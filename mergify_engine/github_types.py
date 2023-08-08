@@ -491,6 +491,8 @@ class GitHubEventRefresh(GitHubEventWithRepository):
     ref: GitHubRefType | None
     pull_request_number: GitHubPullRequestNumber | None
     source: str
+    flag: str | None
+    attempts: int | None
 
 
 GitHubEventPullRequestActionType = typing.Literal[

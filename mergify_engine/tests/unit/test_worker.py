@@ -2872,3 +2872,24 @@ async def test_task_unexpected_cancellation(
         "foo task exited",
         "tasks stopped",
     ]
+
+
+def test_get_bucket_org_key() -> None:
+    assert (
+        stream_lua.get_bucket_org_key(github_types.GitHubAccountIdType(42))
+        == "bucket~42"
+    )
+
+
+def test_get_bucket_sources_key() -> None:
+    assert (
+        stream_lua.get_bucket_sources_key(
+            github_types.GitHubRepositoryIdType(42),
+            github_types.GitHubPullRequestNumber(42),
+        )
+        == "bucket-sources~42~42"
+    )
+    assert (
+        stream_lua.get_bucket_sources_key(github_types.GitHubRepositoryIdType(42), None)
+        == "bucket-sources~42~0"
+    )

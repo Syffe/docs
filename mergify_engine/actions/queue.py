@@ -134,6 +134,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
 `@mergifyio refresh` on the pull request.
 """
 
+    MAX_REFRESH_ATTEMPTS: int | None = 15
+
     @property
     def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return ()

@@ -35,6 +35,8 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                 "ref": True,
                 "pull_request_number": True,
                 "source": True,
+                "flag": True,
+                "attempts": True,
             }
         )
 

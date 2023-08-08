@@ -1296,6 +1296,8 @@ async def test_reviews_filtering(
                         "ref": a_pull_request["base"]["ref"],
                         "pull_request_number": a_pull_request["number"],
                         "source": "internal",
+                        "flag": None,
+                        "attempts": None,
                     }
                 ),
                 "timestamp": github_types.ISODateTimeType(

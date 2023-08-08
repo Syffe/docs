@@ -123,10 +123,10 @@ async def push(
                 "initial_score": float(score),
             },
         )
-        bucket_org_key = stream_lua.BucketOrgKeyType(f"bucket~{owner_id}")
-        bucket_sources_key = stream_lua.BucketSourcesKeyType(
-            f"bucket-sources~{repo_id}~{pull_number or 0}"
-        )
+
+        bucket_org_key = stream_lua.get_bucket_org_key(owner_id)
+        bucket_sources_key = stream_lua.get_bucket_sources_key(repo_id, pull_number)
+
         await stream_lua.push_pull(
             redis,
             bucket_org_key,

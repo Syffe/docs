@@ -39,6 +39,8 @@ MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
 
 
 class MergeUtilsMixin:
+    MAX_REFRESH_ATTEMPTS: int | None = None
+
     async def _refresh_for_retry(self, ctxt: context.Context) -> None:
         await refresher.send_pull_refresh(
             ctxt.repository.installation.redis.stream,
@@ -47,6 +49,8 @@ class MergeUtilsMixin:
             action="internal",
             source="merge failed and need to be retried",
             priority=worker_pusher.Priority.high,
+            refresh_flag=refresher.RefreshFlag.MERGE_FAILED,
+            max_attempts=self.MAX_REFRESH_ATTEMPTS,
         )
 
     @staticmethod
@@ -120,18 +124,6 @@ class MergeUtilsMixin:
                     json={"sha": ctxt.pull["head"]["sha"]},
                 )
             except http.HTTPClientSideError as e:  # pragma: no cover
-                if (
-                    "Update is not a fast forward" in e.message
-                    or "Base branch was modified" in e.message
-                ):
-                    ctxt.log.info(
-                        "Base branch was modified in the meantime, retrying",
-                        status_code=e.status_code,
-                        error_message=e.message,
-                    )
-                    await self._refresh_for_retry(ctxt)
-                    return await pending_result_builder(ctxt)
-
                 await ctxt.update()
                 if ctxt.pull["merged"]:
                     ctxt.log.info("merged in the meantime")
@@ -223,6 +215,35 @@ class MergeUtilsMixin:
         ctxt: context.Context,
         pending_result_builder: PendingResultBuilderT,
     ) -> check_api.Result:
+        try:
+            if (
+                result := await self._handle_merge_error_conditions(
+                    e, ctxt, pending_result_builder
+                )
+            ) is not None:
+                return result
+        except refresher.MaxRefreshAttemptsExceeded as e_:
+            ctxt.log.debug("failed to merge after %s refresh attempts", e_.max_attempts)
+
+        message = "Mergify failed to merge the pull request"
+        ctxt.log.info(
+            "merge fail",
+            status_code=e.status_code,
+            mergify_message=message,
+            error_message=e.message,
+        )
+        return check_api.Result(
+            check_api.Conclusion.CANCELLED,
+            message,
+            f"GitHub error message: `{e.message}`",
+        )
+
+    async def _handle_merge_error_conditions(
+        self,
+        e: http.HTTPClientSideError,
+        ctxt: context.Context,
+        pending_result_builder: PendingResultBuilderT,
+    ) -> check_api.Result | None:
         if "Head branch was modified" in e.message:
             ctxt.log.info(
                 "Head branch was modified in the meantime, retrying",
@@ -232,7 +253,10 @@ class MergeUtilsMixin:
             await self._refresh_for_retry(ctxt)
             return await pending_result_builder(ctxt)
 
-        if "Base branch was modified" in e.message:
+        if (
+            "Update is not a fast forward" in e.message
+            or "Base branch was modified" in e.message
+        ):
             # NOTE(sileht): The base branch was modified between pull.is_behind call and
             # here, usually by something not merged by mergify. So we need sync it again
             # with the base branch.
@@ -348,18 +372,7 @@ class MergeUtilsMixin:
                 f"(detail: {e.message})",
             )
 
-        message = "Mergify failed to merge the pull request"
-        ctxt.log.info(
-            "merge fail",
-            status_code=e.status_code,
-            mergify_message=message,
-            error_message=e.message,
-        )
-        return check_api.Result(
-            check_api.Conclusion.CANCELLED,
-            message,
-            f"GitHub error message: `{e.message}`",
-        )
+        return None
 
     async def pre_merge_checks(
         self,

@@ -8,6 +8,7 @@ import anys
 from first import first
 from freezegun import freeze_time
 import pytest
+import respx
 
 from mergify_engine import check_api
 from mergify_engine import constants
@@ -1639,6 +1640,120 @@ class TestQueueAction(base.FunctionalTestBase):
         assert p2_merged["pull_request"]["head"]["sha"] == branch["commit"]["sha"]
         await self.assert_merge_queue_contents(q, None, [])
 
+    async def test_queue_fast_forward_with_retries(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "merge fast-forward",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "merge_method": "fast-forward",
+                        }
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(as_="admin")
+
+        # Forces a rebase of p1
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.run_engine()
+        p = await self.get_pull(p["number"])
+
+        # Fulfill conditions to queue
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "synchronize"})
+        pulls = await self.get_pulls()
+        assert len(pulls) == 1
+
+        q = await self.get_train()
+        assert p["merge_commit_sha"] is not None
+        await self.assert_merge_queue_contents(
+            q,
+            p["merge_commit_sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                )
+            ],
+        )
+
+        head_sha = p1["head"]["sha"]
+        p1 = await self.get_pull(p1["number"])
+        # p1 has been rebased
+        assert p1["head"]["sha"] != head_sha
+
+        await self.run_engine()
+        check = await self.wait_for_check_run(name="Rule: merge fast-forward (queue)")
+        assert (
+            check["check_run"]["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
+        # Fulfill merge_conditions
+        await self.create_status(p1)
+
+        # GitHub fast-forward is failing unexpectedly
+        with respx.mock(assert_all_called=False) as respx_mock:
+            respx_mock.put(
+                f"{settings.GITHUB_REST_API_URL}"
+                f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
+                f"/git/refs/heads/{self.main_branch_name}"
+            ).respond(405, json={"message": "Base branch was modified"})
+            respx_mock.route(host="api.github.com").pass_through()
+
+            await self.run_engine()
+
+        await self.wait_for_check_run(name="Queue: Embarked in merge train")
+        pr_disembarked_check = await self.wait_for_check_run(
+            name="Queue: Embarked in merge train", conclusion="failure"
+        )
+        assert pr_disembarked_check is not None
+        assert (
+            pr_disembarked_check["check_run"]["output"]["title"]
+            == f"The pull request {p1['number']} cannot be merged and has been disembarked"
+        )
+        assert (
+            pr_disembarked_check["check_run"]["output"]["summary"]
+            == "Mergify failed to merge the pull request\nGitHub error message: `Base branch was modified`"
+        )
+
+        merge_check = await self.wait_for_check_run(
+            name="Rule: merge fast-forward (queue)", conclusion="cancelled"
+        )
+        assert merge_check is not None
+        assert (
+            merge_check["check_run"]["output"]["title"]
+            == "Mergify failed to merge the pull request"
+        )
+        assert (
+            merge_check["check_run"]["output"]["summary"]
+            == "GitHub error message: `Base branch was modified`"
+        )
+
     async def test_queue_with_ci_and_files(self) -> None:
         rules = {
             "queue_rules": [
@@ -2912,6 +3027,8 @@ class TestQueueAction(base.FunctionalTestBase):
                             "ref": p1["base"]["ref"],
                             "pull_request_number": p1["number"],
                             "source": "internal",
+                            "flag": None,
+                            "attempts": None,
                         }
                     ),
                     "timestamp": github_types.ISODateTimeType(

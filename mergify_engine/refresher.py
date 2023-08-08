@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import dataclasses
+import enum
 import typing
 
 import daiquiri
+import msgpack
 
 from mergify_engine import date
 from mergify_engine import filtered_github_types
 from mergify_engine import github_types
 from mergify_engine import worker_pusher
+from mergify_engine.worker import stream_lua
 
 
 if typing.TYPE_CHECKING:
@@ -15,7 +19,57 @@ if typing.TYPE_CHECKING:
     from mergify_engine.models import github_repository
 
 
+@dataclasses.dataclass
+class MaxRefreshAttemptsExceeded(Exception):
+    max_attempts: int
+
+
 LOG = daiquiri.getLogger()
+
+
+class RefreshFlag(enum.StrEnum):
+    MERGE_FAILED = "merge_failed"
+
+
+async def _add_refresh_attempt(
+    redis_stream: redis_utils.RedisStream | redis_utils.PipelineStream,
+    repository: github_types.GitHubRepository | github_repository.GitHubRepositoryDict,
+    pull_request_number: github_types.GitHubPullRequestNumber | None = None,
+    refresh_flag: RefreshFlag | None = None,
+    max_attempts: int | None = None,
+) -> int | None:
+    if max_attempts is None:
+        return None
+
+    bucket_sources_key = stream_lua.get_bucket_sources_key(
+        repository["id"], pull_request_number
+    )
+
+    attempts = 1
+    events = await redis_stream.xrevrange(bucket_sources_key)
+    for event in events:
+        event_unpacked = msgpack.unpackb(event[1][b"source"])
+        if event_unpacked["event_type"] != "refresh":
+            continue
+        refresh_data = typing.cast(
+            github_types.GitHubEventRefresh, event_unpacked["data"]
+        )
+        if (
+            refresh_data["action"] == "internal"
+            and refresh_data is not None
+            and refresh_data["flag"] == refresh_flag
+        ):
+            attempts = (
+                refresh_data["attempts"]
+                if refresh_data["attempts"] is not None
+                else attempts
+            )
+            if attempts >= max_attempts:
+                raise MaxRefreshAttemptsExceeded(max_attempts)
+            attempts += 1
+            # NOTE(lecrepont01): first refresh event if many is the most recent
+            break
+    return attempts
 
 
 async def _send_refresh(
@@ -26,7 +80,13 @@ async def _send_refresh(
     pull_request_number: github_types.GitHubPullRequestNumber | None = None,
     ref: github_types.GitHubRefType | None = None,
     priority: worker_pusher.Priority = worker_pusher.Priority.high,
+    refresh_flag: RefreshFlag | None = None,
+    max_attempts: int | None = None,
 ) -> None:
+    attempts = await _add_refresh_attempt(
+        redis_stream, repository, pull_request_number, refresh_flag, max_attempts
+    )
+
     data = github_types.GitHubEventRefresh(
         {
             "received_at": github_types.ISODateTimeType(date.utcnow().isoformat()),
@@ -51,6 +111,8 @@ async def _send_refresh(
                 "permissions": {},
                 "suspended_at": None,
             },
+            "flag": refresh_flag,
+            "attempts": attempts,
         }
     )
 
@@ -75,6 +137,8 @@ async def send_pull_refresh(
     pull_request_number: github_types.GitHubPullRequestNumber,
     source: str,
     priority: worker_pusher.Priority = worker_pusher.Priority.high,
+    refresh_flag: RefreshFlag | None = None,
+    max_attempts: int | None = None,
 ) -> None:
     LOG.debug(
         "sending pull refresh",
@@ -85,8 +149,9 @@ async def send_pull_refresh(
         action=action,
         source=source,
         priority=priority,
+        refresh_flag=refresh_flag,
+        max_attempts=max_attempts,
     )
-
     await _send_refresh(
         redis_stream,
         repository,
@@ -94,6 +159,8 @@ async def send_pull_refresh(
         source,
         pull_request_number=pull_request_number,
         priority=priority,
+        refresh_flag=refresh_flag,
+        max_attempts=max_attempts,
     )
 
 

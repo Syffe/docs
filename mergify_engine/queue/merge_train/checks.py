@@ -1,7 +1,11 @@
 import dataclasses
 import typing
 
+import httpx
 import pydantic
+
+
+t = httpx.USE_CLIENT_DEFAULT
 
 
 CheckStateT = typing.Literal[

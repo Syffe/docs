@@ -13,6 +13,18 @@ LOG = daiquiri.getLogger(__name__)
 BucketOrgKeyType = typing.NewType("BucketOrgKeyType", str)
 BucketSourcesKeyType = typing.NewType("BucketSourcesKeyType", str)
 
+
+def get_bucket_org_key(owner_id: github_types.GitHubAccountIdType) -> BucketOrgKeyType:
+    return BucketOrgKeyType(f"bucket~{owner_id}")
+
+
+def get_bucket_sources_key(
+    repo_id: github_types.GitHubRepositoryIdType,
+    pull_number: github_types.GitHubPullRequestNumber | None,
+) -> BucketSourcesKeyType:
+    return BucketSourcesKeyType(f"bucket-sources~{repo_id}~{pull_number or 0}")
+
+
 PUSH_PR_SCRIPT = redis_utils.register_script(
     """
 local bucket_org_key = KEYS[1]
