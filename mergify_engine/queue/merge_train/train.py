@@ -1051,11 +1051,19 @@ class Train:
                     >= queue_rule.config["batch_max_wait_time"]
                 )
                 if not enough_to_batch and not wait_enough_time_to_batch:
+                    refresh_at = (
+                        pulls_to_check[0].queued_at
+                        + queue_rule.config["batch_max_wait_time"]
+                    )
+                    self.log.info(
+                        "not enough pulls to batch, waiting",
+                        batch_size=queue_rule.config["batch_size"],
+                        refresh_at=refresh_at,
+                    )
                     await delayed_refresh.plan_refresh_at_least_at(
                         self.convoy.repository,
                         pulls_to_check[0].user_pull_request_number,
-                        pulls_to_check[0].queued_at
-                        + queue_rule.config["batch_max_wait_time"],
+                        refresh_at,
                     )
 
                     return
