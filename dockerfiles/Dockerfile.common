@@ -45,17 +45,14 @@ ENV DD_MERGIFY_VERSION="$DD_MERGIFY_VERSION"
 
 # Add Datadog repository, signing keys and packages
 ENV DATADOG_APT_KEYRING="/usr/share/keyrings/datadog-archive-keyring.gpg"
-ENV DATADOG_APT_KEYS_URL="https://keys.datadoghq.com"
+COPY datadog/DATADOG_APT_KEY_*.public /tmp
 # hadolint ignore=DL3008
 RUN apt-get update -y && \
     apt-get install -y gnupg apt-transport-https gpg-agent curl ca-certificates openssh-server iproute2 && \
     echo "deb [signed-by=${DATADOG_APT_KEYRING}] https://apt.datadoghq.com/ stable 7" > /etc/apt/sources.list.d/datadog.list && \
     touch ${DATADOG_APT_KEYRING} && \
-    curl -o /tmp/DATADOG_APT_KEY_CURRENT.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_CURRENT.public" && \
     gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_CURRENT.public && \
-    curl -o /tmp/DATADOG_APT_KEY_F14F620E.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_F14F620E.public" && \
     gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_F14F620E.public && \
-    curl -o /tmp/DATADOG_APT_KEY_382E94DE.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_382E94DE.public" && \
     gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_382E94DE.public && \
     apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=${DD_AGENT_VERSION} && \
     apt-get purge -y linux-libc-dev && \
