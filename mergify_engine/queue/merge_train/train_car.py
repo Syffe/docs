@@ -983,7 +983,7 @@ class TrainCar:
                     if attempt.retry_state.attempt_number > 1:
                         self.train.log.info(
                             "retrying to create the merge-queue branch",
-                            name=branch_name,
+                            branch_name=branch_name,
                             sha=base_sha,
                         )
 
