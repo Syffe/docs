@@ -2,14 +2,13 @@ import typing
 
 import daiquiri
 import fastapi
-import httpx
 from starlette import requests
 from starlette import responses
 
+from mergify_engine import event_forwarder
 from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import settings
-from mergify_engine.clients import http
 from mergify_engine.web import auth
 from mergify_engine.web import redis
 from mergify_engine.web import utils
@@ -17,46 +16,11 @@ from mergify_engine.web import utils
 
 LOG = daiquiri.getLogger(__name__)
 
-# Set the maximum timeout to 5 seconds: GitHub is not going to wait for
-# more than 10 seconds for us to accept an event, so if we're unable to
-# forward an event in 5 seconds, just drop it.
-EVENT_FORWARD_TIMEOUT = 5
-
 
 router = fastapi.APIRouter(
     tags=["github"],
     dependencies=[fastapi.Depends(auth.github_webhook_signature)],
 )
-
-
-async def forward_event(
-    destination: str,
-    request: requests.Request,
-    event_type: str,
-    event_id: str,
-    event: github_types.GitHubEvent,
-) -> None:
-    raw = await request.body()
-    try:
-        async with http.AsyncClient(timeout=EVENT_FORWARD_TIMEOUT) as client:
-            await client.post(
-                destination,
-                content=raw.decode(),
-                headers={
-                    "X-GitHub-Event": event_type,
-                    "X-GitHub-Delivery": event_id,
-                    "X-Hub-Signature": request.headers["X-Hub-Signature"],
-                    "User-Agent": request.headers["User-Agent"],
-                    "Content-Type": request.headers["Content-Type"],
-                },
-            )
-    except httpx.HTTPError:
-        LOG.warning(
-            "Fail to forward GitHub event",
-            event_type=event_type,
-            event_id=event_id,
-            sender=event["sender"]["login"],
-        )
 
 
 @router.post("/event")
@@ -98,13 +62,10 @@ async def event_handler(
         and settings.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES is not None
         and event_type in settings.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES
     ):
-        background_tasks.add_task(
-            forward_event,
-            settings.GITHUB_WEBHOOK_FORWARD_URL,
-            request,
-            event_type,
-            event_id,
-            data,
+        await event_forwarder.push(
+            redis_links,
+            await request.body(),
+            dict(request.headers),
         )
 
     return responses.Response(reason, status_code=status_code)

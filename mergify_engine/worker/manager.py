@@ -75,6 +75,7 @@ ServiceNameT = typing.Literal[
     "ci-event-processing",
     "log-embedder",
     "dedicated-workers-cache-syncer",
+    "event-forwarder",
 ]
 ServiceNamesT = set[ServiceNameT]
 AVAILABLE_WORKER_SERVICES = set(ServiceNameT.__dict__["__args__"])
@@ -135,6 +136,9 @@ class ServiceManager:
 
     # LogEmbedderProcessingService
     log_embedder_idle_time: float = 60
+
+    # EventForwarderService
+    event_forwarder_idle_time: float = 5
 
     _redis_links: redis_utils.RedisLinks = dataclasses.field(
         init=False, default_factory=lambda: redis_utils.RedisLinks(name="worker")
