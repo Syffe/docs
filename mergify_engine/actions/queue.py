@@ -286,6 +286,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json={"sha": newsha},
             )
+        except http.HTTPUnauthorized:
+            if on_behalf is None:
+                raise
+            return action_utils.get_invalid_credentials_report(on_behalf)
         except http.HTTPClientSideError as e:  # pragma: no cover
             return await self._handle_merge_error(
                 e,

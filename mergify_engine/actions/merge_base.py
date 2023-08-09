@@ -175,6 +175,10 @@ class MergeUtilsMixin:
                 oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json=data,
             )
+        except http.HTTPUnauthorized:
+            if on_behalf is None:
+                raise
+            return action_utils.get_invalid_credentials_report(on_behalf)
         except http.HTTPClientSideError as e:  # pragma: no cover
             await ctxt.update()
             if ctxt.pull["merged"]:

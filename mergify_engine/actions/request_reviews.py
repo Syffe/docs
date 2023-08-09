@@ -210,6 +210,10 @@ class RequestReviewsExecutor(
                             "team_reviewers": list(team_reviews_to_request),
                         },
                     )
+                except http.HTTPUnauthorized:
+                    if on_behalf is None:
+                        raise
+                    return action_utils.get_invalid_credentials_report(on_behalf)
                 except http.HTTPClientSideError as e:  # pragma: no cover
                     return check_api.Result(
                         check_api.Conclusion.FAILURE,

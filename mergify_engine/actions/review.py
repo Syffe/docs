@@ -143,6 +143,10 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                 oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json=payload,
             )
+        except http.HTTPUnauthorized:
+            if on_behalf is None:
+                raise
+            return action_utils.get_invalid_credentials_report(on_behalf)
         except http.HTTPClientSideError as e:
             if e.status_code == 422 and "errors" in e.response.json():
                 return check_api.Result(

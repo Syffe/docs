@@ -6,7 +6,6 @@ from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
@@ -99,14 +98,9 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
                 oauth_token=on_behalf.oauth_access_token if on_behalf else None,
             )
         except http.HTTPUnauthorized:
-            if not on_behalf:
+            if on_behalf is None:
                 raise
-
-            return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
-                f"User `{on_behalf.login}` used as `bot_account` as invalid credentials",
-                f"Please make sure `{on_behalf.login}` logout and re-login into the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL}).",
-            )
+            return action_utils.get_invalid_credentials_report(on_behalf)
 
         except github.GraphqlError as e:
             if "Field 'convertPullRequestToDraft' doesn't exist" in e.message:

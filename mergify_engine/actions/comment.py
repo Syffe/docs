@@ -82,6 +82,11 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
                 oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json={"body": self.config["message"]},
             )
+        except http.HTTPUnauthorized:
+            if on_behalf is None:
+                raise
+            return action_utils.get_invalid_credentials_report(on_behalf)
+
         except http.HTTPClientSideError as e:  # pragma: no cover
             return check_api.Result(
                 check_api.Conclusion.PENDING,

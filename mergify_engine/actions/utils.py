@@ -173,6 +173,7 @@ async def get_github_user_from_bot_account(
                 ),
                 "",
             )
+
     if not settings.SAAS_MODE:
         for (
             hardcoded_id,
@@ -197,3 +198,13 @@ async def get_github_user_from_bot_account(
         )
 
     return on_behalf
+
+
+def get_invalid_credentials_report(
+    on_behalf: github_user.GitHubUser,
+) -> check_api.Result:
+    return check_api.Result(
+        check_api.Conclusion.ACTION_REQUIRED,
+        f"User `{on_behalf.login}` used as `bot_account` as invalid credentials",
+        f"Please make sure `{on_behalf.login}` logout and re-login into the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL}).",
+    )

@@ -9,6 +9,7 @@ from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
+from mergify_engine.clients import http
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
@@ -64,6 +65,10 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
 
         try:
             await branch_updater.update_with_api(self.ctxt, on_behalf)
+        except http.HTTPUnauthorized:
+            if on_behalf is None:
+                raise
+            return action_utils.get_invalid_credentials_report(on_behalf)
         except branch_updater.BranchUpdateFailure as e:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
