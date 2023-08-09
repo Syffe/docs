@@ -55,6 +55,71 @@ pull_request_rules:
 
 
 @pytest.mark.parametrize(
+    "start_datetime, expected_refresh",
+    (
+        # [Europe/Paris] == UTC+2
+        # This is a Monday
+        (
+            datetime.datetime(2023, 7, 24, 12, 10, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 24, 12, 30, 1, tzinfo=datetime.UTC),
+        ),
+        (
+            datetime.datetime(2023, 7, 24, 12, 31, 0, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 24, 12, 51, 0, tzinfo=datetime.UTC),
+        ),
+        (
+            datetime.datetime(2023, 7, 28, 6, 0, 0, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 28, 7, 0, 1, tzinfo=datetime.UTC),
+        ),
+        (
+            datetime.datetime(2023, 7, 28, 7, 2, 0, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 28, 10, 1, 0, tzinfo=datetime.UTC),
+        ),
+    ),
+)
+async def test_delayed_refresh_with_more_success_conditions(
+    context_getter: conftest.ContextGetterFixture,
+    start_datetime: datetime.datetime,
+    expected_refresh: datetime.datetime | None,
+) -> None:
+    config = await utils.load_mergify_config(
+        """
+pull_request_rules:
+  - name: post check with success conditions
+    conditions:
+      - "base=main"
+
+    actions:
+      post_check:
+        success_conditions:
+          - or:
+            - schedule=Mon-Thu 14:30-14:50[Europe/Paris]
+            - schedule=Mon-Thu 15:30-15:50[Europe/Paris]
+            - schedule=Fri-Fri 09:00-12:00[Europe/Paris]
+        title: Best post check ever
+        summary: |
+          {% if not check_succeed %}
+          We are not in working hours, try another time
+          {% else %}
+          We are in working hours, well done
+          {% endif %}
+"""
+    )
+    with freeze_time(start_datetime, tick=False):
+        ctxt = await context_getter(0)
+        rule = typing.cast(
+            list[prr_config.EvaluatedPullRequestRule],
+            config["pull_request_rules"].rules,
+        )
+        await delayed_refresh.plan_next_refresh(ctxt, rule, ctxt.pull_request)
+
+        when = await delayed_refresh._get_current_refresh_datetime(
+            ctxt.repository, ctxt.pull["number"]
+        )
+        assert when == expected_refresh
+
+
+@pytest.mark.parametrize(
     "start_datetime, pull, expected_refresh",
     (
         # [Europe/Madrid] == UTC+2

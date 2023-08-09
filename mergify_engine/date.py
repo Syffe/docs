@@ -195,7 +195,7 @@ class Time:
         obj: Time | datetime.datetime, ref: datetime.datetime
     ) -> datetime.datetime:
         if isinstance(obj, datetime.datetime):
-            return obj
+            return obj.replace(second=0, microsecond=0)
         if isinstance(obj, Time):
             return ref.astimezone(obj.tzinfo).replace(
                 minute=obj.minute,
