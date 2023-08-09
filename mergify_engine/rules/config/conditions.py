@@ -9,7 +9,7 @@ def RuleConditionSchema(
     v: typing.Any, depth: int = 0, allow_command_attributes: bool = False
 ) -> typing.Any:
     if depth > 8:
-        raise voluptuous.Invalid("Maximun number of nested conditions reached")
+        raise voluptuous.Invalid("Maximum number of nested conditions reached")
 
     return voluptuous.Schema(
         voluptuous.Any(

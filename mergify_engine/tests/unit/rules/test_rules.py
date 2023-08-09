@@ -204,7 +204,7 @@ def test_pull_request_rule(valid: typing.Any) -> None:
                 ],
                 "actions": {},
             },
-            "Maximun number of nested conditions reached",
+            "Maximum number of nested conditions reached",
         ),
     ),
 )
