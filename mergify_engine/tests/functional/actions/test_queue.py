@@ -3465,6 +3465,10 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_3 = await self.wait_for_pull_request("opened")
         tmp_pull_4 = await self.wait_for_pull_request("opened")
 
+        reason_abort = f"Pull requests combination (#{p1['number']}, #{p2['number']}, #{p3['number']}) which was ahead in the queue failed to get merged"
+        await self.assert_api_checks_end_reason(p4["number"], reason_abort)
+        await self.assert_api_checks_end_reason(p5["number"], reason_abort)
+
         # The train car has been splitted
         await self.assert_merge_queue_contents(
             q,
@@ -3778,6 +3782,9 @@ class TestQueueAction(base.FunctionalTestBase):
         for event in response["events"]:
             if event["event"] == "action.queue.checks_end":
                 assert expected_reason in event["metadata"]["abort_reason"]
+                return
+        else:
+            pytest.fail("No action.queue.checks_end event found")
 
     async def test_unqueue_all_pr_when_unexpected_changes_on_draft_pr(self) -> None:
         rules_config = {

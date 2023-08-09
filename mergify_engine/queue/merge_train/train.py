@@ -722,7 +722,10 @@ class Train:
         # after has we known now they will not work, and split this one
         # in two
         await self._slice_cars(
-            current_queue_position, reason=queue_utils.PrAheadFailedToMerge()
+            current_queue_position,
+            reason=queue_utils.PrAheadFailedToMerge(
+                [ep.user_pull_request_number for ep in car.still_queued_embarked_pulls]
+            ),
         )
 
         # We move this car later at the end to not retest it

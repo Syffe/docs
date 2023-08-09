@@ -74,10 +74,15 @@ class PrAheadDequeued(BaseUnqueueReason):
 
 @dataclasses.dataclass
 class PrAheadFailedToMerge(BaseUnqueueReason):
-    message = "Pull request ahead in queue failed to get merged"
+    message = "Pull requests combination ({_formated_pr_numbers}) which was ahead in the queue failed to get merged"
     unqueue_code: typing.ClassVar[
         typing.Literal["PR_AHEAD_FAILED_TO_MERGE"]
     ] = "PR_AHEAD_FAILED_TO_MERGE"
+    pr_numbers: list[int]
+
+    @property
+    def _formated_pr_numbers(self) -> str:
+        return ", ".join(f"#{pr_number}" for pr_number in self.pr_numbers)
 
 
 @dataclasses.dataclass
