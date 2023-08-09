@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    The attributes ``added-files``, ``modifed-files`` and ``removed-files`` have been added.

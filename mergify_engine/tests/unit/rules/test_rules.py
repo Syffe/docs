@@ -377,6 +377,15 @@ async def test_jinja_with_list_attribute() -> None:
                       {% for name in files %}
                       @{{name}}
                       {% endfor %}
+                      {% for name in added_files %}
+                      @{{name}}
+                      {% endfor %}
+                      {% for name in modified_files %}
+                      @{{name}}
+                      {% endfor %}
+                      {% for name in removed_files %}
+                      @{{name}}
+                      {% endfor %}
                       {% for name in assignee %}
                       @{{name}}
                       {% endfor %}
@@ -1389,7 +1398,11 @@ async def test_get_pull_request_rules_evaluator(
             "author_association": "MEMBER",
         }
     ]
-    get_files = [{"filename": "README.rst"}, {"filename": "setup.py"}]
+    get_files = [
+        {"filename": "README.rst", "status": "added"},
+        {"filename": "setup.py", "status": "removed"},
+        {"filename": "setup.cfg", "status": "modified"},
+    ]
     get_team_members = [{"login": "sileht", "id": 12321}, {"login": "jd", "id": 2644}]
 
     get_checks: list[github_types.GitHubCheckRun] = []

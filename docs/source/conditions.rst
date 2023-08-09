@@ -328,7 +328,16 @@ Here's the list of pull request attribute that can be used in conditions:
      - Whether the pull request is in draft state.
    * - ``files``
      - list of string
-     - The files that are modified, deleted or added by the pull request.
+     - The files that are modified, removed or added by the pull request.
+   * - ``added-files``
+     - list of string
+     - The files that are added by the pull request.
+   * - ``modified-files``
+     - list of string
+     - The files that are modified by the pull request.
+   * - ``removed-files``
+     - list of string
+     - The files that are removed by the pull request.
    * - ``head``
      - string
      - The name of the branch where the pull request changes are implemented.

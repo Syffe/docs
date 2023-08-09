@@ -2378,6 +2378,10 @@ class BasePullRequest:
         if name == "files":
             return [f["filename"] for f in await ctxt.files]
 
+        if name in ("added-files", "removed-files", "modified-files"):
+            status = name.split("-")[0]
+            return [f["filename"] for f in await ctxt.files if f["status"] == status]
+
         if name == "#commits":
             return ctxt.pull["commits"]
 
@@ -2645,6 +2649,9 @@ class PullRequest(BasePullRequest):
         "review-threads-resolved",
         "review-threads-unresolved",
         "files",
+        "added-files",
+        "modified-files",
+        "removed-files",
         "co-authors",
     }
 
@@ -2826,6 +2833,9 @@ class QueuePullRequest(BasePullRequest):
         "queue-merge-started-at",
         "queue-merge-started-at-relative",
         "files",
+        "added-files",
+        "modified-files",
+        "removed-files",
         "queue-partition-name",
     )
 
