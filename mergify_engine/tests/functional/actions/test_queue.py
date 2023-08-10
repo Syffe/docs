@@ -3875,6 +3875,105 @@ class TestQueueAction(base.FunctionalTestBase):
             "The pull request has been removed from the queue"
         )
 
+    async def test_frozen_train_reset_after_unexpected_base_branch_changes(
+        self,
+    ) -> None:
+        rules_config = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "batch_max_wait_time": "0 s",
+                    "speculative_checks": 2,
+                    "batch_size": 3,
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules_config))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        draft_pr = await self.wait_for_pull_request("opened")
+        assert draft_pr["number"] not in [p1["number"], p2["number"]]
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"], p2["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    merge_train.TrainCarChecksType.DRAFT,
+                    draft_pr["number"],
+                ),
+            ],
+        )
+
+        r = await self.admin_app.put(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+            json={"reason": "test freeze reason"},
+        )
+        assert r.status_code == 200
+
+        # We set the status and run the engine to put the train car into a final state.
+        await self.create_status(draft_pr["pull_request"])
+        await self.run_engine()
+
+        # We push changes to the base branch
+        await self.git("fetch", "origin", self.main_branch_name)
+        await self.git("checkout", "-b", "random", f"origin/{self.main_branch_name}")
+        open(self.git.repository + "/random_file.txt", "wb").close()
+        await self.git("add", "random_file.txt")
+        await self.git("commit", "--no-edit", "-m", "random update")
+        await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.run_engine()
+
+        r = await self.admin_app.delete(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+        )
+        assert r.status_code == 204
+
+        await self.run_engine()
+
+        await self.assert_api_checks_end_reason(
+            p1["number"],
+            "Unexpected queue change: an external action moved the target branch head to",
+        )
+
+        # when detecting base branch changes, the engine should reset the train
+        comment = await self.wait_for_issue_comment(str(draft_pr["number"]), "created")
+        assert "The whole train will be reset." in comment["comment"]["body"]
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
     async def test_draft_pr_train_reset_after_unexpected_base_branch_changes(
         self,
     ) -> None:

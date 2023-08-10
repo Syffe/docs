@@ -1714,91 +1714,85 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
             return None
 
-        unexpected_changes: UnexpectedChanges | None = None
-
         if (
             self.train_car_state.checks_type == TrainCarChecksType.DRAFT
             and not queue_rule.config["allow_queue_branch_edit"]
             and await self._have_unexpected_draft_pull_request_changes()
         ):
-            unexpected_changes = UnexpectedDraftPullRequestChange(
-                self.queue_pull_request_number
-            )
-        elif (
+            return UnexpectedDraftPullRequestChange(self.queue_pull_request_number)
+        if (
             self.train_car_state.checks_type == TrainCarChecksType.INPLACE
             and await checked_ctxt.synchronized_by_user_at() is not None
         ):
-            unexpected_changes = UnexpectedUpdatedPullRequestChange(
-                checked_ctxt.pull["number"]
-            )
-        elif checked_ctxt.pull["state"] != "closed":
-            # NOTE(Syffe): If we enter this clause, it means there are no unexpected changes detected yet on the PR.
-            # Thus, checking for UnexpectedBaseBranchChange on a closed pull request makes no sense, since
-            # we are sure, if the PR is closed, that it is closed by us.
-            fallback_partition_name = (
-                self.train.convoy.partition_rules.get_fallback_partition_name()
-            )
-            train_synced_with_base_branch = (
-                await self.train.is_synced_with_the_base_branch(
-                    checked_ctxt,
-                    current_base_sha,
+            return UnexpectedUpdatedPullRequestChange(checked_ctxt.pull["number"])
+
+        if (
+            self.train_car_state.checks_type == TrainCarChecksType.INPLACE
+            and checked_ctxt.pull["state"] == "closed"
+        ):
+            return None
+
+        # NOTE(Syffe): If we enter this clause, it means there are no unexpected changes detected yet on the PR.
+        # Thus, checking for UnexpectedBaseBranchChange on a closed pull request makes no sense, since
+        # we are sure, if the PR is closed, that it is closed by us.
+        train_synced_with_base_branch = await self.train.is_synced_with_the_base_branch(
+            checked_ctxt,
+            current_base_sha,
+        )
+        if train_synced_with_base_branch:
+            return None
+
+        fallback_partition_name = (
+            self.train.convoy.partition_rules.get_fallback_partition_name()
+        )
+        if fallback_partition_name is None:
+            # There is no fallback partition, and we don't know the change, we reset every partition
+            return UnexpectedBaseBranchChange(current_base_sha)
+
+        # NOTE(Syffe): In case a context with a fallback partition, if the train is out of sync with the base
+        # branch we have to define wether the change comes from a Pull Request, or a force push directly on
+        # the base branch.
+        # * If the change comes from a PR, we need to evaluate it against each partition
+        # rules, then there are two cases:
+        #   1. The PR matches one or more partition --> We reset the concerned partitions
+        #   2. The PR doesn't match any partition --> We reset the fallback partition only
+        # * If the change doesn't come from a PR, it is a force push, we reset every partition
+
+        # NOTE(Syffe): In order to define wether the change comes from a PR or not, we need to check if a PR
+        # exists in the repository. To do this, we use the current_base_sha that is out of sync with the base
+        # branch as a parameter.
+        # * If the endpoint is empty, there is no existing PR, then we reset every partition
+        #   see endpoint documentation:
+        #   https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#list-pull-requests-associated-with-a-commit
+        # * If the endpoint returns a result, we check that the pull request at the origin of
+        #   the change is inside, and we then evaluate it against the current train partition rules in order to
+        #   define if it needs to be reset
+
+        is_api_call_result_empty = True
+        async for pull in typing.cast(
+            abc.AsyncIterator[github_types.GitHubPullRequest],
+            self.repository.installation.client.items(
+                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/commits/{current_base_sha}/pulls",
+                resource_name="pulls",
+                page_limit=20,
+            ),
+        ):
+            is_api_call_result_empty = False
+            if pull["merge_commit_sha"] == current_base_sha:
+                pull_context = await self.repository.get_pull_request_context(
+                    pull["number"]
                 )
-            )
+                return await self.train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition(
+                    pull_context,
+                    current_base_sha,
+                    fallback_partition_name,
+                )
 
-            if (
-                not train_synced_with_base_branch
-                and fallback_partition_name is not None
-            ):
-                # NOTE(Syffe): In case a context with a fallback partition, if the train is out of sync with the base
-                # branch we have to define wether the change comes from a Pull Request, or a force push directly on
-                # the base branch.
-                # * If the change comes from a PR, we need to evaluate it against each partition
-                # rules, then there are two cases:
-                #   1. The PR matches one or more partition --> We reset the concerned partitions
-                #   2. The PR doesn't match any partition --> We reset the fallback partition only
-                # * If the change doesn't come from a PR, it is a force push, we reset every partition
-
-                # NOTE(Syffe): In order to define wether the change comes from a PR or not, we need to check if a PR
-                # exists in the repository. To do this, we use the current_base_sha that is out of sync with the base
-                # branch as a parameter.
-                # * If the endpoint is empty, there is no existing PR, then we reset every partition
-                #   see endpoint documentation:
-                #   https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#list-pull-requests-associated-with-a-commit
-                # * If the endpoint returns a result, we check that the pull request at the origin of
-                #   the change is inside, and we then evaluate it against the current train partition rules in order to
-                #   define if it needs to be reset
-
-                is_api_call_result_empty = True
-                async for pull in typing.cast(
-                    abc.AsyncIterator[github_types.GitHubPullRequest],
-                    self.repository.installation.client.items(
-                        f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/commits/{current_base_sha}/pulls",
-                        resource_name="pulls",
-                        page_limit=20,
-                    ),
-                ):
-                    is_api_call_result_empty = False
-                    if pull["merge_commit_sha"] == current_base_sha:
-                        pull_context = await self.repository.get_pull_request_context(
-                            pull["number"]
-                        )
-                        unexpected_changes = await self.train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition(
-                            pull_context,
-                            current_base_sha,
-                            fallback_partition_name,
-                        )
-                        break
-
-                if is_api_call_result_empty:
-                    # In a context with a fallback partition, the change doesn't come from a PR, we reset every
-                    # partition
-                    unexpected_changes = UnexpectedBaseBranchChange(current_base_sha)
-
-            elif not train_synced_with_base_branch:
-                # There is no fallback partition, and we don't know the change, we reset every partition
-                unexpected_changes = UnexpectedBaseBranchChange(current_base_sha)
-
-        return unexpected_changes
+        if is_api_call_result_empty:
+            # In a context with a fallback partition, the change doesn't come from a PR, we reset every
+            # partition
+            return UnexpectedBaseBranchChange(current_base_sha)
+        return None
 
     async def check_mergeability(
         self,
