@@ -855,7 +855,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 or self.config["merge_method"] == "fast-forward"
             )
             and await self.has_been_recently_merged(
-                convoy.repository.installation.redis.cache,
+                self.ctxt.redis.cache,
                 self.ctxt.repository.repo["id"],
                 self.ctxt.pull["number"],
             )

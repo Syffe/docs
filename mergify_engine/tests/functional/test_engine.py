@@ -971,3 +971,69 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.create_command(pr2["number"], "@Mergifyio refresh", as_="admin")
         await self.run_engine()
         await self.wait_for_pull_request("closed", pr2["number"], merged=True)
+
+    @pytest.mark.subscription(
+        subscription.Features.MERGE_QUEUE,
+        subscription.Features.QUEUE_ACTION,
+        subscription.Features.WORKFLOW_AUTOMATION,
+    )
+    async def test_pull_request_implicitly_merged(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "priority_rules": [
+                        {
+                            "name": "high priority",
+                            "conditions": ["label=urgent"],
+                            "priority": "high",
+                        }
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "default merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                    ],
+                    "actions": {"queue": ""},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_1 = await self.create_pr()
+        await self.add_label(pr_1["number"], "standard")
+
+        pr_2 = await self.create_pr(base=pr_1["head"]["ref"])
+        await self.edit_pull(pr_2["number"], base=self.main_branch_name)
+        await self.add_label(pr_2["number"], "urgent")
+
+        await self.run_engine()
+
+        found = 0
+        while 1:
+            check = await self.wait_for_check_run(
+                "completed", name="Rule: default merge (queue)"
+            )
+            assert check["check_run"]["head_sha"] in [
+                pr_1["head"]["sha"],
+                pr_2["head"]["sha"],
+            ]
+            if check["check_run"]["head_sha"] == pr_1["head"]["sha"]:
+                assert (
+                    check["check_run"]["output"]["title"]
+                    == "The pull request has been merged implicitly by merging another pull request"
+                )
+                found += 1
+            elif check["check_run"]["head_sha"] == pr_2["head"]["sha"]:
+                assert (
+                    check["check_run"]["output"]["title"]
+                    == "The pull request has been merged automatically"
+                )
+                found += 1
+
+            if found == 2:
+                break

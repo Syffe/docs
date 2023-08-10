@@ -395,8 +395,16 @@ class MergeUtilsMixin:
                 ctxt.pull["merged_by"]["id"] == mergify_bot["id"]
                 or ctxt.pull["merged_by"]["login"] == merge_bot_account
             ):
-                mode = "automatically"
-                conclusion = check_api.Conclusion.SUCCESS
+                if await self.has_been_recently_merged(
+                    ctxt.redis.cache,
+                    ctxt.repository.repo["id"],
+                    ctxt.pull["number"],
+                ):
+                    mode = "automatically"
+                    conclusion = check_api.Conclusion.SUCCESS
+                else:
+                    mode = "implicitly by merging another pull request"
+                    conclusion = check_api.Conclusion.CANCELLED
             else:
                 mode = "manually"
                 conclusion = check_api.Conclusion.CANCELLED
