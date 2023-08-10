@@ -25,6 +25,7 @@ jobs:
                               "title": $title,
                               "description": $desc,
                               "teamId": $teamId,
+                              "stateId": $stateId,
                               "labelId": $labelId
                             }
                           }')
