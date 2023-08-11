@@ -1,0 +1,179 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/app
+  response:
+    content: '{"id":214863,"slug":"mergify-sileht","node_id":"A_kwHOAmplV84AA0dP","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-sileht","description":"Mergify
+      testing installation for sileht","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-sileht","created_at":"2022-06-27T12:22:05Z","updated_at":"2023-06-06T11:39:10Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","merge_queues":"write","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add","workflow_job","workflow_run"],"installations_count":3}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      cache-control:
+      - public, max-age=60, s-maxage=60
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Tue, 01 Aug 2023 00:50:47 GMT
+      etag:
+      - W/"d4fb4b4d02992032d4ac2a4937b5c791907b677a921a3a0bca1393a9199e6f9c"
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - C541:C72A:32F057E:335BB44:64C856E7
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 200
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/app/installations?per_page=100
+  response:
+    content: '[{"id":32400250,"account":{"login":"sileht","id":200878,"node_id":"MDQ6VXNlcjIwMDg3OA==","avatar_url":"https://avatars.githubusercontent.com/u/200878?v=4","gravatar_id":"","url":"https://api.github.com/users/sileht","html_url":"https://github.com/sileht","followers_url":"https://api.github.com/users/sileht/followers","following_url":"https://api.github.com/users/sileht/following{/other_user}","gists_url":"https://api.github.com/users/sileht/gists{/gist_id}","starred_url":"https://api.github.com/users/sileht/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/sileht/subscriptions","organizations_url":"https://api.github.com/users/sileht/orgs","repos_url":"https://api.github.com/users/sileht/repos","events_url":"https://api.github.com/users/sileht/events{/privacy}","received_events_url":"https://api.github.com/users/sileht/received_events","type":"User","site_admin":false},"repository_selection":"selected","access_tokens_url":"https://api.github.com/app/installations/32400250/access_tokens","repositories_url":"https://api.github.com/installation/repositories","html_url":"https://github.com/settings/installations/32400250","app_id":214863,"app_slug":"mergify-sileht","target_id":200878,"target_type":"User","permissions":{"pages":"write","checks":"write","issues":"write","contents":"write","metadata":"read","statuses":"write","workflows":"write","merge_queues":"write","pull_requests":"write","administration":"read"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add","workflow_job","workflow_run"],"created_at":"2022-12-20T13:46:53.000Z","updated_at":"2023-06-06T11:39:11.000Z","single_file_name":null,"has_multiple_single_files":false,"single_file_paths":[],"suspended_by":null,"suspended_at":null},{"id":29212934,"account":{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false},"repository_selection":"selected","access_tokens_url":"https://api.github.com/app/installations/29212934/access_tokens","repositories_url":"https://api.github.com/installation/repositories","html_url":"https://github.com/settings/installations/29212934","app_id":214863,"app_slug":"mergify-sileht","target_id":38494943,"target_type":"User","permissions":{"pages":"write","checks":"write","issues":"write","contents":"write","metadata":"read","statuses":"write","workflows":"write","merge_queues":"write","pull_requests":"write","administration":"read"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add","workflow_job","workflow_run"],"created_at":"2022-09-14T10:00:06.000Z","updated_at":"2023-06-06T11:39:11.000Z","single_file_name":null,"has_multiple_single_files":false,"single_file_paths":[],"suspended_by":null,"suspended_at":null},{"id":26894537,"account":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"repository_selection":"selected","access_tokens_url":"https://api.github.com/app/installations/26894537/access_tokens","repositories_url":"https://api.github.com/installation/repositories","html_url":"https://github.com/organizations/mergifyio-testing/settings/installations/26894537","app_id":214863,"app_slug":"mergify-sileht","target_id":40527191,"target_type":"Organization","permissions":{"pages":"write","checks":"write","issues":"write","members":"read","contents":"write","metadata":"read","statuses":"write","workflows":"write","merge_queues":"write","pull_requests":"write","administration":"read"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add","workflow_job","workflow_run"],"created_at":"2022-06-27T12:22:13.000Z","updated_at":"2023-07-31T21:59:42.000Z","single_file_name":null,"has_multiple_single_files":false,"single_file_paths":[],"suspended_by":null,"suspended_at":null}]'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      cache-control:
+      - public, max-age=60, s-maxage=60
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Tue, 01 Aug 2023 00:50:47 GMT
+      etag:
+      - W/"040d113c2c204aac7c03e63dfd992c32c152e237f87da68bdf88430eda234eab"
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - C542:F85C:31E0F1A:324C4E2:64C856E7
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 200
+- request:
+    body: ''
+    headers:
+      Authorization:
+      - <TOKEN>
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/users/mergify-sileht[bot]
+  response:
+    content: '{"login":"mergify-sileht[bot]","id":108276933,"node_id":"BOT_kgDOBnQsxQ","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-sileht%5Bbot%5D","html_url":"https://github.com/apps/mergify-sileht","followers_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/received_events","type":"Bot","site_admin":false,"name":null,"company":null,"blog":"","location":null,"email":null,"hireable":null,"bio":null,"twitter_username":null,"public_repos":0,"public_gists":0,"followers":0,"following":0,"created_at":"2022-06-27T12:22:04Z","updated_at":"2022-06-27T12:22:05Z"}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      cache-control:
+      - private, max-age=60, s-maxage=60
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Tue, 01 Aug 2023 00:50:48 GMT
+      etag:
+      - W/"6734046e056b39dcca1c0adb4e2444220468e8b5187acd924b9b8f2ad67f0221"
+      last-modified:
+      - Mon, 27 Jun 2022 12:22:05 GMT
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - C543:7A5C:332BF56:3397532:64C856E8
+      x-ratelimit-limit:
+      - '5000'
+      x-ratelimit-remaining:
+      - '4998'
+      x-ratelimit-reset:
+      - '1690853713'
+      x-ratelimit-resource:
+      - core
+      x-ratelimit-used:
+      - '2'
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 200
+version: 1
