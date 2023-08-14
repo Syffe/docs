@@ -8,3 +8,4 @@ excluded-packages:
   - systemd
   - systemd-sysv
   - systemd-timesyncd
+  - libkrb5support0
