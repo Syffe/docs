@@ -121,7 +121,8 @@ def config_log() -> None:
     ):
         if f"MERGIFYENGINE_{env}" in os.environ:
             LOG.warning(
-                f"MERGIFYENGINE_{env} configuration environment variable is deprecated and can be removed"
+                "MERGIFYENGINE_%s configuration environment variable is deprecated and can be removed",
+                env,
             )
 
 

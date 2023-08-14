@@ -146,7 +146,10 @@ async def auth_via_github(
             raise fastapi.HTTPException(401)
 
         LOG.error(
-            f"OAuth error error={e.error} description={e.description} uri={e.uri}",
+            "OAuth error error=%s description=%s uri=%s",
+            e.error,
+            e.description,
+            e.uri,
             exc_info=True,
         )
         raise fastapi.HTTPException(401)

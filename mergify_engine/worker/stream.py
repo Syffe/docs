@@ -455,7 +455,9 @@ class Processor:
                 for bucket in buckets:
                     messages = await self.redis_links.stream.xrange(bucket)
                     for _, message in messages:
-                        LOG.info("event dropped", msgpack.unpackb(message[b"source"]))
+                        LOG.info(
+                            "event dropped", source=msgpack.unpackb(message[b"source"])
+                        )
                     await self.redis_links.stream.delete(bucket)
                     await self.redis_links.stream.delete(ATTEMPTS_KEY)
                     await self.redis_links.stream.zrem(bucket_org_key, bucket)

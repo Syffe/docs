@@ -31,7 +31,7 @@ class TaskRetriedForever:
     task: asyncio.Task[None] = dataclasses.field(init=False, repr=False)
 
     def __post_init__(self) -> None:
-        LOG.info(f"{self.name} starting")
+        LOG.info("%s starting", self.name)
         self.task = asyncio.create_task(
             self.loop_and_sleep_forever(self.name, self.func, self.sleep_time),
             name=self.name,
