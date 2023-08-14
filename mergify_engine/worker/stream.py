@@ -686,6 +686,7 @@ class Processor:
                     ) as span:
                         span.set_tags(
                             {
+                                "enabled_features": installation.subscription._all_features,
                                 "gh_repo": tracing_repo_name,
                                 "gh_pull": bucket.pull_number,
                             }
