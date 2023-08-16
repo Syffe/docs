@@ -113,10 +113,10 @@ def test_model_as_dict() -> None:
         name: orm.Mapped[str]
 
     obj = TestSimpleModel(id=0)
-    assert obj.as_dict() == {"id": 0, "name": None}  # type: ignore [comparison-overlap]
+    assert obj.as_dict() == {"id": 0, "name": None}
 
     obj = TestSimpleModel(id=0, name="hello")
-    assert obj.as_dict() == {"id": 0, "name": "hello"}  # type: ignore [comparison-overlap]
+    assert obj.as_dict() == {"id": 0, "name": "hello"}
 
 
 def test_relational_model_as_dict() -> None:
@@ -137,12 +137,12 @@ def test_relational_model_as_dict() -> None:
         )
 
     obj = TestRelationalModel(id=0)
-    assert obj.as_dict() == {"id": 0, "name": None, "user_id": None}  # type: ignore [comparison-overlap]
+    assert obj.as_dict() == {"id": 0, "name": None, "user_id": None}
 
     obj = TestRelationalModel(
         id=0, name="hello", user_id=0, user=TestRelationalUserModel(id=0, name="me")
     )
-    assert obj.as_dict() == {  # type: ignore [comparison-overlap]
+    assert obj.as_dict() == {
         "id": 0,
         "name": "hello",
         "user_id": 0,
