@@ -622,7 +622,7 @@ class Train:
         )
         await self.refresh_pulls(
             source=f"merged pull {pr_number} removed from queue",
-            additional_pull_request=pr_number,
+            additional_pull_requests=[pr_number],
             # process quickly the next one,
             priority_first_pull_request=worker_pusher.Priority.immediate,
         )
@@ -656,46 +656,88 @@ class Train:
             reason=other_prs_reason,
             drop_pull_requests={pr_number: unqueue_reason},
         )
+        await self.save()
+        await self._send_queue_leave_signal(
+            position,
+            embarked_pull_with_car.embarked_pull,
+            embarked_pull_with_car.car,
+            signal_trigger,
+            unqueue_reason,
+        )
+        await self.refresh_pulls(
+            source=f"pull {pr_number} removed from queue",
+            additional_pull_requests=[pr_number],
+        )
+
+    async def remove_failed_car(self, car: train_car.TrainCar) -> None:
+        unqueue_reason = tcs_import.unqueue_reason_from_train_car_state(
+            car.train_car_state
+        )
+        other_prs_reason = queue_utils.PrAheadDequeued(
+            pr_number=car.still_queued_embarked_pulls[0].user_pull_request_number
+        )
+        drop_pull_requests = [
+            ep.user_pull_request_number for ep in car.still_queued_embarked_pulls
+        ]
+        position = self._cars.index(car)
+        await self._slice_cars(
+            position,
+            reason=other_prs_reason,
+            drop_pull_requests={pr: unqueue_reason for pr in drop_pull_requests},
+        )
+        for i, ep in enumerate(car.still_queued_embarked_pulls):
+            await self._send_queue_leave_signal(
+                position + i, ep, car, "merge queue internal", unqueue_reason
+            )
+
+        await self.save()
+        await self.refresh_pulls(
+            source=f"pulls {','.join(str(pr) for pr in drop_pull_requests)} removed from queue",
+            additional_pull_requests=drop_pull_requests,
+        )
+
+    async def _send_queue_leave_signal(
+        self,
+        position: int,
+        embarked_pull: ep_import.EmbarkedPull,
+        car: train_car.TrainCar | None,
+        signal_trigger: str,
+        unqueue_reason: queue_utils.BaseUnqueueReason,
+    ) -> None:
         event_metadata = signals.EventQueueLeaveMetadata(
             {
                 "branch": self.convoy.ref,
                 "merged": False,
                 "partition_name": self.partition_name,
                 "position": position,
-                "queued_at": embarked_pull_with_car.embarked_pull.queued_at,
-                "queue_name": embarked_pull_with_car.embarked_pull.config["name"],
+                "queued_at": embarked_pull.queued_at,
+                "queue_name": embarked_pull.config["name"],
                 "reason": str(unqueue_reason),
                 "seconds_waiting_for_schedule": 0,
                 "seconds_waiting_for_freeze": 0,
             }
         )
-        if embarked_pull_with_car.car is not None:
+        if car is not None:
             event_metadata.update(
                 {
-                    "seconds_waiting_for_schedule": embarked_pull_with_car.car.train_car_state.seconds_waiting_for_schedule,
-                    "seconds_waiting_for_freeze": embarked_pull_with_car.car.train_car_state.seconds_waiting_for_freeze,
+                    "seconds_waiting_for_schedule": car.train_car_state.seconds_waiting_for_schedule,
+                    "seconds_waiting_for_freeze": car.train_car_state.seconds_waiting_for_freeze,
                 }
             )
 
-        await self.save()
         await signals.send(
             self.convoy.repository,
-            pr_number,
+            embarked_pull.user_pull_request_number,
             "action.queue.leave",
             event_metadata,
             signal_trigger,
         )
-
         self.log.info(
             "removed from train",
             position=position,
-            gh_pull=pr_number,
+            gh_pull=embarked_pull.user_pull_request_number,
             gh_branch=self.convoy.ref,
             **self.log_queue_extras,
-        )
-        await self.refresh_pulls(
-            source=f"pull {pr_number} removed from queue",
-            additional_pull_request=pr_number,
         )
 
     async def _split_failed_train_car(self, car: train_car.TrainCar) -> None:
@@ -1319,11 +1361,14 @@ class Train:
         self,
         source: str,
         priority_first_pull_request: worker_pusher.Priority = worker_pusher.Priority.medium,
-        additional_pull_request: None | (github_types.GitHubPullRequestNumber) = None,
+        additional_pull_requests: list[github_types.GitHubPullRequestNumber]
+        | None = None,
     ) -> None:
         pulls = await self.get_pulls()
-        if additional_pull_request and additional_pull_request not in pulls:
-            pulls.append(additional_pull_request)
+        if additional_pull_requests:
+            for additional_pull_request in additional_pull_requests:
+                if additional_pull_request not in pulls:
+                    pulls.append(additional_pull_request)
 
         pipe = typing.cast(
             redis_utils.PipelineStream,

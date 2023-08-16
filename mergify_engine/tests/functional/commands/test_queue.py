@@ -459,15 +459,17 @@ class TestQueueCommand(base.FunctionalTestBase):
         assert (
             """<details>
 
-- [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]
-- [X] `#changes-requested-reviews-by=0` [🛡 GitHub branch protection]
+- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+    - [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]
+    - [ ] `label=default`
+    - [X] `#changes-requested-reviews-by=0` [🛡 GitHub branch protection]
+  - [ ] all of: [:pushpin: queue conditions of queue `quwu`]
+    - [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]
+    - [X] `#changes-requested-reviews-by=0` [🛡 GitHub branch protection]
+    - [X] `label=uwu`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [X] all of: [:pushpin: queue conditions of queue `quwu`]
-    - [X] `label=uwu`
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
-    - [ ] `label=default`
 
 </details>
 """
@@ -727,11 +729,13 @@ class TestQueueCommand(base.FunctionalTestBase):
         comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "edited")
 
         assert (
-            "The pull request rule doesn't match anymore"
+            "The pull request has been removed from the queue"
             in comment_p1["comment"]["body"]
         )
-
-        assert "This action has been cancelled." in comment_p1["comment"]["body"]
+        assert (
+            "The queue conditions cannot be satisfied due to failing checks."
+            in comment_p1["comment"]["body"]
+        )
 
     async def test_branch_protections_reporting_when_pr_is_not_yet_in_traincar(
         self,

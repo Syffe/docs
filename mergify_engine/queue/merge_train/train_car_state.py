@@ -3,16 +3,23 @@ import dataclasses
 import datetime
 import typing
 
+import daiquiri
+
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import utils
 from mergify_engine.queue import freeze
+from mergify_engine.queue import merge_train
 from mergify_engine.queue import pause
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import train_car
 from mergify_engine.queue.merge_train import types as queue_types
 from mergify_engine.rules.config import queue_rules as qr_config
+
+
+LOG = daiquiri.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -279,3 +286,42 @@ def extract_encoded_train_car_state_data_from_summary(
             return lines[0]
 
     return None
+
+
+def unqueue_reason_from_train_car_state(
+    train_car_state: TrainCarState | TrainCarStateForSummary,
+) -> queue_utils.BaseUnqueueReason:
+    if train_car_state.outcome in (
+        merge_train.TrainCarOutcome.DRAFT_PR_CHANGE,
+        merge_train.TrainCarOutcome.BASE_BRANCH_CHANGE,
+        merge_train.TrainCarOutcome.UPDATED_PR_CHANGE,
+    ):
+        if train_car_state.outcome_message is None:
+            LOG.error(
+                "outcome_message is not set", outcome=train_car_state.outcome.value
+            )
+        return queue_utils.UnexpectedQueueChange(
+            change=train_car_state.outcome_message or "unexpected queue change"
+        )
+
+    if (
+        train_car_state.outcome
+        == merge_train.TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE
+    ):
+        return queue_utils.ChecksStoppedBecauseMergeQueuePause()
+
+    if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
+        return queue_utils.ChecksFailed()
+
+    if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_TIMEOUT:
+        return queue_utils.ChecksTimeout()
+
+    if (
+        train_car_state.outcome
+        == merge_train.TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
+    ):
+        return queue_utils.MaximumBatchFailureResolutionAttemptsReached()
+
+    raise RuntimeError(
+        f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"
+    )

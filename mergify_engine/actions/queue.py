@@ -35,6 +35,7 @@ from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import pause
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.queue.merge_train import train_car_state as tcs_import
 from mergify_engine.queue.merge_train import types as merge_train_types
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
@@ -923,34 +924,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ctxt.pull["number"], " due to failing checks or checks timeout"
             )
 
-        if (
-            train_car_state.outcome
-            in (
-                merge_train.TrainCarOutcome.DRAFT_PR_CHANGE,
-                merge_train.TrainCarOutcome.BASE_BRANCH_CHANGE,
-                merge_train.TrainCarOutcome.UPDATED_PR_CHANGE,
-            )
-            and train_car_state.outcome_message is not None
-        ):
-            return queue_utils.UnexpectedQueueChange(
-                change=train_car_state.outcome_message
-            )
-
-        if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
-            return queue_utils.ChecksFailed()
-
-        if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_TIMEOUT:
-            return queue_utils.ChecksTimeout()
-
-        if (
-            train_car_state.outcome
-            == merge_train.TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
-        ):
-            return queue_utils.MaximumBatchFailureResolutionAttemptsReached()
-
-        raise RuntimeError(
-            f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"
-        )
+        return tcs_import.unqueue_reason_from_train_car_state(train_car_state)
 
     @classmethod
     async def _should_be_queued(
@@ -1007,23 +981,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return True
 
         for train, prev_car in previous_cars:
-            position, _ = train.find_embarked_pull(ctxt.pull["number"])
-            if position is None:
-                return True
-
             car = train.get_car(ctxt)
             if car is None:
-                # NOTE(sileht): in case the car just got deleted but the PR is
-                # still first in queue this means the train has been resetted for
-                # some reason. If we were waiting for CIs to complete, we must not
-                # cancel the action as the train car will be recreated very soon
-                # (by Train.refresh()).
-                # To keep it queued, we check the state against the previous car
-                # version one last time.
-                car = prev_car
+                # NOTE(sileht): train car has been deleted, wait for the queue status to be copied
+                # to the action status
+                return False
 
             if (
                 car
+                and car == prev_car
                 and car.train_car_state.checks_type
                 == merge_train.TrainCarChecksType.INPLACE
             ):

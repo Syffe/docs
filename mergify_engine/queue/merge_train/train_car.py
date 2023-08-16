@@ -497,7 +497,7 @@ class TrainCar:
 
     @property
     def is_batch_failure_resolved(self) -> bool:
-        return (
+        return self not in self.train._cars or (
             self.has_previous_car_status_succeeded()
             and len(self.initial_embarked_pulls) == 1
         )
@@ -2175,6 +2175,36 @@ You don't need to do anything. Mergify will close this pull request automaticall
             TrainCarChecksType.DRAFT_DELEGATED,
         ):
             await self._save_check_runs()
+
+        if self.train_car_state.outcome in (
+            TrainCarOutcome.UNKNOWN,
+            TrainCarOutcome.MERGEABLE,
+        ):
+            # Everything look good for now, just wait.
+            return
+
+        if (
+            self.train_car_state.outcome
+            == TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE
+        ):
+            # We wait for _populate_cars() to reset the whole train
+            return
+
+        if (
+            len(self.initial_embarked_pulls) != 1
+            and self.train_car_state.outcome
+            != TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
+        ):
+            # NOTE(sileht): We wait for _split_failed_batches() to find the culprit PR
+            return
+
+        if not self.has_previous_car_status_succeeded():
+            # NOTE(sileht): We wait for the cars ahead in queue to success first in case of the failure
+            # is due to them
+            return
+
+        # NOTE(sileht): This car failed and PRs inside are the culprit, report the failure and remove this car.
+        await self.train.remove_failed_car(self)
 
     def _has_reached_batch_max_failure(self) -> bool:
         rule = self.get_queue_rule()
