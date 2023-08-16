@@ -4,8 +4,9 @@ import os
 import shutil
 import tempfile
 
+from mergify_engine import console_scripts
 from mergify_engine import yaml
-from mergify_engine.redis_utils import dumper
+from mergify_engine.tests import utils
 from mergify_engine.tests.functional import base
 
 
@@ -63,12 +64,28 @@ class TestRedisUtilsDumper(base.FunctionalTestBase):
         await self.repository_ctxt.get_mergify_config_file()
         temporary_folder = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, temporary_folder)
-        await dumper.dump(["--path", temporary_folder, "--key", "non_existent_key"])
+
+        result = utils.test_console_scripts(
+            console_scripts.admin,
+            [
+                "dump-redis-keys",
+                "--path",
+                temporary_folder,
+                "--key",
+                "non_existent_key",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+
         assert not os.path.exists(
             f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt"
         )
 
-        await dumper.dump(["--path", temporary_folder])
+        result = utils.test_console_scripts(
+            console_scripts.admin, ["dump-redis-keys", "--path", temporary_folder]
+        )
+        assert result.exit_code == 0, result.output
+
         assert os.path.exists(
             f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt"
         )

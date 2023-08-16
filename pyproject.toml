@@ -100,7 +100,6 @@ click = "^8.1.6"
   mergify-count-seats = "mergify_engine.count_seats:main"
   mergify-api-public-openapi-spec = "mergify_engine.web.api.root:generate_openapi_spec"
   mergify-api-internal-openapi-spec = "mergify_engine.web.root:generate_openapi_spec"
-  mergify-redis-dump = "mergify_engine.redis_utils.dumper:main"
   mergify-admin = "mergify_engine.console_scripts:admin"
 
 [tool.poetry.plugins]
