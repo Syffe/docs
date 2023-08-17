@@ -196,10 +196,7 @@ jobs:
               -e SENTRY_ENVIRONMENT=ci \
               --entrypoint /bin/bash \
               $i:tmp \
-              -c 'set -e;
-                  /datadog-wrapper.sh mergify-import-check-worker;
-                  /datadog-wrapper.sh mergify-import-check-web;
-                  /datadog-wrapper.sh mergify-import-check-db-update;'
+              -c 'set -e; /datadog-wrapper.sh /app/tools/import-checks.sh'
           done
 
       ################
@@ -233,10 +230,7 @@ jobs:
               -e DYNO=testing.1 \
               --entrypoint /bin/bash \
               web:tmp \
-              -c 'set -e;
-                  /datadog-wrapper.sh mergify-import-check-worker;
-                  /datadog-wrapper.sh mergify-import-check-web;
-                  /datadog-wrapper.sh mergify-import-check-db-update;'
+              -c 'set -e; /datadog-wrapper.sh /app/tools/import-checks.sh'
 
       - name: 📜 Tag and Push
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

@@ -125,8 +125,8 @@ jobs:
               -e MERGIFYENGINE_DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres \
               --entrypoint /bin/bash \
               onpremise:tmp \
-              -c '/datadog-wrapper.sh mergify-import-check-worker;
-                  /datadog-wrapper.sh mergify-import-check-web;'
+            -c 'set -e; /datadog-wrapper.sh /app/tools/import-checks.sh'
+
 
       ######################
       # ON PREMISE RELEASE #

@@ -774,7 +774,7 @@ async def test_worker_start_redis_ping(
         fake(),
     ]
 
-    w = manager.ServiceManager(enabled_services=set())
+    w = manager.ServiceManager(enabled_services={"gitter"})
 
     with mock.patch.object(tenacity.wait_exponential, "__call__", return_value=0):
         await w.start()

@@ -26,9 +26,7 @@ sequence = [
   "mypy",
   "yamllint .",
   "reno lint",
-  "mergify-import-check-web",
-  "mergify-import-check-worker",
-  "mergify-import-check-db-update",
+  "tools/import-checks.sh",
   "tools/check-obsolete-fixtures.sh",
   "bash -n onpremise/entrypoint.sh",
   "bash -n datadog-wrapper.sh"
@@ -74,7 +72,7 @@ default_item_type = "cmd"
 sequence = [
     # Ensure no dev deps are installed like in production
     "poetry install --only main --sync",
-    "./tools/run-tests.sh bash -c 'mergify-import-check-worker && mergify-import-check-web && mergify-import-check-db-update'",
+    "./tools/import-checks.sh",
 ]
 [tool.poe.tasks.import-checks.env]
 MERGIFYENGINE_SENTRY_URL = "https://12345@localhost/12345"

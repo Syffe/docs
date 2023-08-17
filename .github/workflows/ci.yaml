@@ -116,17 +116,6 @@ jobs:
   import-checks:
     timeout-minutes: 20
     runs-on: ubuntu-22.04
-    services:
-      redis:
-        image: redis:latest
-        ports:
-          - 6363:6379
-      postgres:
-        image: ankane/pgvector:v0.4.4
-        env:
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3.3.0

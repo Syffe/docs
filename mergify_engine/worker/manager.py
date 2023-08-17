@@ -160,6 +160,11 @@ class ServiceManager:
         if self._stop_task is not None:
             raise RuntimeError("Worker can't be restarted")
 
+        if not self.enabled_services:
+            self._stopped.set()
+            LOG.info("worker has no services enabled, shutdown..")
+            return
+
         self._stopped.clear()
 
         LOG.info(
@@ -264,6 +269,8 @@ def ServicesSet(v: str) -> ServiceNamesT:
     enabled_services = set()
     invalid_services = set()
     for value in values:
+        if not value:
+            continue
         if value in AVAILABLE_WORKER_SERVICES:
             enabled_services.add(value)
         else:
