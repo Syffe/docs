@@ -90,7 +90,6 @@ click = "^8.1.6"
 
 [tool.poetry.scripts]
   mergify-database-update = "mergify_engine.models.manage:database_update"
-  mergify-debug = "mergify_engine.debug:main"
   mergify-stream-status = "mergify_engine.worker.stream_cli:status"
   mergify-stream-reschedule = "mergify_engine.worker.stream_cli:reschedule_now"
   mergify-engine-worker = "mergify_engine.worker.manager:main"

@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import datetime
 import itertools
@@ -11,7 +10,6 @@ from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import redis_utils
-from mergify_engine import service
 from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import utils
@@ -259,16 +257,3 @@ async def report(
 
     await redis_links.shutdown_all()
     return ctxt
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Debugger for mergify")
-    parser.add_argument("url", help="Pull request url")
-    args = parser.parse_args()
-    service.setup(service_name="debugger", dump_config=False, stdout_logging_only=True)
-    try:
-        asyncio.run(report(args.url))
-    except KeyboardInterrupt:
-        print("Interruped...")
-    except BrokenPipeError:
-        pass
