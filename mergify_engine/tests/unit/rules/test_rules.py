@@ -2543,3 +2543,32 @@ def test_rule_condition_operator(
     condition: conditions.RuleCondition, expected_operator: str
 ) -> None:
     assert condition.operator == expected_operator
+
+
+@pytest.mark.parametrize(
+    "configuration,expected_error",
+    (
+        (
+            """
+pull_request_rules:
+  - name: foo
+    conditions: []
+    actions:
+      queue: merge
+""",
+            "expected a dictionary for dictionary value @ pull_request_rules → item 0 → actions → queue",
+        ),
+        (
+            """
+queue_rules:
+  - foo
+""",
+            "expected a dictionary @ queue_rules → item 0",
+        ),
+    ),
+)
+async def test_invalid_dict_format(configuration: str, expected_error: str) -> None:
+    with pytest.raises(mergify_conf.InvalidRules) as e:
+        await utils.load_mergify_config(configuration)
+
+    assert str(e.value) == expected_error

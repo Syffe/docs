@@ -281,6 +281,11 @@ def _has_only_one_of(
 
     def func(obj: dict[str, typing.Any]) -> dict[str, typing.Any]:
         nonlocal msg
+        if not isinstance(obj, dict):
+            raise RuntimeError(
+                "_has_only_one_of() must be used after `obj` format has been valided by voluptuous"
+            )
+
         if len(keys_set & obj.keys()) > 1:
             if msg is None:
                 msg = f"Must contain only one of {','.join(keys)}"
@@ -297,6 +302,7 @@ queue_conditions_exclusive_msg = "Cannot have both `routing_conditions` and `que
 QueueRulesSchema = voluptuous.All(
     [
         voluptuous.All(
+            {voluptuous.Extra: object},  # just ensure first it's a dict
             _has_only_one_of(
                 "conditions",
                 "merge_conditions",

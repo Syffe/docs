@@ -217,7 +217,12 @@ class Action(abc.ABC):
 
     def __post_init__(self, raw_config_: RawConfigT | None) -> None:
         self.raw_config = raw_config_ or {}
-        self.config = voluptuous.Schema(self.validator)(self.raw_config)
+        self.config = voluptuous.Schema(
+            voluptuous.All(
+                {voluptuous.Extra: object},  # just ensure first it's a dict
+                self.validator,
+            )
+        )(self.raw_config)
 
     async def load_context(
         self, ctxt: "context.Context", rule: "prr_config.EvaluatedPullRequestRule"
