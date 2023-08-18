@@ -86,7 +86,7 @@ poethepoet = "^0.22.0"
 pytest-rerunfailures = "^12.0"
 ruff = "^0.0.284"
 black = "^23.7.0"
-click = "^8.1.6"
+click = "^8.1.7"
 
 [tool.poetry.scripts]
   mergify-database-update = "mergify_engine.models.manage:database_update"
