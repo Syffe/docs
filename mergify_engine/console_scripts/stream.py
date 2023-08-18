@@ -1,8 +1,9 @@
-import argparse
-import asyncio
 import datetime
 import itertools
 
+import click
+
+from mergify_engine import console_scripts
 from mergify_engine import date
 from mergify_engine import redis_utils
 from mergify_engine import settings
@@ -12,7 +13,8 @@ from mergify_engine.worker import stream_lua
 from mergify_engine.worker import stream_service_base
 
 
-async def async_status() -> None:
+@console_scripts.async_admin_command
+async def stream_status() -> None:
     shared_stream_tasks_per_process: int = settings.SHARED_STREAM_TASKS_PER_PROCESS
     shared_stream_processes: int = settings.SHARED_STREAM_PROCESSES
     global_shared_tasks_count: int = (
@@ -53,23 +55,17 @@ async def async_status() -> None:
             event_org_buckets = await redis_links.stream.zrange(org_bucket, 0, -1)
             count = sum([await redis_links.stream.xlen(es) for es in event_org_buckets])
             items = f"{len(event_org_buckets)} pull requests, {count} events"
-            print(f"{{{worker_id}}} [{date}] {owner_id.decode()}: {items}")
+            click.echo(f"{{{worker_id}}} [{date}] {owner_id.decode()}: {items}")
 
     await redis_links.shutdown_all()
 
 
-def status() -> None:
-    asyncio.run(async_status())
-
-
-async def async_reschedule_now() -> int:
-    parser = argparse.ArgumentParser(description="Rescheduler for Mergify")
-    parser.add_argument("owner_id", help="Organization ID")
-    args = parser.parse_args()
-
-    redis_links = redis_utils.RedisLinks(name="async_reschedule_now")
+@console_scripts.async_admin_command
+@click.argument("owner-id", required=True)
+async def stream_reschedule_now(owner_id: str) -> int:
+    redis_links = redis_utils.RedisLinks(name="reschedule_now")
     org_buckets = await redis_links.stream.zrangebyscore("streams", min=0, max="+inf")
-    expected_bucket = f"bucket~{args.owner_id}"
+    expected_bucket = f"bucket~{owner_id}"
     for org_bucket in org_buckets:
         if org_bucket.decode().startswith(expected_bucket):
             scheduled_at = date.utcnow()
@@ -81,13 +77,10 @@ async def async_reschedule_now() -> int:
             # NOTE(sileht): Do we need to cleanup the per PR attempt?
             # await transaction.hdel(ATTEMPTS_KEY, bucket_sources_key)
             await transaction.execute()
+            click.echo(f"Stream for {expected_bucket} rescheduled now")
             await redis_links.shutdown_all()
             return 0
     else:
-        print(f"Stream for {expected_bucket} not found")
+        click.echo(f"Stream for {expected_bucket} not found")
         await redis_links.shutdown_all()
         return 1
-
-
-def reschedule_now() -> int:
-    return asyncio.run(async_reschedule_now())

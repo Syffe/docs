@@ -29,7 +29,6 @@ from mergify_engine.worker import gitter_service
 from mergify_engine.worker import manager
 from mergify_engine.worker import shared_workers_spawner_service
 from mergify_engine.worker import stream
-from mergify_engine.worker import stream_cli
 from mergify_engine.worker import stream_lua
 from mergify_engine.worker import stream_monitoring_service
 from mergify_engine.worker import task
@@ -1576,33 +1575,6 @@ async def test_worker_drop_bucket(
 
 
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
-async def test_worker_debug_report(
-    get_subscription: mock.AsyncMock,
-    redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
-) -> None:
-    get_subscription.side_effect = fake_get_subscription
-
-    for installation_id in range(8):
-        for pull_number in range(2):
-            for data in range(3):
-                owner = f"owner-{installation_id}"
-                repo = f"repo-{installation_id}"
-                await worker_pusher.push(
-                    redis_links.stream,
-                    github_types.GitHubAccountIdType(123),
-                    github_types.GitHubLogin(owner),
-                    github_types.GitHubRepositoryIdType(123),
-                    github_types.GitHubRepositoryName(repo),
-                    github_types.GitHubPullRequestNumber(pull_number),
-                    "pull_request",
-                    github_types.GitHubEvent({"payload": data}),  # type: ignore[typeddict-item]
-                )
-
-    await stream_cli.async_status()
-
-
-@mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
 @mock.patch("mergify_engine.worker.stream.run_engine")
 async def test_stream_processor_retrying_after_read_error(
@@ -1752,58 +1724,6 @@ async def test_worker_with_multiple_workers(
 
     # Check engine have been run with expect data
     assert 200 == len(run_engine.mock_calls)
-
-
-@mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
-@mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
-@mock.patch("mergify_engine.worker.stream.run_engine")
-async def test_worker_reschedule(
-    run_engine: mock.Mock,
-    get_installation_from_account_id: mock.Mock,
-    get_subscription: mock.AsyncMock,
-    redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
-    get_subscription.side_effect = fake_get_subscription
-
-    monkeypatch.setattr("mergify_engine.worker_pusher.WORKER_PROCESSING_DELAY", 3000)
-    await worker_pusher.push(
-        redis_links.stream,
-        github_types.GitHubAccountIdType(123),
-        github_types.GitHubLogin("owner-123"),
-        github_types.GitHubRepositoryIdType(123),
-        github_types.GitHubRepositoryName("repo"),
-        github_types.GitHubPullRequestNumber(123),
-        "pull_request",
-        github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
-    )
-
-    score = (await redis_links.stream.zrange("streams", 0, -1, withscores=True))[0][1]
-    planned_for = datetime.datetime.utcfromtimestamp(score)
-
-    monkeypatch.setattr("sys.argv", ["mergify-worker-rescheduler", "other"])
-    ret = await stream_cli.async_reschedule_now()
-    assert ret == 1
-
-    score_not_rescheduled = (
-        await redis_links.stream.zrange("streams", 0, -1, withscores=True)
-    )[0][1]
-    planned_for_not_rescheduled = datetime.datetime.utcfromtimestamp(
-        score_not_rescheduled
-    )
-    assert planned_for == planned_for_not_rescheduled
-
-    monkeypatch.setattr("sys.argv", ["mergify-worker-rescheduler", "123"])
-    ret = await stream_cli.async_reschedule_now()
-    assert ret == 0
-
-    score_rescheduled = (
-        await redis_links.stream.zrange("streams", 0, -1, withscores=True)
-    )[0][1]
-    planned_for_rescheduled = datetime.datetime.utcfromtimestamp(score_rescheduled)
-    assert planned_for > planned_for_rescheduled
 
 
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")

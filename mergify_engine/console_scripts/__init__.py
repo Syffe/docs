@@ -35,3 +35,4 @@ from mergify_engine.console_scripts import merge_queue  # noqa
 from mergify_engine.console_scripts import redis_dump  # noqa
 from mergify_engine.console_scripts import refresher  # noqa
 from mergify_engine.console_scripts import subscription  # noqa
+from mergify_engine.console_scripts import stream  # noqa
