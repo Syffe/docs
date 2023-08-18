@@ -1843,8 +1843,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         saved_pause_data = self.train_car_state.paused_by
 
         if (
-            origin == "original_pull_request"
-            and self.train_car_state.checks_type
+            self.train_car_state.checks_type
             in (TrainCarChecksType.DRAFT, TrainCarChecksType.DRAFT_DELEGATED)
             and saved_queue_check_run_conclusion is not None
         ):
