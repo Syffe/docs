@@ -2136,15 +2136,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 self.train_car_state.outcome = TrainCarOutcome.MERGEABLE
                 self.train_car_state.outcome_message = None
             elif queue_conditions_conclusion == check_api.Conclusion.FAILURE:
-                self.train_car_state.outcome = TrainCarOutcome.CHECKS_FAILED
                 self.train_car_state.outcome_message = CI_FAILED_MESSAGE
-        elif (
-            self.train_car_state.outcome == TrainCarOutcome.CHECKS_FAILED
-            and self._has_reached_batch_max_failure()
-        ):
-            self.train_car_state.outcome = (
-                TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
-            )
+                if self._has_reached_batch_max_failure():
+                    self.train_car_state.outcome = (
+                        TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
+                    )
+                else:
+                    self.train_car_state.outcome = TrainCarOutcome.CHECKS_FAILED
 
         # Calculate next timeout refresh
         if (

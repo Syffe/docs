@@ -1344,8 +1344,31 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             await self.wait_for(
                 "check_run",
                 {"check_run": wait_payload},
+                test_id=self._extract_test_id_from_pull_request_for_check_run(pull),
             ),
         )
+
+    @staticmethod
+    def _extract_test_id_from_pull_request_for_check_run(
+        pull: github_types.GitHubPullRequest,
+    ) -> str | None:
+        branch = pull["head"]["ref"]
+        # eg: refs/heads/20221003073120/test_retrieve_unresolved_threads/integration/pr1
+        tmp = branch.replace("refs/heads/", "")
+        # eg: 20221003073120/test_retrieve_unresolved_threads/integration/pr1
+        tmp_split = tmp.split("/")
+        # eg: 20221003073120/test_retrieve_unresolved_threads
+        tmp = "/".join((tmp_split[0], tmp_split[1]))
+
+        # NOTE(Kontrolix): This test let us know if this pull request is a draft merge
+        # queue PR. If so, in the creation process of the pr, we create a branch with
+        # the QUEUE_BRANCH_PREFIX then merge code on this branch and finally rename it
+        # without the prefix. But check-suite linked to our check run was created
+        # before renaming so we have to look for branch name with the QUEUE_BRANCH_PREFIX
+        if pull["draft"] and tmp == constants.MERGE_QUEUE_BRANCH_PREFIX.strip("/"):
+            tmp = f"{merge_train.TrainCar.QUEUE_BRANCH_PREFIX}{tmp}"
+
+        return tmp.replace("/", "-")
 
     async def update_check_run(
         self,

@@ -573,8 +573,13 @@ pull_requests:
         await self.run_engine()
 
         draft_pr = await self.wait_for_pull_request("opened")
-        await self.create_status(draft_pr["pull_request"], state="failure")
+        await self.create_check_run(
+            draft_pr["pull_request"],
+            conclusion="failure",
+        )
         await self.run_engine()
+
+        await self.wait_for_pull_request("closed", draft_pr["pull_request"]["number"])
 
         check_run = await self.wait_for_check_run(
             name="Rule: Automatic merge (queue)", conclusion="cancelled"
