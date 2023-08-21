@@ -14,6 +14,7 @@ from mergify_engine import settings
 from mergify_engine.ci import pull_registries
 from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
+from mergify_engine.models import github_repository
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -21,20 +22,17 @@ LOG = daiquiri.getLogger(__name__)
 
 @tracer.wrap("ci.event_processing", span_type="worker")
 async def process_event_streams(redis_links: redis_utils.RedisLinks) -> None:
-    async with database.create_session() as session:
-        await _process_workflow_run_stream(redis_links, session)
-        await _process_workflow_job_stream(redis_links, session)
+    await _process_workflow_run_stream(redis_links)
+    await _process_workflow_job_stream(redis_links)
 
 
-async def _process_workflow_run_stream(
-    redis_links: redis_utils.RedisLinks, session: sqlalchemy.ext.asyncio.AsyncSession
-) -> None:
+async def _process_workflow_run_stream(redis_links: redis_utils.RedisLinks) -> None:
     async for stream_event_id, stream_event in _iter_stream(
         redis_links, "gha_workflow_run", settings.CI_EVENT_PROCESSING_BATCH_SIZE
     ):
         try:
             await _process_workflow_run_event(
-                redis_links, session, stream_event_id, stream_event
+                redis_links, stream_event_id, stream_event
             )
         except Exception:
             LOG.exception(
@@ -61,7 +59,6 @@ async def _iter_stream(
 @tracer.wrap("ci.workflow_run_processing")
 async def _process_workflow_run_event(
     redis_links: redis_utils.RedisLinks,
-    session: sqlalchemy.ext.asyncio.AsyncSession,
     stream_event_id: bytes,
     stream_event: dict[bytes, bytes],
 ) -> None:
@@ -70,23 +67,19 @@ async def _process_workflow_run_event(
     )
     workflow_run = workflow_run_event["workflow_run"]
 
-    owner = workflow_run["repository"]["owner"]
-    await github_account.GitHubAccount.create_or_update(session, owner)
+    async for attempt in database.tenacity_retry_on_pk_integrity_error(
+        (github_repository.GitHubRepository, github_account.GitHubAccount)
+    ):
+        with attempt:
+            async with database.create_session() as session:
+                await github_actions.WorkflowRun.insert(
+                    session, workflow_run, workflow_run_event["repository"]
+                )
 
-    # GitHub lies and sometimes does not set this
-    # MERGIFY-ENGINE-3B2
-    if "triggering_actor" in workflow_run:
-        triggering_actor = workflow_run["triggering_actor"]
-        await github_account.GitHubAccount.create_or_update(session, triggering_actor)
+                if workflow_run["event"] in ("pull_request", "pull_request_target"):
+                    await _insert_pull_request(redis_links, session, workflow_run_event)
 
-    await github_actions.WorkflowRun.insert(
-        session, workflow_run, workflow_run_event["repository"]
-    )
-
-    if workflow_run["event"] in ("pull_request", "pull_request_target"):
-        await _insert_pull_request(redis_links, session, workflow_run_event)
-
-    await session.commit()
+                await session.commit()
 
     await redis_links.stream.xdel("gha_workflow_run", stream_event_id)  # type: ignore [no-untyped-call]
 
@@ -119,15 +112,13 @@ async def _insert_pull_request(
         )
 
 
-async def _process_workflow_job_stream(
-    redis_links: redis_utils.RedisLinks, session: sqlalchemy.ext.asyncio.AsyncSession
-) -> None:
+async def _process_workflow_job_stream(redis_links: redis_utils.RedisLinks) -> None:
     async for stream_event_id, stream_event in _iter_stream(
         redis_links, "gha_workflow_job", settings.CI_EVENT_PROCESSING_BATCH_SIZE
     ):
         try:
             await _process_workflow_job_event(
-                redis_links, session, stream_event_id, stream_event
+                redis_links, stream_event_id, stream_event
             )
         except Exception:
             LOG.exception(
@@ -140,7 +131,6 @@ async def _process_workflow_job_stream(
 @tracer.wrap("ci.workflow_job_processing")
 async def _process_workflow_job_event(
     redis_links: redis_utils.RedisLinks,
-    session: sqlalchemy.ext.asyncio.AsyncSession,
     stream_event_id: bytes,
     stream_event: dict[bytes, bytes],
 ) -> None:
@@ -154,7 +144,14 @@ async def _process_workflow_job_event(
         event_data["repository"],
     )
 
-    await github_actions.WorkflowJob.insert(session, workflow_job, repository)
-    await session.commit()
+    async for attempt in database.tenacity_retry_on_pk_integrity_error(
+        (github_repository.GitHubRepository, github_account.GitHubAccount)
+    ):
+        with attempt:
+            async with database.create_session() as session:
+                await github_actions.WorkflowJob.insert(
+                    session, workflow_job, repository
+                )
+                await session.commit()
 
     await redis_links.stream.xdel("gha_workflow_job", stream_event_id)  # type: ignore [no-untyped-call]

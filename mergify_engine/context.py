@@ -200,14 +200,19 @@ class Installation:
         | github_repository.GitHubRepositoryDict,
     ) -> None:
         # Circular import
+        from mergify_engine.models import github_account
         from mergify_engine.models import github_repository
 
-        async with database.create_session() as session:
-            db_repo = await github_repository.GitHubRepository.get_or_create(
-                session, repo_data
-            )
-            session.add(db_repo)
-            await session.commit()
+        async for attempt in database.tenacity_retry_on_pk_integrity_error(
+            (github_repository.GitHubRepository, github_account.GitHubAccount)
+        ):
+            with attempt:
+                async with database.create_session() as session:
+                    db_repo = await github_repository.GitHubRepository.get_or_create(
+                        session, repo_data
+                    )
+                    session.add(db_repo)
+                    await session.commit()
 
     async def get_repository_by_id(
         self, _id: github_types.GitHubRepositoryIdType

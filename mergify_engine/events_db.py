@@ -6,10 +6,8 @@ from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.models import events as evt_model
-
-
-if typing.TYPE_CHECKING:
-    from mergify_engine.models import github_repository
+from mergify_engine.models import github_account
+from mergify_engine.models import github_repository
 
 
 EVENT_NAME_TO_MODEL = {
@@ -36,13 +34,17 @@ async def insert(
     except KeyError:
         raise EventNotHandled(f"Event '{event}' not supported in database")
 
-    async with database.create_session() as session:
-        event_obj = await event_model.create(
-            session,
-            repository=repository,
-            pull_request=pull_request,
-            trigger=trigger,
-            metadata=metadata,
-        )
-        session.add(event_obj)
-        await session.commit()
+    async for attempt in database.tenacity_retry_on_pk_integrity_error(
+        (github_repository.GitHubRepository, github_account.GitHubAccount)
+    ):
+        with attempt:
+            async with database.create_session() as session:
+                event_obj = await event_model.create(
+                    session,
+                    repository=repository,
+                    pull_request=pull_request,
+                    trigger=trigger,
+                    metadata=metadata,
+                )
+                session.add(event_obj)
+                await session.commit()

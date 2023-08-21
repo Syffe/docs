@@ -159,19 +159,20 @@ class WorkflowRun(models.Base):
                 triggering_actor = await github_account.GitHubAccount.get_or_create(
                     session, workflow_run_data["triggering_actor"]
                 )
+                session.add(triggering_actor)
             else:
                 triggering_actor = None  # type: ignore[unreachable]
+
+            repo = await github_repository.GitHubRepository.get_or_create(
+                session, repository
+            )
 
             session.add(
                 cls(
                     id=workflow_run_data["id"],
                     workflow_id=workflow_run_data["workflow_id"],
-                    owner=await github_account.GitHubAccount.get_or_create(
-                        session, workflow_run_data["repository"]["owner"]
-                    ),
-                    repository=await github_repository.GitHubRepository.get_or_create(
-                        session, repository
-                    ),
+                    owner=repo.owner,
+                    repository=repo,
                     event=WorkflowRunTriggerEvent(workflow_run_data["event"]),
                     triggering_actor=triggering_actor,
                     run_attempt=workflow_run_data["run_attempt"],

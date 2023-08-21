@@ -12,9 +12,12 @@ import sqlalchemy
 from sqlalchemy import orm
 
 from mergify_engine import database
+from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine import settings
 from mergify_engine.config import types as config_types
+from mergify_engine.models import github_account
+from mergify_engine.models import github_repository
 from mergify_engine.models import manage
 from mergify_engine.tests import utils
 
@@ -148,3 +151,86 @@ def test_relational_model_as_dict() -> None:
         "user_id": 0,
         "user": {"id": 0, "name": "me"},
     }
+
+
+async def test_get_or_create_on_conflict(setup_database: None) -> None:
+    account = github_types.GitHubAccount(
+        {
+            "id": github_types.GitHubAccountIdType(1),
+            "login": github_types.GitHubLogin("account"),
+            "type": "User",
+            "avatar_url": "",
+        }
+    )
+    repo1 = github_types.GitHubRepository(
+        {
+            "id": github_types.GitHubRepositoryIdType(1),
+            "name": github_types.GitHubRepositoryName("repo1"),
+            "owner": account,
+            "full_name": "account/repo1",
+            "private": False,
+            "archived": False,
+            "url": "",
+            "html_url": "",
+            "default_branch": github_types.GitHubRefType("main"),
+        }
+    )
+    repo2 = github_types.GitHubRepository(
+        {
+            "id": github_types.GitHubRepositoryIdType(2),
+            "name": github_types.GitHubRepositoryName("repo2"),
+            "owner": account,
+            "full_name": "account/repo2",
+            "private": False,
+            "archived": False,
+            "url": "",
+            "html_url": "",
+            "default_branch": github_types.GitHubRefType("main"),
+        }
+    )
+
+    nb_try = 0
+    # NOTE(Kontrolix): This whole mess is just here to simulate a session conflict for
+    # test purpose, in reality the two sessions would have been opened in parallel
+    async with database.create_session() as session1:
+        session1.add(
+            await github_repository.GitHubRepository.get_or_create(session1, repo1)
+        )
+
+        async for attempt in database.tenacity_retry_on_pk_integrity_error(
+            (github_account.GitHubAccount, github_repository.GitHubRepository)
+        ):
+            with attempt:
+                async with database.create_session() as session2:
+                    nb_try += 1
+                    session2.add(
+                        await github_repository.GitHubRepository.get_or_create(
+                            session2, repo2
+                        )
+                    )
+                    await session1.commit()
+                    await session2.commit()
+
+    # To ensure that we try the session session twice
+    assert nb_try == 2
+
+    async with database.create_session() as session:
+        repos = (
+            await session.scalars(
+                sqlalchemy.select(github_repository.GitHubRepository).order_by(
+                    github_repository.GitHubRepository.id
+                )
+            )
+        ).all()
+
+    assert len(repos) == 2
+    for repo_id, repo in enumerate(repos):
+        assert repo_id + 1 == repo.id
+
+    async with database.create_session() as session:
+        accounts = (
+            await session.scalars(sqlalchemy.select(github_account.GitHubAccount))
+        ).all()
+
+    assert len(accounts) == 1
+    assert accounts[0].id == 1

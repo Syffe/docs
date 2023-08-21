@@ -3,7 +3,10 @@ import typing
 
 import ddtrace
 import fastapi
+import sqlalchemy.exc
 import sqlalchemy.ext.asyncio
+import sqlalchemy.orm
+import tenacity
 
 from mergify_engine import settings
 
@@ -76,6 +79,19 @@ def get_engine() -> sqlalchemy.ext.asyncio.AsyncEngine:
 
 def create_session() -> sqlalchemy.ext.asyncio.AsyncSession:
     return _get_app()["sessionmaker"]()
+
+
+def tenacity_retry_on_pk_integrity_error(
+    models: tuple[type[sqlalchemy.orm.decl_api.DeclarativeBase], ...],
+) -> tenacity.AsyncRetrying:
+    matches = []
+    for model in models:
+        matches.append(
+            f'\\(psycopg.errors.UniqueViolation\\) duplicate key value violates unique constraint "{model.__table__.primary_key.name}"'  # type: ignore[attr-defined]
+        )
+    return tenacity.AsyncRetrying(
+        retry=tenacity.retry_if_exception_message(match="|".join(matches)),
+    )
 
 
 async def get_session() -> abc.AsyncGenerator[
