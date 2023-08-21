@@ -4,8 +4,8 @@ import os
 import shutil
 import tempfile
 
-from mergify_engine import console_scripts
 from mergify_engine import yaml
+from mergify_engine.console_scripts import admin_cli
 from mergify_engine.tests import utils
 from mergify_engine.tests.functional import base
 
@@ -66,7 +66,7 @@ class TestRedisUtilsDumper(base.FunctionalTestBase):
         self.addCleanup(shutil.rmtree, temporary_folder)
 
         result = utils.test_console_scripts(
-            console_scripts.admin,
+            admin_cli.admin_cli,
             [
                 "dump-redis-keys",
                 "--path",
@@ -82,7 +82,7 @@ class TestRedisUtilsDumper(base.FunctionalTestBase):
         )
 
         result = utils.test_console_scripts(
-            console_scripts.admin, ["dump-redis-keys", "--path", temporary_folder]
+            admin_cli.admin_cli, ["dump-redis-keys", "--path", temporary_folder]
         )
         assert result.exit_code == 0, result.output
 

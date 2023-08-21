@@ -2,10 +2,10 @@ import typing
 
 import click
 
-from mergify_engine import console_scripts
 from mergify_engine import github_types
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
+from mergify_engine.console_scripts import admin_cli
 
 
 async def suspended(
@@ -19,14 +19,14 @@ async def suspended(
         await client.request(verb, f"/app/installations/{installation['id']}/suspended")
 
 
-@console_scripts.async_admin_command
+@admin_cli.async_command
 @click.argument("organization", required=True)
 async def suspend(organization: github_types.GitHubLogin) -> None:
     await suspended("PUT", organization)
     click.echo(f"Account `{organization}` suspended")
 
 
-@console_scripts.async_admin_command
+@admin_cli.async_command
 @click.argument("organization", required=True)
 async def unsuspend(organization: github_types.GitHubLogin) -> None:
     await suspended("DELETE", organization)

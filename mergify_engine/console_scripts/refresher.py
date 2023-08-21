@@ -2,16 +2,16 @@ import typing
 
 import click
 
-from mergify_engine import console_scripts
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
+from mergify_engine.console_scripts import admin_cli
 
 
-@console_scripts.async_admin_command
+@admin_cli.async_command
 @click.pass_context
 @click.argument("url", required=True)
 @click.option(

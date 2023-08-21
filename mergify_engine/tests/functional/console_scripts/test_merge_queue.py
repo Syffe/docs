@@ -1,6 +1,6 @@
 import pytest
 
-from mergify_engine import console_scripts
+from mergify_engine.console_scripts import admin_cli
 from mergify_engine.tests import utils
 from mergify_engine.tests.functional import conftest as func_conftest
 
@@ -13,7 +13,7 @@ def test_merge_queue_reset(
 ) -> None:
     repo = f"https://github.com/{recorder.config['organization_name']}/{recorder.config['repository_name']}"
     result = utils.test_console_scripts(
-        console_scripts.admin, ["merge-queue-reset", repo]
+        admin_cli.admin_cli, ["merge-queue-reset", repo]
     )
     assert result.exit_code == 0, result.output
     assert (

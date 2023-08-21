@@ -1,18 +1,18 @@
 import click
 
-from mergify_engine import console_scripts
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import redis_utils
 from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine.clients import github
+from mergify_engine.console_scripts import admin_cli
 from mergify_engine.queue import merge_train
 from mergify_engine.queue.merge_train import train_car
 from mergify_engine.rules.config import mergify as mergify_conf
 
 
-@console_scripts.async_admin_command
+@admin_cli.async_command
 @click.pass_context
 @click.argument("url", required=True)
 async def merge_queue_reset(cli_ctxt: click.Context, url: str) -> None:

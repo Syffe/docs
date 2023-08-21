@@ -3,17 +3,17 @@ import itertools
 
 import click
 
-from mergify_engine import console_scripts
 from mergify_engine import date
 from mergify_engine import redis_utils
 from mergify_engine import settings
+from mergify_engine.console_scripts import admin_cli
 from mergify_engine.worker import shared_workers_spawner_service
 from mergify_engine.worker import stream
 from mergify_engine.worker import stream_lua
 from mergify_engine.worker import stream_service_base
 
 
-@console_scripts.async_admin_command
+@admin_cli.async_command
 async def stream_status() -> None:
     shared_stream_tasks_per_process: int = settings.SHARED_STREAM_TASKS_PER_PROCESS
     shared_stream_processes: int = settings.SHARED_STREAM_PROCESSES
@@ -60,7 +60,7 @@ async def stream_status() -> None:
     await redis_links.shutdown_all()
 
 
-@console_scripts.async_admin_command
+@admin_cli.async_command
 @click.argument("owner-id", required=True)
 async def stream_reschedule_now(owner_id: str) -> int:
     redis_links = redis_utils.RedisLinks(name="reschedule_now")

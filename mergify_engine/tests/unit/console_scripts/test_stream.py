@@ -3,11 +3,11 @@ from unittest import mock
 
 import pytest
 
-from mergify_engine import console_scripts
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import worker_pusher
 from mergify_engine.clients import github_app
+from mergify_engine.console_scripts import admin_cli
 from mergify_engine.tests import utils
 
 
@@ -32,7 +32,7 @@ async def test_stream_status(
                     github_types.GitHubEvent({"payload": data}),  # type: ignore[typeddict-item]
                 )
 
-    result = utils.test_console_scripts(console_scripts.admin, ["stream-status"])
+    result = utils.test_console_scripts(admin_cli.admin_cli, ["stream-status"])
     assert result.exit_code == 0
     assert result.output.endswith(" 123: 2 pull requests, 48 events\n")
 
@@ -77,7 +77,7 @@ async def test_stream_reschedule(
     planned_for = datetime.datetime.utcfromtimestamp(score)
 
     result = utils.test_console_scripts(
-        console_scripts.admin, ["stream-reschedule-now", "other"]
+        admin_cli.admin_cli, ["stream-reschedule-now", "other"]
     )
     assert result.exit_code == 0
     assert result.output == "Stream for bucket~other not found\n"
@@ -91,7 +91,7 @@ async def test_stream_reschedule(
     assert planned_for == planned_for_not_rescheduled
 
     result = utils.test_console_scripts(
-        console_scripts.admin, ["stream-reschedule-now", "123"]
+        admin_cli.admin_cli, ["stream-reschedule-now", "123"]
     )
     assert result.exit_code == 0
     assert result.output == "Stream for bucket~123 rescheduled now\n"

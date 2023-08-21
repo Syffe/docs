@@ -2,11 +2,11 @@ import os.path
 
 import click
 
-from mergify_engine import console_scripts
 from mergify_engine import redis_utils
+from mergify_engine.console_scripts import admin_cli
 
 
-@console_scripts.async_admin_command
+@admin_cli.async_command
 @click.option("--path", default="cached_config_files")
 @click.option("--key", default="config_file/*")
 async def dump_redis_keys(path: str, key: str) -> None:

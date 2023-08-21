@@ -13,14 +13,14 @@ R = typing.TypeVar("R")
 
 
 @click.group()
-def admin() -> None:
+def admin_cli() -> None:
     pass
 
 
-def async_admin_command(
+def async_command(
     func: abc.Callable[P, abc.Coroutine[typing.Any, typing.Any, R]]
 ) -> abc.Callable[..., None]:
-    @admin.command()
+    @admin_cli.command()
     @functools.wraps(func)
     def inner_func(*args: P.args, **kwargs: P.kwargs) -> R:
         service.setup(func.__name__, stdout_logging_only=True, dump_config=False)
