@@ -176,15 +176,21 @@ requeue
 =======
 
 Inform Mergify that the CI failure was not due to the pull request itself, but to, e.g., a flaky test.
+If you do not have any ``queue`` action in your ``pull_request_rules``, the pull request will
+automatically be queued again, in addition to the failed queued state being cleaned.
+
+The optional ``queue-name`` parameter for the command can only be used when no ``pull_request_rules`` use the ``queue`` action.
 
 .. list-table::
   :widths: 2 10
   :align: left
 
   * - Syntax
-    - ``@Mergifyio requeue``
+    - ``@Mergifyio requeue [<queue-name>]``
   * - Example
     - ``@Mergifyio requeue``
+
+      ``@Mergifyio requeue foo``
   * - Default restrictions
     - Write access
 

@@ -35,6 +35,7 @@ class TestRequeueCommand(base.FunctionalTestBase):
         draft_pr = await self.wait_for_pull_request(action="opened")
         await self.create_status(draft_pr["pull_request"], state="failure")
         await self.run_engine()
+
         comments = await self.get_issue_comments(p["number"])
         assert len(comments) == 2
         assert (
@@ -43,12 +44,34 @@ class TestRequeueCommand(base.FunctionalTestBase):
         )
 
         # Requeue PR
-        await self.create_comment(p["number"], "@mergifyio requeue", as_="admin")
+        await self.create_comment(
+            p["number"], "@mergifyio requeue default", as_="admin"
+        )
         await self.run_engine()
         requeue_comment = await self.wait_for_issue_comment(
             action="created", test_id=str(p["number"])
         )
         assert (
-            "✅ The queue state of this pull request has been cleaned. It can be re-embarked automatically"
+            "✅ This pull request will be re-embarked automatically"
             in requeue_comment["comment"]["body"]
         )
+        assert (
+            "The followup `queue default` command will be automatically executed to re-embark the pull request"
+            in requeue_comment["comment"]["body"]
+        )
+
+        queue_comment_2 = await self.wait_for_issue_comment(
+            action="created", test_id=str(p["number"])
+        )
+        assert (
+            "🟠 The pull request is the 1st in the queue to be merged"
+            in queue_comment_2["comment"]["body"]
+        )
+
+        draft_pr_2 = await self.wait_for_pull_request("opened")
+
+        await self.create_status(draft_pr_2["pull_request"])
+        await self.run_engine()
+
+        await self.wait_for_pull_request("closed", draft_pr_2["number"])
+        await self.wait_for_pull_request("closed", p["number"], merged=True)

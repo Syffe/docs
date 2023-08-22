@@ -325,6 +325,7 @@ DO NOT EDIT
         comment=comment,
         mergify_bot=user,
         pendings=mock.Mock(),
+        finished_commands=mock.Mock(),
     )
 
     assert command_state.action_is_running is False

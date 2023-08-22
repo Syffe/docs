@@ -36,6 +36,12 @@ INVALID_COMMAND_ARGS_MESSAGE = "Sorry but I didn't understand the arguments of t
 
 
 @dataclasses.dataclass
+class FollowUpCommand:
+    command_str: str
+    previous_command_result: check_api.Result
+
+
+@dataclasses.dataclass
 class CommandMixin:
     name: prr_config.PullRequestRuleName
     command_args: str
@@ -68,10 +74,14 @@ class NotACommand(Exception):
     message: str
 
 
-class CommandPayload(typing.TypedDict):
+class CommandPayloadBase(typing.TypedDict):
     command: str
     conclusion: str
     action_is_running: bool
+
+
+class CommandPayload(CommandPayloadBase, total=False):
+    followup_of_command: str
 
 
 class CommandExecutionState(typing.NamedTuple):
@@ -86,10 +96,14 @@ class CommandState:
     github_comment_source: github_types.GitHubComment
     github_comment_result: github_types.GitHubComment | None
     action_is_running: bool
+    followup_of_command: str | None = dataclasses.field(default=None)
 
 
 def prepare_message(
-    command: str, result: check_api.Result, action_is_running: bool
+    command: str,
+    result: check_api.Result,
+    action_is_running: bool,
+    followup_of_command: str | None = None,
 ) -> str:
     # NOTE: Do not serialize this with Mergify JSON encoder:
     # we don't want to allow loading/unloading weird value/classes
@@ -101,6 +115,9 @@ def prepare_message(
             "action_is_running": action_is_running,
         }
     )
+    if followup_of_command is not None:
+        payload["followup_of_command"] = followup_of_command
+
     details = ""
     if result.summary:
         details = f"<details>\n\n{result.summary}\n\n</details>\n"
@@ -188,6 +205,7 @@ def extract_command_state(
     comment: github_types.GitHubComment,
     mergify_bot: github_types.GitHubAccount,
     pendings: dict[str, CommandState],
+    finished_commands: dict[str, CommandState],
 ) -> CommandState:
     match = COMMAND_MATCHER.search(comment["body"])
 
@@ -234,6 +252,21 @@ def extract_command_state(
 
     previous_state = pendings.get(payload["command"])
     if previous_state is None:
+        if (followup_of_command := payload.get("followup_of_command")) is not None:
+            # This command is a followup of another command, so it has no real github_comment_source.
+            # The github_comment_source is the comment of the command that issued the followup.
+            # Since the original command would have ended, it won't be in the `pendings`.
+            return CommandState(
+                payload["command"],
+                conclusion=conclusion,
+                github_comment_source=finished_commands[
+                    followup_of_command
+                ].github_comment_source,
+                github_comment_result=comment,
+                action_is_running=action_is_running,
+                followup_of_command=followup_of_command,
+            )
+
         LOG.warning("Unable to find initial command comment")
         raise NoCommandStateFound()
 
@@ -243,6 +276,7 @@ def extract_command_state(
         github_comment_source=previous_state.github_comment_source,
         github_comment_result=comment,
         action_is_running=action_is_running,
+        followup_of_command=payload.get("followup_of_command"),
     )
 
 
@@ -253,6 +287,7 @@ async def get_pending_commands_to_run_from_comments(
         ctxt.repository.installation.redis.cache
     )
     pendings = LastUpdatedOrderedDict()
+    finished_commands = LastUpdatedOrderedDict()
 
     comments: list[github_types.GitHubComment] = [
         c
@@ -266,14 +301,21 @@ async def get_pending_commands_to_run_from_comments(
 
     for comment in comments:
         try:
-            state = extract_command_state(comment, mergify_bot, pendings)
+            state = extract_command_state(
+                comment,
+                mergify_bot,
+                pendings,
+                finished_commands,
+            )
         except NoCommandStateFound:
             continue
 
         if state.conclusion == check_api.Conclusion.PENDING:
             pendings[state.command] = state
-        elif state.command in pendings:
-            del pendings[state.command]
+        else:
+            finished_commands[state.command] = state
+            if state.command in pendings:
+                del pendings[state.command]
 
     return pendings
 
@@ -387,7 +429,7 @@ async def run_commands_tasks(
 
     commands = await pre_commands_run(ctxt, pendings, mergify_config)
 
-    for command, state in commands:
+    for idx, (command, state) in enumerate(commands):
         if isinstance(command, CommandInvalid):
             if state.github_comment_result is None:
                 command_execution_state = CommandExecutionState(
@@ -411,31 +453,105 @@ async def run_commands_tasks(
                     command_state=state,
                     exc=str(command),
                 )
-        else:
-            if not ctxt.subscription.has_feature(
-                command.action.required_feature_for_command
-            ):
-                await post_result(
-                    ctxt,
-                    command,
-                    state,
-                    CommandExecutionState(
-                        result=check_api.Result(
-                            check_api.Conclusion.ACTION_REQUIRED,
-                            f"Cannot use the command `{command.get_command()}`",
-                            ctxt.subscription.missing_feature_reason(
-                                ctxt.pull["base"]["repo"]["owner"]["login"]
-                            ),
+        elif not ctxt.subscription.has_feature(
+            command.action.required_feature_for_command
+        ):
+            await post_result(
+                ctxt,
+                command,
+                state,
+                CommandExecutionState(
+                    result=check_api.Result(
+                        check_api.Conclusion.ACTION_REQUIRED,
+                        f"Cannot use the command `{command.get_command()}`",
+                        ctxt.subscription.missing_feature_reason(
+                            ctxt.pull["base"]["repo"]["owner"]["login"]
                         ),
-                        action_is_running=False,
                     ),
-                )
+                    action_is_running=False,
+                ),
+            )
+        else:
+            command_result = await run_command(ctxt, mergify_config, command, state)
+            if isinstance(command_result, CommandExecutionState):
+                await post_result(ctxt, command, state, command_result)
                 continue
 
-            command_execution_state = await run_command(
-                ctxt, mergify_config, command, state
+            # isinstance(command_result, FollowUpCommand)
+            followup_command_str = command_result.command_str
+            await post_result_for_command_with_followup(
+                ctxt,
+                command,
+                state,
+                command_result.previous_command_result,
+                followup_command_str,
             )
-            await post_result(ctxt, command, state, command_execution_state)
+
+            ctxt.log.info(
+                "command '%s' has a follow up command to execute: '%s'",
+                command.name,
+                followup_command_str,
+            )
+            followup_command: Command | CommandInvalid | NotACommand
+            try:
+                followup_command = load_command(
+                    mergify_config, f"@Mergifyio {followup_command_str}"
+                )
+            except CommandInvalid as e:
+                followup_command = e
+                ctxt.log.error(
+                    "CommandInvalid while loading followup command '%s'",
+                    followup_command_str,
+                    exc_info=True,
+                )
+            except NotACommand as e:
+                followup_command = e
+                ctxt.log.error(
+                    "NotACommandError while loading followup command '%s'",
+                    followup_command_str,
+                    exc_info=True,
+                )
+
+            followup_command_state = CommandState(
+                command=followup_command_str,
+                conclusion=check_api.Conclusion.PENDING,
+                github_comment_source=state.github_comment_source,
+                github_comment_result=None,
+                action_is_running=False,
+                followup_of_command=str(command),
+            )
+            commands.insert(idx + 1, (followup_command, followup_command_state))
+
+
+async def post_result_for_command_with_followup(
+    ctxt: context.Context,
+    command: Command,
+    state: CommandState,
+    command_result: check_api.Result,
+    followup_command_str: str,
+) -> None:
+    message = prepare_message(
+        command.get_command(),
+        command_result,
+        True,
+    )
+    ctxt.log.info(
+        "command %s: %s",
+        command.name,
+        command_result.conclusion,
+        command_full=str(command),
+        followup_command_str=followup_command_str,
+        user_login=state.github_comment_source["user"]["login"]
+        if state.github_comment_source
+        else "<unavailable>",
+        comment_out=message,
+        comment_result=state.github_comment_result,
+    )
+
+    if state.github_comment_result is None:
+        await ctxt.post_comment(message)
+    elif message != state.github_comment_result["body"]:
+        await ctxt.edit_comment(state.github_comment_result["id"], message)
 
 
 async def post_result(
@@ -448,6 +564,7 @@ async def post_result(
         command.get_command(),
         command_execution_state.result,
         command_execution_state.action_is_running,
+        state.followup_of_command,
     )
     ctxt.log.info(
         "command %s: %s",
@@ -475,7 +592,7 @@ async def run_command(
     state: CommandState,
     force_run: bool = False,
     executor_func_to_run: typing.Literal["run", "cancel"] = "run",
-) -> CommandExecutionState:
+) -> CommandExecutionState | FollowUpCommand:
     statsd.increment("engine.commands.count", tags=[f"name:{command.name}"])
     try:
         await check_init_command_run(ctxt, mergify_config, command, state)
@@ -516,8 +633,12 @@ async def run_command(
         else:
             # Do not use getattr to keep typing
             if executor_func_to_run == "run":
+                command_result = await command.action.executor.run()
+                if isinstance(command_result, FollowUpCommand):
+                    return command_result
+
                 return CommandExecutionState(
-                    result=await command.action.executor.run(),
+                    result=command_result,
                     action_is_running=True,
                 )
             if executor_func_to_run == "cancel":

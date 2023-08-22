@@ -14,6 +14,7 @@ from mergify_engine.rules.config import mergify as mergify_conf
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.engine import commands_runner
     from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
@@ -118,7 +119,9 @@ class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
     config_hidden_from_simulator: typing.ClassVar[tuple[str, ...]] = ()
 
     @abc.abstractmethod
-    async def run(self) -> check_api.Result:  # pragma: no cover
+    async def run(
+        self,
+    ) -> "check_api.Result | commands_runner.FollowUpCommand":  # pragma: no cover
         ...
 
     @abc.abstractmethod

@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 import typing
+
+import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
@@ -8,11 +12,13 @@ from mergify_engine import dashboard
 from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine import subscription
+from mergify_engine.engine import commands_runner
 from mergify_engine.rules.config import pull_request_rules as prr_config
+from mergify_engine.rules.config import queue_rules as qr_config
 
 
 class RequeueExecutorConfig(typing.TypedDict):
-    pass
+    queue_name: qr_config.QueueName | None
 
 
 class RequeueExecutor(
@@ -21,13 +27,17 @@ class RequeueExecutor(
     @classmethod
     async def create(
         cls,
-        action: "RequeueCommand",
-        ctxt: "context.Context",
+        action: RequeueCommand,
+        ctxt: context.Context,
         rule: prr_config.EvaluatedPullRequestRule,
-    ) -> "RequeueExecutor":
-        return cls(ctxt, rule, RequeueExecutorConfig())
+    ) -> RequeueExecutor:
+        return cls(
+            ctxt,
+            rule,
+            RequeueExecutorConfig({"queue_name": action.config["queue_name"]}),
+        )
 
-    async def run(self) -> check_api.Result:
+    async def run(self) -> check_api.Result | commands_runner.FollowUpCommand:
         check = await self.ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         if not check:
             return check_api.Result(
@@ -47,10 +57,46 @@ class RequeueExecutor(
                 summary="",
             )
 
-        self.ctxt.log.debug(
-            "requeue command marks the pull request as re-embarkable", check=check
+        mergify_config = await self.ctxt.repository.get_mergify_config()
+        has_queue_action_in_prr = any(
+            "queue" in prr.actions.keys()
+            for prr in mergify_config["pull_request_rules"]
         )
 
+        # If the config has a `queue` action in the pull_request_rules
+        # then we just mark the pull request as re-embarkable and the
+        # rules will take care of automatically re-adding it in the queue.
+        if has_queue_action_in_prr:
+            self.ctxt.log.debug(
+                "requeue command marks the pull request as re-embarkable", check=check
+            )
+            return await self._mark_pull_request_as_reembarkable()
+
+        # Otherwise we need to manually execute the queue action again
+        await check_api.set_check_run(
+            self.ctxt,
+            constants.MERGE_QUEUE_SUMMARY_NAME,
+            check_api.Result(
+                check_api.Conclusion.NEUTRAL,
+                "This pull request will be re-embarked automatically",
+                "",
+            ),
+            details_url=await dashboard.get_queues_url_from_context(self.ctxt),
+        )
+        queue_command = "queue"
+        if self.config["queue_name"] is not None:
+            queue_command += f" {self.config['queue_name']}"
+
+        return commands_runner.FollowUpCommand(
+            queue_command,
+            check_api.Result(
+                check_api.Conclusion.SUCCESS,
+                title="This pull request will be re-embarked automatically",
+                summary=f"The followup `{queue_command}` command will be automatically executed to re-embark the pull request",
+            ),
+        )
+
+    async def _mark_pull_request_as_reembarkable(self) -> check_api.Result:
         await check_api.set_check_run(
             self.ctxt,
             constants.MERGE_QUEUE_SUMMARY_NAME,
@@ -62,7 +108,7 @@ class RequeueExecutor(
             details_url=await dashboard.get_queues_url_from_context(self.ctxt),
         )
 
-        # NOTE(sileht): refresh it to maybe, retrigger the queue action.
+        # NOTE(sileht): refresh it to, maybe, retrigger the queue action.
         await refresher.send_pull_refresh(
             self.ctxt.redis.stream,
             self.ctxt.pull["base"]["repo"],
@@ -92,7 +138,9 @@ class RequeueExecutor(
 class RequeueCommand(actions.Action):
     flags = actions.ActionFlag.NONE
 
-    validator: typing.ClassVar[dict[typing.Any, typing.Any]] = {}
+    validator: typing.ClassVar[dict[typing.Any, typing.Any]] = {
+        voluptuous.Required("queue_name", default=None): voluptuous.Any(str, None),
+    }
 
     executor_class = RequeueExecutor
 
@@ -101,3 +149,16 @@ class RequeueCommand(actions.Action):
     ]
 
     required_feature_for_command = subscription.Features.MERGE_QUEUE
+
+    @staticmethod
+    def command_to_config(command_arguments: str) -> dict[str, typing.Any]:
+        name: str | None = None
+        config = {"queue_name": name}
+        args = [
+            arg_stripped
+            for arg in command_arguments.split(" ")
+            if (arg_stripped := arg.strip())
+        ]
+        if args and args[0]:
+            config["queue_name"] = args[0]
+        return config

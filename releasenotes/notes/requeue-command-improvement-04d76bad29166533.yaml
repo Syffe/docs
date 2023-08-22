@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    The ``requeue`` command has been improved, when used it will now automatically
+    queue the pull request again, only if you do not have any ``queue`` action in
+    your ``pull_request_rules``. This allow to clean the failed queued state of the
+    pull request and queue it again with only 1 comment.
+    To go with this improved behavior, the ``requeue`` command also has a new, optional,
+    ``queue-name`` parameter. It allows to specify the queue name in which you want to
+    requeue the pull request, eg: ``@Mergifyio requeue default``
