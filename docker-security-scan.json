@@ -504,15 +504,6 @@
     "PublishedDate": "2018-01-16T09:29:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2018-5709",
-    "PkgName": "libkrb5support0",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
-    "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
-    "Severity": "LOW",
-    "PublishedDate": "2018-01-16T09:29:00Z"
-  },
-  {
     "VulnerabilityID": "CVE-2018-6829",
     "PkgName": "libgcrypt20",
     "SeveritySource": "debian",
@@ -2061,6 +2052,33 @@
     "PublishedDate": "2023-06-08T03:15:00Z"
   },
   {
+    "VulnerabilityID": "CVE-2023-36054",
+    "PkgName": "libgssapi-krb5-2",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-36054",
+    "Title": "lib/kadm5/kadm_rpc_xdr.c in MIT Kerberos 5 (aka krb5) before 1.20.2 an ...",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-08-07T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-36054",
+    "PkgName": "libk5crypto3",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-36054",
+    "Title": "lib/kadm5/kadm_rpc_xdr.c in MIT Kerberos 5 (aka krb5) before 1.20.2 an ...",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-08-07T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-36054",
+    "PkgName": "libkrb5-3",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-36054",
+    "Title": "lib/kadm5/kadm_rpc_xdr.c in MIT Kerberos 5 (aka krb5) before 1.20.2 an ...",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-08-07T19:15:00Z"
+  },
+  {
     "VulnerabilityID": "CVE-2023-36191",
     "PkgName": "libsqlite3-0",
     "SeveritySource": "debian",
@@ -2072,6 +2090,7 @@
   {
     "VulnerabilityID": "CVE-2023-3817",
     "PkgName": "libssl1.1",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3817",
     "Title": "Excessive time spent checking DH q parameter value",
     "Severity": "MEDIUM",
@@ -2080,6 +2099,7 @@
   {
     "VulnerabilityID": "CVE-2023-3817",
     "PkgName": "openssl",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3817",
     "Title": "Excessive time spent checking DH q parameter value",
     "Severity": "MEDIUM",
@@ -2111,5 +2131,23 @@
     "Title": "Remote code execution in ssh-agent PKCS#11 support",
     "Severity": "CRITICAL",
     "PublishedDate": "2023-07-20T03:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-4016",
+    "PkgName": "libprocps8",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4016",
+    "Title": "ps buffer overflow",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-08-02T05:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-4016",
+    "PkgName": "procps",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4016",
+    "Title": "ps buffer overflow",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-08-02T05:15:00Z"
   }
 ]
