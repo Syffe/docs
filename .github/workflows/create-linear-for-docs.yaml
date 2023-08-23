@@ -17,15 +17,13 @@ jobs:
                           --arg title "Docs for $PR_TITLE" \
                           --arg desc "Documentation needed for merged PR: $PR_URL" \
                           --arg teamId "b3feece8-d97e-4d35-85f0-dd0e45be5d53" \
-                          --arg stateId "cdd327d2-7875-4636-ba9d-adccf335d888" \
                           --arg labelId "4e23b066-c7a3-4def-9596-ee18b455fe15" \
                           '{
-                            "query": "mutation ($title: String!, $description: String!, $teamId: String!, $labelId: String!) { issueCreate(input: { title: $title, description: $description, teamId: $teamId, labelIds: [$labelId], stateId: $stateId }) { success issue { id title } } }",
+                            "query": "mutation ($title: String!, $description: String!, $teamId: String!, $labelId: String!) { issueCreate(input: { title: $title, description: $description, teamId: $teamId, labelIds: [$labelId], stateId: \"cdd327d2-7875-4636-ba9d-adccf335d888\" }) { success issue { id title } } }",
                             "variables": {
                               "title": $title,
                               "description": $desc,
                               "teamId": $teamId,
-                              "stateId": $stateId,
                               "labelId": $labelId
                             }
                           }')
