@@ -919,6 +919,17 @@ GitHubWorkflowJobConclusionType = typing.Literal[
     "action_required",
 ]
 
+GitHubWorkflowJobStepStatus = typing.Literal["queued", "in_progress", "completed"]
+
+
+class GitHubWorkflowJobStep(typing.TypedDict):
+    name: str
+    status: GitHubWorkflowJobStepStatus
+    conclusion: GitHubWorkflowJobConclusionType
+    number: int
+    started_at: ISODateTimeType
+    completed_at: ISODateTimeType
+
 
 class GitHubWorkflowJob(typing.TypedDict):
     id: int
@@ -929,6 +940,7 @@ class GitHubWorkflowJob(typing.TypedDict):
     completed_at: ISODateTimeType
     labels: list[str]
     run_attempt: int
+    steps: list[GitHubWorkflowJobStep]
 
 
 class GitHubEventWorkflowJob(GitHubEventWithRepository):

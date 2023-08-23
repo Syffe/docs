@@ -89,18 +89,34 @@ async def test_process_event_stream_workflow_run(
     assert len(stream_events) == 0
 
 
+@pytest.mark.parametrize(
+    "event_file_name, conclusion, failed_step_number",
+    (
+        (
+            "workflow_job.completed_failure.json",
+            github_actions.WorkflowJobConclusion.FAILURE,
+            3,
+        ),
+        (
+            "workflow_job.completed.json",
+            github_actions.WorkflowJobConclusion.SUCCESS,
+            None,
+        ),
+    ),
+)
 async def test_process_event_stream_workflow_job(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     logger_checker: None,
+    event_file_name: str,
+    conclusion: github_actions.WorkflowJobConclusion,
+    failed_step_number: int,
 ) -> None:
     # Create the event twice, as we should handle duplicates
     stream_event = {
         "event_type": "workflow_job",
-        "data": msgpack.packb(
-            sample_ci_events_to_process["workflow_job.completed.json"].slim_event
-        ),
+        "data": msgpack.packb(sample_ci_events_to_process[event_file_name].slim_event),
     }
     await redis_links.stream.xadd("gha_workflow_job", stream_event)
     await redis_links.stream.xadd("gha_workflow_job", stream_event)
@@ -112,10 +128,13 @@ async def test_process_event_stream_workflow_job(
     workflow_jobs = list(result)
     assert len(workflow_jobs) == 1
     actual_workflow_job = workflow_jobs[0]
-    assert (
-        actual_workflow_job.conclusion == github_actions.WorkflowJobConclusion.SUCCESS
-    )
+    assert actual_workflow_job.conclusion == conclusion
     assert actual_workflow_job.labels == ["ubuntu-20.04"]
+
+    assert actual_workflow_job.steps is not None
+    assert len(actual_workflow_job.steps) == 5
+
+    assert actual_workflow_job.failed_step_number == failed_step_number
 
     stream_events = await redis_links.stream.xrange("workflow_job")
     assert len(stream_events) == 0

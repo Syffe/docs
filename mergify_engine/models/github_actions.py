@@ -237,6 +237,14 @@ class WorkflowJob(models.Base):
         sqlalchemy.BigInteger, anonymizer_config=None
     )
 
+    steps: orm.Mapped[github_types.GitHubWorkflowJobStep | None] = orm.mapped_column(
+        sqlalchemy.JSON, anonymizer_config=None, nullable=True
+    )
+
+    failed_step_number: orm.Mapped[int | None] = orm.mapped_column(
+        sqlalchemy.Integer, nullable=True, anonymizer_config=None
+    )
+
     @classmethod
     async def insert(
         cls,
@@ -261,8 +269,25 @@ class WorkflowJob(models.Base):
                         session, repository
                     ),
                     run_attempt=workflow_job_data["run_attempt"],
+                    # TODO(Kontrolix): remove get when all the old event in redis are processed
+                    steps=workflow_job_data.get("steps"),
+                    failed_step_number=cls.get_failed_step_number(workflow_job_data),
                 )
             )
+
+    @staticmethod
+    def get_failed_step_number(
+        workflow_job_data: github_types.GitHubWorkflowJob,
+    ) -> int | None:
+        failed_step_number = None
+        if workflow_job_data["conclusion"] == "failure":
+            # TODO(Kontrolix): remove get when all the old event in redis are processed
+            for step in workflow_job_data.get("steps", []):
+                if step["conclusion"] == "failure":
+                    failed_step_number = step["number"]
+                    break
+
+        return failed_step_number
 
     @classmethod
     async def compute_logs_embedding_cosine_similarity(
