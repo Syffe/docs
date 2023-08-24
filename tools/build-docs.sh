@@ -13,8 +13,8 @@ set -x
 
 rm -rf docs/build
 
-mergify-api-public-openapi-spec docs/build/api/openapi.json
-mergify-api-internal-openapi-spec docs/build/api/openapi-internal.json
+mergify-devtools generate-openapi-spec --visibility public docs/build/api/openapi.json
+mergify-devtools generate-openapi-spec --visibility internal docs/build/api/openapi-internal.json
 
 (
     cd docs

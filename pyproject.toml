@@ -92,9 +92,8 @@ click = "^8.1.7"
   mergify-database-update = "mergify_engine.models.manage:database_update"
   mergify-engine-worker = "mergify_engine.worker.manager:main"
   mergify-count-seats = "mergify_engine.count_seats:main"
-  mergify-api-public-openapi-spec = "mergify_engine.web.api.root:generate_openapi_spec"
-  mergify-api-internal-openapi-spec = "mergify_engine.web.root:generate_openapi_spec"
   mergify-admin = "mergify_engine.console_scripts.admin_cli:admin_cli"
+  mergify-devtools = "mergify_engine.console_scripts.devtools_cli:devtools_cli"
 
 [tool.poetry.plugins]
 

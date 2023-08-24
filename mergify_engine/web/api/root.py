@@ -1,7 +1,3 @@
-import argparse
-import json
-import os
-
 import fastapi
 from starlette.middleware import cors
 
@@ -89,17 +85,3 @@ def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
 
     web_utils.setup_exception_handlers(app)
     return app
-
-
-def generate_openapi_spec() -> None:
-    parser = argparse.ArgumentParser(description="Generate OpenAPI spec file")
-    parser.add_argument("output", help="output file")
-    args = parser.parse_args()
-
-    path = os.path.dirname(args.output)
-    if path:
-        os.makedirs(path, exist_ok=True)
-
-    app = create_app(cors_enabled=True)
-    with open(args.output, "w") as f:
-        json.dump(fp=f, obj=app.openapi())
