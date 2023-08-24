@@ -90,16 +90,18 @@ async def test_process_event_stream_workflow_run(
 
 
 @pytest.mark.parametrize(
-    "event_file_name, conclusion, failed_step_number",
+    "event_file_name, conclusion, failed_step_number, failed_step_name",
     (
         (
             "workflow_job.completed_failure.json",
             github_actions.WorkflowJobConclusion.FAILURE,
             3,
+            "Run echo hello",
         ),
         (
             "workflow_job.completed.json",
             github_actions.WorkflowJobConclusion.SUCCESS,
+            None,
             None,
         ),
     ),
@@ -112,6 +114,7 @@ async def test_process_event_stream_workflow_job(
     event_file_name: str,
     conclusion: github_actions.WorkflowJobConclusion,
     failed_step_number: int,
+    failed_step_name: str,
 ) -> None:
     # Create the event twice, as we should handle duplicates
     stream_event = {
@@ -135,6 +138,7 @@ async def test_process_event_stream_workflow_job(
     assert len(actual_workflow_job.steps) == 5
 
     assert actual_workflow_job.failed_step_number == failed_step_number
+    assert actual_workflow_job.failed_step_name == failed_step_name
 
     stream_events = await redis_links.stream.xrange("workflow_job")
     assert len(stream_events) == 0

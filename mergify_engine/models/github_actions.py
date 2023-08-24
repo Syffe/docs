@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 import enum
+import typing
 
 import numpy as np
 import numpy.typing as npt
@@ -180,6 +181,11 @@ class WorkflowRun(models.Base):
             )
 
 
+class WorkflowJobFailedStep(typing.TypedDict):
+    number: int
+    name: str
+
+
 class WorkflowJob(models.Base):
     __tablename__ = "gha_workflow_job"
 
@@ -242,7 +248,10 @@ class WorkflowJob(models.Base):
     )
 
     failed_step_number: orm.Mapped[int | None] = orm.mapped_column(
-        sqlalchemy.Integer, nullable=True, anonymizer_config=None
+        sqlalchemy.Integer, anonymizer_config=None
+    )
+    failed_step_name: orm.Mapped[str | None] = orm.mapped_column(
+        sqlalchemy.String, anonymizer_config=None
     )
 
     @classmethod
@@ -256,6 +265,8 @@ class WorkflowJob(models.Base):
             sqlalchemy.select(cls).where(cls.id == workflow_job_data["id"])
         )
         if result.scalar_one_or_none() is None:
+            failed_step = cls.get_failed_step(workflow_job_data)
+
             session.add(
                 cls(
                     id=workflow_job_data["id"],
@@ -269,25 +280,26 @@ class WorkflowJob(models.Base):
                         session, repository
                     ),
                     run_attempt=workflow_job_data["run_attempt"],
-                    # TODO(Kontrolix): remove get when all the old event in redis are processed
-                    steps=workflow_job_data.get("steps"),
-                    failed_step_number=cls.get_failed_step_number(workflow_job_data),
+                    steps=workflow_job_data["steps"],
+                    failed_step_number=failed_step["number"] if failed_step else None,
+                    failed_step_name=failed_step["name"] if failed_step else None,
                 )
             )
 
     @staticmethod
-    def get_failed_step_number(
+    def get_failed_step(
         workflow_job_data: github_types.GitHubWorkflowJob,
-    ) -> int | None:
-        failed_step_number = None
+    ) -> WorkflowJobFailedStep | None:
+        result = None
         if workflow_job_data["conclusion"] == "failure":
-            # TODO(Kontrolix): remove get when all the old event in redis are processed
-            for step in workflow_job_data.get("steps", []):
+            for step in workflow_job_data["steps"]:
                 if step["conclusion"] == "failure":
-                    failed_step_number = step["number"]
+                    result = WorkflowJobFailedStep(
+                        number=step["number"], name=step["name"]
+                    )
                     break
 
-        return failed_step_number
+        return result
 
     @classmethod
     async def compute_logs_embedding_cosine_similarity(
