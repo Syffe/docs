@@ -40,6 +40,7 @@ GitHubInstallationPermissionsK = typing.Literal[
     "statuses",
     "members",
     "workflows",
+    "actions",
 ]
 
 
@@ -935,6 +936,7 @@ class GitHubWorkflowJob(typing.TypedDict):
     id: int
     run_id: int
     name: str
+    workflow_name: str
     conclusion: GitHubWorkflowJobConclusionType
     started_at: ISODateTimeType
     completed_at: ISODateTimeType

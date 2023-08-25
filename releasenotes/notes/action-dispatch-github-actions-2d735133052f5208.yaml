@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    A new action called ``github_actions`` has been added, which allows to dispatch your GitHub
+    Workflows.
+    Each dispatched workflow can receive inputs used in the workflow job run to be dispatched.

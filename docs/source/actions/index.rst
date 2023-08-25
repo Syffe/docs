@@ -39,3 +39,4 @@ options.
    review
    update
    squash
+   github_actions

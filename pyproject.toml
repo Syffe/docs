@@ -126,6 +126,7 @@ click = "^8.1.7"
   review = "mergify_engine.actions.review:ReviewAction"
   squash = "mergify_engine.actions.squash:SquashAction"
   update = "mergify_engine.actions.update:UpdateAction"
+  github_actions = "mergify_engine.actions.github_actions:GhaAction"
 
 [tool.poetry.plugins.mergify_commands]
   backport = "mergify_engine.actions.backport:BackportAction"

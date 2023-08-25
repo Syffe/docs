@@ -2135,6 +2135,12 @@ class Context:
         )
         return workflows_perm == "write"
 
+    def github_actions_controllable(self) -> bool:
+        workflows_perm = self.repository.installation.installation["permissions"].get(
+            "actions"
+        )
+        return workflows_perm == "write"
+
     async def github_workflow_changed(self) -> bool:
         for f in await self.files:
             if f["filename"].startswith(".github/workflows"):
