@@ -166,6 +166,15 @@ class QueueRule:
         self, pulls: list[context.BasePullRequest]
     ) -> EvaluatedQueueRule:
         await self.merge_conditions(pulls)
+        if all(isinstance(p, context.QueuePullRequest) for p in pulls):
+            # NOTE(Greesb): We re-cast QueuePullRequest into simple PullRequest
+            # because we want to evaluate the queue_conditions on
+            # the queued pull requests, not the draft pr (if any).
+            # The type ignore is because mypy thinks the pulls are `BasePullRequest`
+            # and doesn't understand that in this `if` all the pull requests
+            # in `pulls` are of `QueuePullRequest` instance.
+            pulls = [context.PullRequest(p.context) for p in pulls]  # type: ignore[attr-defined]
+
         await self.queue_conditions(pulls)
         return typing.cast(EvaluatedQueueRule, self)
 
