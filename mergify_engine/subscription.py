@@ -1,6 +1,7 @@
 import abc as abstract
 from collections import abc
 import dataclasses
+import datetime
 import enum
 import json
 import logging
@@ -132,14 +133,14 @@ class SubscriptionBase(abstract.ABC):
             "features": self._all_features,
         }
 
-    RETENTION_SECONDS = 60 * 60 * 24 * 3  # 3 days
-    VALIDITY_SECONDS = 3600
+    RETENTION_SECONDS = datetime.timedelta(days=3)
+    VALIDITY_SECONDS = datetime.timedelta(hours=1)
 
     async def _has_expired(self) -> bool:
         if self.ttl < 0:  # not cached
             return True
-        elapsed_since_stored = self.RETENTION_SECONDS - self.ttl
-        return elapsed_since_stored > self.VALIDITY_SECONDS
+        elapsed_since_stored = self.RETENTION_SECONDS.total_seconds() - self.ttl
+        return elapsed_since_stored > self.VALIDITY_SECONDS.total_seconds()
 
     @classmethod
     async def get_subscription(
@@ -187,7 +188,7 @@ class SubscriptionBase(abstract.ABC):
             self.RETENTION_SECONDS,
             crypto.encrypt(json.dumps(self.to_dict()).encode()),
         )
-        self.ttl = self.RETENTION_SECONDS
+        self.ttl = int(self.RETENTION_SECONDS.total_seconds())
 
     @classmethod
     @abstract.abstractmethod
