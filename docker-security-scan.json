@@ -886,7 +886,7 @@
     "PkgName": "libelf1",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-33294",
-    "Title": "In elfutils 0.183, an infinite loop was found in the function handle_s ...",
+    "Title": "an infinite loop was found in the function handle_symtab in readelf.c which causes denial of service",
     "Severity": "LOW",
     "PublishedDate": "2023-07-18T14:15:00Z"
   },
@@ -1366,6 +1366,42 @@
     "Title": "heap buffer overflow at from_header() in list.c via specially crafted checksum",
     "Severity": "LOW",
     "PublishedDate": "2023-01-30T04:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-48522",
+    "PkgName": "libperl5.32",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48522",
+    "Title": "In Perl 5.34.0, function S_find_uninit_var in sv.c has a stack-based c ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-08-22T19:16:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-48522",
+    "PkgName": "perl",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48522",
+    "Title": "In Perl 5.34.0, function S_find_uninit_var in sv.c has a stack-based c ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-08-22T19:16:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-48522",
+    "PkgName": "perl-base",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48522",
+    "Title": "In Perl 5.34.0, function S_find_uninit_var in sv.c has a stack-based c ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-08-22T19:16:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-48522",
+    "PkgName": "perl-modules-5.32",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48522",
+    "Title": "In Perl 5.34.0, function S_find_uninit_var in sv.c has a stack-based c ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-08-22T19:16:00Z"
   },
   {
     "VulnerabilityID": "CVE-2022-4899",
@@ -2056,7 +2092,7 @@
     "PkgName": "libgssapi-krb5-2",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-36054",
-    "Title": "lib/kadm5/kadm_rpc_xdr.c in MIT Kerberos 5 (aka krb5) before 1.20.2 an ...",
+    "Title": "Denial of service through freeing uninitialized pointer",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-08-07T19:15:00Z"
   },
@@ -2065,7 +2101,7 @@
     "PkgName": "libk5crypto3",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-36054",
-    "Title": "lib/kadm5/kadm_rpc_xdr.c in MIT Kerberos 5 (aka krb5) before 1.20.2 an ...",
+    "Title": "Denial of service through freeing uninitialized pointer",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-08-07T19:15:00Z"
   },
@@ -2074,7 +2110,7 @@
     "PkgName": "libkrb5-3",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-36054",
-    "Title": "lib/kadm5/kadm_rpc_xdr.c in MIT Kerberos 5 (aka krb5) before 1.20.2 an ...",
+    "Title": "Denial of service through freeing uninitialized pointer",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-08-07T19:15:00Z"
   },
