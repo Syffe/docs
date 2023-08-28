@@ -133,7 +133,7 @@ train_properties_asserts:
           url: "www.check-run-description.com"
           state: "success"
           avatar_url: null
-      last_conditions_evaluation:
+      last_merge_conditions_evaluation:
         match: true
         label: "hellothere"
         is_label_user_input: false

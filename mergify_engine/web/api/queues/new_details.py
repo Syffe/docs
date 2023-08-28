@@ -101,8 +101,8 @@ class MergeabilityCheck:
                     f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
                 )
             conditions_evaluation = (
-                car.last_conditions_evaluation.as_json_dict()
-                if car.last_conditions_evaluation is not None
+                car.last_merge_conditions_evaluation.as_json_dict()
+                if car.last_merge_conditions_evaluation is not None
                 else None
             )
             return MergeabilityCheck(
@@ -116,7 +116,7 @@ class MergeabilityCheck:
                 ended_at=car.checks_ended_timestamp,
                 state=car.get_queue_check_run_conclusion().value or "pending",
                 checks=car.last_checks,
-                evaluated_conditions=car.last_evaluated_conditions,
+                evaluated_conditions=car.last_evaluated_merge_conditions,
                 conditions_evaluation=conditions_evaluation,
             )
 

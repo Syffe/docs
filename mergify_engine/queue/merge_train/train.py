@@ -1269,14 +1269,20 @@ class Train:
         *,
         pull_rule: "prr_config.EvaluatedPullRequestRule | None" = None,
         for_queue_pull_request: bool = False,
+        required_conditions_to_stay_in_queue: str | None = None,
     ) -> str:
         description = f"\n\n**Required conditions of queue** `{queue_rule_report.name}` **for merge:**\n\n"
 
         description += queue_rule_report.summary
 
-        if pull_rule and not pull_rule.conditions.match:
+        if required_conditions_to_stay_in_queue is not None or pull_rule is not None:
             description += "\n\n**Required conditions to stay in the queue:**\n\n"
-            description += pull_rule.conditions.get_unmatched_summary()
+            if required_conditions_to_stay_in_queue is not None:
+                description += required_conditions_to_stay_in_queue
+            elif pull_rule is not None:
+                description += pull_rule.conditions.get_summary()
+            else:
+                raise RuntimeError("How the hell did we even get here")
 
         repo_owner = self.convoy.repository.repo["owner"]["login"]
         repo_name = self.convoy.repository.repo["name"]
@@ -1302,7 +1308,7 @@ class Train:
         ctxt: context.Context,
         queue_rule: "qr_config.QueueRule",
         pull_rule: "prr_config.EvaluatedPullRequestRule | None" = None,
-        # This is mainly used by Convoy.get_pull_summary to avoid doing
+        # This argument is mainly used by Convoy.get_pull_summary to avoid doing
         # Train.find_embarked_pull multiples times
         embarked_pull_with_car: merge_train_types.EmbarkedPullWithCar | None = None,
     ) -> str:

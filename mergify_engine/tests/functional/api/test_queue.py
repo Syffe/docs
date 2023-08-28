@@ -914,7 +914,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p6['number']}",
             )
             # The PR alone cannot have an ETA because it doesn't have a car,
-            # with evaluated rules (last_conditions_evaluation), and it doesn't
+            # with evaluated rules (last_merge_conditions_evaluation), and it doesn't
             # have previous car as a reference either.
             assert r.json()["estimated_time_of_merge"] is None
 
@@ -1081,7 +1081,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p8['number']}",
             )
             # The PR alone cannot have an ETA because it doesn't have a car,
-            # with evaluated rules (last_conditions_evaluation), and it doesn't
+            # with evaluated rules (last_merge_conditions_evaluation), and it doesn't
             # have previous car as a reference either.
             assert r.json()["estimated_time_of_merge"] is None
 

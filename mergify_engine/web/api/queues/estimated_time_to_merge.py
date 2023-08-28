@@ -78,7 +78,8 @@ async def compute_estimation(
     previous_eta: datetime.datetime | None = None,
 ) -> datetime.datetime | None:
     if checks_duration is None or (
-        (car is None or car.last_conditions_evaluation is None) and previous_eta is None
+        (car is None or car.last_merge_conditions_evaluation is None)
+        and previous_eta is None
     ):
         return None
 
@@ -91,7 +92,7 @@ async def compute_estimation(
         # The PR is in the same batch as the PR the `previous_eta` is from
         return previous_eta
 
-    if car is None or car.last_conditions_evaluation is None:
+    if car is None or car.last_merge_conditions_evaluation is None:
         # The PR is not in the same batch as the previous PR and has
         # no car.
         # mypy thinks previous_eta can be None, but the first `if` of this function prevents it.
@@ -106,7 +107,7 @@ async def compute_estimation(
     # Evaluate schedule conditions relative to the current time
     farthest_datetime_from_conditions = (
         rules_conditions.get_farthest_datetime_from_non_match_schedule_condition(
-            car.last_conditions_evaluation.subconditions,
+            car.last_merge_conditions_evaluation.subconditions,
             embarked_pull.user_pull_request_number,
             date.utcnow(),
         )
@@ -118,7 +119,7 @@ async def compute_estimation(
         # trying to re-evaluate the schedule conditions relative to the raw_estimated_time_of_merge
         # since we won't return that time in the end.
         re_evaluated_conditions = rules_conditions.re_evaluate_schedule_conditions(
-            car.last_conditions_evaluation.copy().subconditions,
+            car.last_merge_conditions_evaluation.copy().subconditions,
             raw_estimated_time_of_merge,
         )
         farthest_datetime_from_conditions = (

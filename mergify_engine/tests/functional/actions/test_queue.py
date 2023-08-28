@@ -943,6 +943,59 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
 
+    async def test_checks_inject_queue_conditions_in_merge_conditions(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "allow_inplace_checks": False,
+                    "queue_conditions": [
+                        "status-success=continuous-integration/fake-ci-queue",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci-merge",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr()
+        await self.create_status(p, "continuous-integration/fake-ci-queue")
+        await self.run_engine()
+        draft_pr = await self.wait_for_pull_request("opened")
+
+        check_summary = first(
+            await context.Context(self.repository_ctxt, p).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check_summary is not None
+        assert (
+            f"""
+- `status-success=continuous-integration/fake-ci-queue`
+  - [X] #{p["number"]}
+"""
+            in check_summary["output"]["summary"]
+        )
+        assert (
+            "[ ] `status-success=continuous-integration/fake-ci-merge`"
+            in check_summary["output"]["summary"]
+        )
+
+        await self.create_status(
+            draft_pr["pull_request"], "continuous-integration/fake-ci-merge"
+        )
+        await self.run_engine()
+        await self.wait_for_pull_request("closed", draft_pr["number"])
+        await self.wait_for_pull_request("closed", p["number"], merged=True)
+
     async def test_queue_priority_rules(self) -> None:
         rules = {
             "queue_rules": [

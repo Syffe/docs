@@ -252,7 +252,12 @@ class TrainCar:
     last_checks: list[merge_train_checks.QueueCheck] = dataclasses.field(
         default_factory=list
     )
-    last_conditions_evaluation: conditions.QueueConditionEvaluationResult | None = None
+    last_merge_conditions_evaluation: conditions.QueueConditionEvaluationResult | None = (
+        None
+    )
+    last_queue_conditions_evaluation: conditions.QueueConditionEvaluationResult | None = (
+        None
+    )
     checks_ended_timestamp: datetime.datetime | None = None
     queue_branch_name: github_types.GitHubRefType | None = None
     delegating_train_cars_partition_names: list[
@@ -271,16 +276,28 @@ class TrainCar:
         failure_history: list["TrainCar.Serialized"]
         head_branch: str | None
         last_checks: list[merge_train_checks.QueueCheck.Serialized]
+        # retrocompat
         last_conditions_evaluation: conditions.QueueConditionEvaluationResult.Serialized | None
+        last_merge_conditions_evaluation: conditions.QueueConditionEvaluationResult.Serialized | None
+        last_queue_conditions_evaluation: conditions.QueueConditionEvaluationResult.Serialized | None
         checks_ended_timestamp: datetime.datetime | None
         queue_branch_name: github_types.GitHubRefType | None
         delegating_train_cars_partition_names: list[partr_config.PartitionRuleName]
 
     def serialized(self) -> "TrainCar.Serialized":
-        if self.last_conditions_evaluation is not None:
-            last_conditions_evaluation = self.last_conditions_evaluation.serialized()
+        if self.last_merge_conditions_evaluation is not None:
+            last_merge_conditions_evaluation = (
+                self.last_merge_conditions_evaluation.serialized()
+            )
         else:
-            last_conditions_evaluation = None
+            last_merge_conditions_evaluation = None
+
+        if self.last_queue_conditions_evaluation is not None:
+            last_queue_conditions_evaluation = (
+                self.last_queue_conditions_evaluation.serialized()
+            )
+        else:
+            last_queue_conditions_evaluation = None
 
         return self.Serialized(
             train_car_state=self.train_car_state.serialized(),
@@ -296,7 +313,9 @@ class TrainCar:
             failure_history=[fh.serialized() for fh in self.failure_history],
             head_branch=self.head_branch,
             last_checks=[c.serialized() for c in self.last_checks],
-            last_conditions_evaluation=last_conditions_evaluation,
+            last_merge_conditions_evaluation=last_merge_conditions_evaluation,
+            last_queue_conditions_evaluation=last_queue_conditions_evaluation,
+            last_conditions_evaluation=None,
             checks_ended_timestamp=self.checks_ended_timestamp,
             queue_branch_name=self.queue_branch_name,
             delegating_train_cars_partition_names=self.delegating_train_cars_partition_names,
@@ -398,17 +417,38 @@ class TrainCar:
             train.convoy.repository, train.convoy.queue_rules, data, checks_type
         )
 
-        if (
-            "last_conditions_evaluation" in data
-            and data["last_conditions_evaluation"] is not None
-        ):
-            last_conditions_evaluation = (
+        if data.get("last_merge_conditions_evaluation") is not None:
+            last_merge_conditions_evaluation = (
                 conditions.QueueConditionEvaluationResult.deserialize(
-                    data["last_conditions_evaluation"]
+                    typing.cast(
+                        conditions.QueueConditionEvaluationResult.Serialized,
+                        data["last_merge_conditions_evaluation"],
+                    )
+                )
+            )
+        elif data.get("last_conditions_evaluation") is not None:
+            last_merge_conditions_evaluation = (
+                conditions.QueueConditionEvaluationResult.deserialize(
+                    typing.cast(
+                        conditions.QueueConditionEvaluationResult.Serialized,
+                        data["last_conditions_evaluation"],
+                    )
                 )
             )
         else:
-            last_conditions_evaluation = None
+            last_merge_conditions_evaluation = None
+
+        if data.get("last_queue_conditions_evaluation") is not None:
+            last_queue_conditions_evaluation = (
+                conditions.QueueConditionEvaluationResult.deserialize(
+                    typing.cast(
+                        conditions.QueueConditionEvaluationResult.Serialized,
+                        data["last_queue_conditions_evaluation"],
+                    )
+                )
+            )
+        else:
+            last_queue_conditions_evaluation = None
 
         return cls(
             train,
@@ -421,7 +461,8 @@ class TrainCar:
             failure_history=failure_history,
             head_branch=data["head_branch"],
             last_checks=last_checks,
-            last_conditions_evaluation=last_conditions_evaluation,
+            last_merge_conditions_evaluation=last_merge_conditions_evaluation,
+            last_queue_conditions_evaluation=last_queue_conditions_evaluation,
             checks_ended_timestamp=data.get("checks_ended_timestamp"),
             queue_branch_name=data["queue_branch_name"],
             delegating_train_cars_partition_names=data.get(
@@ -503,9 +544,15 @@ class TrainCar:
         )
 
     @property
-    def last_evaluated_conditions(self) -> str:
-        if self.last_conditions_evaluation is not None:
-            return self.last_conditions_evaluation.as_markdown()
+    def last_evaluated_merge_conditions(self) -> str:
+        if self.last_merge_conditions_evaluation is not None:
+            return self.last_merge_conditions_evaluation.as_markdown()
+        return ""
+
+    @property
+    def last_evaluated_queue_conditions(self) -> str:
+        if self.last_queue_conditions_evaluation is not None:
+            return self.last_queue_conditions_evaluation.as_markdown()
         return ""
 
     @property
@@ -1280,6 +1327,7 @@ class TrainCar:
             self.ref,
             queue_pull_requests,
         )
+
         await self.update_state(check_api.Conclusion.PENDING, evaluated_queue_rule)
         await self.update_summaries()
         await self.send_refresh_to_user_pull_requests()
@@ -1362,10 +1410,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
         description += await self.train.generate_merge_queue_summary_footer(
             queue_rule_report=merge_train_types.QueueRuleReport(
                 self.still_queued_embarked_pulls[0].config["name"],
-                self.last_evaluated_conditions,
+                self.last_evaluated_merge_conditions,
             ),
             pull_rule=pull_rule,
             for_queue_pull_request=for_queue_pull_request,
+            required_conditions_to_stay_in_queue=self.last_queue_conditions_evaluation.as_markdown()
+            if self.last_queue_conditions_evaluation is not None
+            else None,
         )
 
         if for_queue_pull_request:
@@ -1495,10 +1546,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 TrainCarOutcome.CHECKS_TIMEOUT,
                 TrainCarOutcome.CHECKS_FAILED,
             )
-            and self.last_conditions_evaluation
+            and self.last_merge_conditions_evaluation
             and raw_unsuccessful_checks
         ):
-            related_checks = self.last_conditions_evaluation.get_related_checks()
+            related_checks = self.last_merge_conditions_evaluation.get_related_checks()
 
             unsuccessful_checks = [
                 check.serialized()
@@ -1513,7 +1564,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     raw_unsuccessful_checks=raw_unsuccessful_checks,
                     related_checks=related_checks,
                     train_car_outcome=self.train_car_state.outcome,
-                    last_evaluated_conditions=self.last_conditions_evaluation,
+                    last_evaluated_merge_conditions=self.last_merge_conditions_evaluation,
                 )
         else:
             unsuccessful_checks = []
@@ -1832,7 +1883,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             return
 
         saved_ci_state = self.train_car_state.ci_state
-        saved_last_conditions_evaluation = self.last_conditions_evaluation
+        saved_last_merge_conditions_evaluation = self.last_merge_conditions_evaluation
         saved_outcome = self.train_car_state.outcome
 
         check = await checked_ctxt.get_engine_check_run(
@@ -1904,8 +1955,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
 
         diff_result = deepdiff.DeepDiff(
-            saved_last_conditions_evaluation,
-            self.last_conditions_evaluation,
+            saved_last_merge_conditions_evaluation,
+            self.last_merge_conditions_evaluation,
             ignore_order=True,
             exclude_types=[date.Schedule],
             # No need to refresh summary if related_checks or next_evaluation_at change
@@ -2016,8 +2067,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
         evaluated_queue_rule: "qr_config.EvaluatedQueueRule",
         unexpected_changes: UnexpectedChanges | None = None,
     ) -> None:
-        self.last_conditions_evaluation = (
+        self.last_merge_conditions_evaluation = (
             evaluated_queue_rule.merge_conditions.get_evaluation_result()
+        )
+        self.last_queue_conditions_evaluation = (
+            evaluated_queue_rule.queue_conditions.get_evaluation_result(
+                display_evaluations=True
+            )
         )
         outside_schedule = False
         has_failed_check_other_than_schedule = False
@@ -2346,7 +2402,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
         ).serialized()
 
     def get_merge_conditions_summary(self) -> str:
-        return "Required conditions for merge:\n\n" + self.last_evaluated_conditions
+        return (
+            "Required conditions for merge:\n\n" + self.last_evaluated_merge_conditions
+        )
 
     def get_unexpected_changes_summary(self) -> str | None:
         if not self.has_unexpected_changes:
@@ -2518,6 +2576,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             original_pull_title=queue_summary.title,
             gh_pull=checked_pull,
             merge_conditions_summary=queue_summary.merge_conditions.strip(),
+            last_evaluated_queue_conditions_summary=self.last_evaluated_queue_conditions.strip(),
             batch_failure_summary=queue_summary.build_batch_failure_summary().strip(),
             checks_copy_summary={check.name: check.state for check in self.last_checks},
             still_embarked_pull_numbers=[

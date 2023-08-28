@@ -94,7 +94,7 @@ class SpeculativeCheckPullRequest:
                 ended_at=car.checks_ended_timestamp,
                 state=car.get_queue_check_run_conclusion().value or "pending",
                 checks=car.last_checks,
-                evaluated_conditions=car.last_evaluated_conditions,
+                evaluated_conditions=car.last_evaluated_merge_conditions,
             )
 
         raise RuntimeError(
