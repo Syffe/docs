@@ -30,6 +30,7 @@ from mergify_engine.clients import github
 from mergify_engine.models import github_user
 from mergify_engine.models import manage
 from mergify_engine.tests import utils as test_utils
+from mergify_engine.tests.db_populator import DbPopulator
 from mergify_engine.web import root as web_root
 
 
@@ -211,6 +212,20 @@ async def db(
 ) -> abc.AsyncGenerator[sqlalchemy.ext.asyncio.AsyncSession, None]:
     async with database.create_session() as session:
         yield session
+        DbPopulator.loaded_dadaset = set()
+
+
+@pytest.fixture
+async def populated_db(
+    db: sqlalchemy.ext.asyncio.AsyncSession, request: pytest.FixtureRequest
+) -> abc.AsyncGenerator[sqlalchemy.ext.asyncio.AsyncSession, None]:
+    if "populated_db_datasets" in request.keywords:
+        datasets = request.keywords["populated_db_datasets"].args
+    else:
+        datasets = None
+
+    await DbPopulator.load(db, datasets)
+    yield db
 
 
 @pytest.fixture()
