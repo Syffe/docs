@@ -550,8 +550,8 @@ class TestPartitionsApi(base.FunctionalTestBase):
             # projB eta should be at least 1 hour more than projA
             assert datetime.datetime.fromisoformat(
                 rprojectB.json()["pull_requests"][0]["estimated_time_of_merge"]
-            ) <= datetime.datetime.fromisoformat(
-                rprojectB.json()["pull_requests"][0]["estimated_time_of_merge"]
+            ) > datetime.datetime.fromisoformat(
+                rprojectA.json()["pull_requests"][0]["estimated_time_of_merge"]
             ) + datetime.timedelta(
                 hours=1
             )
