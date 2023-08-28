@@ -256,7 +256,7 @@ class TestBranchProtection(base.FunctionalTestBase):
         check_run = await self.wait_for_check_run(
             name="Rule: Queue on label (queue)",
             status="completed",
-            conclusion="failure",
+            conclusion="cancelled",
         )
         assert (
             check_run["check_run"]["output"]["title"]
@@ -268,7 +268,7 @@ class TestBranchProtection(base.FunctionalTestBase):
         )
 
         await self.add_label(pr2["number"], "queue")
-        await self.run_engine()
+        await self.run_full_engine()
 
         # pr2 should be merged because not created by a bot
         await self.wait_for_pull_request("synchronize", pr2["number"])
