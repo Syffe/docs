@@ -2,6 +2,7 @@ import typing
 
 import sqlalchemy
 from sqlalchemy import orm
+import sqlalchemy.ext.asyncio
 
 
 class ORMObjectAsDict(typing.TypedDict):
@@ -23,8 +24,18 @@ class Base(orm.DeclarativeBase):
     )
 
     def as_dict(self) -> ORMObjectAsDict:
-        result = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        columns = self.__table__.columns.values()
 
+        # NOTE(lecrepont01): for an inherited relation, the attributes of
+        # the parent class must be added
+        if (
+            "polymorphic_identity" in self.__mapper_args__
+            and "polymorphic_on" not in self.__mapper_args__
+        ):
+            parent_relation = self.__class__.__bases__[0]
+            columns += parent_relation.__table__.columns.values()  # type: ignore [attr-defined]
+
+        result = {c.name: getattr(self, c.name) for c in columns}
         for relationship in sqlalchemy.inspect(self.__class__).relationships:
             relationship_name = relationship.key
             relationship_value = getattr(self, relationship_name)
@@ -32,6 +43,14 @@ class Base(orm.DeclarativeBase):
                 result[relationship_name] = relationship_value.as_dict()
 
         return result  # type: ignore [return-value]
+
+    @classmethod
+    async def total(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> int:
+        return (
+            await session.scalar(
+                sqlalchemy.select(sqlalchemy.func.count()).select_from(cls)
+            )
+        ) or 0
 
 
 # NOTE(charly): ensure all models are loaded, to

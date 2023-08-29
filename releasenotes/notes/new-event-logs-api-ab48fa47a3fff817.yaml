@@ -1,0 +1,4 @@
+features:
+  - |
+    Add new `/repos/{owner}/{repository}/logs` endpoint to the API. This
+    endpoint returns the logs of a repository.

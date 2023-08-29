@@ -8,8 +8,10 @@ from sqlalchemy import func
 from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import models
+from mergify_engine import pagination
 from mergify_engine import signals
 from mergify_engine.models import enumerations
 from mergify_engine.models import events_metadata
@@ -79,6 +81,55 @@ class Event(models.Base):
             trigger=trigger,
             **metadata,
         )
+
+    @classmethod
+    async def get(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        page: pagination.CurrentPage,
+        backward: bool,
+        repository_ctxt: context.Repository,
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        event_type: list[enumerations.EventType] | None,
+        received_from: datetime.datetime | None,
+        received_to: datetime.datetime | None,
+    ) -> typing.Sequence[Event]:
+        filter_dict = {
+            "repository_id": cls.repository_id == repository_ctxt.repo["id"],
+            "pull_request": cls.pull_request == pull_request
+            if pull_request is not None
+            else None,
+            "event_type": cls.type.in_(event_type) if event_type is not None else None,
+            "received_from": cls.received_at >= received_from
+            if received_from is not None
+            else None,
+            "received_to": cls.received_at <= received_to
+            if received_to is not None
+            else None,
+        }
+
+        cursor = page.cursor
+        if cursor is not None and len(cursor) > 1:
+            if backward:
+                filter_dict.update({"cursor": cls.id > int(cursor[1:])})
+            else:
+                filter_dict.update({"cursor": cls.id < int(cursor[1:])})
+
+        subquery = (
+            sqlalchemy.select(cls)
+            .where(*[f for f in filter_dict.values() if f is not None])
+            .limit(page.per_page)
+            .order_by(cls.id.asc() if backward else cls.id.desc())
+        ).subquery()
+        events_aliased = orm.aliased(cls, subquery)
+
+        return (
+            await session.scalars(
+                sqlalchemy.select(events_aliased)
+                .order_by(events_aliased.id.desc())
+                .options(orm.selectin_polymorphic(events_aliased, cls.__subclasses__()))
+            )
+        ).all()
 
 
 class EventActionAssign(Event):
