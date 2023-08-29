@@ -377,7 +377,7 @@ def logging_reset() -> abc.Generator[None, None, None]:
         root_logger.handlers = saved_handlers
 
 
-@pytest.hookimpl(trylast=True)  # type: ignore[misc]
+@pytest.hookimpl(trylast=True)
 def pytest_configure(config: pytest.Config) -> None:
     logging_plugin = config.pluginmanager.get_plugin("logging-plugin")
     if logging_plugin:
