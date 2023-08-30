@@ -819,6 +819,15 @@
     "PublishedDate": "2021-12-13T18:15:00Z"
   },
   {
+    "VulnerabilityID": "CVE-2020-22218",
+    "PkgName": "libssh2-1",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-22218",
+    "Title": "An issue was discovered in function _libssh2_packet_add in libssh2 1.1 ...",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-08-22T19:16:00Z"
+  },
+  {
     "VulnerabilityID": "CVE-2021-22922",
     "PkgName": "curl",
     "SeveritySource": "debian",
@@ -880,6 +889,15 @@
     "Title": "denial of service via the appendvfs.c function",
     "Severity": "HIGH",
     "PublishedDate": "2023-05-09T02:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-32292",
+    "PkgName": "libjson-c5",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-32292",
+    "Title": "An issue was discovered in json-c through 0.15-20200726. A stack-buffe ...",
+    "Severity": "CRITICAL",
+    "PublishedDate": "2023-08-22T19:16:00Z"
   },
   {
     "VulnerabilityID": "CVE-2021-33294",
@@ -1366,42 +1384,6 @@
     "Title": "heap buffer overflow at from_header() in list.c via specially crafted checksum",
     "Severity": "LOW",
     "PublishedDate": "2023-01-30T04:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-48522",
-    "PkgName": "libperl5.32",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48522",
-    "Title": "In Perl 5.34.0, function S_find_uninit_var in sv.c has a stack-based c ...",
-    "Severity": "LOW",
-    "PublishedDate": "2023-08-22T19:16:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-48522",
-    "PkgName": "perl",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48522",
-    "Title": "In Perl 5.34.0, function S_find_uninit_var in sv.c has a stack-based c ...",
-    "Severity": "LOW",
-    "PublishedDate": "2023-08-22T19:16:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-48522",
-    "PkgName": "perl-base",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48522",
-    "Title": "In Perl 5.34.0, function S_find_uninit_var in sv.c has a stack-based c ...",
-    "Severity": "LOW",
-    "PublishedDate": "2023-08-22T19:16:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-48522",
-    "PkgName": "perl-modules-5.32",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48522",
-    "Title": "In Perl 5.34.0, function S_find_uninit_var in sv.c has a stack-based c ...",
-    "Severity": "LOW",
-    "PublishedDate": "2023-08-22T19:16:00Z"
   },
   {
     "VulnerabilityID": "CVE-2022-4899",
