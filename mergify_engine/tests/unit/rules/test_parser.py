@@ -6,6 +6,7 @@ import zoneinfo
 
 from freezegun import freeze_time
 import pytest
+import tenacity
 
 from mergify_engine import date
 from mergify_engine import github_types
@@ -16,9 +17,6 @@ from mergify_engine.rules import parser
 now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
 
 
-# The comparison of two DateTimeRange's attributes that can be an instance
-# of `UncertainDatePart` is flaky for an unknown reason.
-@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize(
     "line, result",
     (
@@ -475,7 +473,18 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
 )
 @freeze_time(now)
 def test_parse(line: str, result: typing.Any) -> None:
-    assert result == parser.parse(line, allow_command_attributes=True)
+    # pytest.mark.flaky does not work with parametrize, so we need to manually retry.
+    if line == "current-datetime=XXXX-07-14T08:00/XXXX-07-14T19:00[Europe/Paris]":
+        # The comparison of two DateTimeRange's attributes that can be an instance
+        # of `UncertainDatePart` is flaky for an unknown reason.
+        for attempt in tenacity.Retrying(
+            reraise=True,
+            stop=tenacity.stop_after_attempt(5),
+        ):
+            with attempt:
+                assert result == parser.parse(line, allow_command_attributes=True)
+    else:
+        assert result == parser.parse(line, allow_command_attributes=True)
 
 
 async def AsyncProperty(value: str) -> str:
