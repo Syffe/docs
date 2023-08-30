@@ -31,6 +31,7 @@ async def test_subscription_cache_update(web_client: httpx.AsyncClient) -> None:
             {
                 "subscription_reason": "Customer",
                 "features": [],
+                "expire_at": None,
             }
         )
     ).encode(charset)

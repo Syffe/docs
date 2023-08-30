@@ -3,15 +3,16 @@ from collections import abc
 import dataclasses
 import datetime
 import enum
-import json
 import logging
 import typing
 
 import daiquiri
 
 from mergify_engine import crypto
+from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
+from mergify_engine import json
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.clients import dashboard
@@ -67,6 +68,7 @@ FeaturesLiteralT = typing.Literal[
 class SubscriptionDict(typing.TypedDict):
     subscription_reason: str
     features: list[FeaturesLiteralT]
+    expire_at: datetime.datetime | None
 
 
 @dataclasses.dataclass
@@ -80,7 +82,7 @@ class SubscriptionBase(abstract.ABC):
     # the one that we were not able to instantiate. The features we were not able to
     # instantiate might be new features not yet implemented on the engine side.
     _all_features: list[FeaturesLiteralT]
-    ttl: int = -2
+    expire_at: datetime.datetime | None = None
 
     feature_flag_log_level: int = logging.WARNING
 
@@ -116,7 +118,6 @@ class SubscriptionBase(abstract.ABC):
         redis: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
         sub: SubscriptionDict,
-        ttl: int = -2,
     ) -> SubscriptionT:
         return cls(
             redis,
@@ -124,23 +125,27 @@ class SubscriptionBase(abstract.ABC):
             sub["subscription_reason"],
             cls._to_features(sub.get("features", [])),
             sub.get("features", []),
-            ttl,
+            sub.get("expire_at"),
         )
 
     def to_dict(self) -> SubscriptionDict:
         return {
             "subscription_reason": self.reason,
             "features": self._all_features,
+            "expire_at": self.expire_at,
         }
 
     RETENTION_SECONDS = datetime.timedelta(days=3)
     VALIDITY_SECONDS = datetime.timedelta(hours=1)
 
+    @classmethod
+    def default_expire_at(cls) -> datetime.datetime:
+        return date.utcnow() + cls.VALIDITY_SECONDS
+
     async def _has_expired(self) -> bool:
-        if self.ttl < 0:  # not cached
+        if self.expire_at is None:  # not cached
             return True
-        elapsed_since_stored = self.RETENTION_SECONDS.total_seconds() - self.ttl
-        return elapsed_since_stored > self.VALIDITY_SECONDS.total_seconds()
+        return date.utcnow() > self.expire_at
 
     @classmethod
     async def get_subscription(
@@ -157,8 +162,13 @@ class SubscriptionBase(abstract.ABC):
                 if cached_sub is not None and (
                     exceptions.should_be_ignored(exc) or exceptions.need_retry(exc)
                 ):
-                    # NOTE(sileht): return the cached sub, instead of retry the stream,
-                    # just because the dashboard have connectivity issue.
+                    # NOTE(charly): Shadow Office is temporary unavailable,
+                    # renew the cache validity and return it, instead of
+                    # retrying the stream. But leave the data retention as is,
+                    # so Redis can remove the subscription cache itself after
+                    # some days. It prevents on premise installations from
+                    # cutting the network link to our subscription service.
+                    await cached_sub._save_subscription_to_cache(update_retention=False)
                     return cached_sub
                 raise
 
@@ -181,14 +191,22 @@ class SubscriptionBase(abstract.ABC):
     ) -> None:
         await redis.delete(cls._cache_key(owner_id))
 
-    async def _save_subscription_to_cache(self) -> None:
+    async def _save_subscription_to_cache(self, update_retention: bool = True) -> None:
         """Save a subscription to the cache."""
-        await self.redis.setex(
-            self._cache_key(self.owner_id),
-            self.RETENTION_SECONDS,
-            crypto.encrypt(json.dumps(self.to_dict()).encode()),
-        )
-        self.ttl = int(self.RETENTION_SECONDS.total_seconds())
+        self.expire_at = self.default_expire_at()
+
+        if update_retention:
+            await self.redis.setex(
+                self._cache_key(self.owner_id),
+                self.RETENTION_SECONDS,
+                crypto.encrypt(json.dumps(self.to_dict()).encode()),
+            )
+        else:
+            await self.redis.set(
+                self._cache_key(self.owner_id),
+                crypto.encrypt(json.dumps(self.to_dict()).encode()),
+                keepttl=True,
+            )
 
     @classmethod
     @abstract.abstractmethod
@@ -205,17 +223,13 @@ class SubscriptionBase(abstract.ABC):
         redis: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT | None:
-        async with await redis.pipeline() as pipe:
-            await pipe.get(cls._cache_key(owner_id))
-            await pipe.ttl(cls._cache_key(owner_id))
-            encrypted_sub, ttl = typing.cast(tuple[bytes, int], await pipe.execute())
+        encrypted_sub = await redis.get(cls._cache_key(owner_id))
 
         if encrypted_sub:
             return cls.from_dict(
                 redis,
                 owner_id,
                 json.loads(crypto.decrypt(encrypted_sub).decode()),
-                ttl,
             )
         return None
 

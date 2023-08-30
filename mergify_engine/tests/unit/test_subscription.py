@@ -2,6 +2,7 @@ import enum
 import typing
 from unittest import mock
 
+from freezegun import freeze_time
 import pydantic
 import pytest
 import respx
@@ -21,6 +22,7 @@ async def test_init(redis_cache: redis_utils.RedisCache) -> None:
         "friend",
         frozenset({subscription.Features.PRIVATE_REPOSITORY}),
         ["private_repository"],
+        expire_at=subscription.Subscription.default_expire_at(),
     )
 
 
@@ -32,9 +34,10 @@ async def test_dict(redis_cache: redis_utils.RedisCache) -> None:
         "friend",
         frozenset({subscription.Features.PRIVATE_REPOSITORY}),
         ["private_repository"],
+        expire_at=subscription.Subscription.default_expire_at(),
     )
 
-    assert sub.from_dict(redis_cache, owner_id, sub.to_dict(), -2) == sub
+    assert sub.from_dict(redis_cache, owner_id, sub.to_dict()) == sub
 
 
 @pytest.mark.parametrize(
@@ -83,6 +86,7 @@ async def test_save_sub_with_unhandled_feature(
                 "public_repository",
                 "new_feature",  # type: ignore[list-item]
             ],
+            "expire_at": None,
         },
     )
 
@@ -126,56 +130,59 @@ async def test_subscription_db_unavailable(
     retrieve_subscription_from_db_mock: mock.Mock,
     redis_cache: redis_utils.RedisCache,
 ) -> None:
-    owner_id = github_types.GitHubAccountIdType(1234)
-    sub = subscription.Subscription(
-        redis_cache,
-        owner_id,
-        "friend",
-        frozenset([subscription.Features.PUBLIC_REPOSITORY]),
-        ["public_repository"],
-    )
-    retrieve_subscription_from_db_mock.return_value = sub
+    with freeze_time("2023-08-25 12:00") as frozen_time:
+        owner_id = github_types.GitHubAccountIdType(1234)
+        sub = subscription.Subscription(
+            redis_cache,
+            owner_id,
+            "friend",
+            frozenset([subscription.Features.PUBLIC_REPOSITORY]),
+            ["public_repository"],
+        )
+        retrieve_subscription_from_db_mock.return_value = sub
 
-    # no cache, no db -> reraise
-    retrieve_subscription_from_db_mock.side_effect = http.HTTPServiceUnavailable(
-        "boom!", response=mock.Mock(), request=mock.Mock()
-    )
-    with pytest.raises(http.HTTPServiceUnavailable):
-        await subscription.Subscription.get_subscription(redis_cache, owner_id)
+        # no cache, no db -> reraise
+        retrieve_subscription_from_db_mock.side_effect = http.HTTPServiceUnavailable(
+            "boom!", response=mock.Mock(), request=mock.Mock()
+        )
+        with pytest.raises(http.HTTPServiceUnavailable):
+            await subscription.Subscription.get_subscription(redis_cache, owner_id)
+            retrieve_subscription_from_db_mock.assert_called_once()
+
+        # no cache, but db -> got db sub
+        retrieve_subscription_from_db_mock.reset_mock()
+        retrieve_subscription_from_db_mock.side_effect = None
+        rsub = await subscription.Subscription.get_subscription(redis_cache, owner_id)
+        assert sub == rsub
         retrieve_subscription_from_db_mock.assert_called_once()
 
-    # no cache, but db -> got db sub
-    retrieve_subscription_from_db_mock.reset_mock()
-    retrieve_subscription_from_db_mock.side_effect = None
-    rsub = await subscription.Subscription.get_subscription(redis_cache, owner_id)
-    assert sub == rsub
-    retrieve_subscription_from_db_mock.assert_called_once()
+        # cache not expired and not db -> got cached sub
+        retrieve_subscription_from_db_mock.reset_mock()
+        rsub = await subscription.Subscription.get_subscription(redis_cache, owner_id)
+        assert rsub == sub
+        retrieve_subscription_from_db_mock.assert_not_called()
 
-    # cache not expired and not db -> got cached  sub
-    retrieve_subscription_from_db_mock.reset_mock()
-    rsub = await subscription.Subscription.get_subscription(redis_cache, owner_id)
-    sub.ttl = 259200
-    assert rsub == sub
-    retrieve_subscription_from_db_mock.assert_not_called()
+        # cache expired and not db -> got cached sub and expiration is updated
+        retrieve_subscription_from_db_mock.reset_mock()
+        retrieve_subscription_from_db_mock.side_effect = http.HTTPServiceUnavailable(
+            "boom!", response=mock.Mock(), request=mock.Mock()
+        )
+        frozen_time.move_to("2023-08-25 13:01")
+        await redis_cache.expire(f"subscription-cache-owner-{owner_id}", 7200)
+        rsub = await subscription.Subscription.get_subscription(redis_cache, owner_id)
+        sub.expire_at = sub.default_expire_at()
+        assert rsub == sub
+        retrieve_subscription_from_db_mock.assert_called_once()
+        # TTL hasn't changed, Redis will remove the key automatically after some time
+        assert await redis_cache.ttl(f"subscription-cache-owner-{owner_id}") == 7200
 
-    # cache expired and not db -> got cached  sub
-    retrieve_subscription_from_db_mock.reset_mock()
-    retrieve_subscription_from_db_mock.side_effect = http.HTTPServiceUnavailable(
-        "boom!", response=mock.Mock(), request=mock.Mock()
-    )
-    await redis_cache.expire(f"subscription-cache-owner-{owner_id}", 7200)
-    rsub = await subscription.Subscription.get_subscription(redis_cache, owner_id)
-    sub.ttl = 7200
-    assert rsub == sub
-    retrieve_subscription_from_db_mock.assert_called_once()
-
-    # cache expired and unexpected db issue -> reraise
-    retrieve_subscription_from_db_mock.reset_mock()
-    retrieve_subscription_from_db_mock.side_effect = Exception("WTF")
-    await redis_cache.expire(f"subscription-cache-owner-{owner_id}", 7200)
-    with pytest.raises(Exception, match="WTF"):
-        await subscription.Subscription.get_subscription(redis_cache, owner_id)
-    retrieve_subscription_from_db_mock.assert_called_once()
+        # cache expired and unexpected db issue -> reraise
+        retrieve_subscription_from_db_mock.reset_mock()
+        retrieve_subscription_from_db_mock.side_effect = Exception("WTF")
+        frozen_time.move_to("2023-08-25 14:02")
+        with pytest.raises(Exception, match="WTF"):
+            await subscription.Subscription.get_subscription(redis_cache, owner_id)
+        retrieve_subscription_from_db_mock.assert_called_once()
 
 
 async def test_unknown_sub(redis_cache: redis_utils.RedisCache) -> None:
@@ -192,6 +199,7 @@ async def test_from_dict_unknown_features(redis_cache: redis_utils.RedisCache) -
         {
             "subscription_reason": "friend",
             "features": ["unknown feature"],  # type: ignore[list-item]
+            "expire_at": None,
         },
     ) == subscription.Subscription(
         redis_cache,
@@ -199,7 +207,6 @@ async def test_from_dict_unknown_features(redis_cache: redis_utils.RedisCache) -
         "friend",
         frozenset(),
         ["unknown feature"],  # type: ignore[list-item]
-        -2,
     )
 
 
@@ -228,6 +235,7 @@ async def test_active_feature(redis_cache: redis_utils.RedisCache) -> None:
         {
             "subscription_reason": "friend",
             "features": ["private_repository"],
+            "expire_at": None,
         },
     )
     assert sub.has_feature(subscription.Features.PRIVATE_REPOSITORY) is True
