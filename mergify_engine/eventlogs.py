@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 import itertools
 import typing
@@ -24,7 +25,9 @@ EVENTLOGS_LONG_RETENTION = datetime.timedelta(days=7)
 EVENTLOGS_SHORT_RETENTION = datetime.timedelta(days=1)
 
 
-class EventBase(typing.TypedDict):
+class EventBase(typing.TypedDict, total=False):
+    id: int
+    received_at: datetime.datetime
     timestamp: datetime.datetime
     trigger: str
     repository: str
@@ -39,153 +42,184 @@ class EventBaseNoMetadata(EventBase):
     metadata: signals.EventNoMetadata
 
 
-class EventAssign(EventBase):
+class EventAssign(EventBase, total=False):
     event: typing.Literal["action.assign"]
+    type: typing.Literal["action.assign"]
     metadata: signals.EventAssignMetadata
 
 
-class EventBackport(EventBase):
+class EventBackport(EventBase, total=False):
     event: typing.Literal["action.backport"]
+    type: typing.Literal["action.backport"]
     metadata: signals.EventCopyMetadata
 
 
-class EventClose(EventBase):
+class EventClose(EventBase, total=False):
     event: typing.Literal["action.close"]
+    type: typing.Literal["action.close"]
     metadata: signals.EventCloseMetadata
 
 
-class EventComment(EventBase):
+class EventComment(EventBase, total=False):
     event: typing.Literal["action.comment"]
+    type: typing.Literal["action.comment"]
     metadata: signals.EventCommentMetadata
 
 
-class EventCopy(EventBase):
+class EventCopy(EventBase, total=False):
     event: typing.Literal["action.copy"]
+    type: typing.Literal["action.copy"]
     metadata: signals.EventCopyMetadata
 
 
-class EventEdit(EventBase):
+class EventEdit(EventBase, total=False):
     event: typing.Literal["action.edit"]
+    type: typing.Literal["action.edit"]
     metadata: signals.EventEditMetadata
 
 
-class EventDeleteHeadBranch(EventBase):
+class EventDeleteHeadBranch(EventBase, total=False):
     event: typing.Literal["action.delete_head_branch"]
+    type: typing.Literal["action.delete_head_branch"]
     metadata: signals.EventDeleteHeadBranchMetadata
 
 
-class EventDismissReviews(EventBase):
+class EventDismissReviews(EventBase, total=False):
     event: typing.Literal["action.dismiss_reviews"]
+    type: typing.Literal["action.dismiss_reviews"]
     metadata: signals.EventDismissReviewsMetadata
 
 
-class EventLabel(EventBase):
+class EventLabel(EventBase, total=False):
     event: typing.Literal["action.label"]
+    type: typing.Literal["action.label"]
     metadata: signals.EventLabelMetadata
 
 
-class EventMerge(EventBase):
+class EventMerge(EventBase, total=False):
     event: typing.Literal["action.merge"]
+    type: typing.Literal["action.merge"]
     metadata: signals.EventMergeMetadata
 
 
-class EventPostCheck(EventBase):
+class EventPostCheck(EventBase, total=False):
     event: typing.Literal["action.post_check"]
+    type: typing.Literal["action.post_check"]
     metadata: signals.EventPostCheckMetadata
 
 
-class EventQueueEnter(EventBase):
+class EventQueueEnter(EventBase, total=False):
     event: typing.Literal["action.queue.enter"]
+    type: typing.Literal["action.queue.enter"]
     metadata: signals.EventQueueEnterMetadata
 
 
-class EventQueueLeave(EventBase):
+class EventQueueLeave(EventBase, total=False):
     event: typing.Literal["action.queue.leave"]
+    type: typing.Literal["action.queue.leave"]
     metadata: signals.EventQueueLeaveMetadata
 
 
-class EventQueueChecksStart(EventBase):
+class EventQueueChecksStart(EventBase, total=False):
     event: typing.Literal["action.queue.checks_start"]
+    type: typing.Literal["action.queue.checks_start"]
     metadata: signals.EventQueueChecksStartMetadata
 
 
-class EventQueueChecksEnd(EventBase):
+class EventQueueChecksEnd(EventBase, total=False):
     event: typing.Literal["action.queue.checks_end"]
+    type: typing.Literal["action.queue.checks_end"]
     metadata: signals.EventQueueChecksEndMetadata
 
 
-class EventQueueMerged(EventBase):
+class EventQueueMerged(EventBase, total=False):
     event: typing.Literal["action.queue.merged"]
+    type: typing.Literal["action.queue.merged"]
     metadata: signals.EventQueueMergedMetadata
 
 
-class EventRebase(EventBaseNoMetadata):
+class EventRebase(EventBaseNoMetadata, total=False):
     event: typing.Literal["action.rebase"]
+    type: typing.Literal["action.rebase"]
 
 
-class EventRefresh(EventBaseNoMetadata):
+class EventRefresh(EventBaseNoMetadata, total=False):
     event: typing.Literal["action.refresh"]
+    type: typing.Literal["action.refresh"]
 
 
-class EventRequeue(EventBaseNoMetadata):
+class EventRequeue(EventBaseNoMetadata, total=False):
     event: typing.Literal["action.requeue"]
+    type: typing.Literal["action.requeue"]
 
 
-class EventRequestReviewers(EventBase):
+class EventRequestReviewers(EventBase, total=False):
     # FIXME(lecrepont01): remove according to MRGFY-2461
     event: typing.Literal["action.request_reviewers"]
+    type: typing.Literal["action.request_reviewers"]
     metadata: signals.EventRequestReviewsMetadata
 
 
-class EventRequestReviews(EventBase):
+class EventRequestReviews(EventBase, total=False):
     event: typing.Literal["action.request_reviews"]
+    type: typing.Literal["action.request_reviews"]
     metadata: signals.EventRequestReviewsMetadata
 
 
-class EventReview(EventBase):
+class EventReview(EventBase, total=False):
     event: typing.Literal["action.review"]
+    type: typing.Literal["action.review"]
     metadata: signals.EventReviewMetadata
 
 
-class EventSquash(EventBaseNoMetadata):
+class EventSquash(EventBaseNoMetadata, total=False):
     event: typing.Literal["action.squash"]
+    type: typing.Literal["action.squash"]
 
 
-class EventUnqueue(EventBaseNoMetadata):
+class EventUnqueue(EventBaseNoMetadata, total=False):
     event: typing.Literal["action.unqueue"]
+    type: typing.Literal["action.unqueue"]
 
 
-class EventUpdate(EventBaseNoMetadata):
+class EventUpdate(EventBaseNoMetadata, total=False):
     event: typing.Literal["action.update"]
+    type: typing.Literal["action.update"]
 
 
-class EventQueueFreezeCreate(EventBase):
+class EventQueueFreezeCreate(EventBase, total=False):
     event: typing.Literal["queue.freeze.create"]
+    type: typing.Literal["queue.freeze.create"]
     metadata: signals.EventQueueFreezeCreateMetadata
 
 
-class EventQueueFreezeUpdate(EventBase):
+class EventQueueFreezeUpdate(EventBase, total=False):
     event: typing.Literal["queue.freeze.update"]
+    type: typing.Literal["queue.freeze.update"]
     metadata: signals.EventQueueFreezeUpdateMetadata
 
 
-class EventQueueFreezeDelete(EventBase):
+class EventQueueFreezeDelete(EventBase, total=False):
     event: typing.Literal["queue.freeze.delete"]
+    type: typing.Literal["queue.freeze.delete"]
     metadata: signals.EventQueueFreezeDeleteMetadata
 
 
-class EventQueuePauseCreate(EventBase):
+class EventQueuePauseCreate(EventBase, total=False):
     event: typing.Literal["queue.pause.create"]
+    type: typing.Literal["queue.pause.create"]
     metadata: signals.EventQueuePauseCreateMetadata
 
 
-class EventQueuePauseUpdate(EventBase):
+class EventQueuePauseUpdate(EventBase, total=False):
     event: typing.Literal["queue.pause.update"]
+    type: typing.Literal["queue.pause.update"]
     metadata: signals.EventQueuePauseUpdateMetadata
 
 
-class EventQueuePauseDelete(EventBase):
+class EventQueuePauseDelete(EventBase, total=False):
     event: typing.Literal["queue.pause.delete"]
+    type: typing.Literal["queue.pause.delete"]
     metadata: signals.EventQueuePauseDeleteMetadata
 
 
@@ -250,9 +284,16 @@ SUPPORTED_EVENT_NAMES = list(
 DEFAULT_VERSION = "1.0"
 
 
-class GenericEvent(EventBase):
+class GenericEvent(EventBase, total=False):
     event: signals.EventName
+    type: signals.EventName
     metadata: signals.EventMetadata
+
+
+@dataclasses.dataclass
+class UnsupportedEvent(Exception):
+    event: GenericEvent
+    message: str = "unsupported event-type, skipping"
 
 
 class EventLogsSignal(signals.SignalBase):
@@ -326,6 +367,76 @@ class EventLogsSignal(signals.SignalBase):
                 )
             else:
                 LOG.debug("skipping event-type not supported in database", event=event)
+
+
+def cast_event_item(
+    event: GenericEvent, key: typing.Literal["event", "type"] = "event"
+) -> Event:
+    match event[key]:
+        case "action.assign":
+            return typing.cast(EventAssign, event)
+        case "action.backport":
+            return typing.cast(EventBackport, event)
+        case "action.close":
+            return typing.cast(EventClose, event)
+        case "action.comment":
+            return typing.cast(EventComment, event)
+        case "action.copy":
+            return typing.cast(EventCopy, event)
+        case "action.delete_head_branch":
+            return typing.cast(EventDeleteHeadBranch, event)
+        case "action.dismiss_reviews":
+            return typing.cast(EventDismissReviews, event)
+        case "action.label":
+            return typing.cast(EventLabel, event)
+        case "action.merge":
+            return typing.cast(EventMerge, event)
+        case "action.post_check":
+            return typing.cast(EventPostCheck, event)
+        case "action.queue.checks_start":
+            return typing.cast(EventQueueChecksStart, event)
+        case "action.queue.checks_end":
+            return typing.cast(EventQueueChecksEnd, event)
+        case "action.queue.enter":
+            return typing.cast(EventQueueEnter, event)
+        case "action.queue.leave":
+            return typing.cast(EventQueueLeave, event)
+        case "action.queue.merged":
+            return typing.cast(EventQueueMerged, event)
+        case "action.rebase":
+            return typing.cast(EventRebase, event)
+        case "action.refresh":
+            return typing.cast(EventRefresh, event)
+        case "action.request_reviewers":  # MRGFY-2461
+            return typing.cast(EventRequestReviewers, event)
+        case "action.request_reviews":
+            return typing.cast(EventRequestReviews, event)
+        case "action.requeue":
+            return typing.cast(EventRequeue, event)
+        case "action.review":
+            return typing.cast(EventReview, event)
+        case "action.squash":
+            return typing.cast(EventSquash, event)
+        case "action.unqueue":
+            return typing.cast(EventUnqueue, event)
+        case "action.update":
+            return typing.cast(EventUpdate, event)
+        case "action.edit":
+            return typing.cast(EventEdit, event)
+        case "queue.freeze.create":
+            return typing.cast(EventQueueFreezeCreate, event)
+        case "queue.freeze.update":
+            return typing.cast(EventQueueFreezeUpdate, event)
+        case "queue.freeze.delete":
+            return typing.cast(EventQueueFreezeDelete, event)
+        case "queue.pause.create":
+            return typing.cast(EventQueuePauseCreate, event)
+        case "queue.pause.update":
+            return typing.cast(EventQueuePauseUpdate, event)
+        case "queue.pause.delete":
+            return typing.cast(EventQueuePauseDelete, event)
+
+    raise UnsupportedEvent(event)
 
 
 async def get(
@@ -411,101 +522,10 @@ async def get(
     events: list[Event] = []
     for _, raw in items:
         event = typing.cast(GenericEvent, msgpack.unpackb(raw[b"data"], timestamp=3))
-        if event["event"] == "action.assign":
-            events.append(typing.cast(EventAssign, event))
-
-        elif event["event"] == "action.backport":
-            events.append(typing.cast(EventBackport, event))
-
-        elif event["event"] == "action.close":
-            events.append(typing.cast(EventClose, event))
-
-        elif event["event"] == "action.comment":
-            events.append(typing.cast(EventComment, event))
-
-        elif event["event"] == "action.copy":
-            events.append(typing.cast(EventCopy, event))
-
-        elif event["event"] == "action.delete_head_branch":
-            events.append(typing.cast(EventDeleteHeadBranch, event))
-
-        elif event["event"] == "action.dismiss_reviews":
-            events.append(typing.cast(EventDismissReviews, event))
-
-        elif event["event"] == "action.label":
-            events.append(typing.cast(EventLabel, event))
-
-        elif event["event"] == "action.merge":
-            events.append(typing.cast(EventMerge, event))
-
-        elif event["event"] == "action.post_check":
-            events.append(typing.cast(EventPostCheck, event))
-
-        elif event["event"] == "action.queue.checks_start":
-            events.append(typing.cast(EventQueueChecksStart, event))
-
-        elif event["event"] == "action.queue.checks_end":
-            events.append(typing.cast(EventQueueChecksEnd, event))
-
-        elif event["event"] == "action.queue.enter":
-            events.append(typing.cast(EventQueueEnter, event))
-
-        elif event["event"] == "action.queue.leave":
-            events.append(typing.cast(EventQueueLeave, event))
-
-        elif event["event"] == "action.queue.merged":
-            events.append(typing.cast(EventQueueMerged, event))
-
-        elif event["event"] == "action.rebase":
-            events.append(typing.cast(EventRebase, event))
-
-        elif event["event"] == "action.refresh":
-            events.append(typing.cast(EventRefresh, event))
-
-        elif event["event"] == "action.request_reviewers":  # MRGFY-2461
-            events.append(typing.cast(EventRequestReviewers, event))
-
-        elif event["event"] == "action.request_reviews":
-            events.append(typing.cast(EventRequestReviews, event))
-
-        elif event["event"] == "action.requeue":
-            events.append(typing.cast(EventRequeue, event))
-
-        elif event["event"] == "action.review":
-            events.append(typing.cast(EventReview, event))
-
-        elif event["event"] == "action.squash":
-            events.append(typing.cast(EventSquash, event))
-
-        elif event["event"] == "action.unqueue":
-            events.append(typing.cast(EventUnqueue, event))
-
-        elif event["event"] == "action.update":
-            events.append(typing.cast(EventUpdate, event))
-
-        elif event["event"] == "action.edit":
-            events.append(typing.cast(EventEdit, event))
-
-        elif event["event"] == "queue.freeze.create":
-            events.append(typing.cast(EventQueueFreezeCreate, event))
-
-        elif event["event"] == "queue.freeze.update":
-            events.append(typing.cast(EventQueueFreezeUpdate, event))
-
-        elif event["event"] == "queue.freeze.delete":
-            events.append(typing.cast(EventQueueFreezeDelete, event))
-
-        elif event["event"] == "queue.pause.create":
-            events.append(typing.cast(EventQueuePauseCreate, event))
-
-        elif event["event"] == "queue.pause.update":
-            events.append(typing.cast(EventQueuePauseUpdate, event))
-
-        elif event["event"] == "queue.pause.delete":
-            events.append(typing.cast(EventQueuePauseDelete, event))
-
-        else:
-            LOG.error("unsupported event-type, skipping", event=event)  # type: ignore[unreachable]
+        try:
+            events.append(cast_event_item(event))
+        except UnsupportedEvent as err:
+            LOG.error(err.message, event=err.event)
 
     return pagination.Page(
         items=events,

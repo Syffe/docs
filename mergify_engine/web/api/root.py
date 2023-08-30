@@ -7,6 +7,7 @@ from mergify_engine.web import utils as web_utils
 from mergify_engine.web.api import applications
 from mergify_engine.web.api import badges
 from mergify_engine.web.api import eventlogs
+from mergify_engine.web.api import events
 from mergify_engine.web.api import partitions
 from mergify_engine.web.api import queues
 from mergify_engine.web.api import simulator
@@ -26,6 +27,7 @@ def include_api_routes(router: fastapi.APIRouter | fastapi.FastAPI) -> None:
     router.include_router(eventlogs.router)
     router.include_router(statistics.router)
     router.include_router(partitions.router)
+    router.include_router(events.router)
 
 
 def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
@@ -53,6 +55,10 @@ def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
             {
                 "name": "eventlogs",
                 "description": "Operations with event logs.",
+            },
+            {
+                "name": "events",
+                "description": "Enhanced operations with events.",
             },
             {
                 "name": "queues",

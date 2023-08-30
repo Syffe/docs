@@ -1,4 +1,5 @@
 import random
+from unittest import mock
 
 import anys
 from freezegun import freeze_time
@@ -715,4 +716,48 @@ def test_all_known_events_supported() -> None:
     # "Type values inserted should be kept in sync with the known event names"
     assert known_evt_names - known_evt_enum_types == {
         "action.request_reviewers",
+    }
+
+
+async def test_event_as_dict(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "queue.pause.delete",
+        signals.EventQueuePauseDeleteMetadata(
+            deleted_by={"id": 987, "type": "user", "name": "cell"},
+        ),
+        pull_request=None,
+    )
+    event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseDelete))
+
+    assert event is not None
+    assert event.as_dict() == {
+        "id": 1,
+        "deleted_by_id": 987,
+        "type": enumerations.EventType.QueuePauseDelete,
+        "received_at": mock.ANY,
+        "pull_request": None,
+        "trigger": "Rule: my rule",
+        "repository_id": 0,
+        "deleted_by": {
+            "id": 987,
+            "type": enumerations.GithubAuthenticatedActorType.USER,
+            "name": "cell",
+        },
+        "repository": {
+            "id": 0,
+            "owner_id": 0,
+            "name": "mergify-engine",
+            "private": False,
+            "default_branch": "main",
+            "full_name": "Mergifyio/mergify-engine",
+            "archived": False,
+            "owner": {
+                "id": 0,
+                "login": "Mergifyio",
+                "type": "User",
+            },
+        },
     }
