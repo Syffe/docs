@@ -663,6 +663,12 @@ class Schedule:
         return {"hour": hour, "minute": minute}
 
 
+class UncertainDatePart:
+    def __eq__(self, other: object) -> bool:
+        # Needed for unit tests
+        return isinstance(other, UncertainDatePart)
+
+
 REGEX_DATETIME_WITH_UNCERTAIN_DIGITS = re.compile(
     # We don't need to match the timezone since it will be already split from
     # the date value when this regex will be used
@@ -672,20 +678,28 @@ REGEX_DATETIME_WITH_UNCERTAIN_DIGITS = re.compile(
 
 @dataclasses.dataclass
 class UncertainDate:
-    year: int | None  # None means it is uncertain
-    month: int | None  # None means it is uncertain
-    day: int | None  # None means it is uncertain
+    year: int | UncertainDatePart
+    month: int | UncertainDatePart
+    day: int | UncertainDatePart
     hour: int
     minute: int
     tzinfo: zoneinfo.ZoneInfo = dataclasses.field(default=UTC)
 
     def __post_init__(self) -> None:
-        if self.year is None and self.month is None and self.day is None:
+        if (
+            isinstance(self.year, UncertainDatePart)
+            and isinstance(self.month, UncertainDatePart)
+            and isinstance(self.day, UncertainDatePart)
+        ):
             raise InvalidDate(
                 "Cannot have year, month and day as uncertain, use `schedule` condition instead"
             )
 
-        if isinstance(self.year, int) and self.day is None and self.month is None:
+        if (
+            isinstance(self.year, int)
+            and isinstance(self.day, UncertainDatePart)
+            and isinstance(self.month, UncertainDatePart)
+        ):
             # This forbid the following case: 2023-XX-XX
             # NOTE(Greesb): It is forbidden at the moment because it will require
             # quite a bit of code to get working and i'm not sure this use case
@@ -699,11 +713,11 @@ class UncertainDate:
         if not match:
             raise InvalidDate("The datetime format is invalid")
 
-        values: dict[str, int | None] = {}
+        values: dict[str, int | UncertainDatePart] = {}
         for group_name in ("year", "month", "day"):
             raw_value = match.group(group_name)
             if "X" in raw_value:
-                values[group_name] = None
+                values[group_name] = UncertainDatePart()
             else:
                 try:
                     values[group_name] = int(raw_value)
@@ -730,7 +744,7 @@ class UncertainDate:
                     or other.minute is None
                     or self.minute == other.minute
                 )
-                and self.tzinfo == other.tzinfo
+                and self.tzinfo.key == other.tzinfo.key
             )
 
         if isinstance(other, datetime.datetime):
@@ -749,9 +763,9 @@ class UncertainDate:
         dt_values = {}
         other = other.astimezone(self.tzinfo)
         for attr in ("year", "month", "day", "hour", "minute"):
-            # Build a datetime with the `None` parts
+            # Build a datetime with the `UncertainDatePart`
             # replaced by the values of the `other` datetime
-            if getattr(self, attr) is None:
+            if isinstance(getattr(self, attr), UncertainDatePart):
                 dt_values[attr] = getattr(other, attr)
             else:
                 dt_values[attr] = getattr(self, attr)
@@ -798,12 +812,12 @@ class UncertainDate:
         as_dt = self._as_datetime(from_time)
 
         if as_dt >= from_time:
-            if self.day is None:
+            if isinstance(self.day, UncertainDatePart):
                 return as_dt.replace(day=1)
             return as_dt
 
         # as_dt < from_time
-        if self.month is None:
+        if isinstance(self.month, UncertainDatePart):
             # We want a specific day each month, if we are here that means
             # we already passed the day of the current month.
             # So we need to increment months to find the next specific day
@@ -816,12 +830,14 @@ class UncertainDate:
 
             return as_dt
 
-        if self.year is None and self.day is None:
+        if isinstance(self.year, UncertainDatePart) and isinstance(
+            self.day, UncertainDatePart
+        ):
             return as_dt.replace(day=1) + dateutil.relativedelta.relativedelta(
                 months=12
             )
 
-        # Only `year` is `None`
+        # Only `year` is `UncertainDatePart`
         return as_dt + dateutil.relativedelta.relativedelta(years=1)
 
 
