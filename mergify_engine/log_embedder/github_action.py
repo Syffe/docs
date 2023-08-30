@@ -1,5 +1,5 @@
-from collections import abc
-from collections import deque
+import io
+import zipfile
 
 import daiquiri
 from ddtrace import tracer
@@ -21,38 +21,62 @@ LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 
 
 async def embed_log(job: github_actions.WorkflowJob) -> None:
-    tokens = await get_tokenized_cleaned_log(job)
+    log_lines = await download_failed_step_log(job)
+    tokens, first_line, last_line = await get_tokenized_cleaned_log(log_lines)
     embedding = await openai_embedding.get_embedding(tokens)
     job.log_embedding = embedding
+    job.embedded_log = "".join(log_lines[first_line:last_line])
 
 
-async def log_download(
+async def download_failed_step_log(
     job: github_actions.WorkflowJob,
-) -> abc.AsyncGenerator[str, None]:
+) -> list[str]:
+    if job.failed_step_number is None or job.failed_step_name is None:
+        RuntimeError("We should not arrived here, let's find why it happened")
+
     repo = job.repository
 
     installation_json = await github.get_installation_from_login(repo.owner.login)
-    async with github.aget_client(installation_json) as client:
-        async with client.stream(
-            "GET", f"/repos/{repo.owner.login}/{repo.name}/actions/jobs/{job.id}/logs"
-        ) as resp:
-            async for line in resp.aiter_lines():
-                yield line
+
+    with io.BytesIO() as zip_data:
+        async with github.aget_client(installation_json) as client:
+            resp = await client.get(
+                f"/repos/{repo.owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/logs",
+            )
+            zip_data.write(resp.content)
+
+        with zipfile.ZipFile(zip_data, "r") as zip_file:
+            with zip_file.open(
+                f"{job.name}/{job.failed_step_number}_{job.failed_step_name}.txt"
+            ) as log_file:
+                return [line.decode() for line in log_file.readlines()]
 
 
-async def get_tokenized_cleaned_log(job: github_actions.WorkflowJob) -> list[int]:
+async def get_tokenized_cleaned_log(
+    log_lines: list[str],
+) -> tuple[list[int], int, int]:
     cleaner = log_cleaner.LogCleaner()
 
-    tokens: deque[int] = deque(
-        maxlen=openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
-    )
-    async for log_line in log_download(job):
-        cleaned_log_line = cleaner.clean_line(log_line)
-        if cleaned_log_line:
-            line_tokenized = openai_embedding.TIKTOKEN_ENCODING.encode(cleaned_log_line)
-            tokens.extend(line_tokenized)
+    tokens: list[int] = []
+    first_line = 0
+    last_line = 0
+    max_tokens = openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
 
-    return list(tokens)
+    for i, line in enumerate(reversed(log_lines)):
+        cleaned_line = cleaner.clean_line(line)
+        if cleaned_line:
+            tokenized_line = openai_embedding.TIKTOKEN_ENCODING.encode(cleaned_line)
+            total_tokens = len(tokenized_line) + len(tokens)
+            if total_tokens <= max_tokens:
+                tokens = tokenized_line + tokens
+                if last_line == 0:
+                    last_line = len(log_lines) - i
+                first_line = len(log_lines) - 1 - i
+
+            if total_tokens >= max_tokens:
+                break
+
+    return tokens, first_line, last_line
 
 
 @tracer.wrap("embed-logs")

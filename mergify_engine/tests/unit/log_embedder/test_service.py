@@ -1,3 +1,4 @@
+import base64
 import typing
 
 import numpy as np
@@ -79,11 +80,19 @@ async def test_embed_logs(
                 "id": i,
                 "repository": repo,
                 "conclusion": github_actions.WorkflowJobConclusion.FAILURE,
+                "name": "job_toto",
+                "failed_step_name": "toto",
+                "failed_step_number": 1,
             },
         )
         respx_mock.get(
-            f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/jobs/{job.id}/logs"
-        ).respond(200, text="toto")
+            f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/logs"
+        ).respond(
+            200,
+            stream=base64.b64decode(  # type: ignore[arg-type]
+                b"UEsDBBQAAAAIALxTGVdrx2MWrgEAAAQYAAAJAAAALkRTX1N0b3Jl7ZjBTsIwGIDbMaULMdlBE+OpiVcSGWIM8TLnvBkOzugBzWSMwHSshA13ICQ8gD6Bb+LdV/BBvHlzYz/JlBE1HiDaL2k+WP92++nWriCEsDawFYRkhBBBiQUJZUKgzCCA81HBkz4CxOJihX4vuy/OkhGPHUE30bhZyEyPn+UyK6p7snqu4wel0gsWcuLKap7kSYFcGR0WGkEjGPhao1+Pv50x5lrTzw3r3GmFprx+xLyg4Xit/qSBY7eikMsLx7NZqLGBZ/v1VAWRiGTKW8NhRakqRVqu7I6KdKgou+Ui3a/ujUYS2djeOTg1b92ux+6TBDCGTNY+ZfaQlZntN10rulKcVem2FaPJuulbdyamy3QdfhryWnt8q508H2bH2d+K63W+Pued0fdc5rXR5DHjcDic3wOTCSks9jI4HM4SEs8PFKyCx4kx1AtgMdVGBlOwCh4nxhAngEUwActgClbB48QwaWHYfGA4M4YdCpbBFKz+KGUO59+QSyTH6//x/P0/h8P5w2BRN3QNzf93IV5raVSupw3QxxcBOCZCbLwUb6aOU7AKHifmLwIczqJ4B1BLAwQUAAAACADIUxlX8aTMEAYAAAAEAAAAEwAAAGpvYl90b3RvLzFfdG90by50eHQryS/JBwBQSwECFAMUAAAACAC8UxlXa8djFq4BAAAEGAAACQAAAAAAAAAAAAAApIEAAAAALkRTX1N0b3JlUEsBAhQDFAAAAAgAyFMZV/GkzBAGAAAABAAAABMAAAAAAAAAAAAAAKSB1QEAAGpvYl90b3RvLzFfdG90by50eHRQSwUGAAAAAAIAAgB4AAAADAIAAAAA"
+            ),
+        )
     await db.commit()
 
     pending_work = await github_action.embed_logs()

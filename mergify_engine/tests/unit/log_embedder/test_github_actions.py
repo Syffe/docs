@@ -1,12 +1,9 @@
 import typing
 
-import httpx
 import numpy as np
 import pytest
-import respx
 import sqlalchemy.ext.asyncio
 
-from mergify_engine import github_types
 from mergify_engine.log_embedder import openai_embedding
 from mergify_engine.log_embedder.github_action import get_tokenized_cleaned_log
 from mergify_engine.models import github_account
@@ -165,60 +162,39 @@ async def test_compute_log_embedding_cosine_similarity(
 
 
 @pytest.mark.parametrize(
-    "raw_log,expected_lenght,expected_cleaned_log",
+    "raw_log,expected_lenght,expected_cleaned_log,expected_embedded_log",
     [
-        (b"hello", 1, "hello"),
+        (["hello\n"], 1, "hello", ["hello\n"]),
         (
-            b"hello" * openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
+            ["hello\n"] * openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
             openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
-            "hello" * openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
+            "hello" * (openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN),
+            ["hello\n"] * openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
         ),
         (
-            b"hello" * openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN + b"the end",
+            (["hello\n"] * openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN)
+            + [
+                "before the end\n",
+                "extra token at the end",
+            ],  # NOTE(Kontrolix): When this part is cleaned, it leaves 4 tokens
             openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
-            "hello" * (openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 2)
-            + "the end",
+            ("hello" * (openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 4))
+            + "endextra token end",
+            (["hello\n"] * (openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 4))
+            + ["before the end\n", "extra token at the end"],
         ),
     ],
     ids=["one_token_string", "max_input_token_string", "too_long_input_token_string"],
 )
 async def test_get_tokenized_cleaned_log(
-    respx_mock: respx.MockRouter,
-    raw_log: bytes,
+    raw_log: list[str],
     expected_lenght: int,
     expected_cleaned_log: str,
+    expected_embedded_log: list[str],
 ) -> None:
-    owner = github_account.GitHubAccount(id=1, login="owner")
-    repo = github_repository.GitHubRepository(id=1, owner=owner, name="repo")
-    job = github_actions.WorkflowJob(id=1, repository=repo)
-
-    respx_mock.get(f"https://api.github.com/users/{owner.login}/installation").respond(
-        200,
-        json=github_types.GitHubInstallation(  # type: ignore[arg-type]
-            {
-                "id": github_types.GitHubInstallationIdType(0),
-                "target_type": "Organization",
-                "suspended_at": None,
-                "permissions": {},
-                "account": {
-                    "login": owner.login,
-                    "id": typing.cast(github_types.GitHubAccountIdType, 1),
-                    "type": "User",
-                    "avatar_url": "",
-                },
-            }
-        ),
-    )
-    respx_mock.post("https://api.github.com/app/installations/0/access_tokens").respond(
-        200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}
-    )
-
-    respx_mock.get(
-        f"/repos/{repo.owner.login}/{repo.name}/actions/jobs/{job.id}/logs",
-    ).respond(200, stream=httpx.ByteStream(raw_log))
-
-    tokens = await get_tokenized_cleaned_log(job)
+    tokens, first_line, last_line = await get_tokenized_cleaned_log(raw_log)
 
     assert len(tokens) == expected_lenght
 
     assert openai_embedding.TIKTOKEN_ENCODING.decode(tokens) == expected_cleaned_log
+    assert raw_log[first_line:last_line] == expected_embedded_log

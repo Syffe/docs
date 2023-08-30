@@ -1,4 +1,5 @@
 import asyncio
+import base64
 from collections import abc
 import contextlib
 import dataclasses
@@ -582,4 +583,86 @@ async def lock_settings_delete_branch_on_merge(
         ):
             yield
     else:
+        yield
+
+
+@pytest.fixture(autouse=True)
+def mock_vcr_stubs_httpx_stubs_to_serialized_response() -> (
+    abc.Generator[None, None, None]
+):
+    """
+    TODO(Kontrolix) Remove this fixture when this PR is merged and release
+    https://github.com/kevin1024/vcrpy/pull/764
+    See MRGFY-2561
+    """
+
+    def _to_serialized_response(httpx_response: typing.Any) -> dict[str, typing.Any]:
+        try:
+            content = httpx_response.content.decode("utf-8")
+            base64encoded = False
+        except UnicodeDecodeError:
+            content = base64.b64encode(httpx_response.content)
+            base64encoded = True
+
+        return {
+            "status_code": httpx_response.status_code,
+            "http_version": httpx_response.http_version,
+            "headers": vcr.stubs.httpx_stubs._transform_headers(httpx_response),
+            "content": content,
+            "base64encoded": base64encoded,
+        }
+
+    with mock.patch(
+        "vcr.stubs.httpx_stubs._to_serialized_response",
+        new=_to_serialized_response,
+    ):
+        yield
+
+
+@pytest.fixture(autouse=True)
+def mock_vcr_stubs_httpx_stubs_from_serialized_response() -> (
+    abc.Generator[None, None, None]
+):
+    """
+    TODO(Kontrolix) Remove this fixture when this PR is merged and release
+    https://github.com/kevin1024/vcrpy/pull/764
+    See MRGFY-2561
+    """
+
+    # NOTE(Kontrolix): Import here to avoid mess up this test
+    # `test_command_queue_infinite_loop_bug`, I don'tknow why
+    import vcr.stubs.httpx_stubs
+
+    @vcr.stubs.httpx_stubs.patch(  # type: ignore[misc]
+        "httpx.Response.close", vcr.stubs.httpx_stubs.MagicMock()
+    )
+    @vcr.stubs.httpx_stubs.patch(  # type: ignore[misc]
+        "httpx.Response.read", vcr.stubs.httpx_stubs.MagicMock()
+    )
+    def _from_serialized_response(
+        request: httpx.Request,
+        serialized_response: dict[str, typing.Any],
+        history: list[typing.Any] | None = None,
+    ) -> httpx.Response:
+        if serialized_response.get("base64encoded"):
+            content = base64.b64decode(serialized_response["content"])
+        else:
+            content = serialized_response["content"].encode()
+
+        response = httpx.Response(
+            status_code=serialized_response["status_code"],
+            request=request,
+            headers=vcr.stubs.httpx_stubs._from_serialized_headers(
+                serialized_response.get("headers")
+            ),
+            content=content,
+            history=history or [],
+        )
+        response._content = content
+        return response
+
+    with mock.patch(
+        "vcr.stubs.httpx_stubs._from_serialized_response",
+        new=_from_serialized_response,
+    ):
         yield

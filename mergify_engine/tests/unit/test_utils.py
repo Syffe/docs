@@ -371,6 +371,8 @@ def add_workflow_job(
         ),
         labels=job_data.get("labels", []),
         run_attempt=job_data.get("run_attempt", 1),
+        failed_step_name=job_data.get("failed_step_name"),
+        failed_step_number=job_data.get("failed_step_number"),
     )
     session.add(job)
     return job

@@ -29,7 +29,14 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 "unit-tests": {
                     "timeout-minutes": 5,
                     "runs-on": "ubuntu-20.04",
-                    "steps": [{"uses": "actions/checkout@v2"}, {"run": "echo toto"}],
+                    "steps": [
+                        {"uses": "actions/checkout@v2"},
+                        {"name": "Succes step 🎉", "run": "echo toto"},
+                        {
+                            "name": "Failure step ❌",
+                            "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }};exit 1",
+                        },
+                    ],
                 }
             },
         }
@@ -57,16 +64,12 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
         assert job is not None
 
-        log_lines = []
-        async for log_line in gha_embedder.log_download(job):
-            log_lines.append(log_line)
-        log = "\n".join(log_lines)
+        log = await gha_embedder.download_failed_step_log(job)
 
-        assert f"Merge {pr['head']['sha']} into {pr['base']['sha']}" in log
-        assert "toto" in log
+        assert f"I will fail on sha {pr['head']['sha']}" in "".join(log)
 
     async def test_log_embedding(self) -> None:
-        job_event, _ = await self.run_github_action()
+        job_event, pr = await self.run_github_action()
 
         assert job_event["workflow_job"] is not None
 
@@ -116,6 +119,10 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             job = result.scalar()
 
         assert job is not None
+        assert job.embedded_log is not None
+        assert f"I will fail on sha {pr['head']['sha']}" in job.embedded_log
+        assert job.failed_step_number == 4
+        assert job.failed_step_name == "Failure step ❌"
         assert job.log_embedding is not None
 
         assert np.array_equal(
