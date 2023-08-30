@@ -668,6 +668,12 @@ class UncertainDatePart:
         # Needed for unit tests
         return isinstance(other, UncertainDatePart)
 
+    def __repr__(self) -> str:
+        # Needed for unit tests to not fail to compare
+        # to another UncertainDatePart (when repr is used
+        # on this object).
+        return "UncertainDatePart()"
+
 
 REGEX_DATETIME_WITH_UNCERTAIN_DIGITS = re.compile(
     # We don't need to match the timezone since it will be already split from
