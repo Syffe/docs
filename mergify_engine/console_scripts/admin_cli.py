@@ -42,3 +42,4 @@ from mergify_engine.console_scripts import refresher  # noqa
 from mergify_engine.console_scripts import openapi_spec_generator  # noqa
 from mergify_engine.console_scripts import subscription  # noqa
 from mergify_engine.console_scripts import stream  # noqa
+from mergify_engine.console_scripts import debug  # noqa
