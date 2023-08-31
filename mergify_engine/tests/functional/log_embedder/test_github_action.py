@@ -8,7 +8,7 @@ import yaml
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine.log_embedder import github_action as gha_embedder
-from mergify_engine.log_embedder import openai_embedding
+from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github_actions as gha_model
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATASET
@@ -90,7 +90,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 ).pass_through()
                 respx_mock.route(host="api.github.com").pass_through()
 
-                respx_mock.post(openai_embedding.OPENAI_EMBEDDINGS_END_POINT).respond(
+                respx_mock.post(openai_api.OPENAI_EMBEDDINGS_END_POINT).respond(
                     200,
                     json={
                         "object": "list",
@@ -101,7 +101,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                                 "embedding": OPENAI_EMBEDDING_DATASET["toto"],
                             }
                         ],
-                        "model": openai_embedding.OPENAI_EMBEDDINGS_MODEL,
+                        "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
                         "usage": {"prompt_tokens": 2, "total_tokens": 2},
                     },
                 )

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import sqlalchemy.ext.asyncio
 
-from mergify_engine.log_embedder import openai_embedding
+from mergify_engine.log_embedder import openai_api
 from mergify_engine.log_embedder.github_action import get_tokenized_cleaned_log
 from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
@@ -166,21 +166,21 @@ async def test_compute_log_embedding_cosine_similarity(
     [
         (["hello\n"], 1, "hello", ["hello\n"]),
         (
-            ["hello\n"] * openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
-            openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
-            "hello" * (openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN),
-            ["hello\n"] * openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
+            ["hello\n"] * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
+            openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
+            "hello" * (openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN),
+            ["hello\n"] * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
         ),
         (
-            (["hello\n"] * openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN)
+            (["hello\n"] * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN)
             + [
                 "before the end\n",
                 "extra token at the end",
             ],  # NOTE(Kontrolix): When this part is cleaned, it leaves 4 tokens
-            openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
-            ("hello" * (openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 4))
+            openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
+            ("hello" * (openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 4))
             + "endextra token end",
-            (["hello\n"] * (openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 4))
+            (["hello\n"] * (openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 4))
             + ["before the end\n", "extra token at the end"],
         ),
     ],
@@ -196,5 +196,5 @@ async def test_get_tokenized_cleaned_log(
 
     assert len(tokens) == expected_lenght
 
-    assert openai_embedding.TIKTOKEN_ENCODING.decode(tokens) == expected_cleaned_log
+    assert openai_api.TIKTOKEN_ENCODING.decode(tokens) == expected_cleaned_log
     assert raw_log[first_line:last_line] == expected_embedded_log

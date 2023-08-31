@@ -9,7 +9,7 @@ from mergify_engine import database
 from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.log_embedder import log_cleaner
-from mergify_engine.log_embedder import openai_embedding
+from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
 from mergify_engine.models import github_repository
@@ -23,7 +23,7 @@ LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 async def embed_log(job: github_actions.WorkflowJob) -> None:
     log_lines = await download_failed_step_log(job)
     tokens, first_line, last_line = await get_tokenized_cleaned_log(log_lines)
-    embedding = await openai_embedding.get_embedding(tokens)
+    embedding = await openai_api.get_embedding(tokens)
     job.log_embedding = embedding
     job.embedded_log = "".join(log_lines[first_line:last_line])
 
@@ -60,12 +60,12 @@ async def get_tokenized_cleaned_log(
     tokens: list[int] = []
     first_line = 0
     last_line = 0
-    max_tokens = openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
+    max_tokens = openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
 
     for i, line in enumerate(reversed(log_lines)):
         cleaned_line = cleaner.clean_line(line)
         if cleaned_line:
-            tokenized_line = openai_embedding.TIKTOKEN_ENCODING.encode(cleaned_line)
+            tokenized_line = openai_api.TIKTOKEN_ENCODING.encode(cleaned_line)
             total_tokens = len(tokenized_line) + len(tokens)
             if total_tokens <= max_tokens:
                 tokens = tokenized_line + tokens
@@ -118,7 +118,7 @@ async def embed_logs() -> bool:
             if job.log_embedding is None:
                 try:
                     await embed_log(job)
-                except openai_embedding.OpenAiException:
+                except openai_api.OpenAiException:
                     LOG.error(
                         "log-embedder: a job raises an unexpected error on log embedding",
                         job_id=job.id,

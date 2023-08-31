@@ -12,7 +12,7 @@ from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.log_embedder import github_action
-from mergify_engine.log_embedder import openai_embedding
+from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
 from mergify_engine.models import github_repository
@@ -52,7 +52,7 @@ async def test_embed_logs(
         200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}
     )
     respx_mock.post(
-        openai_embedding.OPENAI_EMBEDDINGS_END_POINT,
+        openai_api.OPENAI_EMBEDDINGS_END_POINT,
     ).respond(
         200,
         json={
@@ -64,7 +64,7 @@ async def test_embed_logs(
                     "embedding": OPENAI_EMBEDDING_DATASET["toto"],
                 }
             ],
-            "model": openai_embedding.OPENAI_EMBEDDINGS_MODEL,
+            "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
         },
     )
