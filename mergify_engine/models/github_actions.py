@@ -4,6 +4,7 @@ import datetime
 import enum
 import typing
 
+import daiquiri
 import numpy as np
 import numpy.typing as npt
 from pgvector.sqlalchemy import Vector  # type: ignore
@@ -18,6 +19,9 @@ from mergify_engine import models
 from mergify_engine.ci import pull_registries
 from mergify_engine.models import github_account
 from mergify_engine.models import github_repository
+
+
+LOG = daiquiri.getLogger(__name__)
 
 
 class PullRequest(models.Base):
@@ -298,11 +302,17 @@ class WorkflowJob(models.Base):
         result = None
         if workflow_job_data["conclusion"] == "failure":
             for step in workflow_job_data["steps"]:
-                if step["conclusion"] == "failure":
+                if step["conclusion"] in ("failure", "cancelled"):
                     result = WorkflowJobFailedStep(
                         number=step["number"], name=step["name"]
                     )
                     break
+            else:
+                LOG.info(
+                    "WorkflowJob: Can't find failed step on failed job",
+                    workflow_job_data=workflow_job_data,
+                )
+                raise RuntimeError("Failed step not found.")
 
         return result
 

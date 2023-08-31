@@ -32,7 +32,14 @@ async def download_failed_step_log(
     job: github_actions.WorkflowJob,
 ) -> list[str]:
     if job.failed_step_number is None or job.failed_step_name is None:
-        RuntimeError("We should not arrived here, let's find why it happened")
+        LOG.info(
+            "log-embedder: Tried to download log with not enough data",
+            job_id=job.id,
+            job_data=job.as_dict(),
+        )
+        raise RuntimeError(
+            "We should not have arrived here, let's find why it happened."
+        )
 
     repo = job.repository
 
