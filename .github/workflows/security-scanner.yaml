@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - main
+      - devs/**
     paths:
       - ".github/workflows/security-scanner.yml"
 

@@ -1,8 +1,12 @@
 name: Linear automation
 
 on:
+  # NOTE(sileht): safe as long as we don't checkout the PR code
+  # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
   pull_request_target:
-    branches: ["main"]
+    branches:
+      - main
+      - devs/**
     types: ["opened", "synchronize", "reopened", "edited"]
 
 permissions: write-all

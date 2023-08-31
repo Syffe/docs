@@ -1,6 +1,12 @@
 name: Mergify merge-queue labels copier
+
 on:
+  # NOTE(sileht): safe as long as we don't checkout the PR code
+  # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
   pull_request_target:
+    branches:
+      - main
+      - devs/**
     types:
       - opened
 

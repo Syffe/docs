@@ -2,7 +2,13 @@ name: Continuous Integration (target)
 permissions: read-all
 
 on:
+  # NOTE(sileht): safe as long as we don't run/build anything from the pull request
+  # BEWARE THIS WORKFLOW USE actions/checkout, any change must take care of
+  # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
   pull_request_target:
+    branches:
+      - main
+      - devs/**
     types:
       - opened
       - edited
