@@ -1386,6 +1386,75 @@ def test_pull_request_rule_schema_invalid(
         pull_request_rule_from_list([invalid])
 
 
+async def test_queue_rules_evaluator_with_users_or_team(
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
+    client = mock.Mock()
+    get_reviews = [
+        {
+            "user": {"login": "sileht", "id": 12321, "type": "User"},
+            "state": "APPROVED",
+            "author_association": "MEMBER",
+        }
+    ]
+    get_team_members = [{"login": "sileht", "id": 12321}, {"login": "jd", "id": 2644}]
+
+    async def client_item(
+        url: str, *args: typing.Any, **kwargs: typing.Any
+    ) -> dict[str, str] | None:
+        if url == "/repos/Mergifyio/mergify-engine/collaborators/sileht/permission":
+            return {"permission": "write"}
+
+        if url == "/repos/Mergifyio/mergify-engine/collaborators/jd/permission":
+            return {"permission": "write"}
+
+        if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
+            raise http.HTTPNotFound(
+                message="boom", response=mock.Mock(), request=mock.Mock()
+            )
+
+        raise RuntimeError(f"not handled url {url}")
+
+    client.item.side_effect = client_item
+
+    async def client_items(
+        url: str, *args: typing.Any, **kwargs: typing.Any
+    ) -> abc.AsyncGenerator[dict[str, typing.Any], None] | None:
+        if url == "/repos/Mergifyio/mergify-engine/pulls/1/reviews":
+            for r in get_reviews:
+                yield r
+        elif url == "/orgs/Mergifyio/teams/my-reviewers/members":
+            for tm in get_team_members:
+                yield tm
+        else:
+            raise RuntimeError(f"not handled url {url}")
+
+    client.items.side_effect = client_items
+
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.installation.client = client
+
+    queuerules = voluptuous.Schema(qr_config.QueueRulesSchema)(
+        rules.YamlSchema(
+            """
+queue_rules:
+  - name: default
+    merge_conditions: []
+    queue_conditions:
+      - approved-reviews-by=@Mergifyio/my-reviewers
+"""
+        )["queue_rules"]
+    )
+
+    match = await qr_config.QueuesRulesEvaluator.create(
+        [queuerules["default"]],
+        ctxt.repository,
+        [context.PullRequest(ctxt)],
+        False,
+    )
+    assert match.rules[0].queue_conditions.match
+
+
 async def test_get_pull_request_rules_evaluator(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:

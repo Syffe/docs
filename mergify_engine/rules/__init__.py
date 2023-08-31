@@ -81,9 +81,10 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
 
         for rule in self.rules:
             apply_configure_filter(repository, rule.conditions)
-            evaluated_rule = typing.cast(types.T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
             if isinstance(rule, qr_config.QueueRule):
                 apply_configure_filter(repository, rule.queue_conditions)
+
+            evaluated_rule = typing.cast(types.T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
             del rule
 
             # NOTE(sileht):
