@@ -68,7 +68,7 @@ async def report_worker_status(
     if attempts_raw is None:
         attempts = 0
     else:
-        attempts = int(attempts)
+        attempts = int(attempts_raw)
     print(
         "* WORKER: Installation queued, "
         f" pos: {pos}/{len(streams)},"
