@@ -2,7 +2,7 @@
    :description: Mergify Documentation for github_actions Action
    :keywords: mergify, github actions, workflow
    :summary: Dispatch GitHub Actions workflows.
-   :doc:icon: gears
+   :doc:icon: cogs
 
 .. _github_actions action:
 
