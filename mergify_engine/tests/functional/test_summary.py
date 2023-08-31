@@ -311,8 +311,7 @@ class TestQueueCISummary(base.FunctionalTestBase):
         check_runs = await self.get_check_runs(p1)
 
         assert len(check_runs) == 3
-
-        assert check_runs[0]["name"] == "Queue: Embarked in merge train"
+        assert check_runs[0]["name"] == "Queue: Embarked in merge queue"
         regex = rf"Check-runs and statuses of the embarked pull request #{tmp_pull_1['number']}:.*The CI is failure.*The CI is pending.*The CI is success"
         assert (
             re.search(regex, check_runs[0]["output"]["summary"], flags=re.DOTALL)

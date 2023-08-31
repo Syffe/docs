@@ -1683,7 +1683,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
             await check_api.set_check_run(
                 original_ctxt,
-                constants.MERGE_QUEUE_SUMMARY_NAME,
+                await original_ctxt.get_merge_queue_check_run_name(),
                 check_api.Result(
                     check_api.Conclusion.ACTION_REQUIRED,
                     title=title,
@@ -1693,7 +1693,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     original_ctxt, self.train.convoy
                 ),
             )
-
             await refresher.send_pull_refresh(
                 self.repository.installation.redis.stream,
                 original_ctxt.pull["base"]["repo"],
@@ -1886,9 +1885,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         saved_last_merge_conditions_evaluation = self.last_merge_conditions_evaluation
         saved_outcome = self.train_car_state.outcome
 
-        check = await checked_ctxt.get_engine_check_run(
-            constants.MERGE_QUEUE_SUMMARY_NAME
-        )
+        check = await checked_ctxt.get_merge_queue_check_run()
         saved_queue_check_run_conclusion = check["conclusion"] if check else None
         saved_freeze_data = self.train_car_state.frozen_by
         saved_pause_data = self.train_car_state.paused_by

@@ -7,7 +7,6 @@ import daiquiri
 from ddtrace import tracer
 
 from mergify_engine import check_api
-from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import github_types
@@ -457,7 +456,7 @@ class Convoy:
 
             await check_api.set_check_run(
                 user_pr_context,
-                constants.MERGE_QUEUE_SUMMARY_NAME,
+                await user_pr_context.get_merge_queue_check_run_name(),
                 report,
                 details_url=await dashboard.get_queues_url_from_context(
                     user_pr_context, self
@@ -502,7 +501,7 @@ class Convoy:
 
             await check_api.set_check_run(
                 user_pr_context,
-                constants.MERGE_QUEUE_SUMMARY_NAME,
+                await user_pr_context.get_merge_queue_check_run_name(),
                 report,
                 details_url=await dashboard.get_queues_url_from_context(
                     user_pr_context, self

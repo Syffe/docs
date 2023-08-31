@@ -19,7 +19,8 @@ MERGE_QUEUE_BRANCH_PREFIX = "mergify/merge-queue/"
 MERGE_QUEUE_BODY_INFO = {
     "merge-queue-pr": True,
 }
-MERGE_QUEUE_SUMMARY_NAME = "Queue: Embarked in merge train"
+MERGE_QUEUE_OLD_SUMMARY_NAME = "Queue: Embarked in merge train"
+MERGE_QUEUE_SUMMARY_NAME = "Queue: Embarked in merge queue"
 CONFIGURATION_CHANGED_CHECK_NAME = "Configuration changed"
 CONFIGURATION_DELETED_CHECK_NAME = "Configuration has been deleted"
 CONFIGURATION_MUTIPLE_FOUND_SUMMARY_TITLE = (

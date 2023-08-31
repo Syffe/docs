@@ -438,9 +438,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
             # NOTE(sileht): user ask a refresh, we just remove the previous state of this
             # check and the method _should_be_queued will become true again :)
-            check = await self.ctxt.get_engine_check_run(
-                constants.MERGE_QUEUE_SUMMARY_NAME
-            )
+            check = await self.ctxt.get_merge_queue_check_run()
             if check and check_api.Conclusion(check["conclusion"]) not in [
                 check_api.Conclusion.SUCCESS,
                 check_api.Conclusion.PENDING,
@@ -454,7 +452,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 )
                 await check_api.set_check_run(
                     self.ctxt,
-                    constants.MERGE_QUEUE_SUMMARY_NAME,
+                    check["name"],
                     check_api.Result(
                         check_api.Conclusion.PENDING,
                         "The pull request has been refreshed and is going to be re-embarked soon",
@@ -592,16 +590,14 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
         else:
             # Reset MERGE_QUEUE_SUMMARY_NAME check_run to neutral only if it exists already
-            merge_queue_check_run = await self.ctxt.get_engine_check_run(
-                constants.MERGE_QUEUE_SUMMARY_NAME
-            )
+            merge_queue_check_run = await self.ctxt.get_merge_queue_check_run()
             if (
                 merge_queue_check_run is not None
                 and merge_queue_check_run["status"] != "in_progress"
             ):
                 await check_api.set_check_run(
                     self.ctxt,
-                    constants.MERGE_QUEUE_SUMMARY_NAME,
+                    merge_queue_check_run["name"],
                     check_api.Result(
                         check_api.Conclusion.NEUTRAL,
                         f"The pull request {self.ctxt.pull['number']} is in queue",
@@ -655,7 +651,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
             await check_api.set_check_run(
                 self.ctxt,
-                constants.MERGE_QUEUE_SUMMARY_NAME,
+                await self.ctxt.get_merge_queue_check_run_name(),
                 check_api.Result(
                     conclusion,
                     f"The pull request {self.ctxt.pull['number']} cannot be merged and has been disembarked",
@@ -894,7 +890,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def get_unqueue_reason_from_outcome(
         ctxt: context.Context,
     ) -> queue_utils.BaseUnqueueReason:
-        check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
+        check = await ctxt.get_merge_queue_check_run()
         if check is None:
             raise RuntimeError(
                 "get_unqueue_reason_from_outcome() called by check is not there"
@@ -925,7 +921,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     ) -> bool:
         # TODO(sileht): load outcome from summary,
         # so we know why it shouldn't be queued
-        check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
+        check = await ctxt.get_merge_queue_check_run()
         return not check or check_api.Conclusion(check["conclusion"]) in [
             check_api.Conclusion.SUCCESS,
             check_api.Conclusion.PENDING,

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import typing
 
+import daiquiri
 import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import refresher
@@ -15,6 +15,9 @@ from mergify_engine import subscription
 from mergify_engine.engine import commands_runner
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
+
+
+LOG = daiquiri.getLogger(__name__)
 
 
 class RequeueExecutorConfig(typing.TypedDict):
@@ -38,15 +41,15 @@ class RequeueExecutor(
         )
 
     async def run(self) -> check_api.Result | commands_runner.FollowUpCommand:
-        check = await self.ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
-        if not check:
+        previous_queue_check = await self.ctxt.get_merge_queue_check_run()
+        if not previous_queue_check:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 title="This pull request head commit has not been previously disembarked from queue.",
                 summary="",
             )
 
-        if check_api.Conclusion(check["conclusion"]) in [
+        if check_api.Conclusion(previous_queue_check["conclusion"]) in [
             check_api.Conclusion.SUCCESS,
             check_api.Conclusion.NEUTRAL,
             check_api.Conclusion.PENDING,
@@ -68,14 +71,15 @@ class RequeueExecutor(
         # rules will take care of automatically re-adding it in the queue.
         if has_queue_action_in_prr:
             self.ctxt.log.debug(
-                "requeue command marks the pull request as re-embarkable", check=check
+                "requeue command marks the pull request as re-embarkable",
+                check=previous_queue_check,
             )
             return await self._mark_pull_request_as_reembarkable()
 
         # Otherwise we need to manually execute the queue action again
         await check_api.set_check_run(
             self.ctxt,
-            constants.MERGE_QUEUE_SUMMARY_NAME,
+            await self.ctxt.get_merge_queue_check_run_name(),
             check_api.Result(
                 check_api.Conclusion.NEUTRAL,
                 "This pull request will be re-embarked automatically",
@@ -99,7 +103,7 @@ class RequeueExecutor(
     async def _mark_pull_request_as_reembarkable(self) -> check_api.Result:
         await check_api.set_check_run(
             self.ctxt,
-            constants.MERGE_QUEUE_SUMMARY_NAME,
+            await self.ctxt.get_merge_queue_check_run_name(),
             check_api.Result(
                 check_api.Conclusion.NEUTRAL,
                 "This pull request can be re-embarked automatically",

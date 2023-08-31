@@ -1604,6 +1604,22 @@ class Context:
             self.log, commits[0].commit_message
         )
 
+    async def get_merge_queue_check_run_name(self) -> str:
+        check = await self.get_merge_queue_check_run()
+        if check is None:
+            return constants.MERGE_QUEUE_SUMMARY_NAME
+        return check["name"]
+
+    async def get_merge_queue_check_run(
+        self,
+    ) -> github_types.CachedGitHubCheckRun | None:
+        check = await self.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
+        if check is None:
+            check = await self.get_engine_check_run(
+                constants.MERGE_QUEUE_OLD_SUMMARY_NAME
+            )
+        return check
+
     async def _get_commits_attribute(
         self, commit_attribute: str, relative_time: bool
     ) -> CommitListAttributeType:
@@ -2292,11 +2308,16 @@ class BasePullRequest:
     async def _get_consolidated_checks_data(
         ctxt: Context, states: tuple[str | None, ...] | None
     ) -> ContextAttributeType:
-        return [
+        checks = [
             check_name
             for check_name, state in (await ctxt.checks).items()
             if states is None or state in states
         ]
+        # NOTE(sileht): backward compatiblity for user that have writting condition
+        # on this name
+        if constants.MERGE_QUEUE_SUMMARY_NAME in checks:
+            checks.append(constants.MERGE_QUEUE_OLD_SUMMARY_NAME)
+        return checks
 
     @classmethod
     async def _get_consolidated_data(

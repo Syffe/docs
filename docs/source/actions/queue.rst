@@ -1096,7 +1096,7 @@ enqueued pull requests.
 
     - name: Notify author on queue failure
       conditions:
-        - 'check-failure=Queue: Embarked in merge train'
+        - 'check-failure=Queue: Embarked in merge queue'
       actions:
         comment:
           message: >

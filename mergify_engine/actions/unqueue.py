@@ -3,7 +3,6 @@ import typing
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import signals
@@ -101,7 +100,7 @@ class UnqueueExecutor(
         # manually set a status, to not automatically re-embark it
         await check_api.set_check_run(
             self.ctxt,
-            constants.MERGE_QUEUE_SUMMARY_NAME,
+            await self.ctxt.get_merge_queue_check_run_name(),
             check_api.Result(
                 check_api.Conclusion.CANCELLED,
                 title=f"The pull request has been removed from the queue `{queue_name}` by an `unqueue` command",
