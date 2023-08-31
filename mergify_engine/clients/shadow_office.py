@@ -23,12 +23,12 @@ class NoAssociatedUsersFound(Exception):
     pass
 
 
-class AsyncDashboardSaasClient(http.AsyncClient):
+class AsyncShadowOfficeSaasClient(http.AsyncClient):
     def __init__(self) -> None:
         super().__init__(
             base_url=settings.SUBSCRIPTION_URL,
             headers={
-                "Authorization": f"Bearer {settings.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()}"
+                "Authorization": f"Bearer {settings.ENGINE_TO_SHADOW_OFFICE_API_KEY.get_secret_value()}"
             },
             retry_stop_after_attempt=2,
             retry_exponential_multiplier=0.1,
@@ -54,7 +54,7 @@ class AsyncDashboardSaasClient(http.AsyncClient):
         )
 
 
-class AsyncDashboardOnPremiseClient(http.AsyncClient):
+class AsyncShadowOfficeOnPremiseClient(http.AsyncClient):
     def __init__(self) -> None:
         if settings.SUBSCRIPTION_TOKEN is None:
             raise RuntimeError("settings.SUBSCRIPTION_TOKEN is None")

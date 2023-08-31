@@ -39,7 +39,7 @@ async def test_saas_proxy_saas_mode_true(
             url="http://localhost:5000/engine/saas/github-account/42/stripe-create",
             params="plan=Essential",
             headers={
-                "Authorization": f"Bearer {settings.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()}",
+                "Authorization": f"Bearer {settings.ENGINE_TO_SHADOW_OFFICE_API_KEY.get_secret_value()}",
                 "Mergify-On-Behalf-Of": str(user.id),
             },
         )
@@ -117,7 +117,7 @@ async def test_saas_subscription_with_saas_mode_true(
             method="get",
             url="http://localhost:5000/engine/saas/github-account/42/subscription-details",
             headers={
-                "Authorization": f"Bearer {settings.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()}",
+                "Authorization": f"Bearer {settings.ENGINE_TO_SHADOW_OFFICE_API_KEY.get_secret_value()}",
                 "Mergify-On-Behalf-Of": str(user.id),
             },
         )
@@ -252,7 +252,7 @@ async def test_saas_intercom_with_saas_mode_true(
             method="get",
             url="http://localhost:5000/engine/saas/intercom",
             headers={
-                "Authorization": f"Bearer {settings.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()}",
+                "Authorization": f"Bearer {settings.ENGINE_TO_SHADOW_OFFICE_API_KEY.get_secret_value()}",
                 "Mergify-On-Behalf-Of": str(user.id),
             },
         )
@@ -315,7 +315,7 @@ async def test_saas_proxy_redirect(
     respx_mock.get(
         proxied_url,
         headers={
-            "Authorization": f"Bearer {settings.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()}",
+            "Authorization": f"Bearer {settings.ENGINE_TO_SHADOW_OFFICE_API_KEY.get_secret_value()}",
             "Mergify-On-Behalf-Of": str(user.id),
         },
     ).respond(307, headers={"Location": proxy_location})

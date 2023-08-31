@@ -74,10 +74,10 @@ def test_defaults(
     assert conf.MAX_GITTER_CONCURRENT_JOBS == 20
 
     assert conf.SUBSCRIPTION_TOKEN is None
-    assert conf.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()
+    assert conf.ENGINE_TO_SHADOW_OFFICE_API_KEY.get_secret_value()
     assert conf.SUBSCRIPTION_URL == "https://subscription.mergify.com"
-    assert conf.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()
-    assert conf.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION is None
+    assert conf.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()
+    assert conf.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION is None
     assert conf.ACCOUNT_TOKENS == []
     assert conf.APPLICATION_APIKEYS == {}
 
@@ -148,10 +148,15 @@ def test_all_sets(
     monkeypatch.setenv("MERGIFYENGINE_BUCKET_PROCESSING_MAX_SECONDS", "60")
     monkeypatch.setenv("MERGIFYENGINE_MAX_GITTER_CONCURRENT_JOBS", "40")
 
-    monkeypatch.setenv("MERGIFYENGINE_ENGINE_TO_DASHBOARD_API_KEY", "api-secret-key")
-    monkeypatch.setenv("MERGIFYENGINE_DASHBOARD_TO_ENGINE_API_KEY", "webhook-secret")
     monkeypatch.setenv(
-        "MERGIFYENGINE_DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION", "webhook-secret-bis"
+        "MERGIFYENGINE_ENGINE_TO_SHADOW_OFFICE_API_KEY", "api-secret-key"
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_SHADOW_OFFICE_TO_ENGINE_API_KEY", "webhook-secret"
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION",
+        "webhook-secret-bis",
     )
     monkeypatch.setenv(
         "MERGIFYENGINE_SUBSCRIPTION_URL", "https://subscription.example.com"
@@ -226,12 +231,12 @@ def test_all_sets(
 
     assert conf.SUBSCRIPTION_TOKEN is not None
     assert conf.SUBSCRIPTION_TOKEN.get_secret_value() == "onprem-token"
-    assert conf.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value() == "api-secret-key"
+    assert conf.ENGINE_TO_SHADOW_OFFICE_API_KEY.get_secret_value() == "api-secret-key"
     assert conf.SUBSCRIPTION_URL == "https://subscription.example.com"
-    assert conf.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value() == "webhook-secret"
-    assert conf.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION is not None
+    assert conf.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value() == "webhook-secret"
+    assert conf.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION is not None
     assert (
-        conf.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION.get_secret_value()
+        conf.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION.get_secret_value()
         == "webhook-secret-bis"
     )
     assert conf.ACCOUNT_TOKENS == []
@@ -298,6 +303,12 @@ def test_legacy_env_sets(
     monkeypatch.setenv("MERGIFYENGINE_CACHE_TOKEN_SECRET", "crypto-secret")
     monkeypatch.setenv("MERGIFYENGINE_CACHE_TOKEN_SECRET_OLD", "crypto-secret-old")
 
+    monkeypatch.setenv("MERGIFYENGINE_ENGINE_TO_DASHBOARD_API_KEY", "api-secret-key")
+    monkeypatch.setenv("MERGIFYENGINE_DASHBOARD_TO_ENGINE_API_KEY", "webhook-secret")
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION", "webhook-secret-bis"
+    )
+
     conf = config.EngineSettings()
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret4"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
@@ -314,6 +325,14 @@ def test_legacy_env_sets(
     assert conf.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value() == "crypto-secret"
     assert conf.REDIS_CRYPTO_SECRET_OLD is not None
     assert conf.REDIS_CRYPTO_SECRET_OLD.get_secret_value() == "crypto-secret-old"
+
+    assert conf.ENGINE_TO_SHADOW_OFFICE_API_KEY.get_secret_value() == "api-secret-key"
+    assert conf.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value() == "webhook-secret"
+    assert conf.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION is not None
+    assert (
+        conf.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION.get_secret_value()
+        == "webhook-secret-bis"
+    )
 
 
 @pytest.mark.parametrize(

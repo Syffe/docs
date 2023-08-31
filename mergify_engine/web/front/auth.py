@@ -11,9 +11,9 @@ import starsessions.session
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import settings
-from mergify_engine.clients import dashboard
 from mergify_engine.clients import github
 from mergify_engine.clients import http
+from mergify_engine.clients import shadow_office
 from mergify_engine.models import github_user
 from mergify_engine.web.front import security
 
@@ -115,7 +115,7 @@ async def create_or_update_user(
         # TODO(sileht): This API call may call back the engine API to cleanup the token
         # for now the source of truth of tokens is still the dashboard backend until we
         # sync all user accounts on the engine side.
-        async with dashboard.AsyncDashboardSaasClient() as client:
+        async with shadow_office.AsyncShadowOfficeSaasClient() as client:
             await client.post(
                 url="/engine/user-update",
                 json={"user": user_data, "token": token},

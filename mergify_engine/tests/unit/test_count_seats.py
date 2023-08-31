@@ -154,7 +154,7 @@ async def test_get_usage_count_seats(
 
     web_client.headers[
         "Authorization"
-    ] = f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}"
+    ] = f"Bearer {settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()}"
     web_client.headers["Content-Type"] = "application/json; charset=utf8"
     reply = await web_client.request("GET", "/subscriptions/organization/1234/usage")
     assert reply.status_code == 200, reply.content
@@ -228,7 +228,7 @@ async def test_get_usage_last_seen(
 
     web_client.headers[
         "Authorization"
-    ] = f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}"
+    ] = f"Bearer {settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()}"
     web_client.headers["Content-Type"] = "application/json; charset=utf8"
 
     reply = await web_client.request("GET", "/subscriptions/organization/0/usage")

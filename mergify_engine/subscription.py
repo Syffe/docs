@@ -15,8 +15,8 @@ from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import redis_utils
 from mergify_engine import settings
-from mergify_engine.clients import dashboard
 from mergify_engine.clients import http
+from mergify_engine.clients import shadow_office
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -235,14 +235,14 @@ class SubscriptionBase(abstract.ABC):
 
 
 @dataclasses.dataclass
-class SubscriptionDashboardSaas(SubscriptionBase):
+class SubscriptionShadowOfficeSaas(SubscriptionBase):
     @classmethod
     async def _retrieve_subscription_from_db(
         cls: type[SubscriptionT],
         redis: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT:
-        async with dashboard.AsyncDashboardSaasClient() as client:
+        async with shadow_office.AsyncShadowOfficeSaasClient() as client:
             try:
                 resp = await client.get(f"/engine/subscription/{owner_id}")
             except http.HTTPNotFound:
@@ -252,7 +252,7 @@ class SubscriptionDashboardSaas(SubscriptionBase):
                 return cls.from_dict(redis, owner_id, sub)
 
 
-class SubscriptionDashboardOnPremise(SubscriptionBase):
+class SubscriptionShadowOfficeOnPremise(SubscriptionBase):
     feature_flag_log_level: int = logging.INFO
 
     @classmethod
@@ -261,7 +261,7 @@ class SubscriptionDashboardOnPremise(SubscriptionBase):
         redis: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT:
-        async with dashboard.AsyncDashboardOnPremiseClient() as client:
+        async with shadow_office.AsyncShadowOfficeOnPremiseClient() as client:
             try:
                 resp = await client.get(f"/on-premise/subscription/{owner_id}")
             except http.HTTPUnauthorized:
@@ -283,11 +283,11 @@ class SubscriptionDashboardOnPremise(SubscriptionBase):
 if settings.SAAS_MODE:
 
     @dataclasses.dataclass
-    class Subscription(SubscriptionDashboardSaas):
+    class Subscription(SubscriptionShadowOfficeSaas):
         pass
 
 else:
 
     @dataclasses.dataclass
-    class Subscription(SubscriptionDashboardOnPremise):  # type: ignore [no-redef]
+    class Subscription(SubscriptionShadowOfficeOnPremise):  # type: ignore [no-redef]
         pass

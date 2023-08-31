@@ -80,7 +80,7 @@ class RecordConfigType(typing.TypedDict):
     branch_prefix: str
 
 
-class DashboardFixture(typing.NamedTuple):
+class SubscriptionFixture(typing.NamedTuple):
     api_key_admin: str
     subscription: subscription.Subscription
 
@@ -113,12 +113,12 @@ def extract_subscription_marker_features(
 
 
 @pytest.fixture
-async def dashboard(
+async def shadow_office(
     monkeypatch: pytest.MonkeyPatch,
     redis_cache: redis_utils.RedisCache,
     request: pytest.FixtureRequest,
     setup_database: None,
-) -> DashboardFixture:
+) -> SubscriptionFixture:
     is_functionaltest_class = request.cls is not None
     marker = request.node.get_closest_marker("subscription")
     if marker:
@@ -213,7 +213,7 @@ async def dashboard(
         ),
     )
 
-    return DashboardFixture(api_key_admin, sub)
+    return SubscriptionFixture(api_key_admin, sub)
 
 
 def pyvcr_response_filter(
@@ -435,26 +435,26 @@ def unittest_asyncio_glue(
 
 @pytest.fixture
 async def web_client_as_admin(
-    web_client: httpx.AsyncClient, dashboard: DashboardFixture
+    web_client: httpx.AsyncClient, shadow_office: SubscriptionFixture
 ) -> httpx.AsyncClient:
-    web_client.headers["Authorization"] = f"bearer {dashboard.api_key_admin}"
+    web_client.headers["Authorization"] = f"bearer {shadow_office.api_key_admin}"
     return web_client
 
 
 @pytest.fixture
 def unittest_glue(
-    dashboard: DashboardFixture,
+    shadow_office: SubscriptionFixture,
     web_client: httpx.AsyncClient,
     web_client_as_admin: httpx.AsyncClient,
     recorder: RecorderFixture,
     request: pytest.FixtureRequest,
 ) -> None:
-    request.cls.api_key_admin = dashboard.api_key_admin
+    request.cls.api_key_admin = shadow_office.api_key_admin
     request.cls.app = web_client
     request.cls.admin_app = web_client_as_admin
     request.cls.RECORD_CONFIG = recorder.config
     request.cls.cassette_library_dir = recorder.vcr.cassette_library_dir
-    request.cls.subscription = dashboard.subscription
+    request.cls.subscription = shadow_office.subscription
 
 
 @dataclasses.dataclass

@@ -268,7 +268,7 @@ async def test_subscription_on_premise_valid(
         },
     )
 
-    await subscription.SubscriptionDashboardOnPremise.get_subscription(
+    await subscription.SubscriptionShadowOfficeOnPremise.get_subscription(
         redis_cache, github_types.GitHubAccountIdType(1234)
     )
 
@@ -286,7 +286,7 @@ async def test_subscription_on_premise_wrong_token(
     ).respond(401, json={"message": "error"})
 
     with pytest.raises(exceptions.MergifyNotInstalled):
-        await subscription.SubscriptionDashboardOnPremise.get_subscription(
+        await subscription.SubscriptionShadowOfficeOnPremise.get_subscription(
             redis_cache, github_types.GitHubAccountIdType(1234)
         )
 
@@ -306,7 +306,7 @@ async def test_subscription_on_premise_invalid_sub(
         json={"message": "error"},
     )
     with pytest.raises(exceptions.MergifyNotInstalled):
-        await subscription.SubscriptionDashboardOnPremise.get_subscription(
+        await subscription.SubscriptionShadowOfficeOnPremise.get_subscription(
             redis_cache, github_types.GitHubAccountIdType(1234)
         )
 

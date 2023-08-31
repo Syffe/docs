@@ -13,7 +13,7 @@ import sqlalchemy.orm.exc
 from mergify_engine import database
 from mergify_engine import debug
 from mergify_engine import github_types
-from mergify_engine.clients import dashboard
+from mergify_engine.clients import shadow_office
 from mergify_engine.models import github_user
 from mergify_engine.web.front import security
 
@@ -52,10 +52,10 @@ async def select_user_from_login(
         return account
 
     # Check if the login is an organization with billing system
-    async with dashboard.AsyncDashboardSaasClient() as client:
+    async with shadow_office.AsyncShadowOfficeSaasClient() as client:
         try:
             associated_users = await client.get_associated_users(login)
-        except dashboard.NoAssociatedUsersFound as e:
+        except shadow_office.NoAssociatedUsersFound as e:
             raise fastapi.HTTPException(status_code=404, detail=str(e))
 
         for associated_user in associated_users:

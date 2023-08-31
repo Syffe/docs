@@ -24,8 +24,10 @@ async def test_fixture_recorder() -> None:
         assert r.json()["owner"]["login"] == settings.TESTING_ORGANIZATION_NAME
 
 
-async def test_fixture_dashboard(dashboard: func_conftest.DashboardFixture) -> None:
-    assert dashboard.subscription.features == frozenset(
+async def test_fixture_shadow_office(
+    shadow_office: func_conftest.SubscriptionFixture,
+) -> None:
+    assert shadow_office.subscription.features == frozenset(
         {
             subscription.Features.PUBLIC_REPOSITORY,
         }

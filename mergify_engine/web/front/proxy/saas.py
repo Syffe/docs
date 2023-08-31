@@ -10,7 +10,7 @@ from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import subscription
-from mergify_engine.clients import dashboard
+from mergify_engine.clients import shadow_office
 from mergify_engine.web import redis
 from mergify_engine.web.front import security
 from mergify_engine.web.front import utils
@@ -144,7 +144,7 @@ async def saas_proxy(
         )
 
     # nosemgrep: python.django.security.injection.tainted-url-host.tainted-url-host
-    async with dashboard.AsyncDashboardSaasClient() as client:
+    async with shadow_office.AsyncShadowOfficeSaasClient() as client:
         proxy_request: httpx.Request | None = None
         try:
             resp = await client.request(

@@ -13,7 +13,7 @@ from mergify_engine.tests import conftest
 async def test_subscription_cache_delete(web_client: httpx.AsyncClient) -> None:
     owner_id = 123
     headers = {
-        "Authorization": f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}"
+        "Authorization": f"Bearer {settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()}"
     }
     reply = await web_client.delete(
         f"/subscriptions/subscription-cache/{owner_id}", headers=headers
@@ -36,7 +36,7 @@ async def test_subscription_cache_update(web_client: httpx.AsyncClient) -> None:
         )
     ).encode(charset)
     headers = {
-        "Authorization": f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}",
+        "Authorization": f"Bearer {settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()}",
         "Content-Type": f"application/json; charset={charset}",
     }
     reply = await web_client.put(
@@ -60,7 +60,7 @@ async def test_subscription_user_oauth_token(
 ) -> None:
     web_client.headers[
         "Authorization"
-    ] = f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}"
+    ] = f"Bearer {settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()}"
 
     reply = await web_client.get("/subscriptions/user-oauth-access-token/42")
     assert reply.status_code == 404

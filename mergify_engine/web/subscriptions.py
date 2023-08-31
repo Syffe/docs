@@ -19,7 +19,7 @@ router = fastapi.APIRouter(tags=["subscription"])
 
 @router.get(
     "/organization/{owner_id}/usage",
-    dependencies=[fastapi.Depends(auth.dashboard)],
+    dependencies=[fastapi.Depends(auth.shadow_office)],
 )
 async def get_stats(
     owner_id: github_types.GitHubAccountIdType, redis_links: redis.RedisLinks
@@ -46,7 +46,7 @@ async def get_stats(
 
 @router.put(
     "/subscription-cache/{owner_id}",
-    dependencies=[fastapi.Depends(auth.dashboard)],
+    dependencies=[fastapi.Depends(auth.shadow_office)],
 )
 async def subscription_cache_update(
     owner_id: github_types.GitHubAccountIdType,
@@ -69,7 +69,7 @@ async def subscription_cache_update(
 
 @router.delete(
     "/subscription-cache/{owner_id}",
-    dependencies=[fastapi.Depends(auth.dashboard)],
+    dependencies=[fastapi.Depends(auth.shadow_office)],
 )
 async def subscription_cache_delete(
     owner_id: github_types.GitHubAccountIdType, redis_links: redis.RedisLinks
@@ -84,7 +84,7 @@ async def subscription_cache_delete(
 
 @router.get(
     "/user-oauth-access-token/{github_account_id}",
-    dependencies=[fastapi.Depends(auth.dashboard)],
+    dependencies=[fastapi.Depends(auth.shadow_office)],
 )
 async def get_user_oauth_access_token(
     github_account_id: github_types.GitHubAccountIdType,

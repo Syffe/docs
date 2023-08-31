@@ -61,12 +61,12 @@ async def test_api_auth_unknown_path(
 @pytest.mark.recorder
 async def test_api_auth_scoped(
     web_client: httpx.AsyncClient,
-    dashboard: func_conftest.DashboardFixture,
+    shadow_office: func_conftest.SubscriptionFixture,
     recorder: func_conftest.RecorderFixture,
 ) -> None:
     r = await web_client.get(
         f"/v1/testing-endpoint/{recorder.config['organization_name']}/{recorder.config['repository_name']}",
-        headers={"Authorization": f"bearer {dashboard.api_key_admin}"},
+        headers={"Authorization": f"bearer {shadow_office.api_key_admin}"},
     )
     assert r.status_code == 200, r.json()
     assert r.json()["user_login"] == recorder.config["organization_name"]
@@ -74,7 +74,7 @@ async def test_api_auth_scoped(
     # check case insensitive
     r = await web_client.get(
         f"/v1/testing-endpoint/{recorder.config['organization_name'].upper()}/{recorder.config['repository_name'].upper()}",
-        headers={"Authorization": f"bearer {dashboard.api_key_admin}"},
+        headers={"Authorization": f"bearer {shadow_office.api_key_admin}"},
     )
     assert r.status_code == 200, r.json()
     assert r.json()["user_login"] == recorder.config["organization_name"]
@@ -83,7 +83,7 @@ async def test_api_auth_scoped(
 @pytest.mark.recorder
 async def test_api_auth_invalid_token(
     web_client: httpx.AsyncClient,
-    dashboard: func_conftest.DashboardFixture,
+    shadow_office: func_conftest.SubscriptionFixture,
     recorder: func_conftest.RecorderFixture,
 ) -> None:
     # invalid header
@@ -122,7 +122,7 @@ async def test_api_auth_invalid_token(
 @pytest.mark.recorder
 async def test_api_auth_no_token(
     web_client: httpx.AsyncClient,
-    dashboard: func_conftest.DashboardFixture,
+    shadow_office: func_conftest.SubscriptionFixture,
     recorder: func_conftest.RecorderFixture,
 ) -> None:
     r = await web_client.get(
@@ -135,7 +135,7 @@ async def test_api_auth_no_token(
 @pytest.mark.recorder
 async def test_api_repository_auth_cached(
     web_client: httpx.AsyncClient,
-    dashboard: func_conftest.DashboardFixture,
+    shadow_office: func_conftest.SubscriptionFixture,
     recorder: func_conftest.RecorderFixture,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
@@ -143,7 +143,7 @@ async def test_api_repository_auth_cached(
     # the repository is correctly stored as a dict in redis.
     r = await web_client.get(
         f"/v1/testing-endpoint/{recorder.config['organization_name']}/{recorder.config['repository_name']}",
-        headers={"Authorization": f"bearer {dashboard.api_key_admin}"},
+        headers={"Authorization": f"bearer {shadow_office.api_key_admin}"},
     )
     assert r.status_code == 200
 
@@ -162,7 +162,7 @@ async def test_api_repository_auth_cached(
     # when stored in redis
     r = await web_client.get(
         f"/v1/testing-endpoint/{recorder.config['organization_name']}/testbar",
-        headers={"Authorization": f"bearer {dashboard.api_key_admin}"},
+        headers={"Authorization": f"bearer {shadow_office.api_key_admin}"},
     )
     assert r.status_code == 404
 
@@ -181,7 +181,7 @@ async def test_api_repository_auth_cached(
     ):
         r = await web_client.get(
             f"/v1/testing-endpoint/{recorder.config['organization_name']}/testbar",
-            headers={"Authorization": f"bearer {dashboard.api_key_admin}"},
+            headers={"Authorization": f"bearer {shadow_office.api_key_admin}"},
         )
         assert r.status_code == 404
 

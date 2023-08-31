@@ -273,17 +273,19 @@ class SubscriptionSetting(pydantic.BaseSettings):
     SUBSCRIPTION_URL: str = pydantic.Field(
         default="https://subscription.mergify.com", extra_env="SUBSCRIPTION_BASE_URL"
     )
-    ENGINE_TO_DASHBOARD_API_KEY: pydantic.SecretStr = pydantic.Field(
+    ENGINE_TO_SHADOW_OFFICE_API_KEY: pydantic.SecretStr = pydantic.Field(
         default=pydantic.SecretStr(secrets.token_hex(16)),
+        extra_env="ENGINE_TO_DASHBOARD_API_KEY",
     )
     SUBSCRIPTION_TOKEN: pydantic.SecretStr | None = pydantic.Field(default=None)
 
-    DASHBOARD_TO_ENGINE_API_KEY: pydantic.SecretStr = pydantic.Field(
+    SHADOW_OFFICE_TO_ENGINE_API_KEY: pydantic.SecretStr = pydantic.Field(
         default=pydantic.SecretStr(secrets.token_hex(16)),
+        extra_env="DASHBOARD_TO_ENGINE_API_KEY",
     )
-    DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION: pydantic.SecretStr | None = (
+    SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION: pydantic.SecretStr | None = (
         pydantic.Field(
-            default=None,
+            default=None, extra_env="DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION"
         )
     )
 
