@@ -38,7 +38,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                             "continue-on-error": True,
                         },
                         {
-                            "name": "Failure step ❌",
+                            "name": "Failure step with a / in the title ❌",
                             "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }};exit 1",
                         },
                     ],
@@ -127,7 +127,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         assert job.embedded_log is not None
         assert f"I will fail on sha {pr['head']['sha']}" in job.embedded_log
         assert job.failed_step_number == 5
-        assert job.failed_step_name == "Failure step ❌"
+        assert job.failed_step_name == "Failure step with a / in the title ❌"
         assert job.log_embedding is not None
 
         assert np.array_equal(

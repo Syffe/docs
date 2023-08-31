@@ -54,7 +54,7 @@ async def download_failed_step_log(
 
         with zipfile.ZipFile(zip_data, "r") as zip_file:
             with zip_file.open(
-                f"{job.name}/{job.failed_step_number}_{job.failed_step_name}.txt"
+                f"{job.name}/{job.failed_step_number}_{job.failed_step_name.replace('/', '')}.txt"
             ) as log_file:
                 return [line.decode() for line in log_file.readlines()]
 
