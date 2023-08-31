@@ -10,6 +10,7 @@ from ddtrace import tracer
 from redis import exceptions as redis_exceptions
 import sentry_sdk
 
+from mergify_engine import logs
 from mergify_engine import redis_utils
 
 
@@ -44,6 +45,7 @@ class TaskRetriedForever:
     async def loop_and_sleep_forever(
         self, name: str, func: TaskRetriedForeverFuncT, sleep_time: float
     ) -> None:
+        logs.WORKER_TASK.set(name)
         with sentry_sdk.Hub(sentry_sdk.Hub.current):
             while not self.shutdown_requested.is_set():
                 try:

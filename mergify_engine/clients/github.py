@@ -626,6 +626,9 @@ class AsyncGitHubInstallationClient(AsyncGitHubClient):
             worker_id = logs.WORKER_ID.get(None)
             if worker_id is not None:
                 tags.append(f"worker_id:{worker_id}")
+            worker_task = logs.WORKER_TASK.get(None)
+            if worker_task is not None:
+                tags.append(f"worker_task:{worker_task}")
 
         statsd.histogram(
             "http.client.session",

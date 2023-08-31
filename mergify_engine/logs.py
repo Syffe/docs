@@ -21,6 +21,7 @@ LEVEL_COLORS[42] = "\033[01;35m"
 
 
 WORKER_ID: contextvars.ContextVar[str] = contextvars.ContextVar("worker_id")
+WORKER_TASK: contextvars.ContextVar[str] = contextvars.ContextVar("worker_task")
 
 
 class CustomFormatter(daiquiri.formatter.ColorExtrasFormatter):
@@ -83,6 +84,9 @@ class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
         worker_id = WORKER_ID.get(None)
         if worker_id is not None:
             log_record.update({"worker_id": worker_id})
+        worker_task = WORKER_TASK.get(None)
+        if worker_task is not None:
+            log_record.update({"worker_task": worker_task})
 
 
 def strip_url_credentials(url: str) -> str:
