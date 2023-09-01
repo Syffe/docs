@@ -13,15 +13,10 @@ from mergify_engine.clients import http
 from mergify_engine.models import github_user
 
 
+@dataclasses.dataclass
 class BranchUpdateFailure(Exception):
-    def __init__(
-        self,
-        msg: str = "",
-        title: str = "Base branch update has failed",
-    ) -> None:
-        self.title = title
-        self.message = msg
-        super().__init__(self.message)
+    message: str
+    title: str = dataclasses.field(default="Base branch update has failed")
 
 
 @dataclasses.dataclass
@@ -177,10 +172,10 @@ async def _do_rebase(
             returncode=e.returncode,
             exc_info=True,
         )
-        raise BranchUpdateFailure()
+        raise BranchUpdateFailure("Git reported an unexpected error while rebasing")
     except Exception:  # pragma: no cover
         ctxt.log.error("update branch failed", exc_info=True)
-        raise BranchUpdateFailure()
+        raise BranchUpdateFailure("Git reported an unknown error while rebasing")
     finally:
         await git.cleanup()
 
@@ -227,7 +222,7 @@ async def update_with_api(
             )
             raise BranchUpdateFailure(
                 title="Mergify doesn't have permission to update",
-                msg="For security reasons, Mergify can't update this pull request. "
+                message="For security reasons, Mergify can't update this pull request. "
                 "Try updating locally.\n"
                 f"GitHub response: {e.message}",
             )
