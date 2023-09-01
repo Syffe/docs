@@ -255,6 +255,26 @@ async def test_event_action_merge_consistency(
     assert event.branch == "merge_branch"
 
 
+async def test_event_action_github_actions_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    inputs: dict[str, str | int | bool] = {"tool": "wrench", "size": 14, "in_use": True}
+    await insert_event(
+        fake_repository,
+        "action.github_actions",
+        signals.EventGithubActionsMetadata(
+            workflow="verify_tool.yaml",
+            inputs=inputs,
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionGithubActions))
+    assert event is not None
+    assert event.workflow == "verify_tool.yaml"
+    assert event.inputs == inputs
+
+
 @freeze_time("2023-07-10T14:00:00", tz_offset=0)
 async def test_event_action_queue_enter_consistency(
     db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository

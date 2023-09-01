@@ -10,6 +10,7 @@ from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import settings
+from mergify_engine import signals
 from mergify_engine.clients import http
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
@@ -139,6 +140,16 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
                 f"Failed to dispatch workflow `{wf['workflow']}`",
                 base_err_msg + e.message + ("" if e.message.endswith(".") else "."),
             )
+
+        await signals.send(
+            self.ctxt.repository,
+            self.ctxt.pull["number"],
+            "action.github_actions",
+            signals.EventGithubActionsMetadata(
+                workflow=wf["workflow"], inputs=wf["inputs"]
+            ),
+            self.rule.get_signal_trigger(),
+        )
 
         return check_api.Result(
             check_api.Conclusion.SUCCESS,

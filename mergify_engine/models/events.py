@@ -6,6 +6,7 @@ import typing
 import sqlalchemy
 from sqlalchemy import func
 from sqlalchemy import orm
+from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
@@ -322,6 +323,26 @@ class EventActionMerge(Event):
     )
     branch: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+
+
+class EventActionGithubActions(Event):
+    __tablename__ = "event_action_github_actions"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.github_actions",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
+    )
+    workflow: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    inputs: orm.Mapped[dict[str, str | int | bool]] = orm.mapped_column(
+        postgresql.JSONB,
+        anonymizer_config=(
+            "custom_masks.jsonb_obj(0, 3, ARRAY[''text'', ''integer'', ''boolean''])"
+        ),
     )
 
 

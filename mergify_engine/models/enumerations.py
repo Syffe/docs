@@ -34,6 +34,7 @@ class EventType(enum.StrEnum):
     QueuePauseCreate = "queue.pause.create"
     QueuePauseUpdate = "queue.pause.update"
     QueuePauseDelete = "queue.pause.delete"
+    ActionGithubActions = "action.github_actions"
 
 
 class CheckConclusion(str, enum.Enum):

@@ -108,6 +108,12 @@ class EventPostCheck(EventBase, total=False):
     metadata: signals.EventPostCheckMetadata
 
 
+class EventGithubActions(EventBase, total=False):
+    event: typing.Literal["action.github_actions"]
+    type: typing.Literal["action.github_actions"]
+    metadata: signals.EventGithubActionsMetadata
+
+
 class EventQueueEnter(EventBase, total=False):
     event: typing.Literal["action.queue.enter"]
     type: typing.Literal["action.queue.enter"]
@@ -250,6 +256,7 @@ Event = (
     | EventLabel
     | EventMerge
     | EventPostCheck
+    | EventGithubActions
     | EventQueueEnter
     | EventQueueLeave
     | EventQueueChecksStart
@@ -397,6 +404,8 @@ def cast_event_item(
             return typing.cast(EventQueueChecksStart, event)
         case "action.queue.checks_end":
             return typing.cast(EventQueueChecksEnd, event)
+        case "action.github_actions":
+            return typing.cast(EventGithubActions, event)
         case "action.queue.enter":
             return typing.cast(EventQueueEnter, event)
         case "action.queue.leave":

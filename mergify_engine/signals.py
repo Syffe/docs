@@ -31,6 +31,7 @@ EventName = typing.Literal[
     "action.label",
     "action.merge",
     "action.post_check",
+    "action.github_actions",
     "action.queue.enter",
     "action.queue.checks_start",
     "action.queue.checks_end",
@@ -105,6 +106,11 @@ class EventRequestReviewsMetadata(EventMetadata, total=False):
 
 class EventDismissReviewsMetadata(EventMetadata, total=False):
     users: list[str]
+
+
+class EventGithubActionsMetadata(EventMetadata, total=False):
+    workflow: str
+    inputs: dict[str, str | int | bool]
 
 
 class EventQueueEnterMetadata(EventMetadata, total=False):
@@ -429,6 +435,17 @@ async def send(
     pull_request: github_types.GitHubPullRequestNumber,
     event: typing.Literal["action.backport", "action.copy"],
     metadata: EventCopyMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+@typing.overload
+async def send(
+    repository: "context.Repository",
+    pull_request: github_types.GitHubPullRequestNumber,
+    event: typing.Literal["action.github_actions"],
+    metadata: EventGithubActionsMetadata,
     trigger: str,
 ) -> None:
     ...
