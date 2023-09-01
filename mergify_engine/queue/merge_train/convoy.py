@@ -431,15 +431,15 @@ class Convoy:
         self,
         user_pull_request_number: github_types.GitHubPullRequestNumber,
         checked_pull: github_types.GitHubPullRequestNumber | None,
-        default_car: "tc_import.TrainCar",
+        temporary_car: "tc_import.TrainCar",
     ) -> None:
         user_pr_context = await self.repository.get_pull_request_context(
             user_pull_request_number
         )
         train_cars = self.get_train_cars_by_pull(user_pr_context)
-        if len(train_cars) == 0:
-            # Means we haven't saved the train yet
-            train_cars.append(default_car)
+        if temporary_car not in train_cars:
+            # Means we haven't saved the train yet or just got removed
+            train_cars.append(temporary_car)
 
         if (
             len(train_cars) == 1
