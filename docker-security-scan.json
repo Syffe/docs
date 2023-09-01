@@ -832,7 +832,7 @@
     "PkgName": "curl",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
-    "Title": "curl: Content not matching hash in Metalink is not being discarded",
+    "Title": "Content not matching hash in Metalink is not being discarded",
     "Severity": "LOW",
     "PublishedDate": "2021-08-05T21:15:00Z"
   },
@@ -841,7 +841,7 @@
     "PkgName": "libcurl3-gnutls",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
-    "Title": "curl: Content not matching hash in Metalink is not being discarded",
+    "Title": "Content not matching hash in Metalink is not being discarded",
     "Severity": "LOW",
     "PublishedDate": "2021-08-05T21:15:00Z"
   },
@@ -850,7 +850,7 @@
     "PkgName": "libcurl4",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
-    "Title": "curl: Content not matching hash in Metalink is not being discarded",
+    "Title": "Content not matching hash in Metalink is not being discarded",
     "Severity": "LOW",
     "PublishedDate": "2021-08-05T21:15:00Z"
   },
@@ -859,7 +859,7 @@
     "PkgName": "curl",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
-    "Title": "curl: Metalink download sends credentials",
+    "Title": "Metalink download sends credentials",
     "Severity": "LOW",
     "PublishedDate": "2021-08-05T21:15:00Z"
   },
@@ -868,7 +868,7 @@
     "PkgName": "libcurl3-gnutls",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
-    "Title": "curl: Metalink download sends credentials",
+    "Title": "Metalink download sends credentials",
     "Severity": "LOW",
     "PublishedDate": "2021-08-05T21:15:00Z"
   },
@@ -877,7 +877,7 @@
     "PkgName": "libcurl4",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
-    "Title": "curl: Metalink download sends credentials",
+    "Title": "Metalink download sends credentials",
     "Severity": "LOW",
     "PublishedDate": "2021-08-05T21:15:00Z"
   },
@@ -889,19 +889,6 @@
     "Title": "denial of service via the appendvfs.c function",
     "Severity": "HIGH",
     "PublishedDate": "2023-05-09T02:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-32292",
-    "VendorIDs": [
-      "DSA-5486-1"
-    ],
-    "PkgName": "libjson-c5",
-    "FixedVersion": "0.15-2+deb11u1",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-32292",
-    "Title": "An issue was discovered in json-c through 0.15-20200726. A stack-buffe ...",
-    "Severity": "CRITICAL",
-    "PublishedDate": "2023-08-22T19:16:00Z"
   },
   {
     "VulnerabilityID": "CVE-2021-33294",
