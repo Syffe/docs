@@ -10,6 +10,7 @@ import jinja2.sandbox
 
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import filter
 
 
@@ -100,6 +101,7 @@ CONDITION_PARSERS = {
     "merged-at": Parser.TIMESTAMP_OR_TIMEDELTA,
     "queued-at": Parser.TIMESTAMP_OR_TIMEDELTA,
     "queue-merge-started-at": Parser.TIMESTAMP_OR_TIMEDELTA,
+    "queue-dequeue-reason": Parser.ENUM,
     "locked": Parser.BOOL,
     "merged": Parser.BOOL,
     "closed": Parser.BOOL,
@@ -121,7 +123,11 @@ CONDITION_ENUMS = {
         "APPROVED",
         "REVIEW_REQUIRED",
         "CHANGES_REQUESTED",
-    ]
+    ],
+    "queue-dequeue-reason": [
+        *(c.lower().replace("_", "-") for c in typing.get_args(queue_utils.AbortCodeT)),
+        "pr-merged",
+    ],
 }
 
 # NOTE(sileht): From the longest string to the short one to ensure for

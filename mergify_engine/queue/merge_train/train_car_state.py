@@ -22,6 +22,10 @@ from mergify_engine.rules.config import queue_rules as qr_config
 LOG = daiquiri.getLogger(__name__)
 
 
+class UnexpectedOutcome(Exception):
+    pass
+
+
 @dataclasses.dataclass
 class TrainCarStateForSummary:
     outcome: train_car.TrainCarOutcome = train_car.TrainCarOutcome.UNKNOWN
@@ -322,6 +326,6 @@ def unqueue_reason_from_train_car_state(
     ):
         return queue_utils.MaximumBatchFailureResolutionAttemptsReached()
 
-    raise RuntimeError(
+    raise UnexpectedOutcome(
         f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"
     )

@@ -35,7 +35,6 @@ from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import pause
 from mergify_engine.queue import utils as queue_utils
-from mergify_engine.queue.merge_train import train_car_state as tcs_import
 from mergify_engine.queue.merge_train import types as merge_train_types
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
@@ -528,7 +527,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 )
 
         if not await self._should_be_queued(self.ctxt):
-            unqueue_reason = await self.get_unqueue_reason_from_outcome(self.ctxt)
+            unqueue_reason = await action_utils.get_unqueue_reason_from_outcome(
+                self.ctxt
+            )
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
                 unqueue_msg,
@@ -706,9 +707,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return result
 
         if not await self._should_be_queued(self.ctxt):
-            unqueue_reason = await self.get_unqueue_reason_from_outcome(self.ctxt)
+            unqueue_reason = await action_utils.get_unqueue_reason_from_outcome(
+                self.ctxt
+            )
             unqueue_msg = f"The pull request has been removed from the queue `{self.config['name']}`"
-
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
                 unqueue_msg,
@@ -885,34 +887,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
         return queue_utils.PrDequeued(
             self.ctxt.pull["number"], details=f". {result.title}"
         )
-
-    @staticmethod
-    async def get_unqueue_reason_from_outcome(
-        ctxt: context.Context,
-    ) -> queue_utils.BaseUnqueueReason:
-        check = await ctxt.get_merge_queue_check_run()
-        if check is None:
-            raise RuntimeError(
-                "get_unqueue_reason_from_outcome() called by check is not there"
-            )
-
-        if check["conclusion"] == "cancelled":
-            # NOTE(sileht): should not be possible as unqueue command already
-            # remove the pull request from the queue
-            return queue_utils.PrDequeued(
-                ctxt.pull["number"], " by an `unqueue` command"
-            )
-
-        train_car_state = merge_train.TrainCarStateForSummary.deserialize_from_summary(
-            check
-        )
-        if train_car_state is None:
-            # NOTE(sileht): No details but we can't do much at this point
-            return queue_utils.PrDequeued(
-                ctxt.pull["number"], " due to failing checks or checks timeout"
-            )
-
-        return tcs_import.unqueue_reason_from_train_car_state(train_car_state)
 
     @classmethod
     async def _should_be_queued(

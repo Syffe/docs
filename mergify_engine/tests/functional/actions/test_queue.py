@@ -291,6 +291,71 @@ class TestQueueAction(base.FunctionalTestBase):
         assert check is not None
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
 
+    async def test_queue_dequeue_reason_condition(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+                {
+                    "name": "Label dequeued PR",
+                    "conditions": ["queue-dequeue-reason=checks-failed"],
+                    "actions": {
+                        "label": {
+                            "add": ["dequeued"],
+                            "remove": ["queue"],
+                        }
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        pr = await self.create_pr()
+        await self.add_label(pr["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for_check_run(name="Rule: Queue (queue)", status="in_progress")
+        await self.wait_for_check_run(
+            name="Queue: Embarked in merge queue", status="in_progress"
+        )
+
+        # disembark pr
+        await self.create_status(pr, state="failure")
+        await self.run_engine()
+        await self.wait_for_check_run(
+            name="Queue: Embarked in merge queue", conclusion="failure"
+        )
+        check = await self.wait_for_check_run(
+            name="Rule: Queue (queue)", conclusion="cancelled"
+        )
+        assert check is not None
+        assert (
+            check["check_run"]["output"]["title"]
+            == "The pull request has been removed from the queue `default`"
+        )
+
+        # pr labeled after dequeue condition matches
+        await self.run_engine()
+        pr_labeled = await self.wait_for_pull_request("labeled")
+        assert pr_labeled is not None
+        assert "dequeued" in [
+            label["name"] for label in pr_labeled["pull_request"]["labels"]
+        ]
+
     async def test_pr_with_depends_on_not_queued_if_dependent_pr_is_not_queued(
         self,
     ) -> None:

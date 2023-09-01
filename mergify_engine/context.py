@@ -2245,7 +2245,9 @@ class BasePullRequest:
         ctxt: Context, name: str
     ) -> ContextAttributeType:
         # Circular import
+        from mergify_engine.actions import utils as action_utils
         from mergify_engine.queue import merge_train
+        from mergify_engine.queue.merge_train import train_car_state as tcs
 
         mergify_config = await ctxt.repository.get_mergify_config()
         queue_rules = mergify_config["queue_rules"]
@@ -2301,6 +2303,20 @@ class BasePullRequest:
 
         if name == "queue-partition-name":
             return convoy.get_queue_pull_request_partition_names_from_context(ctxt)
+
+        if name == "queue-dequeue-reason":
+            try:
+                return (
+                    (await action_utils.get_unqueue_reason_from_outcome(ctxt))
+                    .unqueue_code.lower()
+                    .replace("_", "-")
+                )
+            except (action_utils.MissingMergeQueueCheckRun, tcs.UnexpectedOutcome):
+                # NOTE(lecrepont01): We don't expect the check to be present here at
+                # all cost during the evaluation, and we can't ensure that the
+                # state can be mapped to an abort reason either. In this case
+                # the rule should just evaluate to false.
+                return None
 
         raise PullRequestAttributeError(name)
 
@@ -2654,6 +2670,7 @@ class PullRequest(BasePullRequest):
         "body-raw",
         "repository-name",
         "repository-full-name",
+        "queue-dequeue-reason",
     }
 
     LIST_ATTRIBUTES: typing.ClassVar[set[str]] = {

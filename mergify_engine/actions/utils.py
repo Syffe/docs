@@ -10,6 +10,7 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.clients import http
 from mergify_engine.models import github_user
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import types
 
 
@@ -21,6 +22,10 @@ class RenderBotAccountFailure(Exception):
     status: check_api.Conclusion
     title: str
     reason: str
+
+
+class MissingMergeQueueCheckRun(Exception):
+    pass
 
 
 @typing.overload
@@ -208,3 +213,29 @@ def get_invalid_credentials_report(
         f"User `{on_behalf.login}` used as `bot_account` as invalid credentials",
         f"Please make sure `{on_behalf.login}` logout and re-login into the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL}).",
     )
+
+
+async def get_unqueue_reason_from_outcome(
+    ctxt: context.Context,
+) -> queue_utils.BaseUnqueueReason:
+    from mergify_engine.queue.merge_train import train_car_state as tcs
+
+    check = await ctxt.get_merge_queue_check_run()
+    if check is None:
+        raise MissingMergeQueueCheckRun(
+            "get_unqueue_reason_from_outcome() called but check is not there"
+        )
+
+    if check["conclusion"] == "cancelled":
+        # NOTE(sileht): should not be possible as unqueue command already
+        # remove the pull request from the queue
+        return queue_utils.PrDequeued(ctxt.pull["number"], " by an `unqueue` command")
+
+    train_car_state = tcs.TrainCarStateForSummary.deserialize_from_summary(check)
+    if train_car_state is None:
+        # NOTE(sileht): No details but we can't do much at this point
+        return queue_utils.PrDequeued(
+            ctxt.pull["number"], " due to failing checks or checks timeout"
+        )
+
+    return tcs.unqueue_reason_from_train_car_state(train_car_state)

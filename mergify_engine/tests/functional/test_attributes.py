@@ -357,6 +357,7 @@ class TestAttributes(base.FunctionalTestBase):
             "#commits-behind": 2,
             "#files": 1,
             "number": pr["number"],
+            "queue-dequeue-reason": None,
             "closed": False,
             "locked": False,
             "assignee": [],

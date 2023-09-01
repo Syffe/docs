@@ -368,6 +368,15 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``number``
      - integer
      - The pull request number.
+   * - ``queue-dequeue-reason``
+     - string
+     - | A `dequeue code` is associated to each specific reason for when a pull request has been disembarked from the merge queue.
+       | Possible values are:
+       | ``pr-merged``, ``pr-dequeued``, ``pr-ahead-dequeued``, ``pr-ahead-failed-to-merge``, ``pr-with-higher-priority-queued``,
+       | ``pr-queued-twice``, ``speculative-check-number-reduced``, ``checks-timeout``, ``checks-failed``, ``queue-rule-missing``,
+       | ``unexpected-queue-change``, ``pr-frozen-no-cascading``, ``target-branch-missing``, ``target-branch-changed``,
+       | ``pr-unexpectedly-failed-to-merge``, ``batch-max-failure-resolution-attempts``,
+       | ``pr-checks-stopped-because-merge-queue-pause``
    * - ``queue-partition-name``
      - list of string
      - The name of the partitions the pull request is queued in.
