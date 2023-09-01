@@ -121,7 +121,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
         assert "cannot be merged and has been disembarked" in check["output"]["title"]
@@ -201,7 +201,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
         assert "cannot be merged and has been disembarked" in check["output"]["title"]
@@ -279,7 +279,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
         assert "cannot be merged and has been disembarked" in check["output"]["title"]
@@ -1780,9 +1780,9 @@ class TestQueueAction(base.FunctionalTestBase):
 
             await self.run_engine()
 
-        await self.wait_for_check_run(name="Queue: Embarked in merge train")
+        await self.wait_for_check_run(name="Queue: Embarked in merge queue")
         pr_disembarked_check = await self.wait_for_check_run(
-            name="Queue: Embarked in merge train", conclusion="failure"
+            name="Queue: Embarked in merge queue", conclusion="failure"
         )
         assert pr_disembarked_check is not None
         assert (
@@ -1852,7 +1852,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.assert_merge_queue_contents(q, None, [])
         check = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
         assert check["conclusion"] == "failure"
@@ -6405,7 +6405,7 @@ class TestQueueAction(base.FunctionalTestBase):
             # There are 3 check_run events that should arrive:
             # - Summary
             # - Rule: queue (queue)
-            # - Queue: Embarked in merge train
+            # - Queue: Embarked in merge queue
             check_runs = [
                 await self.wait_for_check_run(status="completed", action="completed"),
                 await self.wait_for_check_run(status="completed", action="completed"),
@@ -6422,7 +6422,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "The pull request has been removed from the queue"
                         )
                         assert check_run["check_run"]["conclusion"] == "cancelled"
-                    case "Queue: Embarked in merge train":
+                    case "Queue: Embarked in merge queue":
                         found_embarked_train = True
                         assert (
                             "checks have timed out"
@@ -6438,7 +6438,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 )
             if not found_embarked_train:
                 raise AssertionError(
-                    "Did not find check_run event for 'Queue: Embarked in merge train'"
+                    "Did not find check_run event for 'Queue: Embarked in merge queue'"
                 )
 
     async def test_queue_ci_timeout_inplace_with_only_pull_request_rules(self) -> None:
@@ -6498,7 +6498,7 @@ class TestQueueAction(base.FunctionalTestBase):
             # There are 3 check_run events that should arrive:
             # - Summary
             # - Rule: queue (queue)
-            # - Queue: Embarked in merge train
+            # - Queue: Embarked in merge queue
             check_runs = [
                 await self.wait_for_check_run(status="completed", action="completed"),
                 await self.wait_for_check_run(status="completed", action="completed"),
@@ -6515,7 +6515,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "The pull request has been removed from the queue"
                         )
                         assert check_run["check_run"]["conclusion"] == "cancelled"
-                    case "Queue: Embarked in merge train":
+                    case "Queue: Embarked in merge queue":
                         found_embarked_train = True
                         assert (
                             "checks have timed out"
@@ -6531,7 +6531,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 )
             if not found_embarked_train:
                 raise AssertionError(
-                    "Did not find check_run event for 'Queue: Embarked in merge train'"
+                    "Did not find check_run event for 'Queue: Embarked in merge queue'"
                 )
 
     async def test_queue_ci_timeout_draft_pr(self) -> None:
@@ -6596,7 +6596,7 @@ class TestQueueAction(base.FunctionalTestBase):
             )
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Queue: Embarked in merge train",
+                key=lambda c: c["name"] == "Queue: Embarked in merge queue",
             )
             assert check is not None
             assert "checks have timed out" in check["output"]["summary"]
@@ -7615,7 +7615,7 @@ pull_request_rules:
         )
 
         check_run = await self.wait_for_check_run(
-            name="Queue: Embarked in merge train",
+            name="Queue: Embarked in merge queue",
             status="completed",
             conclusion="cancelled",
         )

@@ -366,7 +366,7 @@ pull_requests:
         pulls = await self.get_pulls()
         assert len(pulls) == 2
 
-        # NOTE(sileht): We don't save the merge train in Redis on purpose, so next
+        # NOTE(sileht): We don't save the merge queue in Redis on purpose, so next
         # engine run should delete merge queue branch of draft PR not tied to a
         # TrainCar
         draft_pr = await self.wait_for_pull_request("opened")

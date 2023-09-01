@@ -273,7 +273,7 @@ class TestQueuePause(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
         assert (
@@ -505,7 +505,7 @@ class TestQueuePause(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
         assert (
@@ -707,7 +707,7 @@ class TestQueuePause(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
         assert (
@@ -1031,7 +1031,7 @@ class TestQueuePause(base.FunctionalTestBase):
 
         check = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check
         assert (

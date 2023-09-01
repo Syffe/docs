@@ -253,7 +253,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p1 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
         assert (
@@ -321,7 +321,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p1 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
         assert (
@@ -615,7 +615,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
 
         check_run_p1 = await self.wait_for_check_run(
-            name="Queue: Embarked in merge train",
+            name="Queue: Embarked in merge queue",
             status="in_progress",
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
@@ -648,7 +648,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check
         assert (
@@ -970,7 +970,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
 
         check_run_p1 = await self.wait_for_check_run(
-            name="Queue: Embarked in merge train",
+            name="Queue: Embarked in merge queue",
             status="in_progress",
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
@@ -1060,7 +1060,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
 
         check_run_p1 = await self.wait_for_check_run(
-            name="Queue: Embarked in merge train",
+            name="Queue: Embarked in merge queue",
             status="in_progress",
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
@@ -1171,7 +1171,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p1 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
         assert (
@@ -1236,7 +1236,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p1 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
         assert (
@@ -1294,7 +1294,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p1 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
         assert (
@@ -1521,7 +1521,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p1 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
         assert (
@@ -1542,7 +1542,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p2 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p2 is None
 
@@ -1568,7 +1568,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p1 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
         assert (
@@ -1589,7 +1589,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p2 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p2
         assert (
@@ -1627,7 +1627,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p1 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
         assert (
@@ -1754,7 +1754,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p1 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
         assert (
@@ -1784,7 +1784,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         check_run_p1 = first(
             await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+            key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
         assert (

@@ -148,7 +148,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            name="Queue: Embarked in merge train",
+            name="Queue: Embarked in merge queue",
             conclusion="failure",
         )
 
