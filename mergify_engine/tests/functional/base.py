@@ -37,6 +37,7 @@ from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine.actions import backport
 from mergify_engine.actions import copy as copy_action
+from mergify_engine.ci import event_processing
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.queue import merge_train
@@ -44,7 +45,6 @@ from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import conftest as func_conftest
-from mergify_engine.worker import ci_event_processing_service
 from mergify_engine.worker import dedicated_workers_cache_syncer_service
 from mergify_engine.worker import dedicated_workers_spawner_service
 from mergify_engine.worker import gitter_service
@@ -829,13 +829,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         shared_service.shared_stream_tasks_per_process = 1
 
-        if additionnal_services and "ci-event-processing" in additionnal_services:
-            services.append(
-                ci_event_processing_service.CIEventProcessingService(
-                    self.redis_links, idle_time=0
-                )
-            )
-
         while (await self.redis_links.stream.zcard("streams")) > 0:
             await shared_service.shared_stream_worker_task(0)
             await dedicated_service.dedicated_stream_worker_task(
@@ -847,6 +840,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await task.stop_and_wait(
             list(itertools.chain.from_iterable([s.tasks for s in services]))
         )
+
+        if additionnal_services and "ci-event-processing" in additionnal_services:
+            LOG.info("Running ci-event-processing")
+            while (await self.redis_links.stream.xlen("gha_workflow_job")) > 0 or (
+                await self.redis_links.stream.xlen("gha_workflow_run")
+            ) > 0:
+                await event_processing.process_event_streams(self.redis_links)
+            LOG.info("ci-event-processing finished")
 
     def get_gitter(
         self, logger: "logging.LoggerAdapter[logging.Logger]"
