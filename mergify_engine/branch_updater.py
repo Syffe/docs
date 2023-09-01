@@ -1,6 +1,5 @@
 import dataclasses
 import logging
-import uuid
 
 import tenacity
 
@@ -20,9 +19,8 @@ class BranchUpdateFailure(Exception):
         msg: str = "",
         title: str = "Base branch update has failed",
     ) -> None:
-        error_code = "err-code: " + uuid.uuid4().hex[-5:].upper()
         self.title = title
-        self.message = msg + "\n" + error_code
+        self.message = msg
         super().__init__(self.message)
 
 
