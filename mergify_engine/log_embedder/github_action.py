@@ -1,4 +1,5 @@
 import io
+import re
 import zipfile
 
 import daiquiri
@@ -18,6 +19,9 @@ from mergify_engine.models import github_repository
 LOG = daiquiri.getLogger(__name__)
 
 LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
+
+# NOTE(Kontrolix): We remove all the windows forbidden path character as github does
+CLEAN_FAILED_STEP_REGEXP = re.compile(r"[\*\"/\\<>:|\?]")
 
 
 async def embed_log(job: github_actions.WorkflowJob) -> None:
@@ -54,7 +58,7 @@ async def download_failed_step_log(
 
         with zipfile.ZipFile(zip_data, "r") as zip_file:
             with zip_file.open(
-                f"{job.name}/{job.failed_step_number}_{job.failed_step_name.replace('/', '')}.txt"
+                f"{job.name}/{job.failed_step_number}_{CLEAN_FAILED_STEP_REGEXP.sub('', job.failed_step_name)}.txt"
             ) as log_file:
                 return [line.decode() for line in log_file.readlines()]
 
