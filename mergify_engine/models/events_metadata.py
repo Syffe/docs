@@ -56,8 +56,8 @@ class SpeculativeCheckPullRequest(models.Base):
     ] = orm.mapped_column(
         postgresql.JSONB,
         anonymizer_config=(
-            "custom_masks.json_obj_array(0, 5, ARRAY['name', 'description', 'state', "
-            "'url', 'avatar_url'])"
+            "custom_masks.json_obj_array(0, 5, ARRAY[''name'', ''description'', ''state'', "
+            "''url'', ''avatar_url''])"
         ),
     )
 

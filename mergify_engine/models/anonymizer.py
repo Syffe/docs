@@ -44,12 +44,16 @@ DECLARE
     count integer;
     obj jsonb;
     result jsonb;
+    i integer;
+    j integer;
+    num_keys integer;
 BEGIN
     count := anon.random_int_between(min, max);
     result := jsonb_build_array();
+    num_keys := array_length(keys, 1);
     FOR i IN 1..count LOOP
-        obj := jsonb_object();
-        FOR j IN ARRAY_RANGE(1, array_length(keys, 1)) LOOP
+        obj := json_object('{}');
+        FOR j IN 1..num_keys LOOP
             obj[keys[j]] := to_jsonb(anon.random_string(10));
         END LOOP;
         result := result || obj;
