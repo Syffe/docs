@@ -52,7 +52,7 @@ async def download_failed_step_log(
     with io.BytesIO() as zip_data:
         async with github.aget_client(installation_json) as client:
             resp = await client.get(
-                f"/repos/{repo.owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/logs",
+                f"/repos/{repo.owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
             )
             zip_data.write(resp.content)
 

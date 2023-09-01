@@ -86,7 +86,7 @@ async def test_embed_logs(
             },
         )
         respx_mock.get(
-            f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/logs"
+            f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
         ).respond(
             200,
             stream=base64.b64decode(  # type: ignore[arg-type]

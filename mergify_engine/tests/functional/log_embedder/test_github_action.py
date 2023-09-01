@@ -39,7 +39,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                         },
                         {
                             "name": 'Failure step with *"/\\<>:|? in the title ❌',
-                            "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }};exit 1",
+                            "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }} run_attempt:${{ github.run_attempt }};exit 1",
                         },
                     ],
                 }
@@ -58,20 +58,42 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
     async def test_log_downloading(self) -> None:
         job_event, pr = await self.run_github_action()
 
-        assert job_event["workflow_job"] is not None
+        async def download_and_check_log(
+            job_event: github_types.GitHubEventWorkflowJob, run_attempt: int
+        ) -> None:
+            assert job_event["workflow_job"] is not None
+            assert job_event["workflow_job"]["run_attempt"] == run_attempt
 
-        async with database.create_session() as session:
-            job = await session.scalar(
-                sqlalchemy.select(gha_model.WorkflowJob).where(
-                    gha_model.WorkflowJob.id == job_event["workflow_job"]["id"]
+            async with database.create_session() as session:
+                job = await session.scalar(
+                    sqlalchemy.select(gha_model.WorkflowJob).where(
+                        gha_model.WorkflowJob.id == job_event["workflow_job"]["id"]
+                    )
                 )
+
+            assert job is not None
+
+            log = await gha_embedder.download_failed_step_log(job)
+
+            assert (
+                f"I will fail on sha {pr['head']['sha']} run_attempt:{run_attempt}"
+                in "".join(log)
             )
 
-        assert job is not None
+        await download_and_check_log(job_event, 1)
 
-        log = await gha_embedder.download_failed_step_log(job)
+        # Rerun the failed job
+        assert job_event["workflow_job"] is not None
+        await self.client_integration.post(
+            f"{self.url_origin}/actions/jobs/{job_event['workflow_job']['id']}/rerun"
+        )
+        job_event = typing.cast(
+            github_types.GitHubEventWorkflowJob,
+            await self.wait_for("workflow_job", {"action": "completed"}),
+        )
+        await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
 
-        assert f"I will fail on sha {pr['head']['sha']}" in "".join(log)
+        await download_and_check_log(job_event, 2)
 
     async def test_log_embedding(self) -> None:
         job_event, pr = await self.run_github_action()
