@@ -355,10 +355,10 @@ def map_tenacity_try_again_to_real_cause(
         try:
             return await func(*args, **kwargs)
         except tenacity.TryAgain as exc:
-            if exc.__cause__ is None:
+            if exc.__context__ is None:
                 raise RuntimeError(
                     "map_tenacity_try_again_to_real_cause must be used only if TryAgain is raise in an except block"
                 )
-            raise exc.__cause__
+            raise exc.__context__
 
     return inner_func

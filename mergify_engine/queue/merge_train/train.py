@@ -962,7 +962,7 @@ class Train:
                 car.initial_current_base_sha,
                 failure_history=[*car.failure_history, car],
             )
-            raise tenacity.TryAgain
+            raise tenacity.TryAgain from exc
 
     async def _slice_frozen_cars(self, frozen_queues: set[str]) -> None:
         for i, car in enumerate(self._cars):

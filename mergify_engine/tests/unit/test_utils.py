@@ -379,10 +379,47 @@ def add_workflow_job(
 
 
 async def test_map_tenacity_try_again_to_real_cause() -> None:
-    @utils.map_tenacity_try_again_to_real_cause
-    @tenacity.retry(retry=tenacity.retry_never, stop=tenacity.stop_after_attempt(2))
+    @tenacity.retry(
+        retry=tenacity.retry_never, stop=tenacity.stop_after_attempt(2), reraise=True
+    )
     async def buggy_code() -> None:
-        1 / 0  # noqa
+        try:
+            1 / 0  # noqa
+        except ZeroDivisionError as exc:
+            raise tenacity.TryAgain from exc
+
+    with pytest.raises(tenacity.TryAgain):
+        await buggy_code()
 
     with pytest.raises(ZeroDivisionError):
+        await utils.map_tenacity_try_again_to_real_cause(buggy_code)()
+
+
+async def test_map_tenacity_try_again_to_real_cause_without_from() -> None:
+    @tenacity.retry(
+        retry=tenacity.retry_never, stop=tenacity.stop_after_attempt(2), reraise=True
+    )
+    async def buggy_code() -> None:
+        try:
+            1 / 0  # noqa
+        except ZeroDivisionError:
+            raise tenacity.TryAgain  # No `from exc`
+
+    with pytest.raises(tenacity.TryAgain):
         await buggy_code()
+
+    with pytest.raises(ZeroDivisionError):
+        await utils.map_tenacity_try_again_to_real_cause(buggy_code)()
+
+
+async def test_map_tenacity_try_again_to_real_cause_without_except() -> None:
+    @tenacity.retry(
+        retry=tenacity.retry_never, stop=tenacity.stop_after_attempt(2), reraise=True
+    )
+    async def buggy_code() -> None:
+        # No except
+        raise tenacity.TryAgain
+
+    expected_error_message = "map_tenacity_try_again_to_real_cause must be used only if TryAgain is raise in an except block"
+    with pytest.raises(RuntimeError, match=expected_error_message):
+        await utils.map_tenacity_try_again_to_real_cause(buggy_code)()
