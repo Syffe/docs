@@ -263,6 +263,11 @@ class WorkflowJob(models.Base):
         anonymizer_config="anon.lorem_ipsum( words := 20 )",
     )
 
+    embedded_log_error_title: orm.Mapped[str | None] = orm.mapped_column(
+        sqlalchemy.String,
+        anonymizer_config="anon.lorem_ipsum( words := 10 )",
+    )
+
     @classmethod
     async def insert(
         cls,

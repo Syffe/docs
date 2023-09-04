@@ -68,6 +68,28 @@ async def test_embed_logs(
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
         },
     )
+    respx_mock.post(
+        openai_api.OPENAI_CHAT_COMPLETION_END_POINT,
+    ).respond(
+        200,
+        json={
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1677652288,
+            "model": "gpt-3.5-turbo-0613",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "Toto title",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
+        },
+    )
 
     # NOTE(Kontrolix): Reduce batch size to speed up test
     github_action.LOG_EMBEDDER_JOBS_BATCH_SIZE = 2
@@ -124,6 +146,7 @@ async def test_embed_logs(
         for job in jobs
     )
     assert all(job.neighbours_computed_at is not None for job in jobs)
+    assert all(job.embedded_log_error_title == "Toto title" for job in jobs)
 
     # NOTE(Kontolix): Validate that if embedding has been computed for a job but neighbours
     # have not been computed, if we call the service, only neighbours are computed for that job.

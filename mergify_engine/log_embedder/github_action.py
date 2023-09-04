@@ -90,6 +90,20 @@ async def get_tokenized_cleaned_log(
     return tokens, first_line, last_line
 
 
+async def set_embedded_log_error_title(job: github_actions.WorkflowJob) -> None:
+    chat_completion = await openai_api.get_chat_completion(
+        [
+            openai_api.ChatCompletionMessage(
+                role=openai_api.ChatCompletionRole.user,
+                content=f"""Analyze the following logs, spot the error and give me a
+                meaningful title to qualify this error. Your answer must contains
+                only the title. The logs: {job.embedded_log}""",
+            )
+        ]
+    )
+    job.embedded_log_error_title = chat_completion["choices"][0]["message"]["content"]
+
+
 @tracer.wrap("embed-logs")
 async def embed_logs() -> bool:
     if not settings.LOG_EMBEDDER_ENABLED_ORGS:
@@ -115,6 +129,7 @@ async def embed_logs() -> bool:
                 sqlalchemy.or_(
                     github_actions.WorkflowJob.log_embedding.is_(None),
                     github_actions.WorkflowJob.neighbours_computed_at.is_(None),
+                    github_actions.WorkflowJob.embedded_log_error_title.is_(None),
                 ),
             )
             .order_by(github_actions.WorkflowJob.completed_at.asc())
@@ -136,8 +151,19 @@ async def embed_logs() -> bool:
                         exc_info=True,
                     )
 
+            if job.embedded_log_error_title is None and job.embedded_log is not None:
+                try:
+                    await set_embedded_log_error_title(job)
+                except openai_api.OpenAiException:
+                    LOG.error(
+                        "log-embedder: a job raises an unexpected error on setting embedded log error title",
+                        job_id=job.id,
+                        exc_info=True,
+                    )
+
             job_ids.append(job.id)
             await session.commit()
+
         await github_actions.WorkflowJob.compute_logs_embedding_cosine_similarity(
             session, job_ids
         )
