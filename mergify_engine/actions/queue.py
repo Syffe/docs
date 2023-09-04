@@ -884,9 +884,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return queue_utils.PrMerged(
                 self.ctxt.pull["number"], self.ctxt.pull["merge_commit_sha"]
             )
-        return queue_utils.PrDequeued(
-            self.ctxt.pull["number"], details=f". {result.title}"
-        )
+        details = f". {result.title}"
+        if result.summary:
+            details += f". {result.summary}"
+        return queue_utils.PrDequeued(self.ctxt.pull["number"], details=details)
 
     @classmethod
     async def _should_be_queued(

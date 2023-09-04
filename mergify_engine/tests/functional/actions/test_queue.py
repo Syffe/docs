@@ -2921,7 +2921,8 @@ class TestQueueAction(base.FunctionalTestBase):
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
-                        "reason": f"Pull request #{p1['number']} has been dequeued. The pull request rule doesn't match anymore",
+                        "reason": f"Pull request #{p1['number']} has been dequeued. "
+                        "The pull request rule doesn't match anymore. This action has been cancelled.",
                         "seconds_waiting_for_schedule": 0,
                         "seconds_waiting_for_freeze": 0,
                     },
