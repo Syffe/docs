@@ -800,7 +800,7 @@ class TrainCar:
             )
             raise TrainCarPullRequestCreationFailure(self) from exc
 
-    @tracer.wrap("TrainCar.start_inplace_checks", span_type="worker")
+    @tracer.wrap("TrainCar.start_inplace_checks")
     async def start_checking_inplace(self) -> None:
         if len(self.still_queued_embarked_pulls) != 1:
             raise RuntimeError("multiple embarked_pulls but state==updated")
@@ -897,7 +897,7 @@ class TrainCar:
             partition_name=self.train.partition_name,
         )
 
-    @tracer.wrap("TrainCar._create_draft_pull_request", span_type="worker")
+    @tracer.wrap("TrainCar._create_draft_pull_request")
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(
             DraftPullRequestCreationTemporaryFailure
@@ -1185,7 +1185,7 @@ class TrainCar:
         ]
         return base_sha, pulls_in_draft
 
-    @tracer.wrap("TrainCar.start_checking_with_draft", span_type="worker")
+    @tracer.wrap("TrainCar.start_checking_with_draft")
     async def start_checking_with_draft(
         self,
         previous_car: "TrainCar | None",

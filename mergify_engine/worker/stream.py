@@ -606,7 +606,6 @@ class Processor:
             if bucket.sources_key.endswith("~0"):
                 with tracer.trace(
                     "check-runs/push pull requests finder",
-                    span_type="worker",
                     resource=f"{installation.owner_login}/{tracing_repo_name}",
                 ) as span:
                     logger.debug(
@@ -683,7 +682,6 @@ class Processor:
                 try:
                     with tracer.trace(
                         "pull processing",
-                        span_type="worker",
                         resource=f"{installation.owner_login}/{tracing_repo_name}/{bucket.pull_number}",
                     ) as span:
                         span.set_tags(

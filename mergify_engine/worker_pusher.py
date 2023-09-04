@@ -89,7 +89,6 @@ async def push(
 
     with tracer.trace(
         "push event",
-        span_type="worker",
         resource=f"{owner_login}/{tracing_repo_name}/{pull_number}",
     ) as span:
         span.set_tags(

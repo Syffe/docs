@@ -20,7 +20,6 @@ from mergify_engine.models import github_repository
 LOG = daiquiri.getLogger(__name__)
 
 
-@tracer.wrap("ci.event_processing", span_type="worker")
 async def process_event_streams(redis_links: redis_utils.RedisLinks) -> None:
     await _process_workflow_run_stream(redis_links)
     await _process_workflow_job_stream(redis_links)

@@ -397,7 +397,7 @@ class Repository:
     def clear_caches(self) -> None:
         self._caches = RepositoryCaches()
 
-    @tracer.wrap("get_mergify_config", span_type="worker")
+    @tracer.wrap("get_mergify_config")
     async def get_mergify_config(
         self,
         allow_extend: bool = True,
@@ -1880,7 +1880,7 @@ class Context:
             return datetime.datetime.max
         return datetime.datetime.fromisoformat(check_run["completed_at"][:-1])
 
-    @tracer.wrap("ensure_complete", span_type="worker")
+    @tracer.wrap("ensure_complete")
     async def ensure_complete(self) -> None:
         if not self._is_data_complete():
             self.pull = await self.client.item(

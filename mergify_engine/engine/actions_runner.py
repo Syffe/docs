@@ -505,7 +505,7 @@ async def run_actions(
 
             else:
                 with ddtrace.tracer.trace(
-                    f"action.{action}", span_type="worker", resource=str(ctxt)
+                    f"action.{action}", resource=str(ctxt)
                 ) as span:
                     # NOTE(sileht): check state change so we have to run "run" or "cancel"
                     report = await exec_action(

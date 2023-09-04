@@ -555,7 +555,7 @@ class Convoy:
         return trains_by_convoy
 
     @classmethod
-    @tracer.wrap("Train.refresh_convoys", span_type="worker")
+    @tracer.wrap("Train.refresh_convoys")
     async def refresh_convoys(cls, installation: context.Installation) -> None:
         trains_key = train_import.get_redis_train_key(installation)
         trains_by_convoy = await cls._get_raw_trains_by_convoy(installation)
