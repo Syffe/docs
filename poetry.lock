@@ -2889,16 +2889,16 @@ files = [
 
 [[package]]
 name = "semgrep"
-version = "1.38.0"
+version = "1.38.3"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "semgrep-1.38.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-any.whl", hash = "sha256:1350c9def869d1ceec8e87e31570a437362f4d5ce7d672f752d13d1c15d7b33b"},
-    {file = "semgrep-1.38.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_10_14_x86_64.whl", hash = "sha256:3e8edac5e9212f807dcda19e11507dfabb011716c05a9de3d50d7d94b6c0c7b4"},
-    {file = "semgrep-1.38.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_11_0_arm64.whl", hash = "sha256:9bfd0be67e65cec7fd07070461b6a9650f5718506904de3628f44065f35914e2"},
-    {file = "semgrep-1.38.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-musllinux_1_0_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0ac1593ae310a714462a9578d84c6d09fd33615456fae2c1b0fa8e2aa7cdcb5b"},
-    {file = "semgrep-1.38.0.tar.gz", hash = "sha256:999cf16dcc142bc25c68dc05bb31320f85d3925f5423df94d07c52fdb2c37228"},
+    {file = "semgrep-1.38.3-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-any.whl", hash = "sha256:90bce975d6b3c19ed99dadbba829b5d9ca715f9533493f29692033a70e715f1b"},
+    {file = "semgrep-1.38.3-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_10_14_x86_64.whl", hash = "sha256:4a59bf1472c4c9814816f23ca71cfff441de567f319c60c2d7a940cf7071963c"},
+    {file = "semgrep-1.38.3-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_11_0_arm64.whl", hash = "sha256:f8b6091a829112de71f82023a88df18770f0c552f953336dcf4a1a143b1d7c03"},
+    {file = "semgrep-1.38.3-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-musllinux_1_0_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0a16e79610c3ab081e84c97eb5136f6523a298173d68fa1ba56f6d6a69326285"},
+    {file = "semgrep-1.38.3.tar.gz", hash = "sha256:9f3d2f2bcbd554b27b4be396cbd1a2034d3cd690cf01b0edbec98265e97707c3"},
 ]
 
 [package.dependencies]
@@ -4125,4 +4125,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "a085c763d14ede569586ce5e5756d79b33c25a943a472c7d999a65dafddccec4"
+content-hash = "6b0add7a30112aceedbfa93862fe6f612575fe134fc3ee089c63b94eeb9383e2"
