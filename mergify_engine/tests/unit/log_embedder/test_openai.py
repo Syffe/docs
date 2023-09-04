@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import respx
 
 from mergify_engine.log_embedder import openai_api
@@ -36,3 +37,135 @@ async def test_openai_get_embedding(
     embedding = await openai_api.get_embedding("toto")
 
     assert np.array_equal(embedding, OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"])
+
+
+async def test_openai_chat_completion_models_order() -> None:
+    previous_max_tokens = 0
+    for model in openai_api.OPENAI_CHAT_COMPLETION_MODELS:
+        if model["max_tokens"] <= previous_max_tokens:
+            pytest.fail(
+                "OPENAI_CHAT_COMPLETION_MODELS list must be ascending sorted according to max_tokens values"
+            )
+        previous_max_tokens = model["max_tokens"]
+
+
+async def test_get_chat_completion(
+    respx_mock: respx.MockRouter,
+) -> None:
+    respx_mock.post(
+        openai_api.OPENAI_CHAT_COMPLETION_END_POINT,
+        json={
+            "model": "gpt-3.5-turbo",
+            "messages": [{"role": "user", "content": "hello"}],
+        },
+    ).respond(
+        200,
+        json={
+            "id": "chatcmpl-7tAj9cUlsxgQOtD6ojRq24bPrljzs",
+            "object": "chat.completion",
+            "created": 1693383631,
+            "model": "gpt-3.5-turbo-0613",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "Hello! How can I assist you today?",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {"prompt_tokens": 8, "completion_tokens": 9, "total_tokens": 17},
+        },
+    )
+
+    chat_completion = await openai_api.get_chat_completion(
+        [
+            openai_api.ChatCompletionMessage(
+                role=openai_api.ChatCompletionRole.user, content="hello"
+            )
+        ],
+        0,
+    )
+
+    assert (
+        chat_completion["choices"][0]["message"]["content"]
+        == "Hello! How can I assist you today?"
+    )
+
+
+async def test_get_chat_completion_model() -> None:
+    model = openai_api.get_chat_completion_model(
+        [{"role": openai_api.ChatCompletionRole.user, "content": "hello"}], 0
+    )
+    assert model["name"] == "gpt-3.5-turbo"
+
+    # NOTE(Kontrolix): - 1 is for the token used by the role
+    model = openai_api.get_chat_completion_model(
+        [
+            {
+                "role": openai_api.ChatCompletionRole.user,
+                "content": "hello"
+                * (
+                    model["max_tokens"]
+                    - 1
+                    - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
+                ),
+            }
+        ],
+        0,
+    )
+    assert model["name"] == "gpt-3.5-turbo"
+
+    model = openai_api.get_chat_completion_model(
+        [
+            {
+                "role": openai_api.ChatCompletionRole.user,
+                "content": "hello"
+                * (
+                    model["max_tokens"]
+                    - 1
+                    - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
+                    - 100
+                ),
+            }
+        ],
+        100,
+    )
+    assert model["name"] == "gpt-3.5-turbo"
+
+    model = openai_api.get_chat_completion_model(
+        [
+            {
+                "role": openai_api.ChatCompletionRole.user,
+                "content": "hello"
+                * (
+                    model["max_tokens"]
+                    - 1
+                    - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
+                    - 100
+                ),
+            }
+        ],
+        101,
+    )
+    assert model["name"] == "gpt-3.5-turbo-16k"
+
+    with pytest.raises(
+        openai_api.OpenAiException, match="No model found to handle 16385 tokens"
+    ):
+        model = openai_api.get_chat_completion_model(
+            [
+                {
+                    "role": openai_api.ChatCompletionRole.user,
+                    "content": "hello"
+                    * (
+                        model["max_tokens"]
+                        - 1
+                        - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
+                        - 100
+                    ),
+                }
+            ],
+            101,
+        )

@@ -162,7 +162,7 @@ async def test_compute_log_embedding_cosine_similarity(
 
 
 @pytest.mark.parametrize(
-    "raw_log,expected_lenght,expected_cleaned_log,expected_embedded_log",
+    "raw_log,expected_length,expected_cleaned_log,expected_embedded_log",
     [
         (["hello\n"], 1, "hello", ["hello\n"]),
         (
@@ -188,13 +188,13 @@ async def test_compute_log_embedding_cosine_similarity(
 )
 async def test_get_tokenized_cleaned_log(
     raw_log: list[str],
-    expected_lenght: int,
+    expected_length: int,
     expected_cleaned_log: str,
     expected_embedded_log: list[str],
 ) -> None:
     tokens, first_line, last_line = await get_tokenized_cleaned_log(raw_log)
 
-    assert len(tokens) == expected_lenght
+    assert len(tokens) == expected_length
 
     assert openai_api.TIKTOKEN_ENCODING.decode(tokens) == expected_cleaned_log
     assert raw_log[first_line:last_line] == expected_embedded_log

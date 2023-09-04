@@ -1,5 +1,7 @@
 import base64
+import enum
 import importlib.resources  # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
+import typing
 
 import numpy as np
 import numpy.typing as npt
@@ -69,3 +71,104 @@ async def get_embedding(input_data: str | list[int]) -> npt.NDArray[np.float32]:
             raise OpenAiException(f"OpenAI return None for embedding of {input_data}")
 
     return np.array(list(map(np.float32, embedding)))
+
+
+class ChatCompletionModel(typing.TypedDict):
+    name: str
+    max_tokens: int
+
+
+OPENAI_CHAT_COMPLETION_END_POINT: str = OPENAI_API_BASE_URL + "/chat/completions"
+# NOTE(Kontrolix): This list must always be ascending sorted
+# according to max_tokens values because when we use it, it must be sorted that way
+OPENAI_CHAT_COMPLETION_MODELS: list[ChatCompletionModel] = sorted(
+    [
+        ChatCompletionModel(name="gpt-3.5-turbo", max_tokens=4096),
+        ChatCompletionModel(name="gpt-3.5-turbo-16k", max_tokens=16384),
+    ],
+    key=lambda e: e["max_tokens"],
+)
+
+# NOTE(Kontolix): "Why 6 ? O_o" according to openai doc "Each message passed to the API
+# consumes the number of tokens in the content, role, and other fields, plus a few
+# extra for behind-the-scenes formatting. This may change slightly in the future."
+# and according to my tests (29/08/2023) 6 is the few extra
+OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN = 6
+
+
+class ChatCompletionRole(enum.StrEnum):
+    system = "system"
+    user = "user"
+    assistant = "assistant"
+
+
+class ChatCompletionFinishReason(enum.StrEnum):
+    stop = "stop"
+    length = "length"
+
+
+class ChatCompletionMessage(typing.TypedDict):
+    role: ChatCompletionRole
+    content: str
+
+
+class ChatCompletionChoice(typing.TypedDict):
+    index: int
+    message: ChatCompletionMessage
+    finish_reason: ChatCompletionFinishReason
+
+
+class ChatCompletionObject(typing.TypedDict):
+    model: str
+    choices: list[ChatCompletionChoice]
+
+
+async def get_chat_completion(
+    messages: list[ChatCompletionMessage], nb_free_token_min_for_answer: int = 100
+) -> ChatCompletionObject:
+    # NOTE(Kontrolix): nb_free_token_min_for_answer is the minimum number of tokens
+    # that we reserve in the max number of tokens of a model since the max number
+    # includes the inputs and the answer according to OpenAI documentation :
+    # https://platform.openai.com/docs/guides/gpt/managing-tokens
+
+    model = get_chat_completion_model(messages, nb_free_token_min_for_answer)
+
+    async with http.AsyncClient(
+        headers={
+            "Authorization": f"Bearer {settings.OPENAI_API_TOKEN.get_secret_value()}",
+            "Accept": "application/json",
+        },
+    ) as session:
+        response = await session.post(
+            OPENAI_CHAT_COMPLETION_END_POINT,
+            json={
+                "model": model["name"],
+                "messages": messages,
+            },
+        )
+
+    return typing.cast(ChatCompletionObject, response.json())
+
+
+def count_chat_completion_messages_token(messages: list[ChatCompletionMessage]) -> int:
+    count = 0
+    for message in messages:
+        count += len(TIKTOKEN_ENCODING.encode(message["content"]))
+        count += len(TIKTOKEN_ENCODING.encode(message["role"]))
+    return count
+
+
+def get_chat_completion_model(
+    messages: list[ChatCompletionMessage], nb_free_token_min_for_answer: int
+) -> ChatCompletionModel:
+    nb_token_needed = (
+        count_chat_completion_messages_token(messages)
+        + nb_free_token_min_for_answer
+        + OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
+    )
+
+    for model in OPENAI_CHAT_COMPLETION_MODELS:
+        if model["max_tokens"] >= nb_token_needed:
+            return model
+
+    raise OpenAiException(f"No model found to handle {nb_token_needed} tokens")
