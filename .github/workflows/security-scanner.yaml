@@ -53,7 +53,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         # yamllint disable-line rule:line-length
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: aquasecurity/trivy-action@0.11.2
+        uses: aquasecurity/trivy-action@0.12.0
         with:
           image-ref: ${{ steps.download-image.outputs.image-ref }}
           format: "json"
