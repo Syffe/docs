@@ -124,7 +124,7 @@ async def embed_logs() -> bool:
 
         LOG.info("log-embedder: %d jobs to embed", len(jobs), request=str(stmt))
 
-        job_ids = []
+        job_ids_to_compute_cosine_similarity = []
         for job in jobs:
             if job.log_embedding is None:
                 try:
@@ -136,10 +136,11 @@ async def embed_logs() -> bool:
                         exc_info=True,
                     )
 
-            job_ids.append(job.id)
+            if job.neighbours_computed_at is None:
+                job_ids_to_compute_cosine_similarity.append(job.id)
             await session.commit()
         await github_actions.WorkflowJob.compute_logs_embedding_cosine_similarity(
-            session, job_ids
+            session, job_ids_to_compute_cosine_similarity
         )
         await session.commit()
         return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
