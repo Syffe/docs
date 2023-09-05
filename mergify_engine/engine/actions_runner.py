@@ -639,14 +639,15 @@ async def handle(
             ),
         )
 
-    try:
-        match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
-    except actions.InvalidDynamicActionConfiguration as e:
-        return check_api.Result(
-            check_api.Conclusion.ACTION_REQUIRED,
-            "The current Mergify configuration is invalid",
-            e.get_summary(),
-        )
+    with ddtrace.tracer.trace("pull_request_rules_evaluation", resource=str(ctxt)):
+        try:
+            match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
+        except actions.InvalidDynamicActionConfiguration as e:
+            return check_api.Result(
+                check_api.Conclusion.ACTION_REQUIRED,
+                "The current Mergify configuration is invalid",
+                e.get_summary(),
+            )
 
     await delayed_refresh.plan_next_refresh(
         ctxt, match.matching_rules, ctxt.pull_request
