@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v4
         with:
           token: "${{ secrets.MERGIFY_CI_BOT_PAT }}"
           persist-credentials: true

@@ -48,7 +48,7 @@ jobs:
           echo "image-ref=$image" >> "$GITHUB_OUTPUT"
 
       - name: ⬇️ Checkout
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scanner
         # yamllint disable-line rule:line-length
