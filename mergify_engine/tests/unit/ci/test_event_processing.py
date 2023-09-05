@@ -90,19 +90,28 @@ async def test_process_event_stream_workflow_run(
 
 
 @pytest.mark.parametrize(
-    "event_file_name, conclusion, failed_step_number, failed_step_name",
+    "event_file_name, conclusion, failed_step_number, failed_step_name, nb_steps",
     (
+        (
+            "workflow_job.completed_failure_no_steps.json",
+            github_actions.WorkflowJobConclusion.FAILURE,
+            None,
+            None,
+            0,
+        ),
         (
             "workflow_job.completed_failure.json",
             github_actions.WorkflowJobConclusion.FAILURE,
             3,
             "Run echo hello",
+            5,
         ),
         (
             "workflow_job.completed.json",
             github_actions.WorkflowJobConclusion.SUCCESS,
             None,
             None,
+            5,
         ),
     ),
 )
@@ -115,6 +124,7 @@ async def test_process_event_stream_workflow_job(
     conclusion: github_actions.WorkflowJobConclusion,
     failed_step_number: int,
     failed_step_name: str,
+    nb_steps: int,
 ) -> None:
     # Create the event twice, as we should handle duplicates
     stream_event = {
@@ -135,10 +145,48 @@ async def test_process_event_stream_workflow_job(
     assert actual_workflow_job.labels == ["ubuntu-20.04"]
 
     assert actual_workflow_job.steps is not None
-    assert len(actual_workflow_job.steps) == 5
+    assert len(actual_workflow_job.steps) == nb_steps
 
     assert actual_workflow_job.failed_step_number == failed_step_number
     assert actual_workflow_job.failed_step_name == failed_step_name
 
     stream_events = await redis_links.stream.xrange("workflow_job")
     assert len(stream_events) == 0
+
+
+async def test_process_event_stream_workflow_job_with_no_failed_steps(
+    redis_links: redis_utils.RedisLinks,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
+    logger_checker: None,
+) -> None:
+    stream_event = {
+        "event_type": "workflow_job",
+        "data": msgpack.packb(
+            sample_ci_events_to_process[
+                "workflow_job.completed_failure_no_failed_steps.json"
+            ].slim_event
+        ),
+    }
+    await redis_links.stream.xadd("gha_workflow_job", stream_event)
+
+    # Mock to let the RuntimeError to be raise and avoid it to be catch
+    # by try/except in _process_workflow_job_stream
+    real_process_workflow_job_event = event_processing._process_workflow_job_event
+
+    async def mock_process_workflow_job_event(
+        redis_links: redis_utils.RedisLinks,
+        stream_event_id: bytes,
+        stream_event: dict[bytes, bytes],
+    ) -> None:
+        with pytest.raises(RuntimeError, match="Failed step not found."):
+            await real_process_workflow_job_event(
+                redis_links, stream_event_id, stream_event
+            )
+
+    with mock.patch.object(
+        event_processing,
+        "_process_workflow_job_event",
+        new=mock_process_workflow_job_event,
+    ):
+        await event_processing.process_event_streams(redis_links)

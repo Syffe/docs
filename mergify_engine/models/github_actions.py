@@ -279,7 +279,7 @@ class WorkflowJob(models.Base):
             sqlalchemy.select(cls).where(cls.id == workflow_job_data["id"])
         )
         if result.scalar_one_or_none() is None:
-            failed_step = cls.get_failed_step(workflow_job_data)
+            failed_step = cls.get_failed_step(workflow_job_data, repository)
 
             session.add(
                 cls(
@@ -303,9 +303,13 @@ class WorkflowJob(models.Base):
     @staticmethod
     def get_failed_step(
         workflow_job_data: github_types.GitHubWorkflowJob,
+        repository: github_types.GitHubRepository,
     ) -> WorkflowJobFailedStep | None:
+        # NOTE(Kontrolix): repository is passed as a parameter just for debug purpose
+        # in DataDog.
+
         result = None
-        if workflow_job_data["conclusion"] == "failure":
+        if workflow_job_data["conclusion"] == "failure" and workflow_job_data["steps"]:
             for step in workflow_job_data["steps"]:
                 if step["conclusion"] in ("failure", "cancelled"):
                     result = WorkflowJobFailedStep(
@@ -316,6 +320,8 @@ class WorkflowJob(models.Base):
                 LOG.info(
                     "WorkflowJob: Can't find failed step on failed job",
                     workflow_job_data=workflow_job_data,
+                    gh_owner=repository["owner"]["login"],
+                    gh_repo=repository["name"],
                 )
                 raise RuntimeError("Failed step not found.")
 

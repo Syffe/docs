@@ -114,6 +114,8 @@ async def embed_logs() -> bool:
             .where(
                 github_actions.WorkflowJob.conclusion
                 == github_actions.WorkflowJobConclusion.FAILURE,
+                github_actions.WorkflowJob.failed_step_name.is_not(None),
+                github_actions.WorkflowJob.failed_step_number.is_not(None),
                 sqlalchemy.or_(
                     github_actions.WorkflowJob.log_embedding.is_(None),
                     github_actions.WorkflowJob.neighbours_computed_at.is_(None),
