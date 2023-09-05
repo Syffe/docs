@@ -12,8 +12,8 @@ instances:
     keys:
       - streams
       - attempts
-      - workflow_run
-      - workflow_job
+      - gha_workflow_run
+      - gha_workflow_job
     tags:
       - role:streams
 
