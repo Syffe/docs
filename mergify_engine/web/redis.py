@@ -17,9 +17,7 @@ async def startup() -> None:
     global _REDIS_LINKS
     _REDIS_LINKS = redis_utils.RedisLinks(
         name="web",
-        # Heroku H12 timeout is 30s, so half should be good
         connection_pool_cls=redispy.connection.BlockingConnectionPool,
-        connection_pool_kwargs={"timeout": 15},
         cache_max_connections=settings.REDIS_CACHE_WEB_MAX_CONNECTIONS,
         stream_max_connections=settings.REDIS_STREAM_WEB_MAX_CONNECTIONS,
         queue_max_connections=settings.REDIS_QUEUE_WEB_MAX_CONNECTIONS,
