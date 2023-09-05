@@ -18,5 +18,5 @@ def test_merge_queue_reset(
     assert result.exit_code == 0, result.output
     assert (
         result.output
-        == "mergifyio-testing/functional-testing-repo-sileht merge queue reseted\n"
+        == f"{recorder.config['organization_name']}/{recorder.config['repository_name']} merge queue reseted\n"
     )

@@ -18,5 +18,5 @@ def test_refresher(
     assert result.exit_code == 0, result.output
     assert (
         result.output
-        == "refresh of branch `https://github.com/mergifyio-testing/functional-testing-repo-sileht/branch/main` has been requested\n"
+        == f"refresh of branch `https://github.com/{recorder.config['organization_name']}/{recorder.config['repository_name']}/branch/main` has been requested\n"
     )
