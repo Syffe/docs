@@ -30,7 +30,6 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     "timeout-minutes": 5,
                     "runs-on": "ubuntu-20.04",
                     "steps": [
-                        {"uses": "actions/checkout@v2"},
                         {"name": "Succes step 🎉", "run": "echo toto"},
                         {
                             "name": "Failed step but no failure 🛑",
@@ -149,7 +148,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         assert job is not None
         assert job.embedded_log is not None
         assert f"I will fail on sha {pr['head']['sha']}" in job.embedded_log
-        assert job.failed_step_number == 5
+        assert job.failed_step_number == 4
         assert job.failed_step_name == 'Failure step with *"/\\<>:|? in the title ❌'
         assert job.log_embedding is not None
 
