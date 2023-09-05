@@ -1,4 +1,6 @@
+import io
 import typing
+import zipfile
 
 import numpy as np
 import respx
@@ -20,7 +22,7 @@ from mergify_engine.worker.manager import ServicesSet
 
 class TestLogEmbedderGithubAction(base.FunctionalTestBase):
     async def run_github_action(
-        self,
+        self, steps: list[dict[str, typing.Any]] | None = None
     ) -> tuple[github_types.GitHubEventWorkflowJob, github_types.GitHubPullRequest]:
         ci = {
             "name": "Continuous Integration",
@@ -29,18 +31,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 "unit-tests": {
                     "timeout-minutes": 5,
                     "runs-on": "ubuntu-20.04",
-                    "steps": [
-                        {"name": "Succes step 🎉", "run": "echo toto"},
-                        {
-                            "name": "Failed step but no failure 🛑",
-                            "run": "echo I faill but we continue;exit 1",
-                            "continue-on-error": True,
-                        },
-                        {
-                            "name": 'Failure step with *"/\\<>:|? in the title ❌',
-                            "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }} run_attempt:${{ github.run_attempt }};exit 1",
-                        },
-                    ],
+                    "steps": steps,
                 }
             },
         }
@@ -55,7 +46,14 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         return typing.cast(github_types.GitHubEventWorkflowJob, job_event), pr
 
     async def test_log_downloading(self) -> None:
-        job_event, pr = await self.run_github_action()
+        job_event, pr = await self.run_github_action(
+            steps=[
+                {
+                    "name": "Say hi we count run_attempt here",
+                    "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }} run_attempt:${{ github.run_attempt }};exit 1",
+                },
+            ],
+        )
 
         async def download_and_check_log(
             job_event: github_types.GitHubEventWorkflowJob, run_attempt: int
@@ -95,7 +93,20 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         await download_and_check_log(job_event, 2)
 
     async def test_log_embedding(self) -> None:
-        job_event, pr = await self.run_github_action()
+        job_event, pr = await self.run_github_action(
+            steps=[
+                {"name": "Success step 🎉", "run": "echo toto"},
+                {
+                    "name": "Failed step but no failure 🛑",
+                    "run": "echo I fail but we continue;exit 1",
+                    "continue-on-error": True,
+                },
+                {
+                    "name": 'Failure step with *"/\\<>:|? in the title ❌',
+                    "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }} run_attempt:${{ github.run_attempt }};exit 1",
+                },
+            ],
+        )
 
         assert job_event["workflow_job"] is not None
 
@@ -155,3 +166,68 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         assert np.array_equal(
             job.log_embedding, OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"]
         )
+
+    async def test_log_step_name_to_zip_filenames(self) -> None:
+        steps = [
+            {"name": "Say hi we count run_attempt here", "run": "echo Hi"},
+            {
+                # Reproduce ENGINE-3EJ with one digit step number
+                "name": "Run # nosemgrep generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip.txt",
+                "run": "echo toto",
+            },
+            {
+                "name": 'Failure step with *"/\\<>:|? in the title ❌',
+                "run": "echo Hi",
+            },
+            {
+                "name": "Failure step with a long utf8 char 𒐫 and too many chars to fit in a GitHub zip filename ❌",
+                "run": "echo Hi",
+            },
+            # To ensure we have step numbers with multiple digits
+            {"name": "Success step 🎉", "run": "echo toto"},
+            {"name": "Success step 🎉", "run": "echo toto"},
+            {"name": "Success step 🎉", "run": "echo toto"},
+            {"name": "Success step 🎉", "run": "echo toto"},
+            {"name": "Success step 🎉", "run": "echo toto"},
+            {"name": "Success step 🎉", "run": "echo toto"},
+            {"name": "Success step 🎉", "run": "echo toto"},
+            {"name": "Success step 🎉", "run": "echo toto"},
+            {"name": "Success step 🎉", "run": "echo toto"},
+            {
+                # Reproduce ENGINE-3EJ with two digits step number
+                "name": "Run # nosemgrep generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip.txt",
+                "run": "echo toto",
+            },
+        ]
+        job_event, pr = await self.run_github_action(steps=steps)
+
+        assert job_event["workflow_job"] is not None
+
+        async with database.create_session() as session:
+            result = await session.execute(
+                sqlalchemy.select(gha_model.WorkflowJob).where(
+                    gha_model.WorkflowJob.id == job_event["workflow_job"]["id"]
+                )
+            )
+            job = result.scalar()
+
+        assert job is not None
+
+        # Get the logs
+        resp = await self.client_integration.get(
+            f"/repos/{self.repository_ctxt.repo['full_name']}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
+        )
+
+        for n, step in enumerate(steps):
+            # The two first steps are GitHub internal stuffs
+            job.failed_step_number = n + 2
+            job.failed_step_name = step["name"]
+
+            assert (
+                len(
+                    gha_embedder.get_lines_from_zip(
+                        zipfile.ZipFile(io.BytesIO(resp.content)), job
+                    )
+                )
+                > 0
+            )

@@ -1,5 +1,4 @@
 import io
-import re
 import zipfile
 
 import daiquiri
@@ -20,9 +19,6 @@ LOG = daiquiri.getLogger(__name__)
 
 LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 
-# NOTE(Kontrolix): We remove all the windows forbidden path character as github does
-CLEAN_FAILED_STEP_REGEXP = re.compile(r"[\*\"/\\<>:|\?]")
-
 
 async def embed_log(
     openai_client: openai_api.OpenAIClient, job: github_actions.WorkflowJob
@@ -34,19 +30,33 @@ async def embed_log(
     job.embedded_log = "".join(log_lines[first_line:last_line])
 
 
-async def download_failed_step_log(
-    job: github_actions.WorkflowJob,
+def get_lines_from_zip(
+    zip_file: zipfile.ZipFile, job: github_actions.WorkflowJob
 ) -> list[str]:
     if job.failed_step_number is None or job.failed_step_name is None:
-        LOG.info(
-            "log-embedder: Tried to download log with not enough data",
-            job_id=job.id,
-            job_data=job.as_dict(),
-        )
         raise RuntimeError(
-            "We should not have arrived here, let's find why it happened."
+            "get_lines_from_zip() called on a job without failed_step_number"
         )
 
+    for i in zip_file.infolist():
+        if not i.filename.startswith(f"{job.name}/{job.failed_step_number}_"):
+            continue
+
+        with zip_file.open(i.filename) as log_file:
+            return [line.decode() for line in log_file.readlines()]
+
+    LOG.info(
+        "log-embedder: job log not found in zip file",
+        job_id=job.id,
+        job_data=job.as_dict(),
+        files=[i.filename for i in zip_file.infolist()],
+    )
+    raise RuntimeError(
+        "log-embedder: job log not found in zip file",
+    )
+
+
+async def download_failed_step_log(job: github_actions.WorkflowJob) -> list[str]:
     repo = job.repository
 
     installation_json = await github.get_installation_from_login(repo.owner.login)
@@ -59,10 +69,7 @@ async def download_failed_step_log(
             zip_data.write(resp.content)
 
         with zipfile.ZipFile(zip_data, "r") as zip_file:
-            with zip_file.open(
-                f"{job.name}/{job.failed_step_number}_{CLEAN_FAILED_STEP_REGEXP.sub('', job.failed_step_name)}.txt"
-            ) as log_file:
-                return [line.decode() for line in log_file.readlines()]
+            return get_lines_from_zip(zip_file, job)
 
 
 async def get_tokenized_cleaned_log(
