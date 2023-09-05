@@ -13,7 +13,6 @@ from mergify_engine.clients import http
 
 OPENAI_API_BASE_URL: str = "https://api.openai.com/v1"
 
-OPENAI_EMBEDDINGS_END_POINT: str = OPENAI_API_BASE_URL + "/embeddings"
 OPENAI_EMBEDDINGS_MODEL: str = "text-embedding-ada-002"
 OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN: int = 8191
 
@@ -47,38 +46,11 @@ class OpenAiException(Exception):
     pass
 
 
-async def get_embedding(input_data: str | list[int]) -> npt.NDArray[np.float32]:
-    async with http.AsyncClient(
-        headers={
-            "Authorization": f"Bearer {settings.OPENAI_API_TOKEN.get_secret_value()}",
-            "Accept": "application/json",
-        },
-    ) as session:
-        response = await session.post(
-            OPENAI_EMBEDDINGS_END_POINT,
-            json={
-                "input": input_data,
-                "model": OPENAI_EMBEDDINGS_MODEL,
-            },
-            extensions={
-                "retry": lambda response: response.json()["data"][0]["embedding"]
-                is None,
-            },
-        )
-        embedding = response.json()["data"][0]["embedding"]
-
-        if embedding is None:
-            raise OpenAiException(f"OpenAI return None for embedding of {input_data}")
-
-    return np.array(list(map(np.float32, embedding)))
-
-
 class ChatCompletionModel(typing.TypedDict):
     name: str
     max_tokens: int
 
 
-OPENAI_CHAT_COMPLETION_END_POINT: str = OPENAI_API_BASE_URL + "/chat/completions"
 # NOTE(Kontrolix): This list must always be ascending sorted
 # according to max_tokens values because when we use it, it must be sorted that way
 OPENAI_CHAT_COMPLETION_MODELS: list[ChatCompletionModel] = sorted(
@@ -123,33 +95,6 @@ class ChatCompletionObject(typing.TypedDict):
     choices: list[ChatCompletionChoice]
 
 
-async def get_chat_completion(
-    messages: list[ChatCompletionMessage], nb_free_token_min_for_answer: int = 100
-) -> ChatCompletionObject:
-    # NOTE(Kontrolix): nb_free_token_min_for_answer is the minimum number of tokens
-    # that we reserve in the max number of tokens of a model since the max number
-    # includes the inputs and the answer according to OpenAI documentation :
-    # https://platform.openai.com/docs/guides/gpt/managing-tokens
-
-    model = get_chat_completion_model(messages, nb_free_token_min_for_answer)
-
-    async with http.AsyncClient(
-        headers={
-            "Authorization": f"Bearer {settings.OPENAI_API_TOKEN.get_secret_value()}",
-            "Accept": "application/json",
-        },
-    ) as session:
-        response = await session.post(
-            OPENAI_CHAT_COMPLETION_END_POINT,
-            json={
-                "model": model["name"],
-                "messages": messages,
-            },
-        )
-
-    return typing.cast(ChatCompletionObject, response.json())
-
-
 def count_chat_completion_messages_token(messages: list[ChatCompletionMessage]) -> int:
     count = 0
     for message in messages:
@@ -172,3 +117,57 @@ def get_chat_completion_model(
             return model
 
     raise OpenAiException(f"No model found to handle {nb_token_needed} tokens")
+
+
+class OpenAIClient(http.AsyncClient):
+    def __init__(self) -> None:
+        super().__init__(
+            base_url=OPENAI_API_BASE_URL,
+            headers={
+                "Authorization": f"Bearer {settings.OPENAI_API_TOKEN.get_secret_value()}",
+                "Accept": "application/json",
+            },
+        )
+
+    async def get_chat_completion(
+        self,
+        messages: list[ChatCompletionMessage],
+        nb_free_token_min_for_answer: int = 100,
+    ) -> ChatCompletionObject:
+        # NOTE(Kontrolix): nb_free_token_min_for_answer is the minimum number of tokens
+        # that we reserve in the max number of tokens of a model since the max number
+        # includes the inputs and the answer according to OpenAI documentation :
+        # https://platform.openai.com/docs/guides/gpt/managing-tokens
+
+        model = get_chat_completion_model(messages, nb_free_token_min_for_answer)
+
+        response = await self.post(
+            "chat/completions",
+            json={
+                "model": model["name"],
+                "messages": messages,
+            },
+        )
+
+        return typing.cast(ChatCompletionObject, response.json())
+
+    async def get_embedding(
+        self, input_data: str | list[int]
+    ) -> npt.NDArray[np.float32]:
+        response = await self.post(
+            "embeddings",
+            json={
+                "input": input_data,
+                "model": OPENAI_EMBEDDINGS_MODEL,
+            },
+            extensions={
+                "retry": lambda response: response.json()["data"][0]["embedding"]
+                is None,
+            },
+        )
+        embedding = response.json()["data"][0]["embedding"]
+
+        if embedding is None:
+            raise OpenAiException(f"OpenAI return None for embedding of {input_data}")
+
+        return np.array(list(map(np.float32, embedding)))

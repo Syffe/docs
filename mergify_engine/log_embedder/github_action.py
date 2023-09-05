@@ -24,10 +24,12 @@ LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 CLEAN_FAILED_STEP_REGEXP = re.compile(r"[\*\"/\\<>:|\?]")
 
 
-async def embed_log(job: github_actions.WorkflowJob) -> None:
+async def embed_log(
+    openai_client: openai_api.OpenAIClient, job: github_actions.WorkflowJob
+) -> None:
     log_lines = await download_failed_step_log(job)
     tokens, first_line, last_line = await get_tokenized_cleaned_log(log_lines)
-    embedding = await openai_api.get_embedding(tokens)
+    embedding = await openai_client.get_embedding(tokens)
     job.log_embedding = embedding
     job.embedded_log = "".join(log_lines[first_line:last_line])
 
@@ -124,21 +126,23 @@ async def embed_logs() -> bool:
 
         LOG.info("log-embedder: %d jobs to embed", len(jobs), request=str(stmt))
 
-        job_ids_to_compute_cosine_similarity = []
-        for job in jobs:
-            if job.log_embedding is None:
-                try:
-                    await embed_log(job)
-                except openai_api.OpenAiException:
-                    LOG.error(
-                        "log-embedder: a job raises an unexpected error on log embedding",
-                        job_id=job.id,
-                        exc_info=True,
-                    )
+        async with openai_api.OpenAIClient() as openai_client:
+            job_ids_to_compute_cosine_similarity = []
+            for job in jobs:
+                if job.log_embedding is None:
+                    try:
+                        await embed_log(openai_client, job)
+                    except openai_api.OpenAiException:
+                        LOG.error(
+                            "log-embedder: a job raises an unexpected error on log embedding",
+                            job_id=job.id,
+                            exc_info=True,
+                        )
 
-            if job.neighbours_computed_at is None:
-                job_ids_to_compute_cosine_similarity.append(job.id)
-            await session.commit()
+                if job.neighbours_computed_at is None:
+                    job_ids_to_compute_cosine_similarity.append(job.id)
+                await session.commit()
+
         await github_actions.WorkflowJob.compute_logs_embedding_cosine_similarity(
             session, job_ids_to_compute_cosine_similarity
         )

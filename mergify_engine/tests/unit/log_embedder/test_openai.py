@@ -13,7 +13,7 @@ async def test_openai_get_embedding(
     respx_mock: respx.MockRouter,
 ) -> None:
     respx_mock.post(
-        openai_api.OPENAI_EMBEDDINGS_END_POINT,
+        f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
         json={
             "input": "toto",
             "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
@@ -34,7 +34,8 @@ async def test_openai_get_embedding(
         },
     )
 
-    embedding = await openai_api.get_embedding("toto")
+    async with openai_api.OpenAIClient() as client:
+        embedding = await client.get_embedding("toto")
 
     assert np.array_equal(embedding, OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"])
 
@@ -53,7 +54,7 @@ async def test_get_chat_completion(
     respx_mock: respx.MockRouter,
 ) -> None:
     respx_mock.post(
-        openai_api.OPENAI_CHAT_COMPLETION_END_POINT,
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
         json={
             "model": "gpt-3.5-turbo",
             "messages": [{"role": "user", "content": "hello"}],
@@ -79,14 +80,15 @@ async def test_get_chat_completion(
         },
     )
 
-    chat_completion = await openai_api.get_chat_completion(
-        [
-            openai_api.ChatCompletionMessage(
-                role=openai_api.ChatCompletionRole.user, content="hello"
-            )
-        ],
-        0,
-    )
+    async with openai_api.OpenAIClient() as client:
+        chat_completion = await client.get_chat_completion(
+            [
+                openai_api.ChatCompletionMessage(
+                    role=openai_api.ChatCompletionRole.user, content="hello"
+                )
+            ],
+            0,
+        )
 
     assert (
         chat_completion["choices"][0]["message"]["content"]

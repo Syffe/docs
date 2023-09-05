@@ -52,7 +52,7 @@ async def test_embed_logs(
         200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}
     )
     respx_mock.post(
-        openai_api.OPENAI_EMBEDDINGS_END_POINT,
+        f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
     ).respond(
         200,
         json={

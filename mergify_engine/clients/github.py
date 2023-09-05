@@ -6,7 +6,6 @@ import dataclasses
 import datetime
 import json
 import random
-import types
 import typing
 from urllib import parse
 
@@ -514,41 +513,6 @@ class AsyncGitHubClient(http.AsyncClient):
                 break
 
 
-@dataclasses.dataclass
-class RequestHistory:
-    request: httpx.Request
-    response: httpx.Response | None
-
-    @staticmethod
-    def _header_to_str(key: str, value: str) -> str:
-        if key == "authorization":
-            value = "*****"
-        return f'"{key}: {value}"'
-
-    async def to_curl_request(self) -> str:
-        headers = [self._header_to_str(k, v) for k, v in self.request.headers.items()]
-        headers_str = " -H ".join(headers)
-        body = await self.request.aread()
-        if body:
-            body_str = f"-d '{body.decode() if isinstance(body, bytes) else body}'"
-        return f"curl -X {self.request.method} -H {headers_str} {body_str} {self.request.url}"
-
-    async def to_curl_response(self) -> str:
-        if self.response is None:
-            return "<no response>"
-
-        host = self.request.url.netloc.decode()
-        headers = [self._header_to_str(k, v) for k, v in self.response.headers.items()]
-        headers_str = "\n< ".join(headers)
-        body = (await self.response.aread()).decode()
-        return f"""< {self.response.http_version} {self.response.status_code}
-< {headers_str}
-<
-* Connection #0 to host {host} left intact
-{body}
-"""
-
-
 class AsyncGitHubInstallationClient(AsyncGitHubClient):
     auth: (GitHubAppInstallationAuth | GitHubTokenAuth)
 
@@ -557,7 +521,6 @@ class AsyncGitHubInstallationClient(AsyncGitHubClient):
         auth: (GitHubAppInstallationAuth | GitHubTokenAuth),
         extra_metrics: bool = False,
     ) -> None:
-        self._requests: list[RequestHistory] = []
         self._extra_metrics = extra_metrics
         super().__init__(auth=auth)
 
@@ -575,53 +538,16 @@ class AsyncGitHubInstallationClient(AsyncGitHubClient):
         follow_redirects: bool
         | httpx._client.UseClientDefault = httpx._client.USE_CLIENT_DEFAULT,
     ) -> httpx.Response:
-        response = None
-        try:
-            response = await super().send(
-                request, auth=auth, follow_redirects=follow_redirects
-            )
-            _check_rate_limit(self, response)
-        finally:
-            if response is None:
-                # https://github.com/python/mypy/issues/13104
-                status_code = "error"  # type: ignore[unreachable]
-            else:
-                status_code = str(response.status_code)
-            tags = [f"hostname:{self.base_url.host}", f"status_code:{status_code}"]
-            worker_id = logs.WORKER_ID.get(None)
-            if worker_id is not None:
-                tags.append(f"worker_id:{worker_id}")
-            statsd.increment(
-                "http.client.requests",
-                tags=tags,
-            )
-            self._requests.append(RequestHistory(request, response))
-
+        response = await super().send(
+            request, auth=auth, follow_redirects=follow_redirects
+        )
+        _check_rate_limit(self, response)
         return response
 
-    @property
-    def last_request(self) -> RequestHistory:
-        return self._requests[-1]
-
-    async def aclose(self) -> None:
-        await super().aclose()
-        self._generate_metrics()
-
-    async def __aexit__(
-        self,
-        exc_type: type[BaseException] | None = None,
-        exc_value: BaseException | None = None,
-        traceback: types.TracebackType | None = None,
-    ) -> None:
-        await super().__aexit__(exc_type, exc_value, traceback)
-        self._generate_metrics()
-
-    def _generate_metrics(self) -> None:
-        nb_requests = len(self._requests)
-        gh_owner = http.extract_organization_login(self)
-
-        tags = [f"hostname:{self.base_url.host}"]
+    def _get_datadog_tags(self) -> list[str]:
+        tags = super()._get_datadog_tags()
         if self._extra_metrics:
+            gh_owner = http.extract_organization_login(self)
             tags.append(f"gh_owner:{gh_owner}")
             worker_id = logs.WORKER_ID.get(None)
             if worker_id is not None:
@@ -629,12 +555,11 @@ class AsyncGitHubInstallationClient(AsyncGitHubClient):
             worker_task = logs.WORKER_TASK.get(None)
             if worker_task is not None:
                 tags.append(f"worker_task:{worker_task}")
+        return tags
 
-        statsd.histogram(
-            "http.client.session",
-            nb_requests,
-            tags=tags,
-        )
+    def _generate_metrics(self) -> None:
+        super()._generate_metrics()
+        tags = self._get_datadog_tags()
 
         request_with_ratelimit = first.first(
             r
@@ -656,8 +581,6 @@ class AsyncGitHubInstallationClient(AsyncGitHubClient):
                 int(request_with_ratelimit.response.headers["x-ratelimit-remaining"]),
                 tags=tags,
             )
-
-        self._requests = []
 
     async def get_access_token(self) -> str:
         token = self.auth.get_access_token()

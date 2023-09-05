@@ -2,9 +2,11 @@ import dataclasses
 import datetime
 import email.utils
 import sys
+import types
 import typing
 
 import daiquiri
+from datadog import statsd  # type: ignore[attr-defined]
 import httpx
 from httpx import _types as httpx_types
 import tenacity
@@ -221,6 +223,41 @@ class AsyncHTTPTransport(httpx.AsyncHTTPTransport):
         return response
 
 
+@dataclasses.dataclass
+class RequestHistory:
+    request: httpx.Request
+    response: httpx.Response | None
+
+    @staticmethod
+    def _header_to_str(key: str, value: str) -> str:
+        if key == "authorization":
+            value = "*****"
+        return f'"{key}: {value}"'
+
+    async def to_curl_request(self) -> str:
+        headers = [self._header_to_str(k, v) for k, v in self.request.headers.items()]
+        headers_str = " -H ".join(headers)
+        body = await self.request.aread()
+        if body:
+            body_str = f"-d '{body.decode() if isinstance(body, bytes) else body}'"
+        return f"curl -X {self.request.method} -H {headers_str} {body_str} {self.request.url}"
+
+    async def to_curl_response(self) -> str:
+        if self.response is None:
+            return "<no response>"
+
+        host = self.request.url.netloc.decode()
+        headers = [self._header_to_str(k, v) for k, v in self.response.headers.items()]
+        headers_str = "\n< ".join(headers)
+        body = (await self.response.aread()).decode()
+        return f"""< {self.response.http_version} {self.response.status_code}
+< {headers_str}
+<
+* Connection #0 to host {host} left intact
+{body}
+"""
+
+
 class AsyncClient(httpx.AsyncClient):
     def __init__(
         self,
@@ -232,6 +269,8 @@ class AsyncClient(httpx.AsyncClient):
         retry_stop_after_attempt: int = 5,
         retry_exponential_multiplier: float = 0.2,
     ) -> None:
+        self._requests: list[RequestHistory] = []
+
         final_headers = DEFAULT_HEADERS.copy()
         if headers is not None:
             final_headers.update(headers)
@@ -250,3 +289,59 @@ class AsyncClient(httpx.AsyncClient):
         resp = await super().request(*args, **kwargs)
         raise_for_status(resp)
         return resp
+
+    async def send(
+        self,
+        request: httpx.Request,
+        *,
+        stream: bool = False,
+        auth: httpx._types.AuthTypes
+        | httpx._client.UseClientDefault
+        | None = httpx._client.USE_CLIENT_DEFAULT,
+        follow_redirects: bool
+        | httpx._client.UseClientDefault = httpx._client.USE_CLIENT_DEFAULT,
+    ) -> httpx.Response:
+        response = None
+        try:
+            response = await super().send(
+                request, auth=auth, follow_redirects=follow_redirects
+            )
+        finally:
+            if response is None:
+                # https://github.com/python/mypy/issues/13104
+                status_code = "error"  # type: ignore[unreachable]
+            else:
+                status_code = str(response.status_code)
+
+            tags = self._get_datadog_tags()
+            tags.append(f"status_code:{status_code}")
+            statsd.increment("http.client.requests", tags=tags)
+            self._requests.append(RequestHistory(request, response))
+
+        return response
+
+    @property
+    def last_request(self) -> RequestHistory:
+        return self._requests[-1]
+
+    def _get_datadog_tags(self) -> list[str]:
+        return [f"hostname:{self.base_url.host}"]
+
+    def _generate_metrics(self) -> None:
+        tags = self._get_datadog_tags()
+        statsd.histogram("http.client.session", len(self._requests), tags=tags)
+
+    async def aclose(self) -> None:
+        await super().aclose()
+        self._generate_metrics()
+        self._requests = []
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None = None,
+        exc_value: BaseException | None = None,
+        traceback: types.TracebackType | None = None,
+    ) -> None:
+        await super().__aexit__(exc_type, exc_value, traceback)
+        self._generate_metrics()
+        self._requests = []

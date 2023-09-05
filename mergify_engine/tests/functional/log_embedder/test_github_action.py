@@ -117,7 +117,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 ).pass_through()
                 respx_mock.route(host="api.github.com").pass_through()
 
-                respx_mock.post(openai_api.OPENAI_EMBEDDINGS_END_POINT).respond(
+                respx_mock.post(f"{openai_api.OPENAI_API_BASE_URL}/embeddings").respond(
                     200,
                     json={
                         "object": "list",
@@ -133,7 +133,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     },
                 )
 
-                await gha_embedder.embed_log(job)
+                async with openai_api.OpenAIClient() as openai_client:
+                    await gha_embedder.embed_log(openai_client, job)
 
             await session.commit()
 
