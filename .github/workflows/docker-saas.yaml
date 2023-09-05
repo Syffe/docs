@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # yamllint disable-line rule:line-length
       # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
       - uses: hadolint/hadolint-action@v3.1.0
@@ -76,7 +76,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL_RELEASES }}
 
       - name: ⬇️ Checkout
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           submodules: true
