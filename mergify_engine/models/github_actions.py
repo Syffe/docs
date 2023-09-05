@@ -317,13 +317,12 @@ class WorkflowJob(models.Base):
                     )
                     break
             else:
-                LOG.info(
+                LOG.error(
                     "WorkflowJob: Can't find failed step on failed job",
                     workflow_job_data=workflow_job_data,
                     gh_owner=repository["owner"]["login"],
                     gh_repo=repository["name"],
                 )
-                raise RuntimeError("Failed step not found.")
 
         return result
 

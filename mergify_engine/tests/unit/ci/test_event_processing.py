@@ -158,7 +158,7 @@ async def test_process_event_stream_workflow_job_with_no_failed_steps(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
-    logger_checker: None,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     stream_event = {
         "event_type": "workflow_job",
@@ -170,23 +170,6 @@ async def test_process_event_stream_workflow_job_with_no_failed_steps(
     }
     await redis_links.stream.xadd("gha_workflow_job", stream_event)
 
-    # Mock to let the RuntimeError to be raise and avoid it to be catch
-    # by try/except in _process_workflow_job_stream
-    real_process_workflow_job_event = event_processing._process_workflow_job_event
+    await event_processing.process_event_streams(redis_links)
 
-    async def mock_process_workflow_job_event(
-        redis_links: redis_utils.RedisLinks,
-        stream_event_id: bytes,
-        stream_event: dict[bytes, bytes],
-    ) -> None:
-        with pytest.raises(RuntimeError, match="Failed step not found."):
-            await real_process_workflow_job_event(
-                redis_links, stream_event_id, stream_event
-            )
-
-    with mock.patch.object(
-        event_processing,
-        "_process_workflow_job_event",
-        new=mock_process_workflow_job_event,
-    ):
-        await event_processing.process_event_streams(redis_links)
+    assert caplog.messages == ["WorkflowJob: Can't find failed step on failed job"]
