@@ -185,6 +185,13 @@ class WorkflowRun(models.Base):
             )
 
 
+class WorkflowJobLogStatus(enum.Enum):
+    UNKNOWN = "unknown"
+    GONE = "gone"
+    ERROR = "error"
+    EMBEDDED = "embedded"
+
+
 class WorkflowJobFailedStep(typing.TypedDict):
     number: int
     name: str
@@ -192,6 +199,19 @@ class WorkflowJobFailedStep(typing.TypedDict):
 
 class WorkflowJob(models.Base):
     __tablename__ = "gha_workflow_job"
+
+    __table_args__ = (
+        sqlalchemy.schema.CheckConstraint(
+            """
+            (
+                log_status = 'EMBEDDED' AND log_embedding IS NOT NULL AND embedded_log IS NOT NULL
+            ) OR (
+                log_status != 'EMBEDDED' AND log_embedding IS NULL AND embedded_log IS NULL
+            )
+            """,
+            name="embedding_linked_columns",
+        ),
+    )
 
     id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.BigInteger,
@@ -266,6 +286,11 @@ class WorkflowJob(models.Base):
     embedded_log_error_title: orm.Mapped[str | None] = orm.mapped_column(
         sqlalchemy.String,
         anonymizer_config="anon.lorem_ipsum( words := 10 )",
+    )
+    log_status: orm.Mapped[WorkflowJobLogStatus] = orm.mapped_column(
+        sqlalchemy.Enum(WorkflowJobLogStatus),
+        server_default="UNKNOWN",
+        anonymizer_config=None,
     )
 
     @classmethod

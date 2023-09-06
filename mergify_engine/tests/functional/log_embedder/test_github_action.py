@@ -162,6 +162,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         assert job.failed_step_number == 4
         assert job.failed_step_name == 'Failure step with *"/\\<>:|? in the title ❌'
         assert job.log_embedding is not None
+        assert job.log_status is gha_model.WorkflowJobLogStatus.EMBEDDED
 
         assert np.array_equal(
             job.log_embedding, OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"]
