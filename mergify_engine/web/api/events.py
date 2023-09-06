@@ -119,7 +119,7 @@ async def get_repository_events(
         fastapi.Query(description="Get the events received until this date"),
     ] = None,
 ) -> EventsResponse:
-    backward = page.cursor is not None and "-" in page.cursor
+    backward = page.cursor is not None and page.cursor.startswith("-")
 
     results = await events.Event.get(
         session,

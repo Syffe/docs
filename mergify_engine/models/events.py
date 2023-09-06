@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import re
 import typing
 
 import sqlalchemy
@@ -110,11 +111,13 @@ class Event(models.Base):
         }
 
         cursor = page.cursor
-        if cursor is not None and len(cursor) > 1:
+        if cursor is not None and cursor != "-":
+            if (cursor_idx := re.fullmatch(r"[+-](\d+)", cursor)) is None:
+                raise pagination.InvalidCursor(cursor)
             if backward:
-                filter_dict.update({"cursor": cls.id > int(cursor[1:])})
+                filter_dict.update({"cursor": cls.id > int(cursor_idx.group(1))})
             else:
-                filter_dict.update({"cursor": cls.id < int(cursor[1:])})
+                filter_dict.update({"cursor": cls.id < int(cursor_idx.group(1))})
 
         subquery = (
             sqlalchemy.select(cls)

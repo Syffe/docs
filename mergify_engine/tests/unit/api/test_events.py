@@ -250,7 +250,7 @@ async def test_api_cursor(
     assert links["next"].split("?")[-1] == "per_page=2&cursor=%2B3"
     assert links["prev"].split("?")[-1] == "per_page=2&cursor=-4"
 
-    # last 2
+    # last 2 with initial last cursor
     response = await web_client.get(
         "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=-",
         headers={"Authorization": api_token},
@@ -270,3 +270,35 @@ async def test_api_cursor(
     links = parse_links(response.headers["link"])
     assert links["next"].split("?")[-1] == "per_page=2&cursor=-4"
     assert links["prev"].split("?")[-1] == "per_page=2&cursor=%2B3"
+
+
+async def test_api_cursor_invalid(
+    web_client: conftest.CustomTestClient,
+    api_token: str,
+) -> None:
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=INVALID_CURSOR",
+        headers={"Authorization": api_token},
+    )
+    assert response.status_code == 422
+    assert response.json() == {"message": "Invalid cursor", "cursor": "INVALID_CURSOR"}
+
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=+123456_this_part_is_unexpected",
+        headers={"Authorization": api_token},
+    )
+    assert response.status_code == 422
+
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=-123456_neither_is_this_part",
+        headers={"Authorization": api_token},
+    )
+    assert response.status_code == 422
+
+    # + alone (like any other char alone except for -) is not valid it is equivalent
+    # to default - not provided
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=+",
+        headers={"Authorization": api_token},
+    )
+    assert response.status_code == 422
