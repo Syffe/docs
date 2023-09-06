@@ -777,8 +777,14 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["conclusion"] == "cancelled"
-        assert check["output"]["title"] == "The pull request rule doesn't match anymore"
-        assert check["output"]["summary"] == "This action has been cancelled."
+        assert (
+            check["output"]["title"]
+            == "The pull request has been removed from the queue `default`"
+        )
+        assert (
+            "The queue conditions cannot be satisfied due to failing checks."
+            in check["output"]["summary"]
+        )
 
     async def test_queue_conditions_empty(self) -> None:
         rules = {
@@ -1321,6 +1327,287 @@ class TestQueueAction(base.FunctionalTestBase):
                     p1["number"],
                 ),
             ],
+        )
+
+    async def test_bypass_branch_protections_with_queue_injection_mode(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [],
+                    "branch_protection_injection_mode": "queue",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge default",
+                    "conditions": [f"base={self.main_branch_name}", "label=queue"],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        protection = {
+            "required_status_checks": {
+                "strict": True,
+                "contexts": [
+                    "continuous-integration/fake-ci",
+                ],
+            },
+            "required_conversation_resolution": True,
+            "required_linear_history": False,
+            "required_pull_request_reviews": None,
+            "restrictions": None,
+            "enforce_admins": False,
+        }
+        await self.setup_repo(yaml.dump(rules))
+        await self.branch_protection_protect(self.main_branch_name, protection)
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        summary = await self.wait_for_check_run(name="Summary")
+        assert (
+            """Rule: Merge default (queue)
+- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+    - [ ] any of: [🛡 GitHub branch protection]
+      - [ ] `check-neutral=continuous-integration/fake-ci`
+      - [ ] `check-skipped=continuous-integration/fake-ci`
+      - [ ] `check-success=continuous-integration/fake-ci`
+    - [X] `#review-threads-unresolved=0` [🛡 GitHub branch protection]"""
+            in summary["check_run"]["output"]["summary"]
+        )
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            None,
+            [],
+        )
+
+        await self.create_status(p1, context="continuous-integration/fake-ci")
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
+        assert (
+            """**Required conditions of queue** `default` **for merge:**
+
+- [ ] `#review-threads-unresolved=0` [🛡 GitHub branch protection]
+- [ ] any of: [🛡 GitHub branch protection]
+  - [ ] `check-neutral=continuous-integration/fake-ci`
+  - [ ] `check-skipped=continuous-integration/fake-ci`
+  - [ ] `check-success=continuous-integration/fake-ci`"""
+            in check_run["check_run"]["output"]["summary"]
+        )
+
+        p1_merged = await self.wait_for_pull_request("closed", p1["number"])
+        check = first(
+            await context.Context(
+                self.repository_ctxt, p1_merged["pull_request"]
+            ).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge default (queue)",
+        )
+        assert check is not None
+        assert check["conclusion"] == "success"
+        assert (
+            check["output"]["title"] == "The pull request has been merged automatically"
+        )
+
+    async def test_bypass_branch_protections_with_merge_injection_mode(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [],
+                    "branch_protection_injection_mode": "merge",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge default",
+                    "conditions": [f"base={self.main_branch_name}", "label=queue"],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        protection = {
+            "required_status_checks": {
+                "strict": True,
+                "contexts": [
+                    "continuous-integration/fake-ci",
+                ],
+            },
+            "required_conversation_resolution": True,
+            "required_linear_history": False,
+            "required_pull_request_reviews": None,
+            "restrictions": None,
+            "enforce_admins": False,
+        }
+        await self.setup_repo(yaml.dump(rules))
+        await self.branch_protection_protect(self.main_branch_name, protection)
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
+        assert (
+            """**Required conditions of queue** `default` **for merge:**
+
+- [ ] `#review-threads-unresolved=0` [🛡 GitHub branch protection]
+- [ ] any of: [🛡 GitHub branch protection]
+  - [ ] `check-neutral=continuous-integration/fake-ci`
+  - [ ] `check-skipped=continuous-integration/fake-ci`
+  - [ ] `check-success=continuous-integration/fake-ci`"""
+            in check_run["check_run"]["output"]["summary"]
+        )
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
+        await self.create_status(p1, context="continuous-integration/fake-ci")
+        await self.run_engine()
+
+        p1_merged = await self.wait_for_pull_request("closed", p1["number"])
+        check = first(
+            await context.Context(
+                self.repository_ctxt, p1_merged["pull_request"]
+            ).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge default (queue)",
+        )
+        assert check is not None
+        assert check["conclusion"] == "success"
+        assert (
+            check["output"]["title"] == "The pull request has been merged automatically"
+        )
+
+    async def test_bypass_branch_protections_with_none_injection_mode(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [],
+                    "branch_protection_injection_mode": "none",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge default",
+                    "conditions": [f"base={self.main_branch_name}", "label=queue"],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "merge_bot_account": "mergify-test1",
+                        }
+                    },
+                },
+            ],
+        }
+
+        protection = {
+            "required_status_checks": {
+                "strict": True,
+                "contexts": [
+                    "continuous-integration/fake-ci",
+                ],
+            },
+            "required_conversation_resolution": True,
+            "required_linear_history": False,
+            "required_pull_request_reviews": None,
+            "restrictions": None,
+            "enforce_admins": False,
+        }
+        await self.setup_repo(yaml.dump(rules))
+        await self.branch_protection_protect(self.main_branch_name, protection)
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
+        assert (
+            """**Required conditions of queue** `default` **for merge:**
+
+- [ ] `#review-threads-unresolved=0` [🛡 GitHub branch protection]
+- [ ] any of: [🛡 GitHub branch protection]
+  - [ ] `check-neutral=continuous-integration/fake-ci`
+  - [ ] `check-skipped=continuous-integration/fake-ci`
+  - [ ] `check-success=continuous-integration/fake-ci`"""
+            not in check_run["check_run"]["output"]["summary"]
+        )
+
+        p1_merged = await self.wait_for_pull_request("closed", p1["number"])
+        check = first(
+            await context.Context(
+                self.repository_ctxt, p1_merged["pull_request"]
+            ).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge default (queue)",
+        )
+        assert check is not None
+        assert check["conclusion"] == "success"
+        assert (
+            check["output"]["title"] == "The pull request has been merged automatically"
+        )
+
+    async def test_error_bypass_branch_protections_with_none_injection_mode_without_bot_account(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [],
+                    "branch_protection_injection_mode": "none",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge default",
+                    "conditions": [f"base={self.main_branch_name}", "label=queue"],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        protection = {
+            "required_status_checks": {
+                "strict": True,
+                "contexts": [
+                    "continuous-integration/fake-ci",
+                ],
+            },
+            "required_conversation_resolution": True,
+            "required_linear_history": False,
+            "required_pull_request_reviews": None,
+            "restrictions": None,
+            "enforce_admins": False,
+        }
+        await self.setup_repo(yaml.dump(rules))
+        await self.branch_protection_protect(self.main_branch_name, protection)
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
+        assert (
+            "Cannot use `branch_protection_injection_mode` set to `none` without using a `merge_bot_account` with the `queue` action"
+            in check_run["check_run"]["output"]["summary"]
         )
 
     async def test_queue_inplace_interrupted(self) -> None:
@@ -2595,8 +2882,9 @@ class TestQueueAction(base.FunctionalTestBase):
 
 **Required conditions to stay in the queue:**
 
-- [ ] `status-success=continuous-integration/fake-ci`
-"""
+- [ ] all of [📃 From pull request rule **default merge**]:
+  - `status-success=continuous-integration/fake-ci`
+    - [ ]"""
             in summary
         )
 

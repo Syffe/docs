@@ -112,6 +112,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                     require_branch_protection=True,
+                    branch_protection_injection_mode="queue",
                 )
             ]
         )
@@ -252,6 +253,7 @@ pull_requests:
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                     require_branch_protection=True,
+                    branch_protection_injection_mode="queue",
                 )
             ]
         )
@@ -358,6 +360,7 @@ pull_requests:
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                     require_branch_protection=True,
+                    branch_protection_injection_mode="queue",
                 )
             ]
         )
@@ -437,6 +440,7 @@ pull_requests:
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                     require_branch_protection=True,
+                    branch_protection_injection_mode="queue",
                 )
             ]
         )

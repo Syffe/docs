@@ -8,6 +8,7 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import queue
 from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import worker_pusher
@@ -97,21 +98,30 @@ class MergeUtilsMixin:
         merge_bot_account: github_types.GitHubLogin | None,
         commit_message_template: str | None,
         pending_result_builder: PendingResultBuilderT,
+        branch_protection_injection_mode: queue.BranchProtectionInjectionModeT = "queue",
     ) -> check_api.Result:
         data = {}
 
         on_behalf: github_user.GitHubUser | None = None
         if merge_bot_account:
+            if branch_protection_injection_mode == "none":
+                required_permissions = (
+                    github_types.GitHubRepositoryPermission.permissions_above(
+                        github_types.GitHubRepositoryPermission.WRITE
+                    )
+                )
+            else:
+                # NOTE(sileht): we don't allow admin, because if branch protection are
+                # enabled, but not enforced on admins, we may bypass them
+                required_permissions = [
+                    github_types.GitHubRepositoryPermission.WRITE,
+                ]
             try:
                 on_behalf = await action_utils.get_github_user_from_bot_account(
                     ctxt.repository,
                     kind,
                     merge_bot_account,
-                    # NOTE(sileht): we don't allow admin, because if branch protection are
-                    # enabled, but not enforced on admins, we may bypass them
-                    required_permissions=[
-                        github_types.GitHubRepositoryPermission.WRITE
-                    ],
+                    required_permissions=required_permissions,
                 )
             except action_utils.BotAccountNotFound as e:
                 return check_api.Result(e.status, e.title, e.reason)

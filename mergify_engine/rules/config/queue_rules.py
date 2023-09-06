@@ -58,6 +58,7 @@ class QueueRule:
     queue_conditions: conditions_mod.QueueRuleMergeConditions
     priority_rules: priority_rules_config.PriorityRules
     require_branch_protection: bool
+    branch_protection_injection_mode: queue.BranchProtectionInjectionModeT
 
     class T_from_dict(QueueConfig, total=False):
         name: QueueName
@@ -70,6 +71,7 @@ class QueueRule:
         queue_conditions: conditions_mod.QueueRuleMergeConditions
         priority_rules: priority_rules_config.PriorityRules
         require_branch_protection: bool
+        branch_protection_injection_mode: queue.BranchProtectionInjectionModeT
 
     @property
     def conditions(self) -> conditions_mod.QueueRuleMergeConditions:
@@ -90,7 +92,13 @@ class QueueRule:
         if queue_conditions is None:
             queue_conditions = d.pop("queue_conditions")
 
-        require_branch_protection = d.pop("require_branch_protection", True)
+        branch_protection_injection_mode = d.pop(
+            "branch_protection_injection_mode", "queue"
+        )
+        # NOTE(Syffe): with the new parameter branch_protection_injection_mode, require_branch_protection is now irrelevant,
+        # for now we keep it because it is subject to a deprecation process. We will need to do it as a separate pull request/process beside
+        # the implementation of branch_protection_injection_mode.
+        require_branch_protection = branch_protection_injection_mode == "queue"
 
         priority_rules = d.pop("priority_rules")
 
@@ -113,6 +121,7 @@ class QueueRule:
             queue_conditions=queue_conditions,
             priority_rules=priority_rules,
             require_branch_protection=require_branch_protection,
+            branch_protection_injection_mode=branch_protection_injection_mode,
         )
 
     async def get_evaluated_queue_rule(
@@ -123,15 +132,21 @@ class QueueRule:
         evaluated_pull_request_rule: pull_request_rules_config.EvaluatedPullRequestRule
         | None = None,
     ) -> EvaluatedQueueRule:
-        extra_conditions = await conditions_mod.get_branch_protection_conditions(
-            repository, ref, strict=False
-        )
+        branch_protections: list[conditions_mod.RuleConditionNode] = []
+        pull_request_rules_conditions: list[conditions_mod.RuleConditionNode] = []
+        if self.branch_protection_injection_mode != "none":
+            branch_protections.extend(
+                await conditions_mod.get_branch_protection_conditions(
+                    repository, ref, strict=False
+                )
+            )
+
         if evaluated_pull_request_rule is not None:
             evaluated_pull_request_rule_conditions = (
                 evaluated_pull_request_rule.conditions.copy()
             )
             if evaluated_pull_request_rule_conditions.condition.conditions:
-                extra_conditions.extend(
+                pull_request_rules_conditions.extend(
                     [
                         conditions_mod.RuleConditionCombination(
                             {
@@ -142,17 +157,30 @@ class QueueRule:
                     ]
                 )
 
+        if self.branch_protection_injection_mode == "queue":
+            queue_conditions = conditions_mod.QueueRuleMergeConditions(
+                branch_protections
+                + pull_request_rules_conditions
+                + self.queue_conditions.condition.copy().conditions
+            )
+        else:
+            queue_conditions = conditions_mod.QueueRuleMergeConditions(
+                pull_request_rules_conditions
+                + self.queue_conditions.condition.copy().conditions
+            )
+
         queue_rule_with_extra_conditions = QueueRule(
             name=self.name,
             merge_conditions=conditions_mod.QueueRuleMergeConditions(
-                extra_conditions + self.merge_conditions.condition.copy().conditions
+                branch_protections
+                + pull_request_rules_conditions
+                + self.merge_conditions.condition.copy().conditions
             ),
-            queue_conditions=conditions_mod.QueueRuleMergeConditions(
-                self.queue_conditions.condition.copy().conditions
-            ),
+            queue_conditions=queue_conditions,
             config=self.config,
             priority_rules=self.priority_rules,
             require_branch_protection=self.require_branch_protection,
+            branch_protection_injection_mode=self.branch_protection_injection_mode,
         )
         queue_rules_evaluator = await QueuesRulesEvaluator.create(
             [queue_rule_with_extra_conditions],
@@ -245,6 +273,7 @@ class QueueRules:
                 config=rule.config,
                 priority_rules=rule.priority_rules,
                 require_branch_protection=rule.require_branch_protection,
+                branch_protection_injection_mode=rule.branch_protection_injection_mode,
             )
             for rule in self.rules
         ]
@@ -368,6 +397,9 @@ QueueRulesSchema = voluptuous.All(
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
                 voluptuous.Required("require_branch_protection", default=True): bool,
+                voluptuous.Required(
+                    "branch_protection_injection_mode", default="queue"
+                ): voluptuous.Any("queue", "merge", "none"),
                 voluptuous.Required("speculative_checks", default=1): voluptuous.All(
                     int, voluptuous.Range(min=1, max=20)
                 ),

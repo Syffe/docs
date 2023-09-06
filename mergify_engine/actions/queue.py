@@ -64,6 +64,12 @@ class InvalidQueueConfiguration(Exception):
 
 
 @dataclasses.dataclass
+class MergeBotAccountNotFoundWithBranchProtectionOff(InvalidQueueConfiguration):
+    title: str = "There are no `merge_bot_account` being used"
+    message: str = "Cannot use `branch_protection_injection_mode` set to `none` without using a `merge_bot_account` with the `queue` action"
+
+
+@dataclasses.dataclass
 class MismatchingQueueConditions(InvalidQueueConfiguration):
     summary: str | None = dataclasses.field(default=None)
     title: str = "There are no queue conditions matching"
@@ -198,6 +204,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 queue_freeze=queue_freeze,
                 queue_pause=queue_pause,
             ),
+            self.queue_rule.branch_protection_injection_mode,
         )
         if result.conclusion == check_api.Conclusion.SUCCESS:
             embarked_pulls = await convoy.find_embarked_pull(self.ctxt.pull["number"])
@@ -762,8 +769,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 self.ctxt.repository,
                 "merge queued pull request",
                 self.config["merge_bot_account"],
-                # enabled, but not enforced on admins, we may bypass them
-                required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
+                required_permissions=(
+                    github_types.GitHubRepositoryPermission.permissions_above(
+                        github_types.GitHubRepositoryPermission.WRITE
+                    )
+                ),
             )
         except action_utils.BotAccountNotFound as e:
             raise InvalidQueueConfiguration(e.title, e.reason)
@@ -773,6 +783,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
     ) -> check_api.Result | None:
         try:
             await self._set_action_queue_rule()
+            await self._check_branch_protection_injection_mode_compatibility(
+                branch_protection_injection_mode=self.queue_rule.branch_protection_injection_mode,
+                queue_executor_config=self.config,
+            )
             await self._check_config_compatibility_with_branch_protection(
                 ctxt=self.ctxt,
                 queue_rule_config=self.queue_rule.config,
@@ -1141,6 +1155,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     ctxt.pull["base"]["repo"]["owner"]["login"]
                 ),
             )
+
+    @staticmethod
+    async def _check_branch_protection_injection_mode_compatibility(
+        branch_protection_injection_mode: queue.BranchProtectionInjectionModeT,
+        queue_executor_config: QueueExecutorConfig,
+    ) -> None:
+        if (
+            branch_protection_injection_mode == "none"
+            and queue_executor_config["merge_bot_account"] is None
+        ):
+            raise MergeBotAccountNotFoundWithBranchProtectionOff
 
     @staticmethod
     async def _check_config_compatibility_with_branch_protection(

@@ -13,6 +13,7 @@ if typing.TYPE_CHECKING:
 LOG = daiquiri.getLogger(__name__)
 
 PriorityT = typing.Literal["high", "medium", "low"]
+BranchProtectionInjectionModeT = typing.Literal["queue", "merge", "none"]
 
 
 class PriorityAliases(enum.Enum):

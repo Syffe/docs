@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Mergify now includes a new queue rules attribute `branch_protection_injection_mode`, allowing to set
+    several different modes of injection for branch protections in the merge queue.
+    (see documentation for further information)
