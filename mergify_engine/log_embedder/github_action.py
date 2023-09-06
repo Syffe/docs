@@ -42,7 +42,7 @@ async def embed_log(
 def get_lines_from_zip(
     zip_file: zipfile.ZipFile, job: github_actions.WorkflowJob
 ) -> list[str]:
-    if job.failed_step_number is None or job.failed_step_name is None:
+    if job.failed_step_number is None:
         raise RuntimeError(
             "get_lines_from_zip() called on a job without failed_step_number"
         )
@@ -130,7 +130,6 @@ async def embed_logs() -> bool:
             .where(
                 github_actions.WorkflowJob.conclusion
                 == github_actions.WorkflowJobConclusion.FAILURE,
-                github_actions.WorkflowJob.failed_step_name.is_not(None),
                 github_actions.WorkflowJob.failed_step_number.is_not(None),
                 github_actions.WorkflowJob.log_status.notin_(
                     (
