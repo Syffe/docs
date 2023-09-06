@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 import sqlalchemy.ext.asyncio
 
-from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_api
+from mergify_engine.log_embedder.github_action import get_tokenized_cleaned_log
 from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
 from mergify_engine.models import github_repository
@@ -38,81 +38,27 @@ async def test_compute_log_embedding_cosine_similarity(
 
     # Jobs
     job_pep8_1_repo1 = add_workflow_job(
-        db,
-        {
-            "id": 1,
-            "name": "pep8",
-            "repository": repo1,
-            "log_embedding": [1] * 1536,
-            "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
-        },
+        db, {"id": 1, "name": "pep8", "repository": repo1, "log_embedding": [1] * 1536}
     )
     job_pep8_2_repo1 = add_workflow_job(
-        db,
-        {
-            "id": 2,
-            "name": "pep8",
-            "repository": repo1,
-            "log_embedding": [2] * 1536,
-            "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
-        },
+        db, {"id": 2, "name": "pep8", "repository": repo1, "log_embedding": [2] * 1536}
     )
     job_pep8_3_repo1 = add_workflow_job(
-        db,
-        {
-            "id": 3,
-            "name": "pep8",
-            "repository": repo1,
-            "log_embedding": [-1] * 1536,
-            "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
-        },
+        db, {"id": 3, "name": "pep8", "repository": repo1, "log_embedding": [-1] * 1536}
     )
     job_pep8_1_repo2 = add_workflow_job(
-        db,
-        {
-            "id": 4,
-            "name": "pep8",
-            "repository": repo2,
-            "log_embedding": [1] * 1536,
-            "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
-        },
+        db, {"id": 4, "name": "pep8", "repository": repo2, "log_embedding": [1] * 1536}
     )
     job_pep8_2_repo2 = add_workflow_job(
-        db,
-        {
-            "id": 5,
-            "name": "pep8",
-            "repository": repo2,
-            "log_embedding": [2] * 1536,
-            "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
-        },
+        db, {"id": 5, "name": "pep8", "repository": repo2, "log_embedding": [2] * 1536}
     )
     job_docker_1_repo2 = add_workflow_job(
         db,
-        {
-            "id": 6,
-            "name": "docker",
-            "repository": repo2,
-            "log_embedding": [1] * 1536,
-            "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
-        },
+        {"id": 6, "name": "docker", "repository": repo2, "log_embedding": [1] * 1536},
     )
     job_docker_2_repo2 = add_workflow_job(
         db,
-        {
-            "id": 7,
-            "name": "docker",
-            "repository": repo2,
-            "log_embedding": [2] * 1536,
-            "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
-        },
+        {"id": 7, "name": "docker", "repository": repo2, "log_embedding": [2] * 1536},
     )
     # ==================================================================================
 
@@ -246,9 +192,7 @@ async def test_get_tokenized_cleaned_log(
     expected_cleaned_log: str,
     expected_embedded_log: list[str],
 ) -> None:
-    tokens, first_line, last_line = await github_action.get_tokenized_cleaned_log(
-        raw_log
-    )
+    tokens, first_line, last_line = await get_tokenized_cleaned_log(raw_log)
 
     assert len(tokens) == expected_length
 
