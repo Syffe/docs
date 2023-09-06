@@ -8,6 +8,7 @@ import sqlalchemy
 from mergify_engine import database
 from mergify_engine import settings
 from mergify_engine.clients import github
+from mergify_engine.clients import http
 from mergify_engine.log_embedder import log_cleaner
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github_account
@@ -23,11 +24,19 @@ LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 async def embed_log(
     openai_client: openai_api.OpenAIClient, job: github_actions.WorkflowJob
 ) -> None:
-    log_lines = await download_failed_step_log(job)
+    try:
+        log_lines = await download_failed_step_log(job)
+    except http.HTTPStatusError as e:
+        if e.response.status_code == 410:
+            job.log_status = github_actions.WorkflowJobLogStatus.GONE
+            return
+        raise
+
     tokens, first_line, last_line = await get_tokenized_cleaned_log(log_lines)
     embedding = await openai_client.get_embedding(tokens)
     job.log_embedding = embedding
     job.embedded_log = "".join(log_lines[first_line:last_line])
+    job.log_status = github_actions.WorkflowJobLogStatus.EMBEDDED
 
 
 def get_lines_from_zip(
@@ -123,6 +132,12 @@ async def embed_logs() -> bool:
                 == github_actions.WorkflowJobConclusion.FAILURE,
                 github_actions.WorkflowJob.failed_step_name.is_not(None),
                 github_actions.WorkflowJob.failed_step_number.is_not(None),
+                github_actions.WorkflowJob.log_status.notin_(
+                    (
+                        github_actions.WorkflowJobLogStatus.GONE,
+                        github_actions.WorkflowJobLogStatus.ERROR,
+                    )
+                ),
                 sqlalchemy.or_(
                     github_actions.WorkflowJob.log_embedding.is_(None),
                     github_actions.WorkflowJob.neighbours_computed_at.is_(None),
@@ -148,7 +163,7 @@ async def embed_logs() -> bool:
                             exc_info=True,
                         )
 
-                if job.neighbours_computed_at is None:
+                if job.log_embedding is not None and job.neighbours_computed_at is None:
                     job_ids_to_compute_cosine_similarity.append(job.id)
                 await session.commit()
 

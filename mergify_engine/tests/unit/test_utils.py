@@ -362,6 +362,8 @@ def add_workflow_job(
         id=job_data["id"],
         repository=job_data["repository"],
         log_embedding=job_data.get("log_embedding"),
+        log_status=job_data.get("log_status"),
+        embedded_log=job_data.get("embedded_log"),
         workflow_run_id=job_data.get("workflow_run_id", 1),
         name=job_data.get("name", "job_name"),
         started_at=job_data.get("started_at", datetime.datetime.now()),
