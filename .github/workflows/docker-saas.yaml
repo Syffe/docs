@@ -279,7 +279,7 @@ jobs:
         env:
           HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
         run: |
-          heroku run -a "${HEROKU_ENVIRONMENT}" mergify-database-update
+          heroku run -a "${HEROKU_ENVIRONMENT}" -x mergify-database-update
 
       - name: Deployment finish
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
