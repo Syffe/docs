@@ -80,6 +80,9 @@ if [ -n "$MERGIFYENGINE_DATABASE_URL" ]; then
         sed -i "s/<YOUR PORT>/${BASH_REMATCH[4]}/" "$POSTGRES_CONF_FILE"
         sed -i "s/<YOUR DBNAME>/${BASH_REMATCH[5]}/" "$POSTGRES_CONF_FILE"
     fi
+    LOG_EMBEDDER_MONITORED_ACCOUNTS="$(python3 -c "import sys; print('\'' + '\',\''.join(sys.argv[1].split(',')) + '\'')" $MERGIFYENGINE_LOG_EMBEDDER_ENABLED_ORGS)"
+    sed -i "s/<LOG_EMBEDDER_MONITORED_ACCOUNTS>/${LOG_EMBEDDER_MONITORED_ACCOUNTS}/" "$POSTGRES_CONF_FILE"
+
 fi
 
 REDIS_REGEX='^redis(s?)://([^:]*):([^@]+)@([^:]+):([^/?]+)'
