@@ -75,7 +75,7 @@ async def test_embed_logs(
     )
 
     # NOTE(Kontrolix): Reduce batch size to speed up test
-    github_action.LOG_EMBEDDER_JOBS_BATCH_SIZE = 2
+    monkeypatch.setattr(github_action, "LOG_EMBEDDER_JOBS_BATCH_SIZE", 2)
 
     # Create 3 jobs (LOG_EMBEDDER_JOBS_BATCH_SIZE + 1)
     for i in range(3):
