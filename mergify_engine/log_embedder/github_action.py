@@ -8,6 +8,8 @@ import sqlalchemy
 from sqlalchemy import orm
 
 from mergify_engine import database
+from mergify_engine import date
+from mergify_engine import exceptions
 from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -23,6 +25,7 @@ LOG = daiquiri.getLogger(__name__)
 # NOTE(Kontrolix): We remove all the windows forbidden path character as github does
 WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP = re.compile(r"[\*\"/\\<>:|\?]")
 LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
+LOG_EMBEDDER_MAX_ATTEMPTS = 15
 
 
 async def embed_log(
@@ -34,10 +37,54 @@ async def embed_log(
         if e.response.status_code == 410:
             job.log_status = github_actions.WorkflowJobLogStatus.GONE
             return
+
+        if exceptions.should_be_ignored(e):
+            job.log_status = github_actions.WorkflowJobLogStatus.ERROR
+            LOG.warning(
+                "log-embedder: downloading job log failed with a fatal error",
+                job_id=job.id,
+                job_data=job.as_dict(),
+                exc_info=True,
+            )
+
+            return
+
+        retry_in = exceptions.need_retry(e)
+        if retry_in is not None:
+            job.log_embedding_retry_after = date.utcnow() + retry_in
+            job.log_embedding_attempts += 1
+            if job.log_embedding_attempts >= LOG_EMBEDDER_MAX_ATTEMPTS:
+                job.log_status = github_actions.WorkflowJobLogStatus.ERROR
+                LOG.warning(
+                    "log-embedder: downloading job log failed too many times",
+                    job_id=job.id,
+                    job_data=job.as_dict(),
+                    exc_info=True,
+                )
+            else:
+                LOG.warning(
+                    "log-embedder: downloading job log failed, retrying later",
+                    job_id=job.id,
+                    job_data=job.as_dict(),
+                    exc_info=True,
+                )
+
+            return
+
         raise
 
     tokens, first_line, last_line = await get_tokenized_cleaned_log(log_lines)
-    embedding = await openai_client.get_embedding(tokens)
+
+    try:
+        embedding = await openai_client.get_embedding(tokens)
+    except openai_api.OpenAiException:
+        LOG.error(
+            "log-embedder: a job raises an unexpected error on log embedding",
+            job_id=job.id,
+            exc_info=True,
+        )
+        return
+
     job.log_embedding = embedding
     job.embedded_log = "".join(log_lines[first_line:last_line])
     job.log_status = github_actions.WorkflowJobLogStatus.EMBEDDED
@@ -163,6 +210,10 @@ async def embed_logs() -> bool:
             )
             .where(
                 wjob.conclusion == github_actions.WorkflowJobConclusion.FAILURE,
+                sqlalchemy.or_(
+                    wjob.log_embedding_retry_after.is_(None),
+                    wjob.log_embedding_retry_after <= date.utcnow(),
+                ),
                 wjob.failed_step_number.is_not(None),
                 wjob.log_status.notin_(
                     (
@@ -187,14 +238,7 @@ async def embed_logs() -> bool:
             job_ids_to_compute_cosine_similarity = []
             for job in jobs:
                 if job.log_embedding is None:
-                    try:
-                        await embed_log(openai_client, job)
-                    except openai_api.OpenAiException:
-                        LOG.error(
-                            "log-embedder: a job raises an unexpected error on log embedding",
-                            job_id=job.id,
-                            exc_info=True,
-                        )
+                    await embed_log(openai_client, job)
 
                 if (
                     job.embedded_log_error_title is None

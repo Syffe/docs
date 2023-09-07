@@ -3,6 +3,7 @@ import io
 import os
 import re
 import typing
+from unittest import mock
 import zipfile
 
 import numpy as np
@@ -12,6 +13,7 @@ import respx
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import exceptions
 from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import settings
@@ -316,7 +318,11 @@ async def test_embed_logs_on_various_data(
     assert count != 0
 
 
+@mock.patch.object(
+    exceptions, "need_retry", return_value=datetime.timedelta(seconds=-60)
+)
 async def test_workflow_job_log_life_cycle(
+    _: None,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     monkeypatch: pytest.MonkeyPatch,
@@ -349,11 +355,25 @@ async def test_workflow_job_log_life_cycle(
         failed_step_name="toto",
         failed_step_number=1,
     )
+    job3 = github_actions.WorkflowJob(
+        id=3,
+        repository=repo,
+        workflow_run_id=3,
+        name="job_toto",
+        started_at=datetime.datetime.now(),
+        completed_at=datetime.datetime.now(),
+        conclusion=github_actions.WorkflowJobConclusion.FAILURE,
+        labels=[],
+        run_attempt=1,
+        failed_step_name="toto",
+        failed_step_number=1,
+    )
 
     db.add(owner)
     db.add(repo)
     db.add(job1)
     db.add(job2)
+    db.add(job3)
     await db.commit()
     db.expunge_all()
 
@@ -403,28 +423,9 @@ async def test_workflow_job_log_life_cycle(
         200,
         stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
     )
-    respx_mock.post(
-        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-    ).respond(
-        200,
-        json={
-            "id": "chatcmpl-123",
-            "object": "chat.completion",
-            "created": 1677652288,
-            "model": "gpt-3.5-turbo-0613",
-            "choices": [
-                {
-                    "index": 0,
-                    "message": {
-                        "role": "assistant",
-                        "content": "Toto title",
-                    },
-                    "finish_reason": "stop",
-                }
-            ],
-            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
-        },
-    )
+    respx_mock.get(
+        f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/runs/{job3.workflow_run_id}/attempts/{job3.run_attempt}/logs"
+    ).respond(500)
 
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
@@ -449,24 +450,66 @@ async def test_workflow_job_log_life_cycle(
         },
     )
 
-    monkeypatch.setattr(
-        settings,
-        "LOG_EMBEDDER_ENABLED_ORGS",
-        [owner.login],
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        json={
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1677652288,
+            "model": "gpt-3.5-turbo-0613",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "Toto title",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
+        },
     )
 
-    jobs = list((await db.scalars(sqlalchemy.select(github_actions.WorkflowJob))).all())
-    assert len(jobs) == 2
+    monkeypatch.setattr(settings, "LOG_EMBEDDER_ENABLED_ORGS", [owner.login])
+    monkeypatch.setattr(github_action, "LOG_EMBEDDER_MAX_ATTEMPTS", 2)
+
+    async def get_jobs() -> list[github_actions.WorkflowJob]:
+        return list(
+            (
+                await db.scalars(
+                    sqlalchemy.select(github_actions.WorkflowJob).order_by(
+                        github_actions.WorkflowJob.id
+                    )
+                )
+            ).all()
+        )
+
+    jobs = await get_jobs()
+    assert len(jobs) == 3
     assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.UNKNOWN
     assert jobs[1].log_status == github_actions.WorkflowJobLogStatus.UNKNOWN
+    assert jobs[2].log_status == github_actions.WorkflowJobLogStatus.UNKNOWN
     db.expunge_all()
 
     await github_action.embed_logs()
 
-    jobs = list((await db.scalars(sqlalchemy.select(github_actions.WorkflowJob))).all())
-    assert len(jobs) == 2
+    jobs = await get_jobs()
+    assert len(jobs) == 3
     assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.GONE
     assert jobs[1].log_status == github_actions.WorkflowJobLogStatus.EMBEDDED
+    assert jobs[2].log_status == github_actions.WorkflowJobLogStatus.UNKNOWN
+    db.expunge_all()
+
+    await github_action.embed_logs()
+
+    jobs = await get_jobs()
+    assert len(jobs) == 3
+    assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.GONE
+    assert jobs[1].log_status == github_actions.WorkflowJobLogStatus.EMBEDDED
+    assert jobs[2].log_status == github_actions.WorkflowJobLogStatus.ERROR
 
 
 @pytest.mark.parametrize(

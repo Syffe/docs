@@ -211,6 +211,15 @@ class WorkflowJob(models.Base):
             """,
             name="embedding_linked_columns",
         ),
+        sqlalchemy.schema.CheckConstraint(
+            """
+            log_embedding_attempts >= 0 AND (
+                ( log_embedding_attempts = 0 AND log_embedding_retry_after IS NULL )
+                OR ( log_embedding_attempts > 0 AND log_embedding_retry_after IS NOT NULL)
+            )
+            """,
+            name="embedding_retries",
+        ),
     )
 
     id: orm.Mapped[int] = orm.mapped_column(
@@ -291,6 +300,12 @@ class WorkflowJob(models.Base):
         sqlalchemy.Enum(WorkflowJobLogStatus),
         server_default="UNKNOWN",
         anonymizer_config=None,
+    )
+    log_embedding_attempts: orm.Mapped[int] = orm.mapped_column(
+        server_default="0", anonymizer_config=None
+    )
+    log_embedding_retry_after: orm.Mapped[datetime.datetime | None] = orm.mapped_column(
+        nullable=True, anonymizer_config=None
     )
 
     @classmethod
