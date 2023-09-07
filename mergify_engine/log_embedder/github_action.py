@@ -5,6 +5,7 @@ import zipfile
 import daiquiri
 from ddtrace import tracer
 import sqlalchemy
+from sqlalchemy import orm
 
 from mergify_engine import database
 from mergify_engine import settings
@@ -113,14 +114,42 @@ async def get_tokenized_cleaned_log(
     return tokens, first_line, last_line
 
 
+async def set_embedded_log_error_title(
+    openai_client: openai_api.OpenAIClient, job: github_actions.WorkflowJob
+) -> None:
+    chat_completion = await openai_client.get_chat_completion(
+        [
+            openai_api.ChatCompletionMessage(
+                role=openai_api.ChatCompletionRole.user,
+                content=f"""Analyze the following logs, spot the error and give me a
+                meaningful title to qualify this error. Your answer must contain
+                only the title. The logs: {job.embedded_log}""",
+            )
+        ]
+    )
+    title = chat_completion.get("choices", [{}])[0].get("message", {}).get("content")  # type: ignore[typeddict-item]
+
+    if not title:
+        LOG.error(
+            "log-embedder: ChatGPT returned no title for the job log",
+            job_id=job.id,
+            chat_completion=chat_completion,
+        )
+        return
+
+    job.embedded_log_error_title = title
+
+
 @tracer.wrap("embed-logs")
 async def embed_logs() -> bool:
     if not settings.LOG_EMBEDDER_ENABLED_ORGS:
         return False
 
+    wjob = orm.aliased(github_actions.WorkflowJob, name="wjob")
+
     async with database.create_session() as session:
         stmt = (
-            sqlalchemy.select(github_actions.WorkflowJob)
+            sqlalchemy.select(wjob)
             .join(github_repository.GitHubRepository)
             .join(
                 github_account.GitHubAccount,
@@ -133,21 +162,21 @@ async def embed_logs() -> bool:
                 ),
             )
             .where(
-                github_actions.WorkflowJob.conclusion
-                == github_actions.WorkflowJobConclusion.FAILURE,
-                github_actions.WorkflowJob.failed_step_number.is_not(None),
-                github_actions.WorkflowJob.log_status.notin_(
+                wjob.conclusion == github_actions.WorkflowJobConclusion.FAILURE,
+                wjob.failed_step_number.is_not(None),
+                wjob.log_status.notin_(
                     (
                         github_actions.WorkflowJobLogStatus.GONE,
                         github_actions.WorkflowJobLogStatus.ERROR,
                     )
                 ),
                 sqlalchemy.or_(
-                    github_actions.WorkflowJob.log_embedding.is_(None),
-                    github_actions.WorkflowJob.neighbours_computed_at.is_(None),
+                    wjob.log_embedding.is_(None),
+                    wjob.neighbours_computed_at.is_(None),
+                    wjob.embedded_log_error_title.is_(None),
                 ),
             )
-            .order_by(github_actions.WorkflowJob.completed_at.asc())
+            .order_by(wjob.completed_at.asc())
             .limit(LOG_EMBEDDER_JOBS_BATCH_SIZE)
         )
         jobs = (await session.scalars(stmt)).all()
@@ -166,6 +195,12 @@ async def embed_logs() -> bool:
                             job_id=job.id,
                             exc_info=True,
                         )
+
+                if (
+                    job.embedded_log_error_title is None
+                    and job.embedded_log is not None
+                ):
+                    await set_embedded_log_error_title(openai_client, job)
 
                 if job.log_embedding is not None and job.neighbours_computed_at is None:
                     job_ids_to_compute_cosine_similarity.append(job.id)

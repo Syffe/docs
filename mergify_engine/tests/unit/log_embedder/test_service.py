@@ -165,6 +165,7 @@ async def test_embed_logs_on_controlled_data(
         for job in jobs
     )
     assert all(job.neighbours_computed_at is not None for job in jobs)
+    assert all(job.embedded_log_error_title == "Toto title" for job in jobs)
 
     # NOTE(Kontolix): Validate that if embedding has been computed for a job but neighbours
     # have not been computed, if we call the service, only neighbours are computed for that job.
@@ -402,6 +403,28 @@ async def test_workflow_job_log_life_cycle(
         200,
         stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
     )
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        json={
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1677652288,
+            "model": "gpt-3.5-turbo-0613",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "Toto title",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
+        },
+    )
 
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
@@ -513,6 +536,28 @@ async def test_workflow_job_with_special_job_name(
             ],
             "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
+        },
+    )
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        json={
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1677652288,
+            "model": "gpt-3.5-turbo-0613",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "Toto title",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
         },
     )
     respx_mock.get(
