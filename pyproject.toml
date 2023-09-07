@@ -87,6 +87,7 @@ pytest-rerunfailures = "^12.0"
 ruff = "^0.0.287"
 black = "^23.7.0"
 click = "^8.1.7"
+pytest-flakefinder = "^1.1.0"
 
 [tool.poetry.scripts]
   mergify-database-update = "mergify_engine.models.manage:database_update"
