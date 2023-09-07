@@ -926,10 +926,10 @@ GitHubWorkflowJobStepStatus = typing.Literal["queued", "in_progress", "completed
 class GitHubWorkflowJobStep(typing.TypedDict):
     name: str
     status: GitHubWorkflowJobStepStatus
-    conclusion: GitHubWorkflowJobConclusionType
+    conclusion: GitHubWorkflowJobConclusionType | None
     number: int
-    started_at: ISODateTimeType
-    completed_at: ISODateTimeType
+    started_at: ISODateTimeType | None
+    completed_at: ISODateTimeType | None
 
 
 class GitHubWorkflowJob(typing.TypedDict):

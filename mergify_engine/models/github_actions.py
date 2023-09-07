@@ -332,24 +332,35 @@ class WorkflowJob(models.Base):
     ) -> WorkflowJobFailedStep | None:
         # NOTE(Kontrolix): repository is passed as a parameter just for debug purpose
         # in DataDog.
+        if workflow_job_data["conclusion"] != "failure":
+            return None
 
-        result = None
-        if workflow_job_data["conclusion"] == "failure" and workflow_job_data["steps"]:
-            for step in workflow_job_data["steps"]:
-                if step["conclusion"] in ("failure", "cancelled"):
-                    result = WorkflowJobFailedStep(
-                        number=step["number"], name=step["name"]
-                    )
-                    break
-            else:
-                LOG.error(
-                    "WorkflowJob: Can't find failed step on failed job",
-                    workflow_job_data=workflow_job_data,
-                    gh_owner=repository["owner"]["login"],
-                    gh_repo=repository["name"],
-                )
+        if not workflow_job_data["steps"]:
+            # FIXME(sileht): we need to find why how we can have failed jobs with no steps
+            LOG.warning(
+                "WorkflowJob without steps",
+                workflow_job_data=workflow_job_data,
+                gh_owner=repository["owner"]["login"],
+                gh_repo=repository["name"],
+            )
+            return None
 
-        return result
+        for step in workflow_job_data["steps"]:
+            if step["conclusion"] in ("failure", "cancelled"):
+                return WorkflowJobFailedStep(number=step["number"], name=step["name"])
+
+            if step["status"] != "completed":
+                # steps was still in progress, we assume the job timed out
+                # See MRGFY-2588
+                return None
+
+        LOG.error(
+            "WorkflowJob: Can't find failed step on failed job",
+            workflow_job_data=workflow_job_data,
+            gh_owner=repository["owner"]["login"],
+            gh_repo=repository["name"],
+        )
+        return None
 
     @classmethod
     async def compute_logs_embedding_cosine_similarity(
