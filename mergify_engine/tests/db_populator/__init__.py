@@ -48,4 +48,5 @@ class DbPopulator:
 # NOTE(Kontrolix): Import here to register dataset
 import mergify_engine.tests.db_populator.account_and_repo  # noqa: E402
 import mergify_engine.tests.db_populator.colliding_repo_name  # noqa: E402
-import mergify_engine.tests.db_populator.one_account_and_one_repo  # noqa: E402, F401
+import mergify_engine.tests.db_populator.one_account_and_one_repo  # noqa: E402
+import mergify_engine.tests.db_populator.workflow_job  # noqa: E402, F401

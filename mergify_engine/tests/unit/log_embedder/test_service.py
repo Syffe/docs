@@ -1,5 +1,6 @@
 import datetime
 import os
+import re
 import typing
 
 import numpy as np
@@ -28,7 +29,7 @@ with open(os.path.join(os.path.dirname(__file__), "gha-ci-logs.zip"), "rb") as f
     GHA_CI_LOGS_ZIP = f.read()
 
 
-async def test_embed_logs(
+async def test_embed_logs_on_controlled_data(
     respx_mock: respx.MockRouter,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
@@ -39,7 +40,9 @@ async def test_embed_logs(
     repo = github_repository.GitHubRepository(id=1, owner=owner, name="repo_name")
     db.add(repo)
 
-    respx_mock.get(f"https://api.github.com/users/{owner.login}/installation").respond(
+    respx_mock.get(
+        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation"
+    ).respond(
         200,
         json=github_types.GitHubInstallation(  # type: ignore[arg-type]
             {
@@ -53,9 +56,9 @@ async def test_embed_logs(
             }
         ),
     )
-    respx_mock.post("https://api.github.com/app/installations/0/access_tokens").respond(
-        200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}
-    )
+    respx_mock.post(
+        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens"
+    ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
     ).respond(
@@ -71,6 +74,28 @@ async def test_embed_logs(
             ],
             "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
+        },
+    )
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        json={
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1677652288,
+            "model": "gpt-3.5-turbo-0613",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "Toto title",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
         },
     )
 
@@ -153,6 +178,128 @@ async def test_embed_logs(
         embedding_control_value,
     )
     assert a_job.neighbours_computed_at is not None
+
+
+async def test_embed_logs_on_various_data(
+    respx_mock: respx.MockRouter,
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    respx_mock.get(
+        re.compile(f"{settings.GITHUB_REST_API_URL}/users/.+/installation")
+    ).respond(
+        200,
+        json=github_types.GitHubInstallation(  # type: ignore[arg-type]
+            {
+                "id": github_types.GitHubInstallationIdType(0),
+                "target_type": "Organization",
+                "suspended_at": None,
+                "permissions": {},
+                "account": sample_ci_events_to_process[
+                    "workflow_job.completed.json"
+                ].slim_event["repository"]["owner"],
+            }
+        ),
+    )
+    respx_mock.post(
+        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens"
+    ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
+
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
+    ).respond(
+        200,
+        json={
+            "object": "list",
+            "data": [
+                {
+                    "object": "embedding",
+                    "index": 0,
+                    "embedding": OPENAI_EMBEDDING_DATASET["toto"],
+                }
+            ],
+            "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
+            "usage": {"prompt_tokens": 2, "total_tokens": 2},
+        },
+    )
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        json={
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1677652288,
+            "model": "gpt-3.5-turbo-0613",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "Toto title",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
+        },
+    )
+
+    respx_mock.get(
+        re.compile(
+            f"{settings.GITHUB_REST_API_URL}/repos/.+/.+/actions/runs/.+/attempts/.+/logs"
+        )
+    ).respond(
+        200, stream=GHA_CI_LOGS_ZIP  # type: ignore[arg-type]
+    )
+
+    # Update jobs name and failed step to match the zip archive mock
+    await populated_db.execute(
+        sqlalchemy.update(github_actions.WorkflowJob)
+        .values(failed_step_name="toto", failed_step_number=1, name="job_toto")
+        .where(
+            github_actions.WorkflowJob.failed_step_name.is_not(None),
+            github_actions.WorkflowJob.failed_step_number.is_not(None),
+        )
+    )
+    await populated_db.commit()
+
+    logins = set()
+    for job in (
+        await populated_db.execute(sqlalchemy.select(github_actions.WorkflowJob))
+    ).scalars():
+        logins.add(job.repository.owner.login)
+
+    monkeypatch.setattr(
+        settings,
+        "LOG_EMBEDDER_ENABLED_ORGS",
+        list(logins),
+    )
+
+    count = (
+        await populated_db.execute(
+            sqlalchemy.select(
+                sqlalchemy.func.count(github_actions.WorkflowJob.id)
+            ).where(github_actions.WorkflowJob.embedded_log.is_not(None))
+        )
+    ).all()[0][0]
+
+    assert count == 0
+
+    pending_work = True
+    while pending_work:
+        pending_work = await github_action.embed_logs()
+
+    count = (
+        await populated_db.execute(
+            sqlalchemy.select(
+                sqlalchemy.func.count(github_actions.WorkflowJob.id)
+            ).where(github_actions.WorkflowJob.embedded_log.is_not(None))
+        )
+    ).all()[0][0]
+
+    assert count != 0
 
 
 async def test_workflow_job_log_life_cycle(
@@ -241,6 +388,29 @@ async def test_workflow_job_log_life_cycle(
     ).respond(
         200,
         stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
+    )
+
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        json={
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1677652288,
+            "model": "gpt-3.5-turbo-0613",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "Toto title",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
+        },
     )
 
     monkeypatch.setattr(
