@@ -1,4 +1,5 @@
 import io
+import re
 import zipfile
 
 import daiquiri
@@ -18,6 +19,8 @@ from mergify_engine.models import github_repository
 
 LOG = daiquiri.getLogger(__name__)
 
+# NOTE(Kontrolix): We remove all the windows forbidden path character as github does
+WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP = re.compile(r"[\*\"/\\<>:|\?]")
 LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 
 
@@ -47,8 +50,10 @@ def get_lines_from_zip(
             "get_lines_from_zip() called on a job without failed_step_number"
         )
 
+    cleaned_job_name = WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP.sub("", job.name)
+
     for i in zip_file.infolist():
-        if not i.filename.startswith(f"{job.name}/{job.failed_step_number}_"):
+        if not i.filename.startswith(f"{cleaned_job_name}/{job.failed_step_number}_"):
             continue
 
         with zip_file.open(i.filename) as log_file:

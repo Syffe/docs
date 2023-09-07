@@ -1,7 +1,9 @@
 import datetime
+import io
 import os
 import re
 import typing
+import zipfile
 
 import numpy as np
 import numpy.typing as npt
@@ -25,8 +27,19 @@ from mergify_engine.tests.openai_embedding_dataset import (
 from mergify_engine.tests.unit.test_utils import add_workflow_job
 
 
-with open(os.path.join(os.path.dirname(__file__), "gha-ci-logs.zip"), "rb") as f:
-    GHA_CI_LOGS_ZIP = f.read()
+GHA_CI_LOGS_ZIP_DIRECTORY = os.path.join(
+    os.path.dirname(__file__), "gha-ci-logs-examples"
+)
+GHA_CI_LOGS_ZIP_BUFFER = io.BytesIO()
+
+with zipfile.ZipFile(GHA_CI_LOGS_ZIP_BUFFER, "w") as zip_object:
+    for folder_name, _sub_folders, file_names in os.walk(GHA_CI_LOGS_ZIP_DIRECTORY):
+        for filename in file_names:
+            file_path = os.path.join(folder_name, filename)
+            zip_object.write(file_path, file_path[len(GHA_CI_LOGS_ZIP_DIRECTORY) :])
+
+GHA_CI_LOGS_ZIP_BUFFER.seek(0)
+GHA_CI_LOGS_ZIP = GHA_CI_LOGS_ZIP_BUFFER.read()
 
 
 async def test_embed_logs_on_controlled_data(
@@ -431,3 +444,94 @@ async def test_workflow_job_log_life_cycle(
     assert len(jobs) == 2
     assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.GONE
     assert jobs[1].log_status == github_actions.WorkflowJobLogStatus.EMBEDDED
+
+
+@pytest.mark.parametrize(
+    "job_name, step", (("front (format:check)", 4), ("job_toto", 1))
+)
+async def test_workflow_job_with_special_job_name(
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    monkeypatch: pytest.MonkeyPatch,
+    job_name: str,
+    step: int,
+) -> None:
+    owner = github_account.GitHubAccount(id=1, login="owner")
+    repo = github_repository.GitHubRepository(id=1, owner=owner, name="repo1")
+    job = github_actions.WorkflowJob(
+        id=1,
+        repository=repo,
+        workflow_run_id=1,
+        name=job_name,
+        started_at=datetime.datetime.now(),
+        completed_at=datetime.datetime.now(),
+        conclusion=github_actions.WorkflowJobConclusion.FAILURE,
+        labels=[],
+        run_attempt=1,
+        failed_step_name="toto",
+        failed_step_number=step,
+    )
+
+    db.add(owner)
+    db.add(repo)
+    db.add(job)
+    await db.commit()
+    db.expunge_all()
+
+    respx_mock.get(f"https://api.github.com/users/{owner.login}/installation").respond(
+        200,
+        json=github_types.GitHubInstallation(  # type: ignore[arg-type]
+            {
+                "id": github_types.GitHubInstallationIdType(0),
+                "target_type": "Organization",
+                "suspended_at": None,
+                "permissions": {},
+                "account": {
+                    "id": github_types.GitHubAccountIdType(1),
+                    "login": github_types.GitHubLogin("owner"),
+                    "type": "User",
+                    "avatar_url": "",
+                },
+            }
+        ),
+    )
+    respx_mock.post("https://api.github.com/app/installations/0/access_tokens").respond(
+        200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}
+    )
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
+    ).respond(
+        200,
+        json={
+            "object": "list",
+            "data": [
+                {
+                    "object": "embedding",
+                    "index": 0,
+                    "embedding": OPENAI_EMBEDDING_DATASET["toto"],
+                }
+            ],
+            "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
+            "usage": {"prompt_tokens": 2, "total_tokens": 2},
+        },
+    )
+    respx_mock.get(
+        f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
+    ).respond(
+        200,
+        stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
+    )
+
+    monkeypatch.setattr(settings, "LOG_EMBEDDER_ENABLED_ORGS", [owner.login])
+
+    jobs = list((await db.scalars(sqlalchemy.select(github_actions.WorkflowJob))).all())
+    assert len(jobs) == 1
+    assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.UNKNOWN
+    db.expunge_all()
+
+    await github_action.embed_logs()
+
+    jobs = list((await db.scalars(sqlalchemy.select(github_actions.WorkflowJob))).all())
+    assert len(jobs) == 1
+    assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.EMBEDDED
+    db.expunge_all()
