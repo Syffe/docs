@@ -737,6 +737,7 @@ class Train:
             position=position,
             gh_pull=embarked_pull.user_pull_request_number,
             gh_branch=self.convoy.ref,
+            reason=str(unqueue_reason),
             **self.log_queue_extras,
         )
 
