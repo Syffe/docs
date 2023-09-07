@@ -22,6 +22,7 @@ class DedicatedStreamService(stream_service_base.StreamService):
     service_dedicated_workers_cache_syncer: dedicated_workers_cache_syncer_service.DedicatedWorkersCacheSyncerService
 
     loading_priority: typing.ClassVar[int] = 10
+    main_task_must_shutdown_first: typing.ClassVar[bool] = True
 
     _dedicated_worker_tasks: dict[
         github_types.GitHubAccountIdType, task.TaskRetriedForever
@@ -30,8 +31,8 @@ class DedicatedStreamService(stream_service_base.StreamService):
     @property
     def tasks(self) -> list[task.TaskRetriedForever]:
         return [
-            *list(self._dedicated_worker_tasks.values()),
             self.main_task,
+            *list(self._dedicated_worker_tasks.values()),
         ]
 
     async def dedicated_stream_worker_task(

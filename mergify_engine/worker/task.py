@@ -89,6 +89,7 @@ class SimpleService:
     loading_priority: typing.ClassVar[int] = 100
 
     main_task: TaskRetriedForever = dataclasses.field(init=False)
+    main_task_must_shutdown_first: typing.ClassVar[bool] = False
 
     def __init_subclass__(cls, **kwargs: typing.Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -102,7 +103,10 @@ class SimpleService:
     def __post_init__(self) -> None:
         traced_work = tracer.wrap(self.get_name(), span_type="worker")(self.work)
         self.main_task = TaskRetriedForever(
-            self.get_name(), traced_work, self.idle_time
+            name=self.get_name(),
+            func=traced_work,
+            sleep_time=self.idle_time,
+            must_shutdown_first=self.main_task_must_shutdown_first,
         )
 
     @property

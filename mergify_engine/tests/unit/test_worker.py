@@ -2515,9 +2515,6 @@ def test_score_priority_helpers(
         )
 
 
-@pytest.mark.flaky(  # drop me when asyncio_timeout is removed from redispy and python >= 3.11.3
-    reruns=5
-)
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
 @mock.patch("mergify_engine.worker.stream.run_engine")
