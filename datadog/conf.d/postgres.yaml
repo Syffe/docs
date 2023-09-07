@@ -30,6 +30,7 @@ instances:
           WHERE
               gha_workflow_job.conclusion = 'FAILURE'
               AND gha_workflow_job.failed_step_number is not NULL
+              AND log_status not in ('GONE', 'ERROR')
               AND github_account.login in (<LOG_EMBEDDER_MONITORED_ACCOUNTS>)
           ;
         columns:
