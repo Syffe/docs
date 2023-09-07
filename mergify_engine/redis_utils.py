@@ -240,7 +240,7 @@ class RedisLinks:
 
         if issubclass(self.connection_pool_cls, redispy.BlockingConnectionPool):
             # Heroku H12 timeout is 30s and we retry 3 times
-            options["timeout"] = 7
+            options["timeout"] = 5
 
         client = redispy.Redis(  # type: ignore[var-annotated]
             connection_pool=self.connection_pool_cls.from_url(
@@ -249,11 +249,12 @@ class RedisLinks:
                 decode_responses=False,
                 client_name=f"{service.SERVICE_NAME}/{self.name}/{name}",
                 redis_connect_func=redis_connect_func,
+                health_check_interval=10,
                 retry=retry.Retry(redispy.default_backoff(), retries=3),
                 retry_on_timeout=True,
                 # Heroku H12 timeout is 30s and we retry 3 times
-                socket_timeout=7,
-                socket_connect_timeout=7,
+                socket_timeout=5,
+                socket_connect_timeout=5,
                 socket_keepalive=True,
                 **options,
             )
