@@ -104,7 +104,7 @@ def strip_url_credentials(url: str) -> str:
 
 def config_log() -> None:
     LOG.info("##################### CONFIGURATION ######################")
-    for key, value in settings.dict().items():
+    for key, value in settings.model_dump().items():
         if key.startswith("TESTING_"):
             continue
         LOG.info("* %s: %s", key, value)
@@ -142,16 +142,15 @@ def setup_logging(dump_config: bool = True, stdout_logging_only: bool = False) -
 
     if settings.LOG_DATADOG and not stdout_logging_only:
         dd_extras: dict[str, int | str] = {}
-        if isinstance(settings.LOG_DATADOG, str):
-            dd_agent_parsed = parse.urlparse(settings.LOG_DATADOG)
-            if dd_agent_parsed.scheme != "udp":
+        if not isinstance(settings.LOG_DATADOG, bool):
+            if settings.LOG_DATADOG.scheme != "udp":
                 raise RuntimeError(
                     "Only UDP protocol is supported for MERGIFYENGINE_LOG_DATADOG"
                 )
-            if dd_agent_parsed.hostname:
-                dd_extras["hostname"] = dd_agent_parsed.hostname
-            if dd_agent_parsed.port:
-                dd_extras["port"] = dd_agent_parsed.port
+            if settings.LOG_DATADOG.host:
+                dd_extras["hostname"] = settings.LOG_DATADOG.host
+            if settings.LOG_DATADOG.port:
+                dd_extras["port"] = settings.LOG_DATADOG.port
         outputs.append(
             daiquiri.output.Datadog(
                 level=settings.LOG_DATADOG_LEVEL,

@@ -353,7 +353,7 @@ async def count_and_send(redis: redis_utils.RedisActiveUsers) -> None:
         # break `tox -e test`. And we can et SUBSCRIPTION_TOKEN to test the
         # daemon with `tox -etest`
         if settings.SUBSCRIPTION_TOKEN is None:
-            LOG.info("on-premise subscription token missing, nothing to do.")
+            LOG.info("on-premise subscription token missing, nothing to do.")  # type: ignore[unreachable]
         else:
             try:
                 seats = (await Seats.get(redis)).count()
@@ -378,7 +378,7 @@ async def report(args: argparse.Namespace) -> None:
         else:
             service.setup("count-seats", dump_config=False)
             if settings.SUBSCRIPTION_TOKEN is None:
-                LOG.error("on-premise subscription token missing")
+                LOG.error("on-premise subscription token missing")  # type: ignore[unreachable]
             else:
                 seats = await Seats.get(redis_links.active_users)
                 if args.json:
