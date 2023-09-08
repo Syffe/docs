@@ -82,12 +82,7 @@ async def test_get_chat_completion(
 
     async with openai_api.OpenAIClient() as client:
         chat_completion = await client.get_chat_completion(
-            [
-                openai_api.ChatCompletionMessage(
-                    role=openai_api.ChatCompletionRole.user, content="hello"
-                )
-            ],
-            0,
+            openai_api.ChatCompletionQuery("user", "hello", 0)
         )
 
     assert (
@@ -97,77 +92,60 @@ async def test_get_chat_completion(
 
 
 async def test_get_chat_completion_model() -> None:
-    model = openai_api.get_chat_completion_model(
-        [{"role": openai_api.ChatCompletionRole.user, "content": "hello"}], 0
-    )
-    assert model["name"] == "gpt-3.5-turbo"
-
-    # NOTE(Kontrolix): - 1 is for the token used by the role
-    model = openai_api.get_chat_completion_model(
-        [
-            {
-                "role": openai_api.ChatCompletionRole.user,
-                "content": "hello"
-                * (
-                    model["max_tokens"]
-                    - 1
-                    - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
-                ),
-            }
-        ],
+    query = openai_api.ChatCompletionQuery(
+        "user",
+        "hello",
         0,
     )
+    model = query.get_chat_completion_model()
     assert model["name"] == "gpt-3.5-turbo"
 
-    model = openai_api.get_chat_completion_model(
-        [
-            {
-                "role": openai_api.ChatCompletionRole.user,
-                "content": "hello"
-                * (
-                    model["max_tokens"]
-                    - 1
-                    - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
-                    - 100
-                ),
-            }
-        ],
+    query = openai_api.ChatCompletionQuery(
+        "user",
+        "hello"
+        * (model["max_tokens"] - 1 - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN),
+        0,
+    )
+    # NOTE(Kontrolix): - 1 is for the token used by the role
+    model = query.get_chat_completion_model()
+    assert model["name"] == "gpt-3.5-turbo"
+
+    query = openai_api.ChatCompletionQuery(
+        "user",
+        "hello"
+        * (
+            model["max_tokens"]
+            - 1
+            - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
+            - 100
+        ),
         100,
     )
+
+    model = query.get_chat_completion_model()
     assert model["name"] == "gpt-3.5-turbo"
 
-    model = openai_api.get_chat_completion_model(
-        [
-            {
-                "role": openai_api.ChatCompletionRole.user,
-                "content": "hello"
-                * (
-                    model["max_tokens"]
-                    - 1
-                    - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
-                    - 100
-                ),
-            }
-        ],
+    query = openai_api.ChatCompletionQuery(
+        "user",
+        "hello"
+        * (
+            model["max_tokens"]
+            - 1
+            - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
+            - 100
+        ),
         101,
     )
+
+    model = query.get_chat_completion_model()
     assert model["name"] == "gpt-3.5-turbo-16k"
 
+    query = openai_api.ChatCompletionQuery(
+        "user",
+        "hello" * (model["max_tokens"] * 2),
+        101,
+    )
     with pytest.raises(
-        openai_api.OpenAiException, match="No model found to handle 16385 tokens"
+        openai_api.OpenAiException, match="No model found to handle 32876 tokens"
     ):
-        model = openai_api.get_chat_completion_model(
-            [
-                {
-                    "role": openai_api.ChatCompletionRole.user,
-                    "content": "hello"
-                    * (
-                        model["max_tokens"]
-                        - 1
-                        - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
-                        - 100
-                    ),
-                }
-            ],
-            101,
-        )
+        model = query.get_chat_completion_model()

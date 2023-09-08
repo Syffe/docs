@@ -29,6 +29,15 @@ LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 LOG_EMBEDDER_MAX_ATTEMPTS = 15
 
 
+ERROR_TITLE_QUERY_TEMPLATE = openai_api.ChatCompletionQuery(
+    "user",
+    """Analyze the following logs, spot the error and give me a
+meaningful title to qualify this error. Your answer must contain only the title. The logs:
+    """,
+    100,
+)
+
+
 @dataclasses.dataclass
 class NoLogFileFoundInZip(Exception):
     message: str
@@ -82,12 +91,12 @@ async def embed_log(
 
         raise
 
-    tokens, first_line, last_line = await get_tokenized_cleaned_log(log_lines)
+    tokens, truncated_log = await get_tokenized_cleaned_log(log_lines)
 
     embedding = await openai_client.get_embedding(tokens)
 
     job.log_embedding = embedding
-    job.embedded_log = "".join(log_lines[first_line:last_line])
+    job.embedded_log = truncated_log
     job.log_status = github_actions.WorkflowJobLogStatus.EMBEDDED
 
 
@@ -132,44 +141,89 @@ async def download_failed_step_log(job: github_actions.WorkflowJob) -> list[str]
 
 async def get_tokenized_cleaned_log(
     log_lines: list[str],
-) -> tuple[list[int], int, int]:
+) -> tuple[list[int], str]:
     cleaner = log_cleaner.LogCleaner()
 
-    tokens: list[int] = []
-    first_line = 0
-    last_line = 0
-    max_tokens = openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
+    max_embedding_tokens = openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
+    max_chat_completion_tokens = (
+        openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
+        - ERROR_TITLE_QUERY_TEMPLATE.get_tokens_size()
+    )
 
-    for i, line in enumerate(reversed(log_lines)):
+    cleaned_tokens: list[int] = []
+    truncated_log = ""
+    truncated_log_ready = False
+    truncated_log_tokens_length = 0
+
+    line_iterator = reversed(log_lines)
+
+    # start by removing useless ending lines
+    for line in line_iterator:
+        if not line:
+            continue
+
+    for line in reversed(log_lines):
+        if not line:
+            continue
+
         cleaned_line = cleaner.clean_line(line)
-        if cleaned_line:
-            tokenized_line = openai_api.TIKTOKEN_ENCODING.encode(cleaned_line)
-            total_tokens = len(tokenized_line) + len(tokens)
-            if total_tokens <= max_tokens:
-                tokens = tokenized_line + tokens
-                if last_line == 0:
-                    last_line = len(log_lines) - i
-                first_line = len(log_lines) - 1 - i
+        # Start feeding truncated_log only on first non empty line
+        if not cleaned_line and not truncated_log:
+            continue
 
-            if total_tokens >= max_tokens:
-                break
+        if not truncated_log_ready:
+            nb_tokens_in_line = len(openai_api.TIKTOKEN_ENCODING.encode(line))
+            truncated_log_tokens_length += nb_tokens_in_line
 
-    return tokens, first_line, last_line
+            if truncated_log_tokens_length <= max_chat_completion_tokens:
+                truncated_log = line + truncated_log
+
+            if truncated_log_tokens_length >= max_chat_completion_tokens:
+                truncated_log_ready = True
+
+        if not cleaned_line:
+            continue
+
+        tokenized_cleaned_line = openai_api.TIKTOKEN_ENCODING.encode(cleaned_line)
+
+        total_tokens = len(tokenized_cleaned_line) + len(cleaned_tokens)
+
+        if total_tokens <= max_embedding_tokens:
+            cleaned_tokens = tokenized_cleaned_line + cleaned_tokens
+
+        if total_tokens >= max_embedding_tokens:
+            break
+
+    return cleaned_tokens, truncated_log
 
 
 async def set_embedded_log_error_title(
     openai_client: openai_api.OpenAIClient, job: github_actions.WorkflowJob
 ) -> None:
-    chat_completion = await openai_client.get_chat_completion(
-        [
-            openai_api.ChatCompletionMessage(
-                role=openai_api.ChatCompletionRole.user,
-                content=f"""Analyze the following logs, spot the error and give me a
-                meaningful title to qualify this error. Your answer must contain
-                only the title. The logs: {job.embedded_log}""",
-            )
-        ]
+    if job.embedded_log is None:
+        raise RuntimeError(
+            "set_embedded_log_error_title canlled with job.embedded_log=None"
+        )
+
+    query = openai_api.ChatCompletionQuery(
+        role=ERROR_TITLE_QUERY_TEMPLATE.role,
+        content=f"{ERROR_TITLE_QUERY_TEMPLATE.content}{job.embedded_log}",
+        answer_size=ERROR_TITLE_QUERY_TEMPLATE.answer_size,
     )
+
+    if (
+        query.get_tokens_size()
+        > openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
+    ):
+        # NOTE(sileht): the job.embedded_log has been created with an old
+        # version of get_tokenized_cleaned_log() that doesn't truncate the log correctly
+        # So just reset the state of this job
+        job.log_status = github_actions.WorkflowJobLogStatus.UNKNOWN
+        job.embedded_log = None
+        job.log_embedding = None
+        return
+
+    chat_completion = await openai_client.get_chat_completion(query)
     title = chat_completion.get("choices", [{}])[0].get("message", {}).get("content")  # type: ignore[typeddict-item]
 
     if not title:

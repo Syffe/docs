@@ -1,4 +1,5 @@
 import base64
+import dataclasses
 import enum
 import importlib.resources  # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
 import typing
@@ -68,10 +69,7 @@ OPENAI_CHAT_COMPLETION_MODELS: list[ChatCompletionModel] = sorted(
 OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN = 6
 
 
-class ChatCompletionRole(enum.StrEnum):
-    system = "system"
-    user = "user"
-    assistant = "assistant"
+ChatCompletionRole = typing.Literal["system", "user", "assistant"]
 
 
 class ChatCompletionFinishReason(enum.StrEnum):
@@ -95,28 +93,29 @@ class ChatCompletionObject(typing.TypedDict):
     choices: list[ChatCompletionChoice]
 
 
-def count_chat_completion_messages_token(messages: list[ChatCompletionMessage]) -> int:
-    count = 0
-    for message in messages:
-        count += len(TIKTOKEN_ENCODING.encode(message["content"]))
-        count += len(TIKTOKEN_ENCODING.encode(message["role"]))
-    return count
+@dataclasses.dataclass
+class ChatCompletionQuery:
+    role: ChatCompletionRole
+    content: str
+    answer_size: int
 
+    def json(self) -> ChatCompletionMessage:
+        return ChatCompletionMessage({"role": self.role, "content": self.content})
 
-def get_chat_completion_model(
-    messages: list[ChatCompletionMessage], nb_free_token_min_for_answer: int
-) -> ChatCompletionModel:
-    nb_token_needed = (
-        count_chat_completion_messages_token(messages)
-        + nb_free_token_min_for_answer
-        + OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
-    )
+    def get_tokens_size(self) -> int:
+        return (
+            len(TIKTOKEN_ENCODING.encode(self.content))
+            + len(TIKTOKEN_ENCODING.encode(self.role))
+            + self.answer_size
+            + OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
+        )
 
-    for model in OPENAI_CHAT_COMPLETION_MODELS:
-        if model["max_tokens"] >= nb_token_needed:
-            return model
-
-    raise OpenAiException(f"No model found to handle {nb_token_needed} tokens")
+    def get_chat_completion_model(self) -> ChatCompletionModel:
+        nb_token_needed = self.get_tokens_size()
+        for model in OPENAI_CHAT_COMPLETION_MODELS:
+            if model["max_tokens"] >= nb_token_needed:
+                return model
+        raise OpenAiException(f"No model found to handle {nb_token_needed} tokens")
 
 
 class OpenAIClient(http.AsyncClient):
@@ -130,22 +129,18 @@ class OpenAIClient(http.AsyncClient):
         )
 
     async def get_chat_completion(
-        self,
-        messages: list[ChatCompletionMessage],
-        nb_free_token_min_for_answer: int = 100,
+        self, query: ChatCompletionQuery
     ) -> ChatCompletionObject:
         # NOTE(Kontrolix): nb_free_token_min_for_answer is the minimum number of tokens
         # that we reserve in the max number of tokens of a model since the max number
         # includes the inputs and the answer according to OpenAI documentation :
         # https://platform.openai.com/docs/guides/gpt/managing-tokens
 
-        model = get_chat_completion_model(messages, nb_free_token_min_for_answer)
-
         response = await self.post(
             "chat/completions",
             json={
-                "model": model["name"],
-                "messages": messages,
+                "model": query.get_chat_completion_model()["name"],
+                "messages": [query.json()],
             },
         )
 
