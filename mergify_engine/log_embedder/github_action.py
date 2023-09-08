@@ -42,7 +42,7 @@ async def embed_log(
         log_lines = await download_failed_step_log(job)
 
     except NoLogFileFoundInZip as e:
-        LOG.error(e.message, job_id=job.id, job_data=job.as_dict(), files=e.files)
+        LOG.error(e.message, files=e.files, **job.as_log_extras())
         return
 
     except http.HTTPStatusError as e:
@@ -54,9 +54,8 @@ async def embed_log(
             job.log_status = github_actions.WorkflowJobLogStatus.ERROR
             LOG.warning(
                 "log-embedder: downloading job log failed with a fatal error",
-                job_id=job.id,
-                job_data=job.as_dict(),
                 exc_info=True,
+                **job.as_log_extras(),
             )
 
             return
@@ -69,16 +68,14 @@ async def embed_log(
                 job.log_status = github_actions.WorkflowJobLogStatus.ERROR
                 LOG.warning(
                     "log-embedder: downloading job log failed too many times",
-                    job_id=job.id,
-                    job_data=job.as_dict(),
                     exc_info=True,
+                    **job.as_log_extras(),
                 )
             else:
                 LOG.warning(
                     "log-embedder: downloading job log failed, retrying later",
-                    job_id=job.id,
-                    job_data=job.as_dict(),
                     exc_info=True,
+                    **job.as_log_extras(),
                 )
 
             return
@@ -249,8 +246,7 @@ async def embed_logs() -> bool:
                 except Exception:
                     LOG.error(
                         "log-embedder: unexpected failure",
-                        job_id=job.id,
-                        job_data=job.as_dict(),
+                        **job.as_log_extras(),
                         exc_info=True,
                     )
 

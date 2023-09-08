@@ -316,6 +316,26 @@ class WorkflowJob(models.Base):
         nullable=True, anonymizer_config=None
     )
 
+    def as_log_extras(self) -> dict[str, typing.Any]:
+        return {
+            "gh_owner": self.repository.owner.login,
+            "gh_repo": self.repository.name,
+            "job": {
+                "id": self.id,
+                "workflow_run_id": self.workflow_run_id,
+                "name": self.name,
+                "conclusion": self.conclusion,
+                "steps": self.steps,
+                "run_attempt": self.run_attempt,
+                "started_at": self.started_at,
+                "completed_at": self.completed_at,
+                "log_status": self.log_status,
+                "log_embedding_attempts": self.log_embedding_attempts,
+                "log_embedding_retry_after": self.log_embedding_retry_after,
+                "neighbours_computed_at": self.neighbours_computed_at,
+            },
+        }
+
     @classmethod
     async def insert(
         cls,
