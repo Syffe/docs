@@ -78,8 +78,7 @@ CHECK_ASSERTS: dict[merge_train_checks.CheckStateT | None, str] = {
 
 
 @json.register_enum_type
-# FIXME(jd): restore me when the UNKNOWN type is fixed
-# @enum.unique
+@enum.unique
 class TrainCarOutcome(enum.Enum):
     MERGEABLE = "mergeable"
     CHECKS_TIMEOUT = "checks_timeout"
@@ -92,8 +91,6 @@ class TrainCarOutcome(enum.Enum):
     PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE = (
         "pr_checks_stopped_because_merge_queue_pause"
     )
-    # FIXME(jd): remove me once all serialization are up to date
-    UNKNWON = "unknown"
 
 
 class UnexpectedChanges:
