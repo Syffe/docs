@@ -58,54 +58,58 @@ export DD_LOGS_CONFIG_FRAME_SIZE=30000
 # Copy the empty config file
 cp -f "${DD_CONF_DIR}/datadog.yaml.example" "$DD_CONF_DIR/datadog.yaml"
 
-
 MERGIFY_CONF_FILE="$DD_CONF_DIR/conf.d/mergify.d/conf.yaml"
-if [ -n "$DD_MERGIFY_API_TOKEN" ]; then
-    echo "Installing datadog-mergify integration"
-    sed -i "s/<YOUR DD_MERGIFY_API_TOKEN>/${DD_MERGIFY_API_TOKEN}/" "$MERGIFY_CONF_FILE"
-else
-    rm -f  "$MERGIFY_CONF_FILE"
-fi
-
+REDIS_REGEX='^redis(s?)://([^:]*):([^@]+)@([^:]+):([^/?]+)'
+REDIS_FILE="$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
 POSTGRES_REGEX='^postgres://([^:]+):([^@]+)@([^:]+):([^/]+)/(.*)$'
 POSTGRES_CONF_FILE="$DD_CONF_DIR/conf.d/postgres.d/conf.yaml"
 
-if [ -n "$MERGIFYENGINE_DATABASE_URL" ]; then
-    if [[ $MERGIFYENGINE_DATABASE_URL =~ $POSTGRES_REGEX ]]; then
-        DB_USERNAME="datadog"
-        DB_PASSWORD=$(echo "${DATADOG_POSTGRES_PASSWORD}" | url_decode)
-        sed -i "s/<YOUR HOSTNAME>/${BASH_REMATCH[3]}/" "$POSTGRES_CONF_FILE"
-        sed -i "s/<YOUR USERNAME>/${DB_USERNAME}/" "$POSTGRES_CONF_FILE"
-        sed -i "s/<YOUR PASSWORD>/${DB_PASSWORD}/" "$POSTGRES_CONF_FILE"
-        sed -i "s/<YOUR PORT>/${BASH_REMATCH[4]}/" "$POSTGRES_CONF_FILE"
-        sed -i "s/<YOUR DBNAME>/${BASH_REMATCH[5]}/" "$POSTGRES_CONF_FILE"
+if [ "$DYNOTYPE" == "worker-shared" ] ; then
+
+    if [ -n "$DD_MERGIFY_API_TOKEN" ]; then
+        echo "Installing datadog-mergify integration"
+        sed -i "s/<YOUR DD_MERGIFY_API_TOKEN>/${DD_MERGIFY_API_TOKEN}/" "$MERGIFY_CONF_FILE"
+    else
+        rm -f  "$MERGIFY_CONF_FILE"
     fi
-    LOG_EMBEDDER_MONITORED_ACCOUNTS="$(python3 -c "import sys; print('\'' + '\',\''.join(sys.argv[1].split(',')) + '\'')" $MERGIFYENGINE_LOG_EMBEDDER_ENABLED_ORGS)"
-    sed -i "s/<LOG_EMBEDDER_MONITORED_ACCOUNTS>/${LOG_EMBEDDER_MONITORED_ACCOUNTS}/" "$POSTGRES_CONF_FILE"
 
-fi
+    if [ -n "$MERGIFYENGINE_DATABASE_URL" ]; then
+        if [[ $MERGIFYENGINE_DATABASE_URL =~ $POSTGRES_REGEX ]]; then
+            DB_USERNAME="datadog"
+            DB_PASSWORD=$(echo "${DATADOG_POSTGRES_PASSWORD}" | url_decode)
+            sed -i "s/<YOUR HOSTNAME>/${BASH_REMATCH[3]}/" "$POSTGRES_CONF_FILE"
+            sed -i "s/<YOUR USERNAME>/${DB_USERNAME}/" "$POSTGRES_CONF_FILE"
+            sed -i "s/<YOUR PASSWORD>/${DB_PASSWORD}/" "$POSTGRES_CONF_FILE"
+            sed -i "s/<YOUR PORT>/${BASH_REMATCH[4]}/" "$POSTGRES_CONF_FILE"
+            sed -i "s/<YOUR DBNAME>/${BASH_REMATCH[5]}/" "$POSTGRES_CONF_FILE"
+        fi
+        LOG_EMBEDDER_MONITORED_ACCOUNTS="$(python3 -c "import sys; print('\'' + '\',\''.join(sys.argv[1].split(',')) + '\'')" $MERGIFYENGINE_LOG_EMBEDDER_ENABLED_ORGS)"
+        sed -i "s/<LOG_EMBEDDER_MONITORED_ACCOUNTS>/${LOG_EMBEDDER_MONITORED_ACCOUNTS}/" "$POSTGRES_CONF_FILE"
 
-REDIS_REGEX='^redis(s?)://([^:]*):([^@]+)@([^:]+):([^/?]+)'
-REDIS_FILE="$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
-
-if [ -n "$MERGIFYENGINE_EVENTLOGS_URL" ]; then
-    if [[ $MERGIFYENGINE_EVENTLOGS_URL =~ $REDIS_REGEX ]]; then
-        [ "${BASH_REMATCH[1]}" ] && REDIS_SSL="true" || REDIS_SSL="false"
-        sed -i "s/<EVENTLOGS SSL>/$REDIS_SSL/" "$REDIS_FILE"
-        sed -i "s/<EVENTLOGS HOST>/${BASH_REMATCH[4]}/" "$REDIS_FILE"
-        sed -i "s/<EVENTLOGS PASSWORD>/${BASH_REMATCH[3]}/" "$REDIS_FILE"
-        sed -i "s/<EVENTLOGS PORT>/${BASH_REMATCH[5]}/" "$REDIS_FILE"
     fi
-fi
 
-if [ -n "$MERGIFYENGINE_DEFAULT_REDIS_URL" ]; then
-    if [[ $MERGIFYENGINE_DEFAULT_REDIS_URL =~ $REDIS_REGEX ]]; then
-        [ "${BASH_REMATCH[1]}" ] && REDIS_SSL="true" || REDIS_SSL="false"
-        sed -i "s/<DEFAULT REDIS SSL>/$REDIS_SSL/" "$REDIS_FILE"
-        sed -i "s/<DEFAULT REDIS HOST>/${BASH_REMATCH[4]}/" "$REDIS_FILE"
-        sed -i "s/<DEFAULT REDIS PASSWORD>/${BASH_REMATCH[3]}/" "$REDIS_FILE"
-        sed -i "s/<DEFAULT REDIS PORT>/${BASH_REMATCH[5]}/" "$REDIS_FILE"
+    if [ -n "$MERGIFYENGINE_EVENTLOGS_URL" ]; then
+        if [[ $MERGIFYENGINE_EVENTLOGS_URL =~ $REDIS_REGEX ]]; then
+            [ "${BASH_REMATCH[1]}" ] && REDIS_SSL="true" || REDIS_SSL="false"
+            sed -i "s/<EVENTLOGS SSL>/$REDIS_SSL/" "$REDIS_FILE"
+            sed -i "s/<EVENTLOGS HOST>/${BASH_REMATCH[4]}/" "$REDIS_FILE"
+            sed -i "s/<EVENTLOGS PASSWORD>/${BASH_REMATCH[3]}/" "$REDIS_FILE"
+            sed -i "s/<EVENTLOGS PORT>/${BASH_REMATCH[5]}/" "$REDIS_FILE"
+        fi
     fi
+
+    if [ -n "$MERGIFYENGINE_DEFAULT_REDIS_URL" ]; then
+        if [[ $MERGIFYENGINE_DEFAULT_REDIS_URL =~ $REDIS_REGEX ]]; then
+            [ "${BASH_REMATCH[1]}" ] && REDIS_SSL="true" || REDIS_SSL="false"
+            sed -i "s/<DEFAULT REDIS SSL>/$REDIS_SSL/" "$REDIS_FILE"
+            sed -i "s/<DEFAULT REDIS HOST>/${BASH_REMATCH[4]}/" "$REDIS_FILE"
+            sed -i "s/<DEFAULT REDIS PASSWORD>/${BASH_REMATCH[3]}/" "$REDIS_FILE"
+            sed -i "s/<DEFAULT REDIS PORT>/${BASH_REMATCH[5]}/" "$REDIS_FILE"
+        fi
+    fi
+
+else
+    rm -f "$POSTGRES_CONF_FILE" "$REDIS_FILE" "$MERGIFY_CONF_FILE"
 fi
 
 export DD_DOGSTATSD_DISABLE=0
