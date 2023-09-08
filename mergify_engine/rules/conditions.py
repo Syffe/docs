@@ -12,7 +12,6 @@ import typing
 import daiquiri
 from first import first
 import pydantic
-import typing_extensions
 import voluptuous
 
 from mergify_engine import constants
@@ -1203,7 +1202,7 @@ class QueueConditionEvaluationJsonSerialized:
     subconditions: list[QueueConditionEvaluationJsonSerialized]
     evaluations: list[QueueConditionEvaluationJsonSerialized.Evaluation]
 
-    class Evaluation(typing_extensions.TypedDict):
+    class Evaluation(typing.TypedDict):
         pull_request: github_types.GitHubPullRequestNumber
         match: bool
         evaluation_error: str | None

@@ -42,7 +42,7 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
     app.include_router(healthcheck.router)
 
     if settings.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None:
-        app.get("/")(saas_root_endpoint)  # type: ignore[unreachable]
+        app.get("/")(saas_root_endpoint)
         app.mount("/", github_webhook.create_app(debug=debug))
     else:
         app.include_router(github_webhook.router)

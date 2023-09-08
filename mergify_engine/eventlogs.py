@@ -5,7 +5,6 @@ import typing
 
 import daiquiri
 import msgpack
-import typing_extensions
 
 from mergify_engine import date
 from mergify_engine import events_db
@@ -26,7 +25,7 @@ EVENTLOGS_LONG_RETENTION = datetime.timedelta(days=7)
 EVENTLOGS_SHORT_RETENTION = datetime.timedelta(days=1)
 
 
-class EventBase(typing_extensions.TypedDict, total=False):
+class EventBase(typing.TypedDict, total=False):
     id: int
     received_at: datetime.datetime
     timestamp: datetime.datetime
@@ -35,7 +34,7 @@ class EventBase(typing_extensions.TypedDict, total=False):
     pull_request: int | None
 
 
-class EventMetadata(typing_extensions.TypedDict):
+class EventMetadata(typing.TypedDict):
     pass
 
 

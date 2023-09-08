@@ -33,7 +33,7 @@ class SecurityMiddleware:
 
                 # NOTE(sileht): On-Premise use need to access to the UI static files
                 if settings.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None:
-                    headers["Content-Security-Policy"] = "default-src 'none'"  # type: ignore[unreachable]
+                    headers["Content-Security-Policy"] = "default-src 'none'"
 
             await send(message)
 

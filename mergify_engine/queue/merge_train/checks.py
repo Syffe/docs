@@ -3,7 +3,6 @@ import typing
 
 import httpx
 import pydantic
-import typing_extensions
 
 
 t = httpx.USE_CLIENT_DEFAULT
@@ -48,7 +47,7 @@ class QueueCheck:
         metadata={"description": "Check avatar_url"}
     )
 
-    class Serialized(typing_extensions.TypedDict):
+    class Serialized(typing.TypedDict):
         name: str
         description: str
         url: str | None

@@ -24,7 +24,7 @@ if settings.REDIS_CRYPTO_SECRET_OLD is not None:
     SECRET_KEY_OLD = digest_old.finalize()
     del digest_old
 else:
-    SECRET_KEY_OLD = None  # type: ignore[unreachable]
+    SECRET_KEY_OLD = None
 
 IV_BYTES_NEEDED = 12
 BLOCK_SIZE = 16

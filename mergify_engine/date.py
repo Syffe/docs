@@ -10,7 +10,6 @@ import zoneinfo
 
 import dateutil
 import pydantic
-import typing_extensions
 
 
 UTC = zoneinfo.ZoneInfo("UTC")
@@ -236,21 +235,21 @@ class DayOfWeek(int):
             raise InvalidDate(f"{string} is not a number or literal day of the week")
 
 
-class TimeJSON(typing_extensions.TypedDict):
+class TimeJSON(typing.TypedDict):
     hour: int
     minute: int
 
 
-class TimeRangeJSON(typing_extensions.TypedDict):
+class TimeRangeJSON(typing.TypedDict):
     start_at: TimeJSON
     end_at: TimeJSON
 
 
-class DayJSON(typing_extensions.TypedDict):
+class DayJSON(typing.TypedDict):
     times: list[TimeRangeJSON]
 
 
-class ScheduleJSON(typing_extensions.TypedDict):
+class ScheduleJSON(typing.TypedDict):
     timezone: str
     days: dict[str, DayJSON]
 

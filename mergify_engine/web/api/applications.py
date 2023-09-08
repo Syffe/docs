@@ -3,7 +3,6 @@ import typing
 import daiquiri
 import fastapi
 import pydantic
-import typing_extensions
 
 from mergify_engine import github_types
 from mergify_engine.models import application_keys
@@ -14,7 +13,7 @@ from mergify_engine.web.api import security
 LOG = daiquiri.getLogger(__name__)
 
 
-class ApplicationAccountScope(typing_extensions.TypedDict):
+class ApplicationAccountScope(typing.TypedDict):
     id: github_types.GitHubAccountIdType
     login: github_types.GitHubLogin
 

@@ -1,3 +1,4 @@
+import dataclasses
 import typing
 
 import daiquiri
@@ -28,14 +29,14 @@ Event = typing.Annotated[
 ]
 
 
+@pydantic.dataclasses.dataclass
 class EventLogsResponse(pagination.PageResponse[Event]):
-    items_key: typing.ClassVar[str] = "events"
-    events: list[Event] = pydantic.Field(
-        json_schema_extra={
-            "metadata": {
-                "description": "The list of events of a pull request",
-            },
-        }
+    items_key = "events"
+    events: list[Event] = dataclasses.field(
+        init=False,
+        metadata={
+            "description": "The list of events of a pull request",
+        },
     )
 
 
@@ -61,7 +62,7 @@ async def get_pull_request_eventlogs(
     current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:
     page = await eventlogs.get(repository_ctxt, current_page, pull)
-    return EventLogsResponse(page)  # type: ignore[misc, call-arg]
+    return EventLogsResponse(page)
 
 
 @router.get(
@@ -82,4 +83,4 @@ async def get_repository_eventlogs(
     current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:
     page = await eventlogs.get(repository_ctxt, current_page)
-    return EventLogsResponse(page)  # type: ignore[misc, call-arg]
+    return EventLogsResponse(page)

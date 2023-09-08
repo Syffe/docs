@@ -40,7 +40,7 @@ def get_dependabot_consolidated_data_from_commit_msg(
         return None
 
     try:
-        dependabot_data = dependabot_types.DependabotYamlMessageSchema.model_validate(
+        dependabot_data = dependabot_types.DependabotYamlMessageSchema.parse_obj(
             data_from_yaml
         )
     except pydantic.ValidationError:

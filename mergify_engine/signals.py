@@ -5,7 +5,6 @@ import importlib.metadata
 import typing
 
 import daiquiri
-import typing_extensions
 
 from mergify_engine import github_types
 from mergify_engine.clients import github
@@ -56,7 +55,7 @@ EventName = typing.Literal[
 ]
 
 
-class EventMetadata(typing_extensions.TypedDict):
+class EventMetadata(typing.TypedDict):
     pass
 
 
@@ -153,7 +152,7 @@ ChecksConclusion = typing.Literal[
 ]
 
 
-class SpeculativeCheckPullRequest(typing_extensions.TypedDict, total=False):
+class SpeculativeCheckPullRequest(typing.TypedDict, total=False):
     number: int
     in_place: bool
     checks_timed_out: bool

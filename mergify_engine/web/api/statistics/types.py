@@ -1,15 +1,15 @@
 import dataclasses
+import typing
 
 import pydantic
-import typing_extensions
 
 
-class TimeToMergeResponse(typing_extensions.TypedDict):
+class TimeToMergeResponse(typing.TypedDict):
     mean: float | None
     median: float | None
 
 
-class ChecksDurationResponse(typing_extensions.TypedDict):
+class ChecksDurationResponse(typing.TypedDict):
     mean: float | None
     median: float | None
 

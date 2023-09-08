@@ -25,8 +25,7 @@ def cleanup_secrets() -> abc.Generator[None, None, None]:
         # ensure pytest monkeypatch has revert values and we reload the module
         assert settings.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value() == current_secret
         assert settings.REDIS_CRYPTO_SECRET_OLD is None
-        # regen digest with default secrets
-        importlib.reload(crypto)  # type: ignore[unreachable]
+        importlib.reload(crypto)  # regen digest with default secrets
 
 
 def test_key_rotation(cleanup_secrets: None) -> None:

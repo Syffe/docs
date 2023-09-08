@@ -1,150 +1,31 @@
-from __future__ import annotations
-
+from collections import abc
 import logging
 import typing
 from urllib import parse
 
 import pydantic
-import pydantic_core
-import typing_extensions
 
-from mergify_engine import github_types
 from mergify_engine import utils
 
 
-UdpUrl = typing.Annotated[
-    pydantic.AnyUrl,
-    pydantic.UrlConstraints(allowed_schemes=["udp"]),
-]
-
-
-class NormalizedUrl(str):
-    _parsed_url: pydantic.HttpUrl
-
+class NormalizedUrl(pydantic.HttpUrl):
     @typing.no_type_check
-    def __new__(cls, url: str):
-        temp_parsed_url = pydantic.HttpUrl(url)
-        parsed_url = pydantic.HttpUrl.build(
-            scheme=temp_parsed_url.scheme,
-            host=temp_parsed_url.host,
-            port=temp_parsed_url.port,
-            path=temp_parsed_url.path,
-            query=None,
-            fragment=None,
-        )
-        str_url = str(parsed_url).strip("/")
-        # XXX: Don't know if this is a bug from pydantic or from the rust
-        # library they use, but the str of any url always has a double /
-        # before the path for some reason.
-        scheme_length = len(parsed_url.scheme) + 3  # +3 = "://"
-        while "//" in str_url[scheme_length:]:
-            str_url = (
-                f"{str_url[:scheme_length]}{str_url[scheme_length:].replace('//', '/')}"
-            )
-
-        obj = str.__new__(cls, str_url)
-        obj._parsed_url = parsed_url
-        return obj
-
-    def __getattr__(self, attr: str) -> typing.Any:
-        return getattr(self._parsed_url, attr)
+    def __new__(cls, url: str | None, **kwargs) -> object:
+        # Always rebuild the url from parts
+        return str.__new__(cls, cls.build(**kwargs))
 
     @classmethod
-    def __get_pydantic_core_schema__(
-        self,
-        _source_type: typing.Any,
-        _handler: typing.Callable[[typing.Any], pydantic_core.core_schema.CoreSchema],
-    ) -> pydantic_core.core_schema.CoreSchema:
-        def validate_from_str(value: str) -> NormalizedUrl:
-            # For some reason mypy think we do not return a NormalizedUrl here...
-            return NormalizedUrl(value)  # type: ignore[no-any-return]
-
-        from_str_schema = pydantic_core.core_schema.chain_schema(
-            [
-                pydantic_core.core_schema.str_schema(),
-                pydantic_core.core_schema.no_info_plain_validator_function(
-                    validate_from_str
-                ),
-            ]
-        )
-
-        return pydantic_core.core_schema.json_or_python_schema(
-            json_schema=from_str_schema,
-            python_schema=pydantic_core.core_schema.union_schema(
-                [
-                    # check if it's an instance first before doing any further work
-                    pydantic_core.core_schema.is_instance_schema(NormalizedUrl),
-                    from_str_schema,
-                ]
-            ),
-            serialization=pydantic_core.core_schema.plain_serializer_function_ser_schema(
-                lambda instance: str(instance)
-            ),
-        )
-
-
-T = typing.TypeVar("T")
-
-
-class ListFromStrWithComma(list[T]):
-    _type: type[T]
-
-    @classmethod
-    def parse(cls, v: str | list[typing.Any]) -> typing.Self:
-        if isinstance(v, list):
-            return typing.cast(typing.Self, [cls._type(x) for x in v])
-        return typing.cast(typing.Self, [cls._type(x) for x in v.split(",")])
-
-    @classmethod
-    def __get_pydantic_core_schema__(
-        cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
-    ) -> pydantic_core.CoreSchema:
-        return pydantic_core.core_schema.no_info_plain_validator_function(cls.parse)
-
-
-class StrListFromStrWithComma(ListFromStrWithComma[str]):
-    _type = str
-
-
-class IntListFromStrWithComma(ListFromStrWithComma[int]):
-    _type = int
-
-
-class GitHubLoginListFromStrWithComma(ListFromStrWithComma[github_types.GitHubLogin]):
-    _type = github_types.GitHubLogin
-
-
-TT = typing.TypeVar("TT")
-
-
-class DictFromStr(dict[str, TT]):
-    _type: type[TT]
-
-    @classmethod
-    def parse(cls, v: str | dict[typing.Any, typing.Any]) -> typing.Self:
-        if isinstance(v, dict):
-            return typing.cast(
-                typing.Self, {str(k): cls._type(va) for k, va in v.items()}
-            )
-        return typing.cast(typing.Self, utils.string_to_dict(v, cls._type))
-
-    @classmethod
-    def from_dict(cls, _dict: dict[typing.Any, typing.Any]) -> typing.Self:
-        return cls({str(k): cls._type(v) for k, v in _dict.items()})
-
-    @classmethod
-    def __get_pydantic_core_schema__(
-        cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
-    ) -> pydantic_core.CoreSchema:
-        return pydantic_core.core_schema.no_info_plain_validator_function(cls.parse)
-
-
-class StrIntDictFromStr(DictFromStr[int]):
-    _type = int
-
-
-class StrStrDictFromStr(DictFromStr[str]):
-    _type = str
+    def validate_parts(
+        cls, parts: "pydantic.networks.Parts", validate_port: bool = True
+    ) -> "pydantic.networks.Parts":
+        super().validate_parts(parts, validate_port)
+        if parts["path"] and parts["path"].endswith("/"):
+            parts["path"] = parts["path"][:-1]
+        if not parts["path"]:
+            parts["path"] = None
+        parts["query"] = None
+        parts["fragment"] = None
+        return parts
 
 
 class SecretUrl(parse.SplitResult):
@@ -187,10 +68,12 @@ class SecretUrl(parse.SplitResult):
         )
 
     @classmethod
-    def __get_pydantic_core_schema__(
-        cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
-    ) -> pydantic_core.CoreSchema:
-        return pydantic_core.core_schema.no_info_plain_validator_function(cls.parse)
+    def __get_validators__(cls) -> abc.Iterator[abc.Callable[[str], typing.Self]]:
+        yield cls.parse
+
+    @classmethod
+    def __modify_schema__(cls, field_schema: dict[str, typing.Any]) -> None:
+        pass
 
 
 class PostgresDSN(SecretUrl):
@@ -202,65 +85,48 @@ class RedisDSN(SecretUrl):
     allowed_schemes = ("redis", "rediss")
 
 
-def parse_loglevel_aliases(value: str | int) -> str | int:
-    if isinstance(value, str) and value.upper() in (
-        "CRITICAL",
-        "ERROR",
-        "WARNING",
-        "INFO",
-        "DEBUG",
-    ):
-        return int(getattr(logging, value.upper()))
-    return int(value)
+class LogLevel(pydantic.PositiveInt):
+    @typing.no_type_check
+    def __new__(cls, value):
+        value = cls.parse_loglevel_aliases(value)
+        return super().__new__(cls, value)
 
-
-LogLevel = typing.Annotated[
-    pydantic.PositiveInt,
-    pydantic.BeforeValidator(parse_loglevel_aliases),
-]
-
-
-class AccountTokens(list[tuple[int, str, pydantic.SecretStr]]):
     @classmethod
-    def parse(cls, v: str | list[tuple[int, str, pydantic.SecretStr]]) -> AccountTokens:
-        if isinstance(v, list):
-            for _, _, token in v:
-                if not isinstance(token, pydantic.SecretStr | str):
-                    raise ValueError("token must be a `str` or `pydantic.SecretStr`")
+    def __get_validators__(cls) -> typing.Any:
+        yield cls.parse_loglevel_aliases
+        yield from super().__get_validators__()  # type: ignore[misc]
 
-            return AccountTokens(
-                [
-                    (
-                        int(_id),
-                        str(login),
-                        pydantic.SecretStr(token) if isinstance(token, str) else token,
-                    )
-                    for _id, login, token in v
-                ]
+    @classmethod
+    def parse_loglevel_aliases(cls, value: str | int) -> str | int:
+        if isinstance(value, str) and value.upper() in (
+            "CRITICAL",
+            "ERROR",
+            "WARNING",
+            "INFO",
+            "DEBUG",
+        ):
+            return int(getattr(logging, value.upper()))
+        return value
+
+
+def AccountTokens(v: str) -> list[tuple[int, str, pydantic.SecretStr]]:
+    try:
+        return [
+            (int(_id), login, pydantic.SecretStr(token))
+            for _id, login, token in typing.cast(
+                list[tuple[int, str, str]],
+                utils.string_to_list_of_tuple(v, split=3),
             )
-
-        return AccountTokens(
-            [
-                (int(_id), login, pydantic.SecretStr(token))
-                for _id, login, token in typing.cast(
-                    list[tuple[int, str, str]],
-                    utils.string_to_list_of_tuple(v, split=3),
-                )
-            ]
-        )
-
-    @classmethod
-    def __get_pydantic_core_schema__(
-        cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
-    ) -> pydantic_core.CoreSchema:
-        return pydantic_core.core_schema.no_info_plain_validator_function(cls.parse)
+        ]
+    except ValueError:
+        raise ValueError("wrong format, expect `id1:login1:token1,id2:login2:token2`")
 
 
 API_ACCESS_KEY_LEN = 32
 API_SECRET_KEY_LEN = 32
 
 
-class ApplicationAPIKey(typing_extensions.TypedDict):
+class ApplicationAPIKey(typing.TypedDict):
     api_access_key: str
     api_secret_key: str
     account_id: int
