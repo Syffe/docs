@@ -1650,7 +1650,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         summary = await self.wait_for_check_run(name="Summary")
         assert (
-            actions_runner.REQUIRE_BRANCH_PROTECTION_QUEUE_DEPRECATION_SAAS
+            actions_runner.REQUIRE_BRANCH_PROTECTION_DEPRECATION_SAAS
             in summary["check_run"]["output"]["summary"]
         )
 

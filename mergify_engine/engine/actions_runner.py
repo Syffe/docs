@@ -33,19 +33,21 @@ NOT_APPLICABLE_TEMPLATE = """<details>
 %s
 </details>"""
 
-REQUIRE_BRANCH_PROTECTION_QUEUE_DEPRECATION_GHES = """
+REQUIRE_BRANCH_PROTECTION_DEPRECATION_GHES = """
 :bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated `require_branch_protection` in the queue action.**
-> This option will be removed on a future version.
-> For more information: https://docs.mergify.com/actions/queue/
+> **The configuration uses the deprecated option `require_branch_protection` in the queue action or the queue_rules.**
+> It must be replaced with the `queue_rules` option `branch_protection_injection_mode`.
+> The `require_branch_protection` option will be removed on a future version.
+> For more information and examples on how to use the `branch_protection_injection_mode` option: https://docs.mergify.com/actions/queue/#queue-rules
 """
 
-REQUIRE_BRANCH_PROTECTION_QUEUE_DEPRECATION_SAAS = """
+REQUIRE_BRANCH_PROTECTION_DEPRECATION_SAAS = """
 :bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated `require_branch_protection` in the queue action.**
-> A brownout is planned on September 26th, 2023.
-> This option will be removed on October 26th, 2023.
-> For more information: https://docs.mergify.com/actions/queue/
+> **The configuration uses the deprecated option `require_branch_protection` in the queue action or the queue_rules.**
+> It must be replaced with the `queue_rules` option `branch_protection_injection_mode`.
+> A brownout for `require_branch_protection` is planned on October 20th, 2023.
+> The option will be removed on November 20th, 2023.
+> For more information and examples on how to use the `branch_protection_injection_mode` option: https://docs.mergify.com/actions/queue/#queue-rules
 """
 
 
@@ -157,18 +159,16 @@ async def gen_summary(
     summary = ""
     summary += await get_already_merged_summary(ctxt, match)
 
-    has_require_branch_protection_queue_action = [
-        action
-        for rule in match.rules
-        for name, action in rule.actions.items()
-        if name == "queue" and "require_branch_protection" in action.raw_config
-    ]
-
-    if has_require_branch_protection_queue_action:
+    mergify_config_file = await ctxt.repository.get_mergify_config_file()
+    has_require_branch_protection_in_config_file = (
+        mergify_config_file is not None
+        and "require_branch_protection" in mergify_config_file["decoded_content"]
+    )
+    if has_require_branch_protection_in_config_file:
         if settings.SAAS_MODE:
-            summary += REQUIRE_BRANCH_PROTECTION_QUEUE_DEPRECATION_SAAS
+            summary += REQUIRE_BRANCH_PROTECTION_DEPRECATION_SAAS
         else:
-            summary += REQUIRE_BRANCH_PROTECTION_QUEUE_DEPRECATION_GHES
+            summary += REQUIRE_BRANCH_PROTECTION_DEPRECATION_GHES
 
     matching_rules_to_display = match.matching_rules[:]
     not_applicable_base_changeable_attributes_rules_to_display = []

@@ -1,0 +1,8 @@
+---
+deprecations:
+  - |
+    The ``require_branch_protection`` option is being deprecated.
+    It is now replaced by the ``queue_rules`` option ``branch_protection_injection_mode``.
+    A brownout is planned to happen on October 20th, 2023.
+    and the option will be completely removed on November 20th, 2023.
+    For more informations: https://docs.mergify.com/actions/queue/#queue-rules

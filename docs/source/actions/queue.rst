@@ -806,7 +806,8 @@ A ``queue_rules`` takes the following parameters:
    * - ``require_branch_protection``
      - bool
      - true
-     - Whether branch protections are required for queueing pull requests.
+     - | |deprecated tag|
+       | Whether branch protections are required for queueing pull requests.
 
    * - ``speculative_checks``
      - int
