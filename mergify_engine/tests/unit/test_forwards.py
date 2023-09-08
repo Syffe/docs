@@ -7,6 +7,8 @@ import httpx
 import pytest
 import respx
 
+from mergify_engine import event_forwarder
+from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.worker import manager
@@ -32,6 +34,7 @@ async def test_app_event_forward(
     respx_mock: respx.MockRouter,
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
+    redis_links: redis_utils.RedisLinks,
 ) -> None:
     with open(os.path.join(os.path.dirname(__file__), "events", "push.json")) as f:
         data = f.read()
@@ -44,7 +47,7 @@ async def test_app_event_forward(
         "Content-Type": "application/json",
     }
     respx_mock.post(
-        settings.GITHUB_WEBHOOK_FORWARD_URL, headers=headers, content=data
+        "https://forward.example.com/", headers=headers, content=data
     ).respond(200, content="")
 
     w = manager.ServiceManager(
@@ -54,5 +57,6 @@ async def test_app_event_forward(
     await w.start()
     request.addfinalizer(lambda: event_loop.run_until_complete(w._shutdown()))
     await web_client.post("/event", content=data, headers=headers)
-    await asyncio.sleep(0.01)
+    while await redis_links.stream.xlen(event_forwarder.EVENT_FORWARDER_REDIS_KEY) != 0:
+        await asyncio.sleep(0.001)
     assert respx_mock.calls.call_count == 1
