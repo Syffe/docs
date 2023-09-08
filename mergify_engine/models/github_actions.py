@@ -201,6 +201,14 @@ class WorkflowJob(models.Base):
     __tablename__ = "gha_workflow_job"
 
     __table_args__ = (
+        sqlalchemy.schema.Index(
+            # NOTE(sileht): Index used for the big select used by monitoring and by log_embedder.github_action.get_embeds()
+            "idx_gha_workflow_job_incomplete_job_finder",
+            "conclusion",
+            "log_status",
+            "failed_step_number",
+            postgresql_where="conclusion = 'FAILURE'::workflowjobconclusion AND failed_step_number IS NOT NULL AND log_status <> ALL (ARRAY['GONE'::workflowjoblogstatus, 'ERROR'::workflowjoblogstatus])",
+        ),
         sqlalchemy.schema.CheckConstraint(
             """
             (
