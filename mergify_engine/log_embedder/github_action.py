@@ -1,3 +1,4 @@
+import dataclasses
 import io
 import re
 import zipfile
@@ -28,11 +29,22 @@ LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 LOG_EMBEDDER_MAX_ATTEMPTS = 15
 
 
+@dataclasses.dataclass
+class NoLogFileFoundInZip(Exception):
+    message: str
+    files: list[str] = dataclasses.field(default_factory=list)
+
+
 async def embed_log(
     openai_client: openai_api.OpenAIClient, job: github_actions.WorkflowJob
 ) -> None:
     try:
         log_lines = await download_failed_step_log(job)
+
+    except NoLogFileFoundInZip as e:
+        LOG.error(e.message, job_id=job.id, job_data=job.as_dict(), files=e.files)
+        return
+
     except http.HTTPStatusError as e:
         if e.response.status_code == 410:
             job.log_status = github_actions.WorkflowJobLogStatus.GONE
@@ -75,15 +87,7 @@ async def embed_log(
 
     tokens, first_line, last_line = await get_tokenized_cleaned_log(log_lines)
 
-    try:
-        embedding = await openai_client.get_embedding(tokens)
-    except openai_api.OpenAiException:
-        LOG.error(
-            "log-embedder: a job raises an unexpected error on log embedding",
-            job_id=job.id,
-            exc_info=True,
-        )
-        return
+    embedding = await openai_client.get_embedding(tokens)
 
     job.log_embedding = embedding
     job.embedded_log = "".join(log_lines[first_line:last_line])
@@ -107,14 +111,9 @@ def get_lines_from_zip(
         with zip_file.open(i.filename) as log_file:
             return [line.decode() for line in log_file.readlines()]
 
-    LOG.info(
+    raise NoLogFileFoundInZip(
         "log-embedder: job log not found in zip file",
-        job_id=job.id,
-        job_data=job.as_dict(),
         files=[i.filename for i in zip_file.infolist()],
-    )
-    raise RuntimeError(
-        "log-embedder: job log not found in zip file",
     )
 
 
@@ -237,14 +236,23 @@ async def embed_logs() -> bool:
         async with openai_api.OpenAIClient() as openai_client:
             job_ids_to_compute_cosine_similarity = []
             for job in jobs:
-                if job.log_embedding is None:
-                    await embed_log(openai_client, job)
+                try:
+                    if job.log_embedding is None:
+                        await embed_log(openai_client, job)
 
-                if (
-                    job.embedded_log_error_title is None
-                    and job.embedded_log is not None
-                ):
-                    await set_embedded_log_error_title(openai_client, job)
+                    if (
+                        job.embedded_log_error_title is None
+                        and job.embedded_log is not None
+                    ):
+                        await set_embedded_log_error_title(openai_client, job)
+
+                except Exception:
+                    LOG.error(
+                        "log-embedder: unexpected failure",
+                        job_id=job.id,
+                        job_data=job.as_dict(),
+                        exc_info=True,
+                    )
 
                 if job.log_embedding is not None and job.neighbours_computed_at is None:
                     job_ids_to_compute_cosine_similarity.append(job.id)
