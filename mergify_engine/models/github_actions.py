@@ -284,9 +284,9 @@ class WorkflowJob(models.Base):
         sqlalchemy.BigInteger, anonymizer_config=None
     )
 
-    steps: orm.Mapped[github_types.GitHubWorkflowJobStep | None] = orm.mapped_column(
-        sqlalchemy.JSON, anonymizer_config=None, nullable=True
-    )
+    steps: orm.Mapped[
+        list[github_types.GitHubWorkflowJobStep] | None
+    ] = orm.mapped_column(sqlalchemy.JSON, anonymizer_config=None, nullable=True)
 
     failed_step_number: orm.Mapped[int | None] = orm.mapped_column(
         sqlalchemy.Integer, anonymizer_config=None
