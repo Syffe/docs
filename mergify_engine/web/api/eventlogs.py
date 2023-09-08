@@ -44,6 +44,7 @@ class EventLogsResponse(pagination.PageResponse[Event]):
     "/repos/{owner}/{repository}/pulls/{pull}/events",
     summary="Get the events log of a pull request",
     description="Get the events log of the requested pull request",
+    deprecated=True,
     dependencies=[fastapi.Depends(security.check_subscription_feature_eventlogs)],
     response_model=EventLogsResponse,
     responses={
@@ -69,6 +70,7 @@ async def get_pull_request_eventlogs(
     "/repos/{owner}/{repository}/events",
     summary="Get the events log of a repository",
     description="Get the events log of the requested repository",
+    deprecated=True,
     dependencies=[fastapi.Depends(security.check_subscription_feature_eventlogs)],
     response_model=EventLogsResponse,
     responses={
