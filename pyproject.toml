@@ -170,7 +170,7 @@ warn_unreachable = true
 exclude = [".venv"]
 files = ["mergify_engine"]
 show_error_codes = true
-plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
+plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
 module = [
