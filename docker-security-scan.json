@@ -485,7 +485,7 @@
     "Status": "affected",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
-    "Title": "openssh: User enumeration via malformed packets in authentication requests",
+    "Title": "User enumeration via malformed packets in authentication requests",
     "Severity": "LOW",
     "PublishedDate": "2018-08-28T08:29:00Z"
   },
@@ -495,7 +495,7 @@
     "Status": "affected",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
-    "Title": "openssh: User enumeration via malformed packets in authentication requests",
+    "Title": "User enumeration via malformed packets in authentication requests",
     "Severity": "LOW",
     "PublishedDate": "2018-08-28T08:29:00Z"
   },
@@ -505,7 +505,7 @@
     "Status": "affected",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
-    "Title": "openssh: User enumeration via malformed packets in authentication requests",
+    "Title": "User enumeration via malformed packets in authentication requests",
     "Severity": "LOW",
     "PublishedDate": "2018-08-28T08:29:00Z"
   },
@@ -735,7 +735,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-8457",
-    "Title": "sqlite: heap out-of-bound read in function rtreenode()",
+    "Title": "heap out-of-bound read in function rtreenode()",
     "Severity": "CRITICAL",
     "PublishedDate": "2019-05-30T16:29:00Z"
   },
