@@ -91,7 +91,7 @@ def should_be_ignored(exception: Exception) -> bool:
 
 
 def need_retry(
-    exception: Exception,
+    exception: Exception, base_retry_in: int = 1
 ) -> datetime.timedelta | None:  # pragma: no cover
     if isinstance(exception, RateLimited):
         # NOTE(sileht): when we are close to reset date, and since utc time between us and
@@ -104,27 +104,27 @@ def need_retry(
     if isinstance(exception, http.RequestError | http.HTTPServerSideError):
         # NOTE(sileht): We already retry locally with urllib3, so if we get there, GitHub
         # is in a really bad shape...
-        return datetime.timedelta(minutes=1)
+        return datetime.timedelta(minutes=base_retry_in)
 
     # NOTE(sileht): Most of the times token are just temporary invalid, Why ?
     # no idea, ask GitHub...
     if isinstance(exception, http.HTTPClientSideError):
         # Bad creds or token expired, we can't really known
         if exception.response.status_code == 401:
-            return datetime.timedelta(minutes=1)
+            return datetime.timedelta(minutes=base_retry_in)
 
         # Rate limit or abuse detection mechanism, futures events will be rate limited
         # correctly by mergify_engine.utils.GitHub()
         if exception.response.status_code == 403:
-            return datetime.timedelta(minutes=3)
+            return datetime.timedelta(minutes=base_retry_in * 3)
 
     if isinstance(exception, redis_exceptions.ResponseError):
         # Redis script bug or OOM
-        return datetime.timedelta(minutes=1)
+        return datetime.timedelta(minutes=base_retry_in)
 
     if isinstance(exception, redis_exceptions.ConnectionError):
         # Redis down
-        return datetime.timedelta(minutes=1)
+        return datetime.timedelta(minutes=base_retry_in)
 
     return None
 

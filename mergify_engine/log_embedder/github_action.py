@@ -1,6 +1,10 @@
+from collections import abc
+import contextlib
 import dataclasses
+import datetime
 import io
 import re
+import typing
 import zipfile
 
 import daiquiri
@@ -26,7 +30,7 @@ LOG = daiquiri.getLogger(__name__)
 # NOTE(Kontrolix): We remove all the windows forbidden path character as github does
 WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP = re.compile(r"[\*\"/\\<>:|\?]")
 LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
-LOG_EMBEDDER_MAX_ATTEMPTS = 15
+LOG_EMBEDDER_MAX_ATTEMPTS = 30
 
 
 ERROR_TITLE_QUERY_TEMPLATE = openai_api.ChatCompletionQuery(
@@ -39,9 +43,9 @@ meaningful title to qualify this error. Your answer must contain only the title.
 
 
 @dataclasses.dataclass
-class NoLogFileFoundInZip(Exception):
+class UnexpectedLogEmbedderError(Exception):
     message: str
-    files: list[str] = dataclasses.field(default_factory=list)
+    log_extras: dict[str, typing.Any] = dataclasses.field(default_factory=dict)
 
 
 async def embed_log(
@@ -50,45 +54,10 @@ async def embed_log(
     try:
         log_lines = await download_failed_step_log(job)
 
-    except NoLogFileFoundInZip as e:
-        LOG.error(e.message, files=e.files, **job.as_log_extras())
-        return
-
     except http.HTTPStatusError as e:
         if e.response.status_code == 410:
             job.log_status = github_actions.WorkflowJobLogStatus.GONE
             return
-
-        if exceptions.should_be_ignored(e):
-            job.log_status = github_actions.WorkflowJobLogStatus.ERROR
-            LOG.warning(
-                "log-embedder: downloading job log failed with a fatal error",
-                exc_info=True,
-                **job.as_log_extras(),
-            )
-
-            return
-
-        retry_in = exceptions.need_retry(e)
-        if retry_in is not None:
-            job.log_embedding_retry_after = date.utcnow() + retry_in
-            job.log_embedding_attempts += 1
-            if job.log_embedding_attempts >= LOG_EMBEDDER_MAX_ATTEMPTS:
-                job.log_status = github_actions.WorkflowJobLogStatus.ERROR
-                LOG.warning(
-                    "log-embedder: downloading job log failed too many times",
-                    exc_info=True,
-                    **job.as_log_extras(),
-                )
-            else:
-                LOG.warning(
-                    "log-embedder: downloading job log failed, retrying later",
-                    exc_info=True,
-                    **job.as_log_extras(),
-                )
-
-            return
-
         raise
 
     tokens, truncated_log = await get_tokenized_cleaned_log(log_lines)
@@ -117,9 +86,9 @@ def get_lines_from_zip(
         with zip_file.open(i.filename) as log_file:
             return [line.decode() for line in log_file.readlines()]
 
-    raise NoLogFileFoundInZip(
+    raise UnexpectedLogEmbedderError(
         "log-embedder: job log not found in zip file",
-        files=[i.filename for i in zip_file.infolist()],
+        log_extras={"files": [i.filename for i in zip_file.infolist()]},
     )
 
 
@@ -227,14 +196,69 @@ async def set_embedded_log_error_title(
     title = chat_completion.get("choices", [{}])[0].get("message", {}).get("content")  # type: ignore[typeddict-item]
 
     if not title:
-        LOG.error(
+        raise UnexpectedLogEmbedderError(
             "log-embedder: ChatGPT returned no title for the job log",
-            job_id=job.id,
-            chat_completion=chat_completion,
+            log_extras={"chat_completion": chat_completion},
         )
-        return
 
     job.embedded_log_error_title = title
+
+
+@contextlib.contextmanager
+def log_exception_and_maybe_retry(
+    job: github_actions.WorkflowJob,
+) -> abc.Generator[None, None, None]:
+    try:
+        yield
+    except Exception as exc:
+        log_extras = job.as_log_extras()
+        if isinstance(exc, UnexpectedLogEmbedderError):
+            log_extras.update(exc.log_extras)
+
+        if exceptions.should_be_ignored(exc):
+            job.log_status = github_actions.WorkflowJobLogStatus.ERROR
+            LOG.warning(
+                "log-embedder: failed with a fatal error",
+                exc_info=True,
+                **log_extras,
+            )
+            return
+
+        if (
+            isinstance(exc, http.RequestError)
+            and exc.request.url == openai_api.OPENAI_API_BASE_URL
+        ):
+            # NOTE(sileht): This cost money so we don't want to retry too often
+            base_retry_in = 10
+        else:
+            base_retry_in = 1
+
+        retry_in = exceptions.need_retry(exc, base_retry_in=base_retry_in)
+        if retry_in is None:
+            # TODO(sileht): Maybe replace me by a exponential backoff + 1 hours limit
+            retry_in = datetime.timedelta(minutes=10)
+
+        job.log_embedding_retry_after = date.utcnow() + retry_in
+        job.log_embedding_attempts += 1
+
+        if job.log_embedding_attempts >= LOG_EMBEDDER_MAX_ATTEMPTS:
+            job.log_status = github_actions.WorkflowJobLogStatus.ERROR
+            LOG.error(
+                "log-embedder: too many unexpected failures, giving up",
+                exc_info=True,
+                **log_extras,
+            )
+            return
+
+        if isinstance(exc, http.RequestError | http.HTTPServerSideError):
+            # We don't want to log anything related to network and HTTP server side error
+            return
+
+        LOG.error(
+            "log-embedder: unexpected failure, retrying later",
+            exc_info=True,
+            **log_extras,
+        )
 
 
 @tracer.wrap("embed-logs")
@@ -287,7 +311,7 @@ async def embed_logs() -> bool:
         async with openai_api.OpenAIClient() as openai_client:
             job_ids_to_compute_cosine_similarity = []
             for job in jobs:
-                try:
+                with log_exception_and_maybe_retry(job):
                     if job.log_embedding is None:
                         await embed_log(openai_client, job)
 
@@ -296,13 +320,6 @@ async def embed_logs() -> bool:
                         and job.embedded_log is not None
                     ):
                         await set_embedded_log_error_title(openai_client, job)
-
-                except Exception:
-                    LOG.error(
-                        "log-embedder: unexpected failure",
-                        **job.as_log_extras(),
-                        exc_info=True,
-                    )
 
                 if job.log_embedding is not None and job.neighbours_computed_at is None:
                     job_ids_to_compute_cosine_similarity.append(job.id)
