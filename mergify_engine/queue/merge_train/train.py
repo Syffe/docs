@@ -572,7 +572,6 @@ class Train:
         pr_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
         unqueue_reason: queue_utils.PrMerged,
-        send_eventlog_signal: bool = True,
     ) -> None:
         embarked_pull = self._cars[0].still_queued_embarked_pulls[0]
         if embarked_pull.user_pull_request_number != pr_number:
