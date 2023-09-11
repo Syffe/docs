@@ -25,6 +25,7 @@ import pytest
 from mergify_engine import branch_updater
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import delayed_refresh
 from mergify_engine import duplicate_pull
 from mergify_engine import github_graphql_types
 from mergify_engine import github_types
@@ -405,9 +406,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     WAIT_TIME_BEFORE_TEARDOWN = 0.20
     WORKER_IDLE_TIME = 0.20 if RECORD else 0.01
 
-    # NOTE(Syffe): If too low (previously 0.02), this value can cause some tests using
-    # delayed-refreshes to be flaky
-    WORKER_HAS_WORK_INTERVAL_CHECK = 0.04
+    WORKER_HAS_WORK_INTERVAL_CHECK = 0.02
 
     def register_mock(self, mock_obj: typing.Any) -> None:
         mock_obj.start()
@@ -773,13 +772,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         gitter_serv = w.get_service(gitter_service.GitterService)
         assert gitter_serv is not None
 
-        # Ensure delayed_refresh and monitoring task run at least once
-        await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
-
         while (
             (await w._redis_links.stream.zcard("streams")) > 0
             or self.worker_concurrency_works > 0
             or len(gitter_serv._jobs) > 0
+            or len(await delayed_refresh.get_list_of_refresh_to_send(self.redis_links))
+            > 0
         ):
             await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
 

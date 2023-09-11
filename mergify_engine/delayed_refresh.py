@@ -149,11 +149,15 @@ async def plan_refresh_at_least_at(
     )
 
 
-async def send(
+async def get_list_of_refresh_to_send(
     redis_links: redis_utils.RedisLinks,
-) -> None:
+) -> list[bytes]:
     score = date.utcnow().timestamp()
-    keys = await redis_links.cache.zrangebyscore(DELAYED_REFRESH_KEY, "-inf", score)
+    return await redis_links.cache.zrangebyscore(DELAYED_REFRESH_KEY, "-inf", score)
+
+
+async def send(redis_links: redis_utils.RedisLinks) -> None:
+    keys = await get_list_of_refresh_to_send(redis_links)
     if not keys:
         return
 
