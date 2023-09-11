@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    There are new unqueue reasons for conflicts with the base branch or
+    conflicts with a pull request ahead in queue that you can use with the
+    `queue-dequeue-reason` condition.

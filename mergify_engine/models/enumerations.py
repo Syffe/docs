@@ -94,6 +94,8 @@ class QueueChecksAbortCode(str, enum.Enum):
     PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE = (
         "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE"
     )
+    CONFLICT_WITH_BASE_BRANCH = "CONFLICT_WITH_BASE_BRANCH"
+    CONFLICT_WITH_PULL_AHEAD = "CONFLICT_WITH_PULL_AHEAD"
 
 
 class QueueChecksUnqueueCode(str, enum.Enum):
@@ -116,6 +118,8 @@ class QueueChecksUnqueueCode(str, enum.Enum):
         "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE"
     )
     PR_MERGED = "PR_MERGED"
+    CONFLICT_WITH_BASE_BRANCH = "CONFLICT_WITH_BASE_BRANCH"
+    CONFLICT_WITH_PULL_AHEAD = "CONFLICT_WITH_PULL_AHEAD"
 
 
 class QueueChecksAbortStatus(str, enum.Enum):

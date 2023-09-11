@@ -93,3 +93,11 @@ class QueueChecksOutcome:
             "description": "The checks have been interrupted because the merge queue is paused on this repository"
         }
     )
+    CONFLICT_WITH_BASE_BRANCH: int = dataclasses.field(
+        metadata={"description": "The pull request conflicts with the base branch"}
+    )
+    CONFLICT_WITH_PULL_AHEAD: int = dataclasses.field(
+        metadata={
+            "description": "The pull request conflicts with at least one pull request ahead in queue"
+        }
+    )

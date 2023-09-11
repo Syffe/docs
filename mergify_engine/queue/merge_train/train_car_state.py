@@ -326,6 +326,12 @@ def unqueue_reason_from_train_car_state(
     ):
         return queue_utils.MaximumBatchFailureResolutionAttemptsReached()
 
+    if train_car_state.outcome == merge_train.TrainCarOutcome.CONFLICT_WITH_BASE_BRANCH:
+        return queue_utils.ConflictWithBaseBranch()
+
+    if train_car_state.outcome == merge_train.TrainCarOutcome.CONFLICT_WITH_PULL_AHEAD:
+        return queue_utils.ConflictWithPullAhead()
+
     raise UnexpectedOutcome(
         f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"
     )

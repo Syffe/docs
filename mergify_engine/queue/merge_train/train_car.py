@@ -91,6 +91,8 @@ class TrainCarOutcome(enum.Enum):
     PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE = (
         "pr_checks_stopped_because_merge_queue_pause"
     )
+    CONFLICT_WITH_BASE_BRANCH = "conflict_with_base_branch"
+    CONFLICT_WITH_PULL_AHEAD = "conflict_with_pull_ahead"
 
 
 class UnexpectedChanges:
@@ -1265,8 +1267,14 @@ class TrainCar:
                         pull_requests_ahead.append(ep.user_pull_request_number)
 
                     if not pull_requests_ahead:
+                        self.train_car_state.outcome = (
+                            TrainCarOutcome.CONFLICT_WITH_BASE_BRANCH
+                        )
                         message = "The pull request conflicts with the base branch"
                     else:
+                        self.train_car_state.outcome = (
+                            TrainCarOutcome.CONFLICT_WITH_PULL_AHEAD
+                        )
                         message = "The pull request conflicts with at least one pull request ahead in queue: "
                         message += ", ".join([f"#{p}" for p in pull_requests_ahead])
 
@@ -1628,11 +1636,22 @@ You don't need to do anything. Mergify will close this pull request automaticall
         else:
             summary = f"The merge queue pull request (#{self.queue_pull_request_number}) can't be prepared"
 
+        # Circular import
+        from mergify_engine.queue.merge_train.train_car_state import (
+            TrainCarStateForSummary,
+        )
+
+        train_car_state_summary = TrainCarStateForSummary.from_train_car_state(
+            self.train_car_state
+        ).serialized()
+
         # Append a `>` after a double newlines because otherwise
         # the quote breaks.
         details_as_markdown = details.replace("\n\n", "\n\n>")
         summary += f"""\nDetails:
 > {details_as_markdown}
+
+{train_car_state_summary}
 """
 
         if pull_requests_to_remove is None:

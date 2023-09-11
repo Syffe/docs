@@ -26,6 +26,8 @@ AbortCodeT = typing.Literal[
     "PR_UNEXPECTEDLY_FAILED_TO_MERGE",
     "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS",
     "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE",
+    "CONFLICT_WITH_BASE_BRANCH",
+    "CONFLICT_WITH_PULL_AHEAD",
 ]
 
 UnqueueCodeT = typing.Literal["PR_MERGED"] | AbortCodeT
@@ -185,6 +187,22 @@ class MaximumBatchFailureResolutionAttemptsReached(BaseUnqueueReason):
     unqueue_code: typing.ClassVar[
         typing.Literal["BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS"]
     ] = "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS"
+
+
+@dataclasses.dataclass
+class ConflictWithBaseBranch(BaseUnqueueReason):
+    message = "The pull request conflicts with the base branch"
+    unqueue_code: typing.ClassVar[
+        typing.Literal["CONFLICT_WITH_BASE_BRANCH"]
+    ] = "CONFLICT_WITH_BASE_BRANCH"
+
+
+@dataclasses.dataclass
+class ConflictWithPullAhead(BaseUnqueueReason):
+    message = "The pull request conflicts with at least one pull request ahead in queue"
+    unqueue_code: typing.ClassVar[
+        typing.Literal["CONFLICT_WITH_PULL_AHEAD"]
+    ] = "CONFLICT_WITH_PULL_AHEAD"
 
 
 def is_merge_queue_pr(pull: github_types.GitHubPullRequest) -> bool:

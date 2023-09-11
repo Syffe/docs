@@ -8089,6 +8089,11 @@ pull_request_rules:
                     ],
                     "actions": {"queue": {"name": "default"}},
                 },
+                {
+                    "name": "Label queue conflicts",
+                    "conditions": ["queue-dequeue-reason=conflict-with-base-branch"],
+                    "actions": {"label": {"add": ["queue-conflict"]}},
+                },
             ],
         }
         await self.setup_repo(yaml.dump(rules))
@@ -8104,6 +8109,14 @@ pull_request_rules:
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
+        pr2_labeled = await self.wait_for_pull_request(
+            "labeled", pr_number=p2["number"]
+        )
+        assert pr2_labeled is not None
+        assert "queue-conflict" in [
+            label["name"] for label in pr2_labeled["pull_request"]["labels"]
+        ]
+
         ctxt = context.Context(self.repository_ctxt, p2)
         queue_summary_check_run = await ctxt.get_engine_check_run(
             constants.MERGE_QUEUE_SUMMARY_NAME
@@ -8115,6 +8128,72 @@ pull_request_rules:
         )
         assert (
             "The pull request conflicts with the base branch"
+            in queue_summary_check_run["output"]["summary"]
+        )
+
+        # Check event logs
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events?per_page=5",
+        )
+        assert len(r.json()["events"]) == 3
+        assert r.json()["events"][1]["event"] == "action.queue.leave"
+        assert r.json()["events"][1]["metadata"]["reason"] == (
+            "The pull request conflicts with the base branch"
+        )
+
+    async def test_conflicts_with_pull_ahead(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                    "allow_inplace_checks": False,
+                    "batch_size": 2,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue on label",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+                {
+                    "name": "Label queue conflicts",
+                    "conditions": ["queue-dequeue-reason=conflict-with-pull-ahead"],
+                    "actions": {"label": {"add": ["queue-conflict"]}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1, p2 = await self.create_prs_with_conflicts()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        pr2_labeled = await self.wait_for_pull_request(
+            "labeled", pr_number=p2["number"]
+        )
+        assert pr2_labeled is not None
+        assert "queue-conflict" in [
+            label["name"] for label in pr2_labeled["pull_request"]["labels"]
+        ]
+
+        ctxt = context.Context(self.repository_ctxt, p2)
+        queue_summary_check_run = await ctxt.get_engine_check_run(
+            constants.MERGE_QUEUE_SUMMARY_NAME
+        )
+        assert queue_summary_check_run is not None
+        assert (
+            queue_summary_check_run["output"]["title"]
+            == "This pull request cannot be embarked for merge"
+        )
+        assert (
+            f"The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}"
             in queue_summary_check_run["output"]["summary"]
         )
 
