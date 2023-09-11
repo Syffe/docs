@@ -151,36 +151,12 @@ async def test_db_populator_dataset(
         assert repo.name == expected_repo
 
 
-async def test_db_populator_no_dataset(
-    db: sqlalchemy.ext.asyncio.AsyncSession,
-) -> None:
-    accounts = (await db.scalars(sqlalchemy.select(github_account.GitHubAccount))).all()
-    assert accounts == []
-    repos = (
-        await db.scalars(sqlalchemy.select(github_repository.GitHubRepository))
-    ).all()
-    assert repos == []
-
-    await DbPopulator.load(db)
-
-    accounts = (
-        await db.scalars(
-            sqlalchemy.select(github_account.GitHubAccount).order_by(
-                github_account.GitHubAccount.login
-            )
-        )
-    ).all()
-    assert len(accounts) > 2
-    repos = (
-        await db.scalars(
-            sqlalchemy.select(github_repository.GitHubRepository).order_by(
-                github_repository.GitHubRepository.name
-            )
-        )
-    ).all()
-    assert len(repos) > 4
-
-
+@pytest.mark.populated_db_datasets(
+    "AccountAndRepo",
+    "CollidingRepoName",
+    "OneAccountAndOneRepo",
+    "WorkflowJob",
+)
 async def test_populated_db(populated_db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
     accounts = (
         await populated_db.scalars(
@@ -189,7 +165,7 @@ async def test_populated_db(populated_db: sqlalchemy.ext.asyncio.AsyncSession) -
             )
         )
     ).all()
-    assert len(accounts) > 2
+    assert len(accounts) == 3
     repos = (
         await populated_db.scalars(
             sqlalchemy.select(github_repository.GitHubRepository).order_by(
@@ -197,7 +173,7 @@ async def test_populated_db(populated_db: sqlalchemy.ext.asyncio.AsyncSession) -
             )
         )
     ).all()
-    assert len(repos) > 4
+    assert len(repos) == 3
 
 
 @pytest.mark.populated_db_datasets("AnotherDummyDataset")

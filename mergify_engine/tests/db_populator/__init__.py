@@ -32,12 +32,10 @@ class DbPopulator:
 
     @classmethod
     async def load(
-        cls,
-        session: sqlalchemy.ext.asyncio.AsyncSession,
-        datasets: set[str] | None = None,
+        cls, session: sqlalchemy.ext.asyncio.AsyncSession, datasets: set[str]
     ) -> None:
-        if datasets is None:
-            datasets = set(cls.dataset_registry.keys())
+        if not datasets:
+            raise RuntimeError("DbPopulator used without datasets")
 
         for dataset in datasets:
             if dataset not in cls.loaded_dadaset:

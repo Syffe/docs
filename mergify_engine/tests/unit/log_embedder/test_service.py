@@ -196,6 +196,7 @@ async def test_embed_logs_on_controlled_data(
     assert a_job.neighbours_computed_at is not None
 
 
+@pytest.mark.populated_db_datasets("WorkflowJob")
 async def test_embed_logs_on_various_data(
     respx_mock: respx.MockRouter,
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
