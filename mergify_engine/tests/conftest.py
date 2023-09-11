@@ -222,7 +222,9 @@ async def populated_db(
     if "populated_db_datasets" in request.keywords:
         datasets = request.keywords["populated_db_datasets"].args
     else:
-        datasets = None
+        raise RuntimeError(
+            "At leat one dataset must be set to use populated_db fixture"
+        )
 
     await DbPopulator.load(db, datasets)
     yield db

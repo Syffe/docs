@@ -151,31 +151,6 @@ async def test_db_populator_dataset(
         assert repo.name == expected_repo
 
 
-@pytest.mark.populated_db_datasets(
-    "AccountAndRepo",
-    "CollidingRepoName",
-    "OneAccountAndOneRepo",
-    "WorkflowJob",
-)
-async def test_populated_db(populated_db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
-    accounts = (
-        await populated_db.scalars(
-            sqlalchemy.select(github_account.GitHubAccount).order_by(
-                github_account.GitHubAccount.login
-            )
-        )
-    ).all()
-    assert len(accounts) == 3
-    repos = (
-        await populated_db.scalars(
-            sqlalchemy.select(github_repository.GitHubRepository).order_by(
-                github_repository.GitHubRepository.name
-            )
-        )
-    ).all()
-    assert len(repos) == 3
-
-
 @pytest.mark.populated_db_datasets("AnotherDummyDataset")
 async def test_populated_db_with_datasets(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
