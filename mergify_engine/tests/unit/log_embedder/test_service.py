@@ -514,14 +514,17 @@ async def test_workflow_job_log_life_cycle(
 
 
 @pytest.mark.parametrize(
-    "job_name, step", (("front (format:check)", 4), ("job_toto", 1))
+    "job_name, step",
+    (("job_toto", 1), ("front (format:check)", 4), ("job_toto", 6)),
+    ids=("simple", "special chars in name", "huge logs"),
 )
-async def test_workflow_job_with_special_job_name(
+async def test_workflow_job_from_real_life(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     monkeypatch: pytest.MonkeyPatch,
     job_name: str,
     step: int,
+    logger_checker: None,
 ) -> None:
     owner = github_account.GitHubAccount(id=1, login="owner")
     repo = github_repository.GitHubRepository(id=1, owner=owner, name="repo1")

@@ -37,7 +37,8 @@ ERROR_TITLE_QUERY_TEMPLATE = openai_api.ChatCompletionQuery(
     "user",
     """Analyze the following logs, spot the error and give me a
 meaningful title to qualify this error. Your answer must contain only the title. The logs:
-    """,
+
+""",
     100,
 )
 
@@ -142,10 +143,13 @@ async def get_tokenized_cleaned_log(
 
         if not truncated_log_ready:
             nb_tokens_in_line = len(openai_api.TIKTOKEN_ENCODING.encode(line))
-            truncated_log_tokens_length += nb_tokens_in_line
+            next_truncated_log_tokens_length = (
+                truncated_log_tokens_length + nb_tokens_in_line
+            )
 
-            if truncated_log_tokens_length <= max_chat_completion_tokens:
+            if next_truncated_log_tokens_length <= max_chat_completion_tokens:
                 truncated_log = line + truncated_log
+                truncated_log_tokens_length = next_truncated_log_tokens_length
 
             if truncated_log_tokens_length >= max_chat_completion_tokens:
                 truncated_log_ready = True
