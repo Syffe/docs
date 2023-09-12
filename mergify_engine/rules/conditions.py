@@ -66,7 +66,18 @@ class RuleConditionFilters:
         self.next_evaluation = filter.NearDatetimeFilter(condition)
 
         attribute = self.get_attribute_name()
-        if attribute.startswith(("check-", "status-")):
+        if (
+            attribute.startswith(("check-", "status-"))
+            # FIXME(MRGFY-2608): This condition has been added to make `ConditionEvaluationResult`
+            # work with pydantic v2. But this revealed that when we have a condition
+            # that asserts the number of check (no matter the type, failure, success, etc), like `#check-failure>0`,
+            # then there is nothing in the `related_checks` because the filter expects
+            # to match with a string.
+            # To make it work we would either need to put every check possible in the `related_checks`, but
+            # this would maybe be problematic if the rules are evaluated when not all the checks have been added
+            # to the pull request, or to rework how the `related_checks` works with `#check-.*` conditions.
+            and not self.has_length_operator()
+        ):
             new_tree = self._replace_attribute_name(
                 condition, "check", overwrite_operator="="
             )
@@ -75,6 +86,13 @@ class RuleConditionFilters:
             )
         else:
             self.related_checks = None
+
+    def has_length_operator(self) -> bool:
+        tree = typing.cast(filter.TreeT, self.boolean.tree)
+        tree = tree.get("-", tree)
+        values = typing.cast(list[filter.TreeBinaryLeafT], list(tree.values()))
+        name = values[0][0]
+        return name.startswith(filter.Filter.LENGTH_OPERATOR)
 
     def get_attribute_name(self) -> str:
         tree = typing.cast(filter.TreeT, self.boolean.tree)

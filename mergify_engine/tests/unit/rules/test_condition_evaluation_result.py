@@ -2,8 +2,12 @@ import datetime
 import typing
 
 import pytest
+import voluptuous
 
+from mergify_engine import context
+from mergify_engine import rules
 from mergify_engine.rules import conditions as rule_conditions
+from mergify_engine.rules.config import pull_request_rules
 
 
 @pytest.mark.parametrize(
@@ -189,3 +193,42 @@ async def test_condition_dict_serialization_with_default_values() -> None:
     )
     assert condition.related_checks == []
     assert condition.next_evaluation_at is None
+
+
+async def test_condition_evaluation_result_serialization_with_related_checks() -> None:
+    class MockedContext:
+        @property
+        async def checks(self) -> dict[str, typing.Any]:
+            return {}
+
+        @property
+        def pull(self) -> dict[str, typing.Any]:
+            return {"labels": []}
+
+    pr = context.PullRequest(MockedContext())  # type: ignore[arg-type]
+
+    config = """
+pull_request_rules:
+  - name: blablawhocares
+    conditions:
+      - label=hotfix
+      - "#check-failure>0"
+    actions: {}
+"""
+
+    prrules = voluptuous.Schema(pull_request_rules.get_pull_request_rules_schema())(
+        rules.YamlSchema(config)["pull_request_rules"]
+    )
+
+    for prr in prrules:
+        evaluated_rules = await prr.evaluate([pr])
+        break
+
+    assert (
+        evaluated_rules.conditions.condition._conditions[1].label == "#check-failure>0"
+    )
+    assert evaluated_rules.conditions.condition._conditions[1].related_checks == []
+
+    # Just to validate that we can safely transform the conditions
+    # to the pydantic dataclass
+    evaluated_rules.conditions.get_summary()
