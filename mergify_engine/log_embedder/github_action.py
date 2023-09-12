@@ -184,24 +184,28 @@ async def set_embedded_log_error_title(
         answer_size=ERROR_TITLE_QUERY_TEMPLATE.answer_size,
     )
 
-    if (
-        query.get_tokens_size()
-        > openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
-    ):
+    tokens_count_limit = openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
+    if query.get_tokens_size() > tokens_count_limit:
         # NOTE(sileht): the job.embedded_log has been created with an old
         # version of get_tokenized_cleaned_log() that doesn't truncate the log correctly
         # So just reset the state of this job
         job.log_status = github_actions.WorkflowJobLogStatus.UNKNOWN
         job.embedded_log = None
         job.log_embedding = None
-        return
+        raise UnexpectedLogEmbedderError(
+            "we prepared a query too big for ChatGPT",
+            log_extras={
+                "tokens_count": query.get_tokens_size(),
+                "tokens_count_limit": tokens_count_limit,
+            },
+        )
 
     chat_completion = await openai_client.get_chat_completion(query)
     title = chat_completion.get("choices", [{}])[0].get("message", {}).get("content")  # type: ignore[typeddict-item]
 
     if not title:
         raise UnexpectedLogEmbedderError(
-            "log-embedder: ChatGPT returned no title for the job log",
+            "ChatGPT returned no title for the job log",
             log_extras={"chat_completion": chat_completion},
         )
 
