@@ -28,6 +28,7 @@ AbortCodeT = typing.Literal[
     "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE",
     "CONFLICT_WITH_BASE_BRANCH",
     "CONFLICT_WITH_PULL_AHEAD",
+    "BRANCH_UPDATE_FAILED",
 ]
 
 UnqueueCodeT = typing.Literal["PR_MERGED"] | AbortCodeT
@@ -203,6 +204,14 @@ class ConflictWithPullAhead(BaseUnqueueReason):
     unqueue_code: typing.ClassVar[
         typing.Literal["CONFLICT_WITH_PULL_AHEAD"]
     ] = "CONFLICT_WITH_PULL_AHEAD"
+
+
+@dataclasses.dataclass
+class BranchUpdateFailed(BaseUnqueueReason):
+    message = "The pull request can't be updated"
+    unqueue_code: typing.ClassVar[
+        typing.Literal["BRANCH_UPDATE_FAILED"]
+    ] = "BRANCH_UPDATE_FAILED"
 
 
 def is_merge_queue_pr(pull: github_types.GitHubPullRequest) -> bool:

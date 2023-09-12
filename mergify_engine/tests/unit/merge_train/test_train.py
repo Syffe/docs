@@ -5,6 +5,7 @@ from freezegun import freeze_time
 import pytest
 import voluptuous
 
+from mergify_engine import branch_updater
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import date
@@ -1866,3 +1867,33 @@ async def test_train_car_has_reached_batch_max_failure(
     first_car.train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
 
     assert first_car._has_reached_batch_max_failure()
+
+
+async def test_train_inplace_branch_update_failure(
+    context_getter: conftest.ContextGetterFixture,
+    convoy: merge_train.Convoy,
+) -> None:
+    t = merge_train.Train(convoy)
+    await t.test_helper_load_from_redis()
+
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "inplace")
+
+    ctxt = await context_getter(12345)
+    await t.add_pull(ctxt, config, "")
+
+    with mock.patch.object(
+        merge_train.TrainCar,
+        "can_be_checked_inplace",
+        side_effect=mock.AsyncMock(return_value=True),
+    ):
+        await t.refresh()
+
+    ctxt.client.put.side_effect = branch_updater.BranchUpdateFailure("oops")  # type: ignore [attr-defined]
+    with mock.patch.object(merge_train.TrainCar, "_set_creation_failure"):
+        with pytest.raises(merge_train.TrainCarPullRequestCreationFailure):
+            await t._cars[0]._start_checking_inplace_merge(ctxt)
+
+    assert (
+        t._cars[0].train_car_state.outcome
+        == merge_train.TrainCarOutcome.BRANCH_UPDATE_FAILED
+    )

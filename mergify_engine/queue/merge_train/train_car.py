@@ -93,6 +93,7 @@ class TrainCarOutcome(enum.Enum):
     )
     CONFLICT_WITH_BASE_BRANCH = "conflict_with_base_branch"
     CONFLICT_WITH_PULL_AHEAD = "conflict_with_pull_ahead"
+    BRANCH_UPDATE_FAILED = "branch_update_failed"
 
 
 class UnexpectedChanges:
@@ -796,6 +797,7 @@ class TrainCar:
             # MRGFY-1742
             await branch_updater.update_with_api(ctxt)
         except branch_updater.BranchUpdateFailure as exc:
+            self.train_car_state.outcome = TrainCarOutcome.BRANCH_UPDATE_FAILED
             await self._set_creation_failure(
                 f"{exc.title}\n\n{exc.message}", operation="updated"
             )

@@ -100,6 +100,7 @@ class FailureByReasonT(typing.TypedDict):
     PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE: int
     CONFLICT_WITH_BASE_BRANCH: int
     CONFLICT_WITH_PULL_AHEAD: int
+    BRANCH_UPDATE_FAILED: int
 
 
 @dataclasses.dataclass
@@ -123,6 +124,7 @@ class FailureByReason(BaseQueueStats):
         queue_utils.ChecksStoppedBecauseMergeQueuePause.unqueue_code: 17,
         queue_utils.ConflictWithBaseBranch.unqueue_code: 18,
         queue_utils.ConflictWithPullAhead.unqueue_code: 19,
+        queue_utils.BranchUpdateFailed.unqueue_code: 20,
     }
     _INT_TO_UNQUEUE_CODE_MAPPING: typing.ClassVar[dict[int, queue_utils.AbortCodeT]] = {
         v: k for k, v in _ABORT_CODE_TO_INT_MAPPING.items()
@@ -494,6 +496,7 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
         "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE": 0,
         "CONFLICT_WITH_BASE_BRANCH": 0,
         "CONFLICT_WITH_PULL_AHEAD": 0,
+        "BRANCH_UPDATE_FAILED": 0,
     }
 )
 

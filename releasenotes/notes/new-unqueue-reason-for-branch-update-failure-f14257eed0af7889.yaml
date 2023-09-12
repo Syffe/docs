@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    There is a new unqueue reason for branch update failure that you can use
+    with the `queue-dequeue-reason` condition.

@@ -96,6 +96,7 @@ class QueueChecksAbortCode(str, enum.Enum):
     )
     CONFLICT_WITH_BASE_BRANCH = "CONFLICT_WITH_BASE_BRANCH"
     CONFLICT_WITH_PULL_AHEAD = "CONFLICT_WITH_PULL_AHEAD"
+    BRANCH_UPDATE_FAILED = "BRANCH_UPDATE_FAILED"
 
 
 class QueueChecksUnqueueCode(str, enum.Enum):
@@ -120,6 +121,7 @@ class QueueChecksUnqueueCode(str, enum.Enum):
     PR_MERGED = "PR_MERGED"
     CONFLICT_WITH_BASE_BRANCH = "CONFLICT_WITH_BASE_BRANCH"
     CONFLICT_WITH_PULL_AHEAD = "CONFLICT_WITH_PULL_AHEAD"
+    BRANCH_UPDATE_FAILED = "BRANCH_UPDATE_FAILED"
 
 
 class QueueChecksAbortStatus(str, enum.Enum):

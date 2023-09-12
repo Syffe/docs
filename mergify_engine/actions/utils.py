@@ -234,6 +234,9 @@ async def get_unqueue_reason_from_outcome(
     train_car_state = tcs.TrainCarStateForSummary.deserialize_from_summary(check)
     if train_car_state is None:
         # NOTE(sileht): No details but we can't do much at this point
+        ctxt.log.warning(
+            "Merge queue check doesn't contain any TrainCarState", check=check
+        )
         return queue_utils.PrDequeued(
             ctxt.pull["number"], " due to failing checks or checks timeout"
         )

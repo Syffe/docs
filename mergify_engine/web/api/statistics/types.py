@@ -101,3 +101,8 @@ class QueueChecksOutcome:
             "description": "The pull request conflicts with at least one pull request ahead in queue"
         }
     )
+    BRANCH_UPDATE_FAILED: int = dataclasses.field(
+        metadata={
+            "description": "The pull request can't be updated for security reasons"
+        }
+    )
