@@ -103,9 +103,10 @@ class TestQueuePause(base.FunctionalTestBase):
         assert r.json() == {
             "detail": [
                 {
+                    "input": None,
                     "loc": ["body"],
-                    "msg": "field required",
-                    "type": "value_error.missing",
+                    "msg": "Field required",
+                    "type": "missing",
                 }
             ]
         }
@@ -117,9 +118,10 @@ class TestQueuePause(base.FunctionalTestBase):
         assert r.json() == {
             "detail": [
                 {
+                    "input": {"false_key": "test pause reason"},
                     "loc": ["body", "reason"],
-                    "msg": "field required",
-                    "type": "value_error.missing",
+                    "msg": "Field required",
+                    "type": "missing",
                 }
             ]
         }
@@ -131,10 +133,11 @@ class TestQueuePause(base.FunctionalTestBase):
         assert r.json() == {
             "detail": [
                 {
+                    "input": "too long" * 100,
                     "loc": ["body", "reason"],
-                    "msg": "ensure this value has at most 255 characters",
-                    "type": "value_error.any_str.max_length",
-                    "ctx": {"limit_value": 255},
+                    "msg": "String should have at most 255 characters",
+                    "type": "string_too_long",
+                    "ctx": {"max_length": 255},
                 }
             ]
         }

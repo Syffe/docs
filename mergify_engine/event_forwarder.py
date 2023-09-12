@@ -33,7 +33,7 @@ async def push(
 
 async def forward(redis_links: redis_utils.RedisLinks) -> bool:
     if settings.GITHUB_WEBHOOK_FORWARD_URL is None:
-        return False
+        return False  # type: ignore[unreachable]
 
     async with http.AsyncClient(
         base_url=settings.GITHUB_WEBHOOK_FORWARD_URL,

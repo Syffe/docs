@@ -222,10 +222,11 @@ async def test_applications_bad_body(
     assert resp.status_code == 422
     assert resp.json()["detail"] == [
         {
-            "ctx": {"limit_value": 255},
+            "ctx": {"max_length": 255},
+            "input": "no" * 500,
             "loc": ["body", "name"],
-            "msg": "ensure this value has at most 255 characters",
-            "type": "value_error.any_str.max_length",
+            "msg": "String should have at most 255 characters",
+            "type": "string_too_long",
         }
     ]
 
@@ -235,10 +236,11 @@ async def test_applications_bad_body(
     assert resp.status_code == 422
     assert resp.json()["detail"] == [
         {
-            "ctx": {"limit_value": 1},
+            "ctx": {"min_length": 1},
+            "input": "",
             "loc": ["body", "name"],
-            "msg": "ensure this value has at least 1 characters",
-            "type": "value_error.any_str.min_length",
+            "msg": "String should have at least 1 characters",
+            "type": "string_too_short",
         }
     ]
 
@@ -249,9 +251,10 @@ async def test_applications_bad_body(
     assert resp.status_code == 422
     assert resp.json()["detail"] == [
         {
+            "input": {"noway": "azerty"},
             "loc": ["body", "name"],
-            "msg": "field required",
-            "type": "value_error.missing",
+            "msg": "Field required",
+            "type": "missing",
         }
     ]
 
@@ -262,10 +265,11 @@ async def test_applications_bad_body(
     assert resp.status_code == 422
     assert resp.json()["detail"] == [
         {
-            "ctx": {"limit_value": 255},
+            "ctx": {"max_length": 255},
+            "input": "no" * 500,
             "loc": ["body", "name"],
-            "msg": "ensure this value has at most 255 characters",
-            "type": "value_error.any_str.max_length",
+            "msg": "String should have at most 255 characters",
+            "type": "string_too_long",
         }
     ]
 
@@ -276,10 +280,11 @@ async def test_applications_bad_body(
     assert resp.status_code == 422
     assert resp.json()["detail"] == [
         {
-            "ctx": {"limit_value": 1},
+            "ctx": {"min_length": 1},
+            "input": "",
             "loc": ["body", "name"],
-            "msg": "ensure this value has at least 1 characters",
-            "type": "value_error.any_str.min_length",
+            "msg": "String should have at least 1 characters",
+            "type": "string_too_short",
         }
     ]
 

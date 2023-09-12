@@ -26,7 +26,7 @@ from mergify_engine.rules.config import pull_request_rules as prr_config
 LOG = daiquiri.getLogger(__name__)
 
 COMMAND_MATCHER = re.compile(
-    rf"^(?:\s*)(?:{settings.GITHUB_URL.rstrip('/')}/|@)Mergify(?:|io) (\w*)(.*)",
+    rf"^(?:\s*)(?:{settings.GITHUB_URL}/|@)Mergify(?:|io) (\w*)(.*)",
     re.IGNORECASE,
 )
 

@@ -48,12 +48,14 @@ psycopg = { version = ">=3.1", extras = ["binary"] }
 # NOTE(sileht): sqlalchemy does not install it for some architecture like mac/m1...
 greenlet = "^2.0.2"
 deepdiff = "^6.5.0"
-pydantic = {extras = ["dotenv"], version = "^1.10.10"}
 alembic = "^1.12.0"
 unidecode = "^1.3.6"
 tiktoken = "^0.5.0"
 types-python-dateutil = "^2.8.19.14"
 python-dateutil = "^2.8.2"
+pydantic = "^2.3"
+pydantic-settings = "^2.0.3"
+typing-extensions = "^4.7.1"
 
 [tool.poetry.group.dev.dependencies]
 sphinx = "^7.2.5"

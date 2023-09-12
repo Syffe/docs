@@ -223,9 +223,10 @@ did not find expected alphabetic or numeric character
         assert r.json() == {
             "detail": [
                 {
+                    "input": {"invalid": "json"},
                     "loc": ["body", "mergify_yml"],
-                    "msg": "field required",
-                    "type": "value_error.missing",
+                    "msg": "Field required",
+                    "type": "missing",
                 },
             ],
         }

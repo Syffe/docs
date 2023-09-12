@@ -2,6 +2,7 @@ import logging
 import os
 
 import pydantic
+import pydantic_core
 import pytest
 
 from mergify_engine import config
@@ -12,7 +13,7 @@ from mergify_engine.config import types
 def unset_testing_env(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(config.EngineSettings.Config, "env_file", None)
+    monkeypatch.setitem(config.EngineSettings.model_config, "env_file", None)
 
     # NOTE(sileht): we can't use monkeypatch.delenv here because it doesn't
     # work well with original_environment_variables() fixture
@@ -41,7 +42,7 @@ def test_defaults(
     assert conf.DATABASE_POOL_SIZES == {"web": 55, "worker": 15}
     assert conf.DATABASE_OAUTH_TOKEN_SECRET_CURRENT.get_secret_value() == "secret"
     assert conf.DATABASE_OAUTH_TOKEN_SECRET_OLD is None
-    assert conf.GITHUB_URL == "https://github.com"
+    assert conf.GITHUB_URL == "https://github.com"  # type: ignore[unreachable]
     assert conf.GITHUB_REST_API_URL == "https://api.github.com"
     assert conf.GITHUB_GRAPHQL_API_URL == "https://api.github.com/graphql"
     assert conf.GITHUB_APP_ID == 12345
@@ -103,7 +104,7 @@ def test_all_sets(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path_factory: pytest.TempPathFactory,
 ) -> None:
-    monkeypatch.setattr(config.EngineSettings.Config, "env_file", None)
+    monkeypatch.setitem(config.EngineSettings.model_config, "env_file", None)
 
     tmpdir = tmp_path_factory.mktemp("whatever")
 
@@ -138,7 +139,7 @@ def test_all_sets(
     monkeypatch.setenv("MERGIFYENGINE_LOG_LEVEL", "DEBUG")
     monkeypatch.setenv("MERGIFYENGINE_LOG_STDOUT", "false")
     monkeypatch.setenv("MERGIFYENGINE_LOG_STDOUT_LEVEL", "CRITICAL")
-    monkeypatch.setenv("MERGIFYENGINE_LOG_DATADOG", "true")
+    monkeypatch.setenv("MERGIFYENGINE_LOG_DATADOG", "udp://localhost:8080")
     monkeypatch.setenv("MERGIFYENGINE_LOG_DATADOG_LEVEL", "WARNING")
     monkeypatch.setenv("MERGIFYENGINE_LOG_DEBUG_LOGGER_NAMES", "foo,bar,yo")
 
@@ -169,6 +170,15 @@ def test_all_sets(
                 "peeph4iephaivohx4jeewociex3ruliiShai1Auyiekekeij4OeGh0OoGuph5zei:12345:login",
                 "tha0naCiWooj1yieV3AeChuDiaY9ieweiquahch3rib3quae3eP7sae7gohQuohB:54321:bot",
                 "Ub5kiekohyuoqua5oori7Moowuom8yiefiequie3yohmo6Eidieb9eihiepi5aiP:424242:other-bot",
+            )
+        ),
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_ACCOUNT_TOKENS",
+        ",".join(
+            (
+                "123:login1:token1",
+                "456:login2:token2",
             )
         ),
     )
@@ -219,7 +229,11 @@ def test_all_sets(
     assert conf.LOG_LEVEL == logging.DEBUG
     assert conf.LOG_STDOUT is False
     assert conf.LOG_STDOUT_LEVEL == logging.CRITICAL
-    assert conf.LOG_DATADOG is True
+    assert isinstance(conf.LOG_DATADOG, pydantic_core.Url)
+    assert str(conf.LOG_DATADOG) == "udp://localhost:8080"
+    assert conf.LOG_DATADOG.scheme == "udp"
+    assert conf.LOG_DATADOG.host == "localhost"
+    assert conf.LOG_DATADOG.port == 8080
     assert conf.LOG_DATADOG_LEVEL == logging.WARNING
     assert conf.LOG_DEBUG_LOGGER_NAMES == ["foo", "bar", "yo"]
 
@@ -239,7 +253,10 @@ def test_all_sets(
         conf.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION.get_secret_value()
         == "webhook-secret-bis"
     )
-    assert conf.ACCOUNT_TOKENS == []
+    assert conf.ACCOUNT_TOKENS == [
+        (123, "login1", pydantic.SecretStr("token1")),
+        (456, "login2", pydantic.SecretStr("token2")),
+    ]
     assert conf.APPLICATION_APIKEYS == {
         "peeph4iephaivohx4jeewociex3rulii": {
             "api_access_key": "peeph4iephaivohx4jeewociex3rulii",
@@ -365,11 +382,9 @@ def test_legacy_dashboard_urls(
         ("1000", 1000),
         (
             "-100",
-            """
-1 validation error for EngineSettings
-MERGIFYENGINE_LOG_LEVEL
-  ensure this value is greater than 0 (type=value_error.number.not_gt; limit_value=0)
-""".strip(),
+            """1 validation error for EngineSettings
+LOG_LEVEL
+  Input should be greater than 0 [type=greater_than, input_value=-100, input_type=int]""",
         ),
         ("INFO", logging.INFO),
         ("ERROR", logging.ERROR),
@@ -380,28 +395,26 @@ MERGIFYENGINE_LOG_LEVEL
         ("debug", logging.DEBUG),
         (
             "NOT_A_STRING_LEVEL",
-            """
-1 validation error for EngineSettings
-MERGIFYENGINE_LOG_LEVEL
-  value is not a valid integer (type=type_error.integer)
-""".strip(),
+            """1 validation error for EngineSettings
+LOG_LEVEL
+  Value error, invalid literal for int() with base 10: 'NOT_A_STRING_LEVEL' [type=value_error, input_value='NOT_A_STRING_LEVEL', input_type=str]""",
         ),
     ),
 )
 def test_type_log_level(
     monkeypatch: pytest.MonkeyPatch,
     value: str,
-    expected: int | None,
+    expected: int | str,
 ) -> None:
     monkeypatch.setenv("MERGIFYENGINE_LOG_LEVEL", value)
     if isinstance(expected, int):
         conf = config.EngineSettings()
         assert conf.LOG_LEVEL == expected
     else:
-        with pytest.raises(pydantic.ValidationError) as exc_info:
+        with pytest.raises(pydantic_core.ValidationError) as exc_info:
             config.EngineSettings()
 
-        assert str(exc_info.value) == expected
+        assert str(exc_info.value).startswith(expected)
 
 
 @pytest.mark.parametrize(
@@ -474,14 +487,13 @@ async def test_database_url_format(
 
 def test_error_message(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_URL", "https://localhost")
-    with pytest.raises(pydantic.ValidationError) as exc_info:
+    with pytest.raises(pydantic_core.ValidationError) as exc_info:
         config.EngineSettings()
 
-    assert (
-        str(exc_info.value)
-        == """1 validation error for EngineSettings
-MERGIFYENGINE_DATABASE_URL
-  scheme `https` is invalid, must be postgres,postgresql,postgresql+psycopg (type=value_error)"""
+    assert str(exc_info.value).startswith(
+        """1 validation error for EngineSettings
+DATABASE_URL
+  Value error, scheme `https` is invalid, must be postgres,postgresql,postgresql+psycopg [type=value_error, input_value='https://localhost', input_type=str]"""
     )
 
 

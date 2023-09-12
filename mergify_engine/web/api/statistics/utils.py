@@ -1,6 +1,8 @@
-import collections
 import statistics
 import typing
+
+import pydantic
+import pydantic_core
 
 from mergify_engine import context
 from mergify_engine import date
@@ -168,8 +170,22 @@ def is_timestamp_in_future(timestamp: int) -> bool:
 
 class TimestampNotInFuture(int):
     @classmethod
-    def __get_validators__(cls) -> collections.abc.Generator[typing.Any, None, None]:
-        yield cls.validate
+    def __get_pydantic_core_schema__(
+        cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
+    ) -> pydantic_core.CoreSchema:
+        from_int_schema = pydantic_core.core_schema.chain_schema(
+            [
+                pydantic_core.core_schema.int_schema(),
+                pydantic_core.core_schema.no_info_plain_validator_function(
+                    cls.validate
+                ),
+            ]
+        )
+
+        return pydantic_core.core_schema.json_or_python_schema(
+            json_schema=from_int_schema,
+            python_schema=from_int_schema,
+        )
 
     @classmethod
     def validate(cls, v: str) -> int:
