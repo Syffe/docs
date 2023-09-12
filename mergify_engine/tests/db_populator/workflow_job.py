@@ -55,6 +55,7 @@ class WorkflowJob(DbPopulator):
                         status="completed",
                     )
                 ],
+                runner_id=1,
             ),
             repo,
         )
@@ -84,6 +85,7 @@ class WorkflowJob(DbPopulator):
                         status="completed",
                     )
                 ],
+                runner_id=1,
             ),
             repo,
         )
@@ -102,6 +104,7 @@ class WorkflowJob(DbPopulator):
                 labels=[],
                 run_attempt=1,
                 steps=[],
+                runner_id=1,
             ),
             repo,
         )

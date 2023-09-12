@@ -379,8 +379,7 @@ class WorkflowJob(models.Base):
             return None
 
         if not workflow_job_data["steps"]:
-            # FIXME(sileht): we need to find why how we can have failed jobs with no steps
-            LOG.warning(
+            LOG.error(
                 "WorkflowJob without steps",
                 workflow_job_data=workflow_job_data,
                 gh_owner=repository["owner"]["login"],

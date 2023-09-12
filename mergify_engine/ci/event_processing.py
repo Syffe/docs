@@ -143,14 +143,16 @@ async def _process_workflow_job_event(
         event_data["repository"],
     )
 
-    async for attempt in database.tenacity_retry_on_pk_integrity_error(
-        (github_repository.GitHubRepository, github_account.GitHubAccount)
-    ):
-        with attempt:
-            async with database.create_session() as session:
-                await github_actions.WorkflowJob.insert(
-                    session, workflow_job, repository
-                )
-                await session.commit()
+    # NOTE(Kontrolix): This test is here to filter some broken jobs
+    if workflow_job.get("runner_id") is not None:
+        async for attempt in database.tenacity_retry_on_pk_integrity_error(
+            (github_repository.GitHubRepository, github_account.GitHubAccount)
+        ):
+            with attempt:
+                async with database.create_session() as session:
+                    await github_actions.WorkflowJob.insert(
+                        session, workflow_job, repository
+                    )
+                    await session.commit()
 
     await redis_links.stream.xdel("gha_workflow_job", stream_event_id)  # type: ignore [no-untyped-call]

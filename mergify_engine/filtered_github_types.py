@@ -135,6 +135,7 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                     "labels": True,
                     "run_attempt": True,
                     "steps": True,
+                    "runner_id": True,
                 },
                 "repository": {
                     "id": True,

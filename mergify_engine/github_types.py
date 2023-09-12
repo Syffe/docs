@@ -943,6 +943,7 @@ class GitHubWorkflowJob(typing.TypedDict):
     labels: list[str]
     run_attempt: int
     steps: list[GitHubWorkflowJobStep]
+    runner_id: int
 
 
 class GitHubEventWorkflowJob(GitHubEventWithRepository):
