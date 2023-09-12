@@ -142,10 +142,15 @@ async def test_get_chat_completion_model() -> None:
 
     query = openai_api.ChatCompletionQuery(
         "user",
-        "hello" * (model["max_tokens"] * 2),
+        "hello"
+        * (
+            model["max_tokens"]
+            - 101
+            - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
+        ),
         101,
     )
     with pytest.raises(
-        openai_api.OpenAiException, match="No model found to handle 32876 tokens"
+        openai_api.OpenAiException, match="No model found to handle 16385 tokens"
     ):
         model = query.get_chat_completion_model()
