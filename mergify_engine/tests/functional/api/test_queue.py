@@ -664,9 +664,7 @@ class TestQueueApi(base.FunctionalTestBase):
             )
             assert (
                 queue_pr_data["estimated_time_of_merge"]
-                # The replace is here because pydantic use the iso `Z` instead
-                # of `+00:00` (both are valid iso formats)
-                == expected_time_of_merge.isoformat().replace("+00:00", "Z")
+                == expected_time_of_merge.isoformat()
             )
 
     async def test_estimated_time_of_merge_multiple_pr_waiting(self) -> None:

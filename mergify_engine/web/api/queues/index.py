@@ -155,9 +155,7 @@ class PullRequestQueued:
         description="The timestamp when the pull requested has entered in the queue"
     )
     speculative_check_pull_request: SpeculativeCheckPullRequest | None = pydantic.Field(
-        ...,
-        description="Use `mergeability_check` instead",
-        json_schema_extra={"deprecated": True},
+        ..., deprecated=True, description="Use `mergeability_check` instead"
     )
     mergeability_check: BriefMergeabilityCheck | None = pydantic.Field(
         description="Information about the mergeability check currently processed"

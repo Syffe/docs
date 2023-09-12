@@ -5,7 +5,6 @@ import pytest
 
 from mergify_engine import logs
 from mergify_engine import settings
-from mergify_engine.config import types
 
 
 @pytest.mark.parametrize(
@@ -37,16 +36,12 @@ def test_strip_url_credentials(url: str, url_expected: str) -> None:
 )
 def test_datadog_logger(
     monkeypatch: pytest.MonkeyPatch,
-    config_value: str | bool,
+    config_value: str | None,
     expected_hostname: str | None,
     expected_port: int | None,
     logging_reset: None,
 ) -> None:
-    if isinstance(config_value, bool):
-        monkeypatch.setattr(settings, "LOG_DATADOG", config_value)
-    else:
-        monkeypatch.setattr(settings, "LOG_DATADOG", types.UdpUrl(config_value))
-
+    monkeypatch.setattr(settings, "LOG_DATADOG", config_value)
     monkeypatch.setattr(settings, "LOG_STDOUT", False)
     logs.setup_logging(dump_config=False)
 

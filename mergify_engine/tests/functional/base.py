@@ -213,7 +213,7 @@ class EventReader:
         self._handled_events: asyncio.Queue[ForwardedEvent] = asyncio.Queue()
         self._counter = 0
 
-        hostname = settings.GITHUB_URL.host
+        hostname = parse.urlparse(settings.GITHUB_URL).hostname
         self.base_event_forwarder_url = f"{settings.TESTING_FORWARDER_ENDPOINT}/events/{hostname}/{integration_id}/{repository_id}/"
         self.test_name = test_name.replace("/", "-")
 

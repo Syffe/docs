@@ -3,8 +3,6 @@ import enum
 import functools
 import typing
 
-import typing_extensions
-
 
 ISODateTimeType = typing.NewType("ISODateTimeType", str)
 
@@ -23,7 +21,7 @@ GitHubAccountType = typing.Literal["User", "Organization", "Bot"]
 GitHubAccountIdType = typing.NewType("GitHubAccountIdType", int)
 
 
-class GitHubAccount(typing_extensions.TypedDict):
+class GitHubAccount(typing.TypedDict):
     login: GitHubLogin
     id: GitHubAccountIdType
     type: GitHubAccountType

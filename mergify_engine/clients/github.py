@@ -14,7 +14,6 @@ from datadog import statsd  # type: ignore[attr-defined]
 import first
 import httpx
 import msgpack
-import typing_extensions
 
 from mergify_engine import date
 from mergify_engine import exceptions
@@ -73,7 +72,7 @@ class InstallationInaccessible(Exception):
     message: str
 
 
-class Actor(typing_extensions.TypedDict):
+class Actor(typing.TypedDict):
     type: typing.Literal["user", "application"]
     id: int
     name: str

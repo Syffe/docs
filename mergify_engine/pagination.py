@@ -76,46 +76,37 @@ Link: <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/events?cursor=d
 }
 
 
-class PageResponse(typing.Generic[T], pydantic.BaseModel):
+@pydantic.dataclasses.dataclass
+class PageResponse(typing.Generic[T]):
     # The attribute name under which all the items of the page will be stored
     items_key: typing.ClassVar[str]
-
-    page: Page[T] = pydantic.Field(exclude=True)
-    size: int = pydantic.Field(
-        json_schema_extra={
-            "metadata": {
-                "description": "The number of items in this page",
-            },
-        }
+    page: dataclasses.InitVar[Page[T]]
+    size: int = dataclasses.field(
+        init=False,
+        metadata={
+            "description": "The number of items in this page",
+        },
     )
-    per_page: int = pydantic.Field(
-        json_schema_extra={
-            "metadata": {
-                "description": "The number of items per page",
-            },
-        }
+    per_page: int = dataclasses.field(
+        init=False,
+        metadata={
+            "description": "The number of items per page",
+        },
     )
-    total: int = pydantic.Field(
-        json_schema_extra={
-            "metadata": {
-                "description": "The total number of items",
-            },
-        }
+    total: int = dataclasses.field(
+        init=False,
+        metadata={
+            "description": "The total number of items",
+        },
     )
 
-    model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
+    def __post_init__(self, page: Page[T]) -> None:
+        setattr(self, self.items_key, page.items)
+        self.size = page.size
+        self.per_page = page.current.per_page
+        self.total = page.total
 
-    def __init__(self, page: Page[T]) -> None:
         page.current.response.headers["Link"] = self._build_link(page)
-        kwargs = {
-            "page": page,
-            self.items_key: page.items,
-            "size": page.size,
-            "per_page": page.current.per_page,
-            "total": page.total,
-        }
-
-        super().__init__(**kwargs)
 
     @staticmethod
     def _build_link(page: Page[T]) -> str:
