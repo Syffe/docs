@@ -790,9 +790,9 @@ did not find expected alphabetic or numeric character
         )
 
     async def test_extended_repo_does_not_have_mergify_enabled(self) -> None:
-        # git-pull-request = repo in mergifyio-testing that doesn't, and shouldn't,
+        # repo-without-mergify = repo in mergifyio-testing that doesn't, and shouldn't,
         # have the testing app installed on it.
-        rules = {"extends": "git-pull-request"}
+        rules = {"extends": "repo-without-mergify"}
 
         await self.setup_repo(yaml.dump(rules))
         await self.create_pr()
@@ -805,13 +805,13 @@ did not find expected alphabetic or numeric character
         )
 
         assert (
-            "Extended configuration repository `git-pull-request` doesn't have Mergify installed on it. Mergify needs to be enabled on extended repositories to be able to detect configuration changes properly."
+            "Extended configuration repository `repo-without-mergify` doesn't have Mergify installed on it. Mergify needs to be enabled on extended repositories to be able to detect configuration changes properly."
             in check_run["check_run"]["output"]["summary"]
         )
 
         cache_value = await self.redis_links.cache.get(
             context.Repository.get_mergify_installation_cache_key(
-                f"{settings.TESTING_ORGANIZATION_NAME}/git-pull-request"
+                f"{settings.TESTING_ORGANIZATION_NAME}/repo-without-mergify"
             )
         )
         assert cache_value is not None
