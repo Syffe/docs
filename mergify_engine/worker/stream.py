@@ -806,6 +806,20 @@ class Processor:
                 ],
             )
 
+            # NOTE(charly): CI usage metric, see MRGFY-2617
+            is_customer = installation.subscription.has_feature(
+                subscription.Features.PRIVATE_REPOSITORY
+            )
+            if source["event_type"] == "check_run" and is_customer:
+                event = typing.cast(github_types.GitHubEventCheckRun, source["data"])
+                if event["check_run"]["app"].get("slug"):
+                    check_run_tags = [
+                        f"app_name:{event['check_run']['app']['slug']}",
+                    ]
+                    statsd.increment(
+                        "engine.buckets.events.check_runs", tags=check_run_tags
+                    )
+
         logger = daiquiri.getLogger(
             __name__,
             gh_repo=tracing_repo_name,

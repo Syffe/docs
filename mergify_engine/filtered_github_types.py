@@ -62,7 +62,7 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                 "action": True,
                 "app": {"id": True},
                 event_type: {
-                    "app": {"id": True},
+                    "app": {"id": True, "slug": True},
                     "head_sha": True,
                     "pull_requests": [
                         {"number": True, "base": {"repo": {"id": True, "url": True}}}
