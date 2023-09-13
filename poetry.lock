@@ -63,17 +63,14 @@ trio = ["trio (<0.22)"]
 
 [[package]]
 name = "anys"
-version = "0.2.1"
+version = "0.3.0"
 description = "Matchers for pytest"
 optional = false
-python-versions = "~=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "anys-0.2.1-py3-none-any.whl", hash = "sha256:b946ff447008d00125a2c437fb06f06aaad006ea798127efc2cae7dd217402b2"},
-    {file = "anys-0.2.1.tar.gz", hash = "sha256:f32e16ead49b0a96c530fe43aa4e69ffa68df1fd63042866a994618a08ae9725"},
+    {file = "anys-0.3.0-py3-none-any.whl", hash = "sha256:ae4124d98ab0449a457d1563e86c9f9baa059707bf7bd65248d594b1fdc2a5c2"},
+    {file = "anys-0.3.0.tar.gz", hash = "sha256:56c04f76afe5379a5058aec067befa1fb93070d63cabbd342e04b3d5aff739f8"},
 ]
-
-[package.dependencies]
-Deprecated = ">=1.2,<2.0"
 
 [[package]]
 name = "asgi-lifespan"
@@ -4148,4 +4145,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "18d8adbf5ed97ee2c056898e28006f05c4cfb63f925d0aa5ba2141a104884d2b"
+content-hash = "662e33d0d50f25c1d792558650bce3ca5be36a3aa021d3dadf93fa9c59266bc8"
