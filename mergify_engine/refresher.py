@@ -57,7 +57,7 @@ async def _add_refresh_attempt(
         if (
             refresh_data["action"] == "internal"
             and refresh_data is not None
-            and refresh_data["flag"] == refresh_flag
+            and refresh_data.get("flag") == refresh_flag
         ):
             attempts = (
                 refresh_data["attempts"]
