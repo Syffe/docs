@@ -596,15 +596,6 @@ These are the options of the ``queue`` action:
      - | |deprecated tag|
        | Whether branch protections are required for queueing pull requests.
 
-   * - ``branch_protection_injection_mode``
-     - string
-     - ``queue``
-     - | Branch protections conditions injection mode to use. Possible values are ``queue``, ``merge``,
-       | or ``none``.
-       | ``queue`` will inject branch protections conditions as required conditions for queuing and merging pull requests.
-       | ``merge`` will inject branch protections conditions as required conditions only for merging pull requests.
-       | ``none`` will disable branch protections, this mode is supported only on queues using a ``merge_bot_account`` with admin rights.
-
    * - ``update_bot_account``
      - :ref:`data type template`
      -
@@ -808,6 +799,15 @@ A ``queue_rules`` takes the following parameters:
      - true
      - | |deprecated tag|
        | Whether branch protections are required for queueing pull requests.
+
+   * - ``branch_protection_injection_mode``
+     - string
+     - ``queue``
+     - | Branch protections conditions injection mode to use. Possible values are ``queue``, ``merge``,
+       | or ``none``.
+       | ``queue`` will inject branch protections conditions as required conditions for queuing and merging pull requests.
+       | ``merge`` will inject branch protections conditions as required conditions only for merging pull requests.
+       | ``none`` will disable branch protections, this mode is supported only on queues using a ``merge_bot_account`` with admin rights.
 
    * - ``speculative_checks``
      - int
