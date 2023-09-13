@@ -3,6 +3,8 @@ import enum
 import functools
 import typing
 
+import typing_extensions
+
 
 ISODateTimeType = typing.NewType("ISODateTimeType", str)
 
@@ -21,7 +23,7 @@ GitHubAccountType = typing.Literal["User", "Organization", "Bot"]
 GitHubAccountIdType = typing.NewType("GitHubAccountIdType", int)
 
 
-class GitHubAccount(typing.TypedDict):
+class GitHubAccount(typing_extensions.TypedDict):
     login: GitHubLogin
     id: GitHubAccountIdType
     type: GitHubAccountType
@@ -923,7 +925,7 @@ GitHubWorkflowJobConclusionType = typing.Literal[
 GitHubWorkflowJobStepStatus = typing.Literal["queued", "in_progress", "completed"]
 
 
-class GitHubWorkflowJobStep(typing.TypedDict):
+class GitHubWorkflowJobStep(typing_extensions.TypedDict):
     name: str
     status: GitHubWorkflowJobStepStatus
     conclusion: GitHubWorkflowJobConclusionType | None

@@ -1,4 +1,3 @@
-import dataclasses
 import datetime
 import typing
 
@@ -33,14 +32,14 @@ Event = typing.Annotated[
 ]
 
 
-@pydantic.dataclasses.dataclass
 class EventsResponse(pagination.PageResponse[Event]):
-    items_key = "events"
-    events: list[Event] = dataclasses.field(
-        init=False,
-        metadata={
-            "description": "The list of events",
-        },
+    items_key: typing.ClassVar[str] = "events"
+    events: list[Event] = pydantic.Field(
+        json_schema_extra={
+            "metadata": {
+                "description": "The list of events",
+            },
+        }
     )
 
 
@@ -67,6 +66,7 @@ def format_event_item_response(event: events.Event) -> dict[str, typing.Any]:
 @router.get(
     "/repos/{owner}/{repository}/logs",
     summary="Get the events log",
+    description="Get the events logs of the requested repository",
     response_model=EventsResponse,
     responses={
         **api.default_responses,  # type: ignore
@@ -82,10 +82,12 @@ def format_event_item_response(event: events.Event) -> dict[str, typing.Any]:
                             {
                                 "id": 0,
                                 "received_at": "2019-08-24T14:15:22Z",
+                                "timestamp": "2019-08-24T14:15:22Z",
                                 "trigger": "string",
                                 "repository": "string",
                                 "pull_request": 0,
                                 "type": "action.assign",
+                                "event": "action.assign",
                                 "metadata": {
                                     "added": ["string"],
                                     "removed": ["string"],
@@ -150,7 +152,7 @@ async def get_repository_events(
         except eventlogs.UnsupportedEvent as err:
             LOG.error(err.message, event=err.event)
 
-    return EventsResponse(
+    return EventsResponse(  # type: ignore[call-arg]
         page=pagination.Page(
             items=events_list,
             current=page,

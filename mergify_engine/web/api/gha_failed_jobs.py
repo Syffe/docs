@@ -5,6 +5,7 @@ import typing
 
 import fastapi
 import pydantic
+import typing_extensions
 
 from mergify_engine import database
 from mergify_engine import github_types
@@ -16,12 +17,12 @@ from mergify_engine.web.api import security
 router = fastapi.APIRouter(tags=["gha_failed_jobs"])
 
 
-class Owner(typing.TypedDict):
+class Owner(typing_extensions.TypedDict):
     id: int
     login: str
 
 
-class Repository(typing.TypedDict):
+class Repository(typing_extensions.TypedDict):
     id: int
     name: str
     owner: Owner
@@ -33,7 +34,7 @@ class FlakyStatus(enum.Enum):
     UNKNOWN = "unknown"
 
 
-class WorkflowJob(typing.TypedDict):
+class WorkflowJob(typing_extensions.TypedDict):
     name: str
     error_description: str | None
     id: int
@@ -45,7 +46,7 @@ class WorkflowJob(typing.TypedDict):
     run_attempt: int
 
 
-class WorkflowJobGroup(typing.TypedDict):
+class WorkflowJobGroup(typing_extensions.TypedDict):
     workflow_jobs: list[WorkflowJob]
 
 

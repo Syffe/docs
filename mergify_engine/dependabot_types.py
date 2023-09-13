@@ -1,9 +1,8 @@
-import typing
-
 import pydantic
+import typing_extensions
 
 
-DependabotAttributes = typing.TypedDict(
+DependabotAttributes = typing_extensions.TypedDict(
     "DependabotAttributes",
     {
         "dependency-name": str,
@@ -21,5 +20,5 @@ DependabotAttributes.__optional_keys__ = frozenset({"update-type"})
 
 class DependabotYamlMessageSchema(pydantic.BaseModel):
     updated_dependencies: list[DependabotAttributes] = pydantic.Field(
-        alias="updated-dependencies", min_items=1, max_items=1
+        alias="updated-dependencies", min_length=1, max_length=1
     )

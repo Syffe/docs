@@ -37,7 +37,11 @@ class ApplicationsList:
 
 
 class ApplicationBody(pydantic.BaseModel):
-    name: str = pydantic.Field(min_length=1, max_length=255, strip_whitespace=True)
+    name: str = pydantic.Field(
+        min_length=1,
+        max_length=255,
+        json_schema_extra={"strip_whitespace": True},
+    )
 
 
 router = fastapi.APIRouter(
@@ -66,6 +70,7 @@ async def list_applications(
         applications = result.unique().scalars().all()
     except sqlalchemy.exc.NoResultFound:
         raise fastapi.HTTPException(status_code=404)
+
     return ApplicationsList(
         applications=[
             ApplicationJSON(

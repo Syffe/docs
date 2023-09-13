@@ -4,6 +4,7 @@ import datetime
 import html
 import typing
 
+import typing_extensions
 import voluptuous
 
 from mergify_engine import constants
@@ -28,7 +29,7 @@ EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
 QueuesRulesEvaluator = base_rules.GenericRulesEvaluator["QueueRule", EvaluatedQueueRule]
 
 
-class QueueConfig(typing.TypedDict):
+class QueueConfig(typing_extensions.TypedDict):
     priority: int
     speculative_checks: int
     batch_size: int

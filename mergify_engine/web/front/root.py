@@ -1,5 +1,3 @@
-import urllib.parse
-
 import fastapi
 import imia
 import starsessions
@@ -18,13 +16,11 @@ from mergify_engine.web.front import sessions
 
 
 def create_app(debug: bool = False) -> fastapi.FastAPI:
-    parsed_base_url = urllib.parse.urlparse(settings.DASHBOARD_UI_FRONT_URL)
-
-    cookie_https_only = parsed_base_url.scheme == "https"
-    if parsed_base_url.hostname == "localhost":
+    cookie_https_only = settings.DASHBOARD_UI_FRONT_URL.scheme == "https"
+    if settings.DASHBOARD_UI_FRONT_URL.host == "localhost":
         cookie_domain = None
     else:
-        cookie_domain = parsed_base_url.hostname
+        cookie_domain = settings.DASHBOARD_UI_FRONT_URL.host
 
     app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
 
