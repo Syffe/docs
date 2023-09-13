@@ -117,7 +117,7 @@ jobs:
       - name: ⚙️ Build & cache all layers
         # yamllint disable-line rule:line-length
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           # NOTE(sileht): COMMON section must be the same on all build steps
           # GitHub workflow does not support Yaml Anchors, so we have to duplciate it...
@@ -134,7 +134,7 @@ jobs:
       - name: ⚙️  Upload layers cache to GitHub Action Cache
         # yamllint disable-line rule:line-length
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           # NOTE(sileht): COMMON section must be the same on all build steps
           # GitHub workflow does not support Yaml Anchors, so we have to duplciate it...
@@ -151,7 +151,7 @@ jobs:
       - name: ⚙️ Build saas-web
         # yamllint disable-line rule:line-length
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           target: saas-web
           tags: web:tmp
@@ -169,7 +169,7 @@ jobs:
       - name: ⚙️ Build saas-worker
         # yamllint disable-line rule:line-length
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           target: saas-worker
           tags: worker:tmp
