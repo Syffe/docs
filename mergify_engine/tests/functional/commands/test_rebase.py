@@ -1,8 +1,10 @@
 import base64
 import typing
+from unittest import mock
 
 import pytest
 
+from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import subscription
 from mergify_engine import yaml
@@ -82,5 +84,36 @@ class TestCommandRebase(base.FunctionalTestBase):
         comment = await self.wait_for_issue_comment(str(p["number"]), "created")
         assert (
             "It's not possible to rebase this pull request because it is queued for merge"
+            in comment["comment"]["body"]
+        )
+
+    async def test_command_rebase_permission_error(self) -> None:
+        await self.setup_repo(
+            yaml.dump(
+                {
+                    "commands_restrictions": {
+                        "rebase": {"conditions": ["sender-permission>=read"]}
+                    }
+                }
+            ),
+            files={"TESTING": "foobar\n"},
+        )
+        p1 = await self.create_pr(files={"TESTING": "foobar\n\n\np1"}, as_="admin")
+        p2 = await self.create_pr(files={"TESTING": "p2\n\nfoobar\n"}, as_="admin")
+
+        await self.merge_pull(p1["number"])
+        await self.wait_for_pull_request("closed", pr_number=p1["number"], merged=True)
+
+        # The repo is a fork with "maintainer_can_modify" authorization, but the
+        # user is not a maintainer of the fork
+        with mock.patch.object(context.Context, "pull_from_fork", True), mock.patch(
+            "mergify_engine.branch_updater.pre_rebase_check", return_value=True
+        ):
+            await self.create_comment_as_fork(p2["number"], "@mergifyio rebase")
+            await self.run_engine()
+
+        comment = await self.wait_for_issue_comment(str(p2["number"]), "created")
+        assert (
+            "`mergify-test2` does not have write access to the forked repository."
             in comment["comment"]["body"]
         )

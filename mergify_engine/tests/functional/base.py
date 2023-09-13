@@ -154,10 +154,7 @@ class GitterRecorder(gitter.Gitter):
 
         r = self.records.pop(0)
         if "exc" in r:
-            raise gitter.GitError(
-                returncode=r["exc"]["returncode"],
-                output=r["exc"]["output"],
-            )
+            raise self._create_git_exception(r["exc"]["returncode"], r["exc"]["output"])
 
         assert r["args"] == self.prepare_args(
             args

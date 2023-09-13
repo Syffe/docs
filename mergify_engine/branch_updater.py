@@ -260,7 +260,7 @@ async def rebase_with_git(
                 permission = await ctxt.repository.get_user_permission(
                     on_behalf.to_github_account()
                 )
-                if permission == github_types.GitHubRepositoryPermission.NONE:
-                    message = f"`{on_behalf.login}` does not have write access to this repository."
+                if permission < github_types.GitHubRepositoryPermission.WRITE:
+                    message = f"`{on_behalf.login}` does not have write access to the forked repository."
 
         raise BranchUpdateFailure(message)
