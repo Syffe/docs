@@ -1,7 +1,6 @@
 import dataclasses
 import datetime
 import enum
-import typing
 
 import fastapi
 import pydantic
@@ -100,9 +99,7 @@ async def get_gha_failed_jobs(
                 error_description=failed_job.embedded_log_error_title,
                 id=failed_job.id,
                 run_id=failed_job.workflow_run_id,
-                steps=typing.cast(
-                    list[github_types.GitHubWorkflowJobStep], failed_job.steps
-                ),
+                steps=failed_job.steps or [],
                 started_at=github_types.ISODateTimeType(str(failed_job.started_at)),
                 completed_at=github_types.ISODateTimeType(str(failed_job.completed_at)),
                 flaky=FlakyStatus.FLAKY if failed_job.flaky else FlakyStatus.UNKNOWN,

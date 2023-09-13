@@ -270,3 +270,81 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
             },
         ],
     }
+
+
+@pytest.mark.populated_db_datasets("TestApiGhaFailedJobsDataset")
+async def test_api_get_gha_failed_jobs_no_step(
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+) -> None:
+    await populated_db.commit()
+
+    async def work_with_repo(full_name: str) -> None:
+        repo_info = typing.cast(
+            github_types.GitHubRepository,
+            (
+                (
+                    await populated_db.execute(
+                        sqlalchemy.select(github_repository.GitHubRepository)
+                        .where(
+                            github_repository.GitHubRepository.full_name == full_name
+                        )
+                        .limit(1)
+                    )
+                ).scalar_one()
+            ).as_dict(),
+        )
+
+        user = await test_utils.mock_user_authorization_on_repo(
+            respx_mock, repo_info, populated_db
+        )
+
+        await web_client.log_as(user.id)
+
+    job = await populated_db.scalar(
+        sqlalchemy.select(github_actions.WorkflowJob)
+        .order_by(github_actions.WorkflowJob.id.desc())
+        .limit(1)
+    )
+
+    assert job is not None
+
+    job.steps = None
+
+    await work_with_repo("colliding_acount_1/colliding_repo_name")
+
+    reply = await web_client.get(
+        "/front/proxy/engine/v1/repos/colliding_acount_1/colliding_repo_name/gha-failed-jobs",
+        follow_redirects=False,
+    )
+
+    assert reply.json() == {
+        "repository": {
+            "id": anys.ANY_INT,
+            "name": "colliding_repo_name",
+            "owner": {
+                "id": anys.ANY_INT,
+                "login": "colliding_acount_1",
+            },
+        },
+        "start_at": None,
+        "min_similarity": 0.01,
+        "workflow_job_groups": [
+            {
+                "workflow_jobs": [
+                    {
+                        "name": "A job",
+                        "error_description": None,
+                        "id": job.id,
+                        "run_id": job.workflow_run_id,
+                        "steps": [],
+                        "started_at": str(job.started_at),
+                        "completed_at": str(job.completed_at),
+                        "flaky": "unknown",
+                        "run_attempt": 1,
+                    }
+                ]
+            },
+        ],
+    }
