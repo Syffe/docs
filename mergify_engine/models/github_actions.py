@@ -342,31 +342,33 @@ class WorkflowJob(models.Base):
         session: sqlalchemy.ext.asyncio.AsyncSession,
         workflow_job_data: github_types.GitHubWorkflowJob,
         repository: github_types.GitHubRepository,
-    ) -> None:
+    ) -> WorkflowJob:
         result = await session.execute(
             sqlalchemy.select(cls).where(cls.id == workflow_job_data["id"])
         )
-        if result.scalar_one_or_none() is None:
+        job = result.scalar_one_or_none()
+        if job is None:
             failed_step = cls.get_failed_step(workflow_job_data, repository)
 
-            session.add(
-                cls(
-                    id=workflow_job_data["id"],
-                    workflow_run_id=workflow_job_data["run_id"],
-                    name=workflow_job_data["name"],
-                    started_at=workflow_job_data["started_at"],
-                    completed_at=workflow_job_data["completed_at"],
-                    conclusion=WorkflowJobConclusion(workflow_job_data["conclusion"]),
-                    labels=workflow_job_data["labels"],
-                    repository=await github_repository.GitHubRepository.get_or_create(
-                        session, repository
-                    ),
-                    run_attempt=workflow_job_data["run_attempt"],
-                    steps=workflow_job_data["steps"],
-                    failed_step_number=failed_step["number"] if failed_step else None,
-                    failed_step_name=failed_step["name"] if failed_step else None,
-                )
+            job = cls(
+                id=workflow_job_data["id"],
+                workflow_run_id=workflow_job_data["run_id"],
+                name=workflow_job_data["name"],
+                started_at=workflow_job_data["started_at"],
+                completed_at=workflow_job_data["completed_at"],
+                conclusion=WorkflowJobConclusion(workflow_job_data["conclusion"]),
+                labels=workflow_job_data["labels"],
+                repository=await github_repository.GitHubRepository.get_or_create(
+                    session, repository
+                ),
+                run_attempt=workflow_job_data["run_attempt"],
+                steps=workflow_job_data["steps"],
+                failed_step_number=failed_step["number"] if failed_step else None,
+                failed_step_name=failed_step["name"] if failed_step else None,
             )
+            session.add(job)
+
+        return job
 
     @staticmethod
     def get_failed_step(
@@ -464,6 +466,71 @@ class WorkflowJob(models.Base):
             .where(cls.id.in_(job_ids))
             .values(neighbours_computed_at=sqlalchemy.func.now())
         )
+
+    @classmethod
+    async def get_failed_jobs(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository_id: github_types.GitHubRepositoryIdType,
+        start_at: datetime.date | None,
+        neighbour_cosine_similarity_threshold: float,
+    ) -> sqlalchemy.Result[typing.Any]:
+        tj_job = orm.aliased(WorkflowJobLogNeighbours, name="tj_job")
+        job = orm.aliased(cls, name="job")
+        job_rerun = orm.aliased(cls, name="job_rerun")
+
+        flaky_job_subquery = (
+            sqlalchemy.select(job_rerun.id)
+            .where(
+                job_rerun.repository_id == job.repository_id,
+                job_rerun.name == job.name,
+                job_rerun.workflow_run_id == job.workflow_run_id,
+                job_rerun.run_attempt > job.run_attempt,
+                job_rerun.conclusion == WorkflowJobConclusion.SUCCESS,
+            )
+            .limit(1)
+            .scalar_subquery()
+        )
+
+        stmt = (
+            sqlalchemy.select(
+                job.id,
+                sqlalchemy.func.array_agg(
+                    sqlalchemy.func.distinct(
+                        sqlalchemy.case(
+                            (job.id == tj_job.job_id, tj_job.neighbour_job_id),
+                            else_=tj_job.job_id,
+                        )
+                    ),
+                ).label("neighbour_job_ids"),
+                job.name,
+                job.embedded_log_error_title,
+                job.workflow_run_id,
+                job.steps,
+                job.started_at,
+                job.completed_at,
+                job.run_attempt,
+                flaky_job_subquery.label("flaky"),
+            )
+            .join(
+                tj_job,
+                sqlalchemy.and_(
+                    job.id.in_((tj_job.job_id, tj_job.neighbour_job_id)),
+                    tj_job.cosine_similarity >= neighbour_cosine_similarity_threshold,
+                ),
+                isouter=True,
+            )
+            .where(
+                job.conclusion == WorkflowJobConclusion.FAILURE,
+                job.repository_id == repository_id,
+            )
+            .group_by(job.id)
+        )
+
+        if start_at:
+            stmt.where(job.started_at >= start_at)
+
+        return await session.execute(stmt)
 
 
 class WorkflowJobLogNeighbours(models.Base):

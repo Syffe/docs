@@ -21,10 +21,14 @@ class DbPopulator:
 
     @classmethod
     def next_id(cls, model: type[sqlalchemy.orm.decl_api.DeclarativeBase]) -> int:
-        current_id = cls.id_auto_increment.setdefault(model.__tablename__, 0)
+        current_id = cls.current_id(model)
         next_id = current_id + 1
         cls.id_auto_increment[model.__tablename__] = next_id
         return next_id
+
+    @classmethod
+    def current_id(cls, model: type[sqlalchemy.orm.decl_api.DeclarativeBase]) -> int:
+        return cls.id_auto_increment.setdefault(model.__tablename__, 0)
 
     @classmethod
     async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
@@ -47,4 +51,5 @@ class DbPopulator:
 import mergify_engine.tests.db_populator.account_and_repo  # noqa: E402
 import mergify_engine.tests.db_populator.colliding_repo_name  # noqa: E402
 import mergify_engine.tests.db_populator.one_account_and_one_repo  # noqa: E402
+import mergify_engine.tests.db_populator.test_api_gha_failed_jobs_dataset  # noqa: E402
 import mergify_engine.tests.db_populator.workflow_job  # noqa: E402, F401

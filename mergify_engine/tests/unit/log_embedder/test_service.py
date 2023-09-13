@@ -302,7 +302,7 @@ async def test_embed_logs_on_various_data(
         )
     ).all()[0][0]
 
-    assert count == 0
+    assert count == 4
 
     pending_work = True
     while pending_work:
@@ -316,7 +316,7 @@ async def test_embed_logs_on_various_data(
         )
     ).all()[0][0]
 
-    assert count != 0
+    assert count == 5
 
 
 @mock.patch.object(

@@ -8,6 +8,7 @@ from mergify_engine.web.api import applications
 from mergify_engine.web.api import badges
 from mergify_engine.web.api import eventlogs
 from mergify_engine.web.api import events
+from mergify_engine.web.api import gha_failed_jobs
 from mergify_engine.web.api import partitions
 from mergify_engine.web.api import queues
 from mergify_engine.web.api import simulator
@@ -28,6 +29,7 @@ def include_api_routes(router: fastapi.APIRouter | fastapi.FastAPI) -> None:
     router.include_router(statistics.router)
     router.include_router(partitions.router)
     router.include_router(events.router)
+    router.include_router(gha_failed_jobs.router)
 
 
 def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:

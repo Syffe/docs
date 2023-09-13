@@ -13,6 +13,7 @@ class WorkflowJob(DbPopulator):
     @classmethod
     async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
         await cls.load(session, {"OneAccountAndOneRepo"})
+        await cls.load(session, {"TestApiGhaFailedJobsDataset"})
 
         repo = typing.cast(
             github_types.GitHubRepository,
