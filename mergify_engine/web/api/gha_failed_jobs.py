@@ -66,6 +66,7 @@ class FailedJobResponse:
     summary="Get failed jobs and related potential failed jobs",
     description="Get failed jobs and related potential failed jobs",
     response_model=FailedJobResponse,
+    include_in_schema=False,
     responses={
         **api.default_responses,  # type: ignore
         404: {"description": "The repository is not found"},
