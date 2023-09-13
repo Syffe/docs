@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 import typing
-from urllib import parse
 
 import daiquiri
 import daiquiri.formatter
@@ -90,22 +89,9 @@ class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
             log_record.update({"worker_task": worker_task})
 
 
-def strip_url_credentials(url: str) -> str:
-    parsed = parse.urlparse(url)
-    if parsed.password or parsed.username:
-        netloc = "*****@"
-        if parsed.hostname is not None:
-            netloc += parsed.hostname
-        if parsed.port is not None:
-            netloc += f":{parsed.port}"
-        return parsed._replace(netloc=netloc).geturl()
-
-    return url
-
-
 def config_log() -> None:
     LOG.info("##################### CONFIGURATION ######################")
-    for key, value in settings.model_dump().items():
+    for key, value in settings:
         if key.startswith("TESTING_"):
             continue
         LOG.info("* %s: %s", key, value)
