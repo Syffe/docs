@@ -1,10 +1,12 @@
 import datetime
+import os
 import statistics
 from unittest import mock
 
 import anys
 from freezegun import freeze_time
 import msgpack
+import pytest
 
 from mergify_engine import constants
 from mergify_engine import context
@@ -929,6 +931,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 == first_batch_prs_expected_eta
             )
 
+    @pytest.mark.timeout(os.environ["PYTEST_TIMEOUT"] if base.RECORD else 60)
     async def test_estimated_time_of_merge_multiple_pr_waiting_multiple_batch(
         self,
     ) -> None:
