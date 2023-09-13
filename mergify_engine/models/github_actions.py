@@ -528,7 +528,7 @@ class WorkflowJob(models.Base):
         )
 
         if start_at:
-            stmt.where(job.started_at >= start_at)
+            stmt = stmt.where(job.started_at >= start_at)
 
         return await session.execute(stmt)
 

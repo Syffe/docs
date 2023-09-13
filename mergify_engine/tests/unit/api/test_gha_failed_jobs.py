@@ -1,6 +1,8 @@
+import datetime
 import typing
 
 import anys
+from dateutil.relativedelta import relativedelta
 import pytest
 import respx
 import sqlalchemy
@@ -151,8 +153,11 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
     }
 
     # Change parameters
+    test_date = (datetime.datetime.utcnow() - relativedelta(days=2)).strftime(
+        "%Y-%m-%d"
+    )
     reply = await web_client.get(
-        "/front/proxy/engine/v1/repos/OneAccount/OneRepo/gha-failed-jobs?neighbour_cosine_similarity_threshold=1&start_at=2023-01-01",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/gha-failed-jobs?neighbour_cosine_similarity_threshold=1&start_at={test_date}",
         follow_redirects=False,
     )
 
@@ -165,7 +170,7 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
                 "login": "OneAccount",
             },
         },
-        "start_at": "2023-01-01",
+        "start_at": test_date,
         "min_similarity": 1,
         "workflow_job_groups": [
             {
@@ -211,30 +216,6 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
                         ],
                         "started_at": str(jobs[2].started_at),
                         "completed_at": str(jobs[2].completed_at),
-                        "flaky": "unknown",
-                        "run_attempt": 1,
-                    },
-                ]
-            },
-            {
-                "workflow_jobs": [
-                    {
-                        "name": "A job",
-                        "error_description": None,
-                        "id": jobs[3].id,
-                        "run_id": jobs[3].workflow_run_id,
-                        "steps": [
-                            {
-                                "name": "Run a step",
-                                "status": "completed",
-                                "conclusion": "failure",
-                                "number": 1,
-                                "started_at": jobs[3].steps[0]["started_at"],
-                                "completed_at": jobs[3].steps[0]["completed_at"],
-                            }
-                        ],
-                        "started_at": str(jobs[3].started_at),
-                        "completed_at": str(jobs[3].completed_at),
                         "flaky": "unknown",
                         "run_attempt": 1,
                     },
