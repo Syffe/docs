@@ -7,6 +7,7 @@ import typing
 
 import daiquiri
 from redis import exceptions as redis_exceptions
+import sqlalchemy.exc
 
 from mergify_engine.clients import http
 
@@ -124,6 +125,10 @@ def need_retry(
 
     if isinstance(exception, redis_exceptions.ConnectionError):
         # Redis down
+        return datetime.timedelta(minutes=base_retry_in)
+
+    if isinstance(exception, sqlalchemy.exc.DatabaseError):
+        # Postgres down
         return datetime.timedelta(minutes=base_retry_in)
 
     return None
