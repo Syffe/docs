@@ -14,6 +14,7 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-22.04
     steps:
+      - uses: actions/checkout@v4
       - name: Syncing databases
         env:
           PRODUCTION_ENGINE_DATABASE_URL: ${{ secrets.PRODUCTION_ENGINE_DATABASE_URL }}
@@ -27,3 +28,12 @@ jobs:
             -u postgres \
             ankane/pgvector:v0.4.4 \
             /app/tools/run-testing-database-sync.sh
+
+      - name: Report Status
+        if: failure() && github.event_name != 'pull_request'
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+        uses: Mergifyio/gha-slack-notification@main
+        with:
+          message: "Database sync testing"
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
