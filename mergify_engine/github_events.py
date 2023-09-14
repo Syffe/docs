@@ -532,6 +532,14 @@ async def event_classifier(
         )
 
     if event_type == "status":
+        # NOTE(charly): temporary log status attributes for MRGFY-2617
+        LOG.info(
+            "Received status check event",
+            enterprise=event.get("enterprise"),
+            sender=event.get("sender"),
+            target_url=event.get("target_url"),
+        )
+
         event = typing.cast(github_types.GitHubEventStatus, event)
         return EventToProcess(
             event_type,
