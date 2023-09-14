@@ -1,6 +1,10 @@
+"""
+Managing the old eventlog system which is stored in a Redis database
+"""
 import dataclasses
 import datetime
 import itertools
+import time
 import typing
 
 import daiquiri
@@ -8,13 +12,13 @@ import msgpack
 import typing_extensions
 
 from mergify_engine import date
-from mergify_engine import events_db
 from mergify_engine import github_types
 from mergify_engine import pagination
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import subscription
+from mergify_engine.models import enumerations
 
 
 if typing.TYPE_CHECKING:
@@ -24,6 +28,23 @@ LOG = daiquiri.getLogger(__name__)
 
 EVENTLOGS_LONG_RETENTION = datetime.timedelta(days=7)
 EVENTLOGS_SHORT_RETENTION = datetime.timedelta(days=1)
+
+DB_SWITCH_KEY = "events-db-switch-marker"
+
+
+async def use_events_redis_backend(
+    repository: "context.Repository",
+) -> bool:
+    redis = repository.installation.redis.cache
+
+    result = await redis.get(DB_SWITCH_KEY)
+    if result is None:
+        ts = time.time()
+        await redis.set(DB_SWITCH_KEY, ts)
+    else:
+        ts = float(result.decode())
+
+    return (date.utcnow() - date.fromtimestamp(ts)) < EVENTLOGS_LONG_RETENTION
 
 
 class EventBase(typing_extensions.TypedDict, total=False):
@@ -365,8 +386,10 @@ class EventLogsSignal(signals.SignalBase):
         await pipe.execute()
 
         if settings.EVENTLOG_EVENTS_DB_INGESTION:
-            if event in events_db.EVENT_NAME_TO_MODEL:
-                await events_db.insert(
+            from mergify_engine import events as evt_utils
+
+            if event in evt_utils.EVENT_NAME_TO_MODEL:
+                await evt_utils.insert(
                     event=event,
                     repository=repository.repo,
                     pull_request=pull_request,
@@ -453,6 +476,10 @@ async def get(
     repository: "context.Repository",
     page: pagination.CurrentPage,
     pull_request: github_types.GitHubPullRequestNumber | None = None,
+    event_type: list[enumerations.EventType] | None = None,
+    received_from: datetime.datetime | None = None,
+    received_to: datetime.datetime | None = None,
+    new_format: bool = False,
 ) -> pagination.Page[Event]:
     redis = repository.installation.redis.eventlogs
     if repository.installation.subscription.has_feature(
@@ -531,9 +558,28 @@ async def get(
 
     events: list[Event] = []
     for _, raw in items:
-        event = typing.cast(GenericEvent, msgpack.unpackb(raw[b"data"], timestamp=3))
+        unpacked_event = msgpack.unpackb(raw[b"data"], timestamp=3)
+        # add event_type, received_from, received_to filtering from new API
+        if (
+            (
+                event_type is not None
+                and unpacked_event["event"] not in [e.value for e in event_type]
+            )
+            or (
+                received_from is not None
+                and unpacked_event["timestamp"] < received_from
+            )
+            or (received_to is not None and unpacked_event["timestamp"] > received_to)
+        ):
+            total -= 1
+            continue
+        if new_format:
+            # NOTE(lecrepont01): this is to return "old" redis events with the new API
+            unpacked_event["received_at"] = unpacked_event.pop("timestamp")
+            unpacked_event["type"] = unpacked_event.pop("event")
+        event = typing.cast(GenericEvent, unpacked_event)
         try:
-            events.append(cast_event_item(event))
+            events.append(cast_event_item(event, key="type" if new_format else "event"))
         except UnsupportedEvent as err:
             LOG.error(err.message, event=err.event)
 

@@ -4,6 +4,7 @@ import daiquiri
 import fastapi
 import pydantic
 
+from mergify_engine import database
 from mergify_engine import eventlogs
 from mergify_engine import github_types
 from mergify_engine import pagination
@@ -39,6 +40,33 @@ class EventLogsResponse(pagination.PageResponse[Event]):
     )
 
 
+content_example = {
+    "application/json": {
+        "example": {
+            "size": 0,
+            "per_page": 0,
+            "total": 0,
+            "events": [
+                {
+                    "id": 0,
+                    "timestamp": "2019-08-24T14:15:22Z",
+                    "received_at": "2019-08-24T14:15:22Z",
+                    "trigger": "string",
+                    "repository": "string",
+                    "pull_request": 0,
+                    "event": "action.assign",
+                    "type": "action.assign",
+                    "metadata": {
+                        "added": ["string"],
+                        "removed": ["string"],
+                    },
+                }
+            ],
+        }
+    }
+}
+
+
 @router.get(
     "/repos/{owner}/{repository}/pulls/{pull}/events",
     summary="Get the events log of a pull request",
@@ -50,10 +78,12 @@ class EventLogsResponse(pagination.PageResponse[Event]):
         **api.default_responses,  # type: ignore
         200: {
             "headers": pagination.LinkHeader,
+            "content": content_example,
         },
     },
 )
 async def get_pull_request_eventlogs(
+    session: database.Session,
     repository_ctxt: security.Repository,
     pull: typing.Annotated[
         github_types.GitHubPullRequestNumber,
@@ -61,7 +91,17 @@ async def get_pull_request_eventlogs(
     ],
     current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:
-    page = await eventlogs.get(repository_ctxt, current_page, pull)
+    # avoid circular import
+    from mergify_engine import events
+
+    if not await eventlogs.use_events_redis_backend(repository_ctxt):
+        # NOTE(lecrepont01): ensure transition from redis db to postgreSQL
+        page = await events.get(
+            session, current_page, repository_ctxt, pull, old_format=True
+        )
+    else:
+        page = await eventlogs.get(repository_ctxt, current_page, pull)
+
     return EventLogsResponse(page)  # type: ignore[misc, call-arg]
 
 
@@ -76,12 +116,21 @@ async def get_pull_request_eventlogs(
         **api.default_responses,  # type: ignore
         200: {
             "headers": pagination.LinkHeader,
+            "content": content_example,
         },
     },
 )
 async def get_repository_eventlogs(
+    session: database.Session,
     repository_ctxt: security.Repository,
     current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:
-    page = await eventlogs.get(repository_ctxt, current_page)
+    # avoid circular import
+    from mergify_engine import events
+
+    if not await eventlogs.use_events_redis_backend(repository_ctxt):
+        page = await events.get(session, current_page, repository_ctxt, old_format=True)
+    else:
+        page = await eventlogs.get(repository_ctxt, current_page)
+
     return EventLogsResponse(page)  # type: ignore[misc, call-arg]

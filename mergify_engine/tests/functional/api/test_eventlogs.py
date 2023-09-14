@@ -10,7 +10,7 @@ import sqlalchemy
 from sqlalchemy import func
 
 from mergify_engine import database
-from mergify_engine import events_db
+from mergify_engine import events as evt_utils
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import signals
@@ -593,7 +593,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         ]
 
         # We don't send any metadata on purpose
-        with mock.patch.object(events_db, "insert", return_value=None):
+        with mock.patch.object(evt_utils, "insert", return_value=None):
             # NOTE(lecrepont01): An incomplete event should not be inserted in database, insert errors should be handled
             # in the future by watching the error logs. Mock the insert to avoid teardown failure via logger_checker.
             await signals.send(

@@ -1,21 +1,16 @@
 import datetime
 import typing
 
-import daiquiri
 import fastapi
 import pydantic.dataclasses
 
 from mergify_engine import database
-from mergify_engine import eventlogs
+from mergify_engine import events as evt_utils
 from mergify_engine import github_types
 from mergify_engine import pagination
 from mergify_engine.models import enumerations
-from mergify_engine.models import events
 from mergify_engine.web import api
 from mergify_engine.web.api import security
-
-
-LOG = daiquiri.getLogger(__name__)
 
 
 router = fastapi.APIRouter(
@@ -26,41 +21,15 @@ router = fastapi.APIRouter(
 )
 
 
-Event = typing.Annotated[
-    eventlogs.Event,
-    pydantic.Field(discriminator="type"),
-]
-
-
-class EventsResponse(pagination.PageResponse[Event]):
+class EventsResponse(pagination.PageResponse[evt_utils.Event]):
     items_key: typing.ClassVar[str] = "events"
-    events: list[Event] = pydantic.Field(
+    events: list[evt_utils.Event] = pydantic.Field(
         json_schema_extra={
             "metadata": {
                 "description": "The list of events",
             },
         }
     )
-
-
-def format_event_item_response(event: events.Event) -> dict[str, typing.Any]:
-    result: dict[str, typing.Any] = {
-        "id": event.id,
-        "type": event.type.value,
-        "received_at": event.received_at,
-        "trigger": event.trigger,
-        "pull_request": event.pull_request,
-        "repository": event.repository.name,
-    }
-    # place child model (event specific) attributes in the metadata key
-    if event.__class__.__bases__[0] == events.Event:
-        result["metadata"] = {
-            col.name: getattr(event, col.name)
-            for col in event.__table__.columns
-            if col.name not in ["id"]
-        }
-
-    return result
 
 
 @router.get(
@@ -102,7 +71,7 @@ def format_event_item_response(event: events.Event) -> dict[str, typing.Any]:
 )
 async def get_repository_events(
     session: database.Session,
-    repository_ctxt: security.Repository,
+    repository: security.Repository,
     page: pagination.CurrentPage,
     pull_request: typing.Annotated[
         github_types.GitHubPullRequestNumber | None,
@@ -121,43 +90,29 @@ async def get_repository_events(
         fastapi.Query(description="Get the events received until this date"),
     ] = None,
 ) -> EventsResponse:
-    backward = page.cursor is not None and page.cursor.startswith("-")
+    # avoid circular import
+    from mergify_engine import eventlogs
 
-    results = await events.Event.get(
-        session,
-        page,
-        backward,
-        repository_ctxt,
-        pull_request,
-        event_type,
-        received_from,
-        received_to,
-    )
-
-    if results and backward:
-        cursor_next = f"-{results[0].id}"
-        cursor_prev = f"+{results[-1].id}" if not page.cursor == "-" else None
-    elif results:
-        cursor_next = f"+{results[-1].id}"
-        cursor_prev = f"-{results[0].id}" if page.cursor else None
-    else:
-        cursor_next = None
-        cursor_prev = None
-
-    events_list: list[eventlogs.Event] = []
-    for raw in results:
-        event = typing.cast(eventlogs.GenericEvent, format_event_item_response(raw))
-        try:
-            events_list.append(eventlogs.cast_event_item(event, key="type"))
-        except eventlogs.UnsupportedEvent as err:
-            LOG.error(err.message, event=err.event)
-
-    return EventsResponse(  # type: ignore[call-arg]
-        page=pagination.Page(
-            items=events_list,
-            current=page,
-            total=await events.Event.total(session),
-            cursor_prev=cursor_prev,
-            cursor_next=cursor_next,
+    # NOTE(lecrepont01): ensure transition from redis db to postgreSQL
+    if await eventlogs.use_events_redis_backend(repository):
+        page_response = await eventlogs.get(
+            repository,
+            page,
+            pull_request,
+            event_type,
+            received_from,
+            received_to,
+            new_format=True,
         )
-    )
+    else:
+        page_response = await evt_utils.get(
+            session,
+            page,
+            repository,
+            pull_request,
+            event_type,
+            received_from,
+            received_to,
+        )
+
+    return EventsResponse(page=page_response)  # type: ignore[call-arg]

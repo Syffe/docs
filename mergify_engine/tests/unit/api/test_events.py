@@ -1,14 +1,20 @@
+from collections import abc
 import datetime
 import re
 
+import anys
+import freezegun
 import pytest
 import respx
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
 from mergify_engine import date
-from mergify_engine import events_db
+from mergify_engine import eventlogs
+from mergify_engine import events as evt_utils
 from mergify_engine import github_types
+from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine.models import events as event_models
@@ -16,6 +22,23 @@ from mergify_engine.models import github_repository
 from mergify_engine.models import github_user
 from mergify_engine.rules.config import partition_rules
 from mergify_engine.tests import conftest
+
+
+INITIAL_TIMESTAMP = datetime.datetime(2023, 9, 5, 0, 0, tzinfo=date.UTC)
+DB_SWITCHED_TIMESTAMP = (
+    datetime.datetime(2023, 9, 5, 0, 0, tzinfo=date.UTC)
+    + eventlogs.EVENTLOGS_LONG_RETENTION
+    + datetime.timedelta(hours=1)
+)
+
+
+@pytest.fixture
+async def switched_to_pg(
+    monkeypatch: pytest.MonkeyPatch, redis_links: redis_utils.RedisLinks
+) -> abc.AsyncGenerator[None, None]:
+    await redis_links.cache.set(eventlogs.DB_SWITCH_KEY, INITIAL_TIMESTAMP.timestamp())
+    with freezegun.freeze_time(DB_SWITCHED_TIMESTAMP):
+        yield
 
 
 @pytest.fixture
@@ -121,7 +144,7 @@ LATER_TIMESTAMP = datetime.datetime.fromisoformat("2022-08-22T12:00:00+00:00")
 async def insert_data(
     db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
 ) -> None:
-    # add events manually instead of events_db.insert() to set a mocked timestamp
+    # add events manually instead of evt_utils.insert() to set a mocked timestamp
     repo = await github_repository.GitHubRepository.get_or_create(
         db, fake_repository.repo
     )
@@ -166,8 +189,8 @@ async def insert_data(
 
 
 async def test_api_query_params(
-    monkeypatch: pytest.MonkeyPatch,
     web_client: conftest.CustomTestClient,
+    switched_to_pg: None,
     api_token: str,
     insert_data: None,
 ) -> None:
@@ -213,10 +236,11 @@ def parse_links(links: str) -> dict[str, str]:
 async def test_api_cursor(
     fake_repository: context.Repository,
     web_client: conftest.CustomTestClient,
+    switched_to_pg: None,
     api_token: str,
 ) -> None:
     for _ in range(6):
-        await events_db.insert(
+        await evt_utils.insert(
             event="action.assign",
             repository=fake_repository.repo,
             pull_request=github_types.GitHubPullRequestNumber(1),
@@ -274,6 +298,7 @@ async def test_api_cursor(
 
 async def test_api_cursor_invalid(
     web_client: conftest.CustomTestClient,
+    switched_to_pg: None,
     api_token: str,
 ) -> None:
     response = await web_client.get(
@@ -302,3 +327,163 @@ async def test_api_cursor_invalid(
         headers={"Authorization": api_token},
     )
     assert response.status_code == 422
+
+
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
+async def test_new_api_db_switch(
+    monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
+    fake_repository: context.Repository,
+    web_client: conftest.CustomTestClient,
+    api_token: str,
+) -> None:
+    monkeypatch.setattr(settings, "EVENTLOG_EVENTS_DB_INGESTION", False)
+
+    timedelta = datetime.timedelta()
+    for i in range(6):
+        # add redis entries
+        with freezegun.freeze_time(INITIAL_TIMESTAMP + timedelta):
+            await signals.send(
+                repository=fake_repository,
+                pull_request=github_types.GitHubPullRequestNumber(1),
+                event="action.comment",
+                metadata=signals.EventCommentMetadata(message=""),
+                trigger=f"redis_evt_{i}",
+            )
+        timedelta += datetime.timedelta(hours=1)
+    # add a postgres entries
+    await evt_utils.insert(
+        event="action.comment",
+        repository=fake_repository.repo,
+        pull_request=github_types.GitHubPullRequestNumber(1),
+        metadata=signals.EventCommentMetadata(message=""),
+        trigger="pg_evt",
+    )
+
+    with freezegun.freeze_time(INITIAL_TIMESTAMP, tick=True):
+        # first
+        response = await web_client.get(
+            "/v1/repos/Mergifyio/engine/logs?per_page=2",
+            headers={"Authorization": api_token},
+        )
+        assert response is not None
+        assert {e["trigger"] for e in response.json()["events"]} == {
+            "redis_evt_5",
+            "redis_evt_4",
+        }
+        next_link = parse_links(response.headers["link"])["next"]
+
+        # next
+        response = await web_client.get(
+            next_link,
+            headers={"Authorization": api_token},
+        )
+        assert response is not None
+        assert {e["trigger"] for e in response.json()["events"]} == {
+            "redis_evt_3",
+            "redis_evt_2",
+        }
+        prev_link = parse_links(response.headers["link"])["prev"]
+
+        # prev
+        response = await web_client.get(
+            prev_link,
+            headers={"Authorization": api_token},
+        )
+        assert response is not None
+        assert {e["trigger"] for e in response.json()["events"]} == {
+            "redis_evt_5",
+            "redis_evt_4",
+        }
+
+        # event type filtering
+        response = await web_client.get(
+            "/v1/repos/Mergifyio/engine/logs?event_type=action.assign",
+            headers={"Authorization": api_token},
+        )
+        assert response is not None
+        assert response.json()["total"] == 0
+
+        # received_at and received_from
+        rfrom = (INITIAL_TIMESTAMP + datetime.timedelta(hours=1, minutes=1)).timestamp()
+        rto = (INITIAL_TIMESTAMP + datetime.timedelta(hours=4, minutes=1)).timestamp()
+        response = await web_client.get(
+            f"/v1/repos/Mergifyio/engine/logs?received_from={rfrom}&received_to={rto}",
+            headers={"Authorization": api_token},
+        )
+        assert response is not None
+        assert response.json()["total"] == 3
+
+    # switched to postgres
+    with freezegun.freeze_time(
+        INITIAL_TIMESTAMP
+        + eventlogs.EVENTLOGS_LONG_RETENTION
+        + datetime.timedelta(hours=1)
+    ):
+        response = await web_client.get(
+            "/v1/repos/Mergifyio/engine/logs",
+            headers={"Authorization": api_token},
+        )
+        assert response is not None
+        assert response.json()["events"][0]["trigger"] == "pg_evt"
+
+
+async def test_old_api_db_switch(
+    monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
+    fake_repository: context.Repository,
+    web_client: conftest.CustomTestClient,
+    api_token: str,
+) -> None:
+    await redis_links.cache.set(eventlogs.DB_SWITCH_KEY, INITIAL_TIMESTAMP.timestamp())
+
+    await evt_utils.insert(
+        event="action.comment",
+        repository=fake_repository.repo,
+        pull_request=github_types.GitHubPullRequestNumber(1),
+        metadata=signals.EventCommentMetadata(message=""),
+        trigger="pg_evt",
+    )
+
+    with freezegun.freeze_time(INITIAL_TIMESTAMP):
+        response = await web_client.get(
+            "/v1/repos/Mergifyio/engine/events",
+            headers={"Authorization": api_token},
+        )
+        assert response.json()["total"] == 0
+
+    # passed the eventlogs TTL the old API will use the postgreSQL backend
+    with freezegun.freeze_time(
+        INITIAL_TIMESTAMP
+        + eventlogs.EVENTLOGS_LONG_RETENTION
+        + datetime.timedelta(hours=1)
+    ):
+        response = await web_client.get(
+            "/v1/repos/Mergifyio/engine/events",
+            headers={"Authorization": api_token},
+        )
+        assert response is not None
+        payload = response.json()
+        assert payload == {
+            "size": 1,
+            "per_page": 10,
+            "total": 1,
+            "events": [
+                {
+                    "id": 1,
+                    "timestamp": anys.ANY_DATETIME_STR,
+                    "trigger": "pg_evt",
+                    "repository": "mergify-engine",
+                    "pull_request": 1,
+                    "event": "action.comment",
+                    "metadata": {"message": ""},
+                }
+            ],
+        }
+
+        # test the second endpoint (pull request path param)
+        response = await web_client.get(
+            "/v1/repos/Mergifyio/engine/pulls/1/events",
+            headers={"Authorization": api_token},
+        )
+        assert response.json()["total"] == 1
