@@ -812,7 +812,9 @@ class Processor:
             )
             if source["event_type"] == "check_run" and is_customer:
                 event = typing.cast(github_types.GitHubEventCheckRun, source["data"])
-                if event["check_run"]["app"].get("slug"):
+                if event["action"] == "created" and event["check_run"]["app"].get(
+                    "slug"
+                ):
                     check_run_tags = [
                         f"app_name:{event['check_run']['app']['slug']}",
                     ]
