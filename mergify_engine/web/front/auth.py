@@ -1,9 +1,11 @@
 import dataclasses
 import typing
 
+from authlib.integrations import httpx_client
 from authlib.integrations import starlette_client
 import daiquiri
 import fastapi
+import httpx
 import imia
 import sqlalchemy.ext.asyncio
 import starsessions.session
@@ -25,7 +27,27 @@ class TokenDictT(typing.TypedDict):
     access_token: str
 
 
-oauth = starlette_client.OAuth()
+class CustomAsyncOAuth2Client(httpx_client.AsyncOAuth2Client):  # type: ignore[misc]
+    retry_stop_after_attempt = 2
+
+    async def send(
+        self, request: httpx.Request, *args: typing.Any, **kwargs: typing.Any
+    ) -> httpx.Response:
+        kwargs["retry_stop_after_attempt"] = self.retry_stop_after_attempt
+        return await http.retry_async_httpx_send(super().send, request, *args, **kwargs)
+
+
+class CustomStarletteOAuth2App(
+    starlette_client.StarletteOAuth2App  # type: ignore[misc]
+):
+    client_cls = CustomAsyncOAuth2Client
+
+
+class CustomStarletteOAuth(starlette_client.OAuth):  # type: ignore[misc]
+    oauth2_client_cls = CustomStarletteOAuth2App
+
+
+oauth = CustomStarletteOAuth()
 oauth.register(
     "github",
     client_id=settings.GITHUB_OAUTH_CLIENT_ID,
@@ -33,7 +55,6 @@ oauth.register(
     api_base_url=settings.GITHUB_REST_API_URL,
     authorize_url=f"{settings.GITHUB_URL}/login/oauth/authorize",
     access_token_url=f"{settings.GITHUB_URL}/login/oauth/access_token",
-    transport=http.AsyncHTTPTransport(retry_stop_after_attempt=2),
 )
 
 

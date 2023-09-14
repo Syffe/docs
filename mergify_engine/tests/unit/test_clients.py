@@ -51,9 +51,7 @@ async def test_client_installation_token_with_owner_id(
     async with github.AsyncGitHubInstallationClient(
         github.GitHubAppInstallationAuth(installation_json),
     ) as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         ret = await client.get("/")
         assert ret.json()["work"]
         assert isinstance(client.auth, github.GitHubAppInstallationAuth)
@@ -89,9 +87,7 @@ async def test_client_user_token(respx_mock: respx.MockRouter) -> None:
     async with github.AsyncGitHubInstallationClient(
         github.GitHubAppInstallationAuth(installation_json)
     ) as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         ret = await client.get(
             "/",
             oauth_token=github_types.GitHubOAuthToken("<user-token>"),
@@ -137,9 +133,7 @@ async def test_client_401_raise_ratelimit(respx_mock: respx.MockRouter) -> None:
 
     installation_json = await github.get_installation_from_account_id(owner_id)
     async with github.aget_client(installation_json) as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(exceptions.RateLimited):
             await client.item(f"/repos/{owner_login}/{repo}/pull/1")
 
@@ -150,9 +144,7 @@ async def test_client_HTTP_400(respx_mock: respx.MockRouter) -> None:
     )
 
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -167,9 +159,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         400, json={"message": "This is a 4XX error", "documentation_url": "fake_url"}
     )
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -184,9 +174,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         },
     )
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -201,9 +189,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         },
     )
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -225,9 +211,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         },
     )
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -242,9 +226,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         },
     )
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -258,9 +240,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         },
     )
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -271,9 +251,7 @@ async def test_client_HTTP_500(respx_mock: respx.MockRouter) -> None:
     respx_mock.get("https://foobar/").respond(500, text="This is a 5XX error")
 
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPServerSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -295,17 +273,13 @@ async def test_client_temporary_HTTP_500(respx_mock: respx.MockRouter) -> None:
     )
 
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         await client.get("https://foobar/")
 
 
 async def test_client_connection_error() -> None:
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.RequestError):
             await client.get("http://localhost:12345")
 
@@ -331,9 +305,7 @@ async def _do_test_client_retry_429(
     respx_mock.get("/").mock(side_effect=record_date)
 
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         await client.get("https://foobar/")
 
     return records[1]
@@ -390,9 +362,7 @@ async def test_client_access_token_HTTP_500(respx_mock: respx.MockRouter) -> Non
     async with github.AsyncGitHubInstallationClient(
         github.GitHubAppInstallationAuth(installation_json)
     ) as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPServerSideError) as exc_info:
             await client.get("/")
 
@@ -429,9 +399,7 @@ async def test_client_installation_HTTP_500(respx_mock: respx.MockRouter) -> Non
         ),
     ) -> None:
         real_init(self, auth)
-        typing.cast(
-            http.AsyncHTTPTransport, self._transport
-        ).retry_exponential_multiplier = 0
+        self.retry_exponential_multiplier = 0
 
     with mock.patch.object(github.AsyncGitHubClient, "__init__", mocked_init):
         with pytest.raises(http.HTTPServerSideError) as exc_info:
@@ -513,9 +481,7 @@ async def test_client_abuse_403_no_header(respx_mock: respx.MockRouter) -> None:
     async with github.AsyncGitHubInstallationClient(
         github.GitHubAppInstallationAuth(installation_json)
     ) as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("/")
 
@@ -560,9 +526,7 @@ async def test_to_curl(
     async with github.AsyncGitHubInstallationClient(
         github.GitHubAppInstallationAuth(installation_json)
     ) as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         await client.post("/", headers={"Foo": "Bar"}, json={"ask": "What?"})
         assert await client.last_request.to_curl_request() == (
             "curl -X POST "
@@ -596,11 +560,31 @@ async def test_retry_that_use_response(respx_mock: respx.MockRouter) -> None:
         httpx.Response(200, json={"message": "This is a 2XX error"}),
     ]
     async with http.AsyncClient() as client:
-        typing.cast(
-            http.AsyncHTTPTransport, client._transport
-        ).retry_exponential_multiplier = 0
+        client.retry_exponential_multiplier = 0
         response = await client.get(
             "https://foobar/",
             extensions={"retry": lambda response: "4XX" in response.json()["message"]},
         )
         assert response.status_code == 200
+
+
+class BuggedStream(httpx.AsyncByteStream):
+    async def __aiter__(self) -> typing.AsyncIterator[bytes]:
+        raise httpx.RequestError("Network is broken while reading the body")
+
+        # NOTE(sileht): this is required to have a valid AsyncIterator
+        yield b""  # type: ignore[unreachable]
+
+
+async def test_retry_if_network_error_during_aread(
+    respx_mock: respx.MockRouter,
+) -> None:
+    respx_mock.get("https://foobar/").side_effect = [
+        httpx.Response(200, stream=BuggedStream()),
+        httpx.Response(200, json={"message": "This is a 2XX error"}),
+    ]
+    async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
+        response = await client.get("https://foobar/")
+        assert response.status_code == 200
+        assert response.json()["message"] == "This is a 2XX error"

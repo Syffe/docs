@@ -172,55 +172,53 @@ def raise_for_status(resp: httpx.Response) -> None:
         raise exception
 
 
-class AsyncHTTPTransport(httpx.AsyncHTTPTransport):
-    def __init__(
-        self,
-        retry_stop_after_attempt: int = 5,
-        retry_exponential_multiplier: float = 0.2,
-    ) -> None:
-        super().__init__(http2=True)
-        self.retry_stop_after_attempt = retry_stop_after_attempt
-        self.retry_exponential_multiplier = retry_exponential_multiplier
+async def retry_async_httpx_send(
+    send_method: typing.Callable[..., typing.Awaitable[httpx.Response]],
+    request: httpx.Request,
+    retry_stop_after_attempt: int = 5,
+    retry_exponential_multiplier: float = 0.2,
+    *args: typing.Any,
+    **kwargs: typing.Any,
+) -> httpx.Response:
+    # NOTE(sileht): this does cover the case where stream=True and a NetworkError is raised
+    # while the caller will read the response as `aiter_bytes()` will not be called by send()
 
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        custom_retry = request.extensions.get("retry")
-        custom_retry_log = request.extensions.get("retry_log")
-        try:
-            async for attempt in tenacity.AsyncRetrying(
-                reraise=True,
-                retry=tenacity.retry_if_exception_type(
-                    (RequestError, TryAgainOnCertainHTTPError)
-                ),
-                wait=tenacity.wait_combine(
-                    TryAgainOnCertainHTTPError.wait_from_headers(),
-                    tenacity.wait_exponential(
-                        multiplier=self.retry_exponential_multiplier
-                    ),
-                ),
-                stop=tenacity.stop_after_attempt(self.retry_stop_after_attempt),
-            ):
-                with attempt:
-                    response = await super().handle_async_request(request)
-                    if response.status_code >= 500 or response.status_code == 429:
+    custom_retry = request.extensions.get("retry")
+    custom_retry_log = request.extensions.get("retry_log")
+    try:
+        async for attempt in tenacity.AsyncRetrying(
+            reraise=True,
+            retry=tenacity.retry_if_exception_type(
+                (RequestError, TryAgainOnCertainHTTPError)
+            ),
+            wait=tenacity.wait_combine(
+                TryAgainOnCertainHTTPError.wait_from_headers(),
+                tenacity.wait_exponential(multiplier=retry_exponential_multiplier),
+            ),
+            stop=tenacity.stop_after_attempt(retry_stop_after_attempt),
+        ):
+            with attempt:
+                response = await send_method(request, *args, **kwargs)
+                if response.status_code >= 500 or response.status_code == 429:
+                    raise TryAgainOnCertainHTTPError(response=response)
+
+                if custom_retry is not None:
+                    try:
+                        should_retry = custom_retry(response)
+                    except httpx.ResponseNotRead:
+                        # retry code need the response body
+                        await response.aread()
+                        should_retry = custom_retry(response)
+
+                    if should_retry:
+                        if custom_retry_log is not None:
+                            custom_retry_log(response)
                         raise TryAgainOnCertainHTTPError(response=response)
 
-                    if custom_retry is not None:
-                        try:
-                            should_retry = custom_retry(response)
-                        except httpx.ResponseNotRead:
-                            # retry code need the response body
-                            await response.aread()
-                            should_retry = custom_retry(response)
+    except TryAgainOnCertainHTTPError as exc:
+        return exc.response
 
-                        if should_retry:
-                            if custom_retry_log is not None:
-                                custom_retry_log(response)
-                            raise TryAgainOnCertainHTTPError(response=response)
-
-        except TryAgainOnCertainHTTPError as exc:
-            return exc.response
-
-        return response
+    return response
 
 
 @dataclasses.dataclass
@@ -270,6 +268,8 @@ class AsyncClient(httpx.AsyncClient):
         retry_exponential_multiplier: float = 0.2,
     ) -> None:
         self._requests: list[RequestHistory] = []
+        self.retry_stop_after_attempt = retry_stop_after_attempt
+        self.retry_exponential_multiplier = retry_exponential_multiplier
 
         final_headers = DEFAULT_HEADERS.copy()
         if headers is not None:
@@ -280,9 +280,6 @@ class AsyncClient(httpx.AsyncClient):
             headers=final_headers,
             timeout=timeout,
             follow_redirects=True,
-            transport=AsyncHTTPTransport(
-                retry_stop_after_attempt, retry_exponential_multiplier
-            ),
         )
 
     async def request(self, *args: typing.Any, **kwargs: typing.Any) -> httpx.Response:
@@ -303,8 +300,14 @@ class AsyncClient(httpx.AsyncClient):
     ) -> httpx.Response:
         response = None
         try:
-            response = await super().send(
-                request, auth=auth, follow_redirects=follow_redirects
+            response = await retry_async_httpx_send(
+                super().send,
+                request,
+                stream=stream,
+                auth=auth,
+                follow_redirects=follow_redirects,
+                retry_stop_after_attempt=self.retry_stop_after_attempt,
+                retry_exponential_multiplier=self.retry_exponential_multiplier,
             )
         finally:
             if response is None:
