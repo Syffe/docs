@@ -57,10 +57,6 @@ from mergify_engine.worker import task
 
 
 LOG = daiquiri.getLogger(__name__)
-RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
-RECORD_EVENTS_WAITING_TIME = int(
-    os.getenv("MERGIFYENGINE_RECORD_EVENTS_WAITING_TIME", 30)
-)
 FAKE_DATA = "whatdataisthat"
 FAKE_HMAC = utils.compute_hmac(
     FAKE_DATA.encode("utf8"), settings.GITHUB_WEBHOOK_SECRET.get_secret_value()
@@ -108,7 +104,7 @@ class GitterRecorder(gitter.Gitter):
     ) -> None:
         super().__init__(logger)
         self.cassette_path = os.path.join(cassette_library_dir, f"git-{suffix}.json")
-        if RECORD:
+        if settings.TESTING_RECORD:
             self.records: list[Record] = []
         else:
             self.load_records()
@@ -126,7 +122,7 @@ class GitterRecorder(gitter.Gitter):
             f.write(data.encode("utf8"))
 
     async def __call__(self, *args: typing.Any, **kwargs: typing.Any) -> str:
-        if RECORD:
+        if settings.TESTING_RECORD:
             try:
                 output = await super().__call__(*args, **kwargs)
             except gitter.GitError as e:
@@ -184,7 +180,7 @@ class GitterRecorder(gitter.Gitter):
 
     async def cleanup(self) -> None:
         await super().cleanup()
-        if RECORD:
+        if settings.TESTING_RECORD:
             self.save_records()
 
 
@@ -234,8 +230,10 @@ class EventReader:
         )
         r.raise_for_status()
 
-    EVENTS_POLLING_INTERVAL_SECONDS = 0.20 if RECORD else 0
-    EVENTS_WAITING_TIME_SECONDS = RECORD_EVENTS_WAITING_TIME if RECORD else 2
+    EVENTS_POLLING_INTERVAL_SECONDS = 0.20 if settings.TESTING_RECORD else 0
+    EVENTS_WAITING_TIME_SECONDS = (
+        settings.TESTING_RECORD_EVENTS_WAITING_TIME if settings.TESTING_RECORD else 2
+    )
 
     async def wait_for(
         self,
@@ -401,7 +399,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     # SUBSCRIPTION_ACTIVE = True
 
     WAIT_TIME_BEFORE_TEARDOWN = 0.20
-    WORKER_IDLE_TIME = 0.20 if RECORD else 0.01
+    WORKER_IDLE_TIME = 0.20 if settings.TESTING_RECORD else 0.01
 
     WORKER_HAS_WORK_INTERVAL_CHECK = 0.02
 
@@ -610,7 +608,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.update_delete_branch_on_merge(teardown=True)
 
         # NOTE(sileht): Wait a bit to ensure all remaining events arrive.
-        if RECORD:
+        if settings.TESTING_RECORD:
             await asyncio.sleep(self.WAIT_TIME_BEFORE_TEARDOWN)
 
             for rule_id in self.created_branch_protection_rule_ids:

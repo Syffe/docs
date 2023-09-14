@@ -49,8 +49,8 @@ jobs:
         run: |
           cat > test.env << EOF
           ${{ secrets[matrix.target.secret_name] }}
-          MERGIFYENGINE_RECORD_EVENTS_WAITING_TIME=300
           EOF
+          export MERGIFYENGINE_TESTING_RECORD_EVENTS_WAITING_TIME=300
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
           tools/poetry-ci-install.sh

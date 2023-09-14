@@ -39,7 +39,6 @@ freezegun.configure(  # type:ignore[attr-defined]
     extend_ignore_list=["mergify_engine.clients.github_app"]
 )
 
-RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
 GITHUB_CI = utils.strtobool(os.getenv("CI", "false"))
 
 

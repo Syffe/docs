@@ -5,6 +5,7 @@ import httpx
 
 from mergify_engine import context
 from mergify_engine import github_graphql_types
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -201,7 +202,7 @@ class TestBranchProtection(base.FunctionalTestBase):
             return await real_client_post(self, url, **kwargs)
 
         # Mock only in non-record mode to keep the real request from github in record mode
-        if not base.RECORD:
+        if not settings.TESTING_RECORD:
             with mock.patch.object(github.AsyncGitHubClient, "post", mock_client_post):
                 await self.run_engine()
         else:

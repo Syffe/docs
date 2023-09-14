@@ -1,6 +1,7 @@
 import asyncio
 
 from mergify_engine import refresher
+from mergify_engine import settings
 from mergify_engine.tests.functional import base
 
 
@@ -32,7 +33,7 @@ class TestCommandsDetection(base.FunctionalTestBase):
         # It works in RECORD mode but not in non-RECORD mode, because, for some unknown reason,
         # the exception raised in non-RECORD mode is an exception telling it cannot override
         # the cassettes.
-        if base.RECORD:
+        if settings.TESTING_RECORD:
             await asyncio.sleep(15)
 
         await refresher.send_pull_refresh(
@@ -66,7 +67,7 @@ class TestCommandsDetection(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        if base.RECORD:
+        if settings.TESTING_RECORD:
             await asyncio.sleep(15)
 
         await refresher.send_pull_refresh(

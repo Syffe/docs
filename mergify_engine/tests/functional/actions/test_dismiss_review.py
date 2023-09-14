@@ -293,7 +293,7 @@ Unknown pull request attribute: Loser
         )
 
     @pytest.mark.skipif(
-        not base.RECORD,
+        not settings.TESTING_RECORD,
         reason="This test cannot be replayed as it exercises code that relies on a timestamp from GitHub API and the event received_at",
     )
     async def test_dismiss_reviews_timing_race(self) -> None:

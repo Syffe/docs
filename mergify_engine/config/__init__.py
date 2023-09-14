@@ -389,6 +389,8 @@ class SubscriptionSetting(pydantic_settings.BaseSettings):
 
 
 class TestingSettings(pydantic_settings.BaseSettings):
+    TESTING_RECORD: bool = False
+    TESTING_RECORD_EVENTS_WAITING_TIME: int = 30
     TESTING_FORWARDER_ENDPOINT: str = "https://test-forwarder.mergify.com"
     TESTING_INSTALLATION_ID: int = 15398551
     TESTING_ORGANIZATION_ID: github_types.GitHubAccountIdType = (

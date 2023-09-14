@@ -528,7 +528,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         # Wait a bit than GitHub refresh the mergeable_state before running the
         # engine
-        if base.RECORD:
+        if settings.TESTING_RECORD:
             await asyncio.sleep(3)
 
         await self.run_engine()
@@ -556,7 +556,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         # Wait a bit than GitHub refresh the mergeable_state before running the
         # engine
-        if base.RECORD:
+        if settings.TESTING_RECORD:
             await asyncio.sleep(3)
 
         await self.run_engine()

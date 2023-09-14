@@ -34,7 +34,6 @@ from mergify_engine.config import types
 from mergify_engine.models import github_user
 
 
-RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
 CASSETTE_LIBRARY_DIR_BASE = "zfixtures/cassettes"
 DEFAULT_SUBSCRIPTION_FEATURES = (subscription.Features.PUBLIC_REPOSITORY,)
 
@@ -311,7 +310,7 @@ async def recorder(
         )
 
     # Recording stuffs
-    if RECORD:
+    if settings.TESTING_RECORD:
         if os.path.exists(cassette_library_dir):
             shutil.rmtree(cassette_library_dir)
         os.makedirs(cassette_library_dir)
@@ -326,7 +325,7 @@ async def recorder(
 
     recorder = vcr.VCR(
         cassette_library_dir=cassette_library_dir,
-        record_mode="all" if RECORD else "none",
+        record_mode="all" if settings.TESTING_RECORD else "none",
         match_on=["method", "uri"],
         ignore_localhost=True,
         ignore_hosts=ignored_host,
@@ -341,7 +340,7 @@ async def recorder(
         before_record_request=pyvcr_request_filter,
     )
 
-    if RECORD:
+    if settings.TESTING_RECORD:
         github.CachedToken.STORAGE = {}
     else:
         # Never expire token during replay
@@ -364,7 +363,7 @@ async def recorder(
     request.addfinalizer(cassette.__exit__)
     record_config_file = os.path.join(cassette_library_dir, "config.json")
 
-    if RECORD:
+    if settings.TESTING_RECORD:
         mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache)
         with open(record_config_file, "w") as f:
             f.write(
@@ -537,7 +536,7 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
     # to add a delay between requests creating content to avoid hitting the secondary rate limit.
     # https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
 
-    if RECORD:
+    if settings.TESTING_RECORD:
         real_request = github.AsyncGitHubClient.request
 
         async def mocked_request(  # type: ignore[no-untyped-def]
