@@ -202,6 +202,21 @@ class WorkflowJob(models.Base):
 
     __table_args__ = (
         sqlalchemy.schema.Index(
+            "idx_gha_workflow_job_conclusion_failure_repository_id",
+            "conclusion",
+            "repository_id",
+            postgresql_where="conclusion = 'FAILURE'::workflowjobconclusion",
+        ),
+        sqlalchemy.schema.Index(
+            "idx_gha_workflow_job_rerun_compound",
+            "run_attempt",
+            "repository_id",
+            "name",
+            "workflow_run_id",
+            "conclusion",
+            postgresql_where="conclusion = 'SUCCESS'::workflowjobconclusion",
+        ),
+        sqlalchemy.schema.Index(
             # NOTE(sileht): Index used for the big select used by monitoring and by log_embedder.github_action.get_embeds()
             "idx_gha_workflow_job_incomplete_job_finder",
             "conclusion",
@@ -479,19 +494,6 @@ class WorkflowJob(models.Base):
         job = orm.aliased(cls, name="job")
         job_rerun = orm.aliased(cls, name="job_rerun")
 
-        flaky_job_subquery = (
-            sqlalchemy.select(job_rerun.id)
-            .where(
-                job_rerun.repository_id == job.repository_id,
-                job_rerun.name == job.name,
-                job_rerun.workflow_run_id == job.workflow_run_id,
-                job_rerun.run_attempt > job.run_attempt,
-                job_rerun.conclusion == WorkflowJobConclusion.SUCCESS,
-            )
-            .limit(1)
-            .scalar_subquery()
-        )
-
         stmt = (
             sqlalchemy.select(
                 job.id,
@@ -510,7 +512,18 @@ class WorkflowJob(models.Base):
                 job.started_at,
                 job.completed_at,
                 job.run_attempt,
-                flaky_job_subquery.label("flaky"),
+                sqlalchemy.func.bool_and(job_rerun.id.is_not(None)).label("flaky"),
+            )
+            .join(
+                job_rerun,
+                sqlalchemy.and_(
+                    job_rerun.repository_id == job.repository_id,
+                    job_rerun.name == job.name,
+                    job_rerun.workflow_run_id == job.workflow_run_id,
+                    job_rerun.run_attempt > job.run_attempt,
+                    job_rerun.conclusion == WorkflowJobConclusion.SUCCESS,
+                ),
+                isouter=True,
             )
             .join(
                 tj_job,
@@ -540,11 +553,13 @@ class WorkflowJobLogNeighbours(models.Base):
         sqlalchemy.ForeignKey("gha_workflow_job.id"),
         primary_key=True,
         anonymizer_config=None,
+        index=True,
     )
     neighbour_job_id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.ForeignKey("gha_workflow_job.id"),
         primary_key=True,
         anonymizer_config=None,
+        index=True,
     )
 
     cosine_similarity: orm.Mapped[float] = orm.mapped_column(anonymizer_config=None)
