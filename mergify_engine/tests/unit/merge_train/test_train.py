@@ -1897,3 +1897,37 @@ async def test_train_inplace_branch_update_failure(
         t._cars[0].train_car_state.outcome
         == merge_train.TrainCarOutcome.BRANCH_UPDATE_FAILED
     )
+
+
+async def test_train_inplace_branch_rebase_failure(
+    context_getter: conftest.ContextGetterFixture,
+    convoy: merge_train.Convoy,
+) -> None:
+    t = merge_train.Train(convoy)
+    await t.test_helper_load_from_redis()
+
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "inplace")
+
+    ctxt = await context_getter(12345)
+    await t.add_pull(ctxt, config, "")
+
+    with mock.patch.object(
+        merge_train.TrainCar,
+        "can_be_checked_inplace",
+        side_effect=mock.AsyncMock(return_value=True),
+    ):
+        await t.refresh()
+
+    with mock.patch.object(merge_train.TrainCar, "_set_creation_failure"), mock.patch(
+        "mergify_engine.actions.utils.get_github_user_from_bot_account"
+    ), mock.patch(
+        "mergify_engine.branch_updater.rebase_with_git",
+        side_effect=branch_updater.BranchUpdateFailure("oops"),
+    ):
+        with pytest.raises(merge_train.TrainCarPullRequestCreationFailure):
+            await t._cars[0]._start_checking_inplace_rebase(ctxt)
+
+    assert (
+        t._cars[0].train_car_state.outcome
+        == merge_train.TrainCarOutcome.BRANCH_UPDATE_FAILED
+    )

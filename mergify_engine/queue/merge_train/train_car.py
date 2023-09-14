@@ -786,6 +786,7 @@ class TrainCar:
         try:
             await branch_updater.rebase_with_git(ctxt, on_behalf, autosquash)
         except branch_updater.BranchUpdateFailure as exc:
+            self.train_car_state.outcome = TrainCarOutcome.BRANCH_UPDATE_FAILED
             await self._set_creation_failure(
                 f"{exc.title}\n\n{exc.message}", operation="updated"
             )
