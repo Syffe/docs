@@ -100,8 +100,12 @@ async def get_gha_failed_jobs(
                 id=failed_job.id,
                 run_id=failed_job.workflow_run_id,
                 steps=failed_job.steps or [],
-                started_at=github_types.ISODateTimeType(str(failed_job.started_at)),
-                completed_at=github_types.ISODateTimeType(str(failed_job.completed_at)),
+                started_at=github_types.ISODateTimeType(
+                    failed_job.started_at.isoformat()
+                ),
+                completed_at=github_types.ISODateTimeType(
+                    failed_job.completed_at.isoformat()
+                ),
                 flaky=FlakyStatus.FLAKY if failed_job.flaky else FlakyStatus.UNKNOWN,
                 run_attempt=failed_job.run_attempt,
             )

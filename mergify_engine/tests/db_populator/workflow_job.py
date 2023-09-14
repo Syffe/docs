@@ -39,8 +39,10 @@ class WorkflowJob(DbPopulator):
                 run_id=1,
                 name="Flaky job",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(str(datetime.utcnow())),
-                completed_at=github_types.ISODateTimeType(str(datetime.utcnow())),
+                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                completed_at=github_types.ISODateTimeType(
+                    datetime.utcnow().isoformat()
+                ),
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
@@ -49,9 +51,11 @@ class WorkflowJob(DbPopulator):
                         name="toto",
                         conclusion="failure",
                         number=1,
-                        started_at=github_types.ISODateTimeType(str(datetime.utcnow())),
+                        started_at=github_types.ISODateTimeType(
+                            datetime.utcnow().isoformat()
+                        ),
                         completed_at=github_types.ISODateTimeType(
-                            str(datetime.utcnow())
+                            datetime.utcnow().isoformat()
                         ),
                         status="completed",
                     )
@@ -69,8 +73,10 @@ class WorkflowJob(DbPopulator):
                 run_id=1,
                 name="Flaky job",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(str(datetime.utcnow())),
-                completed_at=github_types.ISODateTimeType(str(datetime.utcnow())),
+                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                completed_at=github_types.ISODateTimeType(
+                    datetime.utcnow().isoformat()
+                ),
                 conclusion="success",
                 labels=[],
                 run_attempt=2,
@@ -79,9 +85,11 @@ class WorkflowJob(DbPopulator):
                         name="toto",
                         conclusion="success",
                         number=1,
-                        started_at=github_types.ISODateTimeType(str(datetime.utcnow())),
+                        started_at=github_types.ISODateTimeType(
+                            datetime.utcnow().isoformat()
+                        ),
                         completed_at=github_types.ISODateTimeType(
-                            str(datetime.utcnow())
+                            datetime.utcnow().isoformat()
                         ),
                         status="completed",
                     )
@@ -99,8 +107,10 @@ class WorkflowJob(DbPopulator):
                 run_id=2,
                 name="Failed job no step",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(str(datetime.utcnow())),
-                completed_at=github_types.ISODateTimeType(str(datetime.utcnow())),
+                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                completed_at=github_types.ISODateTimeType(
+                    datetime.utcnow().isoformat()
+                ),
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,

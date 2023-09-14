@@ -98,8 +98,8 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[0].steps[0]["completed_at"],
                             }
                         ],
-                        "started_at": str(jobs[0].started_at),
-                        "completed_at": str(jobs[0].completed_at),
+                        "started_at": jobs[0].started_at.isoformat(),
+                        "completed_at": jobs[0].completed_at.isoformat(),
                         "flaky": "yes",
                         "run_attempt": 1,
                     },
@@ -118,8 +118,8 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[2].steps[0]["completed_at"],
                             }
                         ],
-                        "started_at": str(jobs[2].started_at),
-                        "completed_at": str(jobs[2].completed_at),
+                        "started_at": jobs[2].started_at.isoformat(),
+                        "completed_at": jobs[2].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
                     },
@@ -142,8 +142,8 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[3].steps[0]["completed_at"],
                             }
                         ],
-                        "started_at": str(jobs[3].started_at),
-                        "completed_at": str(jobs[3].completed_at),
+                        "started_at": jobs[3].started_at.isoformat(),
+                        "completed_at": jobs[3].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
                     },
@@ -190,8 +190,8 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[0].steps[0]["completed_at"],
                             }
                         ],
-                        "started_at": str(jobs[0].started_at),
-                        "completed_at": str(jobs[0].completed_at),
+                        "started_at": jobs[0].started_at.isoformat(),
+                        "completed_at": jobs[0].completed_at.isoformat(),
                         "flaky": "yes",
                         "run_attempt": 1,
                     }
@@ -214,8 +214,8 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[2].steps[0]["completed_at"],
                             }
                         ],
-                        "started_at": str(jobs[2].started_at),
-                        "completed_at": str(jobs[2].completed_at),
+                        "started_at": jobs[2].started_at.isoformat(),
+                        "completed_at": jobs[2].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
                     },
@@ -261,8 +261,8 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[4].steps[0]["completed_at"],
                             }
                         ],
-                        "started_at": str(jobs[4].started_at),
-                        "completed_at": str(jobs[4].completed_at),
+                        "started_at": jobs[4].started_at.isoformat(),
+                        "completed_at": jobs[4].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
                     }
@@ -339,8 +339,8 @@ async def test_api_get_gha_failed_jobs_no_step(
                         "id": job.id,
                         "run_id": job.workflow_run_id,
                         "steps": [],
-                        "started_at": str(job.started_at),
-                        "completed_at": str(job.completed_at),
+                        "started_at": job.started_at.isoformat(),
+                        "completed_at": job.completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
                     }

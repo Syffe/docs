@@ -19,12 +19,12 @@ def create_commit(sha: github_types.SHAType) -> github_types.GitHubBranchCommit:
                 "author": {
                     "email": "",
                     "name": "someone",
-                    "date": github_types.ISODateTimeType(str(datetime.utcnow())),
+                    "date": github_types.ISODateTimeType(datetime.utcnow().isoformat()),
                 },
                 "committer": {
                     "email": "",
                     "name": "someone-else",
-                    "date": github_types.ISODateTimeType(str(datetime.utcnow())),
+                    "date": github_types.ISODateTimeType(datetime.utcnow().isoformat()),
                 },
             },
             "committer": {

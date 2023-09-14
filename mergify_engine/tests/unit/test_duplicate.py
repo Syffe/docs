@@ -137,8 +137,12 @@ async def test_get_commits_to_cherry_pick_rebase(
         committer="someone-else",
         email_author="",
         email_committer="",
-        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
-        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_author=github_types.ISODateTimeType(
+            datetime.datetime.utcnow().isoformat()
+        ),
+        date_committer=github_types.ISODateTimeType(
+            datetime.datetime.utcnow().isoformat()
+        ),
         gh_author_login=github_types.GitHubLogin("someone"),
     )
     c2 = github_types.CachedGitHubBranchCommit(
@@ -150,8 +154,12 @@ async def test_get_commits_to_cherry_pick_rebase(
         committer="someone-else",
         email_author="",
         email_committer="",
-        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
-        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_author=github_types.ISODateTimeType(
+            datetime.datetime.utcnow().isoformat()
+        ),
+        date_committer=github_types.ISODateTimeType(
+            datetime.datetime.utcnow().isoformat()
+        ),
         gh_author_login=github_types.GitHubLogin("someone"),
     )
     commits.return_value = [c1, c2]
@@ -177,14 +185,14 @@ async def test_get_commits_to_cherry_pick_rebase(
                     "email": "",
                     "name": "someone",
                     "date": github_types.ISODateTimeType(
-                        str(datetime.datetime.utcnow())
+                        datetime.datetime.utcnow().isoformat()
                     ),
                 },
                 "committer": {
                     "email": "",
                     "name": "someone-else",
                     "date": github_types.ISODateTimeType(
-                        str(datetime.datetime.utcnow())
+                        datetime.datetime.utcnow().isoformat()
                     ),
                 },
             },
@@ -213,14 +221,14 @@ async def test_get_commits_to_cherry_pick_rebase(
                     "email": "",
                     "name": "someone",
                     "date": github_types.ISODateTimeType(
-                        str(datetime.datetime.utcnow())
+                        datetime.datetime.utcnow().isoformat()
                     ),
                 },
                 "committer": {
                     "email": "",
                     "name": "someone-else",
                     "date": github_types.ISODateTimeType(
-                        str(datetime.datetime.utcnow())
+                        datetime.datetime.utcnow().isoformat()
                     ),
                 },
             },
@@ -275,8 +283,12 @@ async def test_get_commits_to_cherry_pick_merge(
         committer="someone-else",
         email_author="",
         email_committer="",
-        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
-        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_author=github_types.ISODateTimeType(
+            datetime.datetime.utcnow().isoformat()
+        ),
+        date_committer=github_types.ISODateTimeType(
+            datetime.datetime.utcnow().isoformat()
+        ),
         gh_author_login=github_types.GitHubLogin("someone"),
     )
     c2 = github_types.CachedGitHubBranchCommit(
@@ -288,8 +300,12 @@ async def test_get_commits_to_cherry_pick_merge(
         committer="someone-else",
         email_author="",
         email_committer="",
-        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
-        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_author=github_types.ISODateTimeType(
+            datetime.datetime.utcnow().isoformat()
+        ),
+        date_committer=github_types.ISODateTimeType(
+            datetime.datetime.utcnow().isoformat()
+        ),
         gh_author_login=github_types.GitHubLogin("someone"),
     )
 
@@ -313,8 +329,12 @@ async def test_get_commits_to_cherry_pick_merge(
         committer="someone-else",
         email_author="",
         email_committer="",
-        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
-        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_author=github_types.ISODateTimeType(
+            datetime.datetime.utcnow().isoformat()
+        ),
+        date_committer=github_types.ISODateTimeType(
+            datetime.datetime.utcnow().isoformat()
+        ),
         gh_author_login=github_types.GitHubLogin("someone"),
     )
     merge_commit = github_types.GitHubBranchCommit(
@@ -325,12 +345,16 @@ async def test_get_commits_to_cherry_pick_merge(
             "author": {
                 "name": "",
                 "email": "",
-                "date": github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+                "date": github_types.ISODateTimeType(
+                    datetime.datetime.utcnow().isoformat()
+                ),
             },
             "committer": {
                 "name": "",
                 "email": "",
-                "date": github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+                "date": github_types.ISODateTimeType(
+                    datetime.datetime.utcnow().isoformat()
+                ),
             },
         },
         parents=[{"sha": base_branch.sha}, {"sha": c2.sha}],
