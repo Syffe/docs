@@ -115,4 +115,12 @@ async def get_repository_events(
             received_to,
         )
 
-    return EventsResponse(page=page_response)  # type: ignore[call-arg]
+    return EventsResponse(  # type: ignore[call-arg]
+        page=page_response,
+        query_parameters={
+            "pull_request": pull_request,
+            "event_type": event_type,
+            "received_from": received_from,
+            "received_to": received_to,
+        },
+    )

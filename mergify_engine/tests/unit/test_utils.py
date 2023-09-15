@@ -1,6 +1,8 @@
 import datetime
+import enum
 import typing
 
+import anys
 from freezegun import freeze_time
 import pytest
 import respx
@@ -15,6 +17,7 @@ from mergify_engine import utils
 from mergify_engine.models import github_actions
 from mergify_engine.models import github_user
 from mergify_engine.tests.db_populator import DbPopulator
+from mergify_engine.web import utils as web_utils
 
 
 @pytest.mark.parametrize(
@@ -489,3 +492,33 @@ async def mock_user_authorization_on_repo(
     )
 
     return user
+
+
+def test_clean_qp() -> None:
+    class DummyEnum(enum.Enum):
+        XYZ = "XYZ"
+
+    raw_qp_dict = {
+        "none_is_not_kept": None,
+        "bool": False,
+        "int": 1,
+        "str": "abc",
+        "datetime": date.utcnow(),
+        "enum": DummyEnum.XYZ,
+        "list": ["def", 99, True],
+    }
+    assert web_utils.serialize_query_parameters(raw_qp_dict) == {
+        "bool": 0,
+        "datetime": anys.ANY_AWARE_DATETIME_STR,
+        "enum": "XYZ",
+        "int": 1,
+        "list": ["def", 99, 1],
+        "str": "abc",
+    }
+
+    error_qp_dict = {
+        "valid": 1,
+        "not_valid": datetime.date.today(),
+    }
+    with pytest.raises(ValueError, match="Unsupported type <class 'datetime.date'>"):
+        web_utils.serialize_query_parameters(error_qp_dict)

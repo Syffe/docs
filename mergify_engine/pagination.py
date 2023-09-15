@@ -1,8 +1,11 @@
 import dataclasses
 import typing
+import urllib.parse
 
 import fastapi
 import pydantic
+
+from mergify_engine.web import utils
 
 
 DEFAULT_PER_PAGE = 10
@@ -29,7 +32,8 @@ def get_current_page(
     cursor: typing.Annotated[
         str | None,
         fastapi.Query(
-            description="The opaque cursor of the current page. Must be extracted for RFC 5988 pagination links to get first/previous/next/last pages",
+            description="The opaque cursor of the current page. Must be extracted for RFC 5988 pagination links to "
+            "get first/previous/next/last pages",
         ),
     ] = None,
     per_page: typing.Annotated[
@@ -105,8 +109,10 @@ class PageResponse(typing.Generic[T], pydantic.BaseModel):
 
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, page: Page[T]) -> None:
-        page.current.response.headers["Link"] = self._build_link(page)
+    def __init__(
+        self, page: Page[T], query_parameters: dict[str, typing.Any] | None = None
+    ) -> None:
+        page.current.response.headers["Link"] = self._build_link(page, query_parameters)
         kwargs = {
             "page": page,
             self.items_key: page.items,
@@ -118,24 +124,47 @@ class PageResponse(typing.Generic[T], pydantic.BaseModel):
         super().__init__(**kwargs)
 
     @staticmethod
-    def _build_link(page: Page[T]) -> str:
+    def _build_link(
+        page: Page[T], query_parameters: dict[str, typing.Any] | None
+    ) -> str:
         base_url = page.current.request.url
 
-        links = {
-            "first": base_url.include_query_params(
-                per_page=page.current.per_page, cursor=page.cursor_first
-            ),
-            "last": base_url.include_query_params(
-                per_page=page.current.per_page, cursor=page.cursor_last
-            ),
+        if query_parameters is not None:
+            cleaned_query_parameters = utils.serialize_query_parameters(
+                query_parameters
+            )
+        else:
+            cleaned_query_parameters = {}
+
+        links_query_parameters = {
+            "first": {
+                "per_page": page.current.per_page,
+                "cursor": page.cursor_first,
+                **cleaned_query_parameters,
+            },
+            "last": {
+                "per_page": page.current.per_page,
+                "cursor": page.cursor_last,
+                **cleaned_query_parameters,
+            },
         }
+
         if page.cursor_next is not None:
-            links["next"] = base_url.include_query_params(
-                per_page=page.current.per_page, cursor=page.cursor_next
-            )
+            links_query_parameters["next"] = {
+                "per_page": page.current.per_page,
+                "cursor": page.cursor_next,
+                **cleaned_query_parameters,
+            }
         if page.cursor_prev is not None:
-            links["prev"] = base_url.include_query_params(
-                per_page=page.current.per_page, cursor=page.cursor_prev
-            )
+            links_query_parameters["prev"] = {
+                "per_page": page.current.per_page,
+                "cursor": page.cursor_prev,
+                **cleaned_query_parameters,
+            }
+
+        links = {
+            name: base_url.replace(query=urllib.parse.urlencode(qp, doseq=True))
+            for name, qp in links_query_parameters.items()
+        }
 
         return ",".join([f'<{link}>; rel="{name}"' for name, link in links.items()])

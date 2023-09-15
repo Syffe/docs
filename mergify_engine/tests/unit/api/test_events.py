@@ -1,6 +1,7 @@
 from collections import abc
 import datetime
 import re
+import urllib.parse
 
 import anys
 import freezegun
@@ -294,6 +295,27 @@ async def test_api_cursor(
     links = parse_links(response.headers["link"])
     assert links["next"].split("?")[-1] == "per_page=2&cursor=-4"
     assert links["prev"].split("?")[-1] == "per_page=2&cursor=%2B3"
+
+
+async def test_api_links_with_query_params(
+    fake_repository: context.Repository,
+    web_client: conftest.CustomTestClient,
+    api_token: str,
+) -> None:
+    query_params = {
+        ("per_page", "2"),
+        ("pull_request", "1"),
+        ("event_type", "action.assign"),
+        ("event_type", "action.comment"),
+        ("received_from", "2023-09-15T07:24:11.715105+00:00"),
+    }
+
+    response = await web_client.get(
+        f"/v1/repos/Mergifyio/engine/logs?{urllib.parse.urlencode(list(query_params), doseq=True)}",
+        headers={"Authorization": api_token},
+    )
+    links = parse_links(response.headers["link"])
+    assert set(urllib.parse.parse_qsl(links["first"].split("?")[-1])) == query_params
 
 
 async def test_api_cursor_invalid(

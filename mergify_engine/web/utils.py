@@ -1,3 +1,7 @@
+import datetime
+import enum
+import typing
+
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
 import fastapi
@@ -61,3 +65,21 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
             status_code=422,
             content={"message": "Invalid cursor", "cursor": exc.cursor},
         )
+
+
+def serialize_query_parameters(val: typing.Any) -> typing.Any:
+    if isinstance(val, dict):
+        return {
+            k: serialize_query_parameters(v) for k, v in val.items() if v is not None
+        }
+    if isinstance(val, list):
+        return [serialize_query_parameters(v) for v in val]
+    if isinstance(val, enum.Enum):
+        return val.value
+    if isinstance(val, datetime.datetime):
+        return val.isoformat()
+    if isinstance(val, bool):
+        return int(val)
+    if isinstance(val, int | str | float):
+        return val
+    raise ValueError(f"Unsupported type {type(val)}")
