@@ -21,6 +21,8 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                 "context": True,
                 # NOTE(sileht): only used for logging purpose
                 "state": True,
+                "target_url": True,
+                "name": True,
             }
         )
     elif event_type == "pull_request_review":

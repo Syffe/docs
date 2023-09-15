@@ -2854,3 +2854,71 @@ async def test_task_stop_ordering(
         "event-forwarder",
         "delayed-refresh",
     }
+
+
+@pytest.mark.parametrize(
+    "status_event,expected_app_name",
+    (
+        ({}, "unknown"),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": None,
+            },
+            "unknown",
+        ),
+        (
+            {
+                "sender": {"login": "buildkite[bot]"},
+                "target_url": "https://buildkite.com/org/repo/builds/46478",
+            },
+            "buildkite",
+        ),
+        (
+            {
+                "sender": {"login": "github-actions[bot]"},
+                "target_url": None,
+            },
+            "github-actions",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://circleci.com/gh/org/repo/864761",
+            },
+            "circleci",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://app.circleci.com/pipelines/gh/org/repo/144046/",
+            },
+            "circleci",
+        ),
+        (
+            {
+                "sender": {"login": "some-org-Jenkins"},
+                "target_url": "https://6841368.org.com/job/668347682",
+            },
+            "jenkins",
+        ),
+        (
+            {
+                "sender": {"login": "jenkins-ci[bot]"},
+                "target_url": "https://6841368.org.com/job/668347682",
+            },
+            "jenkins",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://jenkins-ci.internal.org.com/job/34213",
+            },
+            "jenkins",
+        ),
+    ),
+)
+def test_extract_app_from_status(
+    status_event: github_types.GitHubEventStatus, expected_app_name: str
+) -> None:
+    assert stream._extract_app_from_status_event(status_event) == expected_app_name

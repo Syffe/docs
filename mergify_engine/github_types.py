@@ -647,6 +647,10 @@ class GitHubEventPush(GitHubEventWithRepository):
 
 class GitHubEventStatus(GitHubEventWithRepository):
     sha: SHAType
+    state: typing.Literal["pending", "success", "failure", "error"]
+    name: str
+    context: str
+    target_url: str
 
 
 class GitHubApp(typing.TypedDict):

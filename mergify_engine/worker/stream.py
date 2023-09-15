@@ -28,8 +28,10 @@ from collections import abc
 import contextlib
 import dataclasses
 import datetime
+import re
 import time
 import typing
+from urllib import parse
 
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
@@ -806,21 +808,7 @@ class Processor:
                 ],
             )
 
-            # NOTE(charly): CI usage metric, see MRGFY-2617
-            is_customer = installation.subscription.has_feature(
-                subscription.Features.PRIVATE_REPOSITORY
-            )
-            if source["event_type"] == "check_run" and is_customer:
-                event = typing.cast(github_types.GitHubEventCheckRun, source["data"])
-                if event["action"] == "created" and event["check_run"]["app"].get(
-                    "slug"
-                ):
-                    check_run_tags = [
-                        f"app_name:{event['check_run']['app']['slug']}",
-                    ]
-                    statsd.increment(
-                        "engine.buckets.events.check_runs", tags=check_run_tags
-                    )
+            _monitor_consumed_events(source, installation)
 
         logger = daiquiri.getLogger(
             __name__,
@@ -892,6 +880,64 @@ class Processor:
                 raise UnexpectedPullRetry()
 
             raise
+
+
+def _monitor_consumed_events(
+    source: context.T_PayloadEventSource, installation: context.Installation
+) -> None:
+    # NOTE(charly): CI usage metric, see MRGFY-2617
+    is_customer = installation.subscription.has_feature(
+        subscription.Features.PRIVATE_REPOSITORY
+    )
+    if not is_customer:
+        return
+
+    if source["event_type"] == "check_run":
+        check_run = typing.cast(github_types.GitHubEventCheckRun, source["data"])
+        if check_run["action"] == "created" and check_run["check_run"]["app"].get(
+            "slug"
+        ):
+            check_run_tags = [
+                f"app_name:{check_run['check_run']['app']['slug']}",
+            ]
+            statsd.increment("engine.buckets.events.check_runs", tags=check_run_tags)
+
+    elif source["event_type"] == "status":
+        status = typing.cast(github_types.GitHubEventStatus, source["data"])
+        if status["state"] != "pending":
+            app_name = _extract_app_from_status_event(status)
+            statsd.increment(
+                "engine.buckets.events.status", tags=[f"app_name:{app_name}"]
+            )
+
+
+def _extract_app_from_status_event(
+    status: github_types.GitHubEventStatus,
+) -> str:
+    if sender := status.get("sender"):
+        if "jenkins" in re.split(r"\W", sender.get("login", "").lower()):
+            return "jenkins"
+        if sender.get("login", "").endswith("[bot]"):
+            return sender["login"].rstrip("[bot]")
+
+    if target_url := status.get("target_url"):
+        parsed_target_url = parse.urlsplit(target_url)
+        if parsed_target_url.hostname:
+            if parsed_target_url.hostname.endswith("circleci.com"):
+                return "circleci"
+            if "jenkins" in re.split(r"\W", parsed_target_url.hostname.lower()):
+                return "jenkins"
+
+    LOG.info(
+        "Status check created by an unknown app",
+        state=status.get("state"),
+        status_name=status.get("name"),
+        context=status.get("context"),
+        sender=status.get("sender"),
+        target_url=status.get("target_url"),
+    )
+
+    return "unknown"
 
 
 async def get_dedicated_worker_owner_ids_from_redis(
