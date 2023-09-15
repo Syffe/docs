@@ -26,10 +26,6 @@ class BackportAction(copy.CopyAction):
     flags = actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
     executor_class = BackportExecutor
 
-    default_restrictions: typing.ClassVar[list[typing.Any]] = [
-        "sender-permission>=write"
-    ]
-
     KIND: duplicate_pull.KindT = "backport"
     KIND_PLURAL = "backports"
 

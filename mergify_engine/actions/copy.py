@@ -542,10 +542,6 @@ class CopyAction(actions.Action):
     flags = actions.ActionFlag.NONE
     executor_class = CopyExecutor
 
-    default_restrictions: typing.ClassVar[list[typing.Any]] = [
-        "sender-permission>=write"
-    ]
-
     KIND: duplicate_pull.KindT = "copy"
 
     @property

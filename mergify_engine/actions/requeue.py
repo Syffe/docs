@@ -148,10 +148,6 @@ class RequeueCommand(actions.Action):
 
     executor_class = RequeueExecutor
 
-    default_restrictions: typing.ClassVar[list[typing.Any]] = [
-        "sender-permission>=write"
-    ]
-
     required_feature_for_command = subscription.Features.MERGE_QUEUE
 
     @staticmethod

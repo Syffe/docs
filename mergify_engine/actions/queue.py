@@ -1293,10 +1293,6 @@ class QueueAction(actions.Action):
             ),
         )
 
-    default_restrictions: typing.ClassVar[list[typing.Any]] = [
-        "sender-permission>=write"
-    ]
-
     required_feature_for_command = subscription.Features.MERGE_QUEUE
 
     # NOTE(sileht): set by validate_config()
