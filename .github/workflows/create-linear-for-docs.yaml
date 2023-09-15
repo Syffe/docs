@@ -31,3 +31,12 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.LINEAR_API_KEY }}" \
           -H "Content-Type: application/json" \
           -d "$JSON_PAYLOAD"
+
+      - name: Report Status
+        if: failure()
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+        uses: Mergifyio/gha-slack-notification@main
+        with:
+          message: "create-linear-for-docs failed"
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
