@@ -8,6 +8,8 @@ on:
       - main
       - devs/**
     types: ["opened", "synchronize", "reopened", "edited"]
+  pull_request_review:
+    types: ["dismissed"]
 
 permissions: write-all
 
