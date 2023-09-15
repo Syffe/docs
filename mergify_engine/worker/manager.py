@@ -204,6 +204,13 @@ class ServiceManager:
             self._services.append(serv)
 
     async def _stop_all_tasks(self) -> None:
+        tasks_that_must_shutdown_first, other_tasks = self._get_tasks_to_stops()
+        await task.stop_and_wait(tasks_that_must_shutdown_first)
+        await task.stop_and_wait(other_tasks)
+
+    def _get_tasks_to_stops(
+        self,
+    ) -> tuple[list[task.TaskRetriedForever], list[task.TaskRetriedForever]]:
         tasks_that_must_shutdown_first: list[task.TaskRetriedForever] = []
         other_tasks: list[task.TaskRetriedForever] = []
         for serv in self._services:
@@ -213,8 +220,7 @@ class ServiceManager:
                 else:
                     other_tasks.append(a_task)
 
-        await task.stop_and_wait(tasks_that_must_shutdown_first)
-        await task.stop_and_wait(other_tasks)
+        return tasks_that_must_shutdown_first, other_tasks
 
     async def _shutdown(self) -> None:
         LOG.info("shutdown start")

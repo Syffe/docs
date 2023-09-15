@@ -2810,3 +2810,47 @@ def test_get_bucket_sources_key() -> None:
         stream_lua.get_bucket_sources_key(github_types.GitHubRepositoryIdType(42), None)
         == "bucket-sources~42~0"
     )
+
+
+async def test_task_stop_ordering(
+    event_loop: asyncio.BaseEventLoop,
+    request: pytest.FixtureRequest,
+) -> None:
+    w = manager.ServiceManager(
+        shared_stream_tasks_per_process=3,
+        worker_idle_time=0.01,
+        dedicated_workers_spawner_idle_time=0.01,
+        dedicated_workers_cache_syncer_idle_time=0.01,
+        dedicated_stream_processes=1,
+        process_index=0,
+        gitter_concurrent_jobs=2,
+        ci_event_processing_idle_time=0.01,
+        log_embedder_idle_time=0.01,
+    )
+
+    assert w._stopped.is_set()
+    assert w._stop_task is None
+
+    await w.start()
+    request.addfinalizer(lambda: event_loop.run_until_complete(w._shutdown()))
+
+    first, then = w._get_tasks_to_stops()
+
+    first_names = {t.name for t in first}
+    then_names = {t.name for t in then}
+
+    assert first_names == {"dedicated-workers-spawner"}
+    assert then_names == {
+        "dedicated-workers-cache-syncer",
+        "shared-0",
+        "shared-1",
+        "shared-2",
+        "gitter-worker-0",
+        "gitter-worker-1",
+        "gitter",
+        "ci-event-processing",
+        "stream-monitoring",
+        "log-embedder",
+        "event-forwarder",
+        "delayed-refresh",
+    }
