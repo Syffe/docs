@@ -124,3 +124,57 @@ async def get_gha_failed_jobs(
         min_similarity=neighbour_cosine_similarity_threshold,
         workflow_job_groups=list(wfj_groups.values()),
     )
+
+
+class WorkflowJobDetails(WorkflowJob):
+    embedded_log: str | None
+    neighbour_job_ids: list[int]
+
+
+@router.get(
+    "/repos/{owner}/{repository}/gha-failed-jobs/{job_id}",
+    summary="Get failed job details",
+    description="Get failed job details",
+    response_model=WorkflowJobDetails,
+    include_in_schema=False,
+    responses={
+        **api.default_responses,  # type: ignore
+        404: {"description": "Job is not found"},
+    },
+)
+async def get_gha_failed_job_detail(
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    job_id: int,
+    neighbour_cosine_similarity_threshold: float = 0.01,
+) -> WorkflowJobDetails:
+    results = list(
+        await github_actions.WorkflowJob.get_failed_job(
+            session,
+            repository_ctxt.repo["id"],
+            job_id,
+            neighbour_cosine_similarity_threshold,
+        )
+    )
+
+    if len(results) == 0:
+        raise fastapi.HTTPException(404)
+
+    if len(results) > 1:
+        raise RuntimeError("This should never happens")
+
+    return WorkflowJobDetails(
+        name=results[0].name,
+        error_description=results[0].embedded_log_error_title,
+        id=results[0].id,
+        run_id=results[0].workflow_run_id,
+        steps=results[0].steps or [],
+        started_at=github_types.ISODateTimeType(results[0].started_at.isoformat()),
+        completed_at=github_types.ISODateTimeType(results[0].completed_at.isoformat()),
+        flaky=FlakyStatus.FLAKY if results[0].flaky else FlakyStatus.UNKNOWN,
+        run_attempt=results[0].run_attempt,
+        embedded_log=results[0].embedded_log,
+        neighbour_job_ids=results[0].neighbour_job_ids
+        if results[0].neighbour_job_ids != [None]
+        else [],
+    )

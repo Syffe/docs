@@ -15,7 +15,9 @@ from mergify_engine import redis_utils
 from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine.models import github_actions
+from mergify_engine.models import github_repository
 from mergify_engine.models import github_user
+from mergify_engine.tests import conftest
 from mergify_engine.tests.db_populator import DbPopulator
 from mergify_engine.web import utils as web_utils
 
@@ -492,6 +494,32 @@ async def mock_user_authorization_on_repo(
     )
 
     return user
+
+
+async def configure_web_client_to_work_with_a_repo(
+    respx_mock: respx.MockRouter,
+    session: sqlalchemy.ext.asyncio.AsyncSession,
+    web_client: conftest.CustomTestClient,
+    repo_full_name: str,
+) -> None:
+    repo_info = typing.cast(
+        github_types.GitHubRepository,
+        (
+            (
+                await session.execute(
+                    sqlalchemy.select(github_repository.GitHubRepository)
+                    .where(
+                        github_repository.GitHubRepository.full_name == repo_full_name
+                    )
+                    .limit(1)
+                )
+            ).scalar_one()
+        ).as_dict(),
+    )
+
+    user = await mock_user_authorization_on_repo(respx_mock, repo_info, session)
+
+    await web_client.log_as(user.id)
 
 
 def test_clean_qp() -> None:

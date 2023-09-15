@@ -545,6 +545,71 @@ class WorkflowJob(models.Base):
 
         return await session.execute(stmt)
 
+    @classmethod
+    async def get_failed_job(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository_id: github_types.GitHubRepositoryIdType,
+        job_id: int,
+        neighbour_cosine_similarity_threshold: float,
+    ) -> sqlalchemy.Result[typing.Any]:
+        # NOTE(Kontrolix): This method is mostly a duplicate of get_failed_jobs
+        # but the sql query is going to be drastically different in both of these
+        # methods in the future, so no need to mutualise the code for now
+
+        tj_job = orm.aliased(WorkflowJobLogNeighbours, name="tj_job")
+        job = orm.aliased(cls, name="job")
+        job_rerun = orm.aliased(cls, name="job_rerun")
+
+        stmt = (
+            sqlalchemy.select(
+                job.id,
+                sqlalchemy.func.array_agg(
+                    sqlalchemy.func.distinct(
+                        sqlalchemy.case(
+                            (job.id == tj_job.job_id, tj_job.neighbour_job_id),
+                            else_=tj_job.job_id,
+                        )
+                    ),
+                ).label("neighbour_job_ids"),
+                job.name,
+                job.embedded_log_error_title,
+                job.workflow_run_id,
+                job.steps,
+                job.started_at,
+                job.completed_at,
+                job.run_attempt,
+                sqlalchemy.func.bool_and(job_rerun.id.is_not(None)).label("flaky"),
+                job.embedded_log,
+            )
+            .join(
+                job_rerun,
+                sqlalchemy.and_(
+                    job_rerun.repository_id == job.repository_id,
+                    job_rerun.name == job.name,
+                    job_rerun.workflow_run_id == job.workflow_run_id,
+                    job_rerun.run_attempt > job.run_attempt,
+                    job_rerun.conclusion == WorkflowJobConclusion.SUCCESS,
+                ),
+                isouter=True,
+            )
+            .join(
+                tj_job,
+                sqlalchemy.and_(
+                    job.id.in_((tj_job.job_id, tj_job.neighbour_job_id)),
+                    tj_job.cosine_similarity >= neighbour_cosine_similarity_threshold,
+                ),
+                isouter=True,
+            )
+            .where(
+                job.id == job_id,
+                job.repository_id == repository_id,
+            )
+            .group_by(job.id)
+        )
+
+        return await session.execute(stmt)
+
 
 class WorkflowJobLogNeighbours(models.Base):
     __tablename__ = "gha_workflow_job_log_neighbours"

@@ -1,5 +1,4 @@
 import datetime
-import typing
 
 import anys
 from dateutil.relativedelta import relativedelta
@@ -7,42 +6,18 @@ import pytest
 import respx
 import sqlalchemy
 
-from mergify_engine import github_types
 from mergify_engine.models import github_actions
-from mergify_engine.models import github_repository
 from mergify_engine.tests import conftest
 from mergify_engine.tests.unit import test_utils
 
 
 @pytest.mark.populated_db_datasets("TestApiGhaFailedJobsDataset")
-async def test_api_flaky_jobs_get_gha_failed_jobs(
+async def test_api_gha_failed_jobs_get_gha_failed_jobs(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
 ) -> None:
     await populated_db.commit()
-
-    async def work_with_repo(full_name: str) -> None:
-        repo_info = typing.cast(
-            github_types.GitHubRepository,
-            (
-                (
-                    await populated_db.execute(
-                        sqlalchemy.select(github_repository.GitHubRepository)
-                        .where(
-                            github_repository.GitHubRepository.full_name == full_name
-                        )
-                        .limit(1)
-                    )
-                ).scalar_one()
-            ).as_dict(),
-        )
-
-        user = await test_utils.mock_user_authorization_on_repo(
-            respx_mock, repo_info, populated_db
-        )
-
-        await web_client.log_as(user.id)
 
     jobs = (
         (
@@ -62,7 +37,9 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
     assert jobs[3].steps is not None
     assert jobs[4].steps is not None
 
-    await work_with_repo("OneAccount/OneRepo")
+    await test_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock, populated_db, web_client, "OneAccount/OneRepo"
+    )
 
     reply = await web_client.get(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/gha-failed-jobs",
@@ -225,7 +202,9 @@ async def test_api_flaky_jobs_get_gha_failed_jobs(
     }
 
     # Request another repo
-    await work_with_repo("colliding_acount_1/colliding_repo_name")
+    await test_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock, populated_db, web_client, "colliding_acount_1/colliding_repo_name"
+    )
 
     reply = await web_client.get(
         "/front/proxy/engine/v1/repos/colliding_acount_1/colliding_repo_name/gha-failed-jobs?neighbour_cosine_similarity_threshold=1&start_at=2023-01-01",
@@ -280,28 +259,6 @@ async def test_api_get_gha_failed_jobs_no_step(
 ) -> None:
     await populated_db.commit()
 
-    async def work_with_repo(full_name: str) -> None:
-        repo_info = typing.cast(
-            github_types.GitHubRepository,
-            (
-                (
-                    await populated_db.execute(
-                        sqlalchemy.select(github_repository.GitHubRepository)
-                        .where(
-                            github_repository.GitHubRepository.full_name == full_name
-                        )
-                        .limit(1)
-                    )
-                ).scalar_one()
-            ).as_dict(),
-        )
-
-        user = await test_utils.mock_user_authorization_on_repo(
-            respx_mock, repo_info, populated_db
-        )
-
-        await web_client.log_as(user.id)
-
     job = await populated_db.scalar(
         sqlalchemy.select(github_actions.WorkflowJob)
         .order_by(github_actions.WorkflowJob.id.desc())
@@ -312,7 +269,9 @@ async def test_api_get_gha_failed_jobs_no_step(
 
     job.steps = None
 
-    await work_with_repo("colliding_acount_1/colliding_repo_name")
+    await test_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock, populated_db, web_client, "colliding_acount_1/colliding_repo_name"
+    )
 
     reply = await web_client.get(
         "/front/proxy/engine/v1/repos/colliding_acount_1/colliding_repo_name/gha-failed-jobs",
@@ -347,4 +306,137 @@ async def test_api_get_gha_failed_jobs_no_step(
                 ]
             },
         ],
+    }
+
+
+@pytest.mark.populated_db_datasets("TestApiGhaFailedJobsDataset")
+async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+) -> None:
+    await populated_db.commit()
+
+    jobs = (
+        (
+            await populated_db.execute(
+                sqlalchemy.select(github_actions.WorkflowJob).order_by(
+                    github_actions.WorkflowJob.id
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+
+    # NOTE(Kontrolix): We do that to please mypy and tell it that these are not None
+    assert jobs[0].steps is not None
+    assert jobs[2].steps is not None
+    assert jobs[3].steps is not None
+    assert jobs[4].steps is not None
+
+    await test_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock, populated_db, web_client, "OneAccount/OneRepo"
+    )
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/gha-failed-jobs/{jobs[0].id}",
+        follow_redirects=False,
+    )
+
+    assert reply.json() == {
+        "name": "A job",
+        "error_description": None,
+        "id": jobs[0].id,
+        "run_id": jobs[0].workflow_run_id,
+        "steps": [
+            {
+                "name": "Run a step",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 1,
+                "started_at": jobs[0].steps[0]["started_at"],
+                "completed_at": jobs[0].steps[0]["completed_at"],
+            }
+        ],
+        "started_at": jobs[0].started_at.isoformat(),
+        "completed_at": jobs[0].completed_at.isoformat(),
+        "flaky": "yes",
+        "run_attempt": 1,
+        "embedded_log": "Some logs",
+        "neighbour_job_ids": [jobs[2].id],
+    }
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/gha-failed-jobs/{jobs[0].id}?neighbour_cosine_similarity_threshold=-1",
+        follow_redirects=False,
+    )
+
+    assert reply.json() == {
+        "name": "A job",
+        "error_description": None,
+        "id": jobs[0].id,
+        "run_id": jobs[0].workflow_run_id,
+        "steps": [
+            {
+                "name": "Run a step",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 1,
+                "started_at": jobs[0].steps[0]["started_at"],
+                "completed_at": jobs[0].steps[0]["completed_at"],
+            }
+        ],
+        "started_at": jobs[0].started_at.isoformat(),
+        "completed_at": jobs[0].completed_at.isoformat(),
+        "flaky": "yes",
+        "run_attempt": 1,
+        "embedded_log": "Some logs",
+        "neighbour_job_ids": [jobs[2].id, jobs[3].id],
+    }
+
+    reply = await web_client.get(
+        "/front/proxy/engine/v1/repos/OneAccount/OneRepo/gha-failed-jobs/5000",
+        follow_redirects=False,
+    )
+
+    assert reply.status_code == 404
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/gha-failed-jobs/{jobs[4].id}",
+        follow_redirects=False,
+    )
+
+    assert reply.status_code == 404
+
+    await test_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock, populated_db, web_client, "colliding_acount_1/colliding_repo_name"
+    )
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/colliding_acount_1/colliding_repo_name/gha-failed-jobs/{jobs[4].id}",
+        follow_redirects=False,
+    )
+
+    assert reply.json() == {
+        "name": "A job",
+        "error_description": None,
+        "id": jobs[4].id,
+        "run_id": jobs[4].workflow_run_id,
+        "steps": [
+            {
+                "name": "Run a step",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 1,
+                "started_at": jobs[4].steps[0]["started_at"],
+                "completed_at": jobs[4].steps[0]["completed_at"],
+            }
+        ],
+        "started_at": jobs[4].started_at.isoformat(),
+        "completed_at": jobs[4].completed_at.isoformat(),
+        "flaky": "unknown",
+        "run_attempt": 1,
+        "embedded_log": "Some logs",
+        "neighbour_job_ids": [],
     }
