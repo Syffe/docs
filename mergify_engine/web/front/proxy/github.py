@@ -36,6 +36,10 @@ async def github_proxy(
                 content=await request.body(),
                 follow_redirects=True,
             )
+        except httpx.InvalidURL:
+            raise fastapi.HTTPException(
+                status_code=422, detail={"messages": "Invalid request"}
+            )
         except httpx.HTTPStatusError as e:
             resp = e.response
             proxy_request = e.request
