@@ -173,7 +173,6 @@ async def test_get_reviewers(context_getter: conftest.ContextGetterFixture) -> N
     assert reviewers == ({"jd"}, {"foobar"})
 
 
-@pytest.mark.subscription
 async def test_team_permissions_missing(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
@@ -208,7 +207,6 @@ async def test_team_permissions_missing(
             assert error in excinfo.value.details
 
 
-@pytest.mark.subscription
 async def test_team_permissions_ok(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
