@@ -47,7 +47,7 @@ async def use_events_redis_backend(
     return (date.utcnow() - date.fromtimestamp(ts)) < EVENTLOGS_LONG_RETENTION
 
 
-class EventBase(typing_extensions.TypedDict, total=False):
+class EventBase(typing_extensions.TypedDict):
     id: int
     received_at: datetime.datetime
     timestamp: datetime.datetime
@@ -64,188 +64,188 @@ class EventBaseNoMetadata(EventBase):
     metadata: signals.EventNoMetadata
 
 
-class EventAssign(EventBase, total=False):
+class EventAssign(EventBase):
     event: typing.Literal["action.assign"]
     type: typing.Literal["action.assign"]
     metadata: signals.EventAssignMetadata
 
 
-class EventBackport(EventBase, total=False):
+class EventBackport(EventBase):
     event: typing.Literal["action.backport"]
     type: typing.Literal["action.backport"]
     metadata: signals.EventCopyMetadata
 
 
-class EventClose(EventBase, total=False):
+class EventClose(EventBase):
     event: typing.Literal["action.close"]
     type: typing.Literal["action.close"]
     metadata: signals.EventCloseMetadata
 
 
-class EventComment(EventBase, total=False):
+class EventComment(EventBase):
     event: typing.Literal["action.comment"]
     type: typing.Literal["action.comment"]
     metadata: signals.EventCommentMetadata
 
 
-class EventCopy(EventBase, total=False):
+class EventCopy(EventBase):
     event: typing.Literal["action.copy"]
     type: typing.Literal["action.copy"]
     metadata: signals.EventCopyMetadata
 
 
-class EventEdit(EventBase, total=False):
+class EventEdit(EventBase):
     event: typing.Literal["action.edit"]
     type: typing.Literal["action.edit"]
     metadata: signals.EventEditMetadata
 
 
-class EventDeleteHeadBranch(EventBase, total=False):
+class EventDeleteHeadBranch(EventBase):
     event: typing.Literal["action.delete_head_branch"]
     type: typing.Literal["action.delete_head_branch"]
     metadata: signals.EventDeleteHeadBranchMetadata
 
 
-class EventDismissReviews(EventBase, total=False):
+class EventDismissReviews(EventBase):
     event: typing.Literal["action.dismiss_reviews"]
     type: typing.Literal["action.dismiss_reviews"]
     metadata: signals.EventDismissReviewsMetadata
 
 
-class EventLabel(EventBase, total=False):
+class EventLabel(EventBase):
     event: typing.Literal["action.label"]
     type: typing.Literal["action.label"]
     metadata: signals.EventLabelMetadata
 
 
-class EventMerge(EventBase, total=False):
+class EventMerge(EventBase):
     event: typing.Literal["action.merge"]
     type: typing.Literal["action.merge"]
     metadata: signals.EventMergeMetadata
 
 
-class EventPostCheck(EventBase, total=False):
+class EventPostCheck(EventBase):
     event: typing.Literal["action.post_check"]
     type: typing.Literal["action.post_check"]
     metadata: signals.EventPostCheckMetadata
 
 
-class EventGithubActions(EventBase, total=False):
+class EventGithubActions(EventBase):
     event: typing.Literal["action.github_actions"]
     type: typing.Literal["action.github_actions"]
     metadata: signals.EventGithubActionsMetadata
 
 
-class EventQueueEnter(EventBase, total=False):
+class EventQueueEnter(EventBase):
     event: typing.Literal["action.queue.enter"]
     type: typing.Literal["action.queue.enter"]
     metadata: signals.EventQueueEnterMetadata
 
 
-class EventQueueLeave(EventBase, total=False):
+class EventQueueLeave(EventBase):
     event: typing.Literal["action.queue.leave"]
     type: typing.Literal["action.queue.leave"]
     metadata: signals.EventQueueLeaveMetadata
 
 
-class EventQueueChecksStart(EventBase, total=False):
+class EventQueueChecksStart(EventBase):
     event: typing.Literal["action.queue.checks_start"]
     type: typing.Literal["action.queue.checks_start"]
     metadata: signals.EventQueueChecksStartMetadata
 
 
-class EventQueueChecksEnd(EventBase, total=False):
+class EventQueueChecksEnd(EventBase):
     event: typing.Literal["action.queue.checks_end"]
     type: typing.Literal["action.queue.checks_end"]
     metadata: signals.EventQueueChecksEndMetadata
 
 
-class EventQueueMerged(EventBase, total=False):
+class EventQueueMerged(EventBase):
     event: typing.Literal["action.queue.merged"]
     type: typing.Literal["action.queue.merged"]
     metadata: signals.EventQueueMergedMetadata
 
 
-class EventRebase(EventBaseNoMetadata, total=False):
+class EventRebase(EventBaseNoMetadata):
     event: typing.Literal["action.rebase"]
     type: typing.Literal["action.rebase"]
 
 
-class EventRefresh(EventBaseNoMetadata, total=False):
+class EventRefresh(EventBaseNoMetadata):
     event: typing.Literal["action.refresh"]
     type: typing.Literal["action.refresh"]
 
 
-class EventRequeue(EventBaseNoMetadata, total=False):
+class EventRequeue(EventBaseNoMetadata):
     event: typing.Literal["action.requeue"]
     type: typing.Literal["action.requeue"]
 
 
-class EventRequestReviewers(EventBase, total=False):
+class EventRequestReviewers(EventBase):
     # FIXME(lecrepont01): remove according to MRGFY-2461
     event: typing.Literal["action.request_reviewers"]
     type: typing.Literal["action.request_reviewers"]
     metadata: signals.EventRequestReviewsMetadata
 
 
-class EventRequestReviews(EventBase, total=False):
+class EventRequestReviews(EventBase):
     event: typing.Literal["action.request_reviews"]
     type: typing.Literal["action.request_reviews"]
     metadata: signals.EventRequestReviewsMetadata
 
 
-class EventReview(EventBase, total=False):
+class EventReview(EventBase):
     event: typing.Literal["action.review"]
     type: typing.Literal["action.review"]
     metadata: signals.EventReviewMetadata
 
 
-class EventSquash(EventBaseNoMetadata, total=False):
+class EventSquash(EventBaseNoMetadata):
     event: typing.Literal["action.squash"]
     type: typing.Literal["action.squash"]
 
 
-class EventUnqueue(EventBaseNoMetadata, total=False):
+class EventUnqueue(EventBaseNoMetadata):
     event: typing.Literal["action.unqueue"]
     type: typing.Literal["action.unqueue"]
 
 
-class EventUpdate(EventBaseNoMetadata, total=False):
+class EventUpdate(EventBaseNoMetadata):
     event: typing.Literal["action.update"]
     type: typing.Literal["action.update"]
 
 
-class EventQueueFreezeCreate(EventBase, total=False):
+class EventQueueFreezeCreate(EventBase):
     event: typing.Literal["queue.freeze.create"]
     type: typing.Literal["queue.freeze.create"]
     metadata: signals.EventQueueFreezeCreateMetadata
 
 
-class EventQueueFreezeUpdate(EventBase, total=False):
+class EventQueueFreezeUpdate(EventBase):
     event: typing.Literal["queue.freeze.update"]
     type: typing.Literal["queue.freeze.update"]
     metadata: signals.EventQueueFreezeUpdateMetadata
 
 
-class EventQueueFreezeDelete(EventBase, total=False):
+class EventQueueFreezeDelete(EventBase):
     event: typing.Literal["queue.freeze.delete"]
     type: typing.Literal["queue.freeze.delete"]
     metadata: signals.EventQueueFreezeDeleteMetadata
 
 
-class EventQueuePauseCreate(EventBase, total=False):
+class EventQueuePauseCreate(EventBase):
     event: typing.Literal["queue.pause.create"]
     type: typing.Literal["queue.pause.create"]
     metadata: signals.EventQueuePauseCreateMetadata
 
 
-class EventQueuePauseUpdate(EventBase, total=False):
+class EventQueuePauseUpdate(EventBase):
     event: typing.Literal["queue.pause.update"]
     type: typing.Literal["queue.pause.update"]
     metadata: signals.EventQueuePauseUpdateMetadata
 
 
-class EventQueuePauseDelete(EventBase, total=False):
+class EventQueuePauseDelete(EventBase):
     event: typing.Literal["queue.pause.delete"]
     type: typing.Literal["queue.pause.delete"]
     metadata: signals.EventQueuePauseDeleteMetadata
@@ -313,10 +313,19 @@ SUPPORTED_EVENT_NAMES = list(
 DEFAULT_VERSION = "1.0"
 
 
-class GenericEvent(EventBase, total=False):
+class GenericEvent(EventBase):
     event: signals.EventName
     type: signals.EventName
     metadata: signals.EventMetadata
+
+
+class RedisGenericEvent(typing_extensions.TypedDict):
+    pull_request: int | None
+    timestamp: datetime.datetime
+    event: signals.EventName
+    repository: str
+    metadata: signals.EventMetadata
+    trigger: str
 
 
 @dataclasses.dataclass
@@ -355,7 +364,7 @@ class EventLogsSignal(signals.SignalBase):
         fields = {
             b"version": DEFAULT_VERSION,
             b"data": msgpack.packb(
-                GenericEvent(
+                RedisGenericEvent(
                     {
                         "timestamp": now,
                         "event": event,
@@ -400,10 +409,8 @@ class EventLogsSignal(signals.SignalBase):
                 LOG.debug("skipping event-type not supported in database", event=event)
 
 
-def cast_event_item(
-    event: GenericEvent, key: typing.Literal["event", "type"] = "event"
-) -> Event:
-    match event[key]:
+def cast_event_item(event: GenericEvent) -> Event:
+    match event["type"]:
         case "action.assign":
             return typing.cast(EventAssign, event)
         case "action.backport":
@@ -479,7 +486,6 @@ async def get(
     event_type: list[enumerations.EventType] | None = None,
     received_from: datetime.datetime | None = None,
     received_to: datetime.datetime | None = None,
-    new_format: bool = False,
 ) -> pagination.Page[Event]:
     redis = repository.installation.redis.eventlogs
     if repository.installation.subscription.has_feature(
@@ -557,7 +563,7 @@ async def get(
         cursor_next = None
 
     events: list[Event] = []
-    for _, raw in items:
+    for id_, raw in items:
         unpacked_event = msgpack.unpackb(raw[b"data"], timestamp=3)
         # add event_type, received_from, received_to filtering from new API
         if (
@@ -573,13 +579,16 @@ async def get(
         ):
             total -= 1
             continue
-        if new_format:
-            # NOTE(lecrepont01): this is to return "old" redis events with the new API
-            unpacked_event["received_at"] = unpacked_event.pop("timestamp")
-            unpacked_event["type"] = unpacked_event.pop("event")
+
+        # NOTE(lecrepont01): temporary field deduplication (MRGFY-2555)
+        unpacked_event["received_at"] = unpacked_event["timestamp"]
+        unpacked_event["type"] = unpacked_event["event"]
+        # make an id out of the stream id
+        unpacked_event["id"] = int(id_.decode().replace("-", ""))
+
         event = typing.cast(GenericEvent, unpacked_event)
         try:
-            events.append(cast_event_item(event, key="type" if new_format else "event"))
+            events.append(cast_event_item(event))
         except UnsupportedEvent as err:
             LOG.error(err.message, event=err.event)
 

@@ -1,4 +1,4 @@
-from unittest import mock
+import anys
 
 from mergify_engine import context
 from mergify_engine import github_types
@@ -183,10 +183,13 @@ Unknown pull request attribute: hello
         assert r.json() == {
             "events": [
                 {
+                    "id": anys.ANY_INT,
                     "repository": p["base"]["repo"]["full_name"],
                     "pull_request": p["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.review",
+                    "type": "action.review",
                     "metadata": {
                         "message": "WTF?",
                         "type": "REQUEST_CHANGES",
@@ -195,10 +198,13 @@ Unknown pull request attribute: hello
                     "trigger": "Rule: requested",
                 },
                 {
+                    "id": anys.ANY_INT,
                     "repository": p["base"]["repo"]["full_name"],
                     "pull_request": p["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.review",
+                    "type": "action.review",
                     "metadata": {
                         "message": None,
                         "type": "APPROVE",

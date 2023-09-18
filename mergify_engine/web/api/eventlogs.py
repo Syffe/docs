@@ -25,7 +25,7 @@ router = fastapi.APIRouter(
 
 Event = typing.Annotated[
     eventlogs.Event,
-    pydantic.Field(discriminator="event"),
+    pydantic.Field(discriminator="type"),
 ]
 
 
@@ -40,45 +40,16 @@ class EventLogsResponse(pagination.PageResponse[Event]):
     )
 
 
-content_example = {
-    "application/json": {
-        "example": {
-            "size": 0,
-            "per_page": 0,
-            "total": 0,
-            "events": [
-                {
-                    "id": 0,
-                    "timestamp": "2019-08-24T14:15:22Z",
-                    "received_at": "2019-08-24T14:15:22Z",
-                    "trigger": "string",
-                    "repository": "string",
-                    "pull_request": 0,
-                    "event": "action.assign",
-                    "type": "action.assign",
-                    "metadata": {
-                        "added": ["string"],
-                        "removed": ["string"],
-                    },
-                }
-            ],
-        }
-    }
-}
-
-
 @router.get(
     "/repos/{owner}/{repository}/pulls/{pull}/events",
     summary="Get the events log of a pull request",
     description="Get the events log of the requested pull request",
     deprecated=True,
     dependencies=[fastapi.Depends(security.check_subscription_feature_eventlogs)],
-    response_model=EventLogsResponse,
     responses={
         **api.default_responses,  # type: ignore
         200: {
             "headers": pagination.LinkHeader,
-            "content": content_example,
         },
     },
 )
@@ -96,9 +67,7 @@ async def get_pull_request_eventlogs(
 
     if not await eventlogs.use_events_redis_backend(repository_ctxt):
         # NOTE(lecrepont01): ensure transition from redis db to postgreSQL
-        page = await events.get(
-            session, current_page, repository_ctxt, pull, old_format=True
-        )
+        page = await events.get(session, current_page, repository_ctxt, pull)
     else:
         page = await eventlogs.get(repository_ctxt, current_page, pull)
 
@@ -111,12 +80,10 @@ async def get_pull_request_eventlogs(
     description="Get the events log of the requested repository",
     deprecated=True,
     dependencies=[fastapi.Depends(security.check_subscription_feature_eventlogs)],
-    response_model=EventLogsResponse,
     responses={
         **api.default_responses,  # type: ignore
         200: {
             "headers": pagination.LinkHeader,
-            "content": content_example,
         },
     },
 )
@@ -129,7 +96,7 @@ async def get_repository_eventlogs(
     from mergify_engine import events
 
     if not await eventlogs.use_events_redis_backend(repository_ctxt):
-        page = await events.get(session, current_page, repository_ctxt, old_format=True)
+        page = await events.get(session, current_page, repository_ctxt)
     else:
         page = await eventlogs.get(repository_ctxt, current_page)
 

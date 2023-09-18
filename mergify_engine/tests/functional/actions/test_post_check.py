@@ -1,6 +1,6 @@
 import operator
-from unittest import mock
 
+import anys
 import pytest
 
 from mergify_engine import context
@@ -83,7 +83,9 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
+                    "id": anys.ANY_INT,
                     "event": "action.post_check",
+                    "type": "action.post_check",
                     "metadata": {
                         "conclusion": "success",
                         "summary": "- [X] `#body<4096`\n"
@@ -98,7 +100,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     },
                     "repository": match_p["base"]["repo"]["full_name"],
                     "pull_request": match_p["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: body need sentry ticket",
                 },
             ],
@@ -114,7 +117,9 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
+                    "id": anys.ANY_INT,
                     "event": "action.post_check",
+                    "type": "action.post_check",
                     "metadata": {
                         "conclusion": "failure",
                         "summary": "- [ ] `approved-reviews-by=@testing`\n"
@@ -129,7 +134,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     },
                     "repository": unmatch_p["base"]["repo"]["full_name"],
                     "pull_request": unmatch_p["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: body need sentry ticket",
                 },
             ],
@@ -157,7 +163,9 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
+                    "id": anys.ANY_INT,
                     "event": "action.post_check",
+                    "type": "action.post_check",
                     "metadata": {
                         "conclusion": "failure",
                         "summary": "- [ ] `-label=ignore-guideline`\n"
@@ -172,11 +180,14 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     },
                     "pull_request": match_p["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: body need sentry ticket",
                 },
                 {
+                    "id": anys.ANY_INT,
                     "event": "action.post_check",
+                    "type": "action.post_check",
                     "metadata": {
                         "conclusion": "success",
                         "summary": "- [X] `#body<4096`\n"
@@ -191,7 +202,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     },
                     "repository": match_p["base"]["repo"]["full_name"],
                     "pull_request": match_p["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: body need sentry ticket",
                 },
             ],
@@ -263,7 +275,9 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
+                    "id": anys.ANY_INT,
                     "event": "action.post_check",
+                    "type": "action.post_check",
                     "metadata": {
                         "conclusion": "failure",
                         "summary": "- [ ] `body~=(?m)^(Fixes|Related|Closes) "
@@ -278,7 +292,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     },
                     "repository": unmatch_p["base"]["repo"]["full_name"],
                     "pull_request": unmatch_p["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: body need sentry ticket",
                 },
             ],

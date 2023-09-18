@@ -64,13 +64,14 @@ async def insert(
                 await session.commit()
 
 
-def format_event_item_response(
-    event: evt_models.Event, old_format: bool = False
-) -> dict[str, typing.Any]:
+def format_event_item_response(event: evt_models.Event) -> dict[str, typing.Any]:
+    # NOTE(lecrepont01): duplicate fields (MRGFY-2555)
     result: dict[str, typing.Any] = {
         "id": event.id,
-        "event" if old_format else "type": event.type.value,
-        "timestamp" if old_format else "received_at": event.received_at,
+        "event": event.type.value,
+        "type": event.type.value,
+        "timestamp": event.received_at,
+        "received_at": event.received_at,
         "trigger": event.trigger,
         "pull_request": event.pull_request,
         "repository": event.repository.name,
@@ -100,7 +101,6 @@ async def get(
     event_type: list[enumerations.EventType] | None = None,
     received_from: datetime.datetime | None = None,
     received_to: datetime.datetime | None = None,
-    old_format: bool = False,
 ) -> pagination.Page[Event]:
     backward = page.cursor is not None and page.cursor.startswith("-")
     results = await evt_models.Event.get(
@@ -126,13 +126,9 @@ async def get(
 
     events_list: list[eventlogs.Event] = []
     for raw in results:
-        event = typing.cast(
-            eventlogs.GenericEvent, format_event_item_response(raw, old_format)
-        )
+        event = typing.cast(eventlogs.GenericEvent, format_event_item_response(raw))
         try:
-            events_list.append(
-                eventlogs.cast_event_item(event, key="event" if old_format else "type")
-            )
+            events_list.append(eventlogs.cast_event_item(event))
         except eventlogs.UnsupportedEvent as err:
             LOG.error(err.message, event=err.event)
 

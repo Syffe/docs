@@ -2,7 +2,7 @@ import datetime
 import typing
 
 import fastapi
-import pydantic.dataclasses
+import pydantic
 
 from mergify_engine import database
 from mergify_engine import events as evt_utils
@@ -36,36 +36,10 @@ class EventsResponse(pagination.PageResponse[evt_utils.Event]):
     "/repos/{owner}/{repository}/logs",
     summary="Get the events log",
     description="Get the events logs of the requested repository",
-    response_model=EventsResponse,
     responses={
         **api.default_responses,  # type: ignore
         200: {
             "headers": pagination.LinkHeader,
-            "content": {
-                "application/json": {
-                    "example": {
-                        "size": 0,
-                        "per_page": 0,
-                        "total": 0,
-                        "events": [
-                            {
-                                "id": 0,
-                                "received_at": "2019-08-24T14:15:22Z",
-                                "timestamp": "2019-08-24T14:15:22Z",
-                                "trigger": "string",
-                                "repository": "string",
-                                "pull_request": 0,
-                                "type": "action.assign",
-                                "event": "action.assign",
-                                "metadata": {
-                                    "added": ["string"],
-                                    "removed": ["string"],
-                                },
-                            }
-                        ],
-                    }
-                }
-            },
         },
     },
 )
@@ -102,7 +76,6 @@ async def get_repository_events(
             event_type,
             received_from,
             received_to,
-            new_format=True,
         )
     else:
         page_response = await evt_utils.get(

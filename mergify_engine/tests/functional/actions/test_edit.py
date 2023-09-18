@@ -1,5 +1,4 @@
-from unittest import mock
-
+import anys
 import pytest
 
 from mergify_engine import settings
@@ -47,10 +46,13 @@ class TestEditAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
+                    "id": anys.ANY_INT,
                     "event": "action.edit",
+                    "type": "action.edit",
                     "pull_request": p["number"],
                     "metadata": {"draft": True},
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: convert Pull Request to Draft",
                     "repository": p_updated["pull_request"]["base"]["repo"][
                         "full_name"
@@ -95,10 +97,13 @@ class TestEditAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
+                    "id": anys.ANY_INT,
                     "event": "action.edit",
+                    "type": "action.edit",
                     "pull_request": p["number"],
                     "metadata": {"draft": False},
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: Remove Draft from Pull Request",
                     "repository": p_updated["pull_request"]["base"]["repo"][
                         "full_name"

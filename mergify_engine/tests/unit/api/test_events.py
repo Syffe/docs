@@ -189,6 +189,36 @@ async def insert_data(
     await db.commit()
 
 
+async def test_api_response(
+    web_client: conftest.CustomTestClient,
+    switched_to_pg: None,
+    api_token: str,
+    insert_data: None,
+) -> None:
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs?per_page=1",
+        headers={"Authorization": api_token},
+    )
+    assert response.json() == {
+        "size": 1,
+        "per_page": 1,
+        "total": 3,
+        "events": [
+            {
+                "id": 3,
+                "received_at": "2023-08-22T10:00:00Z",
+                "timestamp": "2023-08-22T10:00:00Z",
+                "trigger": "Rule: some other rule",
+                "repository": "mergify-engine",
+                "pull_request": 2,
+                "event": "action.merge",
+                "type": "action.merge",
+                "metadata": {"branch": "merge_branch"},
+            }
+        ],
+    }
+
+
 async def test_api_query_params(
     web_client: conftest.CustomTestClient,
     switched_to_pg: None,
@@ -450,6 +480,7 @@ async def test_new_api_db_switch(
         assert response.json()["events"][0]["trigger"] == "pg_evt"
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 async def test_old_api_db_switch(
     monkeypatch: pytest.MonkeyPatch,
     redis_links: redis_utils.RedisLinks,
@@ -467,12 +498,40 @@ async def test_old_api_db_switch(
         trigger="pg_evt",
     )
 
-    with freezegun.freeze_time(INITIAL_TIMESTAMP):
+    # test one redis event
+    monkeypatch.setattr(settings, "EVENTLOG_EVENTS_DB_INGESTION", False)
+    with freezegun.freeze_time(INITIAL_TIMESTAMP + datetime.timedelta(minutes=1)):
+        await signals.send(
+            repository=fake_repository,
+            pull_request=github_types.GitHubPullRequestNumber(1),
+            event="action.comment",
+            metadata=signals.EventCommentMetadata(message=""),
+            trigger="redis_evt",
+        )
+
         response = await web_client.get(
             "/v1/repos/Mergifyio/engine/events",
             headers={"Authorization": api_token},
         )
-        assert response.json()["total"] == 0
+        assert response.json() == {
+            "size": 1,
+            "per_page": 10,
+            "total": 1,
+            "events": [
+                {
+                    "id": anys.ANY_INT,
+                    "received_at": anys.ANY_DATETIME_STR,
+                    "timestamp": anys.ANY_DATETIME_STR,
+                    "trigger": "redis_evt",
+                    "repository": "Mergifyio/mergify-engine",
+                    "pull_request": 1,
+                    "event": "action.comment",
+                    "type": "action.comment",
+                    "metadata": {"message": ""},
+                }
+            ],
+        }
+        assert response.json()["total"] == 1
 
     # passed the eventlogs TTL the old API will use the postgreSQL backend
     with freezegun.freeze_time(
@@ -494,10 +553,12 @@ async def test_old_api_db_switch(
                 {
                     "id": 1,
                     "timestamp": anys.ANY_DATETIME_STR,
+                    "received_at": anys.ANY_DATETIME_STR,
                     "trigger": "pg_evt",
                     "repository": "mergify-engine",
                     "pull_request": 1,
                     "event": "action.comment",
+                    "type": "action.comment",
                     "metadata": {"message": ""},
                 }
             ],

@@ -67,10 +67,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         p1_expected_events = [
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.label",
+                "type": "action.label",
                 "metadata": {
                     "added": ["need-review"],
                     "removed": ["auto-merge"],
@@ -78,10 +81,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Rule: mergeit",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.assign",
+                "type": "action.assign",
                 "metadata": {
                     "added": ["mergify-test1"],
                     "removed": [],
@@ -89,28 +95,37 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Rule: mergeit",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.merge",
+                "type": "action.merge",
                 "metadata": {"branch": self.main_branch_name},
                 "trigger": "Rule: mergeit",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.comment",
+                "type": "action.comment",
                 "metadata": {"message": "Hello!"},
                 "trigger": "Rule: hello",
             },
         ]
         p2_expected_events = [
             {
+                "id": anys.ANY_INT,
                 "repository": p2["base"]["repo"]["full_name"],
                 "pull_request": p2["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.label",
+                "type": "action.label",
                 "metadata": {
                     "added": ["need-review"],
                     "removed": [],
@@ -118,10 +133,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Rule: mergeit",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p2["base"]["repo"]["full_name"],
                 "pull_request": p2["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.assign",
+                "type": "action.assign",
                 "metadata": {
                     "added": ["mergify-test1"],
                     "removed": [],
@@ -129,10 +147,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Rule: mergeit",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p2["base"]["repo"]["full_name"],
                 "pull_request": p2["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.merge",
+                "type": "action.merge",
                 "metadata": {"branch": self.main_branch_name},
                 "trigger": "Rule: mergeit",
             },
@@ -311,10 +332,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         p1_expected_events = [
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.merged",
+                "type": "action.queue.merged",
                 "metadata": {
                     "branch": self.main_branch_name,
                     "partition_names": [partr_config.DEFAULT_PARTITION_NAME],
@@ -324,10 +348,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Rule: queueit",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.leave",
+                "type": "action.queue.leave",
                 "metadata": {
                     "reason": f"Pull request #{p1['number']} has been merged automatically at *{p1['merge_commit_sha']}*",
                     "merged": True,
@@ -342,10 +369,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Rule: queueit",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.checks_end",
+                "type": "action.queue.checks_end",
                 "metadata": {
                     "aborted": False,
                     "abort_reason": "",
@@ -370,10 +400,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "merge queue internal",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.checks_start",
+                "type": "action.queue.checks_start",
                 "metadata": {
                     "queue_name": "default",
                     "branch": self.main_branch_name,
@@ -393,10 +426,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "merge queue internal",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.enter",
+                "type": "action.queue.enter",
                 "metadata": {
                     "queue_name": "default",
                     "branch": self.main_branch_name,
@@ -410,10 +446,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         repo_expected_events = [
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.merged",
+                "type": "action.queue.merged",
                 "metadata": {
                     "branch": self.main_branch_name,
                     "partition_names": [partr_config.DEFAULT_PARTITION_NAME],
@@ -423,10 +462,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Rule: queueit",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.leave",
+                "type": "action.queue.leave",
                 "metadata": {
                     "reason": f"Pull request #{p1['number']} has been merged automatically at *{p1['merge_commit_sha']}*",
                     "merged": True,
@@ -441,10 +483,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Rule: queueit",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.checks_end",
+                "type": "action.queue.checks_end",
                 "metadata": {
                     "aborted": False,
                     "abort_reason": "",
@@ -469,10 +514,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "merge queue internal",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": None,
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "queue.freeze.delete",
+                "type": "queue.freeze.delete",
                 "metadata": {
                     "queue_name": "default",
                     "deleted_by": {
@@ -484,10 +532,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Delete queue freeze",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": None,
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "queue.freeze.update",
+                "type": "queue.freeze.update",
                 "metadata": {
                     "queue_name": "default",
                     "reason": "test updated freeze reason",
@@ -501,10 +552,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Update queue freeze",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": None,
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "queue.freeze.create",
+                "type": "queue.freeze.create",
                 "metadata": {
                     "queue_name": "default",
                     "reason": "test freeze reason",
@@ -518,10 +572,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Create queue freeze",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.checks_start",
+                "type": "action.queue.checks_start",
                 "metadata": {
                     "queue_name": "default",
                     "branch": self.main_branch_name,
@@ -541,10 +598,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "merge queue internal",
             },
             {
+                "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.enter",
+                "type": "action.queue.enter",
                 "metadata": {
                     "branch": self.main_branch_name,
                     "position": 0,
@@ -583,10 +643,13 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         expected_events = [
             {
+                "id": anys.ANY_INT,
                 "repository": self.repository_ctxt.repo["full_name"],
                 "pull_request": 123,
-                "timestamp": mock.ANY,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
                 "event": "action.queue.merged",
+                "type": "action.queue.merged",
                 "metadata": {},
                 "trigger": "gogogo",
             },

@@ -1,5 +1,4 @@
-from unittest import mock
-
+import anys
 import pytest
 
 from mergify_engine import github_types
@@ -65,12 +64,15 @@ class TestLabelAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
+                    "id": anys.ANY_INT,
                     "repository": p_updated["pull_request"]["base"]["repo"][
                         "full_name"
                     ],
                     "pull_request": p_updated["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.label",
+                    "type": "action.label",
                     "metadata": {
                         "added": ["unstable"],
                         "removed": [],
@@ -78,12 +80,15 @@ class TestLabelAction(base.FunctionalTestBase):
                     "trigger": "Rule: rename label",
                 },
                 {
+                    "id": anys.ANY_INT,
                     "repository": p_updated["pull_request"]["base"]["repo"][
                         "full_name"
                     ],
                     "pull_request": p_updated["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.label",
+                    "type": "action.label",
                     "metadata": {
                         "added": ["foobar", "unstable"],
                         "removed": ["remove-me"],
@@ -162,12 +167,15 @@ class TestLabelAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
+                    "id": anys.ANY_INT,
                     "repository": p_updated["pull_request"]["base"]["repo"][
                         "full_name"
                     ],
                     "pull_request": p_updated["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.label",
+                    "type": "action.label",
                     "metadata": {"added": [], "removed": ["stable"]},
                     "trigger": "Rule: delete all labels",
                 }
@@ -222,22 +230,28 @@ class TestLabelAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
+                    "id": anys.ANY_INT,
                     "repository": p_updated["pull_request"]["base"]["repo"][
                         "full_name"
                     ],
                     "pull_request": p_updated["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.label",
+                    "type": "action.label",
                     "metadata": {"added": [], "removed": ["CI:fail"]},
                     "trigger": "Rule: toggle labels",
                 },
                 {
+                    "id": anys.ANY_INT,
                     "repository": p_updated["pull_request"]["base"]["repo"][
                         "full_name"
                     ],
                     "pull_request": p_updated["number"],
-                    "timestamp": mock.ANY,
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.label",
+                    "type": "action.label",
                     "metadata": {"added": ["CI:fail"], "removed": []},
                     "trigger": "Rule: toggle labels",
                 },
