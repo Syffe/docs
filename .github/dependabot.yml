@@ -12,7 +12,6 @@ updates:
         dependency-type: "all"
     ignore:
       - dependency-name: "setproctitle"
-      - dependency-name: "ddtrace"
   - package-ecosystem: npm
     directory: "/docs"
     schedule:
