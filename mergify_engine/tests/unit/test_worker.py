@@ -6,6 +6,7 @@ import time
 import typing
 from unittest import mock
 
+import daiquiri
 from freezegun import freeze_time
 import httpx
 import msgpack
@@ -32,6 +33,9 @@ from mergify_engine.worker import stream
 from mergify_engine.worker import stream_lua
 from mergify_engine.worker import stream_monitoring_service
 from mergify_engine.worker import task
+
+
+LOG = daiquiri.getLogger(__name__)
 
 
 # NOTE(sileht): old version of the worker_pusher.push() method (3.0.0)
@@ -2647,6 +2651,7 @@ async def test_dedicated_multiple_processes(
         github_types.GitHubAccountIdType(4446)
     }
 
+    LOG.log(42, "should move everything in shared process 0")
     get_subscription.side_effect = fake_get_subscription_shared
     await push_and_wait()
     await push_and_wait()

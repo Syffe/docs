@@ -120,9 +120,14 @@ class SimpleService:
 SIMPLE_SERVICES_REGISTRY: dict[str, type[SimpleService]] = {}
 
 
-async def stop_and_wait(tasks: list[TaskRetriedForever]) -> None:
+async def stop_and_wait(
+    tasks: list[TaskRetriedForever], log_extras: dict[str, typing.Any] | None = None
+) -> None:
+    if log_extras is None:
+        log_extras = {}
+
     names = [t.name for t in tasks]
-    LOG.info("tasks stopping", tasks=names, count=len(tasks))
+    LOG.info("tasks stopping", tasks=names, count=len(tasks), **log_extras)
     if tasks:
         for t in tasks:
             t.shutdown_requested.set()
@@ -141,5 +146,11 @@ async def stop_and_wait(tasks: list[TaskRetriedForever]) -> None:
                 LOG.warning(
                     "some tasks are too slow to exits, retrying",
                     tasks=[t.get_name() for t in pendings],
+                    **log_extras,
                 )
-    LOG.info("tasks stopped", tasks=names, count=len(tasks))
+    LOG.info(
+        "tasks stopped",
+        tasks=names,
+        count=len(tasks),
+        **log_extras,
+    )

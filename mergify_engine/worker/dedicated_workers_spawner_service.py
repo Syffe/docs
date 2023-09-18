@@ -71,7 +71,11 @@ class DedicatedStreamService(stream_service_base.StreamService):
 
         tasks = [self._dedicated_worker_tasks[owner_id] for owner_id in to_stop]
         if tasks:
-            await task.stop_and_wait(tasks)
+            log_extras = {
+                "process_index": self.process_index,
+                "dedicated_stream_processes": self.dedicated_stream_processes,
+            }
+            await task.stop_and_wait(tasks, log_extras=log_extras)
 
         for owner_id in to_stop:
             del self._dedicated_worker_tasks[owner_id]

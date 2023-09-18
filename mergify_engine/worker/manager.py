@@ -205,8 +205,12 @@ class ServiceManager:
 
     async def _stop_all_tasks(self) -> None:
         tasks_that_must_shutdown_first, other_tasks = self._get_tasks_to_stops()
-        await task.stop_and_wait(tasks_that_must_shutdown_first)
-        await task.stop_and_wait(other_tasks)
+        log_extras = {
+            "process_index": self.process_index,
+            "dedicated_stream_processes": self.dedicated_stream_processes,
+        }
+        await task.stop_and_wait(tasks_that_must_shutdown_first, log_extras=log_extras)
+        await task.stop_and_wait(other_tasks, log_extras=log_extras)
 
     def _get_tasks_to_stops(
         self,
