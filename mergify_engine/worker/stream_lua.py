@@ -184,11 +184,16 @@ CLEAN_STREAM_SCRIPT = redis_utils.register_script(
     """
 local bucket_org_key = KEYS[1]
 local scheduled_at_timestamp = ARGV[1]
-redis.call("HDEL", "attempts", bucket_org_key)
 if redis.call("ZCARD", bucket_org_key) == 0 then
     redis.call("ZREM", "streams", bucket_org_key)
+    return "deleted"
 else
-    redis.call("ZADD", "streams", scheduled_at_timestamp, bucket_org_key)
+    if scheduled_at_timestamp ~= "" then
+        redis.call("ZADD", "streams", "XX", scheduled_at_timestamp, bucket_org_key)
+        return "rescheduled"
+    else
+        return "nothing"
+    end
 end
 """
 )
@@ -198,11 +203,19 @@ end
 async def clean_org_bucket(
     redis: redis_utils.RedisStream,
     bucket_org_key: BucketOrgKeyType,
-    scheduled_at: datetime.datetime,
+    reschedule_org_at: datetime.datetime | None,
 ) -> None:
-    await redis_utils.run_script(
+    scheduled_at = ""
+    if reschedule_org_at is not None:
+        scheduled_at = str(reschedule_org_at.timestamp())
+    res = await redis_utils.run_script(
         redis,
         CLEAN_STREAM_SCRIPT,
         (bucket_org_key,),
-        (str(scheduled_at.timestamp()),),
+        (scheduled_at,),
+    )
+    LOG.warning(
+        "bucket %s",
+        res,
+        gh_owner_id=bucket_org_key.split("~")[1],
     )

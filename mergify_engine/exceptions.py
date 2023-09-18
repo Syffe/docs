@@ -24,6 +24,10 @@ class MergifyNotInstalled(Exception):
     pass
 
 
+class MergifyDisabledByUs(Exception):
+    pass
+
+
 @dataclasses.dataclass
 class RateLimited(Exception):
     countdown: datetime.timedelta

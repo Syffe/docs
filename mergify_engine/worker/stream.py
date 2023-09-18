@@ -283,21 +283,21 @@ class Processor:
                     await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_sources_key)
                     raise MaxPullRetry(attempts) from e
 
-            if isinstance(e, exceptions.MergifyNotInstalled):
+            if isinstance(
+                e,
+                exceptions.MergifyNotInstalled | exceptions.MergifyDisabledByUs,
+            ):
                 if bucket_sources_key:
                     await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_sources_key)
                 await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_org_key)
+                await stream_lua.drop_bucket(self.redis_links.stream, bucket_org_key)
                 raise OrgBucketUnused(bucket_org_key)
 
             if isinstance(e, exceptions.RateLimited):
                 retry_at = date.utcnow() + e.countdown
-                score = retry_at.timestamp()
                 if bucket_sources_key:
                     await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_sources_key)
                 await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_org_key)
-                await self.redis_links.stream.zadd(
-                    "streams", {bucket_org_key: score}, xx=True
-                )
                 raise OrgBucketRetry(bucket_org_key, 0, retry_at)
 
             backoff = exceptions.need_retry(e)
@@ -311,10 +311,6 @@ class Processor:
             )
             retry_in = 2 ** min(attempts, 3) * backoff
             retry_at = date.utcnow() + retry_in
-            score = retry_at.timestamp()
-            await self.redis_links.stream.zadd(
-                "streams", {bucket_org_key: score}, xx=True
-            )
             raise OrgBucketRetry(bucket_org_key, attempts, retry_at)
 
     async def consume(
@@ -325,6 +321,7 @@ class Processor:
     ) -> None:
         LOG.debug("consuming org bucket", gh_owner=owner_login_for_tracing)
 
+        reschedule_org_at = None
         try:
             async with self._translate_exception_to_retries(bucket_org_key):
                 sub = await subscription.Subscription.get_subscription(
@@ -338,7 +335,7 @@ class Processor:
                         gh_owner=owner_login_for_tracing,
                         subscription_reason=sub.reason,
                     )
-                    raise OrgBucketUnused(bucket_org_key)
+                    raise exceptions.MergifyDisabledByUs()
 
                 if sub.has_feature(subscription.Features.DEDICATED_WORKER):
                     if self.dedicated_owner_id is None:
@@ -402,6 +399,8 @@ class Processor:
                     if pulls_processed > 0:
                         await merge_train.Convoy.refresh_convoys(installation)
 
+            await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_org_key)
+
         except redis_exceptions.ConnectionError:
             statsd.increment("redis.client.connection.errors")
             LOG.warning(
@@ -409,21 +408,9 @@ class Processor:
                 bucket_org_key=bucket_org_key,
             )
         except OrgBucketUnused:
-            LOG.info(
-                "unused org bucket, dropping it",
-                gh_owner=owner_login_for_tracing,
-                exc_info=True,
-            )
-            try:
-                await stream_lua.drop_bucket(self.redis_links.stream, bucket_org_key)
-            except redis_exceptions.ConnectionError:
-                statsd.increment("redis.client.connection.errors")
-                LOG.warning(
-                    "fail to drop org bucket, it will be retried",
-                    gh_owner=owner_login_for_tracing,
-                    bucket_org_key=bucket_org_key,
-                )
+            LOG.info("unused org bucket, dropping it", gh_owner=owner_login_for_tracing)
         except OrgBucketRetry as e:
+            reschedule_org_at = e.retry_at
             log_method = LOG.info
             if e.attempts >= STREAM_ATTEMPTS_LOGGING_THRESHOLD:
                 if isinstance(
@@ -441,8 +428,9 @@ class Processor:
                 gh_owner=owner_login_for_tracing,
                 exc_info=True,
             )
-            return
         except Exception:
+            # let's do other orgs before
+            reschedule_org_at = date.utcnow()
             LOG.error(
                 "failed to process org bucket",
                 gh_owner=owner_login_for_tracing,
@@ -463,26 +451,43 @@ class Processor:
                     await self.redis_links.stream.delete(bucket)
                     await self.redis_links.stream.delete(ATTEMPTS_KEY)
                     await self.redis_links.stream.zrem(bucket_org_key, bucket)
+        else:
+            reschedule_org_at = date.utcnow()
+        finally:
+            await self._cleanup_org_bucket(
+                bucket_org_key,
+                reschedule_org_at,
+                logs_extra={"gh_owner": owner_login_for_tracing},
+            )
 
-        LOG.debug("cleanup org bucket start", bucket_org_key=bucket_org_key)
+    async def _cleanup_org_bucket(
+        self,
+        bucket_org_key: stream_lua.BucketOrgKeyType,
+        reschedule_org_at: datetime.datetime | None = None,
+        logs_extra: dict[str, typing.Any] | None = None,
+    ) -> None:
+        if logs_extra is None:
+            logs_extra = {}
+
+        LOG.debug(
+            "cleanup org bucket start", bucket_org_key=bucket_org_key, **logs_extra
+        )
         try:
             await stream_lua.clean_org_bucket(
                 self.redis_links.stream,
                 bucket_org_key,
-                date.utcnow(),
+                reschedule_org_at,
             )
-        except redis_exceptions.ConnectionError:
-            statsd.increment("redis.client.connection.errors")
+        except Exception as e:
+            if isinstance(e, redis_exceptions.ConnectionError):
+                statsd.increment("redis.client.connection.errors")
             LOG.warning(
                 "fail to cleanup org bucket, it maybe partially replayed",
                 bucket_org_key=bucket_org_key,
-                gh_owner=owner_login_for_tracing,
+                exc_info=True,
+                **logs_extra,
             )
-        LOG.debug(
-            "cleanup org bucket end",
-            bucket_org_key=bucket_org_key,
-            gh_owner=owner_login_for_tracing,
-        )
+        LOG.debug("cleanup org bucket end", bucket_org_key=bucket_org_key, **logs_extra)
 
     @staticmethod
     def _extract_infos_from_bucket_sources_key(
@@ -505,6 +510,7 @@ class Processor:
     async def select_pull_request_bucket(
         self,
         bucket_org_key: stream_lua.BucketOrgKeyType,
+        cleanup_if_bucket_is_empty: bool = False,
     ) -> PullRequestBucket | None:
         bucket_sources_keys: list[
             tuple[bytes, float]
@@ -514,6 +520,13 @@ class Processor:
             max="+inf",
             withscores=True,
         )
+
+        if cleanup_if_bucket_is_empty and not bucket_sources_keys:
+            # NOTE(sileht): This can only happen when _cleanup_empty_bucket() has been interrupted
+            # by CancelledError during worker shutdown, so we retry the cleanup here to avoid
+            # processing the an empty bucket in loop
+            await self._cleanup_org_bucket(bucket_org_key)
+            return None
 
         now = date.utcnow()
         for _bucket_sources_key, _bucket_score in bucket_sources_keys:

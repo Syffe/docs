@@ -51,7 +51,9 @@ class StreamService(task.SimpleService):
                 continue
 
             has_pull_requests_to_process = (
-                await stream_processor.select_pull_request_bucket(bucket_org_key)
+                await stream_processor.select_pull_request_bucket(
+                    bucket_org_key, cleanup_if_bucket_is_empty=True
+                )
             )
             if not has_pull_requests_to_process:
                 continue
