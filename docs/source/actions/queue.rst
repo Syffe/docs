@@ -1204,23 +1204,23 @@ Here is a table representing the partition and queues with the code below:
             queue_conditions:
               - label=hotfix
             merge_conditions:
-              - or:
-                - and:
-                  - queue-partition-name=projectA
+              - and:
+                - or:
+                  - queue-partition-name!=projectA
                   - check-success=ciA
-                - and:
-                  - queue-partition-name=projectB
+                - or:
+                  - queue-partition-name!=projectB
                   - check-success=ciB
 
           - name: default
             priority_rules: *priority_rules
             merge_conditions:
-              - or:
-                - and:
-                  - queue-partition-name=projectA
+              - and:
+                - or:
+                  - queue-partition-name!=projectA
                   - check-success=ciA
-                - and:
-                  - queue-partition-name=projectB
+                - or:
+                  - queue-partition-name!=projectB
                   - check-success=ciB
 
 .. _fallback partition example:
@@ -1298,27 +1298,27 @@ Here is a table representing the partition and queues with the code below:
             queue_conditions:
               - label=hotfix
             merge_conditions:
-              - or:
-                - and:
-                  - queue-partition-name=projectA
+              - and:
+                - or:
+                  - queue-partition-name!=projectA
                   - check-success=ciA
-                - and:
-                  - queue-partition-name=projectB
+                - or:
+                  - queue-partition-name!=projectB
                   - check-success=ciB
-                - and:
-                  - queue-partition-name=fallback
+                - or:
+                  - queue-partition-name!=fallback
                   - check-success=ciFallback
 
           - name: default
             priority_rules: *priority_rules
             merge_conditions:
-              - or:
-                - and:
-                  - queue-partition-name=projectA
+              - and:
+                - or:
+                  - queue-partition-name!=projectA
                   - check-success=ciA
-                - and:
-                  - queue-partition-name=projectB
+                - or:
+                  - queue-partition-name!=projectB
                   - check-success=ciB
-                - and:
-                  - queue-partition-name=fallback
+                - or:
+                  - queue-partition-name!=fallback
                   - check-success=ciFallback
