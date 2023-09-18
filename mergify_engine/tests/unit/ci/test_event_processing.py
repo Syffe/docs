@@ -147,36 +147,25 @@ async def test_process_event_stream_workflow_job(
     assert len(stream_events) == 0
 
 
-@pytest.mark.parametrize(
-    "event_file_name, log_message",
-    (
-        (
-            "workflow_job.completed_failure_no_steps.json",
-            "WorkflowJob without steps",
-        ),
-        (
-            "workflow_job.completed_failure_no_failed_steps.json",
-            "WorkflowJob: Can't find failed step on failed job",
-        ),
-    ),
-)
 async def test_process_event_stream_workflow_job_with_no_failed_steps(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     caplog: pytest.LogCaptureFixture,
-    event_file_name: str,
-    log_message: str,
 ) -> None:
     stream_event = {
         "event_type": "workflow_job",
-        "data": msgpack.packb(sample_ci_events_to_process[event_file_name].slim_event),
+        "data": msgpack.packb(
+            sample_ci_events_to_process[
+                "workflow_job.completed_failure_no_failed_steps.json"
+            ].slim_event
+        ),
     }
     await redis_links.stream.xadd("gha_workflow_job", stream_event)
 
     await event_processing.process_event_streams(redis_links)
 
-    assert caplog.messages == [log_message]
+    assert caplog.messages == ["WorkflowJob: Can't find failed step on failed job"]
 
 
 async def test_process_event_stream_broken_workflow_job(

@@ -15,6 +15,7 @@ from sqlalchemy import orm
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import exceptions
+from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -52,14 +53,16 @@ class UnexpectedLogEmbedderError(Exception):
 async def embed_log(
     openai_client: openai_api.OpenAIClient, job: github_actions.WorkflowJob
 ) -> None:
-    try:
-        log_lines = await download_failed_step_log(job)
-
-    except http.HTTPStatusError as e:
-        if e.response.status_code == 410:
-            job.log_status = github_actions.WorkflowJobLogStatus.GONE
-            return
-        raise
+    if job.failed_step_number is None:
+        log_lines = await download_failure_annotations(job)
+    else:
+        try:
+            log_lines = await download_failed_step_log(job)
+        except http.HTTPStatusError as e:
+            if e.response.status_code == 410:
+                job.log_status = github_actions.WorkflowJobLogStatus.GONE
+                return
+            raise
 
     tokens, truncated_log = await get_tokenized_cleaned_log(log_lines)
 
@@ -107,6 +110,34 @@ async def download_failed_step_log(job: github_actions.WorkflowJob) -> list[str]
 
         with zipfile.ZipFile(zip_data, "r") as zip_file:
             return get_lines_from_zip(zip_file, job)
+
+
+async def download_failure_annotations(job: github_actions.WorkflowJob) -> list[str]:
+    repo = job.repository
+
+    installation_json = await github.get_installation_from_login(repo.owner.login)
+    async with github.aget_client(installation_json) as client:
+        resp = await client.get(
+            f"/repos/{repo.owner.login}/{repo.name}/check-runs/{job.id}/annotations"
+        )
+
+        annotations = []
+        for annotation in typing.cast(list[github_types.GitHubAnnotation], resp.json()):
+            if annotation["annotation_level"] == "failure":
+                annotations.append(annotation["message"])
+
+        if not annotations:
+            raise UnexpectedLogEmbedderError(
+                "log-embedder: No failure annotation found",
+                log_extras={
+                    "workflow_run_id": job.workflow_run_id,
+                    "job_id": job.id,
+                    "gh_owner": repo.owner.login,
+                    "gh_repo": repo.name,
+                },
+            )
+
+        return annotations
 
 
 async def get_tokenized_cleaned_log(

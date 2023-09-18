@@ -396,12 +396,6 @@ class WorkflowJob(models.Base):
             return None
 
         if not workflow_job_data["steps"]:
-            LOG.error(
-                "WorkflowJob without steps",
-                workflow_job_data=workflow_job_data,
-                gh_owner=repository["owner"]["login"],
-                gh_repo=repository["name"],
-            )
             return None
 
         for step in workflow_job_data["steps"]:

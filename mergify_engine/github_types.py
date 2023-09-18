@@ -63,6 +63,7 @@ class GitHubInstallation(typing.TypedDict):
     target_type: GitHubAccountType
     permissions: GitHubInstallationPermissions
     suspended_at: ISODateTimeType | None
+    app_slug: typing.NotRequired[str]
 
 
 GitHubRefType = typing.NewType("GitHubRefType", str)

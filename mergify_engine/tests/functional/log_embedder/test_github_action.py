@@ -92,6 +92,65 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
         await download_and_check_log(job_event, 2)
 
+    async def test_log_downloading_with_no_steps(self) -> None:
+        ci = {
+            "name": "Continuous Integration",
+            "on": {"pull_request": {"branches": self.main_branch_name}},
+            "jobs": {
+                "unit-tests": {
+                    "timeout-minutes": 5,
+                    "runs-on": "dummy_runner",
+                    "steps": [
+                        {
+                            "name": "Say hi we count run_attempt here",
+                            "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }} run_attempt:${{ github.run_attempt }};exit 1",
+                        },
+                    ],
+                }
+            },
+        }
+
+        await self.setup_repo(
+            files={".github/workflows/ci.yml": yaml.dump(ci)},
+        )
+
+        await self.create_pr()
+        job_event = typing.cast(
+            github_types.GitHubEventWorkflowJob,
+            await self.wait_for("workflow_job", {"action": "queued"}),
+        )
+        assert job_event["workflow_job"] is not None
+
+        await self.client_integration.post(
+            f"{self.url_origin}/actions/runs/{job_event['workflow_job']['run_id']}/cancel"
+        )
+
+        job_event = typing.cast(
+            github_types.GitHubEventWorkflowJob,
+            await self.wait_for("workflow_job", {"action": "completed"}),
+        )
+        assert job_event["workflow_job"] is not None
+
+        await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
+
+        async with database.create_session() as session:
+            job = await session.scalar(
+                sqlalchemy.select(gha_model.WorkflowJob).where(
+                    gha_model.WorkflowJob.id == job_event["workflow_job"]["id"]
+                )
+            )
+
+        assert job is not None
+        assert job.failed_step_number is None
+        assert job.failed_step_name is None
+        assert job.steps == []
+
+        log = await gha_embedder.download_failure_annotations(job)
+
+        assert [
+            f"The run was canceled by @{self.installation_ctxt.installation['app_slug']}."
+        ] == log
+
     async def test_log_embedding(self) -> None:
         job_event, pr = await self.run_github_action(
             steps=[
