@@ -2921,6 +2921,48 @@ async def test_task_stop_ordering(
             },
             "jenkins",
         ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://devops.whatever.net/some-jenkins/job/some_job/job/1342/1/display/redirect",
+            },
+            "jenkins",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://gitlab.com/org/repo/-/pipelines/53223",
+            },
+            "gitlab",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://app.bitrise.io/app/3434/pipelines/314123",
+            },
+            "bitrise",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://app.snyk.io/org/some-org/pr-checks/134342/license",
+            },
+            "snyk",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://app.terraform.io/app/some-org/some-job/runs/123",
+            },
+            "terraform",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://us-east-1.console.aws.amazon.com/codebuild/home?region=us-east-1#/builds/some-build:123/view/new",
+            },
+            "codebuild",
+        ),
     ),
 )
 def test_extract_app_from_status(

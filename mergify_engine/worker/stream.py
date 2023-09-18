@@ -925,7 +925,22 @@ def _extract_app_from_status_event(
         if parsed_target_url.hostname:
             if parsed_target_url.hostname.endswith("circleci.com"):
                 return "circleci"
+            if parsed_target_url.hostname.endswith("gitlab.com"):
+                return "gitlab"
+            if parsed_target_url.hostname.endswith("bitrise.io"):
+                return "bitrise"
+            if parsed_target_url.hostname.endswith("snyk.io"):
+                return "snyk"
+            if parsed_target_url.hostname.endswith("terraform.io"):
+                return "terraform"
+
             if "jenkins" in re.split(r"\W", parsed_target_url.hostname.lower()):
+                return "jenkins"
+
+        if parsed_target_url.path:
+            if parsed_target_url.path.startswith("/codebuild"):
+                return "codebuild"
+            if "jenkins" in re.split(r"\W", parsed_target_url.path.lower()):
                 return "jenkins"
 
     LOG.info(
