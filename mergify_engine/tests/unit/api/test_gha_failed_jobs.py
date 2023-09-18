@@ -8,7 +8,7 @@ import sqlalchemy
 
 from mergify_engine.models import github_actions
 from mergify_engine.tests import conftest
-from mergify_engine.tests.unit import test_utils
+from mergify_engine.tests import utils as tests_utils
 
 
 @pytest.mark.populated_db_datasets("TestApiGhaFailedJobsDataset")
@@ -37,7 +37,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
     assert jobs[3].steps is not None
     assert jobs[4].steps is not None
 
-    await test_utils.configure_web_client_to_work_with_a_repo(
+    await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock, populated_db, web_client, "OneAccount/OneRepo"
     )
 
@@ -202,7 +202,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
     }
 
     # Request another repo
-    await test_utils.configure_web_client_to_work_with_a_repo(
+    await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock, populated_db, web_client, "colliding_acount_1/colliding_repo_name"
     )
 
@@ -269,7 +269,7 @@ async def test_api_get_gha_failed_jobs_no_step(
 
     job.steps = None
 
-    await test_utils.configure_web_client_to_work_with_a_repo(
+    await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock, populated_db, web_client, "colliding_acount_1/colliding_repo_name"
     )
 
@@ -335,7 +335,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
     assert jobs[3].steps is not None
     assert jobs[4].steps is not None
 
-    await test_utils.configure_web_client_to_work_with_a_repo(
+    await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock, populated_db, web_client, "OneAccount/OneRepo"
     )
 
@@ -409,7 +409,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
 
     assert reply.status_code == 404
 
-    await test_utils.configure_web_client_to_work_with_a_repo(
+    await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock, populated_db, web_client, "colliding_acount_1/colliding_repo_name"
     )
 

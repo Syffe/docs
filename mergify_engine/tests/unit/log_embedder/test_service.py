@@ -22,11 +22,11 @@ from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
 from mergify_engine.models import github_repository
+from mergify_engine.tests import utils as tests_utils
 from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATASET
 from mergify_engine.tests.openai_embedding_dataset import (
     OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT,
 )
-from mergify_engine.tests.unit.test_utils import add_workflow_job
 
 
 GHA_CI_LOGS_ZIP_DIRECTORY = os.path.join(
@@ -119,7 +119,7 @@ async def test_embed_logs_on_controlled_data(
 
     # Create 3 jobs (LOG_EMBEDDER_JOBS_BATCH_SIZE + 1)
     for i in range(3):
-        job = add_workflow_job(
+        job = tests_utils.add_workflow_job(
             db,
             {
                 "id": i,

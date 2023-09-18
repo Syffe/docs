@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import os
 import pathlib
@@ -7,15 +9,23 @@ import typing
 from unittest import mock
 
 import click.testing
+import respx
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
 from mergify_engine import database
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine.config import types
+from mergify_engine.models import github_actions
+from mergify_engine.models import github_repository
+from mergify_engine.models import github_user
 from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.tests import conftest
+from mergify_engine.tests.db_populator import DbPopulator
 
 
 async def load_mergify_config(content: str) -> mergify_conf.MergifyConfig:
@@ -100,3 +110,114 @@ def test_console_scripts(
         return result
     finally:
         database.APP_STATE = saved_state
+
+
+def add_workflow_job(
+    session: sqlalchemy.ext.asyncio.AsyncSession,
+    job_data: dict[str, typing.Any],
+) -> github_actions.WorkflowJob:
+    job = github_actions.WorkflowJob(
+        id=job_data["id"],
+        repository=job_data["repository"],
+        log_embedding=job_data.get("log_embedding"),
+        log_status=job_data.get("log_status"),
+        embedded_log=job_data.get("embedded_log"),
+        workflow_run_id=job_data.get("workflow_run_id", 1),
+        name=job_data.get("name", "job_name"),
+        started_at=job_data.get(
+            "started_at",
+            github_types.ISODateTimeType(date.utcnow().isoformat()),
+        ),
+        completed_at=job_data.get(
+            "completed_at",
+            github_types.ISODateTimeType(date.utcnow().isoformat()),
+        ),
+        conclusion=job_data.get(
+            "conclusion", github_actions.WorkflowJobConclusion.SUCCESS
+        ),
+        labels=job_data.get("labels", []),
+        run_attempt=job_data.get("run_attempt", 1),
+        failed_step_name=job_data.get("failed_step_name"),
+        failed_step_number=job_data.get("failed_step_number"),
+        steps=job_data.get("steps"),
+    )
+    session.add(job)
+    return job
+
+
+async def mock_user_authorization_on_repo(
+    respx_mock: respx.MockRouter,
+    repo: github_types.GitHubRepository,
+    db: sqlalchemy.ext.asyncio.AsyncSession | None = None,
+    user: github_user.GitHubUser | None = None,
+    permission: github_types.GitHubRepositoryPermission = github_types.GitHubRepositoryPermission.WRITE,
+) -> github_user.GitHubUser:
+    if user is None:
+        if db is None:
+            raise RuntimeError("If user is not provided, db must be set")
+        user = github_user.GitHubUser(
+            id=DbPopulator.next_id(github_user.GitHubUser),
+            login=github_types.GitHubLogin("user_login"),
+            oauth_access_token=github_types.GitHubOAuthToken("user-token"),
+        )
+        db.add(user)
+        await db.commit()
+
+    respx_mock.get(
+        f"https://api.github.com/users/{repo['owner']['login']}/installation"
+    ).respond(200, json={"account": repo["owner"]})
+    respx_mock.get(
+        f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}"
+    ).respond(
+        200, json=repo  # type: ignore[arg-type]
+    )
+    respx_mock.get(
+        f"http://localhost:5000/engine/subscription/{repo['owner']['id']}"
+    ).respond(
+        200,
+        json={
+            "subscription_active": True,
+            "subscription_reason": "",
+            "features": [feature.value for feature in subscription.Features],
+        },
+    )
+
+    respx_mock.get(
+        f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}/collaborators/{user.login}/permission"
+    ).respond(
+        200,
+        json=github_types.GitHubRepositoryCollaboratorPermission(  # type: ignore[arg-type]
+            {
+                "user": repo["owner"],
+                "permission": permission.value,
+            }
+        ),
+    )
+
+    return user
+
+
+async def configure_web_client_to_work_with_a_repo(
+    respx_mock: respx.MockRouter,
+    session: sqlalchemy.ext.asyncio.AsyncSession,
+    web_client: conftest.CustomTestClient,
+    repo_full_name: str,
+) -> None:
+    repo_info = typing.cast(
+        github_types.GitHubRepository,
+        (
+            (
+                await session.execute(
+                    sqlalchemy.select(github_repository.GitHubRepository)
+                    .where(
+                        github_repository.GitHubRepository.full_name == repo_full_name
+                    )
+                    .limit(1)
+                )
+            ).scalar_one()
+        ).as_dict(),
+    )
+
+    user = await mock_user_authorization_on_repo(respx_mock, repo_info, session)
+
+    await web_client.log_as(user.id)

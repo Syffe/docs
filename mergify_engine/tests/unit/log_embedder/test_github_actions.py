@@ -9,7 +9,7 @@ from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
 from mergify_engine.models import github_repository
-from mergify_engine.tests.unit.test_utils import add_workflow_job
+from mergify_engine.tests import utils as tests_utils
 
 
 async def get_cosine_similarity_for_job(
@@ -37,7 +37,7 @@ async def test_compute_log_embedding_cosine_similarity(
     db.add(repo2)
 
     # Jobs
-    job_pep8_1_repo1 = add_workflow_job(
+    job_pep8_1_repo1 = tests_utils.add_workflow_job(
         db,
         {
             "id": 1,
@@ -48,7 +48,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
         },
     )
-    job_pep8_2_repo1 = add_workflow_job(
+    job_pep8_2_repo1 = tests_utils.add_workflow_job(
         db,
         {
             "id": 2,
@@ -59,7 +59,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
         },
     )
-    job_pep8_3_repo1 = add_workflow_job(
+    job_pep8_3_repo1 = tests_utils.add_workflow_job(
         db,
         {
             "id": 3,
@@ -70,7 +70,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
         },
     )
-    job_pep8_1_repo2 = add_workflow_job(
+    job_pep8_1_repo2 = tests_utils.add_workflow_job(
         db,
         {
             "id": 4,
@@ -81,7 +81,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
         },
     )
-    job_pep8_2_repo2 = add_workflow_job(
+    job_pep8_2_repo2 = tests_utils.add_workflow_job(
         db,
         {
             "id": 5,
@@ -92,7 +92,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
         },
     )
-    job_docker_1_repo2 = add_workflow_job(
+    job_docker_1_repo2 = tests_utils.add_workflow_job(
         db,
         {
             "id": 6,
@@ -103,7 +103,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
         },
     )
-    job_docker_2_repo2 = add_workflow_job(
+    job_docker_2_repo2 = tests_utils.add_workflow_job(
         db,
         {
             "id": 7,
