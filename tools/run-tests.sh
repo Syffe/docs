@@ -2,6 +2,16 @@
 
 set -exo pipefail
 
+PYTHON_EXTRACT_DOCKER_PORT="
+import json, sys
+data = json.load(sys.stdin)
+if isinstance(data, list):
+    port = data[0]['Publishers'][0]['PublishedPort']
+else:
+    port = data['Publishers'][0]['PublishedPort']
+print(port)
+"
+
 if [ "$CI" == "true" ]; then
     REDIS_PORT=6363
     POSTGRES_PORT=5432
@@ -19,8 +29,8 @@ else
     }
     trap cleanup EXIT
 
-    POSTGRES_PORT=$(docker compose ps postgres --format=json | python3 -c "import json,sys; print(json.load(sys.stdin)[0]['Publishers'][0]['PublishedPort'])")
-    REDIS_PORT=$(docker compose ps redis --format=json | python3 -c "import json,sys; print(json.load(sys.stdin)[0]['Publishers'][0]['PublishedPort'])")
+    POSTGRES_PORT=$(docker compose ps postgres --format=json | python3 -c "$PYTHON_EXTRACT_DOCKER_PORT")
+    REDIS_PORT=$(docker compose ps redis --format=json | python3 -c "$PYTHON_EXTRACT_DOCKER_PORT")
 fi
 
 
