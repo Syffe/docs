@@ -1570,7 +1570,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             if not unsuccessful_checks:
                 self.train.log.error(
                     "unsuccessful_checks is unexpectedly empty",
-                    last_checks=self.last_checks,
+                    last_checks=self.last_checks.copy(),
                     raw_unsuccessful_checks=raw_unsuccessful_checks,
                     related_checks=related_checks,
                     train_car_outcome=self.train_car_state.outcome,
