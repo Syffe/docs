@@ -28,10 +28,6 @@ async def test_applications_life_cycle(
     db.add(user)
     await db.commit()
 
-    respx_mock.post(f"{settings.SUBSCRIPTION_URL}/engine/applications").respond(
-        status_code=404
-    )
-
     await web_client.log_as(user.id)
 
     resp = await web_client.get("/front/github-account/424242/applications")
@@ -151,10 +147,6 @@ async def test_create_application_for_orgs(
     )
     db.add(user)
     await db.commit()
-
-    respx_mock.post(f"{settings.SUBSCRIPTION_URL}/engine/applications").respond(
-        status_code=404
-    )
 
     await web_client.log_as(user.id)
 

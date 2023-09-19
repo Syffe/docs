@@ -263,11 +263,15 @@ async def redis_stats(
     return redis_links.stats
 
 
+@pytest.fixture(autouse=True)
+def reset_app_tokens_storage(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(github.CachedToken, "STORAGE", {})
+
+
 @pytest.fixture()
 async def github_server(
     monkeypatch: pytest.MonkeyPatch,
 ) -> abc.AsyncGenerator[respx.MockRouter, None]:
-    monkeypatch.setattr(github.CachedToken, "STORAGE", {})
     async with respx.mock(base_url=settings.GITHUB_REST_API_URL) as respx_mock:
         respx_mock.post("/app/installations/12345/access_tokens").respond(
             200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}

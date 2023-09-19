@@ -19,7 +19,6 @@ async def test_saas_proxy_saas_mode_true(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
-    front_login_mock: None,
 ) -> None:
     monkeypatch.setattr(settings, "SAAS_MODE", True)
 
@@ -65,7 +64,6 @@ async def test_saas_proxy_saas_mode_false(
     monkeypatch: pytest.MonkeyPatch,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     web_client: conftest.CustomTestClient,
-    front_login_mock: None,
 ) -> None:
     monkeypatch.setattr(settings, "SAAS_MODE", False)
 
@@ -98,7 +96,6 @@ async def test_saas_subscription_with_saas_mode_true(
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
     redis_links: redis_utils.RedisLinks,
-    front_login_mock: None,
 ) -> None:
     monkeypatch.setattr(settings, "SAAS_MODE", True)
 
@@ -164,7 +161,6 @@ async def test_saas_subscription_with_saas_mode_false(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
-    front_login_mock: None,
 ) -> None:
     monkeypatch.setattr(settings, "SAAS_MODE", False)
 
@@ -233,7 +229,6 @@ async def test_saas_intercom_with_saas_mode_true(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
-    front_login_mock: None,
 ) -> None:
     monkeypatch.setattr(settings, "SAAS_MODE", True)
 
@@ -300,7 +295,6 @@ async def test_saas_proxy_redirect(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
-    front_login_mock: None,
 ) -> None:
     monkeypatch.setattr(settings, "SAAS_MODE", True)
 

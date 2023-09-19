@@ -13,7 +13,9 @@ from mergify_engine.tests import conftest
 async def prepare_respx_mock(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
-    permission: github_types.GitHubRepositoryPermission,
+    permission: github_types.GitHubRepositoryPermissionLiteral,
+    web_client: conftest.CustomTestClient,
+    will_access_to_repo: bool,
 ) -> github_user.GitHubUser:
     user = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(42),
@@ -33,28 +35,26 @@ async def prepare_respx_mock(
     )
     respx_mock.get(
         "https://api.github.com/repos/user-login/engine/collaborators/user-login/permission"
-    ).respond(
-        200,
-        json=github_types.GitHubRepositoryCollaboratorPermission(  # type: ignore[arg-type]
-            {"user": api_user, "permission": permission}
-        ),
-    )
+    ).respond(200, json={"user": api_user, "permission": permission})
+
     config = """
 queue_rules:
   - name: main
     merge_conditions: []
 """
-    respx_mock.get(
-        "https://api.github.com/repos/user-login/engine/contents/.mergify.yml?ref=main"
-    ).respond(
-        200,
-        json=github_types.GitHubContentFile(  # type: ignore[arg-type]
-            type="file",
-            content=encodebytes(config.encode()).decode(),
-            sha=github_types.SHAType("azertyuiop"),
-            path=github_types.GitHubFilePath("whatever"),
-        ),
-    )
+    if will_access_to_repo:
+        respx_mock.get(
+            "https://api.github.com/repos/user-login/engine/contents/.mergify.yml?ref=main"
+        ).respond(
+            200,
+            json=github_types.GitHubContentFile(  # type: ignore[arg-type]
+                type="file",
+                content=encodebytes(config.encode()).decode(),
+                sha=github_types.SHAType("azertyuiop"),
+                path=github_types.GitHubFilePath("whatever"),
+            ),
+        )
+
     respx_mock.get("https://api.github.com/users/Mergifyio/installation").respond(
         200, json={"account": api_user}
     )
@@ -109,11 +109,12 @@ async def test_engine_proxy_get_queue_freeze(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
-    front_login_mock: None,
-    permission: github_types.GitHubRepositoryPermission,
+    permission: github_types.GitHubRepositoryPermissionLiteral,
     expected_status_code: int,
 ) -> None:
-    user = await prepare_respx_mock(db, respx_mock, permission)
+    user = await prepare_respx_mock(
+        db, respx_mock, permission, web_client, expected_status_code != 403
+    )
 
     url = "/front/proxy/engine/v1/repos/Mergifyio/engine/queues/freezes"
     response = await web_client.get(url)
@@ -132,11 +133,12 @@ async def test_engine_proxy_update_queue_freeze(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
-    front_login_mock: None,
-    permission: github_types.GitHubRepositoryPermission,
+    permission: github_types.GitHubRepositoryPermissionLiteral,
     expected_status_code: int,
 ) -> None:
-    user = await prepare_respx_mock(db, respx_mock, permission)
+    user = await prepare_respx_mock(
+        db, respx_mock, permission, web_client, expected_status_code != 403
+    )
 
     url = "/front/proxy/engine/v1/repos/Mergifyio/engine/queue/main/freeze"
     response = await web_client.put(url, json={"reason": "stop", "cascading": True})
@@ -160,12 +162,13 @@ async def test_engine_proxy_delete_queue_freeze(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
-    front_login_mock: None,
-    permission: github_types.GitHubRepositoryPermission,
+    permission: github_types.GitHubRepositoryPermissionLiteral,
     expected_status_code: int,
     expected_json: dict[str, str],
 ) -> None:
-    user = await prepare_respx_mock(db, respx_mock, permission)
+    user = await prepare_respx_mock(
+        db, respx_mock, permission, web_client, expected_status_code != 403
+    )
 
     url = "/front/proxy/engine/v1/repos/Mergifyio/engine/queue/main/freeze"
     response = await web_client.delete(url)

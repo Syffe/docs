@@ -94,6 +94,11 @@ class GitHubRepositoryList(typing.TypedDict):
     total_count: int
 
 
+GitHubRepositoryPermissionLiteral = typing.Literal[
+    "none", "read", "write", "maintain", "admin"
+]
+
+
 @functools.total_ordering
 class GitHubRepositoryPermission(enum.Enum):
     level: int

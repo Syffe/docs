@@ -5,6 +5,7 @@ import urllib.parse
 
 import anys
 import freezegun
+import httpx
 import pytest
 import respx
 import sqlalchemy.ext.asyncio
@@ -108,6 +109,12 @@ async def api_token(
                 "expires_at": "2111-09-08T17:26:27Z",
             }
         ),  # type: ignore[arg-type]
+    )
+
+    # NOTE(sileht): We don't care if access token is used ot not,
+    # so call it once to please respx.assert_all_called()
+    httpx.post(
+        "https://api.github.com/app/installations/42/access_tokens", json={"foo": "bar"}
     )
 
     # get account subscription to Mergify

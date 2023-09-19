@@ -13,7 +13,6 @@ async def test_github_proxy(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
-    front_login_mock: None,
 ) -> None:
     user = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(42),

@@ -30,9 +30,24 @@ def build_request(path: str) -> starlette.requests.Request:
 
 
 async def test_new_user(
-    front_login_mock: None,
+    respx_mock: respx.MockRouter,
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
+    github_api_user = github_types.GitHubAccount(
+        {
+            "id": github_types.GitHubAccountIdType(42),
+            "login": github_types.GitHubLogin("user-login"),
+            "avatar_url": "http://example.com/logo",
+            "type": "User",
+        }
+    )
+
+    respx_mock.post(
+        "http://localhost:5000/engine/user-update",
+        json={"user": github_api_user, "token": "user-token"},
+    ).respond(204)
+    respx_mock.get("/user").respond(200, json=dict(github_api_user))
+
     await auth.create_or_update_user(
         build_request("/front/auth/authorized"),
         db,
@@ -52,17 +67,18 @@ async def test_new_user(
 
 
 @pytest.mark.parametrize(
-    "query_string, status_code, redirect_url",
+    "query_string, status_code, redirect_url, has_repositories",
     (
         (
             "setup_action=install&installation_id=123",
             200,
             "/github/user-login?new=true",
+            True,
         ),
-        ("setup_action=install&installation_id=456", 200, "/github?new=true"),
-        ("setup_action=request", 200, "/github?request=true"),
-        ("setup_action=unknown", 200, "/"),
-        ("setup_action=install", 400, None),
+        ("setup_action=install&installation_id=123", 200, "/github?new=true", False),
+        ("setup_action=request", 200, "/github?request=true", None),
+        ("setup_action=unknown", 200, "/", None),
+        ("setup_action=install", 400, None, None),
     ),
 )
 async def test_auth_setup(
@@ -71,7 +87,8 @@ async def test_auth_setup(
     query_string: str,
     status_code: int,
     redirect_url: str | None,
-    front_login_mock: None,
+    has_repositories: bool | None,
+    respx_mock: respx.MockRouter,
 ) -> None:
     user = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(42),
@@ -80,6 +97,23 @@ async def test_auth_setup(
     )
     db.add(user)
     await db.commit()
+
+    github_api_user = user.to_github_account()
+
+    setup_action = parse.parse_qs(query_string).get("setup_action")
+    if redirect_url and setup_action and setup_action[0] == "install":
+        respx_mock.post(
+            "http://localhost:5000/engine/user-update",
+            json={"user": github_api_user, "token": user.oauth_access_token},
+        ).respond(204)
+        respx_mock.get("/user").respond(200, json=dict(github_api_user))
+
+    if has_repositories is True:
+        respx_mock.get("/user/installations/123/repositories").respond(
+            200, json={"repositories": [{"owner": github_api_user}], "total_count": 1}
+        )
+    elif has_repositories is False:
+        respx_mock.get("/user/installations/123/repositories").respond(404)
 
     await web_client.log_as(user.id)
     assert await web_client.logged_as() == "user-login"
@@ -93,7 +127,6 @@ async def test_auth_setup(
 async def test_auth_lifecycle(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     web_client: conftest.CustomTestClient,
-    front_login_mock: None,
     respx_mock: respx.MockRouter,
 ) -> None:
     user = github_user.GitHubUser(
@@ -104,10 +137,17 @@ async def test_auth_lifecycle(
     db.add(user)
     await db.commit()
 
+    github_api_user = user.to_github_account()
+
+    respx_mock.post(
+        "http://localhost:5000/engine/user-update",
+        json={"user": github_api_user, "token": user.oauth_access_token},
+    ).respond(204)
+    respx_mock.get("/user").respond(200, json=dict(github_api_user))
+
     respx_mock.post("https://github.com/login/oauth/access_token").respond(
-        200, json={"access_token": "foobar"}
+        200, json={"access_token": user.oauth_access_token}
     )
-    respx_mock.post("http://localhost:5000/engine/user-update").respond(200)
     respx_mock.get("https://api.github.com/repos/foo/bar/pulls").respond(200, json=[])
 
     await web_client.log_as(user.id)

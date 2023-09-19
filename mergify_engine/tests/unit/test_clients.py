@@ -277,7 +277,8 @@ async def test_client_temporary_HTTP_500(respx_mock: respx.MockRouter) -> None:
         await client.get("https://foobar/")
 
 
-async def test_client_connection_error() -> None:
+async def test_client_connection_error(respx_mock: respx.MockRouter) -> None:
+    respx_mock.route(host="localhost").pass_through()
     async with http.AsyncClient() as client:
         client.retry_exponential_multiplier = 0
         with pytest.raises(http.RequestError):

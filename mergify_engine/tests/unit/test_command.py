@@ -181,13 +181,13 @@ def create_fake_installation_client(
             None,
             "nothing",
             "@mergifyio something",
-            "Sorry but I didn't understand the command",
+            commands_runner.UNKNOWN_COMMAND_MESSAGE,
         ),
         (
             123,
             "nothing",
             "@mergifyio something",
-            "Sorry but I didn't understand the command",
+            commands_runner.UNKNOWN_COMMAND_MESSAGE,
         ),
         (
             666,
@@ -205,19 +205,19 @@ def create_fake_installation_client(
             666,
             "admin",
             "@mergifyio something",
-            "Sorry but I didn't understand the command",
+            commands_runner.UNKNOWN_COMMAND_MESSAGE,
         ),
         (
             666,
             "write",
             "@mergifyio something",
-            "Sorry but I didn't understand the command",
+            commands_runner.UNKNOWN_COMMAND_MESSAGE,
         ),
         (
             666,
             "write",
             "@mergifyio something",
-            "Sorry but I didn't understand the command",
+            commands_runner.UNKNOWN_COMMAND_MESSAGE,
         ),
     ],
 )
@@ -235,13 +235,16 @@ async def test_run_command_with_user(
     user = create_fake_user(user_id)
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
 
-    respx_mock.get(f"{ctxt.base_url}/collaborators/{user['login']}/permission").respond(
-        200,
-        json={
-            "permission": permission,
-            "user": user,
-        },
-    )
+    if result and result != commands_runner.UNKNOWN_COMMAND_MESSAGE:
+        respx_mock.get(
+            f"{ctxt.base_url}/collaborators/{user['login']}/permission"
+        ).respond(
+            200,
+            json={
+                "permission": permission,
+                "user": user,
+            },
+        )
 
     respx_mock.get(f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments").respond(
         200,
@@ -268,18 +271,18 @@ async def test_run_command_with_user(
             ),
         ],
     )
-    post_comment_router = respx_mock.post(
-        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments"
-    ).respond(200, json={})
+
+    if result is not None:
+        post_comment_router = respx_mock.post(
+            f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments"
+        ).respond(200, json={})
 
     await commands_runner.run_commands_tasks(
         ctxt=ctxt,
         mergify_config=await get_empty_config(),
     )
 
-    if result is None:
-        assert post_comment_router.call_count == 0
-    else:
+    if result is not None:
         assert post_comment_router.call_count == 1
         assert result in json.loads(post_comment_router.calls[0][0].content)["body"]
 
@@ -557,13 +560,6 @@ async def test_pending_commands_ordering(
     user = create_fake_user()
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
 
-    respx_mock.get(f"{ctxt.base_url}/collaborators/{user['login']}/permission").respond(
-        200,
-        json={
-            "permission": "write",
-            "user": user,
-        },
-    )
     respx_mock.get(f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments").respond(
         200,
         json=[

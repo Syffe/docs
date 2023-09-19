@@ -9,6 +9,7 @@ from unittest import mock
 import jinja2
 import jinja2.sandbox
 import pytest
+import respx
 import voluptuous
 
 from mergify_engine import context
@@ -297,6 +298,16 @@ class FakePullRequest(context.BasePullRequest):
         self.attrs["status-success"] = self.attrs.get("check-success", [])  # type: ignore
         self.attrs["status-neutral"] = self.attrs.get("check-neutral", [])  # type: ignore
         self.attrs["status-failure"] = self.attrs.get("check-failure", [])  # type: ignore
+
+
+@pytest.fixture(autouse=True)
+def respx_configuration(
+    respx_mock: respx.MockRouter,
+) -> abc.Generator[None, None, None]:
+    # This ensures 0 real httpx called is done
+    yield
+    # And that all respx mocked endpoint are used
+    respx_mock.assert_all_called()
 
 
 @pytest.fixture(autouse=True)
