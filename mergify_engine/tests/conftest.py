@@ -97,6 +97,11 @@ def logger_checker(
         "call",
         "teardown",
     )
+    if "logger_checker_ignore" in request.keywords:
+        ignored_logs = request.keywords["logger_checker_ignore"].args
+    else:
+        ignored_logs = set()
+
     for when in whens:
         messages = [
             rec.getMessage()
@@ -105,6 +110,7 @@ def logger_checker(
             # FIXME(sileht): redis/asyncio bug
             # https://github.com/redis/redis-py/issues/2749
             and "coro=<Connection.disconnect() done" not in rec.getMessage()
+            and rec.getMessage() not in ignored_logs
         ]
         assert [] == messages
 

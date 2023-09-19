@@ -2307,7 +2307,11 @@ class BasePullRequest:
         if name == "queue-dequeue-reason":
             try:
                 return (
-                    (await action_utils.get_unqueue_reason_from_outcome(ctxt))
+                    (
+                        await action_utils.get_unqueue_reason_from_outcome(
+                            ctxt, error_if_unknown=False
+                        )
+                    )
                     .unqueue_code.lower()
                     .replace("_", "-")
                 )

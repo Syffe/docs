@@ -11,6 +11,7 @@ from mergify_engine import settings
 from mergify_engine.clients import http
 from mergify_engine.models import github_user
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.queue.merge_train import train_car
 from mergify_engine.rules import types
 
 
@@ -216,7 +217,7 @@ def get_invalid_credentials_report(
 
 
 async def get_unqueue_reason_from_outcome(
-    ctxt: context.Context,
+    ctxt: context.Context, error_if_unknown: bool = True
 ) -> queue_utils.BaseUnqueueReason:
     from mergify_engine.queue.merge_train import train_car_state as tcs
 
@@ -232,11 +233,17 @@ async def get_unqueue_reason_from_outcome(
         return queue_utils.PrDequeued(ctxt.pull["number"], " by an `unqueue` command")
 
     train_car_state = tcs.TrainCarStateForSummary.deserialize_from_summary(check)
-    if train_car_state is None:
-        # NOTE(sileht): No details but we can't do much at this point
-        ctxt.log.warning(
-            "Merge queue check doesn't contain any TrainCarState", check=check
-        )
+    if (
+        train_car_state is None
+        or train_car_state.outcome == train_car.TrainCarOutcome.UNKNOWN
+    ):
+        # NOTE(charly): We just log details to not stuck a PR and handle it later
+        if error_if_unknown:
+            ctxt.log.error(
+                "Merge queue check doesn't contain any TrainCarState",
+                check=check,
+                train_car_state=train_car_state,
+            )
         return queue_utils.PrDequeued(
             ctxt.pull["number"], " due to failing checks or checks timeout"
         )

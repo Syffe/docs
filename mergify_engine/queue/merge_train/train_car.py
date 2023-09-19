@@ -2493,7 +2493,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
     ) -> str:
         original_pr_summary = self.get_original_pr_summary(checked_pull)
         return (
-            f"\n\n**Partition {self.train.partition_name}**: {original_pr_summary.title}\n"
+            original_pr_summary.train_car_state
+            + f"\n\n**Partition {self.train.partition_name}**: {original_pr_summary.title}\n"
             + original_pr_summary.body
         )
 

@@ -2045,6 +2045,14 @@ class TestQueueAction(base.FunctionalTestBase):
         assert p2_merged["pull_request"]["head"]["sha"] == branch["commit"]["sha"]
         await self.assert_merge_queue_contents(q, None, [])
 
+    # NOTE(charly): we don't check log errors for missing TrainCarState. The
+    # test volontarily mock GitHub to return an error, so the engine retries the
+    # merge with a limit of retries. In a normal situation, the merge conflict
+    # would be detected when the TrainCar is created and checked, and we
+    # shouldn't hit this limit of retries.
+    @pytest.mark.logger_checker_ignore(
+        "Merge queue check doesn't contain any TrainCarState"
+    )
     async def test_queue_fast_forward_with_retries(self) -> None:
         rules = {
             "queue_rules": [
@@ -5512,10 +5520,10 @@ class TestQueueAction(base.FunctionalTestBase):
         assert (
             check["output"]["title"] == "This pull request cannot be embarked for merge"
         )
-        assert check["output"]["summary"] == (
+        assert (
             "The merge queue pull request can't be created\n"
             f"Details:\n> The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n"
-        )
+        ) in check["output"]["summary"]
 
         # Merge the train
         await self.create_status(tmp_mq_pr["pull_request"])
@@ -5609,10 +5617,10 @@ class TestQueueAction(base.FunctionalTestBase):
         assert (
             check["output"]["title"] == "This pull request cannot be embarked for merge"
         )
-        assert check["output"]["summary"] == (
+        assert (
             "The merge queue pull request can't be created\n"
             f"Details:\n> The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n"
-        )
+        ) in check["output"]["summary"]
 
         # Merge the train
         await self.create_status(p1)
