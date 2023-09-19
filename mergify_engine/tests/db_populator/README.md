@@ -77,7 +77,7 @@ async def my_test_2(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
 #### Using DbPopulator as a Fixture
 
 Instead of using the standard `db` fixture, you can utilize the `populated_db` fixture to automatically populate your SQLAlchemy session with all registered scenarios.
-If you want to use `populated_db` with a subset of datasets use `@pytest.marker.populated_db_datasets(...)`
+If you want to use `populated_db` with a subset of datasets use `@pytest.mark.populated_db_datasets(...)`.
 
 ```python
 import sqlalchemy.ext.asyncio
