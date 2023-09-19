@@ -2963,6 +2963,71 @@ async def test_task_stop_ordering(
             },
             "codebuild",
         ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://1234-abcd.chromatic.com/",
+            },
+            "chromatic",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": None,
+                "context": "atlantis/apply",
+            },
+            "atlantis",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://whatever.akuity.cloud/applications/pr-123",
+            },
+            "akuity",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://app.gearset.com/continuous-integration-runs?jobId=123",
+            },
+            "gearset",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://g.codefresh.io/build/123",
+            },
+            "codefresh",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://buildkite.com/product/somee-build/builds/123",
+            },
+            "buildkite",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://coveralls.io/builds/123",
+            },
+            "coveralls",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": None,
+                "context": "kubeflow-publish-pipeline-av",
+            },
+            "kubeflow",
+        ),
+        (
+            {
+                "sender": {"login": "whatever"},
+                "target_url": "https://whatever.semaphoreci.com/workflows/123/summary?pipeline_id=123",
+            },
+            "semaphoreci",
+        ),
     ),
 )
 def test_extract_app_from_status(

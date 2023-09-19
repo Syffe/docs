@@ -927,6 +927,12 @@ def _monitor_consumed_events(
 def _extract_app_from_status_event(
     status: github_types.GitHubEventStatus,
 ) -> str:
+    if context := status.get("context"):
+        if context.startswith("atlantis"):
+            return "atlantis"
+        if context.startswith("kubeflow"):
+            return "kubeflow"
+
     if sender := status.get("sender"):
         if "jenkins" in re.split(r"\W", sender.get("login", "").lower()):
             return "jenkins"
@@ -936,16 +942,23 @@ def _extract_app_from_status_event(
     if target_url := status.get("target_url"):
         parsed_target_url = parse.urlsplit(target_url)
         if parsed_target_url.hostname:
-            if parsed_target_url.hostname.endswith("circleci.com"):
-                return "circleci"
-            if parsed_target_url.hostname.endswith("gitlab.com"):
-                return "gitlab"
-            if parsed_target_url.hostname.endswith("bitrise.io"):
-                return "bitrise"
-            if parsed_target_url.hostname.endswith("snyk.io"):
-                return "snyk"
-            if parsed_target_url.hostname.endswith("terraform.io"):
-                return "terraform"
+            host_ci_mapping = {
+                "circleci.com": "circleci",
+                "gitlab.com": "gitlab",
+                "bitrise.io": "bitrise",
+                "snyk.io": "snyk",
+                "terraform.io": "terraform",
+                "chromatic.com": "chromatic",
+                "akuity.cloud": "akuity",
+                "gearset.com": "gearset",
+                "codefresh.io": "codefresh",
+                "buildkite.com": "buildkite",
+                "coveralls.io": "coveralls",
+                "semaphoreci.com": "semaphoreci",
+            }
+            for host, ci in host_ci_mapping.items():
+                if parsed_target_url.hostname.endswith(host):
+                    return ci
 
             if "jenkins" in re.split(r"\W", parsed_target_url.hostname.lower()):
                 return "jenkins"
