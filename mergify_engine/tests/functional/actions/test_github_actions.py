@@ -391,10 +391,18 @@ class GhaActionTestBase(base.FunctionalTestBase):
         assert (
             check_run["check_run"]["output"]["title"] == "Some workflow dispatch failed"
         )
+
+        if settings.IS_GHES:
+            github_action_error = """Invalid request.
+
+For 'additionalProperties', 666 is not a string."""
+        else:
+            github_action_error = "Invalid value for input 'some_string'."
+
         assert (
             check_run["check_run"]["output"]["summary"]
-            == """Workflow dispatch failed:
-- Failed to dispatch workflow `multiple_workflows_error.yaml`. Invalid value for input 'some_string'.
+            == f"""Workflow dispatch failed:
+- Failed to dispatch workflow `multiple_workflows_error.yaml`. {github_action_error}
 
 Workflow successfully dispatched:
 - `multiple_workflows_success.yaml`"""

@@ -289,6 +289,10 @@ class GitHubSettings(pydantic_settings.BaseSettings):
     )
 
     @property
+    def IS_GHES(self) -> bool:
+        return self.GITHUB_URL.host != "github.com"  # type: ignore[no-any-return]
+
+    @property
     def GITHUB_REST_API_URL(self) -> str:
         if self.GITHUB_URL.host == "github.com":
             return "https://api.github.com"
