@@ -2393,6 +2393,7 @@
     "VulnerabilityID": "CVE-2023-4039",
     "PkgName": "gcc-10-base",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
     "Title": "-fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
@@ -2402,6 +2403,7 @@
     "VulnerabilityID": "CVE-2023-4039",
     "PkgName": "gcc-9-base",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
     "Title": "-fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
@@ -2411,6 +2413,7 @@
     "VulnerabilityID": "CVE-2023-4039",
     "PkgName": "libgcc-s1",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
     "Title": "-fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
@@ -2420,6 +2423,7 @@
     "VulnerabilityID": "CVE-2023-4039",
     "PkgName": "libstdc++6",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
     "Title": "-fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
@@ -2447,7 +2451,8 @@
     "Status": "affected",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4806",
     "Title": "potential use-after-free in getaddrinfo()",
-    "Severity": "MEDIUM"
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-09-18T17:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-4806",
@@ -2455,24 +2460,27 @@
     "Status": "affected",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4806",
     "Title": "potential use-after-free in getaddrinfo()",
-    "Severity": "MEDIUM"
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-09-18T17:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-4813",
     "PkgName": "libc-bin",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4813",
     "Title": "potential use-after-free in gaih_inet()",
-    "Severity": "MEDIUM",
+    "Severity": "HIGH",
     "PublishedDate": "2023-09-12T22:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-4813",
     "PkgName": "libc6",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4813",
     "Title": "potential use-after-free in gaih_inet()",
-    "Severity": "MEDIUM",
+    "Severity": "HIGH",
     "PublishedDate": "2023-09-12T22:15:00Z"
   }
 ]
