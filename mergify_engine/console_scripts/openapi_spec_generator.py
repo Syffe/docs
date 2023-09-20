@@ -44,7 +44,7 @@ def patch_router_to_include_everything(
 @click.option("--visibility", type=click.Choice(["public", "internal"]), required=True)
 @click.argument("output", required=True)
 def generate_openapi_spec(
-    visibility: typing.Literal["public", "all"], output: str
+    visibility: typing.Literal["public", "internal"], output: str
 ) -> None:
     if visibility == "public":
         app = public_root.create_app(cors_enabled=True)
