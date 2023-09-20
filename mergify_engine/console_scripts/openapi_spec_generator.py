@@ -41,16 +41,41 @@ def patch_router_to_include_everything(
 
 
 @devtools_cli.command()
-@click.option("--visibility", type=click.Choice(["public", "internal"]), required=True)
+@click.option(
+    "--visibility",
+    type=click.Choice(["public", "public_future", "internal"]),
+    required=True,
+)
 @click.argument("output", required=True)
 def generate_openapi_spec(
-    visibility: typing.Literal["public", "internal"], output: str
+    visibility: typing.Literal["public", "internal", "public_future"], output: str
 ) -> None:
     if visibility == "public":
         app = public_root.create_app(cors_enabled=True)
         openapi_schema = app.openapi()
 
-    else:
+    elif visibility == "public_future":
+        app = public_root.create_app(cors_enabled=True)
+        routes = []
+        for route in app.routes:
+            routes.extend(patch_router_to_include_everything(route, None))
+        openapi_schema = get_openapi(
+            title="Future Public API",
+            version=app.version,
+            openapi_version=app.openapi_version,
+            summary=app.summary,
+            description=app.description,
+            webhooks=app.webhooks.routes,
+            tags=app.openapi_tags,
+            servers=app.servers,
+            terms_of_service=app.terms_of_service,
+            contact=app.contact,
+            license_info=app.license_info,
+            separate_input_output_schemas=app.separate_input_output_schemas,
+            routes=routes,
+        )
+
+    elif visibility == "internal":
         app = all_root.create_app()
         routes = []
         for route in app.routes:
