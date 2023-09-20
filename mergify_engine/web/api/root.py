@@ -63,6 +63,10 @@ def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
                 "description": "Enhanced operations with events.",
             },
             {
+                "name": "gha_failed_jobs",
+                "description": "Operations with failed workflow jobs.",
+            },
+            {
                 "name": "queues",
                 "description": "Operations with queues.",
             },

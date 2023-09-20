@@ -1,6 +1,7 @@
 import dataclasses
 import datetime
 import enum
+import typing
 
 import fastapi
 import pydantic
@@ -74,8 +75,12 @@ class FailedJobResponse:
 async def get_gha_failed_jobs(
     session: database.Session,
     repository_ctxt: security.Repository,
-    start_at: datetime.date | None = None,
-    neighbour_cosine_similarity_threshold: float = 0.01,
+    start_at: typing.Annotated[
+        datetime.date | None, fastapi.Query(description="The minimal job start date")
+    ] = None,
+    neighbour_cosine_similarity_threshold: typing.Annotated[
+        float, fastapi.Query(description="The neighbour cosine similarity threshold")
+    ] = 0.01,
 ) -> FailedJobResponse:
     results = await github_actions.WorkflowJob.get_failed_jobs(
         session,
@@ -145,8 +150,10 @@ class WorkflowJobDetails(WorkflowJob):
 async def get_gha_failed_job_detail(
     session: database.Session,
     repository_ctxt: security.Repository,
-    job_id: int,
-    neighbour_cosine_similarity_threshold: float = 0.01,
+    job_id: typing.Annotated[int, fastapi.Path(description="The workflow job ID")],
+    neighbour_cosine_similarity_threshold: typing.Annotated[
+        float, fastapi.Query(description="The neighbour cosine similarity threshold")
+    ] = 0.01,
 ) -> WorkflowJobDetails:
     results = list(
         await github_actions.WorkflowJob.get_failed_job(
