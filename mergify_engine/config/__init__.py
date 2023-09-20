@@ -304,6 +304,12 @@ class GitHubSettings(pydantic_settings.BaseSettings):
             return "https://api.github.com/graphql"
         return f"{self.GITHUB_URL}/api/graphql"
 
+    @property
+    def GITHUB_REST_API_HOST(self) -> str:
+        if self.GITHUB_URL.host == "github.com":
+            return "api.github.com"
+        return self.GITHUB_URL.host  # type: ignore[no-any-return]
+
 
 class DashboardUISettings(pydantic_settings.BaseSettings):
     DASHBOARD_UI_STATIC_FILES_DIRECTORY: pydantic.DirectoryPath | None = None

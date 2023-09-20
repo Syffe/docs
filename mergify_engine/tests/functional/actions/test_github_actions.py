@@ -473,7 +473,7 @@ Workflow successfully dispatched:
                 url__regex=f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
                 rf"/actions/workflows/workflow_dispatch_forbidden.yaml/dispatches"
             ).respond(403)
-            respx_mock.route(host="api.github.com").pass_through()
+            respx_mock.route(host=settings.GITHUB_REST_API_HOST).pass_through()
             await self.run_engine()
 
         check_run = await self.wait_for_check_run(
