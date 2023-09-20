@@ -40,6 +40,7 @@ class WorkflowJob(typing_extensions.TypedDict):
     id: int
     run_id: int
     steps: list[github_types.GitHubWorkflowJobStep]
+    failed_step_number: int | None
     started_at: github_types.ISODateTimeType
     completed_at: github_types.ISODateTimeType
     flaky: FlakyStatus
@@ -105,6 +106,7 @@ async def get_gha_failed_jobs(
                 id=failed_job.id,
                 run_id=failed_job.workflow_run_id,
                 steps=failed_job.steps or [],
+                failed_step_number=failed_job.failed_step_number,
                 started_at=github_types.ISODateTimeType(
                     failed_job.started_at.isoformat()
                 ),
@@ -176,6 +178,7 @@ async def get_gha_failed_job_detail(
         id=results[0].id,
         run_id=results[0].workflow_run_id,
         steps=results[0].steps or [],
+        failed_step_number=results[0].failed_step_number,
         started_at=github_types.ISODateTimeType(results[0].started_at.isoformat()),
         completed_at=github_types.ISODateTimeType(results[0].completed_at.isoformat()),
         flaky=FlakyStatus.FLAKY if results[0].flaky else FlakyStatus.UNKNOWN,

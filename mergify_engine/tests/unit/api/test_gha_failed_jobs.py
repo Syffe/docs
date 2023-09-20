@@ -75,6 +75,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[0].steps[0]["completed_at"],
                             }
                         ],
+                        "failed_step_number": 1,
                         "started_at": jobs[0].started_at.isoformat(),
                         "completed_at": jobs[0].completed_at.isoformat(),
                         "flaky": "yes",
@@ -95,6 +96,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[2].steps[0]["completed_at"],
                             }
                         ],
+                        "failed_step_number": 1,
                         "started_at": jobs[2].started_at.isoformat(),
                         "completed_at": jobs[2].completed_at.isoformat(),
                         "flaky": "unknown",
@@ -119,6 +121,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[3].steps[0]["completed_at"],
                             }
                         ],
+                        "failed_step_number": 1,
                         "started_at": jobs[3].started_at.isoformat(),
                         "completed_at": jobs[3].completed_at.isoformat(),
                         "flaky": "unknown",
@@ -167,6 +170,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[0].steps[0]["completed_at"],
                             }
                         ],
+                        "failed_step_number": 1,
                         "started_at": jobs[0].started_at.isoformat(),
                         "completed_at": jobs[0].completed_at.isoformat(),
                         "flaky": "yes",
@@ -191,6 +195,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[2].steps[0]["completed_at"],
                             }
                         ],
+                        "failed_step_number": 1,
                         "started_at": jobs[2].started_at.isoformat(),
                         "completed_at": jobs[2].completed_at.isoformat(),
                         "flaky": "unknown",
@@ -240,6 +245,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                                 "completed_at": jobs[4].steps[0]["completed_at"],
                             }
                         ],
+                        "failed_step_number": 1,
                         "started_at": jobs[4].started_at.isoformat(),
                         "completed_at": jobs[4].completed_at.isoformat(),
                         "flaky": "unknown",
@@ -252,7 +258,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
 
 
 @pytest.mark.populated_db_datasets("TestApiGhaFailedJobsDataset")
-async def test_api_get_gha_failed_jobs_no_step(
+async def test_api_get_gha_failed_jobs_no_steps(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
@@ -268,6 +274,7 @@ async def test_api_get_gha_failed_jobs_no_step(
     assert job is not None
 
     job.steps = None
+    job.failed_step_number = None
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock, populated_db, web_client, "colliding_acount_1/colliding_repo_name"
@@ -298,6 +305,7 @@ async def test_api_get_gha_failed_jobs_no_step(
                         "id": job.id,
                         "run_id": job.workflow_run_id,
                         "steps": [],
+                        "failed_step_number": None,
                         "started_at": job.started_at.isoformat(),
                         "completed_at": job.completed_at.isoformat(),
                         "flaky": "unknown",
@@ -359,6 +367,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
                 "completed_at": jobs[0].steps[0]["completed_at"],
             }
         ],
+        "failed_step_number": 1,
         "started_at": jobs[0].started_at.isoformat(),
         "completed_at": jobs[0].completed_at.isoformat(),
         "flaky": "yes",
@@ -387,6 +396,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
                 "completed_at": jobs[0].steps[0]["completed_at"],
             }
         ],
+        "failed_step_number": 1,
         "started_at": jobs[0].started_at.isoformat(),
         "completed_at": jobs[0].completed_at.isoformat(),
         "flaky": "yes",
@@ -433,6 +443,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
                 "completed_at": jobs[4].steps[0]["completed_at"],
             }
         ],
+        "failed_step_number": 1,
         "started_at": jobs[4].started_at.isoformat(),
         "completed_at": jobs[4].completed_at.isoformat(),
         "flaky": "unknown",
