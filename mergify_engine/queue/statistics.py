@@ -1,6 +1,7 @@
 from collections import abc
 import dataclasses
 import datetime
+import enum
 import re
 import typing
 
@@ -211,11 +212,16 @@ async def get_stats_from_event_metadata(
             if metadata["abort_code"] is None:
                 return None
 
+            abort_code = (
+                metadata["abort_code"].value
+                if isinstance(metadata["abort_code"], enum.Enum)
+                else metadata["abort_code"]
+            )
             return FailureByReason.from_reason_code_str(
                 queue_name=qr_config.QueueName(metadata["queue_name"]),
                 branch_name=metadata["branch"],
                 partition_name=metadata["partition_name"],
-                reason_code_str=metadata["abort_code"],
+                reason_code_str=abort_code,
             )
 
         checks_ended_at = metadata["speculative_check_pull_request"].get(

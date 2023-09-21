@@ -9,6 +9,7 @@ import typing_extensions
 
 from mergify_engine import github_types
 from mergify_engine.clients import github
+from mergify_engine.models import enumerations
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import checks as merge_train_checks
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -157,7 +158,7 @@ class SpeculativeCheckPullRequest(typing_extensions.TypedDict, total=False):
     number: int
     in_place: bool
     checks_timed_out: bool
-    checks_conclusion: ChecksConclusion
+    checks_conclusion: ChecksConclusion | enumerations.CheckConclusion
     checks_started_at: datetime.datetime | None
     checks_ended_at: datetime.datetime | None
     unsuccessful_checks: list[merge_train_checks.QueueCheck.Serialized]
@@ -176,16 +177,18 @@ class EventQueueMergedMetadata(EventMetadata, total=False):
 
 class EventQueueChecksEndMetadata(EventMetadata, total=False):
     aborted: bool
-    abort_code: queue_utils.AbortCodeT | None
+    abort_code: queue_utils.AbortCodeT | enumerations.QueueChecksAbortCode | None
     abort_reason: str | None
-    abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"]
+    abort_status: typing.Literal[
+        "DEFINITIVE", "REEMBARKED"
+    ] | enumerations.QueueChecksAbortStatus
     branch: str
     partition_name: partr_config.PartitionRuleName
     position: int | None
     queue_name: str
     queued_at: datetime.datetime
     speculative_check_pull_request: SpeculativeCheckPullRequest
-    unqueue_code: queue_utils.UnqueueCodeT | None
+    unqueue_code: queue_utils.UnqueueCodeT | enumerations.QueueChecksUnqueueCode | None
 
 
 class EventQueueChecksStartMetadata(EventMetadata, total=False):

@@ -19,6 +19,7 @@ from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine.models import events as event_models
 from mergify_engine.models import github_repository
+from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
 from mergify_engine.tests import conftest as tests_conftest
 from mergify_engine.tests.unit.api import conftest as tests_api_conftest
@@ -474,3 +475,66 @@ async def test_old_api_db_switch(
             headers={"Authorization": api_token.api_token},
         )
         assert response.json()["total"] == 1
+
+
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
+async def test_event_with_enum_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+    fake_repository: context.Repository,
+    web_client: tests_conftest.CustomTestClient,
+    api_token: tests_api_conftest.TokenUserRepo,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    await redis_links.cache.set(eventlogs.DB_SWITCH_KEY, INITIAL_TIMESTAMP.timestamp())
+
+    unsuccessful_check = checks.QueueCheck.Serialized(
+        {
+            "name": "trivy",
+            "description": "Security check",
+            "state": "failure",
+            "url": None,
+            "avatar_url": "some_url",
+        }
+    )
+
+    monkeypatch.setattr(settings, "EVENTLOG_EVENTS_DB_INGESTION", False)
+    await evt_utils.insert(
+        event="action.queue.checks_end",
+        repository=fake_repository.repo,
+        pull_request=github_types.GitHubPullRequestNumber(1),
+        metadata=signals.EventQueueChecksEndMetadata(
+            {
+                "branch": "feature_branch",
+                "partition_name": partition_rules.DEFAULT_PARTITION_NAME,
+                "position": 3,
+                "queue_name": "default",
+                "queued_at": date.utcnow(),
+                "aborted": True,
+                "abort_code": "PR_DEQUEUED",
+                "abort_reason": "Pull request has been dequeued.",
+                "abort_status": "DEFINITIVE",
+                "unqueue_code": None,
+                "speculative_check_pull_request": {
+                    "number": 456,
+                    "in_place": True,
+                    "checks_timed_out": False,
+                    "checks_conclusion": "failure",
+                    "checks_started_at": date.utcnow(),
+                    "checks_ended_at": date.utcnow(),
+                    "unsuccessful_checks": [unsuccessful_check],
+                },
+            }
+        ),
+        trigger="Rule: some dummmy rule",
+    )
+
+    with freezegun.freeze_time(
+        INITIAL_TIMESTAMP
+        + eventlogs.EVENTLOGS_LONG_RETENTION
+        + datetime.timedelta(hours=1)
+    ):
+        response = await web_client.get(
+            "/v1/repos/Mergifyio/engine/logs",
+            headers={"Authorization": api_token.api_token},
+        )
+        assert response.status_code == 200
