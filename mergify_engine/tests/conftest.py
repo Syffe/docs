@@ -235,7 +235,7 @@ async def populated_db(
     yield db
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 async def redis_links(
     mock_redis_db_values: typing.Any,
 ) -> abc.AsyncGenerator[redis_utils.RedisLinks, None]:
