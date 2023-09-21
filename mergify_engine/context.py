@@ -2061,9 +2061,12 @@ class Context:
                 # This allows to have a coherent view between review data
                 # retrived in this API and the review data in pull request
                 # requested_reviewers and requested_teams attributes
-                if self._most_recent_event_datetime is None
-                or date.fromisoformat(review["submitted_at"])
-                <= self._most_recent_event_datetime
+                if review is not None
+                and (
+                    self._most_recent_event_datetime is None
+                    or date.fromisoformat(review["submitted_at"])
+                    <= self._most_recent_event_datetime
+                )
             ]
             self._caches.reviews.set(reviews)
         return reviews

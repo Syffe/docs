@@ -1205,7 +1205,7 @@ async def test_check_runs_ordering(
 async def test_reviews_filtering(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
-    all_reviews = [
+    all_reviews: list[github_types.GitHubReview | None] = [
         github_types.GitHubReview(
             {
                 "id": github_types.GitHubReviewIdType(123456),
@@ -1309,6 +1309,11 @@ async def test_reviews_filtering(
     ]
     # Drop review done after the refresh event.
     assert await ctxt.reviews == all_reviews[0:2]
+
+    # Reviews fetched contain a None entry at position 1
+    all_reviews[1] = None
+    ctxt = context.Context(repo, a_pull_request)
+    assert await ctxt.reviews == all_reviews[::2]
 
 
 @pytest.mark.parametrize(
