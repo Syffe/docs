@@ -372,3 +372,12 @@ def sample_ci_events_to_process(
             ci_events[filename] = github_events.CIEventToProcess(event_type, "", event)
 
     return ci_events
+
+
+@pytest.fixture(autouse=True)
+async def clear_redis_database_between_tests(
+    redis_links: redis_utils.RedisLinks,
+) -> abc.AsyncGenerator[None, None]:
+    # No need to do anything else, the code in `redis_links` fixture
+    # already cleans everything
+    yield

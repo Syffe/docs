@@ -13,7 +13,7 @@ GitHubLoginUnknown = typing.NewType("GitHubLoginUnknown", str)
 GitHubLoginForTracing = GitHubLogin | GitHubLoginUnknown
 
 
-class GitHubInstallationAccessToken(typing.TypedDict):
+class GitHubInstallationAccessToken(typing_extensions.TypedDict):
     # https://developer.github.com/v3/apps/#response-7
     token: str
     expires_at: str
@@ -56,7 +56,7 @@ GitHubInstallationPermissions = dict[
 ]
 
 
-class GitHubInstallation(typing.TypedDict):
+class GitHubInstallation(typing_extensions.TypedDict):
     # https://developer.github.com/v3/apps/#get-an-organization-installation-for-the-authenticated-app
     id: GitHubInstallationIdType
     account: GitHubAccount
@@ -77,7 +77,7 @@ GitHubRepositoryNameForTracing = GitHubRepositoryName | GitHubRepositoryNameUnkn
 GitHubFilePath = typing.NewType("GitHubFilePath", str)
 
 
-class GitHubRepository(typing.TypedDict):
+class GitHubRepository(typing_extensions.TypedDict):
     id: GitHubRepositoryIdType
     owner: GitHubAccount
     private: bool
@@ -89,7 +89,7 @@ class GitHubRepository(typing.TypedDict):
     default_branch: GitHubRefType
 
 
-class GitHubRepositoryList(typing.TypedDict):
+class GitHubRepositoryList(typing_extensions.TypedDict):
     repositories: list[GitHubRepository]
     total_count: int
 
@@ -139,7 +139,7 @@ class GitHubRepositoryPermission(enum.Enum):
         return NotImplemented
 
 
-class GitHubRepositoryCollaboratorPermission(typing.TypedDict):
+class GitHubRepositoryCollaboratorPermission(typing_extensions.TypedDict):
     permission: GitHubRepositoryPermission
     user: GitHubAccount
 
@@ -147,32 +147,32 @@ class GitHubRepositoryCollaboratorPermission(typing.TypedDict):
 GitHubTeamSlug = typing.NewType("GitHubTeamSlug", str)
 
 
-class GitHubTeam(typing.TypedDict):
+class GitHubTeam(typing_extensions.TypedDict):
     slug: GitHubTeamSlug
 
 
-class GitHubBranchCommitParent(typing.TypedDict):
+class GitHubBranchCommitParent(typing_extensions.TypedDict):
     sha: SHAType
 
 
-class GitHubBranchCommitVerification(typing.TypedDict):
+class GitHubBranchCommitVerification(typing_extensions.TypedDict):
     verified: bool
 
 
-class GitHubAuthorCommitterCommit(typing.TypedDict):
+class GitHubAuthorCommitterCommit(typing_extensions.TypedDict):
     name: str
     date: ISODateTimeType
     email: str
 
 
-class GitHubBranchCommitCommit(typing.TypedDict):
+class GitHubBranchCommitCommit(typing_extensions.TypedDict):
     message: str
     verification: GitHubBranchCommitVerification
     author: GitHubAuthorCommitterCommit
     committer: GitHubAuthorCommitterCommit
 
 
-class GitHubBranchCommit(typing.TypedDict):
+class GitHubBranchCommit(typing_extensions.TypedDict):
     sha: SHAType
     parents: list[GitHubBranchCommitParent]
     commit: GitHubBranchCommitCommit
@@ -221,33 +221,33 @@ def to_cached_github_branch_commit(
     )
 
 
-class GitHubBranchProtectionRequiredStatusChecks(typing.TypedDict):
+class GitHubBranchProtectionRequiredStatusChecks(typing_extensions.TypedDict):
     contexts: list[str]
     strict: bool
 
 
-class GitHubBranchProtectionRequirePullRequestReviews(typing.TypedDict):
+class GitHubBranchProtectionRequirePullRequestReviews(typing_extensions.TypedDict):
     require_code_owner_reviews: bool
     required_approving_review_count: int
 
 
-class GitHubBranchProtectionBoolean(typing.TypedDict):
+class GitHubBranchProtectionBoolean(typing_extensions.TypedDict):
     enabled: bool
 
 
-class GitHubBranchProtection(typing.TypedDict, total=False):
+class GitHubBranchProtection(typing_extensions.TypedDict, total=False):
     required_linear_history: GitHubBranchProtectionBoolean
     required_status_checks: GitHubBranchProtectionRequiredStatusChecks
     required_pull_request_reviews: GitHubBranchProtectionRequirePullRequestReviews
     required_conversation_resolution: GitHubBranchProtectionBoolean
 
 
-class GitHubBranchProtectionLight(typing.TypedDict):
+class GitHubBranchProtectionLight(typing_extensions.TypedDict):
     enabled: bool
     required_status_checks: GitHubBranchProtectionRequiredStatusChecks
 
 
-class GitHubBranch(typing.TypedDict):
+class GitHubBranch(typing_extensions.TypedDict):
     name: GitHubRefType
     commit: GitHubBranchCommit
     protection: GitHubBranchProtectionLight
@@ -257,7 +257,7 @@ class GitHubBranch(typing.TypedDict):
 GitHubBaseBranchLabel = typing.NewType("GitHubBaseBranchLabel", str)
 
 
-class GitHubBaseBranchRef(typing.TypedDict):
+class GitHubBaseBranchRef(typing_extensions.TypedDict):
     label: GitHubBaseBranchLabel
     ref: GitHubRefType
     sha: SHAType
@@ -268,7 +268,7 @@ class GitHubBaseBranchRef(typing.TypedDict):
 GitHubHeadBranchLabel = typing.NewType("GitHubHeadBranchLabel", str)
 
 
-class GitHubHeadBranchRef(typing.TypedDict):
+class GitHubHeadBranchRef(typing_extensions.TypedDict):
     label: GitHubHeadBranchLabel
     ref: GitHubRefType
     sha: SHAType
@@ -276,7 +276,7 @@ class GitHubHeadBranchRef(typing.TypedDict):
     user: GitHubAccount
 
 
-class GitHubLabel(typing.TypedDict):
+class GitHubLabel(typing_extensions.TypedDict):
     id: int
     name: str
     color: str
@@ -286,7 +286,7 @@ class GitHubLabel(typing.TypedDict):
 GitHubCommentIdType = typing.NewType("GitHubCommentIdType", int)
 
 
-class GitHubComment(typing.TypedDict):
+class GitHubComment(typing_extensions.TypedDict):
     id: GitHubCommentIdType
     url: str
     body: str
@@ -295,14 +295,16 @@ class GitHubComment(typing.TypedDict):
     updated_at: ISODateTimeType
 
 
-GitHubCommentChangesBody = typing.TypedDict("GitHubCommentChangesBody", {"from": str})
+GitHubCommentChangesBody = typing_extensions.TypedDict(
+    "GitHubCommentChangesBody", {"from": str}
+)
 
 
-class GitHubCommentChanges(typing.TypedDict):
+class GitHubCommentChanges(typing_extensions.TypedDict):
     body: GitHubCommentChangesBody
 
 
-class GitHubContentFile(typing.TypedDict):
+class GitHubContentFile(typing_extensions.TypedDict):
     type: typing.Literal["file"]
     content: str
     sha: SHAType
@@ -314,7 +316,7 @@ GitHubFileStatus = typing.Literal[
 ]
 
 
-class GitHubFile(typing.TypedDict):
+class GitHubFile(typing_extensions.TypedDict):
     sha: SHAType
     filename: str
     contents_url: str
@@ -328,7 +330,7 @@ class GitHubFile(typing.TypedDict):
     previous_filename: str | None
 
 
-class CachedGitHubFile(typing.TypedDict):
+class CachedGitHubFile(typing_extensions.TypedDict):
     sha: SHAType
     filename: str
     contents_url: str
@@ -336,7 +338,7 @@ class CachedGitHubFile(typing.TypedDict):
     previous_filename: str | None
 
 
-class GitHubIssueOrPullRequest(typing.TypedDict):
+class GitHubIssueOrPullRequest(typing_extensions.TypedDict):
     pass
 
 
@@ -380,7 +382,7 @@ GitHubPullRequestId = typing.NewType("GitHubPullRequestId", int)
 GitHubPullRequestNumber = typing.NewType("GitHubPullRequestNumber", int)
 
 
-class GitHubMilestone(typing.TypedDict):
+class GitHubMilestone(typing_extensions.TypedDict):
     id: int
     number: int
     title: str
@@ -455,7 +457,7 @@ GitHubWorkflowTriggerEventType = typing.Literal[
 ]
 
 
-class GitHubEvent(typing.TypedDict):
+class GitHubEvent(typing_extensions.TypedDict):
     # FIXME(sileht): not all events have organization keys
     organization: GitHubAccount
     # FIXME(sileht): not all events have full installation object (sometimes
@@ -470,7 +472,7 @@ class GitHubEventWithRepository(GitHubEvent):
     repository: GitHubRepository
 
 
-class GitHubInstallationRepository(typing.TypedDict):
+class GitHubInstallationRepository(typing_extensions.TypedDict):
     full_name: str
     id: GitHubRepositoryIdType
     name: GitHubRepositoryName
@@ -580,7 +582,7 @@ GitHubEventReviewStateType = typing.Literal[
 GitHubReviewStateChangeType = typing.Literal["APPROVE", "REQUEST_CHANGES", "COMMENT"]
 
 
-class GitHubReviewPostMandatory(typing.TypedDict):
+class GitHubReviewPostMandatory(typing_extensions.TypedDict):
     event: GitHubReviewStateChangeType
 
 
@@ -601,7 +603,7 @@ GitHubCommentAuthorAssociation = typing.Literal[
 ]
 
 
-class GitHubReview(typing.TypedDict):
+class GitHubReview(typing_extensions.TypedDict):
     id: GitHubReviewIdType
     user: GitHubAccount | None
     body: str | None
@@ -636,7 +638,7 @@ class GitHubEventIssueComment(GitHubEventWithRepository):
     changes: GitHubCommentChanges
 
 
-class GitHubEventPushCommit(typing.TypedDict):
+class GitHubEventPushCommit(typing_extensions.TypedDict):
     added: list[str]
     modified: list[str]
     removed: list[str]
@@ -659,7 +661,7 @@ class GitHubEventStatus(GitHubEventWithRepository):
     target_url: str
 
 
-class GitHubApp(typing.TypedDict):
+class GitHubApp(typing_extensions.TypedDict):
     id: int
     name: str
     slug: str
@@ -679,7 +681,7 @@ GitHubCheckRunConclusion = typing.Literal[
 ]
 
 
-class GitHubCheckRunOutput(typing.TypedDict):
+class GitHubCheckRunOutput(typing_extensions.TypedDict):
     title: str
     summary: str
     text: str | None
@@ -696,7 +698,7 @@ GitHubStatusState = typing.Literal[
 ]
 
 
-class GitHubStatus(typing.TypedDict):
+class GitHubStatus(typing_extensions.TypedDict):
     context: str
     state: GitHubStatusState
     description: str
@@ -707,11 +709,11 @@ class GitHubStatus(typing.TypedDict):
 GitHubCheckRunStatus = typing.Literal["queued", "in_progress", "completed"]
 
 
-class GitHubCheckRunCheckSuite(typing.TypedDict):
+class GitHubCheckRunCheckSuite(typing_extensions.TypedDict):
     id: int
 
 
-class GitHubCheckRun(typing.TypedDict):
+class GitHubCheckRun(typing_extensions.TypedDict):
     id: int
     app: GitHubApp
     external_id: str
@@ -730,7 +732,7 @@ class GitHubCheckRun(typing.TypedDict):
     check_suite: GitHubCheckRunCheckSuite
 
 
-class CachedGitHubCheckRun(typing.TypedDict):
+class CachedGitHubCheckRun(typing_extensions.TypedDict):
     id: int
     app_id: int
     app_name: str
@@ -745,7 +747,7 @@ class CachedGitHubCheckRun(typing.TypedDict):
     html_url: str
 
 
-class GitHubCheckSuite(typing.TypedDict):
+class GitHubCheckSuite(typing_extensions.TypedDict):
     id: int
     app: GitHubApp
     external_id: str
@@ -836,11 +838,11 @@ class GitHubEventTeamAdd(GitHubEvent, total=False):
 GitHubGitRefType = typing.NewType("GitHubGitRefType", str)
 
 
-class GitHubGitRef(typing.TypedDict):
+class GitHubGitRef(typing_extensions.TypedDict):
     ref: GitHubRefType
 
 
-class GitHubRequestedReviewers(typing.TypedDict):
+class GitHubRequestedReviewers(typing_extensions.TypedDict):
     users: list[GitHubAccount]
     teams: list[GitHubTeam]
 
@@ -851,7 +853,7 @@ GitHubApiVersion = typing.Literal[
 GitHubOAuthToken = typing.NewType("GitHubOAuthToken", str)
 
 
-class GitHubUserToServerAuthorization(typing.TypedDict):
+class GitHubUserToServerAuthorization(typing_extensions.TypedDict):
     access_token: GitHubOAuthToken
     expires_in: int
     refresh_token: str
@@ -863,7 +865,7 @@ class GitHubUserToServerAuthorization(typing.TypedDict):
 GitHubAnnotationLevel = typing.Literal["failure"]
 
 
-class GitHubAnnotation(typing.TypedDict):
+class GitHubAnnotation(typing_extensions.TypedDict):
     path: str
     start_line: int
     end_line: int
@@ -874,7 +876,7 @@ class GitHubAnnotation(typing.TypedDict):
     title: str
 
 
-class GitHubCompareCommits(typing.TypedDict):
+class GitHubCompareCommits(typing_extensions.TypedDict):
     behind_by: int
     status: typing.Literal["diverged", "ahead", "behind", "identical"]
 
@@ -884,13 +886,13 @@ GitHubMembershipRole = typing.Literal["admin", "member"]
 GitHubOrganizationIdType = typing.NewType("GitHubOrganizationIdType", int)
 
 
-class GitHubOrganization(typing.TypedDict):
+class GitHubOrganization(typing_extensions.TypedDict):
     login: GitHubLogin
     id: GitHubOrganizationIdType
 
 
 # https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#get-an-organization-membership-for-the-authenticated-user
-class GitHubMembership(typing.TypedDict):
+class GitHubMembership(typing_extensions.TypedDict):
     state: typing.Literal["active", "pending"]
     role: GitHubMembershipRole
     user: GitHubAccount
@@ -902,7 +904,7 @@ GitHubWorkflowRunConclusionType = typing.Literal[
 ]
 
 
-class GitHubWorkflowRun(typing.TypedDict):
+class GitHubWorkflowRun(typing_extensions.TypedDict):
     id: int
     workflow_id: int
     name: str
@@ -944,7 +946,7 @@ class GitHubWorkflowJobStep(typing_extensions.TypedDict):
     completed_at: ISODateTimeType | None
 
 
-class GitHubWorkflowJob(typing.TypedDict):
+class GitHubWorkflowJob(typing_extensions.TypedDict):
     id: int
     run_id: int
     name: str

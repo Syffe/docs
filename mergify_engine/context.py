@@ -539,6 +539,32 @@ class Repository:
 
         return True
 
+    async def get_pulls(
+        self,
+        state: typing.Literal["open", "closed", "all"] = "open",
+        base: str | None = None,
+        sort: typing.Literal[
+            "created", "updated", "popularity", "long-running"
+        ] = "created",
+        sort_direction: typing.Literal["asc", "desc"] = "asc",
+        per_page: int = 30,
+        page: int = 1,
+    ) -> list[github_types.GitHubPullRequest]:
+        params: dict[str, typing.Any] = {
+            "state": state,
+            "sort": sort,
+            "direction": sort_direction,
+            "per_page": per_page,
+            "page": page,
+        }
+        if base:
+            params["base"] = base
+
+        resp = await self.installation.client.get(
+            f"{self.base_url}/pulls", params=params
+        )
+        return [typing.cast(github_types.GitHubPullRequest, p) for p in resp.json()]
+
     async def get_pull_request_context(
         self,
         pull_number: github_types.GitHubPullRequestNumber,
