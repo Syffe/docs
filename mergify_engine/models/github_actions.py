@@ -508,6 +508,9 @@ class WorkflowJob(models.Base):
                 job.completed_at,
                 job.run_attempt,
                 sqlalchemy.func.bool_and(job_rerun.id.is_not(None)).label("flaky"),
+                sqlalchemy.func.max(job_rerun.run_attempt).label(
+                    "max_job_rerun_attempt"
+                ),
             )
             .join(
                 job_rerun,
@@ -577,6 +580,9 @@ class WorkflowJob(models.Base):
                 job.run_attempt,
                 sqlalchemy.func.bool_and(job_rerun.id.is_not(None)).label("flaky"),
                 job.embedded_log,
+                sqlalchemy.func.max(job_rerun.run_attempt).label(
+                    "max_job_rerun_attempt"
+                ),
             )
             .join(
                 job_rerun,

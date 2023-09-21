@@ -80,6 +80,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "completed_at": jobs[0].completed_at.isoformat(),
                         "flaky": "yes",
                         "run_attempt": 1,
+                        "failed_retry_count": 2,
                     },
                     {
                         "name": "A job",
@@ -101,6 +102,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "completed_at": jobs[2].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
+                        "failed_retry_count": 1,
                     },
                 ]
             },
@@ -126,6 +128,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "completed_at": jobs[3].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
+                        "failed_retry_count": 1,
                     },
                 ]
             },
@@ -175,6 +178,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "completed_at": jobs[0].completed_at.isoformat(),
                         "flaky": "yes",
                         "run_attempt": 1,
+                        "failed_retry_count": 2,
                     }
                 ]
             },
@@ -200,6 +204,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "completed_at": jobs[2].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
+                        "failed_retry_count": 1,
                     },
                 ]
             },
@@ -250,6 +255,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "completed_at": jobs[4].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
+                        "failed_retry_count": 1,
                     }
                 ]
             },
@@ -310,6 +316,7 @@ async def test_api_get_gha_failed_jobs_no_steps(
                         "completed_at": job.completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
+                        "failed_retry_count": 1,
                     }
                 ]
             },
@@ -372,6 +379,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
         "completed_at": jobs[0].completed_at.isoformat(),
         "flaky": "yes",
         "run_attempt": 1,
+        "failed_retry_count": 2,
         "embedded_log": "Some logs",
         "neighbour_job_ids": [jobs[2].id],
     }
@@ -401,6 +409,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
         "completed_at": jobs[0].completed_at.isoformat(),
         "flaky": "yes",
         "run_attempt": 1,
+        "failed_retry_count": 2,
         "embedded_log": "Some logs",
         "neighbour_job_ids": [jobs[2].id, jobs[3].id],
     }
@@ -448,6 +457,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
         "completed_at": jobs[4].completed_at.isoformat(),
         "flaky": "unknown",
         "run_attempt": 1,
+        "failed_retry_count": 1,
         "embedded_log": "Some logs",
         "neighbour_job_ids": [],
     }
