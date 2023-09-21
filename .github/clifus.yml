@@ -36,7 +36,6 @@ targets:
         - ".github/workflows/ci.yaml"
         - ".github/workflows/ci-record.yaml"
         - ".github/workflows/releaser.yaml"
-        - ".github/workflows/docs-upload-gcp-prod.yaml"
         - ".github/actions/tooling-setup/action.yml"
       lineMatchPattern: "(\\s+python-version: )(.+)"
     transformers:
