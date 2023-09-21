@@ -753,7 +753,7 @@ async def test_event_as_dict(
     event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseDelete))
 
     assert event is not None
-    assert event.as_dict() == {
+    assert event._as_dict() == {
         "id": 1,
         "deleted_by_id": 987,
         "type": enumerations.EventType.QueuePauseDelete,

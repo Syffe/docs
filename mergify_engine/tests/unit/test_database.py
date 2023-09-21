@@ -112,24 +112,28 @@ def test_one_head() -> None:
 def test_model_as_dict() -> None:
     class TestSimpleModel(models.Base):
         __tablename__ = "test_simple_table"
+        __github_attributes__ = ("id", "name")
         id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
         name: orm.Mapped[str]
+        not_a_github_thing: orm.Mapped[str]
 
     obj = TestSimpleModel(id=0)
-    assert obj.as_dict() == {"id": 0, "name": None}
+    assert obj.as_github_dict() == {"id": 0, "name": None}
 
     obj = TestSimpleModel(id=0, name="hello")
-    assert obj.as_dict() == {"id": 0, "name": "hello"}
+    assert obj.as_github_dict() == {"id": 0, "name": "hello"}
 
 
 def test_relational_model_as_dict() -> None:
     class TestRelationalUserModel(models.Base):
         __tablename__ = "test_relational_user_table"
+        __github_attributes__ = ("id", "name")
         id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
         name: orm.Mapped[str]
 
     class TestRelationalModel(models.Base):
         __tablename__ = "test_relational_table"
+        __github_attributes__ = ("id", "name", "user")
         id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
         name: orm.Mapped[str]
         user_id: orm.Mapped[int] = orm.mapped_column(
@@ -140,15 +144,14 @@ def test_relational_model_as_dict() -> None:
         )
 
     obj = TestRelationalModel(id=0)
-    assert obj.as_dict() == {"id": 0, "name": None, "user_id": None}
+    assert obj.as_github_dict() == {"id": 0, "name": None, "user": None}
 
     obj = TestRelationalModel(
         id=0, name="hello", user_id=0, user=TestRelationalUserModel(id=0, name="me")
     )
-    assert obj.as_dict() == {
+    assert obj.as_github_dict() == {
         "id": 0,
         "name": "hello",
-        "user_id": 0,
         "user": {"id": 0, "name": "me"},
     }
 

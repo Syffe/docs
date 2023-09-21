@@ -28,7 +28,7 @@ class WorkflowJob(DbPopulator):
                         .limit(1)
                     )
                 ).scalar_one()
-            ).as_dict(),
+            ).as_github_dict(),
         )
 
         # Failed flaky job

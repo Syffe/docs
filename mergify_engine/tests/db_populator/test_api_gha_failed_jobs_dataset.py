@@ -29,7 +29,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         .limit(1)
                     )
                 ).scalar_one()
-            ).as_dict(),
+            ).as_github_dict(),
         )
 
         # Failed job
@@ -204,7 +204,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         .limit(1)
                     )
                 ).scalar_one()
-            ).as_dict(),
+            ).as_github_dict(),
         )
 
         job4 = await github_actions.WorkflowJob.insert(

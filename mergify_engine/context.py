@@ -187,7 +187,7 @@ class Installation:
 
         repo_data: github_types.GitHubRepository | github_repository.GitHubRepositoryDict
         if db_repo is not None and db_repo.is_complete():
-            repo_data = db_repo.as_dict()
+            repo_data = db_repo.as_github_dict()
         else:
             repo_data = await self.client.item(f"/repos/{self.owner_login}/{name}")
             await self._save_repository_to_database(repo_data)

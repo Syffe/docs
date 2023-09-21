@@ -11,6 +11,7 @@ class ORMObjectAsDict(typing.TypedDict):
 
 class Base(orm.DeclarativeBase):
     __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {"eager_defaults": True}  # type: ignore [misc]
+    __github_attributes__: typing.ClassVar[tuple[str, ...]] = ()
 
     metadata = sqlalchemy.MetaData(
         naming_convention={
@@ -22,7 +23,15 @@ class Base(orm.DeclarativeBase):
         }
     )
 
-    def as_dict(self) -> ORMObjectAsDict:
+    def _as_dict(
+        self,
+        included_columns_attribute: str | None = None,
+    ) -> ORMObjectAsDict:
+        if included_columns_attribute is None:
+            included_columns = None
+        else:
+            included_columns = getattr(self, included_columns_attribute, ())
+
         columns = self.__table__.columns.values()
 
         # NOTE(lecrepont01): for an inherited relation, the attributes of
@@ -34,14 +43,26 @@ class Base(orm.DeclarativeBase):
             parent_relation = self.__class__.__bases__[0]
             columns += parent_relation.__table__.columns.values()  # type: ignore [attr-defined]
 
-        result = {c.name: getattr(self, c.name) for c in columns}
+        result = {
+            c.name: getattr(self, c.name)
+            for c in columns
+            if included_columns is None or c.name in included_columns
+        }
         for relationship in sqlalchemy.inspect(self.__class__).relationships:
             relationship_name = relationship.key
-            relationship_value = getattr(self, relationship_name)
-            if relationship_value is not None:
-                result[relationship_name] = relationship_value.as_dict()
+            if included_columns is None or relationship_name in included_columns:
+                relationship_value = getattr(self, relationship_name)
+                if relationship_value is None:
+                    result[relationship_name] = None
+                else:
+                    result[relationship_name] = relationship_value._as_dict(
+                        included_columns_attribute
+                    )
 
         return result  # type: ignore [return-value]
+
+    def as_github_dict(self) -> ORMObjectAsDict:
+        return self._as_dict("__github_attributes__")
 
     @classmethod
     async def total(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> int:

@@ -26,6 +26,15 @@ class GitHubRepository(models.Base):
     __table_args__ = (
         sqlalchemy.Index("github_repository_owner_id_name_idx", "owner_id", "name"),
     )
+    __github_attributes__ = (
+        "id",
+        "owner",
+        "name",
+        "private",
+        "default_branch",
+        "full_name",
+        "archived",
+    )
 
     id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
         sqlalchemy.BigInteger,
@@ -109,8 +118,8 @@ class GitHubRepository(models.Base):
             archived=repository.get("archived"),
         )
 
-    def as_dict(self) -> GitHubRepositoryDict:
-        return typing.cast(GitHubRepositoryDict, super().as_dict())
+    def as_github_dict(self) -> GitHubRepositoryDict:
+        return typing.cast(GitHubRepositoryDict, super().as_github_dict())
 
     def is_complete(self) -> bool:
-        return None not in self.as_dict().values()
+        return None not in self.as_github_dict().values()

@@ -26,6 +26,11 @@ class GitHubAccountType(enum.StrEnum):
 
 class GitHubAccount(models.Base):
     __tablename__ = "github_account"
+    __github_attributes__ = (
+        "id",
+        "login",
+        "type",
+    )
 
     id: orm.Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
         sqlalchemy.BigInteger,
@@ -77,3 +82,6 @@ class GitHubAccount(models.Base):
             return account_obj
 
         return cls(id=account["id"], login=account["login"], type=account.get("type"))
+
+    def as_github_dict(self) -> GitHubAccountDict:
+        return typing.cast(GitHubAccountDict, super().as_github_dict())

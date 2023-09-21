@@ -1,6 +1,7 @@
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
+from mergify_engine.models import github_account
 from mergify_engine.models import github_repository
 
 
@@ -102,10 +103,9 @@ async def test_as_dict(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
     )
 
     assert commited_repo is not None
-    assert commited_repo.as_dict() == {
+    assert commited_repo.as_github_dict() == {
         "id": 0,
         "name": "mergify-engine",
-        "owner_id": 0,
         "owner": {"id": 0, "login": "Mergifyio", "type": "User"},
         "private": False,
         "default_branch": "main",
@@ -133,5 +133,10 @@ def test_is_complete() -> None:
         default_branch=github_types.GitHubRefType("main"),
         full_name="hello/there",
         archived=False,
+        owner=github_account.GitHubAccount(
+            login=github_types.GitHubLogin("Mergifyio"),
+            id=github_types.GitHubAccountIdType(0),
+            type="User",
+        ),
     )
     assert repo.is_complete()

@@ -215,7 +215,7 @@ async def configure_web_client_to_work_with_a_repo(
                     .limit(1)
                 )
             ).scalar_one()
-        ).as_dict(),
+        ).as_github_dict(),
     )
 
     user = await mock_user_authorization_on_repo(respx_mock, repo_info, session)
