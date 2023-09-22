@@ -74,7 +74,7 @@ def format_event_item_response(event: evt_models.Event) -> dict[str, typing.Any]
         "received_at": event.received_at,
         "trigger": event.trigger,
         "pull_request": event.pull_request,
-        "repository": event.repository.name,
+        "repository": event.repository.full_name,
     }
     # place child model (event specific) attributes in the metadata key
     if event.__class__.__bases__[0] == evt_models.Event:
