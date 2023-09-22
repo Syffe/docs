@@ -317,43 +317,43 @@ def test_datetime_inside_time_range(
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Friday, 15:00 UTC
             datetime.datetime(2022, 11, 11, 15, tzinfo=date.UTC),
-            # Friday, 15:01 UTC
-            datetime.datetime(2022, 11, 11, 15, 1, tzinfo=date.UTC),
+            # Friday, 15:00:01 UTC
+            datetime.datetime(2022, 11, 11, 15, 0, 1, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Monday, 16:00 UTC
             datetime.datetime(2022, 11, 7, 16, tzinfo=date.UTC),
-            # Tuesday, 7:00:01 UTC
-            datetime.datetime(2022, 11, 8, 7, 0, 1, tzinfo=date.UTC),
+            # Tuesday, 7:00 UTC
+            datetime.datetime(2022, 11, 8, 7, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Friday, 16:00 UTC
             datetime.datetime(2022, 11, 11, 16, tzinfo=date.UTC),
-            # Saturday, 7:00:01 UTC
-            datetime.datetime(2022, 11, 12, 7, 0, 1, tzinfo=date.UTC),
+            # Saturday, 7:00 UTC
+            datetime.datetime(2022, 11, 12, 7, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Monday, 16:00 UTC
             datetime.datetime(2022, 11, 7, 16, tzinfo=date.UTC),
             # Friday, 7:00:01 UTC
-            datetime.datetime(2022, 11, 11, 7, 0, 1, tzinfo=date.UTC),
+            datetime.datetime(2022, 11, 11, 7, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Saturday, 14:00 UTC
             datetime.datetime(2022, 11, 5, 14, tzinfo=date.UTC),
-            # Monday, 7:00:01 UTC
-            datetime.datetime(2022, 11, 7, 7, 0, 1, tzinfo=date.UTC),
+            # Monday, 7:00 UTC
+            datetime.datetime(2022, 11, 7, 7, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Saturday, 16:00 UTC
             datetime.datetime(2022, 11, 5, 16, tzinfo=date.UTC),
-            # Monday, 7:00:01 UTC
-            datetime.datetime(2022, 11, 7, 7, 0, 1, tzinfo=date.UTC),
+            # Monday, 7:00 UTC
+            datetime.datetime(2022, 11, 7, 7, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("MON-FRI"),
@@ -415,29 +415,29 @@ def test_datetime_inside_time_range(
             date.Schedule.from_string("08:10-17:30"),
             # Monday, 15:00 UTC
             datetime.datetime(2022, 11, 7, 15, tzinfo=date.UTC),
-            # Monday, 17:31 UTC
-            datetime.datetime(2022, 11, 7, 17, 31, tzinfo=date.UTC),
+            # Monday, 17:30:01 UTC
+            datetime.datetime(2022, 11, 7, 17, 30, 1, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("08:10-17:30"),
             # Monday, 18:00 UTC
             datetime.datetime(2022, 11, 7, 18, tzinfo=date.UTC),
-            # Tuesday, 08:10:01 UTC
-            datetime.datetime(2022, 11, 8, 8, 10, 1, tzinfo=date.UTC),
+            # Tuesday, 08:10:00 UTC
+            datetime.datetime(2022, 11, 8, 8, 10, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("08:10-17:30"),
             # Sunday, 18:00 UTC
             datetime.datetime(2022, 11, 6, 18, tzinfo=date.UTC),
-            # Monday, 08:10:01 UTC
-            datetime.datetime(2022, 11, 7, 8, 10, 1, tzinfo=date.UTC),
+            # Monday, 08:10:00 UTC
+            datetime.datetime(2022, 11, 7, 8, 10, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("08:10-17:30"),
             # Monday, 00:00 UTC
             datetime.datetime(2022, 11, 6, tzinfo=date.UTC),
-            # Monday, 08:10:01 UTC
-            datetime.datetime(2022, 11, 6, 8, 10, 1, tzinfo=date.UTC),
+            # Monday, 08:10:00 UTC
+            datetime.datetime(2022, 11, 6, 8, 10, tzinfo=date.UTC),
         ),
     ),
 )

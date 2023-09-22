@@ -14,7 +14,7 @@ from mergify_engine.tests.unit import conftest
 @pytest.mark.parametrize(
     "pull, expected_refresh",
     (
-        ({}, datetime.datetime(2021, 9, 22, 15, 1, tzinfo=datetime.UTC)),
+        ({}, datetime.datetime(2021, 9, 22, 15, 0, 1, tzinfo=datetime.UTC)),
         ({"closed_at": "2021-09-10T08:00:05Z"}, None),
         (
             {"updated_at": "2021-09-22T08:02:05Z"},
@@ -61,19 +61,22 @@ pull_request_rules:
         # This is a Monday
         (
             datetime.datetime(2023, 7, 24, 12, 10, tzinfo=datetime.UTC),
-            datetime.datetime(2023, 7, 24, 12, 30, 1, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 24, 12, 30, tzinfo=datetime.UTC),
         ),
+        # This is a Monday
         (
             datetime.datetime(2023, 7, 24, 12, 31, 0, tzinfo=datetime.UTC),
-            datetime.datetime(2023, 7, 24, 12, 51, 0, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 24, 12, 50, 1, tzinfo=datetime.UTC),
         ),
+        # This is a Friday
         (
             datetime.datetime(2023, 7, 28, 6, 0, 0, tzinfo=datetime.UTC),
-            datetime.datetime(2023, 7, 28, 7, 0, 1, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 28, 7, 0, 0, tzinfo=datetime.UTC),
         ),
+        # This is a Friday
         (
             datetime.datetime(2023, 7, 28, 7, 2, 0, tzinfo=datetime.UTC),
-            datetime.datetime(2023, 7, 28, 10, 1, 0, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 28, 10, 0, 1, tzinfo=datetime.UTC),
         ),
     ),
 )
@@ -127,13 +130,13 @@ pull_request_rules:
         (
             datetime.datetime(2023, 7, 24, 11, 10, tzinfo=datetime.UTC),
             {"updated_at": "2023-07-24T9:02:00Z"},
-            datetime.datetime(2023, 7, 24, 13, 20, 1, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 24, 13, 20, 0, tzinfo=datetime.UTC),
         ),
         # This is a Monday
         (
             datetime.datetime(2023, 7, 24, 10, 10, tzinfo=datetime.UTC),
             {},
-            datetime.datetime(2023, 7, 24, 13, 20, 1, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 24, 13, 20, 0, tzinfo=datetime.UTC),
         ),
         # This is a Monday
         (
@@ -145,7 +148,7 @@ pull_request_rules:
         (
             datetime.datetime(2023, 7, 21, 6, 10, tzinfo=datetime.UTC),
             {},
-            datetime.datetime(2023, 7, 21, 7, 0, 1, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 7, 21, 7, 0, 0, tzinfo=datetime.UTC),
         ),
     ),
 )
@@ -211,7 +214,7 @@ pull_request_rules:
     )
 
     expected_refresh_due_to_rules = datetime.datetime(
-        2021, 9, 22, 15, 1, tzinfo=datetime.UTC
+        2021, 9, 22, 15, 0, 1, tzinfo=datetime.UTC
     )
 
     ctxt = await context_getter(0)

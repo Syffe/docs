@@ -190,7 +190,7 @@ async def test_compute_estimation_out_of_schedule() -> None:
             previous_eta,
         )
 
-        expected_eta = date.fromisoformat("2023-08-29 09:00:01")
+        expected_eta = date.fromisoformat("2023-08-29 09:00:00")
         assert actual_eta == expected_eta
 
 

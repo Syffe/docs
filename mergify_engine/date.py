@@ -546,7 +546,7 @@ class Schedule:
                     minute=self.end_minute,
                     second=0,
                 )
-                + datetime.timedelta(minutes=1)
+                + datetime.timedelta(seconds=1)
             )
         # Inside day schedule but oustide of hour+minute schedule
         elif from_time_as_tz.hour < self.start_hour or (
@@ -576,7 +576,7 @@ class Schedule:
 
         return return_as_origin_timezone(
             from_time_as_tz.replace(
-                hour=self.start_hour, minute=self.start_minute, second=1, microsecond=0
+                hour=self.start_hour, minute=self.start_minute, second=0, microsecond=0
             )
         )
 

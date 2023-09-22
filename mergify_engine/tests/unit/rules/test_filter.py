@@ -542,9 +542,9 @@ async def test_schedule_with_timezone() -> None:
         today = frozen_time().replace(tzinfo=date.UTC)
 
         next_refreshes = [
-            "2021-10-20T07:00:01",
-            "2021-10-20T15:31:00",
-            "2021-10-21T07:00:01",
+            "2021-10-20T07:00:00",
+            "2021-10-20T15:30:01",
+            "2021-10-21T07:00:00",
         ]
         for next_refresh in next_refreshes:
             next_refresh_dt = datetime.datetime.fromisoformat(next_refresh).replace(
@@ -555,7 +555,7 @@ async def test_schedule_with_timezone() -> None:
 
         frozen_time.move_to(today.replace(day=23))
         assert await f(get_scheduled_pr()) == datetime.datetime(
-            2021, 10, 25, 7, 0, 1, tzinfo=date.UTC
+            2021, 10, 25, 7, tzinfo=date.UTC
         )
 
     with freeze_time("2022-09-16T10:38:18.019100", tz_offset=0) as frozen_time:
@@ -565,7 +565,7 @@ async def test_schedule_with_timezone() -> None:
         today = frozen_time().replace(tzinfo=date.UTC)
 
         next_refreshes = [
-            "2022-09-16T13:00:01",
+            "2022-09-16T13:00:00",
         ]
         for next_refresh in next_refreshes:
             next_refresh_dt = datetime.datetime.fromisoformat(next_refresh).replace(
@@ -764,40 +764,40 @@ async def test_schedule_neardatetime_filter() -> None:
         # Correct datetime should be next Monday, 08:00:01 UTC
         assert await f_eq(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 14, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 14, 8, tzinfo=date.UTC)
 
         assert await f_ne(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 14, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 14, 8, tzinfo=date.UTC)
         # Friday
         frozen_time.move_to(datetime.datetime(2022, 11, 11, tzinfo=date.UTC))
-        # Correct datetime should be current day, at start_hour and start_minute of the schedule + 1s
+        # Correct datetime should be current day, at start_hour and start_minute of the schedule
         assert await f_eq(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 11, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
         assert await f_ne(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 11, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
 
         # Friday, 15:00 UTC
         frozen_time.move_to(datetime.datetime(2022, 11, 11, 15, tzinfo=date.UTC))
-        # Correct datetime should be current day, at end_hour and end_minute of the schedule
+        # Correct datetime should be current day, at end_hour and end_minute of the schedule + 1s
         assert await f_eq(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 11, 17, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 11, 17, 0, 1, tzinfo=date.UTC)
         assert await f_ne(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 11, 17, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 11, 17, 0, 1, tzinfo=date.UTC)
 
         # Friday, 17:00 UTC
         frozen_time.move_to(datetime.datetime(2022, 11, 11, 17, tzinfo=date.UTC))
-        # Correct datetime should be current day, 1 minute after the end of the schedule
+        # Correct datetime should be current day, 1 second after the end of the schedule
         assert await f_eq(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 11, 17, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 11, 17, 0, 1, tzinfo=date.UTC)
         assert await f_ne(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 11, 17, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 11, 17, 0, 1, tzinfo=date.UTC)
 
         # Saturday
         frozen_time.move_to(datetime.datetime(2022, 11, 12, tzinfo=date.UTC))
@@ -805,33 +805,33 @@ async def test_schedule_neardatetime_filter() -> None:
         tree_ne = parser.parse("schedule!=FRI-TUE 08:00-17:00")
         f_eq = filter.NearDatetimeFilter(tree_eq)
         f_ne = filter.NearDatetimeFilter(tree_ne)
-        # Correct datetime should be current day, 08:00:01 UTC
+        # Correct datetime should be current day, 08:00:00 UTC
         assert await f_eq(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 12, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 12, 8, tzinfo=date.UTC)
         assert await f_ne(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 12, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 12, 8, tzinfo=date.UTC)
 
         # Thursday
         frozen_time.move_to(datetime.datetime(2022, 11, 9, tzinfo=date.UTC))
-        # Correct datetime should be Friday of the same week, 08:00:01 UTC
+        # Correct datetime should be Friday of the same week, 08:00:00 UTC
         assert await f_eq(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 11, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
         assert await f_ne(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 11, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
 
         # Monday
         frozen_time.move_to(datetime.datetime(2022, 11, 7, tzinfo=date.UTC))
-        # Correct datetime should be current day, at start_hour and start_minute of the schedule + 1s
+        # Correct datetime should be current day, at start_hour and start_minute of the schedule
         assert await f_eq(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 7, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 7, 8, tzinfo=date.UTC)
         assert await f_ne(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 7, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 7, 8, tzinfo=date.UTC)
 
         # Tuesday, 18:00 UTC
         frozen_time.move_to(datetime.datetime(2022, 11, 8, 18, tzinfo=date.UTC))
@@ -839,10 +839,10 @@ async def test_schedule_neardatetime_filter() -> None:
         # at start_hour and start_minute of the schedule
         assert await f_eq(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 11, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
         assert await f_ne(
             FakePR({"current-datetime": date.utcnow()})
-        ) == datetime.datetime(2022, 11, 11, 8, 0, 1, tzinfo=date.UTC)
+        ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
 
 
 @pytest.mark.parametrize(

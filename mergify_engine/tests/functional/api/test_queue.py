@@ -491,7 +491,7 @@ class TestQueueApi(base.FunctionalTestBase):
                                     "evaluation_error": None,
                                     "related_checks": [],
                                     "next_evaluation_at": anys.AnyContains(
-                                        "2023-01-10T15:01:00"
+                                        "2023-01-10T15:00:01"
                                     ),
                                 }
                             ],
@@ -1249,7 +1249,7 @@ class TestQueueApi(base.FunctionalTestBase):
             # Make sure the eta is after the schedule start
             assert datetime.datetime.fromisoformat(
                 r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
-            ) == datetime.datetime(2022, 10, 17, 8, 0, 1, tzinfo=datetime.UTC)
+            ) == datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC)
 
     async def test_estimated_time_of_merge_schedule_condition_match(self) -> None:
         rules = {
@@ -1397,7 +1397,7 @@ class TestQueueApi(base.FunctionalTestBase):
             # ETA should be close to `start_date` since p1 was merged really fast.
             assert datetime.datetime.fromisoformat(
                 r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
-            ) == datetime.datetime(2022, 10, 17, 8, 0, 1, tzinfo=datetime.UTC)
+            ) == datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC)
 
 
 class TestNewQueueApiEndpoint(base.FunctionalTestBase):

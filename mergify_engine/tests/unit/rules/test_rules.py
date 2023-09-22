@@ -2553,7 +2553,7 @@ def _dt(at: str) -> datetime.datetime:
             ),
             conftest.FakePullRequest({"current-datetime": _dt("2022-01-10T12:00:00")}),
             True,
-            _dt("2022-01-10T16:31:00"),
+            _dt("2022-01-10T16:30:01"),
             id="in schedule",
         ),
         pytest.param(
@@ -2562,7 +2562,7 @@ def _dt(at: str) -> datetime.datetime:
             ),
             conftest.FakePullRequest({"current-datetime": _dt("2022-01-10T00:00:00")}),
             False,
-            _dt("2022-01-10T08:00:01"),
+            _dt("2022-01-10T08:00:00"),
             id="out schedule",
         ),
         pytest.param(
