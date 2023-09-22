@@ -2470,7 +2470,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4813",
     "Title": "potential use-after-free in gaih_inet()",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-09-12T22:15:00Z"
   },
   {
@@ -2480,7 +2480,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4813",
     "Title": "potential use-after-free in gaih_inet()",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-09-12T22:15:00Z"
   }
 ]
