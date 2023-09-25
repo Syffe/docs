@@ -82,7 +82,7 @@ async def test_pulls_api_filters(
     ).respond(200, json=[pr1])
 
     resp = await web_client.request(
-        "GET",
+        "POST",
         "/v1/repos/Mergifyio/engine/pulls",
         json=[],
         headers={"Authorization": api_token.api_token},
@@ -94,7 +94,7 @@ async def test_pulls_api_filters(
     assert resp.json()["pull_requests"] == [pr1]
 
     resp = await web_client.request(
-        "GET",
+        "POST",
         "/v1/repos/Mergifyio/engine/pulls",
         json=["label=darkvader"],
         headers={"Authorization": api_token.api_token},
@@ -105,7 +105,7 @@ async def test_pulls_api_filters(
     assert len(resp.json()["pull_requests"]) == 0
 
     resp = await web_client.request(
-        "GET",
+        "POST",
         "/v1/repos/Mergifyio/engine/pulls",
         json=["invalidcondition=darkvader"],
         headers={"Authorization": api_token.api_token},
@@ -226,7 +226,7 @@ async def test_pulls_api_pagination(
     ).respond(200, json=pulls_p2)
 
     resp = await web_client.request(
-        "GET",
+        "POST",
         "/v1/repos/Mergifyio/engine/pulls",
         json=["label=generalkenobi"],
         headers={"Authorization": api_token.api_token},
@@ -252,7 +252,7 @@ async def test_pulls_api_pagination(
     next_url_parsed = parse.urlparse(next_url_str)
 
     resp = await web_client.request(
-        "GET",
+        "POST",
         f"{next_url_parsed.path}?{next_url_parsed.query}",
         json=["label=generalkenobi"],
         headers={"Authorization": api_token.api_token},

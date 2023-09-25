@@ -47,7 +47,7 @@ InputConditionDict = typing_extensions.TypedDict(
 InputConditions = list[InputConditionDict | str]
 
 
-@router.get(
+@router.post(
     "/repos/{owner}/{repository}/pulls",
     summary="Repository's pull requests matching input conditions",
     description="List a repository's pull requests that matches the given conditions",
