@@ -47,8 +47,14 @@ async def test_process_event_stream_workflow_run(
         "event_type": "workflow_run",
         "data": msgpack.packb(sample_ci_events_to_process[event_filename].slim_event),
     }
-    await redis_links.stream.xadd("gha_workflow_run", stream_event)
-    await redis_links.stream.xadd("gha_workflow_run", stream_event)
+    await redis_links.stream.xadd(
+        "gha_workflow_run",
+        fields=stream_event,  # type: ignore[arg-type]
+    )
+    await redis_links.stream.xadd(
+        "gha_workflow_run",
+        fields=stream_event,  # type: ignore[arg-type]
+    )
 
     with mock.patch.object(
         pull_registries.RedisPullRequestRegistry,
@@ -131,9 +137,14 @@ async def test_process_event_stream_workflow_job(
         "event_type": "workflow_job",
         "data": msgpack.packb(sample_ci_events_to_process[event_file_name].slim_event),
     }
-    await redis_links.stream.xadd("gha_workflow_job", stream_event)
-    await redis_links.stream.xadd("gha_workflow_job", stream_event)
-
+    await redis_links.stream.xadd(
+        "gha_workflow_job",
+        fields=stream_event,  # type: ignore[arg-type]
+    )
+    await redis_links.stream.xadd(
+        "gha_workflow_job",
+        fields=stream_event,  # type: ignore[arg-type]
+    )
     await event_processing.process_event_streams(redis_links)
 
     sql = sqlalchemy.select(github_actions.WorkflowJob)
@@ -166,7 +177,10 @@ async def test_process_event_stream_broken_workflow_job(
             sample_ci_events_to_process["workflow_job.broken_job.json"].slim_event
         ),
     }
-    await redis_links.stream.xadd("gha_workflow_job", stream_event)
+    await redis_links.stream.xadd(
+        "gha_workflow_job",
+        fields=stream_event,  # type: ignore[arg-type]
+    )
 
     sql = sqlalchemy.select(github_actions.WorkflowJob)
     result = await db.scalars(sql)

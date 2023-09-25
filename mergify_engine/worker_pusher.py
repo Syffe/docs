@@ -156,9 +156,8 @@ async def push_ci_event(
         "timestamp": date.utcnow().isoformat(),
         "delivery_id": event_id,
     }
-
     await redis.xadd(
         f"gha_{event_type}",
-        fields=event,
+        fields=event,  # type: ignore[arg-type]
         minid=redis_utils.get_expiration_minid(CI_EVENT_EXPIRATION),
     )

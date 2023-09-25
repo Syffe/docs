@@ -90,7 +90,7 @@ async def _process_workflow_run_event(
 
                 await session.commit()
 
-    await redis_links.stream.xdel("gha_workflow_run", stream_event_id)  # type: ignore [no-untyped-call]
+    await redis_links.stream.xdel("gha_workflow_run", stream_event_id)
 
 
 async def _insert_pull_request(
@@ -173,4 +173,4 @@ async def _process_workflow_job_event(
                     )
                     await session.commit()
 
-    await redis_links.stream.xdel("gha_workflow_job", stream_event_id)  # type: ignore [no-untyped-call]
+    await redis_links.stream.xdel("gha_workflow_job", stream_event_id)
