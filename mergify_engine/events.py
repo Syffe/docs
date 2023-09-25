@@ -135,7 +135,7 @@ async def get(
     return pagination.Page(
         items=events_list,
         current=page,
-        total=await evt_models.Event.total(session),
+        total=None,
         cursor_prev=cursor_prev,
         cursor_next=cursor_next,
     )

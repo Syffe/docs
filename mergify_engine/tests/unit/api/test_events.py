@@ -107,7 +107,7 @@ async def test_api_response(
     assert response.json() == {
         "size": 1,
         "per_page": 1,
-        "total": 3,
+        "total": None,
         "events": [
             {
                 "id": 3,
@@ -136,7 +136,7 @@ async def test_api_query_params(
         headers={"Authorization": api_token.api_token},
     )
     r = response.json()
-    assert r["total"] == 3
+    assert r["total"] is None
     assert r["size"] == 2
     assert {e["type"] for e in r["events"]} == {"action.comment", "action.queue.enter"}
 
@@ -359,7 +359,7 @@ async def test_new_api_db_switch(
             headers={"Authorization": api_token.api_token},
         )
         assert response is not None
-        assert response.json()["total"] == 0
+        assert len(response.json()["events"]) == 0
 
         # received_at and received_from
         rfrom = (INITIAL_TIMESTAMP + datetime.timedelta(hours=1, minutes=1)).timestamp()
@@ -369,7 +369,7 @@ async def test_new_api_db_switch(
             headers={"Authorization": api_token.api_token},
         )
         assert response is not None
-        assert response.json()["total"] == 3
+        assert len(response.json()["events"]) == 3
 
     # switched to postgres
     with freezegun.freeze_time(
@@ -436,7 +436,6 @@ async def test_old_api_db_switch(
                 }
             ],
         }
-        assert response.json()["total"] == 1
 
     # passed the eventlogs TTL the old API will use the postgreSQL backend
     with freezegun.freeze_time(
@@ -453,7 +452,7 @@ async def test_old_api_db_switch(
         assert payload == {
             "size": 1,
             "per_page": 10,
-            "total": 1,
+            "total": None,
             "events": [
                 {
                     "id": 1,
@@ -474,7 +473,7 @@ async def test_old_api_db_switch(
             "/v1/repos/Mergifyio/engine/pulls/1/events",
             headers={"Authorization": api_token.api_token},
         )
-        assert response.json()["total"] == 1
+        assert len(response.json()["events"]) == 1
 
 
 @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)

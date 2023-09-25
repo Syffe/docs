@@ -592,10 +592,13 @@ async def get(
         except UnsupportedEvent as err:
             LOG.error(err.message, event=err.event)
 
+    # If filtering is done we can't compute the total so we return 0
+    compute_total = event_type is None and received_from is None and received_to is None
+
     return pagination.Page(
         items=events,
         current=page,
-        total=total,
+        total=total if compute_total else None,
         cursor_prev=cursor_prev,
         cursor_next=cursor_next,
     )
