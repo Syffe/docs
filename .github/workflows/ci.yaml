@@ -205,23 +205,7 @@ jobs:
 
       - name: Build 🔧
         run: |
-          sudo apt update -y
-          sudo apt install graphviz
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
           tools/poetry-ci-install.sh
           poetry run poe docs
-
-      # NOTE(sileht): workflow run on/pull_request doesn't have access to
-      # secrets
-      # So, we upload it as artifact, then another workflow
-      # docs-upload-gcp.yaml will upload it on gcp.
-      - name: Upload ☁️
-        uses: actions/upload-artifact@v3
-        with:
-          name: docs-pr-${{ github.event.pull_request.number }}
-          path: docs/build
-
-      # yamllint disable-line rule:line-length
-      - run: echo "docs=https://docs-preview.mergify.com/${{ github.event.pull_request.number }}/docs" >> "$GITHUB_OUTPUT"
-        shell: bash

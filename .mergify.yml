@@ -132,10 +132,6 @@ pull_request_rules:
               - or:
                   - label=skip release note
                   - files~=^releasenotes/notes
-              - or:
-                  - label=need documentation
-                  - label=skip documentation
-                  - files~=^docs/source
               - body~=MRGFY-
     actions:
       post_check:
