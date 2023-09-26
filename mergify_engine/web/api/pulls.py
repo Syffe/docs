@@ -24,9 +24,9 @@ router = fastapi.APIRouter(
 )
 
 
-class MatchingPullRequests(pagination.PageResponse[github_types.GitHubPullRequest]):
+class MatchingPullRequests(pagination.PageResponse[github_types.GitHubPullRequestBase]):
     items_key: typing.ClassVar[str] = "pull_requests"
-    pull_requests: list[github_types.GitHubPullRequest] = pydantic.Field(
+    pull_requests: list[github_types.GitHubPullRequestBase] = pydantic.Field(
         json_schema_extra={
             "metadata": {
                 "description": "The pull requests of the repository that matches the given conditions"
@@ -82,7 +82,7 @@ async def get_pull_requests(
         start_page = 1
         start_pr = 0
 
-    matching_pulls: list[github_types.GitHubPullRequest] = []
+    matching_pulls: list[github_types.GitHubPullRequestBase] = []
 
     base_pull_conditions = rules_conditions.RuleConditionCombination(
         {"and": validated_conditions}
@@ -120,7 +120,9 @@ async def get_pull_requests(
                 if len(matching_pulls) == current_page.per_page:
                     break
 
-    response_page: pagination.Page[github_types.GitHubPullRequest] = pagination.Page(
+    response_page: pagination.Page[
+        github_types.GitHubPullRequestBase
+    ] = pagination.Page(
         items=matching_pulls,
         current=current_page,
         total=len(matching_pulls),

@@ -388,30 +388,24 @@ class GitHubMilestone(typing_extensions.TypedDict):
     title: str
 
 
-class GitHubPullRequest(GitHubIssueOrPullRequest):
-    # https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+class GitHubPullRequestBase(GitHubIssueOrPullRequest):
+    # The GitHub pull requests returned from `/pulls` do not have the same
+    # properties as the one from `/pulls/{pr_number}`
+    # https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
     id: GitHubPullRequestId
     number: GitHubPullRequestNumber
-    maintainer_can_modify: bool
     base: GitHubBaseBranchRef
     head: GitHubHeadBranchRef
     state: GitHubPullRequestState
     user: GitHubAccount
     labels: list[GitHubLabel]
-    merged: bool
-    merged_by: GitHubAccount | None
     merged_at: ISODateTimeType | None
-    rebaseable: bool | None
     draft: bool
     merge_commit_sha: SHAType | None
-    mergeable: bool | None
-    mergeable_state: GitHubPullRequestMergeableState | None
     html_url: str
     issue_url: str
     title: str
     body: str | None
-    changed_files: int
-    commits: int
     locked: bool
     assignees: list[GitHubAccount]
     requested_reviewers: list[GitHubAccount]
@@ -421,6 +415,18 @@ class GitHubPullRequest(GitHubIssueOrPullRequest):
     created_at: ISODateTimeType
     closed_at: ISODateTimeType | None
     node_id: str
+
+
+class GitHubPullRequest(GitHubPullRequestBase):
+    # https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    maintainer_can_modify: bool
+    merged: bool
+    merged_by: GitHubAccount | None
+    rebaseable: bool | None
+    mergeable: bool | None
+    mergeable_state: GitHubPullRequestMergeableState | None
+    changed_files: int
+    commits: int
 
 
 # https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads
