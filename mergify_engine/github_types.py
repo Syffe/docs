@@ -376,6 +376,7 @@ GitHubPullRequestMergeableState = typing.Literal[
     "unstable",
     "clean",
     "has_hooks",
+    "blocked",
 ]
 
 GitHubPullRequestId = typing.NewType("GitHubPullRequestId", int)
