@@ -62,6 +62,16 @@ async def test_pulls_api_filters(
         "closed_at": None,
         "node_id": "",
     }
+    pr1_full = pr1.copy() | {
+        "maintainer_can_modify": True,
+        "merged": False,
+        "merged_by": None,
+        "rebaseable": True,
+        "mergeable": True,
+        "mergeable_state": "clean",
+        "changed_files": 1,
+        "commits": 1,
+    }
     respx_mock.get(
         "https://api.github.com/repos/Mergifyio/engine/pulls",
         params={
@@ -72,18 +82,21 @@ async def test_pulls_api_filters(
             "page": 1,
         },
     ).respond(200, json=[pr1])
+    respx_mock.get(
+        "https://api.github.com/repos/Mergifyio/engine/pulls/1",
+    ).respond(200, json=pr1_full)
 
     resp = await web_client.request(
         "POST",
         "/v1/repos/Mergifyio/engine/pulls",
-        json=[],
+        json=["-closed"],
         headers={"Authorization": api_token.api_token},
     )
 
     assert resp.status_code == 200
     assert "pull_requests" in resp.json()
     assert len(resp.json()["pull_requests"]) == 1
-    assert resp.json()["pull_requests"] == [pr1]
+    assert resp.json()["pull_requests"] == [pr1_full]
 
     resp = await web_client.request(
         "POST",
@@ -135,11 +148,9 @@ async def test_pulls_api_pagination(
         "locked": False,
         "merge_commit_sha": None,
         "state": "open",
-        "merged": False,
         "draft": False,
         "id": 1,
         "merged_at": None,
-        "rebaseable": True,
         "html_url": "http://whatever.com",
         "issue_url": "http://whatever.com",
         "title": "TITLE",
@@ -211,6 +222,42 @@ async def test_pulls_api_pagination(
         },
     ).respond(200, json=pulls_p2)
 
+    for i in range(28, 30):
+        respx_mock.get(
+            f"https://api.github.com/repos/Mergifyio/engine/pulls/{i}",
+        ).respond(
+            200,
+            json=pulls_p1[i]
+            | {
+                "maintainer_can_modify": True,
+                "merged": False,
+                "merged_by": None,
+                "rebaseable": True,
+                "mergeable": True,
+                "mergeable_state": "clean",
+                "changed_files": 1,
+                "commits": 1,
+            },
+        )
+
+    for i in range(30, 38):
+        respx_mock.get(
+            f"https://api.github.com/repos/Mergifyio/engine/pulls/{i}",
+        ).respond(
+            200,
+            json=pulls_p2[i - 30]
+            | {
+                "maintainer_can_modify": True,
+                "merged": False,
+                "merged_by": None,
+                "rebaseable": True,
+                "mergeable": True,
+                "mergeable_state": "clean",
+                "changed_files": 1,
+                "commits": 1,
+            },
+        )
+
     resp = await web_client.request(
         "POST",
         "/v1/repos/Mergifyio/engine/pulls",
@@ -237,6 +284,23 @@ async def test_pulls_api_pagination(
 
     next_url_parsed = parse.urlparse(next_url_str)
 
+    for i in range(38, 48):
+        respx_mock.get(
+            f"https://api.github.com/repos/Mergifyio/engine/pulls/{i}",
+        ).respond(
+            200,
+            json=pulls_p2[i - 30]
+            | {
+                "maintainer_can_modify": True,
+                "merged": False,
+                "merged_by": None,
+                "rebaseable": True,
+                "mergeable": True,
+                "mergeable_state": "clean",
+                "changed_files": 1,
+                "commits": 1,
+            },
+        )
     resp = await web_client.request(
         "POST",
         f"{next_url_parsed.path}?{next_url_parsed.query}",

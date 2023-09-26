@@ -24,9 +24,9 @@ router = fastapi.APIRouter(
 )
 
 
-class MatchingPullRequests(pagination.PageResponse[github_types.GitHubPullRequestBase]):
+class MatchingPullRequests(pagination.PageResponse[github_types.GitHubPullRequest]):
     items_key: typing.ClassVar[str] = "pull_requests"
-    pull_requests: list[github_types.GitHubPullRequestBase] = pydantic.Field(
+    pull_requests: list[github_types.GitHubPullRequest] = pydantic.Field(
         json_schema_extra={
             "metadata": {
                 "description": "The pull requests of the repository that matches the given conditions"
@@ -85,19 +85,31 @@ async def get_pull_requests(
         start_page = 1
         start_pr = 0
 
-    matching_pulls: list[github_types.GitHubPullRequestBase] = []
+    matching_pulls: list[github_types.GitHubPullRequest] = []
 
     base_pull_conditions = rules_conditions.RuleConditionCombination(
         {"and": validated_conditions}
     )
+
+    needs_full_data = False
+    for cond in base_pull_conditions.walk():
+        # The pull object from `/pulls` doesn't have all the data required
+        # for those attributes to be properly evaluated
+        if cond.get_attribute_name(with_length_operator=True) in (
+            "conflict",
+            "#commits",
+            "#files",
+        ):
+            needs_full_data = True
+            break
 
     # `- 1` because we'll increment the `page` at the start of the loop
     # for easier control and more easily make the `cursor_next`
     page = start_page - 1
     reached_last_page = False
     while len(matching_pulls) != current_page.per_page and not reached_last_page:
-        # The number of pr we went through while trying to fill our page
-        # Will be useful for building cursor_next
+        # The number of pr we went through while trying to fill our page.
+        # It will be useful for building `cursor_next`.
         nb_pulls_on_github = 0
         page += 1
         pulls = await repository.get_pulls(
@@ -111,21 +123,44 @@ async def get_pull_requests(
             if page == start_page and idx < start_pr:
                 continue
 
+            pull_with_all_data = None
             nb_pulls_on_github += 1
 
-            pull_context = context.Context(repository, pull)
+            # Those attributes are not present when querying `/pulls`.
+            # But we can manually fill them to not have to make a query to GitHub
+            # since we queried only the "open" pull requests.
+            pull["merged"] = False
+            pull["merged_by"] = None
+
+            if needs_full_data:
+                pull_with_all_data = typing.cast(
+                    github_types.GitHubPullRequest,
+                    await repository.installation.client.item(
+                        f"{repository.base_url}/pulls/{pull['number']}"
+                    ),
+                )
+                pull_context = context.Context(repository, pull_with_all_data)
+            else:
+                pull_context = context.Context(repository, pull)
+
             pull_obj = context.PullRequest(pull_context)
 
             pull_conditions = base_pull_conditions.copy()
             match = await pull_conditions(pull_obj)
             if match:
-                matching_pulls.append(pull)
+                if pull_with_all_data is None:
+                    pull_with_all_data = typing.cast(
+                        github_types.GitHubPullRequest,
+                        await repository.installation.client.item(
+                            f"{repository.base_url}/pulls/{pull['number']}"
+                        ),
+                    )
+
+                matching_pulls.append(pull_with_all_data)
                 if len(matching_pulls) == current_page.per_page:
                     break
 
-    response_page: pagination.Page[
-        github_types.GitHubPullRequestBase
-    ] = pagination.Page(
+    response_page: pagination.Page[github_types.GitHubPullRequest] = pagination.Page(
         items=matching_pulls,
         current=current_page,
         total=len(matching_pulls),

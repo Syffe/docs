@@ -501,6 +501,21 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
         # ##############################
 
+        # ########## MOCK context.Repository.get_pulls
+        # Need to mock the `get_pulls` call to force `base=self.main_branch_name`,
+        # otherwise we would query all the PR of all the tests
+        real_repository_get_pulls = context.Repository.get_pulls
+
+        async def mocked_get_pulls(*args, **kwargs):  # type: ignore[no-untyped-def]
+            kwargs["base"] = self.main_branch_name
+            return await real_repository_get_pulls(*args, **kwargs)
+
+        self.register_mock(
+            mock.patch.object(context.Repository, "get_pulls", mocked_get_pulls)
+        )
+
+        # ##############################
+
         # Web authentification always pass
         self.register_mock(mock.patch("hmac.compare_digest", return_value=True))
 

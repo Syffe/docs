@@ -21,10 +21,10 @@ class TestPullsApi(base.FunctionalTestBase):
         # So we need to use the typeadapter to be able to validate that the pull,
         # which we will retrieve directly from GitHub, is the same as the one
         # we get in the output of the endpoint.
-        ta = pydantic.TypeAdapter(github_types.GitHubPullRequestBase)
+        ta = pydantic.TypeAdapter(github_types.GitHubPullRequest)
 
-        pulls = await self.get_pulls()
-        expected_pull = ta.validate_python(pulls[-1])
+        p1_full = await self.get_pull(p1["number"])
+        expected_pull = ta.validate_python(p1_full)
 
         resp = await self.admin_app.post(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls",
