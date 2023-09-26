@@ -77,7 +77,10 @@ async def get_pull_requests(
 
     cursor = current_page.cursor
     if cursor:
-        start_page, start_pr = map(int, cursor.split("-"))
+        try:
+            start_page, start_pr = map(int, cursor.split("-"))
+        except ValueError:
+            raise fastapi.HTTPException(status_code=400, detail="Invalid page cursor")
     else:
         start_page = 1
         start_pr = 0

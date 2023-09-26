@@ -248,3 +248,30 @@ async def test_pulls_api_pagination(
     assert "pull_requests" in resp.json()
     assert len(resp.json()["pull_requests"]) == 10
     assert [p["number"] for p in resp.json()["pull_requests"]] == list(range(38, 48))
+
+
+async def test_pulls_api_invalid_cursor(
+    web_client: tests_conftest.CustomTestClient,
+    api_token: tests_api_conftest.TokenUserRepo,
+) -> None:
+    resp = await web_client.request(
+        "POST",
+        "/v1/repos/Mergifyio/engine/pulls",
+        params={"cursor": "blabla"},
+        json=["base=main"],
+        headers={"Authorization": api_token.api_token},
+    )
+
+    assert resp.status_code == 400
+    assert resp.json() == {"detail": "Invalid page cursor"}
+
+    resp = await web_client.request(
+        "POST",
+        "/v1/repos/Mergifyio/engine/pulls",
+        params={"cursor": "abc-123"},
+        json=["base=main"],
+        headers={"Authorization": api_token.api_token},
+    )
+
+    assert resp.status_code == 400
+    assert resp.json() == {"detail": "Invalid page cursor"}
