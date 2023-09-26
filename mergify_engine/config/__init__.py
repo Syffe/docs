@@ -22,10 +22,9 @@ from mergify_engine.config import types
 real_errors = pydantic_core.ValidationError.errors
 
 
-def errors_without_url(  # type: ignore[no-untyped-def]
-    self, *, include_url: bool = False, include_context: bool = True
-) -> list[pydantic_core.ErrorDetails]:
-    return real_errors(self, include_url=False, include_context=include_context)
+def errors_without_url(self, **kwargs) -> list[pydantic_core.ErrorDetails]:  # type: ignore[no-untyped-def]
+    kwargs["include_url"] = False
+    return real_errors(self, **kwargs)
 
 
 pydantic_core.ValidationError.errors = errors_without_url  # type: ignore[method-assign]
