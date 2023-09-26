@@ -106,6 +106,13 @@ async def test_process_event_stream_workflow_run(
             None,
             5,
         ),
+        (
+            "workflow_job.completed_failure_no_failed_steps.json",
+            github_actions.WorkflowJobConclusion.FAILURE,
+            None,
+            None,
+            5,
+        ),
     ),
 )
 async def test_process_event_stream_workflow_job(
@@ -133,39 +140,18 @@ async def test_process_event_stream_workflow_job(
     result = await db.scalars(sql)
     workflow_jobs = list(result)
     assert len(workflow_jobs) == 1
-    actual_workflow_job = workflow_jobs[0]
-    assert actual_workflow_job.conclusion == conclusion
-    assert actual_workflow_job.labels == ["ubuntu-20.04"]
+    current_workflow_job = workflow_jobs[0]
+    assert current_workflow_job.conclusion == conclusion
+    assert current_workflow_job.labels == ["ubuntu-20.04"]
 
-    assert actual_workflow_job.steps is not None
-    assert len(actual_workflow_job.steps) == nb_steps
+    assert current_workflow_job.steps is not None
+    assert len(current_workflow_job.steps) == nb_steps
 
-    assert actual_workflow_job.failed_step_number == failed_step_number
-    assert actual_workflow_job.failed_step_name == failed_step_name
+    assert current_workflow_job.failed_step_number == failed_step_number
+    assert current_workflow_job.failed_step_name == failed_step_name
 
     stream_events = await redis_links.stream.xrange("workflow_job")
     assert len(stream_events) == 0
-
-
-async def test_process_event_stream_workflow_job_with_no_failed_steps(
-    redis_links: redis_utils.RedisLinks,
-    db: sqlalchemy.ext.asyncio.AsyncSession,
-    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    stream_event = {
-        "event_type": "workflow_job",
-        "data": msgpack.packb(
-            sample_ci_events_to_process[
-                "workflow_job.completed_failure_no_failed_steps.json"
-            ].slim_event
-        ),
-    }
-    await redis_links.stream.xadd("gha_workflow_job", stream_event)
-
-    await event_processing.process_event_streams(redis_links)
-
-    assert caplog.messages == ["WorkflowJob: Can't find failed step on failed job"]
 
 
 async def test_process_event_stream_broken_workflow_job(

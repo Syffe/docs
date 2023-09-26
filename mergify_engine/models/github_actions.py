@@ -363,7 +363,7 @@ class WorkflowJob(models.Base):
         )
         job = result.scalar_one_or_none()
         if job is None:
-            failed_step = cls.get_failed_step(workflow_job_data, repository)
+            failed_step = cls.get_failed_step(workflow_job_data)
 
             job = cls(
                 id=workflow_job_data["id"],
@@ -388,10 +388,7 @@ class WorkflowJob(models.Base):
     @staticmethod
     def get_failed_step(
         workflow_job_data: github_types.GitHubWorkflowJob,
-        repository: github_types.GitHubRepository,
     ) -> WorkflowJobFailedStep | None:
-        # NOTE(Kontrolix): repository is passed as a parameter just for debug purpose
-        # in DataDog.
         if workflow_job_data["conclusion"] != "failure":
             return None
 
@@ -407,12 +404,6 @@ class WorkflowJob(models.Base):
                 # See MRGFY-2588
                 return None
 
-        LOG.error(
-            "WorkflowJob: Can't find failed step on failed job",
-            workflow_job_data=workflow_job_data,
-            gh_owner=repository["owner"]["login"],
-            gh_repo=repository["name"],
-        )
         return None
 
     @classmethod
