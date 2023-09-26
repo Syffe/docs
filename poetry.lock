@@ -1961,12 +1961,12 @@ files = [
 
 [[package]]
 name = "pgvector"
-version = "0.2.2"
+version = "0.2.3"
 description = "pgvector support for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pgvector-0.2.2-py2.py3-none-any.whl", hash = "sha256:4c2b138ef2023364b93795f2c4ff2a2c8ba54f24979a82995f6b9ce9c86da271"},
+    {file = "pgvector-0.2.3-py2.py3-none-any.whl", hash = "sha256:9d53dc01138ecc7c9aca64e4680cfa9edf4c38f9cb8ed7098317871fdd211824"},
 ]
 
 [package.dependencies]
