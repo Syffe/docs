@@ -551,7 +551,9 @@ class EventActionQueueChecksStart(Event):
         anonymizer_config=None,
     )
     start_reason: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( words := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7)",
+        server_default="",
     )
     speculative_check_pull_request: orm.Mapped[
         events_metadata.SpeculativeCheckPullRequest

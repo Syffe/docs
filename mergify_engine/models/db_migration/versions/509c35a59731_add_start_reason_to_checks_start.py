@@ -23,6 +23,7 @@ def upgrade() -> None:
             sqlalchemy.Text(),
             nullable=False,
             anonymizer_config="anon.lorem_ipsum( words := 7)",
+            server_default="",
         ),
     )
     alembic.op.execute(
