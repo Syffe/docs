@@ -309,6 +309,7 @@ class RuleConditionGroup(abstract.ABC):
         self,
         conditions: None | list[RuleConditionNode] = None,
         parent_condition_matching: bool = False,
+        yield_only_failing_conditions: bool = False,
     ) -> abc.Iterator[RuleCondition]:
         if conditions is None:
             conditions = self.conditions
@@ -318,11 +319,16 @@ class RuleConditionGroup(abstract.ABC):
         )
 
         for condition in ordered_conditions:
+            if yield_only_failing_conditions and condition._used and condition.match:
+                continue
+
             if isinstance(condition, RuleCondition):
                 yield condition
             elif isinstance(condition, RuleConditionGroup):
                 yield from self.walk(
-                    condition.conditions, parent_condition_matching=condition.match
+                    condition.conditions,
+                    parent_condition_matching=condition.match,
+                    yield_only_failing_conditions=yield_only_failing_conditions,
                 )
             else:
                 raise RuntimeError(f"Unsupported condition type: {type(condition)}")
@@ -791,10 +797,17 @@ class QueueRuleMergeConditions(BaseRuleConditions):
             return any(c.is_faulty() for c in self._evaluated_conditions.values())
         return self.condition.is_faulty()
 
-    def walk(self) -> abc.Iterator[RuleCondition]:
+    def walk(
+        self, yield_only_failing_conditions: bool = False
+    ) -> abc.Iterator[RuleCondition]:
         if self._used:
             for conditions in self._evaluated_conditions.values():
-                yield from conditions.walk()
+                if not yield_only_failing_conditions or (
+                    yield_only_failing_conditions and not conditions.match
+                ):
+                    yield from conditions.walk(
+                        yield_only_failing_conditions=yield_only_failing_conditions
+                    )
         else:
             yield from self.condition.walk()
 

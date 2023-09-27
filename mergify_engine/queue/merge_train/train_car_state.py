@@ -86,6 +86,10 @@ class TrainCarState:
     # It should not be used for other purposes
     frozen_by: freeze.QueueFreeze | None = None
     paused_by: pause.QueuePause | None = None
+    # NOTE(Greesb): Those 4 variables below are used to compute the time spent waiting
+    # for schedule and for freeze. Both of those time, in seconds, are stored
+    # in the `action.queue.leave` event and then used in statistics to calculate the
+    # time to merge of a PR, minus those 2 times.
     waiting_for_freeze_start_dates: list[datetime.datetime] = dataclasses.field(
         default_factory=list
     )

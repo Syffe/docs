@@ -2641,3 +2641,37 @@ async def test_invalid_dict_format(configuration: str, expected_error: str) -> N
         await utils.load_mergify_config(configuration)
 
     assert str(e.value) == expected_error
+
+
+async def test_rule_condition_walk_only_failing_conditions() -> None:
+    conds = conditions.RuleConditionCombination(
+        {
+            "and": [
+                conditions.RuleCondition.from_string("label=foo"),
+                conditions.RuleConditionCombination(
+                    {
+                        "or": [
+                            conditions.RuleCondition.from_string(
+                                "schedule=09:00-18:00"
+                            ),
+                            conditions.RuleCondition.from_string("label=bar"),
+                        ]
+                    }
+                ),
+            ]
+        }
+    )
+
+    pull = conftest.FakePullRequest(
+        {
+            "number": 1,
+            "base": "main",
+            "label": ["bar"],
+            "current-datetime": _dt("2023-09-27T20:00:00"),
+        }
+    )
+
+    await conds(pull)
+
+    for cond in conds.walk(yield_only_failing_conditions=True):
+        assert cond.label == "label=foo"

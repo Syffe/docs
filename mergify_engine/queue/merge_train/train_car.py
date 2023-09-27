@@ -2128,8 +2128,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 display_evaluations=True
             )
         )
-        outside_schedule = False
-        has_failed_check_other_than_schedule = False
 
         rule = self.get_queue_rule()
         timeout = rule.config["checks_timeout"]
@@ -2165,6 +2163,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 f"Unhandled queue_conditions_conclusion: {queue_conditions_conclusion}"
             )
 
+        outside_schedule = False
+        has_failed_check_other_than_schedule = False
+
         # Register schedule period
         if queue_conditions_conclusion in (
             check_api.Conclusion.SUCCESS,
@@ -2172,18 +2173,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
         ):
             self.train_car_state.add_waiting_for_schedule_end_date()
         elif queue_conditions_conclusion == check_api.Conclusion.PENDING:
-            # FIXME(sileht) this is unperfect has conditions tree may don't care about the schedule we are looking at, eg:
-            # or:
-            #   - label=foobar
-            #   - schedule=XXXXX
-            # if this label is set we should ignore this schedule attribute
-            for condition in evaluated_queue_rule.merge_conditions.walk():
-                attr = condition.get_attribute_name()
-                if not condition.match:
-                    if attr == "schedule":
-                        outside_schedule = True
-                    else:
-                        has_failed_check_other_than_schedule = True
+            for condition in evaluated_queue_rule.merge_conditions.walk(
+                yield_only_failing_conditions=True
+            ):
+                if condition.get_attribute_name() == "schedule":
+                    outside_schedule = True
+                else:
+                    has_failed_check_other_than_schedule = True
 
             if outside_schedule and not has_failed_check_other_than_schedule:
                 self.train_car_state.add_waiting_for_schedule_start_date()
