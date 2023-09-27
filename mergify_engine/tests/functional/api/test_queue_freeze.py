@@ -1,11 +1,8 @@
-import typing
 from unittest import mock
 
 from first import first
-import httpx
 
 from mergify_engine import context
-from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.queue import freeze
 from mergify_engine.tests.functional import base
@@ -13,51 +10,6 @@ from mergify_engine.tests.functional import base
 
 class TestQueueFreeze(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
-
-    async def _create_queue_freeze(
-        self,
-        queue_name: str,
-        freeze_payload: dict[str, typing.Any] | None,
-        expected_status_code: int = 200,
-    ) -> httpx.Response:
-        r = await self.admin_app.put(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
-            json=freeze_payload,
-        )
-        assert r.status_code == expected_status_code
-        return r
-
-    async def _delete_queue_freeze(
-        self,
-        queue_name: str,
-        expected_status_code: int = 200,
-    ) -> httpx.Response:
-        r = await self.admin_app.delete(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
-        )
-        assert r.status_code == expected_status_code
-        return r
-
-    async def _get_queue_freeze(
-        self,
-        queue_name: str,
-        expected_status_code: int = 200,
-    ) -> httpx.Response:
-        r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
-        )
-        assert r.status_code == expected_status_code
-        return r
-
-    async def _get_all_queue_freeze(
-        self,
-        expected_status_code: int = 200,
-    ) -> httpx.Response:
-        r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/freezes",
-        )
-        assert r.status_code == expected_status_code
-        return r
 
     async def test_request_error_create_queue_freeze(self) -> None:
         rules = {

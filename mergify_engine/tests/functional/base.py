@@ -2192,3 +2192,48 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         assert check["conclusion"] == expected_conclusion
         assert check["output"]["title"] == expected_title
         assert check["output"]["summary"] == expected_summary
+
+    async def _create_queue_freeze(
+        self,
+        queue_name: str,
+        freeze_payload: dict[str, typing.Any] | None,
+        expected_status_code: int = 200,
+    ) -> httpx.Response:
+        r = await self.admin_app.put(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
+            json=freeze_payload,
+        )
+        assert r.status_code == expected_status_code
+        return r
+
+    async def _delete_queue_freeze(
+        self,
+        queue_name: str,
+        expected_status_code: int = 200,
+    ) -> httpx.Response:
+        r = await self.admin_app.delete(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
+        )
+        assert r.status_code == expected_status_code
+        return r
+
+    async def _get_queue_freeze(
+        self,
+        queue_name: str,
+        expected_status_code: int = 200,
+    ) -> httpx.Response:
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
+        )
+        assert r.status_code == expected_status_code
+        return r
+
+    async def _get_all_queue_freeze(
+        self,
+        expected_status_code: int = 200,
+    ) -> httpx.Response:
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/freezes",
+        )
+        assert r.status_code == expected_status_code
+        return r

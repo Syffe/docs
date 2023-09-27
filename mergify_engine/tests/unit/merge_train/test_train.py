@@ -1722,6 +1722,7 @@ async def test_train_load_from_redis_with_None_partition_name(
                     mt_conftest.QUEUE_RULES, "inplace"
                 ),
                 queued_at=date.utcnow(),
+                checks_end_metadata=merge_train.embarked_pull.QueueChecksEndMetadata(),
             ),
         ],
         current_base_sha=github_types.SHAType("abc123"),

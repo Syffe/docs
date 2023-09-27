@@ -546,10 +546,12 @@ class EventActionQueueChecksStart(Event):
         sqlalchemy.DateTime(timezone=True),
         anonymizer_config="anon.dnoise(queued_at, ''2 days'')",
     )
-
     speculative_check_pull_request_id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.ForeignKey("speculative_check_pull_request.id"),
         anonymizer_config=None,
+    )
+    start_reason: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( words := 7)"
     )
     speculative_check_pull_request: orm.Mapped[
         events_metadata.SpeculativeCheckPullRequest

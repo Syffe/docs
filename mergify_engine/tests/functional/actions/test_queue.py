@@ -9,10 +9,13 @@ from first import first
 from freezegun import freeze_time
 import pytest
 import respx
+import sqlalchemy
+from sqlalchemy import func
 
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import engine
 from mergify_engine import github_types
@@ -21,6 +24,7 @@ from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.engine import actions_runner
+from mergify_engine.models import events as evt_models
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -48,6 +52,7 @@ jobs:
 # the keyword "conditions" instead of "merge_conditions" for queue_rules config
 # in order to keep the backward compatibility tested. They should not be changed
 # until we totally deprecate the "conditions" keyword.
+@pytest.mark.usefixtures("enable_events_db_ingestion")
 class TestQueueAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
@@ -2368,6 +2373,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "start_reason": f"First time checking pull request #{p1['number']}",
                         "speculative_check_pull_request": {
                             "checks_conclusion": "pending",
                             "checks_started_at": None,
@@ -2997,6 +3003,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "start_reason": f"First time checking pull request #{p1['number']}",
                         "speculative_check_pull_request": {
                             "checks_conclusion": "pending",
                             "checks_started_at": None,
@@ -4237,6 +4244,22 @@ class TestQueueAction(base.FunctionalTestBase):
         else:
             pytest.fail("No action.queue.checks_end event found")
 
+    async def assert_api_checks_start_reason(
+        self, pr_number: github_types.GitHubPullRequestNumber, expected_reason: str
+    ) -> None:
+        response = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/"
+            f"logs?pull_request={pr_number}&event_type=action.queue.checks_start&per_page=1",
+        )
+        assert response.status_code == 200
+        payload = response.json()
+
+        if not len(payload["events"]):
+            pytest.fail("No action.queue.checks_start event found")
+        else:
+            event = payload["events"][0]
+            assert expected_reason.lower() in event["metadata"]["start_reason"]
+
     async def test_unqueue_all_pr_when_unexpected_changes_on_draft_pr(self) -> None:
         rules_config = {
             "queue_rules": [
@@ -4407,7 +4430,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        await self.assert_api_checks_end_reason(
+        await self.assert_api_checks_start_reason(
             p1["number"],
             "Unexpected queue change: an external action moved the target branch head to",
         )
@@ -8362,6 +8385,99 @@ pull_request_rules:
             "Rule: Queue and post check (post_check)",
             "continuous-integration/fake-ci",
         ]
+
+    async def test_queue_checks_end_emission(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "check-success=pending_check",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue_to_default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        pr = await self.create_pr()
+
+        await self.add_label(pr["number"], "queue")
+        await self.run_engine()
+
+        # embarking PR in queue
+        await self.wait_for_check_run(
+            name="Rule: queue_to_default (queue)", status="in_progress"
+        )
+        await self.wait_for_check_run(
+            name="Queue: Embarked in merge queue", status="in_progress"
+        )
+
+        pending_check = await self.create_check_run(
+            pr,
+            name="pending_check",
+            conclusion=None,
+            external_id=check_api.USER_CREATED_CHECKS,
+        )
+
+        # a queue freeze is created
+        await self._create_queue_freeze(
+            queue_name="default",
+            freeze_payload={
+                "reason": "weekend",
+            },
+        )
+        await self.run_engine()
+
+        # merge conditions validated while queue is frozen -> pr is mergeable
+        await self.update_check_run(
+            pr,
+            check_id=pending_check["check_run"]["id"],
+        )
+        await self.run_engine()
+        await self.wait_for_check_run(
+            name="Queue: Embarked in merge queue", conclusion="success"
+        )
+
+        # checks_end signal has been emitted
+        async with database.create_session() as db:
+            result = await db.execute(
+                sqlalchemy.select(func.count()).select_from(
+                    evt_models.EventActionQueueChecksEnd
+                )
+            )
+        assert result.scalar() == 1
+
+        await self.wait_for_check_run(
+            name="Queue: Embarked in merge queue", conclusion="neutral"
+        )
+
+        # queue freeze lifted
+        await self._delete_queue_freeze(queue_name="default", expected_status_code=204)
+        await self.run_engine()
+
+        await self.wait_for_check_run(
+            name="Rule: queue_to_default (queue)", conclusion="success"
+        )
+
+        # signal has already been emitted
+        async with database.create_session() as db:
+            result = await db.execute(
+                sqlalchemy.select(func.count()).select_from(
+                    evt_models.EventActionQueueChecksEnd
+                )
+            )
+        assert result.scalar() == 1
 
 
 class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):

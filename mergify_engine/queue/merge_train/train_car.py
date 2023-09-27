@@ -1311,6 +1311,58 @@ class TrainCar:
 
         await self._set_initial_state(checks_type, tmp_pull)
 
+    async def send_checks_start_signal(self) -> None:
+        for ep in self.still_queued_embarked_pulls:
+            if self.queue_pull_request_number is None:
+                raise RuntimeError(
+                    "expected the train car to be started to send the queue.checks_start signal"
+                )
+
+            position, ep_with_car = self.train.find_embarked_pull(
+                ep.user_pull_request_number
+            )
+            if position is None or ep_with_car is None:
+                raise RuntimeError("TrainCar with embarked_pull not in train...")
+
+            checks_end_metadata = ep_with_car.embarked_pull.checks_end_metadata
+            if checks_end_metadata.get("aborted") and (
+                abort_message := checks_end_metadata["abort_reason"]
+            ):
+                start_reason = f"Previous attempt aborted with message: '{abort_message[0].lower() + abort_message[1:]}'"
+            else:
+                start_reason = (
+                    f"First time checking pull request #{ep.user_pull_request_number}"
+                )
+
+            await signals.send(
+                self.repository,
+                ep.user_pull_request_number,
+                "action.queue.checks_start",
+                metadata=signals.EventQueueChecksStartMetadata(
+                    {
+                        "branch": self.ref,
+                        "partition_name": self.train.partition_name,
+                        "position": position,
+                        "queued_at": ep.queued_at,
+                        "queue_name": ep.config["name"],
+                        "start_reason": start_reason,
+                        "speculative_check_pull_request": {
+                            "number": self.queue_pull_request_number,
+                            "in_place": self.train_car_state.checks_type
+                            == TrainCarChecksType.INPLACE,
+                            "checks_conclusion": self.get_queue_check_run_conclusion().value
+                            or "pending",
+                            "checks_timed_out": self.train_car_state.outcome
+                            == TrainCarOutcome.CHECKS_TIMEOUT,
+                            "checks_started_at": None,
+                            "checks_ended_at": self.checks_ended_timestamp,
+                            "unsuccessful_checks": [],
+                        },
+                    }
+                ),
+                trigger="merge queue internal",
+            )
+
     async def _set_initial_state(
         self,
         checks_type: typing.Literal[
@@ -1346,39 +1398,7 @@ class TrainCar:
         # signal is sent without the train being saved, which will cause
         # the train car to be None and cause the ETA calculated to always be None
         await self.train.save()
-
-        for ep in self.still_queued_embarked_pulls:
-            position, _ = self.train.find_embarked_pull(ep.user_pull_request_number)
-            if position is None:
-                raise RuntimeError("TrainCar with embarked_pull not in train...")
-
-            await signals.send(
-                self.repository,
-                ep.user_pull_request_number,
-                "action.queue.checks_start",
-                signals.EventQueueChecksStartMetadata(
-                    {
-                        "branch": self.ref,
-                        "partition_name": self.train.partition_name,
-                        "position": position,
-                        "queued_at": ep.queued_at,
-                        "queue_name": ep.config["name"],
-                        "speculative_check_pull_request": {
-                            "number": self.queue_pull_request_number,
-                            "in_place": self.train_car_state.checks_type
-                            == TrainCarChecksType.INPLACE,
-                            "checks_conclusion": self.get_queue_check_run_conclusion().value
-                            or "pending",
-                            "checks_timed_out": self.train_car_state.outcome
-                            == TrainCarOutcome.CHECKS_TIMEOUT,
-                            "checks_started_at": None,
-                            "checks_ended_at": self.checks_ended_timestamp,
-                            "unsuccessful_checks": [],
-                        },
-                    }
-                ),
-                "merge queue internal",
-            )
+        await self.send_checks_start_signal()
 
     async def build_draft_pr_summary(
         self,
@@ -1517,7 +1537,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
     async def send_checks_end_signal(
         self,
         user_pull_request_number: github_types.GitHubPullRequestNumber,
-        unqueue_reason: queue_utils.BaseUnqueueReason,
+        unqueue_reason: queue_utils.BaseUnqueueReason | None,
         abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"],
     ) -> None:
         if (
@@ -1533,7 +1553,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         ep = ep_with_car.embarked_pull
         abort_code: queue_utils.AbortCodeT | None
-        if isinstance(unqueue_reason, queue_utils.PrMerged):
+        if unqueue_reason is None or isinstance(unqueue_reason, queue_utils.PrMerged):
             aborted = False
             abort_reason_str = ""
             abort_code = None
@@ -1606,13 +1626,28 @@ You don't need to do anything. Mergify will close this pull request automaticall
             }
         )
 
-        await signals.send(
-            self.repository,
-            ep.user_pull_request_number,
-            "action.queue.checks_end",
-            metadata,
-            "merge queue internal",
-        )
+        if not (checks_end_metadata := ep.checks_end_metadata) or (
+            checks_end_metadata
+            and (
+                (
+                    checks_end_metadata["abort_status"] == "REEMBARKED"
+                    and abort_status == "DEFINITIVE"
+                )
+                or (
+                    checks_end_metadata["abort_status"] == "REEMBARKED"
+                    and abort_status == "REEMBARKED"
+                    and checks_end_metadata["abort_reason"] != abort_reason_str
+                )
+            )
+        ):
+            await signals.send(
+                self.repository,
+                ep.user_pull_request_number,
+                "action.queue.checks_end",
+                metadata,
+                "merge queue internal",
+            )
+        ep.associate_queue_checks_end_metadata(metadata)
 
     async def _delete_branch(self) -> None:
         if self.queue_pull_request_number is not None:
@@ -2252,6 +2287,16 @@ You don't need to do anything. Mergify will close this pull request automaticall
             TrainCarOutcome.MERGEABLE,
         ):
             # Everything look good for now, just wait.
+            if (
+                self.train_car_state.outcome == TrainCarOutcome.MERGEABLE
+                and self.queue_pull_request_number is not None
+            ):
+                for ep in self.still_queued_embarked_pulls:
+                    await self.send_checks_end_signal(
+                        user_pull_request_number=ep.user_pull_request_number,
+                        unqueue_reason=None,
+                        abort_status="DEFINITIVE",
+                    )
             return
 
         if (

@@ -197,6 +197,7 @@ class EventQueueChecksStartMetadata(EventMetadata, total=False):
     position: int
     queue_name: str
     queued_at: datetime.datetime
+    start_reason: str
     speculative_check_pull_request: SpeculativeCheckPullRequest
 
 

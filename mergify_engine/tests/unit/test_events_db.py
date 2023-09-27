@@ -431,6 +431,7 @@ async def test_event_action_queue_checks_start_consistency(
                 "position": 3,
                 "queue_name": "default",
                 "queued_at": date.utcnow(),
+                "start_reason": "first time checking",
                 "speculative_check_pull_request": {
                     "number": 123,
                     "in_place": True,
@@ -451,6 +452,7 @@ async def test_event_action_queue_checks_start_consistency(
     assert event.partition_name == "__default__"
     assert event.queue_name == "default"
     assert event.queued_at == anys.ANY_AWARE_DATETIME
+    assert event.start_reason == "first time checking"
     spec_check_pr = event.speculative_check_pull_request
     assert spec_check_pr is not None
     assert spec_check_pr.number == 123
