@@ -1,4 +1,5 @@
 from collections import abc
+import logging
 import typing
 
 import daiquiri
@@ -8,6 +9,7 @@ import sqlalchemy
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import database
+from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
@@ -33,11 +35,19 @@ async def _process_workflow_run_stream(redis_links: redis_utils.RedisLinks) -> N
             await _process_workflow_run_event(
                 redis_links, stream_event_id, stream_event
             )
-        except Exception:
-            LOG.exception(
+        except Exception as e:
+            if exceptions.should_be_ignored(e):
+                return
+
+            log_level = (
+                logging.ERROR if exceptions.need_retry(e) is None else logging.INFO
+            )
+            LOG.log(
+                log_level,
                 "unprocessable workflow_run event",
                 stream_event=stream_event,
                 stream_event_id=stream_event_id,
+                exc_info=True,
             )
 
 
@@ -119,11 +129,19 @@ async def _process_workflow_job_stream(redis_links: redis_utils.RedisLinks) -> N
             await _process_workflow_job_event(
                 redis_links, stream_event_id, stream_event
             )
-        except Exception:
-            LOG.exception(
+        except Exception as e:
+            if exceptions.should_be_ignored(e):
+                return
+
+            log_level = (
+                logging.ERROR if exceptions.need_retry(e) is None else logging.INFO
+            )
+            LOG.log(
+                log_level,
                 "unprocessable workflow_job event",
                 stream_event=stream_event,
                 stream_event_id=stream_event_id,
+                exc_info=True,
             )
 
 
