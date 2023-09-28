@@ -1,0 +1,58 @@
+name: Upload API schemas to GCP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  api-schemas-upload-to-gcp:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Python 🔧
+        uses: actions/setup-python@v4.7.0
+        with:
+          python-version: 3.11.4
+
+      - name: Setup Node 🔧
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Build 🔧
+        run: |
+          # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+          pip install -r requirements-poetry.txt
+          tools/poetry-ci-install.sh
+          poetry run poe api-schemas
+
+      - name: Setup Google Auth 🔧
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GCP_DOCS_CREDENTIAL_JSON }}"
+
+      - name: Upload 🚀
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+        uses: google-github-actions/upload-cloud-storage@v1.0.3
+        with:
+          path: api-schemas
+          destination: mergify-api-schemas
+          parent: false
+
+      - name: Report Status
+        if: failure() && github.event_name != 'pull_request'
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+        uses: Mergifyio/gha-slack-notification@main
+        with:
+          message: "OpenAPI API schemas upload to GCP"
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
