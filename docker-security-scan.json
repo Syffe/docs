@@ -2452,7 +2452,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4806",
     "Title": "potential use-after-free in getaddrinfo()",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-09-18T17:15:00Z"
   },
   {
@@ -2462,7 +2462,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4806",
     "Title": "potential use-after-free in getaddrinfo()",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-09-18T17:15:00Z"
   },
   {
