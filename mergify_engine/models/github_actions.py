@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 import enum
+import re
 import typing
 
 import daiquiri
@@ -22,6 +23,8 @@ from mergify_engine.models import github_repository
 
 
 LOG = daiquiri.getLogger(__name__)
+
+NAME_AND_MATRIX_RE = re.compile(r"^([\w|-]+) \((.+)\)$")
 
 
 class PullRequest(models.Base):
@@ -330,6 +333,7 @@ class WorkflowJob(models.Base):
     log_embedding_retry_after: orm.Mapped[datetime.datetime | None] = orm.mapped_column(
         nullable=True, anonymizer_config=None
     )
+    matrix: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
 
     def as_log_extras(self) -> dict[str, typing.Any]:
         return {
@@ -365,10 +369,12 @@ class WorkflowJob(models.Base):
         if job is None:
             failed_step = cls.get_failed_step(workflow_job_data)
 
+            name, matrix = cls.get_job_name_and_matrix(workflow_job_data["name"])
             job = cls(
                 id=workflow_job_data["id"],
                 workflow_run_id=workflow_job_data["run_id"],
-                name=workflow_job_data["name"],
+                name=name,
+                matrix=matrix,
                 started_at=workflow_job_data["started_at"],
                 completed_at=workflow_job_data["completed_at"],
                 conclusion=WorkflowJobConclusion(workflow_job_data["conclusion"]),
@@ -384,6 +390,13 @@ class WorkflowJob(models.Base):
             session.add(job)
 
         return job
+
+    @staticmethod
+    def get_job_name_and_matrix(name: str) -> tuple[str, str | None]:
+        search_result = NAME_AND_MATRIX_RE.search(name)
+        if search_result is not None:
+            return search_result.groups()[0], search_result.groups()[1]
+        return name, None
 
     @staticmethod
     def get_failed_step(

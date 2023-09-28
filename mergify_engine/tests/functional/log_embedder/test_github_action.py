@@ -291,3 +291,67 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 )
                 > 0
             )
+
+    async def test_log_embedding_matrix(self) -> None:
+        ci = {
+            "name": "Continuous Integration",
+            "on": {"pull_request": {"branches": self.main_branch_name}},
+            "jobs": {
+                "unit-tests": {
+                    "strategy": {
+                        "matrix": {"version": [2.8, 3.5], "os": ["windows", "mac"]}
+                    },
+                    "timeout-minutes": 5,
+                    "runs-on": "ubuntu-20.04",
+                    "steps": [
+                        {
+                            "name": "run version: ${{ matrix.version }} os:${{ matrix.os }}",
+                            "run": "echo version: ${{ matrix.version }} os:${{ matrix.os }}",
+                        }
+                    ],
+                },
+                "job_without_matrix": {
+                    "timeout-minutes": 5,
+                    "runs-on": "ubuntu-20.04",
+                    "steps": [
+                        {
+                            "name": "No matrix",
+                            "run": "echo no matrix",
+                        }
+                    ],
+                },
+            },
+        }
+
+        await self.setup_repo(
+            files={".github/workflows/ci.yml": yaml.dump(ci)},
+        )
+
+        await self.create_pr()
+
+        nb_jobs = 5
+
+        for _ in range(nb_jobs):
+            await self.wait_for("workflow_job", {"action": "completed"})
+
+        await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
+
+        async with database.create_session() as session:
+            jobs = (
+                await session.scalars(sqlalchemy.select(gha_model.WorkflowJob))
+            ).all()
+
+        assert len(jobs) == nb_jobs
+
+        expected_job_name_and_matrix = [
+            ("job_without_matrix", None),
+            ("unit-tests", "mac, 2.8"),
+            ("unit-tests", "mac, 3.5"),
+            ("unit-tests", "windows, 2.8"),
+            ("unit-tests", "windows, 3.5"),
+        ]
+        for job in jobs:
+            if (job.name, job.matrix) in expected_job_name_and_matrix:
+                expected_job_name_and_matrix.remove((job.name, job.matrix))
+
+        assert expected_job_name_and_matrix == []
