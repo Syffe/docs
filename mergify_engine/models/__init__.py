@@ -1,5 +1,7 @@
 import typing
 
+from alembic_utils import pg_extension
+from alembic_utils import replaceable_entity
 import sqlalchemy
 from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
@@ -12,6 +14,13 @@ class ORMObjectAsDict(typing.TypedDict):
 class Base(orm.DeclarativeBase):
     __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {"eager_defaults": True}  # type: ignore [misc]
     __github_attributes__: typing.ClassVar[tuple[str, ...]] = ()
+    __postgres_entities__: typing.ClassVar[
+        tuple[replaceable_entity.ReplaceableEntity, ...]
+    ] = ()
+
+    __postgres_extensions__: typing.ClassVar[tuple[pg_extension.PGExtension, ...]] = (
+        pg_extension.PGExtension("public", "vector"),
+    )
 
     metadata = sqlalchemy.MetaData(
         naming_convention={
@@ -71,6 +80,15 @@ class Base(orm.DeclarativeBase):
                 sqlalchemy.select(sqlalchemy.func.count()).select_from(cls)
             )
         ) or 0
+
+    @classmethod
+    def get_postgres_entities(cls) -> list[replaceable_entity.ReplaceableEntity]:
+        postgres_entities: list[replaceable_entity.ReplaceableEntity] = []
+        for mapper in cls.registry.mappers:
+            postgres_entities.extend(
+                getattr(mapper.class_, "__postgres_entities__", ())
+            )
+        return postgres_entities
 
 
 # NOTE(charly): ensure all models are loaded, to

@@ -3,6 +3,7 @@ import subprocess
 
 from alembic import context
 from alembic.script import write_hooks
+from alembic_utils import replaceable_entity
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
@@ -14,6 +15,10 @@ from mergify_engine import models
 async def run_async_migrations() -> None:
     logs.setup_logging(dump_config=False)
     database.init_sqlalchemy("db-migration")
+
+    replaceable_entity.register_entities(
+        (*models.Base.__postgres_extensions__, *models.Base.get_postgres_entities())
+    )
 
     engine = database.get_engine()
     try:

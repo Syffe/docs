@@ -1,8 +1,9 @@
 import sys
 
 from mergify_engine import config
+import mergify_engine.alembic_utils_workaround  # noqa: RUF100
 import mergify_engine.asyncio_workaround
-import mergify_engine.jinja2_workaround  # noqa
+import mergify_engine.jinja2_workaround  # noqa: RUF100 F401
 
 
 settings = config.EngineSettings()

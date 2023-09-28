@@ -6,6 +6,7 @@ Create Date: 2023-07-05 14:50:15.235034
 
 """
 import alembic
+from alembic_utils.pg_extension import PGExtension
 from pgvector.sqlalchemy import Vector  # type: ignore
 import sqlalchemy
 
@@ -17,7 +18,8 @@ depends_on = None
 
 
 def upgrade() -> None:
-    alembic.op.execute("CREATE EXTENSION IF NOT EXISTS vector")
+    public_vector = PGExtension(schema="public", signature="vector")
+    alembic.op.create_entity(public_vector)  # type: ignore[attr-defined]
 
     alembic.op.add_column(
         "gha_workflow_job",

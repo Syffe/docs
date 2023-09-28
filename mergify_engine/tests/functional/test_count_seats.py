@@ -9,19 +9,19 @@ import pydantic
 import pytest
 
 from mergify_engine import count_seats
+from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import settings
 from mergify_engine import yaml
-from mergify_engine.tests import conftest
 from mergify_engine.tests.functional import base
 
 
 class TestCountSeats(base.FunctionalTestBase):
     @pytest.fixture(autouse=True)
     def prepare_fixture(
-        self, database_cleanup: None, monkeypatch: pytest.MonkeyPatch
+        self, monkeypatch: pytest.MonkeyPatch
     ) -> abc.Generator[None, None, None]:
         monkeypatch.setattr(
             settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something")
@@ -98,7 +98,9 @@ class TestCountSeats(base.FunctionalTestBase):
             raise RuntimeError("client_fork owner is None")
         args = argparse.Namespace(json=True, daemon=False)
         with mock.patch("sys.stdout") as stdout:
-            await conftest.reset_database()
+            assert database.APP_STATE is not None
+            await database.APP_STATE["engine"].dispose()
+            database.APP_STATE = None
             await count_seats.report(args)
             s = "".join(call.args[0] for call in stdout.write.mock_calls)
             json_reports = json.loads(s)

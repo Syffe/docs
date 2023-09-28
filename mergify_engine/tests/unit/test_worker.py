@@ -2269,7 +2269,7 @@ def test_worker_start_all_tasks(
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
-    database_cleanup: None,
+    reset_database_state: None,
 ) -> None:
     loop_and_sleep_forever.side_effect = just_run_once
 
@@ -2310,7 +2310,7 @@ def test_worker_start_just_shared(
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
-    database_cleanup: None,
+    reset_database_state: None,
 ) -> None:
     loop_and_sleep_forever.side_effect = just_run_once
 
@@ -2351,7 +2351,7 @@ def test_worker_start_except_shared(
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
-    database_cleanup: None,
+    reset_database_state: None,
 ) -> None:
     loop_and_sleep_forever.side_effect = just_run_once
 

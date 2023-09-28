@@ -187,24 +187,35 @@ def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
         yield
 
 
-async def reset_database() -> None:
-    await manage.drop_all()
-    if database.APP_STATE is not None:
-        await database.APP_STATE["engine"].dispose()
-        database.APP_STATE = None
+@pytest.fixture(autouse=True)
+def check_database_state_is_reseted() -> None:
+    assert database.APP_STATE is None
 
 
 @pytest.fixture
-async def database_cleanup() -> abc.AsyncGenerator[None, None]:
+async def reset_database_state() -> abc.AsyncGenerator[None, None]:
     try:
         yield
     finally:
-        await reset_database()
+        if database.APP_STATE is not None:
+            await database.APP_STATE["engine"].dispose()
+            database.APP_STATE = None
+
+
+@pytest.fixture
+async def database_cleanup(
+    reset_database_state: None,
+) -> abc.AsyncGenerator[None, None]:
+    try:
+        yield
+    finally:
+        await manage.drop_all()
 
 
 @pytest.fixture
 async def setup_database(
-    database_cleanup: None, mock_postgres_db_value: None
+    database_cleanup: None,
+    mock_postgres_db_value: None,
 ) -> abc.AsyncGenerator[None, None]:
     database.init_sqlalchemy("test")
     await manage.create_all()
