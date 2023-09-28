@@ -102,6 +102,15 @@ class TrainCarState:
     waiting_for_schedule_end_dates: list[datetime.datetime] = dataclasses.field(
         default_factory=list
     )
+    # NOTE(Greesb): Those 2 variables are used to compute the time spent outside a schedule
+    # condition that would make the CI fail if all the others non-schedule condition were True.
+    # This is/will be used during the calculation of the ETA.
+    time_spent_outside_schedule_start_dates: list[
+        datetime.datetime
+    ] = dataclasses.field(default_factory=list)
+    time_spent_outside_schedule_end_dates: list[datetime.datetime] = dataclasses.field(
+        default_factory=list
+    )
 
     class Serialized(typing.TypedDict):
         outcome: train_car.TrainCarOutcome
@@ -116,6 +125,8 @@ class TrainCarState:
         waiting_for_freeze_end_dates: list[datetime.datetime]
         waiting_for_schedule_start_dates: list[datetime.datetime]
         waiting_for_schedule_end_dates: list[datetime.datetime]
+        time_spent_outside_schedule_start_dates: list[datetime.datetime]
+        time_spent_outside_schedule_end_dates: list[datetime.datetime]
 
     def serialized(self) -> "TrainCarState.Serialized":
         frozen_by = None
@@ -139,6 +150,8 @@ class TrainCarState:
             waiting_for_freeze_end_dates=self.waiting_for_freeze_end_dates,
             waiting_for_schedule_start_dates=self.waiting_for_schedule_start_dates,
             waiting_for_schedule_end_dates=self.waiting_for_schedule_end_dates,
+            time_spent_outside_schedule_start_dates=self.time_spent_outside_schedule_start_dates,
+            time_spent_outside_schedule_end_dates=self.time_spent_outside_schedule_end_dates,
         )
 
     @classmethod
@@ -148,26 +161,26 @@ class TrainCarState:
         queue_rules: qr_config.QueueRules,
         data: "TrainCarState.Serialized",
     ) -> "TrainCarState":
-        kwargs = {}
-        if "waiting_for_freeze_start_dates" in data:
-            kwargs["waiting_for_freeze_start_dates"] = data[
-                "waiting_for_freeze_start_dates"
-            ]
-
-        if "waiting_for_freeze_end_dates" in data:
-            kwargs["waiting_for_freeze_end_dates"] = data[
-                "waiting_for_freeze_end_dates"
-            ]
-
-        if "waiting_for_schedule_start_dates" in data:
-            kwargs["waiting_for_schedule_start_dates"] = data[
-                "waiting_for_schedule_start_dates"
-            ]
-
-        if "waiting_for_schedule_end_dates" in data:
-            kwargs["waiting_for_schedule_end_dates"] = data[
-                "waiting_for_schedule_end_dates"
-            ]
+        kwargs = {
+            "waiting_for_freeze_start_dates": data.get(
+                "waiting_for_freeze_start_dates", []
+            ),
+            "waiting_for_freeze_end_dates": data.get(
+                "waiting_for_freeze_end_dates", []
+            ),
+            "waiting_for_schedule_start_dates": data.get(
+                "waiting_for_schedule_start_dates", []
+            ),
+            "waiting_for_schedule_end_dates": data.get(
+                "waiting_for_schedule_end_dates", []
+            ),
+            "time_spent_outside_schedule_start_dates": data.get(
+                "time_spent_outside_schedule_start_dates", []
+            ),
+            "time_spent_outside_schedule_end_dates": data.get(
+                "time_spent_outside_schedule_end_dates", []
+            ),
+        }
 
         legacy_creation_date: datetime.datetime | None = data.get("creation_date")  # type: ignore[assignment]
 
@@ -232,6 +245,18 @@ class TrainCarState:
         ):
             self.waiting_for_freeze_end_dates.append(date.utcnow())
 
+    def add_time_spent_outside_schedule_start_date(self) -> None:
+        if len(self.time_spent_outside_schedule_start_dates) == 0 or len(
+            self.time_spent_outside_schedule_start_dates
+        ) <= len(self.time_spent_outside_schedule_end_dates):
+            self.time_spent_outside_schedule_start_dates.append(date.utcnow())
+
+    def add_time_spent_outside_schedule_end_date(self) -> None:
+        if len(self.time_spent_outside_schedule_start_dates) > len(
+            self.time_spent_outside_schedule_end_dates
+        ):
+            self.time_spent_outside_schedule_end_dates.append(date.utcnow())
+
     @staticmethod
     def _compute_seconds_waiting_from_lists(
         start_dates_list: list[datetime.datetime],
@@ -249,6 +274,20 @@ class TrainCarState:
             seconds += int((end_dates_list[i] - start_dates_list[i]).total_seconds())
 
         return seconds
+
+    @property
+    def seconds_spent_outside_schedule(self) -> int:
+        if len(self.time_spent_outside_schedule_start_dates) - 1 == len(
+            self.time_spent_outside_schedule_end_dates
+        ):
+            # In this case, that means a PR has been unexpectedly unqueued
+            # and the train car did not have time to receive an `update_state`.
+            self.time_spent_outside_schedule_end_dates.append(date.utcnow())
+
+        return self._compute_seconds_waiting_from_lists(
+            self.time_spent_outside_schedule_start_dates,
+            self.time_spent_outside_schedule_end_dates,
+        )
 
     @property
     def seconds_waiting_for_schedule(self) -> int:

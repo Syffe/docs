@@ -1758,16 +1758,22 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 priority=worker_pusher.Priority.immediate,
             )
 
-    def _get_conditions_with_only_checks(
-        cls,
+    def _get_merge_conditions_with_ignored_attributes(
+        self,
         evaluated_queue_rule: "qr_config.EvaluatedQueueRule",
+        non_ignored_attributes: str | tuple[str, ...],
     ) -> "conditions.QueueRuleMergeConditions":
-        conditions_with_only_checks = evaluated_queue_rule.merge_conditions.copy()
-        for condition_with_only_checks in conditions_with_only_checks.walk():
-            attr = condition_with_only_checks.get_attribute_name()
-            if not attr.startswith(("check-", "status-")):
-                condition_with_only_checks.make_always_true()
-        return conditions_with_only_checks
+        conditions_with_ignored_attributes = (
+            evaluated_queue_rule.merge_conditions.copy()
+        )
+        for (
+            condition_with_ignored_attributes
+        ) in conditions_with_ignored_attributes.walk():
+            attr = condition_with_ignored_attributes.get_attribute_name()
+            if not attr.startswith(non_ignored_attributes):
+                condition_with_ignored_attributes.make_always_true()
+
+        return conditions_with_ignored_attributes
 
     async def _have_unexpected_draft_pull_request_changes(
         self,
@@ -2148,8 +2154,11 @@ You don't need to do anything. Mergify will close this pull request automaticall
             self.train_car_state.ci_ended_at = date.utcnow()
         elif queue_conditions_conclusion == check_api.Conclusion.PENDING:
             queue_pull_requests = await self.get_pull_requests_to_evaluate()
-            conditions_with_only_checks = self._get_conditions_with_only_checks(
-                evaluated_queue_rule
+            conditions_with_only_checks = (
+                self._get_merge_conditions_with_ignored_attributes(
+                    evaluated_queue_rule,
+                    ("check-", "status-"),
+                )
             )
 
             if await conditions_with_only_checks(queue_pull_requests):
@@ -2185,6 +2194,23 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 self.train_car_state.add_waiting_for_schedule_start_date()
             else:
                 self.train_car_state.add_waiting_for_schedule_end_date()
+
+            queue_pull_requests = await self.get_pull_requests_to_evaluate()
+            conditions_with_only_schedule = (
+                self._get_merge_conditions_with_ignored_attributes(
+                    evaluated_queue_rule, "schedule"
+                )
+            )
+            await conditions_with_only_schedule(queue_pull_requests)
+
+            for _ in conditions_with_only_schedule.walk(
+                yield_only_failing_conditions=True
+            ):
+                self.train_car_state.add_time_spent_outside_schedule_start_date()
+                break
+            else:
+                self.train_car_state.add_time_spent_outside_schedule_end_date()
+
         else:
             raise RuntimeError(
                 f"Unhandled queue_conditions_conclusion: {queue_conditions_conclusion}"

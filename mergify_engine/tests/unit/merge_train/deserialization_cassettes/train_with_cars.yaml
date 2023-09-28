@@ -99,6 +99,8 @@ train_properties_asserts:
         waiting_for_freeze_end_dates: []
         waiting_for_schedule_start_dates: []
         waiting_for_schedule_end_dates: []
+        time_spent_outside_schedule_start_dates: []
+        time_spent_outside_schedule_end_dates: []
       initial_embarked_pulls:
         - user_pull_request_number: 123
           queued_at: "2023-05-04 14:21:15.695247+00:00"

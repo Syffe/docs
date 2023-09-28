@@ -8613,6 +8613,95 @@ pull_request_rules:
             )
         assert result.scalar() == 1
 
+    async def test_train_car_state_time_spent_outside_schedule(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "schedule=09:00-18:00",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        start_date = datetime.datetime(2023, 9, 28, 16, tzinfo=datetime.UTC)
+        with freeze_time(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            p1 = await self.create_pr()
+
+            await self.add_label(p1["number"], "queue")
+            await self.run_full_engine()
+
+            await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+            # The delayed_refresh should refresh the train car and add a
+            # value to `train_car_state.seconds_spent_outside_schedule_start_dates`
+            await self.run_full_engine()
+
+            train = await self.get_train()
+            assert len(train._cars) == 1
+            assert (
+                len(
+                    train._cars[
+                        0
+                    ].train_car_state.time_spent_outside_schedule_start_dates
+                )
+                == 1
+            )
+            assert (
+                len(
+                    train._cars[0].train_car_state.time_spent_outside_schedule_end_dates
+                )
+                == 0
+            )
+
+        # Next day at the start of schedule
+        with freeze_time(
+            datetime.datetime(2023, 9, 29, 9, tzinfo=datetime.UTC), tick=True
+        ):
+            # The delayed_refresh should refresh the train car and add a
+            # value to `train_car_state.seconds_spent_outside_schedule_end_dates`
+            await self.run_full_engine()
+
+            train = await self.get_train()
+            assert len(train._cars) == 1
+            assert (
+                len(
+                    train._cars[
+                        0
+                    ].train_car_state.time_spent_outside_schedule_start_dates
+                )
+                == 1
+            )
+            assert (
+                len(
+                    train._cars[
+                        0
+                    ].train_car_state.time_spent_outside_schedule_start_dates
+                )
+                == 1
+            )
+
+            assert (
+                50000
+                <= train._cars[0].train_car_state.seconds_spent_outside_schedule
+                <= 54000
+            )
+
 
 class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
     @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
