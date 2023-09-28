@@ -208,8 +208,8 @@ class Train:
                         reason=queue_utils.PrQueuedTwice(),
                     )
                     break
-                else:
-                    known_prs.add(embarked_pull.user_pull_request_number)
+
+                known_prs.add(embarked_pull.user_pull_request_number)
             else:
                 continue
             break
