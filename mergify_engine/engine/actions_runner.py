@@ -479,7 +479,8 @@ async def run_actions(
                 or admin_refresh_requested
                 or (
                     user_refresh_requested
-                    and previous_conclusion == check_api.Conclusion.FAILURE
+                    and previous_conclusion
+                    in (check_api.Conclusion.FAILURE, check_api.Conclusion.CANCELLED)
                 )
                 or not conclusion_is_the_expected_one
             )

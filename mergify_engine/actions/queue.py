@@ -442,30 +442,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
     async def run(self) -> check_api.Result:
         if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
-            # NOTE(sileht): user ask a refresh, we just remove the previous state of this
-            # check and the method _should_be_queued will become true again :)
-            check = await self.ctxt.get_merge_queue_check_run()
-            if check and check_api.Conclusion(check["conclusion"]) not in [
-                check_api.Conclusion.SUCCESS,
-                check_api.Conclusion.PENDING,
-                check_api.Conclusion.NEUTRAL,
-            ]:
-                self.ctxt.log.info(
-                    "a refresh marks the pull request as re-embarkable",
-                    check=check,
-                    user_refresh=self.ctxt.user_refresh_requested(),
-                    admin_refresh=self.ctxt.admin_refresh_requested(),
-                )
-                await check_api.set_check_run(
-                    self.ctxt,
-                    check["name"],
-                    check_api.Result(
-                        check_api.Conclusion.PENDING,
-                        "The pull request has been refreshed and is going to be re-embarked soon",
-                        "",
-                    ),
-                    details_url=await dashboard.get_queues_url_from_context(self.ctxt),
-                )
+            await self.reembark_pull_request_if_possible()
 
         convoy = await merge_train.Convoy.from_context(
             self.ctxt, self.queue_rules, self.partition_rules
@@ -676,6 +653,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
         )
 
     async def cancel(self) -> check_api.Result:
+        if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
+            await self.reembark_pull_request_if_possible()
+
         convoy = await merge_train.Convoy.from_context(
             self.ctxt, self.queue_rules, self.partition_rules
         )
@@ -1217,6 +1197,26 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                     "update_bot_account",
                 )
+
+    async def reembark_pull_request_if_possible(self) -> None:
+        # NOTE(sileht): user ask a refresh, we just remove the previous state of this
+        # check and the method _should_be_queued will become true again :)
+        check = await self.ctxt.get_merge_queue_check_run()
+        if check and check_api.Conclusion(check["conclusion"]) not in [
+            check_api.Conclusion.SUCCESS,
+            check_api.Conclusion.PENDING,
+            check_api.Conclusion.NEUTRAL,
+        ]:
+            await check_api.set_check_run(
+                self.ctxt,
+                check["name"],
+                check_api.Result(
+                    check_api.Conclusion.PENDING,
+                    "The pull request has been refreshed and is going to be re-embarked soon",
+                    "",
+                ),
+                details_url=await dashboard.get_queues_url_from_context(self.ctxt),
+            )
 
 
 class QueueAction(actions.Action):

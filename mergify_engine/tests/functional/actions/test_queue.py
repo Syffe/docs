@@ -5659,6 +5659,114 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.assert_merge_queue_contents(q, None, [])
 
+    async def test_queue_cancel_and_refresh_inplace(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "speculative_checks": 1,
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Tchou tchou",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(as_="admin")
+
+        # To force others to be rebased
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        p_merged = await self.wait_for_pull_request("closed", pr_number=p["number"])
+        await self.run_engine()
+
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
+
+        # Queue PR
+        await self.create_status(p1)
+        await self.run_engine()
+
+        rebased_p1 = await self.wait_for_pull_request("synchronize")
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p_merged["pull_request"]["merge_commit_sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p_merged["pull_request"]["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
+        await self.create_status(rebased_p1["pull_request"], state="failure")
+        await self.run_engine()
+
+        await self.assert_merge_queue_contents(q, None, [])
+
+        # refresh to erase the queue status
+        check = typing.cast(
+            github_types.GitHubCheckRun,
+            await self.client_integration.items(
+                f"{self.url_origin}/commits/{rebased_p1['pull_request']['head']['sha']}/check-runs",
+                resource_name="check runs",
+                page_limit=5,
+                api_version="antiope",
+                list_items="check_runs",
+                params={"name": constants.MERGE_QUEUE_SUMMARY_NAME},
+            ).__anext__(),
+        )
+        check_suite_id = check["check_suite"]["id"]
+
+        # click on refresh btn
+        await self.installation_ctxt.client.post(
+            f"{self.repository_ctxt.base_url}/check-suites/{check_suite_id}/rerequest",
+            api_version="antiope",
+        )
+        await self.wait_for("check_suite", {"action": "rerequested"})
+        await self.run_engine()
+
+        # To force others to be rebased
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+        p2_merged = await self.wait_for_pull_request("closed", pr_number=p2["number"])
+        assert p2_merged["pull_request"]["merge_commit_sha"] is not None
+        await self.run_engine()
+
+        # Now it's success again, it can be reembarked automatically
+        await self.create_status(rebased_p1["pull_request"], state="success")
+        await self.run_engine()
+
+        await self.assert_merge_queue_contents(
+            q,
+            p2_merged["pull_request"]["merge_commit_sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p2_merged["pull_request"]["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
     async def test_queue_cancel_and_refresh(self) -> None:
         rules = {
             "queue_rules": [
