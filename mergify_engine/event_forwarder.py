@@ -66,7 +66,6 @@ async def forward(redis_links: redis_utils.RedisLinks) -> bool:
                 )
 
         if ids_to_delete:
-            # FIXME(sileht): https://github.com/python/typeshed/pull/10531
-            await redis_links.stream.xdel(EVENT_FORWARDER_REDIS_KEY, *ids_to_delete)  # type: ignore[no-untyped-call]
+            await redis_links.stream.xdel(EVENT_FORWARDER_REDIS_KEY, *ids_to_delete)
 
     return len(ids_to_delete) == EVENT_FORWARDER_BATCH_SIZE

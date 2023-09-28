@@ -242,7 +242,7 @@ class RedisLinks:
             # Heroku H12 timeout is 30s and we retry 3 times
             options["timeout"] = 5
 
-        client = redispy.Redis(  # type: ignore[var-annotated]
+        client = redispy.Redis(
             connection_pool=self.connection_pool_cls.from_url(
                 url.geturl(),
                 max_connections=max_connections,
