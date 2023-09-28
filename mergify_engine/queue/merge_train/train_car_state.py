@@ -275,46 +275,72 @@ class TrainCarState:
 
         return seconds
 
-    @property
-    def seconds_spent_outside_schedule(self) -> int:
-        if len(self.time_spent_outside_schedule_start_dates) - 1 == len(
-            self.time_spent_outside_schedule_end_dates
-        ):
+    def _compute_time_arrays_in_seconds(
+        self,
+        start_dates: list[datetime.datetime],
+        end_dates: list[datetime.datetime],
+        add_missing_end_date: bool,
+    ) -> int:
+        if len(start_dates) - 1 == len(end_dates):
             # In this case, that means a PR has been unexpectedly unqueued
             # and the train car did not have time to receive an `update_state`.
-            self.time_spent_outside_schedule_end_dates.append(date.utcnow())
+            if add_missing_end_date:
+                end_dates.append(date.utcnow())
+            else:
+                return self._compute_seconds_waiting_from_lists(
+                    start_dates,
+                    [*end_dates, date.utcnow()],
+                )
 
         return self._compute_seconds_waiting_from_lists(
+            start_dates,
+            end_dates,
+        )
+
+    @property
+    def seconds_spent_outside_schedule(self) -> int:
+        return self._compute_time_arrays_in_seconds(
             self.time_spent_outside_schedule_start_dates,
             self.time_spent_outside_schedule_end_dates,
+            True,
+        )
+
+    @property
+    def seconds_spent_outside_schedule_pure(self) -> int:
+        return self._compute_time_arrays_in_seconds(
+            self.time_spent_outside_schedule_start_dates,
+            self.time_spent_outside_schedule_end_dates,
+            False,
         )
 
     @property
     def seconds_waiting_for_schedule(self) -> int:
-        if len(self.waiting_for_schedule_start_dates) - 1 == len(
-            self.waiting_for_schedule_end_dates
-        ):
-            # In this case, that means a PR has been unexpectedly unqueued
-            # and the train car did not have time to receive an `update_state`.
-            self.waiting_for_schedule_end_dates.append(date.utcnow())
-
-        return self._compute_seconds_waiting_from_lists(
+        return self._compute_time_arrays_in_seconds(
             self.waiting_for_schedule_start_dates,
             self.waiting_for_schedule_end_dates,
+            True,
+        )
+
+    @property
+    def seconds_waiting_for_schedule_pure(self) -> int:
+        return self._compute_time_arrays_in_seconds(
+            self.waiting_for_schedule_start_dates,
+            self.waiting_for_schedule_end_dates,
+            False,
         )
 
     @property
     def seconds_waiting_for_freeze(self) -> int:
-        if len(self.waiting_for_freeze_start_dates) - 1 == len(
-            self.waiting_for_freeze_end_dates
-        ):
-            # In this case, that means the queue has been unfrozen but the
-            # train car did not have time to receive an `update_state`.
-            self.waiting_for_freeze_end_dates.append(date.utcnow())
+        return self._compute_time_arrays_in_seconds(
+            self.waiting_for_freeze_start_dates, self.waiting_for_freeze_end_dates, True
+        )
 
-        return self._compute_seconds_waiting_from_lists(
+    @property
+    def seconds_waiting_for_freeze_pure(self) -> int:
+        return self._compute_time_arrays_in_seconds(
             self.waiting_for_freeze_start_dates,
             self.waiting_for_freeze_end_dates,
+            False,
         )
 
 
