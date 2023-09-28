@@ -94,12 +94,10 @@ MERGIFYENGINE_DASHBOARD_UI_FEATURES = "subscriptions;applications;intercom;statu
 MERGIFYENGINE_DASHBOARD_UI_FRONT_BACKEND_URL = "http://localhost:8802"
 MERGIFYENGINE_SUBCRIPTION_BASE_URL = "http://localhost:5001"
 
-# TODO(sileht): merge this target in linters
-[tool.poe.tasks.docs]
+[tool.poe.tasks.api-schemas]
 deps = ["setup"]
-help = "Build docs"
-env = { ENABLE_API = "True" }
-cmd = "./tools/build-docs.sh"
+help = "Build API schemas"
+cmd = "./tools/build-api-schemas.sh"
 
 [tool.poe.tasks.docker]
 help = "Build docker images (eg: -t my-testing-image --target saas-web)"

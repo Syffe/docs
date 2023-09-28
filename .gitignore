@@ -8,11 +8,9 @@ dist
 .eggs
 .pytest_cache
 .mypy_cache
-docs/build
 test.env
 prod.env
-docs/node_modules
-docs/source/actions/action-list.html
+api-schemas
 .git
 .docker
 .venv

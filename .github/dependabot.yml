@@ -12,16 +12,6 @@ updates:
         dependency-type: "all"
     ignore:
       - dependency-name: "setproctitle"
-  - package-ecosystem: npm
-    directory: "/docs"
-    schedule:
-      interval: daily
-      time: "08:00"
-      timezone: Europe/Paris
-    open-pull-requests-limit: 10
-    allow:
-      - dependency-name: "*"
-        dependency-type: "all"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

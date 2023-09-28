@@ -186,7 +186,7 @@ jobs:
           name: engine-ci-test-durations
           if-no-files-found: warn
           path: engine-ci-test-durations
-  docs:
+  api-schemas:
     timeout-minutes: 20
     runs-on: ubuntu-22.04
     steps:
@@ -208,4 +208,4 @@ jobs:
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
           tools/poetry-ci-install.sh
-          poetry run poe docs
+          poetry run poe api-schemas
