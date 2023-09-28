@@ -137,6 +137,10 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        assert (
+            f"The following conditions don't match anymore:\n- [ ] `depends-on=#{p1['number']}`"
+            in check["output"]["summary"]
+        )
 
     async def test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_no_inplace(
         self,
@@ -217,6 +221,10 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        assert (
+            f"The following conditions don't match anymore:\n- [ ] `depends-on=#{p1['number']}`"
+            in check["output"]["summary"]
+        )
 
     async def test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace(
         self,
@@ -295,6 +303,10 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        assert (
+            f"The following conditions don't match anymore:\n- [ ] `depends-on=#{p1['number']}`"
+            in check["output"]["summary"]
+        )
 
     async def test_queue_dequeue_reason_condition(self) -> None:
         rules = {
@@ -1257,6 +1269,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert check is not None
         assert check["conclusion"] == "cancelled"
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        assert check["output"]["summary"] == "This action has been cancelled."
         q = await self.get_train()
         assert len(await q.get_pulls()) == 0
 
@@ -3123,6 +3136,10 @@ class TestQueueAction(base.FunctionalTestBase):
         assert check is not None
         assert check["conclusion"] == "cancelled"
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        assert (
+            check["output"]["summary"]
+            == "The following conditions don't match anymore:\n- [ ] `label=queue`"
+        )
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         assert check is not None
         assert check["conclusion"] == "neutral"
@@ -3218,6 +3235,10 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        assert (
+            check["output"]["summary"]
+            == "The following conditions don't match anymore:\n- [ ] `label=queue`"
+        )
 
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
@@ -3257,7 +3278,8 @@ class TestQueueAction(base.FunctionalTestBase):
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
                         "reason": f"Pull request #{p1['number']} has been dequeued. "
-                        "The pull request rule doesn't match anymore. This action has been cancelled.",
+                        "The pull request rule doesn't match anymore. "
+                        "The following conditions don't match anymore:\n- [ ] `label=queue`",
                         "seconds_waiting_for_schedule": 0,
                         "seconds_waiting_for_freeze": 0,
                     },
@@ -4228,6 +4250,10 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        assert (
+            check["output"]["summary"]
+            == "The pull request has been synchronized by a user."
+        )
 
     async def assert_api_checks_end_reason(
         self, pr_number: github_types.GitHubPullRequestNumber, expected_reason: str

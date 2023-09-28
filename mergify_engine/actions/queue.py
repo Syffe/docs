@@ -108,6 +108,11 @@ class IncompatibleBranchProtection(InvalidQueueConfiguration):
             self.message += f" if `{self.required_additional_configuration}` isn't set."
 
 
+class QueueCancellationQueryResult(typing.NamedTuple):
+    should_be_cancelled: bool
+    summary: str
+
+
 QueueUpdateT = typing.Literal["merge", "rebase"]
 
 
@@ -612,7 +617,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
         unqueue_reason: queue_utils.BaseUnqueueReason,
         result: check_api.Result,
     ) -> None:
-        pull_request_rule_has_unmatched = result is actions.CANCELLED_CHECK_REPORT
+        pull_request_rule_has_unmatched = (
+            result.conclusion == check_api.Conclusion.CANCELLED
+            and result.title == "The pull request rule doesn't match anymore"
+        )
         # NOTE(sileht): The PR has been checked successfully but the
         # final merge fail, we must erase the queue summary conclusion,
         # so the requeue can work.
@@ -687,8 +695,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
         # We just rebase the pull request, don't cancel it yet if CIs are
         # running. The pull request will be merged if all rules match again.
         # if not we will delete it when we received all CIs termination
-        if await self._should_be_cancel(self.ctxt, self.rule, trains_and_car):
-            result = actions.CANCELLED_CHECK_REPORT
+        cancel_query_result = await self._should_be_cancelled(
+            self.ctxt, self.rule, trains_and_car
+        )
+        if cancel_query_result.should_be_cancelled:
+            result = check_api.Result(
+                check_api.Conclusion.CANCELLED,
+                "The pull request rule doesn't match anymore",
+                cancel_query_result.summary,
+            )
             unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
             await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
             return result
@@ -925,24 +940,30 @@ Then, re-embark the pull request into the merge queue by posting the comment
         return True
 
     @staticmethod
-    async def _should_be_cancel(
+    async def _should_be_cancelled(
         ctxt: context.Context,
         rule: prr_config.EvaluatedPullRequestRule,
         previous_cars: list[merge_train_types.TrainAndTrainCar],
-    ) -> bool:
+    ) -> QueueCancellationQueryResult:
         # It's closed, it's not going to change
         if ctxt.closed:
-            return True
+            return QueueCancellationQueryResult(True, "The pull request is closed.")
 
         if await ctxt.synchronized_by_user_at() is not None:
-            return True
+            return QueueCancellationQueryResult(
+                True, "The pull request has been synchronized by a user."
+            )
+
+        should_be_cancelled = True
 
         for train, prev_car in previous_cars:
             car = train.get_car(ctxt)
             if car is None:
                 # NOTE(sileht): train car has been deleted, wait for the queue status to be copied
                 # to the action status
-                return False
+                return QueueCancellationQueryResult(
+                    False, "Wait for queue status to be copied."
+                )
 
             if (
                 car
@@ -960,12 +981,18 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 # TODO(sileht): we may want to make this behavior configurable as
                 # people having slow/long CI running only on pull request rules, we
                 # may want to merge it before it finishes.
-                return pull_rule_checks_status not in (
+                should_be_cancelled = pull_rule_checks_status not in (
                     check_api.Conclusion.PENDING,
                     check_api.Conclusion.SUCCESS,
                 )
 
-        return True
+        if not rule.conditions.match:
+            summary = f"""The following conditions don't match anymore:
+{rule.conditions.get_unmatched_summary()}"""
+        else:
+            summary = "This action has been cancelled."
+
+        return QueueCancellationQueryResult(should_be_cancelled, summary)
 
     @staticmethod
     async def get_pending_queue_status(
