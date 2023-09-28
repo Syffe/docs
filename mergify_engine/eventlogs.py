@@ -536,13 +536,51 @@ async def get(
     else:
         raise pagination.InvalidCursor(page.cursor)
 
-    await pipe.xlen(key)
-    if look_backward:
-        await pipe.xrange(key, min=from_, max=to_, count=page.per_page)
-    else:
-        await pipe.xrevrange(key, max=from_, min=to_, count=page.per_page)
+    items: list[tuple[bytes, GenericEvent]] = []
+    while len(items) < page.per_page:
+        await pipe.xlen(key)
+        if look_backward:
+            await pipe.xrange(key, min=from_, max=to_, count=page.per_page)
+        else:
+            await pipe.xrevrange(key, max=from_, min=to_, count=page.per_page)
 
-    total, items = await pipe.execute()
+        total, partial_items = await pipe.execute()
+
+        for raw_id, raw_event in partial_items:
+            unpacked_event = msgpack.unpackb(raw_event[b"data"], timestamp=3)
+            # add event_type, received_from, received_to filtering from new API
+            if (
+                (
+                    event_type is not None
+                    and unpacked_event["event"] not in [e.value for e in event_type]
+                )
+                or (
+                    received_from is not None
+                    and unpacked_event["timestamp"] < received_from
+                )
+                or (
+                    received_to is not None
+                    and unpacked_event["timestamp"] > received_to
+                )
+            ):
+                continue
+
+            unpacked_event = msgpack.unpackb(raw_event[b"data"], timestamp=3)
+            # NOTE(lecrepont01): temporary field deduplication (MRGFY-2555)
+            unpacked_event["received_at"] = unpacked_event["timestamp"]
+            unpacked_event["type"] = unpacked_event["event"]
+            # make an id out of the stream id
+            unpacked_event["id"] = int(raw_id.decode().replace("-", ""))
+
+            event = typing.cast(GenericEvent, unpacked_event)
+
+            items.append((raw_id, event))
+
+        # no more data in Redis
+        if len(partial_items) < page.per_page:
+            break
+
+        from_ = f"({partial_items[-1][0].decode()}"
 
     if look_backward:
         items = list(reversed(items))
@@ -563,30 +601,7 @@ async def get(
         cursor_next = None
 
     events: list[Event] = []
-    for id_, raw in items:
-        unpacked_event = msgpack.unpackb(raw[b"data"], timestamp=3)
-        # add event_type, received_from, received_to filtering from new API
-        if (
-            (
-                event_type is not None
-                and unpacked_event["event"] not in [e.value for e in event_type]
-            )
-            or (
-                received_from is not None
-                and unpacked_event["timestamp"] < received_from
-            )
-            or (received_to is not None and unpacked_event["timestamp"] > received_to)
-        ):
-            total -= 1
-            continue
-
-        # NOTE(lecrepont01): temporary field deduplication (MRGFY-2555)
-        unpacked_event["received_at"] = unpacked_event["timestamp"]
-        unpacked_event["type"] = unpacked_event["event"]
-        # make an id out of the stream id
-        unpacked_event["id"] = int(id_.decode().replace("-", ""))
-
-        event = typing.cast(GenericEvent, unpacked_event)
+    for _, event in items:
         try:
             events.append(cast_event_item(event))
         except UnsupportedEvent as err:
