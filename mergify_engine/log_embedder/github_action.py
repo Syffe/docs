@@ -81,7 +81,12 @@ def get_lines_from_zip(
             "get_lines_from_zip() called on a job without failed_step_number"
         )
 
-    cleaned_job_name = WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP.sub("", job.name)
+    if job.matrix:
+        raw_job_name = f"{job.name} ({job.matrix})"
+    else:
+        raw_job_name = job.name
+
+    cleaned_job_name = WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP.sub("", raw_job_name)
 
     for i in zip_file.infolist():
         if not i.filename.startswith(f"{cleaned_job_name}/{job.failed_step_number}_"):

@@ -151,6 +151,54 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             f"The run was canceled by @{self.installation_ctxt.installation['app_slug']}."
         ] == log
 
+    async def test_log_downloading_with_matrix(self) -> None:
+        ci = {
+            "name": "Continuous Integration",
+            "on": {"pull_request": {"branches": self.main_branch_name}},
+            "jobs": {
+                "unit-tests": {
+                    "timeout-minutes": 5,
+                    "runs-on": "ubuntu-20.04",
+                    "strategy": {"matrix": {"version": [2.8, 3.5]}},
+                    "steps": [
+                        {
+                            "name": "the matrix",
+                            "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }} version: ${{ matrix.version }};exit 1",
+                        },
+                    ],
+                }
+            },
+        }
+
+        await self.setup_repo(
+            files={".github/workflows/ci.yml": yaml.dump(ci)},
+        )
+
+        pr = await self.create_pr()
+        await self.wait_for("workflow_job", {"action": "completed"})
+        await self.wait_for("workflow_job", {"action": "completed"})
+
+        await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
+
+        async with database.create_session() as session:
+            jobs = (
+                await session.scalars(sqlalchemy.select(gha_model.WorkflowJob))
+            ).all()
+
+        assert len(jobs) == 2
+
+        for job in jobs:
+            assert job is not None
+            assert job.failed_step_number == 2
+            assert job.failed_step_name == "the matrix"
+
+            log = await gha_embedder.download_failed_step_log(job)
+
+            assert (
+                f"I will fail on sha {pr['head']['sha']} version: {job.matrix}"
+                in "".join(log)
+            )
+
     async def test_log_embedding(self) -> None:
         job_event, pr = await self.run_github_action(
             steps=[
