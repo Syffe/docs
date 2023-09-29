@@ -3558,13 +3558,13 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyam
 
 [[package]]
 name = "starsessions"
-version = "2.1.2"
+version = "2.1.3"
 description = "Advanced sessions for Starlette and FastAPI frameworks"
 optional = false
 python-versions = ">=3.8.0,<4.0.0"
 files = [
-    {file = "starsessions-2.1.2-py3-none-any.whl", hash = "sha256:290494d61c8b54bb343016b2a12a2899653981d01730c925b9394a2603f7f98c"},
-    {file = "starsessions-2.1.2.tar.gz", hash = "sha256:7e028b7b06a5b7f8ac4fe7894eb609941f96d137bc9d6cc6b6d86ae4724d7e36"},
+    {file = "starsessions-2.1.3-py3-none-any.whl", hash = "sha256:5c2aa725ab7466e0b27c827a95c0a436179f0f12f8d826ef2c554e7f50a9a79f"},
+    {file = "starsessions-2.1.3.tar.gz", hash = "sha256:d20c5f277b64a86c16819f65ac50814ccdbd146776159e08c88b378b6612297d"},
 ]
 
 [package.dependencies]
@@ -4288,4 +4288,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "664382493fb29ae7ec5f5d4b0fd5d7435aa212c52056ad3d03238300405eb270"
+content-hash = "c0d5b414cfc3baf9802b5162ef2a19a4e7e9dcb43a0a744513784e80dbfdc220"
