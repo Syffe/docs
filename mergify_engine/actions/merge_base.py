@@ -362,10 +362,14 @@ class MergeUtilsMixin:
                     status_code=e.status_code,
                     error_message=e.message,
                 )
-                # NOTE(sileht): GitHub branch protection is in "not yet computed" state
-                # Just retry later
-                await self._refresh_for_retry(ctxt)
-                return await pending_result_builder(ctxt)
+                # NOTE(charly): set neutral conclusion to be able to enqueue the
+                # pull request again
+                return check_api.Result(
+                    check_api.Conclusion.NEUTRAL,
+                    "GitHub can't merge the pull request for now.",
+                    "GitHub can't merge the pull request for an unknown reason. "
+                    "You should retry later.",
+                )
 
             ctxt.log.info(
                 "Branch protection settings are not validated anymore",
