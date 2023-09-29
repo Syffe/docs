@@ -9,6 +9,8 @@ jobs:
   api-schemas-upload-to-gcp:
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    permissions:
+      id-token: "write"
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
@@ -37,7 +39,9 @@ jobs:
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: "google-github-actions/auth@v1"
         with:
-          credentials_json: "${{ secrets.GCP_DOCS_CREDENTIAL_JSON }}"
+          # yamllint disable-line rule:line-length
+          workload_identity_provider: "projects/370784745717/locations/global/workloadIdentityPools/github/providers/github"
+          service_account: "github-actions@github-400420.iam.gserviceaccount.com"
 
       - name: Upload 🚀
         # yamllint disable-line rule:line-length
