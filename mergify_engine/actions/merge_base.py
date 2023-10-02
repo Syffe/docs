@@ -68,6 +68,7 @@ class MergeUtilsMixin:
                 abort_message=abort_message,
                 mergeable_state=ctxt.pull["mergeable_state"],
                 mergeable=ctxt.pull["mergeable"],
+                is_conflicting=ctxt.is_conflicting,
                 curl=await exception.to_curl() if exception else None,
             )
             return check_api.Result(
@@ -82,6 +83,7 @@ class MergeUtilsMixin:
             abort_message=abort_message,
             mergeable_state=ctxt.pull["mergeable_state"],
             mergeable=ctxt.pull["mergeable"],
+            is_conflicting=ctxt.is_conflicting,
             curl=await exception.to_curl() if exception else None,
         )
         return await pending_result_builder(ctxt)
