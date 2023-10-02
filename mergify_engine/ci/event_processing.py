@@ -1,4 +1,3 @@
-from collections import abc
 import logging
 import typing
 
@@ -28,8 +27,8 @@ async def process_event_streams(redis_links: redis_utils.RedisLinks) -> None:
 
 
 async def _process_workflow_run_stream(redis_links: redis_utils.RedisLinks) -> None:
-    async for stream_event_id, stream_event in _iter_stream(
-        redis_links, "gha_workflow_run", settings.CI_EVENT_PROCESSING_BATCH_SIZE
+    async for stream_event_id, stream_event in redis_utils.iter_stream(
+        redis_links.stream, "gha_workflow_run", settings.CI_EVENT_PROCESSING_BATCH_SIZE
     ):
         try:
             await _process_workflow_run_event(
@@ -49,20 +48,6 @@ async def _process_workflow_run_stream(redis_links: redis_utils.RedisLinks) -> N
                 stream_event_id=stream_event_id,
                 exc_info=True,
             )
-
-
-async def _iter_stream(
-    redis_links: redis_utils.RedisLinks, key: str, batch_size: int
-) -> abc.AsyncGenerator[tuple[bytes, dict[bytes, bytes]], None]:
-    min_stream_event_id = "-"
-
-    while stream_events := await redis_links.stream.xrange(
-        key, min=min_stream_event_id, count=batch_size
-    ):
-        for stream_event_id, stream_event in stream_events:
-            yield stream_event_id, stream_event
-
-        min_stream_event_id = f"({stream_event_id.decode()}"
 
 
 @tracer.wrap("ci.workflow_run_processing")
@@ -122,8 +107,8 @@ async def _insert_pull_request(
 
 
 async def _process_workflow_job_stream(redis_links: redis_utils.RedisLinks) -> None:
-    async for stream_event_id, stream_event in _iter_stream(
-        redis_links, "gha_workflow_job", settings.CI_EVENT_PROCESSING_BATCH_SIZE
+    async for stream_event_id, stream_event in redis_utils.iter_stream(
+        redis_links.stream, "gha_workflow_job", settings.CI_EVENT_PROCESSING_BATCH_SIZE
     ):
         try:
             await _process_workflow_job_event(

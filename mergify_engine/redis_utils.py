@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import abc
 import dataclasses
 import datetime
 import functools
@@ -304,3 +305,17 @@ class RedisLinks:
 
 def get_expiration_minid(retention: datetime.timedelta) -> int:
     return int((datetime.datetime.utcnow() - retention).timestamp() * 1000)
+
+
+async def iter_stream(
+    stream: RedisStream, stream_key: str, batch_size: int
+) -> abc.AsyncGenerator[tuple[bytes, dict[bytes, bytes]], None]:
+    min_stream_event_id = "-"
+
+    while stream_entry := await stream.xrange(
+        stream_key, min=min_stream_event_id, count=batch_size
+    ):
+        for entry_id, entry_data in stream_entry:
+            yield entry_id, entry_data
+
+        min_stream_event_id = f"({entry_id.decode()}"
