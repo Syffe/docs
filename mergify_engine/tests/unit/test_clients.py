@@ -529,7 +529,7 @@ async def test_to_curl(
     ) as client:
         client.retry_exponential_multiplier = 0
         await client.post("/", headers={"Foo": "Bar"}, json={"ask": "What?"})
-        assert await client.last_request.to_curl_request() == (
+        assert await client.last_request.to_curl() == (
             "curl -X POST "
             '-H "host: api.github.com" '
             '-H "accept-encoding: gzip, deflate" '
@@ -542,10 +542,8 @@ async def test_to_curl(
             '-H "authorization: *****" '
             """-d '{"ask": "What?"}' """
             "https://api.github.com/"
-        )
-        assert (
-            await client.last_request.to_curl_response()
-            == """< HTTP/1.1 200
+            "\n"
+            """< HTTP/1.1 200
 < "content-length: 14"
 < "content-type: application/json"
 <

@@ -636,7 +636,9 @@ pull_requests:
                 counter += 1
                 raise http.HTTPClientSideError(
                     message="Head branch was modified in the meantime",
-                    request=mock.Mock(),
+                    request=httpx.Request(
+                        "PUT", "https://api.github.com/whatever", content=b""
+                    ),
                     response=httpx.Response(
                         status_code=405,
                         json={"message": "Head branch was modified in the meantime"},

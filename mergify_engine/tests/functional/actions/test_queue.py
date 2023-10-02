@@ -2069,7 +2069,8 @@ class TestQueueAction(base.FunctionalTestBase):
     # would be detected when the TrainCar is created and checked, and we
     # shouldn't hit this limit of retries.
     @pytest.mark.logger_checker_ignore(
-        "Merge queue check doesn't contain any TrainCarState"
+        "Merge queue check doesn't contain any TrainCarState",
+        "failed to merge after 15 refresh attempts",
     )
     async def test_queue_fast_forward_with_retries(self) -> None:
         rules = {
@@ -2167,9 +2168,10 @@ class TestQueueAction(base.FunctionalTestBase):
             pr_disembarked_check["check_run"]["output"]["title"]
             == f"The pull request {p1['number']} cannot be merged and has been disembarked"
         )
-        assert (
-            pr_disembarked_check["check_run"]["output"]["summary"]
-            == "Mergify failed to merge the pull request\nGitHub error message: `Base branch was modified`"
+        assert pr_disembarked_check["check_run"]["output"]["summary"] == (
+            "Mergify failed to merge the pull request\n"
+            "GitHub can't merge the pull request after 15 retries.\n"
+            "Base branch was modified in the meantime"
         )
 
         merge_check = await self.wait_for_check_run(
@@ -2180,9 +2182,9 @@ class TestQueueAction(base.FunctionalTestBase):
             merge_check["check_run"]["output"]["title"]
             == "Mergify failed to merge the pull request"
         )
-        assert (
-            merge_check["check_run"]["output"]["summary"]
-            == "GitHub error message: `Base branch was modified`"
+        assert merge_check["check_run"]["output"]["summary"] == (
+            "GitHub can't merge the pull request after 15 retries.\n"
+            "Base branch was modified in the meantime"
         )
 
     async def test_queue_with_ci_and_files(self) -> None:

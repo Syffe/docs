@@ -35,6 +35,41 @@ HTTPStatusError = httpx.HTTPStatusError
 RequestError = httpx.RequestError
 
 
+def _header_to_str(key: str, value: str) -> str:
+    if key == "authorization":
+        value = "*****"
+    return f'"{key}: {value}"'
+
+
+async def to_curl(request: httpx.Request, response: httpx.Response | None) -> str:
+    request_headers = [_header_to_str(k, v) for k, v in request.headers.items()]
+    request_headers_str = " -H ".join(request_headers)
+    request_body = await request.aread()
+    request_body_str = ""
+    if request_body:
+        request_body_str = f"-d '{request_body.decode() if isinstance(request_body, bytes) else request_body}'"
+
+    curl_command = f"curl -X {request.method} -H {request_headers_str} {request_body_str} {request.url}"
+
+    if response is None:
+        # nosemgrep: python.flask.security.audit.directly-returned-format-string.directly-returned-format-string
+        return f"{curl_command}\n<no response>"
+
+    host = request.url.netloc.decode()
+    response_headers = [_header_to_str(k, v) for k, v in response.headers.items()]
+    response_headers_str = "\n< ".join(response_headers)
+    response_body = (await response.aread()).decode()
+
+    # nosemgrep: python.flask.security.audit.directly-returned-format-string.directly-returned-format-string
+    return f"""{curl_command}
+< {response.http_version} {response.status_code}
+< {response_headers_str}
+<
+* Connection #0 to host {host} left intact
+{response_body}
+"""
+
+
 def extract_message(response: httpx.Response) -> str:
     # TODO(sileht): do something with errors and documentation_url when present
     # https://developer.github.com/v3/#client-errors
@@ -59,24 +94,25 @@ def extract_message(response: httpx.Response) -> str:
     return typing.cast(str, message)
 
 
-class HTTPServerSideError(httpx.HTTPStatusError):
+class HTTPCustomStatusError(httpx.HTTPStatusError):
+    @property
+    def status_code(self) -> int:
+        return self.response.status_code
+
+    async def to_curl(self) -> str:
+        return await to_curl(self.request, self.response)
+
+
+class HTTPServerSideError(HTTPCustomStatusError):
     @property
     def message(self) -> str:
         return self.response.text
 
-    @property
-    def status_code(self) -> int:
-        return self.response.status_code
 
-
-class HTTPClientSideError(httpx.HTTPStatusError):
+class HTTPClientSideError(HTTPCustomStatusError):
     @property
     def message(self) -> str:
         return extract_message(self.response)
-
-    @property
-    def status_code(self) -> int:
-        return self.response.status_code
 
 
 class HTTPForbidden(HTTPClientSideError):
@@ -226,34 +262,8 @@ class RequestHistory:
     request: httpx.Request
     response: httpx.Response | None
 
-    @staticmethod
-    def _header_to_str(key: str, value: str) -> str:
-        if key == "authorization":
-            value = "*****"
-        return f'"{key}: {value}"'
-
-    async def to_curl_request(self) -> str:
-        headers = [self._header_to_str(k, v) for k, v in self.request.headers.items()]
-        headers_str = " -H ".join(headers)
-        body = await self.request.aread()
-        if body:
-            body_str = f"-d '{body.decode() if isinstance(body, bytes) else body}'"
-        return f"curl -X {self.request.method} -H {headers_str} {body_str} {self.request.url}"
-
-    async def to_curl_response(self) -> str:
-        if self.response is None:
-            return "<no response>"
-
-        host = self.request.url.netloc.decode()
-        headers = [self._header_to_str(k, v) for k, v in self.response.headers.items()]
-        headers_str = "\n< ".join(headers)
-        body = (await self.response.aread()).decode()
-        return f"""< {self.response.http_version} {self.response.status_code}
-< {headers_str}
-<
-* Connection #0 to host {host} left intact
-{body}
-"""
+    async def to_curl(self) -> str:
+        return await to_curl(self.request, self.response)
 
 
 class AsyncClient(httpx.AsyncClient):
