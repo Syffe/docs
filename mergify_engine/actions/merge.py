@@ -65,7 +65,7 @@ class MergeExecutor(
                     rule,
                     action,
                     "Commit message can't be changed with fast-forward merge method",
-                    "`commit_message_template` must not be set if `method: fast-forward` is set.",
+                    "`commit_message_template` must not be set if `merge_method: fast-forward` is set.",
                 )
 
         return cls(

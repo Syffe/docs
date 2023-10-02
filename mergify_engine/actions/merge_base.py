@@ -324,7 +324,7 @@ class MergeUtilsMixin:
                     check_api.Conclusion.CANCELLED,
                     e.message,
                     "The repository configuration doesn't allow rebase merge. "
-                    "The merge `method` configured in Mergify configuration must be "
+                    "The merge method configured in Mergify configuration must be "
                     "allowed in the repository configuration settings.",
                 )
 
@@ -338,7 +338,7 @@ class MergeUtilsMixin:
                     check_api.Conclusion.CANCELLED,
                     e.message,
                     "The repository configuration doesn't allow squash merge. "
-                    "The merge `method` configured in Mergify configuration must be "
+                    "The merge method configured in Mergify configuration must be "
                     "allowed in the repository configuration settings.",
                 )
 
@@ -352,7 +352,7 @@ class MergeUtilsMixin:
                     check_api.Conclusion.CANCELLED,
                     e.message,
                     "The repository configuration doesn't allow merge commits. "
-                    "The merge `method` configured in Mergify configuration must be "
+                    "The merge method configured in Mergify configuration must be "
                     "allowed in the repository configuration settings.",
                 )
 
@@ -430,7 +430,7 @@ class MergeUtilsMixin:
         ):
             conclusion = check_api.Conclusion.FAILURE
             title = "Branch protection setting 'linear history' conflicts with Mergify configuration"
-            summary = "Branch protection setting 'linear history' works only if `method: squash` or `method: rebase`."
+            summary = "Branch protection setting 'linear history' works only if `merge_method: squash` or `merge_method: rebase`."
 
         elif (
             not ctxt.can_change_github_workflow()
