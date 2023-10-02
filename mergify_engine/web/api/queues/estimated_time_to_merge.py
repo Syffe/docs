@@ -101,8 +101,22 @@ async def compute_estimation(
     if car.train_car_state.ci_started_at is None:
         return None
 
+    # The time spent waiting for a schedule or freeze isn't time spent waiting for the CI, because the CI is still
+    # being executed while outside of schedule
+    checks_duration -= max(
+        0,
+        car.train_car_state.seconds_waiting_for_schedule_pure
+        + car.train_car_state.seconds_waiting_for_freeze_pure,
+    )
+
     raw_estimated_time_of_merge = (
-        car.train_car_state.ci_started_at + datetime.timedelta(seconds=checks_duration)
+        car.train_car_state.ci_started_at
+        + datetime.timedelta(
+            seconds=car.train_car_state.seconds_waiting_for_schedule_pure
+            + car.train_car_state.seconds_waiting_for_freeze_pure
+            + car.train_car_state.seconds_spent_outside_schedule_pure
+            + checks_duration
+        )
     )
     # Evaluate schedule conditions relative to the current time
     farthest_datetime_from_conditions = (
@@ -146,5 +160,5 @@ async def compute_estimation(
             seconds=checks_duration
         )
 
-    # No schedule conditions needs to be taken into account
+    # No currently non-matching schedule conditions needs to be taken into account
     return raw_estimated_time_of_merge

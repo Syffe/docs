@@ -1227,13 +1227,13 @@ class TestQueueApi(base.FunctionalTestBase):
 
             # Create draft pr for p2 but dont merge it
             await self.add_label(p2["number"], "queue")
-            await self.run_engine()
+            await self.run_full_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
+            await self.wait_for_pull_request("opened")
 
         # Friday, 18:00 UTC
         with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
-            await self.run_engine()
+            await self.run_full_engine()
 
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
@@ -1247,6 +1247,27 @@ class TestQueueApi(base.FunctionalTestBase):
             )
 
             # Make sure the eta is after the schedule start
+            assert datetime.datetime.fromisoformat(
+                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
+            ) == datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC)
+
+        # Monday, 08:00 UTC, at the very start of the schedule
+        with freeze_time(
+            datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC), tick=True
+        ):
+            await self.run_full_engine()
+
+            r = await self.admin_app.get(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
+            )
+
+            assert len(r.json()["queues"]) == 1
+            assert len(r.json()["queues"][0]["pull_requests"]) == 1
+            assert (
+                r.json()["queues"][0]["pull_requests"][0].get("estimated_time_of_merge")
+                is not None
+            )
+
             assert datetime.datetime.fromisoformat(
                 r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
             ) == datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC)
