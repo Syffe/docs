@@ -86,9 +86,6 @@ async def list_applications(
     )
 
 
-APPLICATIONS_LIMIT = 200
-
-
 @router.post(
     "/github-account/{account_id}/applications",
     dependencies=[
@@ -110,23 +107,8 @@ async def create_application(
     api_access_key = f"mka_{secrets.token_urlsafe(21)}"
     api_secret_key = secrets.token_urlsafe(32)  # 256bytes encoded in base64
 
-    result = await session.execute(
-        sqlalchemy.select(sqlalchemy.func.count(application_keys.ApplicationKey.id))
-        .join(application_keys.ApplicationKey.github_account)
-        .where(application_keys.ApplicationKey.github_account_id == account_id)
-    )
-    try:
-        count = result.scalar_one()
-    except sqlalchemy.exc.NoResultFound:
-        raise fastapi.HTTPException(status_code=404)
-    if count >= APPLICATIONS_LIMIT:
-        raise fastapi.HTTPException(
-            status_code=400,
-            detail=f"too many applications : {count} > {APPLICATIONS_LIMIT - 1}",
-        )
-
     if "organization" in membership:
-        await github_account.GitHubAccount.create_or_update(
+        account = await github_account.GitHubAccount.get_or_create(
             session,
             github_account.GitHubAccountDict(
                 id=account_id,
@@ -135,7 +117,7 @@ async def create_application(
             ),
         )
     else:
-        await github_account.GitHubAccount.create_or_update(
+        account = await github_account.GitHubAccount.get_or_create(
             session,
             github_account.GitHubAccountDict(
                 id=account_id,
@@ -153,8 +135,16 @@ async def create_application(
     application.github_account_id = account_id
     application.created_by_github_user_id = current_user.id
 
+    session.add(account)
     session.add(application)
-    await session.commit()
+
+    try:
+        await session.commit()
+    except application_keys.ApplicationKeyLimitReached:
+        raise fastapi.HTTPException(
+            status_code=400, detail="Maximun number of applications reached"
+        )
+
     await session.refresh(application)
 
     return ApplicationJSONWithAPIKey(

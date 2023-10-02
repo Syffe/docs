@@ -780,6 +780,7 @@ async def test_event_as_dict(
                 "id": 0,
                 "login": "Mergifyio",
                 "type": "User",
+                "application_keys_count": 0,
             },
         },
     }

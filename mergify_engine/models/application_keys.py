@@ -2,15 +2,27 @@ from __future__ import annotations
 
 import datetime
 
+from alembic_utils import pg_function
+from alembic_utils import pg_trigger
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.orm import Mapped
 import sqlalchemy_utils
 
+from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.models import github_account as github_account_mod
 from mergify_engine.models import github_user
+
+
+APPLICATIONS_LIMIT = 200
+
+
+class ApplicationKeyLimitReached(database.CustomPostgresException):
+    msg = (
+        f"The number of application keys has reached the limit of {APPLICATIONS_LIMIT}"
+    )
 
 
 class ApplicationKey(models.Base):
@@ -95,3 +107,67 @@ class ApplicationKey(models.Base):
             return None
 
         return application
+
+    __postgres_entities__ = (
+        pg_function.PGFunction.from_sql(
+            f"""
+CREATE FUNCTION public.increase_application_keys_count()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_count INTEGER;
+BEGIN
+    -- Get the current application_keys_count for the related github_account and lock the row for update
+    SELECT application_keys_count INTO current_count
+    FROM github_account
+    WHERE github_account.id = NEW.github_account_id
+    FOR UPDATE;
+
+    -- Check if the application_keys_count is less than APPLICATIONS_LIMIT
+    IF current_count < {APPLICATIONS_LIMIT} THEN
+        -- Increase the application_keys_count by 1
+        UPDATE github_account
+        SET application_keys_count = current_count + 1
+        WHERE id = NEW.github_account_id;
+
+        -- Allow the insertion
+        RETURN NEW;
+    ELSE
+        -- Reject the insertion if the count is {APPLICATIONS_LIMIT} or more
+        RAISE {ApplicationKeyLimitReached.to_pg_exception()};
+    END IF;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+""".strip(),
+        ),
+        pg_trigger.PGTrigger.from_sql(
+            """
+CREATE TRIGGER trigger_increase_application_keys_count
+BEFORE INSERT
+ON application
+FOR EACH ROW EXECUTE FUNCTION increase_application_keys_count();
+""".strip(),
+        ),
+        pg_function.PGFunction.from_sql(
+            """
+CREATE FUNCTION public.decrease_application_keys_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE github_account
+    SET application_keys_count = application_keys_count - 1
+    WHERE id = OLD.github_account_id;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+""".strip(),
+        ),
+        pg_trigger.PGTrigger.from_sql(
+            """
+CREATE TRIGGER trigger_decrease_application_keys_count
+BEFORE DELETE
+ON application
+FOR EACH ROW EXECUTE FUNCTION decrease_application_keys_count();
+""".strip(),
+        ),
+    )

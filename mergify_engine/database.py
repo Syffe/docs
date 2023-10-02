@@ -1,8 +1,10 @@
 from collections import abc
+import dataclasses
 import typing
 
 import ddtrace
 import fastapi
+import psycopg.errors
 import sqlalchemy.exc
 import sqlalchemy.ext.asyncio
 import sqlalchemy.orm
@@ -30,6 +32,38 @@ class Anonymizer(sqlalchemy.Dialect):
     pass
 
 
+@dataclasses.dataclass
+class CustomPostgresException(Exception):
+    msg: typing.ClassVar[str]
+    registry: typing.ClassVar[dict[str, type["CustomPostgresException"]]] = {}
+
+    CUSTOM_PG_EXCEPTION_MARKER = "CUSTOM_PG_EXCEPTION"
+
+    def __init_subclass__(cls, *args: typing.Any, **kwargs: typing.Any) -> None:
+        if cls.__name__ in cls.registry:
+            raise ValueError(
+                f"A CustomPostgresException named '{cls.__name__}' has already been registered."
+            )
+        cls.registry[cls.__name__] = cls
+        super().__init_subclass__(*args, **kwargs)
+
+    @classmethod
+    def to_pg_exception(cls) -> str:
+        return f"EXCEPTION '{cls.CUSTOM_PG_EXCEPTION_MARKER}' USING DETAIL = '{cls.__name__}'"
+
+
+def handle_custom_pg_exception(context: sqlalchemy.ExceptionContext) -> None:
+    if (
+        isinstance(context.original_exception, psycopg.errors.RaiseException)
+        and context.original_exception.diag.message_primary
+        == CustomPostgresException.CUSTOM_PG_EXCEPTION_MARKER
+    ):
+        class_name = context.original_exception.diag.message_detail
+        if class_name is None:
+            raise RuntimeError("CUSTOM_PG_EXCEPTION raised with DETAIL set")
+        raise CustomPostgresException.registry[class_name]()
+
+
 def init_sqlalchemy(service_name: str) -> None:
     global APP_STATE
 
@@ -51,6 +85,10 @@ def init_sqlalchemy(service_name: str) -> None:
         pool_pre_ping=True,
     )
     ddtrace.Pin.override(async_engine.sync_engine, service="engine-db")
+
+    sqlalchemy.event.listens_for(async_engine.sync_engine, "handle_error")(
+        handle_custom_pg_exception
+    )
 
     APP_STATE = SQLAlchemyAppState(
         {

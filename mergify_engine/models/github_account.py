@@ -49,6 +49,10 @@ class GitHubAccount(models.Base):
         anonymizer_config="anon.random_in_enum(type)",
     )
 
+    application_keys_count: orm.Mapped[int] = orm.mapped_column(
+        nullable=False, server_default="0", anonymizer_config=None
+    )
+
     @classmethod
     async def create_or_update(
         cls,
@@ -81,7 +85,12 @@ class GitHubAccount(models.Base):
                 account_obj.type = GitHubAccountType(account["type"])
             return account_obj
 
-        return cls(id=account["id"], login=account["login"], type=account.get("type"))
+        return cls(
+            id=account["id"],
+            login=account["login"],
+            type=account.get("type"),
+            application_keys_count=0,
+        )
 
     def as_github_dict(self) -> GitHubAccountDict:
         return typing.cast(GitHubAccountDict, super().as_github_dict())

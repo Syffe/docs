@@ -1,20 +1,18 @@
-from unittest import mock
-
 import pytest
 import respx
 import sqlalchemy.orm
 
+from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.config import types
+from mergify_engine.models import application_keys
 from mergify_engine.models import github_account
 from mergify_engine.models import github_user
 from mergify_engine.tests import conftest
-from mergify_engine.web.front import applications
 
 
-@mock.patch.object(applications, "APPLICATIONS_LIMIT", 2)
 async def test_applications_life_cycle(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     web_client: conftest.CustomTestClient,
@@ -102,13 +100,6 @@ async def test_applications_life_cycle(
     assert list_data["applications"][0]["created_by"]["login"] == "user1"
     assert list_data["applications"][1]["created_by"]["login"] == "user1"
 
-    # Check I reach the limit
-    resp = await web_client.post(
-        "/front/github-account/424242/applications",
-        json={"name": "my last app"},
-    )
-    assert resp.status_code == 400
-
     resp = await web_client.get("/front/github-account/424242/applications")
     assert resp.status_code == 200
     list_data = resp.json()
@@ -133,6 +124,87 @@ async def test_applications_life_cycle(
     assert resp.status_code == 200
     list_data = resp.json()
     assert len(list_data["applications"]) == 0
+
+
+async def assert_database_application_keys_count(
+    github_account_id: int, expected: int
+) -> None:
+    async with database.create_session() as session:
+        updated_user = await session.scalar(
+            sqlalchemy.select(github_account.GitHubAccount).where(
+                github_account.GitHubAccount.id == github_account_id
+            )
+        )
+        assert updated_user is not None
+        assert updated_user.application_keys_count == expected
+
+        application_keys_count = await session.scalar(
+            sqlalchemy.select(
+                sqlalchemy.func.count(application_keys.ApplicationKey.id)
+            ).where(
+                application_keys.ApplicationKey.github_account_id == github_account_id
+            )
+        )
+        assert application_keys_count == expected
+
+
+async def test_applications_limit(
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    web_client: conftest.CustomTestClient,
+    respx_mock: respx.MockRouter,
+) -> None:
+    user = github_user.GitHubUser(
+        id=424242,
+        login="user1",
+        oauth_access_token="token",
+    )
+    db.add(user)
+    await db.commit()
+
+    await web_client.log_as(user.id)
+
+    for i in range(application_keys.APPLICATIONS_LIMIT):
+        resp = await web_client.post(
+            "/front/github-account/424242/applications",
+            json={"name": "my last app"},
+        )
+        resp.raise_for_status()
+        await assert_database_application_keys_count(user.id, i + 1)
+
+    await assert_database_application_keys_count(user.id, 200)
+
+    resp = await web_client.get("/front/github-account/424242/applications")
+    assert resp.status_code == 200
+    list_data = resp.json()
+    assert len(list_data["applications"]) == application_keys.APPLICATIONS_LIMIT
+
+    await assert_database_application_keys_count(user.id, 200)
+
+    # Check I reach the limit
+    resp = await web_client.post(
+        "/front/github-account/424242/applications",
+        json={"name": "not this one"},
+    )
+    assert resp.status_code == 400
+
+    resp = await web_client.get("/front/github-account/424242/applications")
+    assert resp.status_code == 200
+    list_data = resp.json()
+    assert len(list_data["applications"]) == application_keys.APPLICATIONS_LIMIT
+
+    await assert_database_application_keys_count(user.id, 200)
+
+    for i in range(10):
+        resp = await web_client.delete(
+            f"/front/github-account/424242/applications/{list_data['applications'][i]['id']}",
+        )
+
+    resp = await web_client.get("/front/github-account/424242/applications")
+    assert resp.status_code == 200
+    list_data = resp.json()
+    assert len(list_data["applications"]) == application_keys.APPLICATIONS_LIMIT - 10
+
+    await assert_database_application_keys_count(user.id, 190)
 
 
 async def test_create_application_for_orgs(
