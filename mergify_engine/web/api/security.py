@@ -84,6 +84,9 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
                     name="on-premise-app-from-env",
                     api_access_key=api_access_key,
                     api_secret_key=api_secret_key,
+                    github_account_id=github_types.GitHubAccountIdType(
+                        data["account_id"]
+                    ),
                     github_account=github_account.GitHubAccount(
                         id=github_types.GitHubAccountIdType(data["account_id"]),
                         login=github_types.GitHubLogin(data["account_login"]),
@@ -299,16 +302,26 @@ async def get_repository_context(
 
         repository_ctxt = installation.get_repository_from_github_data(repo)
 
-        if logged_user is not None and not repo["private"]:
-            try:
-                permission = await repository_ctxt.get_user_permission(
-                    logged_user.to_github_account()
-                )
-            except http.HTTPForbidden:
-                raise fastapi.HTTPException(status_code=403)
+        if not repo["private"]:
+            if logged_user is not None:
+                try:
+                    permission = await repository_ctxt.get_user_permission(
+                        logged_user.to_github_account()
+                    )
+                except http.HTTPForbidden:
+                    raise fastapi.HTTPException(status_code=403)
 
-            if permission == github_types.GitHubRepositoryPermission.NONE:
-                raise fastapi.HTTPException(status_code=403)
+                if permission == github_types.GitHubRepositoryPermission.NONE:
+                    raise fastapi.HTTPException(status_code=403)
+            elif application is not None:
+                if application.github_account_id != repo["owner"]["id"]:
+                    raise fastapi.HTTPException(
+                        status_code=403,
+                        detail=f'{application.github_account_id} != {repo["owner"]["id"]}  - '
+                        f'{application.github_account.login} != {repo["owner"]["login"]}',
+                    )
+            else:
+                raise RuntimeError("get_http_auth should have raised 403")
 
         # NOTE(sileht): Since this method is used as fastapi Depends only, it's safe to set this
         # for the ongoing http request
