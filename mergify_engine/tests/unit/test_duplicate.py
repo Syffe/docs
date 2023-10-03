@@ -184,6 +184,7 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "author": {
                     "email": "",
                     "name": "someone",
+                    "username": "someone",
                     "date": github_types.ISODateTimeType(
                         datetime.datetime.utcnow().isoformat()
                     ),
@@ -191,6 +192,7 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "committer": {
                     "email": "",
                     "name": "someone-else",
+                    "username": "someone-else",
                     "date": github_types.ISODateTimeType(
                         datetime.datetime.utcnow().isoformat()
                     ),
@@ -220,6 +222,7 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "author": {
                     "email": "",
                     "name": "someone",
+                    "username": "someone",
                     "date": github_types.ISODateTimeType(
                         datetime.datetime.utcnow().isoformat()
                     ),
@@ -227,6 +230,7 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "committer": {
                     "email": "",
                     "name": "someone-else",
+                    "username": "someone-else",
                     "date": github_types.ISODateTimeType(
                         datetime.datetime.utcnow().isoformat()
                     ),
@@ -344,6 +348,7 @@ async def test_get_commits_to_cherry_pick_merge(
             "verification": {"verified": True},
             "author": {
                 "name": "",
+                "username": "",
                 "email": "",
                 "date": github_types.ISODateTimeType(
                     datetime.datetime.utcnow().isoformat()
@@ -351,6 +356,7 @@ async def test_get_commits_to_cherry_pick_merge(
             },
             "committer": {
                 "name": "",
+                "username": "",
                 "email": "",
                 "date": github_types.ISODateTimeType(
                     datetime.datetime.utcnow().isoformat()

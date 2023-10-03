@@ -161,6 +161,7 @@ class GitHubBranchCommitVerification(typing_extensions.TypedDict):
 
 class GitHubAuthorCommitterCommit(typing_extensions.TypedDict):
     name: str
+    username: str
     date: ISODateTimeType
     email: str
 
@@ -649,6 +650,8 @@ class GitHubEventPushCommit(typing_extensions.TypedDict):
     added: list[str]
     modified: list[str]
     removed: list[str]
+    message: str
+    author: GitHubAuthorCommitterCommit
 
 
 class GitHubEventPush(GitHubEventWithRepository):

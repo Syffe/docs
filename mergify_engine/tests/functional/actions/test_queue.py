@@ -4742,6 +4742,99 @@ class TestQueueAction(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 0
 
+    async def test_queue_update_with_update_method_merge_without_bot_account(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "merge default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "update_method": "merge",
+                        }
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(as_="admin")
+        p2 = await self.create_pr(as_="admin")
+        await self.merge_pull(p2["number"])
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.run_engine()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+        event = await self.wait_for("push", {"ref": f"refs/heads/{p1['head']['ref']}"})
+        push_event = typing.cast(github_types.GitHubEventPush, event)
+
+        assert (
+            f"Merge branch '{self.main_branch_name}' into {p1['head']['ref']}"
+            in push_event["head_commit"]["message"]
+        )
+        assert "mergify" in push_event["head_commit"]["author"]["username"]
+        assert "[bot]" in push_event["head_commit"]["author"]["username"]
+
+    async def test_queue_update_with_update_method_merge_and_bot_account(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "merge default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "update_method": "merge",
+                            "update_bot_account": "mergify-test1",
+                        }
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(as_="admin")
+        p2 = await self.create_pr(as_="admin")
+        await self.merge_pull(p2["number"])
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.run_engine()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+        event = await self.wait_for("push", {"ref": f"refs/heads/{p1['head']['ref']}"})
+        push_event = typing.cast(github_types.GitHubEventPush, event)
+        assert (
+            f"Merge branch '{self.main_branch_name}' into {p1['head']['ref']}"
+            in push_event["head_commit"]["message"]
+        )
+        assert push_event["head_commit"]["author"]["username"] == "mergify-test1"
+
     async def test_queue_with_ci_in_pull_request_rules(self) -> None:
         rules = {
             "queue_rules": [
