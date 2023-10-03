@@ -1171,6 +1171,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         expected = f"""### Rule: merge (merge)
 - [ ] `depends-on=#{pr1['number']}` [⛓️ **test_depends_on: pull request n1 from integration** ([#{pr1['number']}]({repo_url}/pull/{pr1['number']}))]
 - [ ] `depends-on=#9999999` [⛓️ ⚠️ *pull request not found* (#9999999)]
+- [X] `-conflict` [:pushpin: merge requirement]
 - [X] `-draft` [:pushpin: merge requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]
 - [X] `base={self.main_branch_name}`
@@ -1211,6 +1212,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             assert summary is not None
             expected = f"""### Rule: merge (merge)
 - [ ] `current-datetime>=2023-04-19T00:00:00` [🕒 Merge-After: 2023-04-19T00:00:00+00:00]
+- [X] `-conflict` [:pushpin: merge requirement]
 - [X] `-draft` [:pushpin: merge requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]
 - [X] `base={self.main_branch_name}`

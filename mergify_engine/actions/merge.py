@@ -170,22 +170,24 @@ class MergeAction(actions.Action):
                 )
             )
 
-        conditions_requirements.append(
-            conditions.get_mergify_configuration_change_conditions(
-                "merge", self.config["allow_merging_configuration_change"]
-            )
-        )
-        conditions_requirements.append(
-            conditions.RuleCondition.from_tree(
-                {"=": ("draft", False)}, description=":pushpin: merge requirement"
-            )
-        )
         conditions_requirements.extend(
-            await conditions.get_branch_protection_conditions(
+            [
+                conditions.get_mergify_configuration_change_conditions(
+                    "merge", self.config["allow_merging_configuration_change"]
+                ),
+                conditions.RuleCondition.from_tree(
+                    {"=": ("draft", False)}, description=":pushpin: merge requirement"
+                ),
+                conditions.RuleCondition.from_tree(
+                    {"=": ("conflict", False)},
+                    description=":pushpin: merge requirement",
+                ),
+            ]
+            + await conditions.get_branch_protection_conditions(
                 ctxt.repository, ctxt.pull["base"]["ref"], strict=True
             )
+            + await conditions.get_depends_on_conditions(ctxt)
         )
-        conditions_requirements.extend(await conditions.get_depends_on_conditions(ctxt))
 
         merge_after_condition = conditions.get_merge_after_condition(ctxt)
         if merge_after_condition is not None:

@@ -468,3 +468,32 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
             branch["commit"]["committer"]["login"]
             == self.RECORD_CONFIG["app_user_login"]
         )
+
+    async def test_merge_conflicting_pr(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "merge",
+                    "conditions": [f"base={self.main_branch_name}", "label=merge"],
+                    "actions": {"merge": {}},
+                },
+            ]
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(files={"conflicts": "well"})
+        p2 = await self.create_pr(files={"conflicts": "boom"})
+
+        await self.merge_pull(p1["number"])
+        await self.wait_for_pull_request("closed", pr_number=p1["number"])
+        await self.run_engine()
+
+        await self.add_label(p2["number"], "merge")
+        await self.run_engine()
+
+        ctxt_p2 = context.Context(self.repository_ctxt, p2)
+        check = await ctxt_p2.get_engine_check_run("Rule: merge (merge)")
+        assert check is None
+        check = await ctxt_p2.get_engine_check_run("Summary")
+        assert check is not None
+        assert "[ ] `-conflict`" in check["output"]["summary"]
