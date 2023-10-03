@@ -206,6 +206,15 @@ jobs:
       #
       # Next steps are only on main branch for pushing change in production
       #
+      - name: Setup AWS credentials
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: arn:aws:iam::912098512391:role/OIDC_RDS@engine_ci
+          aws-region: us-east-1
+
       - name: 👮 Log into in Heroku
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -218,6 +227,17 @@ jobs:
               password ${{secrets.HEROKU_API_KEY}}
           EOF
           heroku container:login
+
+      - name: Prepare MERGIFYENGINE_DATABASE_URL
+        id: PRODUCTION_DATABASE_BASE_URL
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          PRODUCTION_DATABASE_HOSTNAME: ${{ vars.PRODUCTION_DATABASE_HOSTNAME }}
+          PRODUCTION_DATABASE_PORT: ${{ vars.PRODUCTION_DATABASE_PORT }}
+          PRODUCTION_DATABASE_USERNAME: ${{ vars.PRODUCTION_DATABASE_USERNAME }}
+        run: |
+          URL="$(tools/build-production-database-base-url.sh)"
+          echo "PRODUCTION_DATABASE_BASE_URL=$URL" >> "$GITHUB_OUTPUT"
 
       - name: Check startup with production configuration
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -250,7 +270,8 @@ jobs:
       - name: Testing production database upgrade
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
-          PRODUCTION_DATABASE_BASE_URL: ${{ secrets.PRODUCTION_DATABASE_BASE_URL }}
+          PRODUCTION_DATABASE_BASE_URL: |-
+            ${{ steps.PRODUCTION_DATABASE_BASE_URL.outputs.PRODUCTION_DATABASE_BASE_URL }}
         run: |
           docker run \
               --env-file fake.env \
