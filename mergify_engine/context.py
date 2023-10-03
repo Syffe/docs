@@ -1729,14 +1729,14 @@ class Context:
 
         is_conflicting = self._caches.is_conflicting.get()
         if is_conflicting is cache.Unset:
-            cached_is_conflicting: bytes | None = await self.redis.cache.get(
-                self._conflict_cache_key
-            )
             if self.pull["mergeable"] is None:
                 # NOTE(sileht): we mark it, so at the end of the engine
                 # processing we will refresh the PR later
                 self.github_has_pending_background_jobs = True
 
+                cached_is_conflicting: bytes | None = await self.redis.cache.get(
+                    self._conflict_cache_key
+                )
                 # NOTE(sileht): Here we fallback to the last known value or False
                 if cached_is_conflicting is None:
                     is_conflicting = False
