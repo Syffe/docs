@@ -243,6 +243,7 @@ jobs:
           PRODUCTION_DATABASE_USERNAME: ${{ vars.PRODUCTION_DATABASE_USERNAME }}
         run: |
           URL="$(tools/build-production-database-base-url.sh)"
+          echo "::add-mask::$URL"
           echo "PRODUCTION_DATABASE_BASE_URL=$URL" >> "$GITHUB_OUTPUT"
 
       - name: Check startup with production configuration
