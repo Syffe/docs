@@ -1,5 +1,5 @@
 name: Docker SaaS
-permissions: read-all
+
 
 on:
   push:
@@ -24,6 +24,8 @@ concurrency:
 
 jobs:
   docker-lint:
+    permissions:
+      contents: "read"
     timeout-minutes: 15
     runs-on: ubuntu-22.04
     steps:
@@ -50,6 +52,9 @@ jobs:
           dockerfile: dockerfiles/Dockerfile.onpremise.footer
 
   docker-saas:
+    permissions:
+      contents: "read"
+      id-token: "write"
     timeout-minutes: 15
     runs-on: ubuntu-22.04
     services:
