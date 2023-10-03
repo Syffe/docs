@@ -8,7 +8,7 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
 from mergify_engine import models
-from mergify_engine.models import github_account
+from mergify_engine.models.github import account as github_account
 
 
 class GitHubRepositoryDict(models.ORMObjectAsDict):

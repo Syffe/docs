@@ -9,7 +9,7 @@ from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.clients import http
-from mergify_engine.models import github_user
+from mergify_engine.models.github import user as github_user
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import train_car
 from mergify_engine.rules import types

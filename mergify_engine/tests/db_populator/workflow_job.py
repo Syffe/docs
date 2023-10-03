@@ -4,8 +4,7 @@ import typing
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
-from mergify_engine.models import github_actions
-from mergify_engine.models import github_repository
+from mergify_engine.models import github as gh_models
 from mergify_engine.tests.db_populator import DbPopulator
 
 
@@ -20,10 +19,9 @@ class WorkflowJob(DbPopulator):
             (
                 (
                     await session.execute(
-                        sqlalchemy.select(github_repository.GitHubRepository)
+                        sqlalchemy.select(gh_models.GitHubRepository)
                         .where(
-                            github_repository.GitHubRepository.full_name
-                            == "OneAccount/OneRepo"
+                            gh_models.GitHubRepository.full_name == "OneAccount/OneRepo"
                         )
                         .limit(1)
                     )
@@ -32,10 +30,10 @@ class WorkflowJob(DbPopulator):
         )
 
         # Failed flaky job
-        await github_actions.WorkflowJob.insert(
+        await gh_models.WorkflowJob.insert(
             session,
             github_types.GitHubWorkflowJob(
-                id=cls.next_id(github_actions.WorkflowJob),
+                id=cls.next_id(gh_models.WorkflowJob),
                 run_id=1,
                 name="Flaky job",
                 workflow_name="unit-test",
@@ -66,10 +64,10 @@ class WorkflowJob(DbPopulator):
         )
 
         # Successful flaky job
-        await github_actions.WorkflowJob.insert(
+        await gh_models.WorkflowJob.insert(
             session,
             github_types.GitHubWorkflowJob(
-                id=cls.next_id(github_actions.WorkflowJob),
+                id=cls.next_id(gh_models.WorkflowJob),
                 run_id=1,
                 name="Flaky job",
                 workflow_name="unit-test",
@@ -100,10 +98,10 @@ class WorkflowJob(DbPopulator):
         )
 
         # Failed job with no step
-        await github_actions.WorkflowJob.insert(
+        await gh_models.WorkflowJob.insert(
             session,
             github_types.GitHubWorkflowJob(
-                id=cls.next_id(github_actions.WorkflowJob),
+                id=cls.next_id(gh_models.WorkflowJob),
                 run_id=2,
                 name="Failed job no step",
                 workflow_name="unit-test",

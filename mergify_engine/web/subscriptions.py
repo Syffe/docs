@@ -6,7 +6,7 @@ from mergify_engine import count_seats
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import subscription
-from mergify_engine.models import github_user
+from mergify_engine.models.github import user as github_user
 from mergify_engine.usage import last_seen
 from mergify_engine.web import auth
 from mergify_engine.web import redis

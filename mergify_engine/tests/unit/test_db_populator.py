@@ -3,26 +3,23 @@ import sqlalchemy
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
-from mergify_engine.models import github_account
-from mergify_engine.models import github_repository
+from mergify_engine.models import github as gh_models
 from mergify_engine.tests.db_populator import DbPopulator
 
 
 class DummyDataset(DbPopulator):
     @classmethod
     async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
-        account = github_account.GitHubAccount(
-            id=github_types.GitHubAccountIdType(
-                cls.next_id(github_account.GitHubAccount)
-            ),
+        account = gh_models.GitHubAccount(
+            id=github_types.GitHubAccountIdType(cls.next_id(gh_models.GitHubAccount)),
             login=github_types.GitHubLogin("account_dds"),
             type="User",
         )
 
         session.add(
-            github_repository.GitHubRepository(
+            gh_models.GitHubRepository(
                 id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(github_repository.GitHubRepository)
+                    cls.next_id(gh_models.GitHubRepository)
                 ),
                 name=github_types.GitHubRepositoryName("dds_repo1"),
                 owner=account,
@@ -33,9 +30,9 @@ class DummyDataset(DbPopulator):
         )
 
         session.add(
-            github_repository.GitHubRepository(
+            gh_models.GitHubRepository(
                 id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(github_repository.GitHubRepository)
+                    cls.next_id(gh_models.GitHubRepository)
                 ),
                 name=github_types.GitHubRepositoryName("dds_repo2"),
                 owner=account,
@@ -49,18 +46,16 @@ class DummyDataset(DbPopulator):
 class AnotherDummyDataset(DbPopulator):
     @classmethod
     async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
-        account = github_account.GitHubAccount(
-            id=github_types.GitHubAccountIdType(
-                cls.next_id(github_account.GitHubAccount)
-            ),
+        account = gh_models.GitHubAccount(
+            id=github_types.GitHubAccountIdType(cls.next_id(gh_models.GitHubAccount)),
             login=github_types.GitHubLogin("account_adds"),
             type="User",
         )
 
         session.add(
-            github_repository.GitHubRepository(
+            gh_models.GitHubRepository(
                 id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(github_repository.GitHubRepository)
+                    cls.next_id(gh_models.GitHubRepository)
                 ),
                 name=github_types.GitHubRepositoryName("adds_repo1"),
                 owner=account,
@@ -71,9 +66,9 @@ class AnotherDummyDataset(DbPopulator):
         )
 
         session.add(
-            github_repository.GitHubRepository(
+            gh_models.GitHubRepository(
                 id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(github_repository.GitHubRepository)
+                    cls.next_id(gh_models.GitHubRepository)
                 ),
                 name=github_types.GitHubRepositoryName("adds_repo2"),
                 owner=account,
@@ -119,19 +114,17 @@ async def test_db_populator_dataset(
     expected_accounts: list[str],
     expected_repos: list[str],
 ) -> None:
-    accounts = (await db.scalars(sqlalchemy.select(github_account.GitHubAccount))).all()
+    accounts = (await db.scalars(sqlalchemy.select(gh_models.GitHubAccount))).all()
     assert accounts == []
-    repos = (
-        await db.scalars(sqlalchemy.select(github_repository.GitHubRepository))
-    ).all()
+    repos = (await db.scalars(sqlalchemy.select(gh_models.GitHubRepository))).all()
     assert repos == []
 
     await DbPopulator.load(db, dataset)
 
     accounts = (
         await db.scalars(
-            sqlalchemy.select(github_account.GitHubAccount).order_by(
-                github_account.GitHubAccount.login
+            sqlalchemy.select(gh_models.GitHubAccount).order_by(
+                gh_models.GitHubAccount.login
             )
         )
     ).all()
@@ -141,8 +134,8 @@ async def test_db_populator_dataset(
 
     repos = (
         await db.scalars(
-            sqlalchemy.select(github_repository.GitHubRepository).order_by(
-                github_repository.GitHubRepository.name
+            sqlalchemy.select(gh_models.GitHubRepository).order_by(
+                gh_models.GitHubRepository.name
             )
         )
     ).all()
@@ -156,15 +149,15 @@ async def test_populated_db_with_datasets(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     accounts = (
-        await populated_db.scalars(sqlalchemy.select(github_account.GitHubAccount))
+        await populated_db.scalars(sqlalchemy.select(gh_models.GitHubAccount))
     ).all()
     assert len(accounts) == 1
     accounts[0].login = github_types.GitHubLogin("account_adds")
 
     repos = (
         await populated_db.scalars(
-            sqlalchemy.select(github_repository.GitHubRepository).order_by(
-                github_repository.GitHubRepository.name
+            sqlalchemy.select(gh_models.GitHubRepository).order_by(
+                gh_models.GitHubRepository.name
             )
         )
     ).all()

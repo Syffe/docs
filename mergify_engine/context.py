@@ -48,7 +48,7 @@ from mergify_engine.clients import http
 
 
 if typing.TYPE_CHECKING:
-    from mergify_engine.models import github_repository
+    from mergify_engine.models import github as gh_models
     from mergify_engine.rules.config import mergify as mergify_conf
 
 SUMMARY_SHA_EXPIRATION = 60 * 60 * 24 * 31 * 1  # 1 Month
@@ -163,7 +163,7 @@ class Installation:
 
     def get_repository_from_github_data(
         self,
-        repo: github_types.GitHubRepository | github_repository.GitHubRepositoryDict,
+        repo: github_types.GitHubRepository | gh_models.GitHubRepositoryDict,
     ) -> Repository:
         if repo["name"] not in self.repositories:
             repository = Repository(self, repo)
@@ -178,14 +178,14 @@ class Installation:
             return self.repositories[name]
 
         # Circular import
-        from mergify_engine.models import github_repository
+        from mergify_engine.models import github as gh_models
 
         async with database.create_session() as session:
-            db_repo = await github_repository.GitHubRepository.get_by_name(
+            db_repo = await gh_models.GitHubRepository.get_by_name(
                 session, self.owner_id, name
             )
 
-        repo_data: github_types.GitHubRepository | github_repository.GitHubRepositoryDict
+        repo_data: github_types.GitHubRepository | gh_models.GitHubRepositoryDict
         if db_repo is not None and db_repo.is_complete():
             repo_data = db_repo.as_github_dict()
         else:
@@ -196,19 +196,17 @@ class Installation:
 
     async def _save_repository_to_database(
         self,
-        repo_data: github_types.GitHubRepository
-        | github_repository.GitHubRepositoryDict,
+        repo_data: github_types.GitHubRepository | gh_models.GitHubRepositoryDict,
     ) -> None:
         # Circular import
-        from mergify_engine.models import github_account
-        from mergify_engine.models import github_repository
+        from mergify_engine.models import github as gh_models
 
         async for attempt in database.tenacity_retry_on_pk_integrity_error(
-            (github_repository.GitHubRepository, github_account.GitHubAccount)
+            (gh_models.GitHubRepository, gh_models.GitHubAccount)
         ):
             with attempt:
                 async with database.create_session() as session:
-                    db_repo = await github_repository.GitHubRepository.get_or_create(
+                    db_repo = await gh_models.GitHubRepository.get_or_create(
                         session, repo_data
                     )
                     session.add(db_repo)
@@ -325,7 +323,7 @@ class MergifyConfigFileEmpty(Exception):
 @dataclasses.dataclass
 class Repository:
     installation: Installation
-    repo: github_types.GitHubRepository | github_repository.GitHubRepositoryDict
+    repo: github_types.GitHubRepository | gh_models.GitHubRepositoryDict
     pull_contexts: dict[
         github_types.GitHubPullRequestNumber, Context
     ] = dataclasses.field(default_factory=dict, repr=False)

@@ -4,7 +4,7 @@ import sqlalchemy
 
 from mergify_engine import github_types
 from mergify_engine import settings
-from mergify_engine.models import github_user
+from mergify_engine.models.github import user as github_user
 from mergify_engine.tests import conftest
 
 

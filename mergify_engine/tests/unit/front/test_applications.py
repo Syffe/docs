@@ -8,8 +8,7 @@ from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.config import types
 from mergify_engine.models import application_keys
-from mergify_engine.models import github_account
-from mergify_engine.models import github_user
+from mergify_engine.models import github as gh_models
 from mergify_engine.tests import conftest
 
 
@@ -18,7 +17,7 @@ async def test_applications_life_cycle(
     web_client: conftest.CustomTestClient,
     respx_mock: respx.MockRouter,
 ) -> None:
-    user = github_user.GitHubUser(
+    user = gh_models.GitHubUser(
         id=424242,
         login="user1",
         oauth_access_token="token",
@@ -131,8 +130,8 @@ async def assert_database_application_keys_count(
 ) -> None:
     async with database.create_session() as session:
         updated_user = await session.scalar(
-            sqlalchemy.select(github_account.GitHubAccount).where(
-                github_account.GitHubAccount.id == github_account_id
+            sqlalchemy.select(gh_models.GitHubAccount).where(
+                gh_models.GitHubAccount.id == github_account_id
             )
         )
         assert updated_user is not None
@@ -153,7 +152,7 @@ async def test_applications_limit(
     web_client: conftest.CustomTestClient,
     respx_mock: respx.MockRouter,
 ) -> None:
-    user = github_user.GitHubUser(
+    user = gh_models.GitHubUser(
         id=424242,
         login="user1",
         oauth_access_token="token",
@@ -212,7 +211,7 @@ async def test_create_application_for_orgs(
     web_client: conftest.CustomTestClient,
     respx_mock: respx.MockRouter,
 ) -> None:
-    user = github_user.GitHubUser(
+    user = gh_models.GitHubUser(
         id=424242,
         login="user1",
         oauth_access_token="token",
@@ -264,11 +263,11 @@ async def test_applications_bad_body(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     web_client: conftest.CustomTestClient,
 ) -> None:
-    gha = github_account.GitHubAccount(
+    gha = gh_models.GitHubAccount(
         id=424242,
         login="user1",
     )
-    user = github_user.GitHubUser(
+    user = gh_models.GitHubUser(
         id=424242,
         login="user1",
         oauth_access_token="token",
@@ -372,11 +371,11 @@ async def test_applications_permissions_for_orgs(
     role: str | None,
     status_code: int,
 ) -> None:
-    gha = github_account.GitHubAccount(
+    gha = gh_models.GitHubAccount(
         id=1234,
         login="org1",
     )
-    user = github_user.GitHubUser(
+    user = gh_models.GitHubUser(
         id=424242,
         login="user1",
         oauth_access_token="token",

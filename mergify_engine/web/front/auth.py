@@ -16,7 +16,7 @@ from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.clients import shadow_office
-from mergify_engine.models import github_user
+from mergify_engine.models.github import user as github_user
 from mergify_engine.web.front import security
 
 

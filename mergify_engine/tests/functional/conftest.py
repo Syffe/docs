@@ -31,7 +31,7 @@ from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 from mergify_engine.config import types
-from mergify_engine.models import github_user
+from mergify_engine.models.github import user as github_user
 
 
 CASSETTE_LIBRARY_DIR_BASE = "zfixtures/cassettes"

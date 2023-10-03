@@ -19,7 +19,7 @@ from mergify_engine import redis_utils
 from mergify_engine import rules
 from mergify_engine import settings
 from mergify_engine.clients import http
-from mergify_engine.models import github_repository
+from mergify_engine.models.github import repository as github_repository
 from mergify_engine.rules import conditions
 from mergify_engine.rules.config import conditions as cond_config
 from mergify_engine.rules.config import mergify as mergify_conf

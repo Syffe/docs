@@ -12,8 +12,7 @@ import sqlalchemy_utils
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import models
-from mergify_engine.models import github_account as github_account_mod
-from mergify_engine.models import github_user
+from mergify_engine.models import github as gh_models
 
 
 APPLICATIONS_LIMIT = 200
@@ -67,13 +66,13 @@ class ApplicationKey(models.Base):
         anonymizer_config=None,
     )
 
-    github_account: Mapped[github_account_mod.GitHubAccount] = orm.relationship(
+    github_account: Mapped[gh_models.GitHubAccount] = orm.relationship(
         "GitHubAccount",
         foreign_keys=[github_account_id],
         lazy="immediate",
     )
 
-    created_by: Mapped[github_user.GitHubUser | None] = orm.relationship(
+    created_by: Mapped[gh_models.GitHubUser | None] = orm.relationship(
         "GitHubUser",
         uselist=False,
         foreign_keys=[created_by_github_user_id],

@@ -11,7 +11,7 @@ from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.ci import event_processing
 from mergify_engine.ci import pull_registries
-from mergify_engine.models import github_actions
+from mergify_engine.models import github as gh_models
 
 
 @pytest.fixture
@@ -65,16 +65,12 @@ async def test_process_event_stream_workflow_run(
     ):
         await event_processing.process_event_streams(redis_links)
 
-    workflow_runs = list(
-        await db.scalars(sqlalchemy.select(github_actions.WorkflowRun))
-    )
+    workflow_runs = list(await db.scalars(sqlalchemy.select(gh_models.WorkflowRun)))
     assert len(workflow_runs) == 1
     actual_workflow_run = workflow_runs[0]
-    assert (
-        actual_workflow_run.event == github_actions.WorkflowRunTriggerEvent.PULL_REQUEST
-    )
+    assert actual_workflow_run.event == gh_models.WorkflowRunTriggerEvent.PULL_REQUEST
 
-    pulls = list(await db.scalars(sqlalchemy.select(github_actions.PullRequest)))
+    pulls = list(await db.scalars(sqlalchemy.select(gh_models.PullRequest)))
     assert len(pulls) == 1
     actual_pull = pulls[0]
     assert actual_pull.id == 1
@@ -83,9 +79,7 @@ async def test_process_event_stream_workflow_run(
     assert actual_pull.state == "open"
 
     associations = list(
-        await db.scalars(
-            sqlalchemy.select(github_actions.PullRequestWorkflowRunAssociation)
-        )
+        await db.scalars(sqlalchemy.select(gh_models.PullRequestWorkflowRunAssociation))
     )
     assert len(associations) == 1
     actual_association = associations[0]
@@ -100,21 +94,21 @@ async def test_process_event_stream_workflow_run(
     (
         (
             "workflow_job.completed_failure.json",
-            github_actions.WorkflowJobConclusion.FAILURE,
+            gh_models.WorkflowJobConclusion.FAILURE,
             3,
             "Run echo hello",
             5,
         ),
         (
             "workflow_job.completed.json",
-            github_actions.WorkflowJobConclusion.SUCCESS,
+            gh_models.WorkflowJobConclusion.SUCCESS,
             None,
             None,
             5,
         ),
         (
             "workflow_job.completed_failure_no_failed_steps.json",
-            github_actions.WorkflowJobConclusion.FAILURE,
+            gh_models.WorkflowJobConclusion.FAILURE,
             None,
             None,
             5,
@@ -127,7 +121,7 @@ async def test_process_event_stream_workflow_job(
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     logger_checker: None,
     event_file_name: str,
-    conclusion: github_actions.WorkflowJobConclusion,
+    conclusion: gh_models.WorkflowJobConclusion,
     failed_step_number: int,
     failed_step_name: str,
     nb_steps: int,
@@ -147,7 +141,7 @@ async def test_process_event_stream_workflow_job(
     )
     await event_processing.process_event_streams(redis_links)
 
-    sql = sqlalchemy.select(github_actions.WorkflowJob)
+    sql = sqlalchemy.select(gh_models.WorkflowJob)
     result = await db.scalars(sql)
     workflow_jobs = list(result)
     assert len(workflow_jobs) == 1
@@ -182,7 +176,7 @@ async def test_process_event_stream_broken_workflow_job(
         fields=stream_event,  # type: ignore[arg-type]
     )
 
-    sql = sqlalchemy.select(github_actions.WorkflowJob)
+    sql = sqlalchemy.select(gh_models.WorkflowJob)
     result = await db.scalars(sql)
     workflow_jobs = list(result)
     assert len(workflow_jobs) == 0
@@ -191,7 +185,7 @@ async def test_process_event_stream_broken_workflow_job(
 
     await event_processing.process_event_streams(redis_links)
 
-    sql = sqlalchemy.select(github_actions.WorkflowJob)
+    sql = sqlalchemy.select(gh_models.WorkflowJob)
     result = await db.scalars(sql)
     workflow_jobs = list(result)
     assert len(workflow_jobs) == 0

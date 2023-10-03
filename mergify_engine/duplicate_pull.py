@@ -14,7 +14,7 @@ from mergify_engine import redis_utils
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.models import github_user
+from mergify_engine.models.github import user as github_user
 
 
 @dataclasses.dataclass

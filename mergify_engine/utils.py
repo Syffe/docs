@@ -20,7 +20,7 @@ from mergify_engine import github_types
 
 
 if typing.TYPE_CHECKING:
-    from mergify_engine.models import github_repository
+    from mergify_engine.models.github import repository as github_repository
 
 
 LOG = daiquiri.getLogger()

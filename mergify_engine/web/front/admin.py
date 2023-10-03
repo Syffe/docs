@@ -14,7 +14,7 @@ from mergify_engine import database
 from mergify_engine import debug
 from mergify_engine import github_types
 from mergify_engine.clients import shadow_office
-from mergify_engine.models import github_user
+from mergify_engine.models.github import user as github_user
 from mergify_engine.web.front import security
 
 

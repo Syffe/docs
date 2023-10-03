@@ -27,8 +27,8 @@ from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
-from mergify_engine.models import github_user
 from mergify_engine.models import manage
+from mergify_engine.models.github import user as github_user
 from mergify_engine.tests import utils as test_utils
 from mergify_engine.tests.db_populator import DbPopulator
 from mergify_engine.web import root as web_root

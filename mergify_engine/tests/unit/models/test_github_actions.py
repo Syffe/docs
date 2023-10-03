@@ -1,6 +1,6 @@
 import pytest
 
-from mergify_engine.models import github_actions
+from mergify_engine.models import github as gh_models
 
 
 @pytest.mark.parametrize(
@@ -17,7 +17,7 @@ async def test_get_job_name_and_matrix(
     expected_name: str,
     expected_matrix: str | None,
 ) -> None:
-    assert github_actions.WorkflowJob.get_job_name_and_matrix(input_name) == (
+    assert gh_models.WorkflowJob.get_job_name_and_matrix(input_name) == (
         expected_name,
         expected_matrix,
     )

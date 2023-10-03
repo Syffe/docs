@@ -1,7 +1,7 @@
 import daiquiri
 
 from mergify_engine import github_types
-from mergify_engine.models import github_actions as sql_models
+from mergify_engine.models import github as gh_models
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -18,7 +18,7 @@ class HTTPJobRegistry:
             return True
 
         try:
-            sql_models.WorkflowRunTriggerEvent(payload["event"])
+            gh_models.WorkflowRunTriggerEvent(payload["event"])
         except ValueError:
             return True
         else:

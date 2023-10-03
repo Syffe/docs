@@ -6,7 +6,7 @@ import pytest
 import respx
 import sqlalchemy
 
-from mergify_engine.models import github_actions
+from mergify_engine.models import github as gh_models
 from mergify_engine.tests import conftest
 from mergify_engine.tests import utils as tests_utils
 
@@ -22,8 +22,8 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
     jobs = (
         (
             await populated_db.execute(
-                sqlalchemy.select(github_actions.WorkflowJob).order_by(
-                    github_actions.WorkflowJob.id
+                sqlalchemy.select(gh_models.WorkflowJob).order_by(
+                    gh_models.WorkflowJob.id
                 )
             )
         )
@@ -272,8 +272,8 @@ async def test_api_get_gha_failed_jobs_no_steps(
     await populated_db.commit()
 
     job = await populated_db.scalar(
-        sqlalchemy.select(github_actions.WorkflowJob)
-        .order_by(github_actions.WorkflowJob.id.desc())
+        sqlalchemy.select(gh_models.WorkflowJob)
+        .order_by(gh_models.WorkflowJob.id.desc())
         .limit(1)
     )
 
@@ -335,8 +335,8 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
     jobs = (
         (
             await populated_db.execute(
-                sqlalchemy.select(github_actions.WorkflowJob).order_by(
-                    github_actions.WorkflowJob.id
+                sqlalchemy.select(gh_models.WorkflowJob).order_by(
+                    gh_models.WorkflowJob.id
                 )
             )
         )

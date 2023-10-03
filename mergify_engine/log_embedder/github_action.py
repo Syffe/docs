@@ -21,9 +21,7 @@ from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.log_embedder import log_cleaner
 from mergify_engine.log_embedder import openai_api
-from mergify_engine.models import github_account
-from mergify_engine.models import github_actions
-from mergify_engine.models import github_repository
+from mergify_engine.models import github as gh_models
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -51,7 +49,7 @@ class UnexpectedLogEmbedderError(Exception):
 
 
 async def embed_log(
-    openai_client: openai_api.OpenAIClient, job: github_actions.WorkflowJob
+    openai_client: openai_api.OpenAIClient, job: gh_models.WorkflowJob
 ) -> None:
     if job.failed_step_number is None:
         log_lines = await download_failure_annotations(job)
@@ -60,7 +58,7 @@ async def embed_log(
             log_lines = await download_failed_step_log(job)
         except http.HTTPStatusError as e:
             if e.response.status_code == 410:
-                job.log_status = github_actions.WorkflowJobLogStatus.GONE
+                job.log_status = gh_models.WorkflowJobLogStatus.GONE
                 return
             raise
 
@@ -70,11 +68,11 @@ async def embed_log(
 
     job.log_embedding = embedding
     job.embedded_log = truncated_log
-    job.log_status = github_actions.WorkflowJobLogStatus.EMBEDDED
+    job.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
 
 
 def get_lines_from_zip(
-    zip_file: zipfile.ZipFile, job: github_actions.WorkflowJob
+    zip_file: zipfile.ZipFile, job: gh_models.WorkflowJob
 ) -> list[str]:
     if job.failed_step_number is None:
         raise RuntimeError(
@@ -101,7 +99,7 @@ def get_lines_from_zip(
     )
 
 
-async def download_failed_step_log(job: github_actions.WorkflowJob) -> list[str]:
+async def download_failed_step_log(job: gh_models.WorkflowJob) -> list[str]:
     repo = job.repository
 
     installation_json = await github.get_installation_from_login(repo.owner.login)
@@ -117,7 +115,7 @@ async def download_failed_step_log(job: github_actions.WorkflowJob) -> list[str]
             return get_lines_from_zip(zip_file, job)
 
 
-async def download_failure_annotations(job: github_actions.WorkflowJob) -> list[str]:
+async def download_failure_annotations(job: gh_models.WorkflowJob) -> list[str]:
     repo = job.repository
 
     installation_json = await github.get_installation_from_login(repo.owner.login)
@@ -207,7 +205,7 @@ async def get_tokenized_cleaned_log(
 
 
 async def set_embedded_log_error_title(
-    openai_client: openai_api.OpenAIClient, job: github_actions.WorkflowJob
+    openai_client: openai_api.OpenAIClient, job: gh_models.WorkflowJob
 ) -> None:
     if job.embedded_log is None:
         raise RuntimeError(
@@ -225,7 +223,7 @@ async def set_embedded_log_error_title(
         # NOTE(sileht): the job.embedded_log has been created with an old
         # version of get_tokenized_cleaned_log() that doesn't truncate the log correctly
         # So just reset the state of this job
-        job.log_status = github_actions.WorkflowJobLogStatus.UNKNOWN
+        job.log_status = gh_models.WorkflowJobLogStatus.UNKNOWN
         job.embedded_log = None
         job.log_embedding = None
         raise UnexpectedLogEmbedderError(
@@ -250,7 +248,7 @@ async def set_embedded_log_error_title(
 
 @contextlib.contextmanager
 def log_exception_and_maybe_retry(
-    job: github_actions.WorkflowJob,
+    job: gh_models.WorkflowJob,
 ) -> abc.Generator[None, None, None]:
     try:
         yield
@@ -260,7 +258,7 @@ def log_exception_and_maybe_retry(
             log_extras.update(exc.log_extras)
 
         if exceptions.should_be_ignored(exc):
-            job.log_status = github_actions.WorkflowJobLogStatus.ERROR
+            job.log_status = gh_models.WorkflowJobLogStatus.ERROR
             LOG.warning(
                 "log-embedder: failed with a fatal error",
                 exc_info=True,
@@ -286,7 +284,7 @@ def log_exception_and_maybe_retry(
         job.log_embedding_attempts += 1
 
         if job.log_embedding_attempts >= LOG_EMBEDDER_MAX_ATTEMPTS:
-            job.log_status = github_actions.WorkflowJobLogStatus.ERROR
+            job.log_status = gh_models.WorkflowJobLogStatus.ERROR
             LOG.error(
                 "log-embedder: too many unexpected failures, giving up",
                 exc_info=True,
@@ -310,24 +308,23 @@ async def embed_logs() -> bool:
     if not settings.LOG_EMBEDDER_ENABLED_ORGS:
         return False
 
-    wjob = orm.aliased(github_actions.WorkflowJob, name="wjob")
+    wjob = orm.aliased(gh_models.WorkflowJob, name="wjob")
 
     async with database.create_session() as session:
         stmt = (
             sqlalchemy.select(wjob)
-            .join(github_repository.GitHubRepository)
+            .join(gh_models.GitHubRepository)
             .join(
-                github_account.GitHubAccount,
+                gh_models.GitHubAccount,
                 sqlalchemy.and_(
-                    github_repository.GitHubRepository.owner_id
-                    == github_account.GitHubAccount.id,
-                    github_account.GitHubAccount.login.in_(
+                    gh_models.GitHubRepository.owner_id == gh_models.GitHubAccount.id,
+                    gh_models.GitHubAccount.login.in_(
                         settings.LOG_EMBEDDER_ENABLED_ORGS
                     ),
                 ),
             )
             .where(
-                wjob.conclusion == github_actions.WorkflowJobConclusion.FAILURE,
+                wjob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
                 sqlalchemy.or_(
                     wjob.log_embedding_retry_after.is_(None),
                     wjob.log_embedding_retry_after <= date.utcnow(),
@@ -335,8 +332,8 @@ async def embed_logs() -> bool:
                 wjob.failed_step_number.is_not(None),
                 wjob.log_status.notin_(
                     (
-                        github_actions.WorkflowJobLogStatus.GONE,
-                        github_actions.WorkflowJobLogStatus.ERROR,
+                        gh_models.WorkflowJobLogStatus.GONE,
+                        gh_models.WorkflowJobLogStatus.ERROR,
                     )
                 ),
                 sqlalchemy.or_(
@@ -369,7 +366,7 @@ async def embed_logs() -> bool:
                     job_ids_to_compute_cosine_similarity.append(job.id)
                 await session.commit()
 
-        await github_actions.WorkflowJob.compute_logs_embedding_cosine_similarity(
+        await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
             session, job_ids_to_compute_cosine_similarity
         )
         await session.commit()

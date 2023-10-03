@@ -16,7 +16,7 @@ from mergify_engine.worker import stream_lua
 
 if typing.TYPE_CHECKING:
     from mergify_engine import redis_utils
-    from mergify_engine.models import github_repository
+    from mergify_engine.models.github import repository as github_repository
 
 
 @dataclasses.dataclass

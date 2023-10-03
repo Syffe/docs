@@ -6,21 +6,19 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_api
-from mergify_engine.models import github_account
-from mergify_engine.models import github_actions
-from mergify_engine.models import github_repository
+from mergify_engine.models import github as gh_models
 from mergify_engine.tests import utils as tests_utils
 
 
 async def get_cosine_similarity_for_job(
     session: sqlalchemy.ext.asyncio.AsyncSession,
-    job: github_actions.WorkflowJob,
-) -> typing.Sequence[github_actions.WorkflowJobLogNeighbours]:
+    job: gh_models.WorkflowJob,
+) -> typing.Sequence[gh_models.WorkflowJobLogNeighbours]:
     return (
         await session.scalars(
-            sqlalchemy.select(github_actions.WorkflowJobLogNeighbours)
-            .where(github_actions.WorkflowJobLogNeighbours.job_id == job.id)
-            .order_by(github_actions.WorkflowJobLogNeighbours.neighbour_job_id)
+            sqlalchemy.select(gh_models.WorkflowJobLogNeighbours)
+            .where(gh_models.WorkflowJobLogNeighbours.job_id == job.id)
+            .order_by(gh_models.WorkflowJobLogNeighbours.neighbour_job_id)
         )
     ).all()
 
@@ -29,11 +27,11 @@ async def test_compute_log_embedding_cosine_similarity(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     # Create dataset ===================================================================
-    owner = github_account.GitHubAccount(id=1, login="owner")
+    owner = gh_models.GitHubAccount(id=1, login="owner")
     db.add(owner)
-    repo1 = github_repository.GitHubRepository(id=1, owner=owner, name="repo1")
+    repo1 = gh_models.GitHubRepository(id=1, owner=owner, name="repo1")
     db.add(repo1)
-    repo2 = github_repository.GitHubRepository(id=2, owner=owner, name="repo2")
+    repo2 = gh_models.GitHubRepository(id=2, owner=owner, name="repo2")
     db.add(repo2)
 
     # Jobs
@@ -45,7 +43,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "repository": repo1,
             "log_embedding": [1] * 1536,
             "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
+            "log_status": gh_models.WorkflowJobLogStatus.EMBEDDED,
         },
     )
     job_pep8_2_repo1 = tests_utils.add_workflow_job(
@@ -56,7 +54,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "repository": repo1,
             "log_embedding": [2] * 1536,
             "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
+            "log_status": gh_models.WorkflowJobLogStatus.EMBEDDED,
         },
     )
     job_pep8_3_repo1 = tests_utils.add_workflow_job(
@@ -67,7 +65,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "repository": repo1,
             "log_embedding": [-1] * 1536,
             "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
+            "log_status": gh_models.WorkflowJobLogStatus.EMBEDDED,
         },
     )
     job_pep8_1_repo2 = tests_utils.add_workflow_job(
@@ -78,7 +76,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "repository": repo2,
             "log_embedding": [1] * 1536,
             "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
+            "log_status": gh_models.WorkflowJobLogStatus.EMBEDDED,
         },
     )
     job_pep8_2_repo2 = tests_utils.add_workflow_job(
@@ -89,7 +87,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "repository": repo2,
             "log_embedding": [2] * 1536,
             "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
+            "log_status": gh_models.WorkflowJobLogStatus.EMBEDDED,
         },
     )
     job_docker_1_repo2 = tests_utils.add_workflow_job(
@@ -100,7 +98,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "repository": repo2,
             "log_embedding": [1] * 1536,
             "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
+            "log_status": gh_models.WorkflowJobLogStatus.EMBEDDED,
         },
     )
     job_docker_2_repo2 = tests_utils.add_workflow_job(
@@ -111,7 +109,7 @@ async def test_compute_log_embedding_cosine_similarity(
             "repository": repo2,
             "log_embedding": [2] * 1536,
             "embedded_log": "whatever",
-            "log_status": github_actions.WorkflowJobLogStatus.EMBEDDED,
+            "log_status": gh_models.WorkflowJobLogStatus.EMBEDDED,
         },
     )
     # ==================================================================================
@@ -119,7 +117,7 @@ async def test_compute_log_embedding_cosine_similarity(
     results = await get_cosine_similarity_for_job(db, job_pep8_1_repo1)
     assert len(results) == 0
 
-    await github_actions.WorkflowJob.compute_logs_embedding_cosine_similarity(
+    await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
         db, [job_pep8_1_repo1.id]
     )
     results = await get_cosine_similarity_for_job(db, job_pep8_1_repo1)
@@ -137,7 +135,7 @@ async def test_compute_log_embedding_cosine_similarity(
     results = await get_cosine_similarity_for_job(db, job_pep8_3_repo1)
     assert len(results) == 0
 
-    await github_actions.WorkflowJob.compute_logs_embedding_cosine_similarity(
+    await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
         db, [job_pep8_2_repo1.id, job_pep8_3_repo1.id]
     )
 
@@ -169,7 +167,7 @@ async def test_compute_log_embedding_cosine_similarity(
     results = await get_cosine_similarity_for_job(db, job_docker_2_repo2)
     assert len(results) == 0
 
-    await github_actions.WorkflowJob.compute_logs_embedding_cosine_similarity(
+    await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
         db,
         [
             job_pep8_1_repo2.id,
@@ -205,7 +203,7 @@ async def test_compute_log_embedding_cosine_similarity(
 
     # Test upsert
     job_pep8_1_repo2.log_embedding = np.array([np.float32(-1)] * 1536)
-    await github_actions.WorkflowJob.compute_logs_embedding_cosine_similarity(
+    await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
         db, [job_pep8_1_repo2.id]
     )
     results = await get_cosine_similarity_for_job(db, job_pep8_1_repo2)

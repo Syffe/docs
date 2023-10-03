@@ -8,7 +8,7 @@ import sqlalchemy
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine.models import application_keys
-from mergify_engine.models import github_account
+from mergify_engine.models import github as gh_models
 from mergify_engine.web.front import security
 
 
@@ -108,18 +108,18 @@ async def create_application(
     api_secret_key = secrets.token_urlsafe(32)  # 256bytes encoded in base64
 
     if "organization" in membership:
-        account = await github_account.GitHubAccount.get_or_create(
+        account = await gh_models.GitHubAccount.get_or_create(
             session,
-            github_account.GitHubAccountDict(
+            gh_models.GitHubAccountDict(
                 id=account_id,
                 login=membership["organization"]["login"],
                 type="Organization",
             ),
         )
     else:
-        account = await github_account.GitHubAccount.get_or_create(
+        account = await gh_models.GitHubAccount.get_or_create(
             session,
-            github_account.GitHubAccountDict(
+            gh_models.GitHubAccountDict(
                 id=account_id,
                 login=membership["user"]["login"],
                 type=membership["user"]["type"],

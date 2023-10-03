@@ -1,8 +1,7 @@
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
-from mergify_engine.models import github_account
-from mergify_engine.models import github_repository
+from mergify_engine.models import github as gh_models
 
 
 async def test_get_by_name(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
@@ -28,9 +27,7 @@ async def test_get_by_name(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
             "default_branch": github_types.GitHubRefType("main"),
         }
     )
-    expected_repo = await github_repository.GitHubRepository.get_or_create(
-        db, account1_repo1
-    )
+    expected_repo = await gh_models.GitHubRepository.get_or_create(db, account1_repo1)
     db.add(expected_repo)
 
     # Insert a second repository with the same name, but different owner
@@ -55,13 +52,11 @@ async def test_get_by_name(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
             "default_branch": github_types.GitHubRefType("main"),
         }
     )
-    another_repo = await github_repository.GitHubRepository.get_or_create(
-        db, account2_repo1
-    )
+    another_repo = await gh_models.GitHubRepository.get_or_create(db, account2_repo1)
     db.add(another_repo)
     await db.commit()
 
-    actual_repo = await github_repository.GitHubRepository.get_by_name(
+    actual_repo = await gh_models.GitHubRepository.get_by_name(
         db,
         github_types.GitHubAccountIdType(1),
         github_types.GitHubRepositoryName("repo1"),
@@ -92,11 +87,11 @@ async def test_as_dict(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
             "default_branch": github_types.GitHubRefType("main"),
         }
     )
-    repo = await github_repository.GitHubRepository.get_or_create(db, gh_repo)
+    repo = await gh_models.GitHubRepository.get_or_create(db, gh_repo)
     db.add(repo)
     await db.commit()
 
-    commited_repo = await github_repository.GitHubRepository.get_by_name(
+    commited_repo = await gh_models.GitHubRepository.get_by_name(
         db,
         github_types.GitHubAccountIdType(0),
         github_types.GitHubRepositoryName("mergify-engine"),
@@ -115,17 +110,17 @@ async def test_as_dict(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
 
 
 def test_is_complete() -> None:
-    repo = github_repository.GitHubRepository()
+    repo = gh_models.GitHubRepository()
     assert not repo.is_complete()
 
-    repo = github_repository.GitHubRepository(
+    repo = gh_models.GitHubRepository(
         id=github_types.GitHubRepositoryIdType(0),
         owner_id=github_types.GitHubAccountIdType(0),
         name=github_types.GitHubRepositoryName("hello"),
     )
     assert not repo.is_complete()
 
-    repo = github_repository.GitHubRepository(
+    repo = gh_models.GitHubRepository(
         id=github_types.GitHubRepositoryIdType(0),
         owner_id=github_types.GitHubAccountIdType(0),
         name=github_types.GitHubRepositoryName("hello"),
@@ -133,7 +128,7 @@ def test_is_complete() -> None:
         default_branch=github_types.GitHubRefType("main"),
         full_name="hello/there",
         archived=False,
-        owner=github_account.GitHubAccount(
+        owner=gh_models.GitHubAccount(
             login=github_types.GitHubLogin("Mergifyio"),
             id=github_types.GitHubAccountIdType(0),
             type="User",

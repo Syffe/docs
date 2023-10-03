@@ -17,7 +17,7 @@ from mergify_engine import pagination
 from mergify_engine import signals
 from mergify_engine.models import enumerations
 from mergify_engine.models import events_metadata
-from mergify_engine.models import github_repository
+from mergify_engine.models.github import repository as github_repository
 from mergify_engine.rules.config import partition_rules
 
 

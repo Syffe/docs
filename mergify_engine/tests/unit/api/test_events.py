@@ -18,7 +18,7 @@ from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine.models import events as event_models
-from mergify_engine.models import github_repository
+from mergify_engine.models.github import repository as github_repository
 from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
 from mergify_engine.tests import conftest as tests_conftest

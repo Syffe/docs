@@ -13,9 +13,7 @@ from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.ci import pull_registries
-from mergify_engine.models import github_account
-from mergify_engine.models import github_actions
-from mergify_engine.models import github_repository
+from mergify_engine.models import github as gh_models
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -62,11 +60,11 @@ async def _process_workflow_run_event(
     workflow_run = workflow_run_event["workflow_run"]
 
     async for attempt in database.tenacity_retry_on_pk_integrity_error(
-        (github_repository.GitHubRepository, github_account.GitHubAccount)
+        (gh_models.GitHubRepository, gh_models.GitHubAccount)
     ):
         with attempt:
             async with database.create_session() as session:
-                await github_actions.WorkflowRun.insert(
+                await gh_models.WorkflowRun.insert(
                     session, workflow_run, workflow_run_event["repository"]
                 )
 
@@ -100,8 +98,8 @@ async def _insert_pull_request(
     )
 
     for pull in pulls:
-        await github_actions.PullRequest.insert(session, pull)
-        await github_actions.PullRequestWorkflowRunAssociation.insert(
+        await gh_models.PullRequest.insert(session, pull)
+        await gh_models.PullRequestWorkflowRunAssociation.insert(
             session, pull.id, workflow_run["id"]
         )
 
@@ -149,11 +147,11 @@ async def _process_workflow_job_event(
     # NOTE(Kontrolix): This test is here to filter some broken jobs
     if workflow_job.get("runner_id") is not None:
         async for attempt in database.tenacity_retry_on_pk_integrity_error(
-            (github_repository.GitHubRepository, github_account.GitHubAccount)
+            (gh_models.GitHubRepository, gh_models.GitHubAccount)
         ):
             with attempt:
                 async with database.create_session() as session:
-                    await github_actions.WorkflowJob.insert(
+                    await gh_models.WorkflowJob.insert(
                         session, workflow_job, repository
                     )
                     await session.commit()

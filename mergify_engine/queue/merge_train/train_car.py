@@ -29,7 +29,7 @@ from mergify_engine import yaml
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.models import github_user
+from mergify_engine.models.github import user as github_user
 from mergify_engine.queue import pause
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import checks as merge_train_checks

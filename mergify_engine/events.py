@@ -18,8 +18,7 @@ from mergify_engine import pagination
 from mergify_engine import signals
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_models
-from mergify_engine.models import github_account
-from mergify_engine.models import github_repository
+from mergify_engine.models import github as gh_models
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -38,7 +37,7 @@ class EventNotHandled(Exception):
 
 async def insert(
     event: signals.EventName,
-    repository: github_types.GitHubRepository | github_repository.GitHubRepositoryDict,
+    repository: github_types.GitHubRepository | gh_models.GitHubRepositoryDict,
     pull_request: github_types.GitHubPullRequestNumber | None,
     trigger: str,
     metadata: signals.EventMetadata,
@@ -49,7 +48,7 @@ async def insert(
         raise EventNotHandled(f"Event '{event}' not supported in database")
 
     async for attempt in database.tenacity_retry_on_pk_integrity_error(
-        (github_repository.GitHubRepository, github_account.GitHubAccount)
+        (gh_models.GitHubRepository, gh_models.GitHubAccount)
     ):
         with attempt:
             async with database.create_session() as session:

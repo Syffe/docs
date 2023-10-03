@@ -11,7 +11,7 @@ from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine.log_embedder import github_action as gha_embedder
 from mergify_engine.log_embedder import openai_api
-from mergify_engine.models import github_actions as gha_model
+from mergify_engine.models import github as gh_models
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATASET
 from mergify_engine.tests.openai_embedding_dataset import (
@@ -63,8 +63,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
             async with database.create_session() as session:
                 job = await session.scalar(
-                    sqlalchemy.select(gha_model.WorkflowJob).where(
-                        gha_model.WorkflowJob.id == job_event["workflow_job"]["id"]
+                    sqlalchemy.select(gh_models.WorkflowJob).where(
+                        gh_models.WorkflowJob.id == job_event["workflow_job"]["id"]
                     )
                 )
 
@@ -135,8 +135,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
         async with database.create_session() as session:
             job = await session.scalar(
-                sqlalchemy.select(gha_model.WorkflowJob).where(
-                    gha_model.WorkflowJob.id == job_event["workflow_job"]["id"]
+                sqlalchemy.select(gh_models.WorkflowJob).where(
+                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"]
                 )
             )
 
@@ -182,7 +182,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
         async with database.create_session() as session:
             jobs = (
-                await session.scalars(sqlalchemy.select(gha_model.WorkflowJob))
+                await session.scalars(sqlalchemy.select(gh_models.WorkflowJob))
             ).all()
 
         assert len(jobs) == 2
@@ -219,8 +219,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
         async with database.create_session() as session:
             job = await session.scalar(
-                sqlalchemy.select(gha_model.WorkflowJob).where(
-                    gha_model.WorkflowJob.id == job_event["workflow_job"]["id"]
+                sqlalchemy.select(gh_models.WorkflowJob).where(
+                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"]
                 )
             )
             assert job is not None
@@ -257,8 +257,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
         async with database.create_session() as session:
             result = await session.execute(
-                sqlalchemy.select(gha_model.WorkflowJob).where(
-                    gha_model.WorkflowJob.id == job_event["workflow_job"]["id"]
+                sqlalchemy.select(gh_models.WorkflowJob).where(
+                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"]
                 )
             )
             job = result.scalar()
@@ -269,7 +269,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         assert job.failed_step_number == 4
         assert job.failed_step_name == 'Failure step with *"/\\<>:|? in the title ❌'
         assert job.log_embedding is not None
-        assert job.log_status is gha_model.WorkflowJobLogStatus.EMBEDDED
+        assert job.log_status is gh_models.WorkflowJobLogStatus.EMBEDDED
 
         assert np.array_equal(
             job.log_embedding, OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"]
@@ -313,8 +313,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
         async with database.create_session() as session:
             result = await session.execute(
-                sqlalchemy.select(gha_model.WorkflowJob).where(
-                    gha_model.WorkflowJob.id == job_event["workflow_job"]["id"]
+                sqlalchemy.select(gh_models.WorkflowJob).where(
+                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"]
                 )
             )
             job = result.scalar()
@@ -386,7 +386,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
         async with database.create_session() as session:
             jobs = (
-                await session.scalars(sqlalchemy.select(gha_model.WorkflowJob))
+                await session.scalars(sqlalchemy.select(gh_models.WorkflowJob))
             ).all()
 
         assert len(jobs) == nb_jobs

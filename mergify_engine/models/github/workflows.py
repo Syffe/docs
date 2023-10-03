@@ -17,64 +17,19 @@ import sqlalchemy.ext.asyncio
 from mergify_engine import constants
 from mergify_engine import github_types
 from mergify_engine import models
-from mergify_engine.ci import pull_registries
-from mergify_engine.models import github_account
-from mergify_engine.models import github_repository
+from mergify_engine.models.github import account as gh_account
+from mergify_engine.models.github import repository as gh_repository
+
+
+if typing.TYPE_CHECKING:
+    # We need to importe only `PullRequest` otherwise sqlalchemy
+    # cannot find the `pull_request` module for some reason.
+    from mergify_engine.models.github.pull_request import PullRequest
 
 
 LOG = daiquiri.getLogger(__name__)
 
 NAME_AND_MATRIX_RE = re.compile(r"^([\w|-]+) \((.+)\)$")
-
-
-class PullRequest(models.Base):
-    __tablename__ = "pull_request"
-
-    id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger,
-        primary_key=True,
-        autoincrement=False,
-        anonymizer_config=None,
-    )
-    number: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger,
-        anonymizer_config="anon.random_int_between(1,100000)",
-    )
-    title: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text,
-        anonymizer_config="anon.lorem_ipsum( words := 5 )",
-    )
-    state: orm.Mapped[github_types.GitHubPullRequestState] = orm.mapped_column(
-        sqlalchemy.Text,
-        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
-    )
-
-    workflow_runs: orm.Mapped[list[WorkflowRun]] = orm.relationship(
-        secondary="jt_gha_workflow_run_pull_request",
-        back_populates="pull_requests",
-        viewonly=True,
-    )
-
-    @classmethod
-    async def insert(
-        cls,
-        session: sqlalchemy.ext.asyncio.AsyncSession,
-        pull: pull_registries.PullRequest,
-    ) -> None:
-        sql = (
-            postgresql.insert(cls)
-            .values(
-                id=pull.id,
-                number=pull.number,
-                title=pull.title,
-                state=pull.state,
-            )
-            .on_conflict_do_update(
-                index_elements=[cls.id],
-                set_={"number": pull.number, "title": pull.title},
-            )
-        )
-        await session.execute(sql)
 
 
 class WorkflowJobConclusion(enum.Enum):
@@ -130,10 +85,10 @@ class WorkflowRun(models.Base):
         sqlalchemy.BigInteger, anonymizer_config=None
     )
 
-    owner: orm.Mapped[github_account.GitHubAccount] = orm.relationship(
+    owner: orm.Mapped[gh_account.GitHubAccount] = orm.relationship(
         lazy="joined", foreign_keys=[owner_id]
     )
-    triggering_actor: orm.Mapped[github_account.GitHubAccount] = orm.relationship(
+    triggering_actor: orm.Mapped[gh_account.GitHubAccount] = orm.relationship(
         lazy="joined", foreign_keys=[triggering_actor_id]
     )
     pull_requests: orm.Mapped[list[PullRequest]] = orm.relationship(
@@ -148,7 +103,7 @@ class WorkflowRun(models.Base):
         anonymizer_config=None,
     )
 
-    repository: orm.Mapped[github_repository.GitHubRepository] = orm.relationship(
+    repository: orm.Mapped[gh_repository.GitHubRepository] = orm.relationship(
         lazy="joined"
     )
 
@@ -164,14 +119,14 @@ class WorkflowRun(models.Base):
         )
         if result.scalar_one_or_none() is None:
             if "triggering_actor" in workflow_run_data:
-                triggering_actor = await github_account.GitHubAccount.get_or_create(
+                triggering_actor = await gh_account.GitHubAccount.get_or_create(
                     session, workflow_run_data["triggering_actor"]
                 )
                 session.add(triggering_actor)
             else:
                 triggering_actor = None  # type: ignore[unreachable]
 
-            repo = await github_repository.GitHubRepository.get_or_create(
+            repo = await gh_repository.GitHubRepository.get_or_create(
                 session, repository
             )
 
@@ -290,7 +245,7 @@ class WorkflowJob(models.Base):
         anonymizer_config=None,
     )
 
-    repository: orm.Mapped[github_repository.GitHubRepository] = orm.relationship(
+    repository: orm.Mapped[gh_repository.GitHubRepository] = orm.relationship(
         lazy="joined"
     )
 
@@ -379,7 +334,7 @@ class WorkflowJob(models.Base):
                 completed_at=workflow_job_data["completed_at"],
                 conclusion=WorkflowJobConclusion(workflow_job_data["conclusion"]),
                 labels=workflow_job_data["labels"],
-                repository=await github_repository.GitHubRepository.get_or_create(
+                repository=await gh_repository.GitHubRepository.get_or_create(
                     session, repository
                 ),
                 run_attempt=workflow_job_data["run_attempt"],

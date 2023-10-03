@@ -19,9 +19,7 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_api
-from mergify_engine.models import github_account
-from mergify_engine.models import github_actions
-from mergify_engine.models import github_repository
+from mergify_engine.models import github as gh_models
 from mergify_engine.tests import utils as tests_utils
 from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATASET
 from mergify_engine.tests.openai_embedding_dataset import (
@@ -50,9 +48,9 @@ async def test_embed_logs_on_controlled_data(
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    owner = github_account.GitHubAccount(id=1, login="owner_login")
+    owner = gh_models.GitHubAccount(id=1, login="owner_login")
     db.add(owner)
-    repo = github_repository.GitHubRepository(id=1, owner=owner, name="repo_name")
+    repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo_name")
     db.add(repo)
 
     respx_mock.get(
@@ -124,7 +122,7 @@ async def test_embed_logs_on_controlled_data(
             {
                 "id": i,
                 "repository": repo,
-                "conclusion": github_actions.WorkflowJobConclusion.FAILURE,
+                "conclusion": gh_models.WorkflowJobConclusion.FAILURE,
                 "name": "job_toto",
                 "failed_step_name": "toto",
                 "failed_step_number": 1,
@@ -140,7 +138,7 @@ async def test_embed_logs_on_controlled_data(
 
     pending_work = await github_action.embed_logs()
     assert not pending_work
-    jobs = (await db.scalars(sqlalchemy.select(github_actions.WorkflowJob))).all()
+    jobs = (await db.scalars(sqlalchemy.select(gh_models.WorkflowJob))).all()
     assert len(jobs) == 3
     assert all(job.log_embedding is None for job in jobs)
 
@@ -156,7 +154,7 @@ async def test_embed_logs_on_controlled_data(
     pending_work = await github_action.embed_logs()
     assert not pending_work
 
-    jobs = (await db.scalars(sqlalchemy.select(github_actions.WorkflowJob))).all()
+    jobs = (await db.scalars(sqlalchemy.select(gh_models.WorkflowJob))).all()
     assert len(jobs) == 3
     assert all(
         np.array_equal(
@@ -184,8 +182,8 @@ async def test_embed_logs_on_controlled_data(
     db.expunge_all()
 
     a_job = await db.scalar(
-        sqlalchemy.select(github_actions.WorkflowJob).where(
-            github_actions.WorkflowJob.id == jobs[0].id
+        sqlalchemy.select(gh_models.WorkflowJob).where(
+            gh_models.WorkflowJob.id == jobs[0].id
         )
     )
     assert a_job is not None
@@ -273,18 +271,18 @@ async def test_embed_logs_on_various_data(
 
     # Update jobs name and failed step to match the zip archive mock
     await populated_db.execute(
-        sqlalchemy.update(github_actions.WorkflowJob)
+        sqlalchemy.update(gh_models.WorkflowJob)
         .values(failed_step_name="toto", failed_step_number=1, name="job_toto")
         .where(
-            github_actions.WorkflowJob.failed_step_name.is_not(None),
-            github_actions.WorkflowJob.failed_step_number.is_not(None),
+            gh_models.WorkflowJob.failed_step_name.is_not(None),
+            gh_models.WorkflowJob.failed_step_number.is_not(None),
         )
     )
     await populated_db.commit()
 
     logins = set()
     for job in (
-        await populated_db.execute(sqlalchemy.select(github_actions.WorkflowJob))
+        await populated_db.execute(sqlalchemy.select(gh_models.WorkflowJob))
     ).scalars():
         logins.add(job.repository.owner.login)
 
@@ -296,9 +294,9 @@ async def test_embed_logs_on_various_data(
 
     count = (
         await populated_db.execute(
-            sqlalchemy.select(
-                sqlalchemy.func.count(github_actions.WorkflowJob.id)
-            ).where(github_actions.WorkflowJob.embedded_log.is_not(None))
+            sqlalchemy.select(sqlalchemy.func.count(gh_models.WorkflowJob.id)).where(
+                gh_models.WorkflowJob.embedded_log.is_not(None)
+            )
         )
     ).all()[0][0]
 
@@ -310,9 +308,9 @@ async def test_embed_logs_on_various_data(
 
     count = (
         await populated_db.execute(
-            sqlalchemy.select(
-                sqlalchemy.func.count(github_actions.WorkflowJob.id)
-            ).where(github_actions.WorkflowJob.embedded_log.is_not(None))
+            sqlalchemy.select(sqlalchemy.func.count(gh_models.WorkflowJob.id)).where(
+                gh_models.WorkflowJob.embedded_log.is_not(None)
+            )
         )
     ).all()[0][0]
 
@@ -328,42 +326,42 @@ async def test_workflow_job_log_life_cycle(
     respx_mock: respx.MockRouter,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    owner = github_account.GitHubAccount(id=1, login="owner")
-    repo = github_repository.GitHubRepository(id=1, owner=owner, name="repo1")
-    job1 = github_actions.WorkflowJob(
+    owner = gh_models.GitHubAccount(id=1, login="owner")
+    repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo1")
+    job1 = gh_models.WorkflowJob(
         id=1,
         repository=repo,
         workflow_run_id=1,
         name="job_toto",
         started_at=datetime.datetime.now(),
         completed_at=datetime.datetime.now(),
-        conclusion=github_actions.WorkflowJobConclusion.FAILURE,
+        conclusion=gh_models.WorkflowJobConclusion.FAILURE,
         labels=[],
         run_attempt=1,
         failed_step_name="toto",
         failed_step_number=1,
     )
-    job2 = github_actions.WorkflowJob(
+    job2 = gh_models.WorkflowJob(
         id=2,
         repository=repo,
         workflow_run_id=2,
         name="job_toto",
         started_at=datetime.datetime.now(),
         completed_at=datetime.datetime.now(),
-        conclusion=github_actions.WorkflowJobConclusion.FAILURE,
+        conclusion=gh_models.WorkflowJobConclusion.FAILURE,
         labels=[],
         run_attempt=1,
         failed_step_name="toto",
         failed_step_number=1,
     )
-    job3 = github_actions.WorkflowJob(
+    job3 = gh_models.WorkflowJob(
         id=3,
         repository=repo,
         workflow_run_id=3,
         name="job_toto",
         started_at=datetime.datetime.now(),
         completed_at=datetime.datetime.now(),
-        conclusion=github_actions.WorkflowJobConclusion.FAILURE,
+        conclusion=gh_models.WorkflowJobConclusion.FAILURE,
         labels=[],
         run_attempt=1,
         failed_step_name="toto",
@@ -477,12 +475,12 @@ async def test_workflow_job_log_life_cycle(
     monkeypatch.setattr(settings, "LOG_EMBEDDER_ENABLED_ORGS", [owner.login])
     monkeypatch.setattr(github_action, "LOG_EMBEDDER_MAX_ATTEMPTS", 2)
 
-    async def get_jobs() -> list[github_actions.WorkflowJob]:
+    async def get_jobs() -> list[gh_models.WorkflowJob]:
         return list(
             (
                 await db.scalars(
-                    sqlalchemy.select(github_actions.WorkflowJob).order_by(
-                        github_actions.WorkflowJob.id
+                    sqlalchemy.select(gh_models.WorkflowJob).order_by(
+                        gh_models.WorkflowJob.id
                     )
                 )
             ).all()
@@ -490,27 +488,27 @@ async def test_workflow_job_log_life_cycle(
 
     jobs = await get_jobs()
     assert len(jobs) == 3
-    assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.UNKNOWN
-    assert jobs[1].log_status == github_actions.WorkflowJobLogStatus.UNKNOWN
-    assert jobs[2].log_status == github_actions.WorkflowJobLogStatus.UNKNOWN
+    assert jobs[0].log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
+    assert jobs[1].log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
+    assert jobs[2].log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
     db.expunge_all()
 
     await github_action.embed_logs()
 
     jobs = await get_jobs()
     assert len(jobs) == 3
-    assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.GONE
-    assert jobs[1].log_status == github_actions.WorkflowJobLogStatus.EMBEDDED
-    assert jobs[2].log_status == github_actions.WorkflowJobLogStatus.UNKNOWN
+    assert jobs[0].log_status == gh_models.WorkflowJobLogStatus.GONE
+    assert jobs[1].log_status == gh_models.WorkflowJobLogStatus.EMBEDDED
+    assert jobs[2].log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
     db.expunge_all()
 
     await github_action.embed_logs()
 
     jobs = await get_jobs()
     assert len(jobs) == 3
-    assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.GONE
-    assert jobs[1].log_status == github_actions.WorkflowJobLogStatus.EMBEDDED
-    assert jobs[2].log_status == github_actions.WorkflowJobLogStatus.ERROR
+    assert jobs[0].log_status == gh_models.WorkflowJobLogStatus.GONE
+    assert jobs[1].log_status == gh_models.WorkflowJobLogStatus.EMBEDDED
+    assert jobs[2].log_status == gh_models.WorkflowJobLogStatus.ERROR
 
 
 @pytest.mark.parametrize(
@@ -526,16 +524,16 @@ async def test_workflow_job_from_real_life(
     step: int,
     logger_checker: None,
 ) -> None:
-    owner = github_account.GitHubAccount(id=1, login="owner")
-    repo = github_repository.GitHubRepository(id=1, owner=owner, name="repo1")
-    job = github_actions.WorkflowJob(
+    owner = gh_models.GitHubAccount(id=1, login="owner")
+    repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo1")
+    job = gh_models.WorkflowJob(
         id=1,
         repository=repo,
         workflow_run_id=1,
         name=job_name,
         started_at=datetime.datetime.now(),
         completed_at=datetime.datetime.now(),
-        conclusion=github_actions.WorkflowJobConclusion.FAILURE,
+        conclusion=gh_models.WorkflowJobConclusion.FAILURE,
         labels=[],
         run_attempt=1,
         failed_step_name="toto",
@@ -616,14 +614,14 @@ async def test_workflow_job_from_real_life(
 
     monkeypatch.setattr(settings, "LOG_EMBEDDER_ENABLED_ORGS", [owner.login])
 
-    jobs = list((await db.scalars(sqlalchemy.select(github_actions.WorkflowJob))).all())
+    jobs = list((await db.scalars(sqlalchemy.select(gh_models.WorkflowJob))).all())
     assert len(jobs) == 1
-    assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.UNKNOWN
+    assert jobs[0].log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
     db.expunge_all()
 
     await github_action.embed_logs()
 
-    jobs = list((await db.scalars(sqlalchemy.select(github_actions.WorkflowJob))).all())
+    jobs = list((await db.scalars(sqlalchemy.select(gh_models.WorkflowJob))).all())
     assert len(jobs) == 1
-    assert jobs[0].log_status == github_actions.WorkflowJobLogStatus.EMBEDDED
+    assert jobs[0].log_status == gh_models.WorkflowJobLogStatus.EMBEDDED
     db.expunge_all()

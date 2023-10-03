@@ -20,9 +20,7 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine.config import types
-from mergify_engine.models import github_actions
-from mergify_engine.models import github_repository
-from mergify_engine.models import github_user
+from mergify_engine.models import github as gh_models
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.tests import conftest
 from mergify_engine.tests.db_populator import DbPopulator
@@ -115,8 +113,8 @@ def test_console_scripts(
 def add_workflow_job(
     session: sqlalchemy.ext.asyncio.AsyncSession,
     job_data: dict[str, typing.Any],
-) -> github_actions.WorkflowJob:
-    job = github_actions.WorkflowJob(
+) -> gh_models.WorkflowJob:
+    job = gh_models.WorkflowJob(
         id=job_data["id"],
         repository=job_data["repository"],
         log_embedding=job_data.get("log_embedding"),
@@ -132,9 +130,7 @@ def add_workflow_job(
             "completed_at",
             github_types.ISODateTimeType(date.utcnow().isoformat()),
         ),
-        conclusion=job_data.get(
-            "conclusion", github_actions.WorkflowJobConclusion.SUCCESS
-        ),
+        conclusion=job_data.get("conclusion", gh_models.WorkflowJobConclusion.SUCCESS),
         labels=job_data.get("labels", []),
         run_attempt=job_data.get("run_attempt", 1),
         failed_step_name=job_data.get("failed_step_name"),
@@ -149,14 +145,14 @@ async def mock_user_authorization_on_repo(
     respx_mock: respx.MockRouter,
     repo: github_types.GitHubRepository,
     db: sqlalchemy.ext.asyncio.AsyncSession | None = None,
-    user: github_user.GitHubUser | None = None,
+    user: gh_models.GitHubUser | None = None,
     permission: github_types.GitHubRepositoryPermission = github_types.GitHubRepositoryPermission.WRITE,
-) -> github_user.GitHubUser:
+) -> gh_models.GitHubUser:
     if user is None:
         if db is None:
             raise RuntimeError("If user is not provided, db must be set")
-        user = github_user.GitHubUser(
-            id=DbPopulator.next_id(github_user.GitHubUser),
+        user = gh_models.GitHubUser(
+            id=DbPopulator.next_id(gh_models.GitHubUser),
             login=github_types.GitHubLogin("user_login"),
             oauth_access_token=github_types.GitHubOAuthToken("user-token"),
         )
@@ -208,10 +204,8 @@ async def configure_web_client_to_work_with_a_repo(
         (
             (
                 await session.execute(
-                    sqlalchemy.select(github_repository.GitHubRepository)
-                    .where(
-                        github_repository.GitHubRepository.full_name == repo_full_name
-                    )
+                    sqlalchemy.select(gh_models.GitHubRepository)
+                    .where(gh_models.GitHubRepository.full_name == repo_full_name)
                     .limit(1)
                 )
             ).scalar_one()

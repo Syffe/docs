@@ -16,8 +16,7 @@ from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine import settings
 from mergify_engine.config import types as config_types
-from mergify_engine.models import github_account
-from mergify_engine.models import github_repository
+from mergify_engine.models import github as gh_models
 from mergify_engine.models import manage
 from mergify_engine.tests import utils
 
@@ -196,20 +195,16 @@ async def test_get_or_create_on_conflict(setup_database: None) -> None:
     # NOTE(Kontrolix): This whole mess is just here to simulate a session conflict for
     # test purpose, in reality the two sessions would have been opened in parallel
     async with database.create_session() as session1:
-        session1.add(
-            await github_repository.GitHubRepository.get_or_create(session1, repo1)
-        )
+        session1.add(await gh_models.GitHubRepository.get_or_create(session1, repo1))
 
         async for attempt in database.tenacity_retry_on_pk_integrity_error(
-            (github_account.GitHubAccount, github_repository.GitHubRepository)
+            (gh_models.GitHubAccount, gh_models.GitHubRepository)
         ):
             with attempt:
                 async with database.create_session() as session2:
                     nb_try += 1
                     session2.add(
-                        await github_repository.GitHubRepository.get_or_create(
-                            session2, repo2
-                        )
+                        await gh_models.GitHubRepository.get_or_create(session2, repo2)
                     )
                     await session1.commit()
                     await session2.commit()
@@ -220,8 +215,8 @@ async def test_get_or_create_on_conflict(setup_database: None) -> None:
     async with database.create_session() as session:
         repos = (
             await session.scalars(
-                sqlalchemy.select(github_repository.GitHubRepository).order_by(
-                    github_repository.GitHubRepository.id
+                sqlalchemy.select(gh_models.GitHubRepository).order_by(
+                    gh_models.GitHubRepository.id
                 )
             )
         ).all()
@@ -232,7 +227,7 @@ async def test_get_or_create_on_conflict(setup_database: None) -> None:
 
     async with database.create_session() as session:
         accounts = (
-            await session.scalars(sqlalchemy.select(github_account.GitHubAccount))
+            await session.scalars(sqlalchemy.select(gh_models.GitHubAccount))
         ).all()
 
     assert len(accounts) == 1

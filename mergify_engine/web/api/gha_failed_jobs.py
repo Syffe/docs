@@ -9,7 +9,7 @@ import typing_extensions
 
 from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine.models import github_actions
+from mergify_engine.models import github as gh_models
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
@@ -84,7 +84,7 @@ async def get_gha_failed_jobs(
         float, fastapi.Query(description="The neighbour cosine similarity threshold")
     ] = 0.01,
 ) -> FailedJobResponse:
-    results = await github_actions.WorkflowJob.get_failed_jobs(
+    results = await gh_models.WorkflowJob.get_failed_jobs(
         session,
         repository_ctxt.repo["id"],
         start_at,
@@ -161,7 +161,7 @@ async def get_gha_failed_job_detail(
     ] = 0.01,
 ) -> WorkflowJobDetails:
     results = list(
-        await github_actions.WorkflowJob.get_failed_job(
+        await gh_models.WorkflowJob.get_failed_job(
             session,
             repository_ctxt.repo["id"],
             job_id,

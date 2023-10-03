@@ -17,8 +17,7 @@ from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.config import types
 from mergify_engine.models import application_keys
-from mergify_engine.models import github_account
-from mergify_engine.models import github_user
+from mergify_engine.models import github as gh_models
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
@@ -87,7 +86,7 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
                     github_account_id=github_types.GitHubAccountIdType(
                         data["account_id"]
                     ),
-                    github_account=github_account.GitHubAccount(
+                    github_account=gh_models.GitHubAccount(
                         id=github_types.GitHubAccountIdType(data["account_id"]),
                         login=github_types.GitHubLogin(data["account_login"]),
                     ),
@@ -124,7 +123,7 @@ LoggedApplication = typing.Annotated[
 
 
 def build_actor(
-    auth_method: application_keys.ApplicationKey | github_user.GitHubUser,
+    auth_method: application_keys.ApplicationKey | gh_models.GitHubUser,
 ) -> github.Actor:
     if isinstance(auth_method, application_keys.ApplicationKey):
         return github.Actor(
@@ -140,14 +139,14 @@ def build_actor(
     )
 
 
-async def get_logged_user(request: fastapi.Request) -> github_user.GitHubUser | None:
+async def get_logged_user(request: fastapi.Request) -> gh_models.GitHubUser | None:
     if "auth" in request.scope and request.auth and request.auth.is_authenticated:
-        return typing.cast(github_user.GitHubUser, request.auth.user)
+        return typing.cast(gh_models.GitHubUser, request.auth.user)
     return None
 
 
 LoggedUser = typing.Annotated[
-    github_user.GitHubUser | None, fastapi.Security(get_logged_user)
+    gh_models.GitHubUser | None, fastapi.Security(get_logged_user)
 ]
 
 
