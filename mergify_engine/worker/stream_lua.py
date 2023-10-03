@@ -214,7 +214,7 @@ async def clean_org_bucket(
         (bucket_org_key,),
         (scheduled_at,),
     )
-    LOG.warning(
+    LOG.debug(
         "bucket %s",
         res,
         gh_owner_id=bucket_org_key.split("~")[1],
