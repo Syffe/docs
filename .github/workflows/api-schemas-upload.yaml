@@ -12,6 +12,7 @@ jobs:
     permissions:
       contents: "read"
       id-token: "write"
+      checks: "read"
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
