@@ -1248,7 +1248,8 @@ class Context:
             gh_pull_locked=self.pull["locked"],
             gh_pull_merge_commit_sha=self.pull["merge_commit_sha"],
             gh_pull_url=self.pull.get("html_url", "<unknown-yet>"),
-            gh_pull_state=(
+            gh_pull_mergeable=self.pull.get("mergeable", "none"),
+            gh_pull_mergeable_state=(
                 "merged"
                 if self.pull.get("merged")
                 else (self.pull.get("mergeable_state", "unknown") or "none")

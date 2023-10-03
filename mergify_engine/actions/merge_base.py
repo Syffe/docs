@@ -66,8 +66,6 @@ class MergeUtilsMixin:
                 "failed to merge after %s refresh attempts",
                 e.max_attempts,
                 abort_message=abort_message,
-                mergeable_state=ctxt.pull["mergeable_state"],
-                mergeable=ctxt.pull["mergeable"],
                 is_conflicting=ctxt.is_conflicting,
                 curl=await exception.to_curl() if exception else None,
             )
@@ -81,8 +79,6 @@ class MergeUtilsMixin:
             "%s, retrying",
             abort_message,
             abort_message=abort_message,
-            mergeable_state=ctxt.pull["mergeable_state"],
-            mergeable=ctxt.pull["mergeable"],
             is_conflicting=ctxt.is_conflicting,
             curl=await exception.to_curl() if exception else None,
         )
