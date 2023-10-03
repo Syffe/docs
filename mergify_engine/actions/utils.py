@@ -1,4 +1,5 @@
 import dataclasses
+import datetime
 import typing
 
 import voluptuous
@@ -6,6 +7,7 @@ import voluptuous
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import database
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.clients import http
@@ -237,8 +239,12 @@ async def get_unqueue_reason_from_outcome(
         train_car_state is None
         or train_car_state.outcome == train_car.TrainCarOutcome.UNKNOWN
     ):
+        is_check_outdated = check["completed_at"] and date.fromisoformat(
+            check["completed_at"]
+        ) < date.utcnow() - datetime.timedelta(days=7)
+
         # NOTE(charly): We just log details to not stuck a PR and handle it later
-        if error_if_unknown:
+        if error_if_unknown and not is_check_outdated:
             ctxt.log.error(
                 "Merge queue check doesn't contain any TrainCarState",
                 check=check,
