@@ -36,7 +36,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Python 🔧
-        uses: actions/setup-python@v4.7.0
+        uses: actions/setup-python@v4.7.1
         with:
           python-version: 3.11.4
 
@@ -56,7 +56,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Python 🔧
-        uses: actions/setup-python@v4.7.0
+        uses: actions/setup-python@v4.7.1
         with:
           python-version: 3.11.4
 
@@ -102,7 +102,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python 🔧
-        uses: actions/setup-python@v4.7.0
+        uses: actions/setup-python@v4.7.1
         with:
           python-version: 3.11.4
 
@@ -121,7 +121,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python 🔧
-        uses: actions/setup-python@v4.7.0
+        uses: actions/setup-python@v4.7.1
         with:
           python-version: 3.11.4
 
@@ -156,7 +156,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python 🔧
-        uses: actions/setup-python@v4.7.0
+        uses: actions/setup-python@v4.7.1
         with:
           python-version: 3.11.4
 
@@ -194,7 +194,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python 🔧
-        uses: actions/setup-python@v4.7.0
+        uses: actions/setup-python@v4.7.1
         with:
           python-version: 3.11.4
 
