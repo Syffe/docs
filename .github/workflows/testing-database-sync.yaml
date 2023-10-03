@@ -13,11 +13,25 @@ jobs:
   testing-database-sync:
     timeout-minutes: 15
     runs-on: ubuntu-22.04
+    permissions:
+      contents: "read"
+      id-token: "write"
     steps:
       - uses: actions/checkout@v4
+      - name: Prepare MERGIFYENGINE_DATABASE_URL
+        id: PRODUCTION_DATABASE_BASE_URL
+        env:
+          PRODUCTION_DATABASE_HOSTNAME: ${{ vars.PRODUCTION_DATABASE_HOSTNAME }}
+          PRODUCTION_DATABASE_PORT: ${{ vars.PRODUCTION_DATABASE_PORT }}
+          PRODUCTION_DATABASE_USERNAME: ${{ vars.PRODUCTION_DATABASE_USERNAME }}
+        run: |
+          URL="$(tools/build-production-database-base-url.sh)"
+          echo "PRODUCTION_DATABASE_BASE_URL=$URL" >> "$GITHUB_OUTPUT"
+
       - name: Syncing databases
         env:
-          PRODUCTION_ENGINE_DATABASE_URL: ${{ secrets.PRODUCTION_ENGINE_DATABASE_URL }}
+          PRODUCTION_DATABASE_BASE_URL: |-
+            ${{ steps.PRODUCTION_DATABASE_BASE_URL.outputs.PRODUCTION_DATABASE_BASE_URL }}
         run: |
           # NOTE(sileht): maybe run this on AWS Lambda to avoid the network roundtrip
           # between AWS and GitHub Actions
