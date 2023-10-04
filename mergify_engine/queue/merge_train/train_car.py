@@ -1474,6 +1474,15 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 {"number": ep.user_pull_request_number}
                 for ep in self.initial_embarked_pulls
             ],
+            "previous_failed_batches": [
+                {
+                    "draft_pr_number": tc.queue_pull_request_number,
+                    "checked_pull_requests": [
+                        ep.user_pull_request_number for ep in tc.initial_embarked_pulls
+                    ],
+                }
+                for tc in self.failure_history
+            ],
         }
         description = "```yaml\n---\n"
         # TODO(sileht): use regular dumper, to use the C parser

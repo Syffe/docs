@@ -3770,6 +3770,19 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         tmp_pull_sliced_1 = await self.wait_for_pull_request("opened")
+        assert tmp_pull_sliced_1["pull_request"]["body"] is not None
+        assert (
+            f"""```yaml
+---
+previous_failed_batches:
+  - checked_pull_requests:
+      - {p1['number']}
+      - {p2['number']}
+      - {p3['number']}
+    draft_pr_number: {tmp_pull['number']}
+"""
+            in tmp_pull_sliced_1["pull_request"]["body"]
+        )
 
         # The train car has been splitted, the second car is in pending
         # state as speculative_checks=1

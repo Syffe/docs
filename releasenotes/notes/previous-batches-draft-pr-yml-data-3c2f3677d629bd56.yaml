@@ -1,0 +1,15 @@
+---
+features:
+  - |
+    The yaml object at the end of the body of draft PR pull requests now contains
+    information about previous failed batches. The new data is in a new key called
+    "previous_failed_batches" which is a list of dict objects containing the number
+    of the draft pr (under the "draft_pr_number" key) and the list of pull requests it checked
+    (under the "checked_pull_requests" key).
+    Example:
+      previous_failed_batches:
+        - checked_pull_requests:
+          - 123
+          - 124
+          - 126
+          draft_pr_number: 130
