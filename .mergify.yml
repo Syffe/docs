@@ -24,6 +24,11 @@ shared:
     - check-success=test (3)
     - check-success=test (4)
     - check-success=test (5)
+    - check-success=test (6)
+    - check-success=test (7)
+    - check-success=test (8)
+    - check-success=test (9)
+    - check-success=test (10)
     - check-success=postgresql-anonymizer
     - check-success=api-schemas
 

@@ -137,7 +137,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        group: [1, 2, 3, 4, 5]
+        group: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     services:
       redis:
         image: redis:latest
@@ -173,7 +173,7 @@ jobs:
           pip install -r requirements-poetry.txt
           tools/poetry-ci-install.sh
           poetry run poe test \
-            --splits 5 --group ${{ matrix.group }} \
+            --splits 10 --group ${{ matrix.group }} \
             --store-durations \
             --durations-path engine-ci-test-durations \
             --splitting-algorithm=least_duration \
