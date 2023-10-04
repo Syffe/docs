@@ -164,14 +164,17 @@ cryptography = ">=3.2"
 
 [[package]]
 name = "babel"
-version = "2.12.1"
+version = "2.13.0"
 description = "Internationalization utilities"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "Babel-2.12.1-py3-none-any.whl", hash = "sha256:b4246fb7677d3b98f501a39d43396d3cafdc8eadb045f4a31be01863f655c610"},
-    {file = "Babel-2.12.1.tar.gz", hash = "sha256:cc2d99999cd01d44420ae725a21c9e3711b3aadc7976d6147f622d8581963455"},
+    {file = "Babel-2.13.0-py3-none-any.whl", hash = "sha256:fbfcae1575ff78e26c7449136f1abbefc3c13ce542eeb13d43d50d8b047216ec"},
+    {file = "Babel-2.13.0.tar.gz", hash = "sha256:04c3e2d28d2b7681644508f836be388ae49e0cfe91465095340395b60d00f210"},
 ]
+
+[package.extras]
+dev = ["freezegun (>=1.0,<2.0)", "pytest (>=6.0)", "pytest-cov"]
 
 [[package]]
 name = "beautifulsoup4"
@@ -1110,6 +1113,7 @@ files = [
     {file = "greenlet-3.0.0-cp39-cp39-win32.whl", hash = "sha256:0d3f83ffb18dc57243e0151331e3c383b05e5b6c5029ac29f754745c800f8ed9"},
     {file = "greenlet-3.0.0-cp39-cp39-win_amd64.whl", hash = "sha256:831d6f35037cf18ca5e80a737a27d822d87cd922521d18ed3dbc8a6967be50ce"},
     {file = "greenlet-3.0.0-cp39-universal2-macosx_11_0_x86_64.whl", hash = "sha256:a048293392d4e058298710a54dfaefcefdf49d287cd33fb1f7d63d55426e4355"},
+    {file = "greenlet-3.0.0.tar.gz", hash = "sha256:19834e3f91f485442adc1ee440171ec5d9a4840a1f7bd5ed97833544719ce10b"},
 ]
 
 [package.extras]
@@ -2145,6 +2149,17 @@ files = [
     {file = "psycopg_binary-3.1.12-cp311-cp311-musllinux_1_1_ppc64le.whl", hash = "sha256:000838cb5ab7851116b462e58893a96b0f1e35864135a6283f3242a730ec45d3"},
     {file = "psycopg_binary-3.1.12-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:e7949e1aefe339f04dbecac6aa036c9cd137a58f966c4b96ab933823c340ee12"},
     {file = "psycopg_binary-3.1.12-cp311-cp311-win_amd64.whl", hash = "sha256:b32922872460575083487de41e17e8cf308c3550da02c704efe42960bc6c19de"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:70054ada2f890d004dc3d5ff908e34aecb085fd599d40db2975c09a39c50dfc3"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:7544d6d74f5b5f9daafe8a4ed7d266787d62a2bf16f5120c45d42d1f4a856bc8"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:43197161099cb4e36a9ca44c10657908b619d7263ffcff30932ad4627430dc3c"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:68398cdf3aedd4042b1126b9aba34615f1ab592831483282f19f0159fce5ca75"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:77ae6cda3ffee2425aca9ea7af57296d0c701e2ac5897b48b95dfee050234592"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:278e8888e90fb6ebd7eae8ccb85199eafd712b734e641e0d40f2a903e946102d"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:047c4ba8d3089465b0a69c4c669128df43403867858d78da6b40b33788bfa89f"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-musllinux_1_1_i686.whl", hash = "sha256:8248b11ac490bb74de80457ab0e9cef31c08164ff7b867031927a17e5c9e19ed"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-musllinux_1_1_ppc64le.whl", hash = "sha256:6979c02acb9783c6134ee516751b8f891a2d4db7f73ebecc9e92750283d6fb99"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:eaf2375b724ad61ee82a5c2a849e57b12b3cb510ec8845084132bbb907cb3335"},
+    {file = "psycopg_binary-3.1.12-cp312-cp312-win_amd64.whl", hash = "sha256:6177cfa6f872a9cc84dbfc7dc163af6ef01639c50acc9a441673f29c2305c37a"},
     {file = "psycopg_binary-3.1.12-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:b81427fd5a97c9b4ac12f3b8d985870b0c3866b5fc2e72e51cacd3630ffd6466"},
     {file = "psycopg_binary-3.1.12-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3f17a2c393879aa54f840540009d0e70a30d22ffa0038d81e258ac2c99b15d74"},
     {file = "psycopg_binary-3.1.12-cp37-cp37m-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:6c6a5d125a61101ef5ab7384206e43952fe2a5fca997b96d28a28a752512f900"},
