@@ -314,7 +314,7 @@ async def test_embed_logs_on_various_data(
         )
     ).all()[0][0]
 
-    assert count == 5
+    assert count == 6
 
 
 @mock.patch.object(

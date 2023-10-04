@@ -493,6 +493,7 @@ class WorkflowJob(models.Base):
             .where(
                 job.conclusion == WorkflowJobConclusion.FAILURE,
                 job.repository_id == repository_id,
+                job.log_status == WorkflowJobLogStatus.EMBEDDED,
             )
             .group_by(job.id)
         )

@@ -189,7 +189,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         )
 
         # Failed job similar to the job1 but on another repo
-        repo = typing.cast(
+        colliding_repo = typing.cast(
             github_types.GitHubRepository,
             (
                 (
@@ -235,7 +235,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 ],
                 runner_id=1,
             ),
-            repo,
+            colliding_repo,
         )
 
         job4.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
@@ -245,3 +245,41 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
             session, [job4.id]
         )
+
+        # Failed job similar to the first one but not yet computed, it should be excluded
+        uncomputed_job = await gh_models.WorkflowJob.insert(
+            session,
+            github_types.GitHubWorkflowJob(
+                id=cls.next_id(gh_models.WorkflowJob),
+                run_id=job1.workflow_run_id,
+                name="A job",
+                workflow_name="unit-test",
+                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                completed_at=github_types.ISODateTimeType(
+                    datetime.utcnow().isoformat()
+                ),
+                conclusion="failure",
+                labels=[],
+                run_attempt=2,
+                steps=[
+                    github_types.GitHubWorkflowJobStep(
+                        name="Run a step",
+                        conclusion="failure",
+                        number=1,
+                        started_at=github_types.ISODateTimeType(
+                            datetime.utcnow().isoformat()
+                        ),
+                        completed_at=github_types.ISODateTimeType(
+                            datetime.utcnow().isoformat()
+                        ),
+                        status="completed",
+                    )
+                ],
+                runner_id=1,
+            ),
+            repo,
+        )
+
+        uncomputed_job.log_embedding = None
+        uncomputed_job.embedded_log = None
+        uncomputed_job.log_status = gh_models.WorkflowJobLogStatus.UNKNOWN

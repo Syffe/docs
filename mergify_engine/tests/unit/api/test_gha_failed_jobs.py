@@ -273,7 +273,11 @@ async def test_api_get_gha_failed_jobs_no_steps(
 
     job = await populated_db.scalar(
         sqlalchemy.select(gh_models.WorkflowJob)
-        .order_by(gh_models.WorkflowJob.id.desc())
+        .join(gh_models.GitHubRepository)
+        .where(
+            gh_models.GitHubRepository.full_name
+            == "colliding_acount_1/colliding_repo_name"
+        )
         .limit(1)
     )
 
