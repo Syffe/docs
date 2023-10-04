@@ -7,7 +7,6 @@ from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
-from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import redis_utils
@@ -41,18 +40,15 @@ MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
 
 
 class MergeUtilsMixin:
-    MAX_REFRESH_ATTEMPTS: typing.ClassVar[int | None] = 5
-    REFRESH_RETRY_EVERY: typing.ClassVar[datetime.timedelta] = datetime.timedelta(
-        seconds=15
-    )
+    MAX_REFRESH_ATTEMPTS: typing.ClassVar[int | None] = 15
 
     @classmethod
     async def _refresh_for_retry(
         cls,
         ctxt: context.Context,
+        pending_result_builder: PendingResultBuilderT,
         abort_message: str,
         exception: http.HTTPClientSideError | None = None,
-        pending_result_builder: PendingResultBuilderT | None = None,
     ) -> check_api.Result:
         try:
             await refresher.send_pull_refresh(
@@ -86,13 +82,6 @@ class MergeUtilsMixin:
             is_conflicting=ctxt.is_conflicting,
             curl=await exception.to_curl() if exception else None,
         )
-        if pending_result_builder is None:
-            # Ensure we wait enough between refresh to let GitHub update the mergeability of the PR
-            raise exceptions.EngineNeedRetry(
-                abort_message,
-                retry_in=cls.REFRESH_RETRY_EVERY,
-            )
-
         return await pending_result_builder(ctxt)
 
     @staticmethod
@@ -144,6 +133,7 @@ class MergeUtilsMixin:
         if ctxt.pull["mergeable"] is None:
             return await self._refresh_for_retry(
                 ctxt,
+                pending_result_builder,
                 "Waiting for GitHub to compute mergeability or to mark the pull request as conflict",
             )
 
@@ -305,9 +295,9 @@ class MergeUtilsMixin:
         if "Head branch was modified" in e.message:
             return await self._refresh_for_retry(
                 ctxt,
+                pending_result_builder,
                 "Head branch was modified in the meantime",
                 e,
-                pending_result_builder,
             )
 
         if (
@@ -319,9 +309,9 @@ class MergeUtilsMixin:
             # with the base branch.
             return await self._refresh_for_retry(
                 ctxt,
+                pending_result_builder,
                 "Base branch was modified in the meantime",
                 e,
-                pending_result_builder,
             )
 
         if e.status_code == 405:
@@ -336,9 +326,9 @@ class MergeUtilsMixin:
                 if new_pull["head"]["sha"] != ctxt.pull["head"]["sha"]:
                     return await self._refresh_for_retry(
                         ctxt,
+                        pending_result_builder,
                         "Head branch was modified in the meantime",
                         e,
-                        pending_result_builder,
                     )
 
                 ctxt.log.info(
@@ -400,6 +390,7 @@ class MergeUtilsMixin:
             if e.message == PULL_REQUEST_IS_NOT_MERGEABLE:
                 return await self._refresh_for_retry(
                     ctxt,
+                    pending_result_builder,
                     "GitHub can't merge the pull request for an unknown reason",
                     e,
                 )
