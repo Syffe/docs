@@ -68,6 +68,48 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job1.embedded_log = "Some logs"
         job1.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
 
+        # Another failed job
+        job2 = await gh_models.WorkflowJob.insert(
+            session,
+            github_types.GitHubWorkflowJob(
+                id=cls.next_id(gh_models.WorkflowJob),
+                run_id=cls.current_id(gh_models.WorkflowRun),
+                name="A job",
+                workflow_name="unit-test",
+                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                completed_at=github_types.ISODateTimeType(
+                    datetime.utcnow().isoformat()
+                ),
+                conclusion="failure",
+                labels=[],
+                run_attempt=2,
+                steps=[
+                    github_types.GitHubWorkflowJobStep(
+                        name="Run a step",
+                        conclusion="failure",
+                        number=1,
+                        started_at=github_types.ISODateTimeType(
+                            datetime.utcnow().isoformat()
+                        ),
+                        completed_at=github_types.ISODateTimeType(
+                            datetime.utcnow().isoformat()
+                        ),
+                        status="completed",
+                    )
+                ],
+                runner_id=1,
+            ),
+            repo,
+        )
+
+        job2.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
+        job2.embedded_log = "Some logs"
+        job2.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+
+        await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
+            session, [job2.id]
+        )
+
         # Successful job
         await gh_models.WorkflowJob.insert(
             session,
@@ -82,7 +124,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 ),
                 conclusion="success",
                 labels=[],
-                run_attempt=2,
+                run_attempt=3,
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -103,7 +145,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         )
 
         # Failed job similar to the job1
-        job2 = await gh_models.WorkflowJob.insert(
+        job3 = await gh_models.WorkflowJob.insert(
             session,
             github_types.GitHubWorkflowJob(
                 id=cls.next_id(gh_models.WorkflowJob),
@@ -136,16 +178,16 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             repo,
         )
 
-        job2.log_embedding = np.array(list(map(np.float32, ([1] * 1535) + [-1])))
-        job2.embedded_log = "Some similar logs"
-        job2.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+        job3.log_embedding = np.array(list(map(np.float32, ([1] * 1535) + [-1])))
+        job3.embedded_log = "Some similar logs"
+        job3.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
 
         await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
-            session, [job2.id]
+            session, [job3.id]
         )
 
         # Failed job completly different to the job1
-        job3 = await gh_models.WorkflowJob.insert(
+        job4 = await gh_models.WorkflowJob.insert(
             session,
             github_types.GitHubWorkflowJob(
                 id=cls.next_id(gh_models.WorkflowJob),
@@ -180,12 +222,12 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             repo,
         )
 
-        job3.log_embedding = np.array(list(map(np.float32, [-1] * 1536)))
-        job3.embedded_log = "Some different logs"
-        job3.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+        job4.log_embedding = np.array(list(map(np.float32, [-1] * 1536)))
+        job4.embedded_log = "Some different logs"
+        job4.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
 
         await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
-            session, [job3.id]
+            session, [job4.id]
         )
 
         # Failed job similar to the job1 but on another repo
@@ -205,7 +247,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             ).as_github_dict(),
         )
 
-        job4 = await gh_models.WorkflowJob.insert(
+        job5 = await gh_models.WorkflowJob.insert(
             session,
             github_types.GitHubWorkflowJob(
                 id=cls.next_id(gh_models.WorkflowJob),
@@ -238,12 +280,12 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             colliding_repo,
         )
 
-        job4.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
-        job4.embedded_log = "Some logs"
-        job4.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+        job5.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
+        job5.embedded_log = "Some logs"
+        job5.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
 
         await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
-            session, [job4.id]
+            session, [job5.id]
         )
 
         # Failed job similar to the first one but not yet computed, it should be excluded

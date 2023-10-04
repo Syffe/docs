@@ -445,7 +445,8 @@ class WorkflowJob(models.Base):
     ) -> sqlalchemy.Result[typing.Any]:
         tj_job = orm.aliased(WorkflowJobLogNeighbours, name="tj_job")
         job = orm.aliased(cls, name="job")
-        job_rerun = orm.aliased(cls, name="job_rerun")
+        job_rerun_success = orm.aliased(cls, name="job_rerun_success")
+        job_rerun_failure = orm.aliased(cls, name="job_rerun_failure")
 
         stmt = (
             sqlalchemy.select(
@@ -466,19 +467,31 @@ class WorkflowJob(models.Base):
                 job.started_at,
                 job.completed_at,
                 job.run_attempt,
-                sqlalchemy.func.bool_and(job_rerun.id.is_not(None)).label("flaky"),
-                sqlalchemy.func.max(job_rerun.run_attempt).label(
-                    "max_job_rerun_attempt"
+                sqlalchemy.func.bool_and(job_rerun_success.id.is_not(None)).label(
+                    "flaky"
+                ),
+                sqlalchemy.func.max(job_rerun_failure.run_attempt).label(
+                    "max_job_rerun_failure_attempt"
                 ),
             )
             .join(
-                job_rerun,
+                job_rerun_success,
                 sqlalchemy.and_(
-                    job_rerun.repository_id == job.repository_id,
-                    job_rerun.name == job.name,
-                    job_rerun.workflow_run_id == job.workflow_run_id,
-                    job_rerun.run_attempt > job.run_attempt,
-                    job_rerun.conclusion == WorkflowJobConclusion.SUCCESS,
+                    job_rerun_success.repository_id == job.repository_id,
+                    job_rerun_success.name == job.name,
+                    job_rerun_success.workflow_run_id == job.workflow_run_id,
+                    job_rerun_success.run_attempt > job.run_attempt,
+                    job_rerun_success.conclusion == WorkflowJobConclusion.SUCCESS,
+                ),
+                isouter=True,
+            )
+            .join(
+                job_rerun_failure,
+                sqlalchemy.and_(
+                    job_rerun_failure.repository_id == job.repository_id,
+                    job_rerun_failure.name == job.name,
+                    job_rerun_failure.workflow_run_id == job.workflow_run_id,
+                    job_rerun_failure.conclusion == WorkflowJobConclusion.FAILURE,
                 ),
                 isouter=True,
             )
@@ -517,7 +530,8 @@ class WorkflowJob(models.Base):
 
         tj_job = orm.aliased(WorkflowJobLogNeighbours, name="tj_job")
         job = orm.aliased(cls, name="job")
-        job_rerun = orm.aliased(cls, name="job_rerun")
+        job_rerun_success = orm.aliased(cls, name="job_rerun_success")
+        job_rerun_failure = orm.aliased(cls, name="job_rerun_failure")
 
         stmt = (
             sqlalchemy.select(
@@ -538,20 +552,32 @@ class WorkflowJob(models.Base):
                 job.started_at,
                 job.completed_at,
                 job.run_attempt,
-                sqlalchemy.func.bool_and(job_rerun.id.is_not(None)).label("flaky"),
+                sqlalchemy.func.bool_and(job_rerun_success.id.is_not(None)).label(
+                    "flaky"
+                ),
                 job.embedded_log,
-                sqlalchemy.func.max(job_rerun.run_attempt).label(
-                    "max_job_rerun_attempt"
+                sqlalchemy.func.max(job_rerun_failure.run_attempt).label(
+                    "max_job_rerun_failure_attempt"
                 ),
             )
             .join(
-                job_rerun,
+                job_rerun_success,
                 sqlalchemy.and_(
-                    job_rerun.repository_id == job.repository_id,
-                    job_rerun.name == job.name,
-                    job_rerun.workflow_run_id == job.workflow_run_id,
-                    job_rerun.run_attempt > job.run_attempt,
-                    job_rerun.conclusion == WorkflowJobConclusion.SUCCESS,
+                    job_rerun_success.repository_id == job.repository_id,
+                    job_rerun_success.name == job.name,
+                    job_rerun_success.workflow_run_id == job.workflow_run_id,
+                    job_rerun_success.run_attempt > job.run_attempt,
+                    job_rerun_success.conclusion == WorkflowJobConclusion.SUCCESS,
+                ),
+                isouter=True,
+            )
+            .join(
+                job_rerun_failure,
+                sqlalchemy.and_(
+                    job_rerun_failure.repository_id == job.repository_id,
+                    job_rerun_failure.name == job.name,
+                    job_rerun_failure.workflow_run_id == job.workflow_run_id,
+                    job_rerun_failure.conclusion == WorkflowJobConclusion.FAILURE,
                 ),
                 isouter=True,
             )

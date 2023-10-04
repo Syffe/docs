@@ -116,8 +116,7 @@ async def get_gha_failed_jobs(
                 ),
                 flaky=FlakyStatus.FLAKY if failed_job.flaky else FlakyStatus.UNKNOWN,
                 run_attempt=failed_job.run_attempt,
-                failed_retry_count=failed_job.max_job_rerun_attempt
-                or failed_job.run_attempt,
+                failed_retry_count=failed_job.max_job_rerun_failure_attempt,
             )
         )
 
@@ -186,7 +185,7 @@ async def get_gha_failed_job_detail(
         completed_at=github_types.ISODateTimeType(results[0].completed_at.isoformat()),
         flaky=FlakyStatus.FLAKY if results[0].flaky else FlakyStatus.UNKNOWN,
         run_attempt=results[0].run_attempt,
-        failed_retry_count=results[0].max_job_rerun_attempt or results[0].run_attempt,
+        failed_retry_count=results[0].max_job_rerun_failure_attempt,
         embedded_log=results[0].embedded_log,
         neighbour_job_ids=results[0].neighbour_job_ids
         if results[0].neighbour_job_ids != [None]

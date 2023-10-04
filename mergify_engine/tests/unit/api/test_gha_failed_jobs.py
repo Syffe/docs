@@ -31,11 +31,13 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
         .all()
     )
 
-    # NOTE(Kontrolix): We do that to please mypy and tell it that these are not None
-    assert jobs[0].steps is not None
-    assert jobs[2].steps is not None
-    assert jobs[3].steps is not None
-    assert jobs[4].steps is not None
+    # NOTE(Kontrolix): We do that to please mypy
+    assert jobs[0].steps
+    assert jobs[1].steps
+    assert jobs[2].steps
+    assert jobs[3].steps
+    assert jobs[4].steps
+    assert jobs[5].steps
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock, populated_db, web_client, "OneAccount/OneRepo"
@@ -85,29 +87,25 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                     {
                         "name": "A job",
                         "error_description": None,
-                        "id": jobs[2].id,
-                        "run_id": jobs[2].workflow_run_id,
+                        "id": jobs[1].id,
+                        "run_id": jobs[1].workflow_run_id,
                         "steps": [
                             {
                                 "name": "Run a step",
                                 "status": "completed",
                                 "conclusion": "failure",
                                 "number": 1,
-                                "started_at": jobs[2].steps[0]["started_at"],
-                                "completed_at": jobs[2].steps[0]["completed_at"],
+                                "started_at": jobs[1].steps[0]["started_at"],
+                                "completed_at": jobs[1].steps[0]["completed_at"],
                             }
                         ],
                         "failed_step_number": 1,
-                        "started_at": jobs[2].started_at.isoformat(),
-                        "completed_at": jobs[2].completed_at.isoformat(),
-                        "flaky": "unknown",
-                        "run_attempt": 1,
-                        "failed_retry_count": 1,
+                        "started_at": jobs[1].started_at.isoformat(),
+                        "completed_at": jobs[1].completed_at.isoformat(),
+                        "flaky": "yes",
+                        "run_attempt": 2,
+                        "failed_retry_count": 2,
                     },
-                ]
-            },
-            {
-                "workflow_jobs": [
                     {
                         "name": "A job",
                         "error_description": None,
@@ -126,6 +124,32 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "failed_step_number": 1,
                         "started_at": jobs[3].started_at.isoformat(),
                         "completed_at": jobs[3].completed_at.isoformat(),
+                        "flaky": "unknown",
+                        "run_attempt": 1,
+                        "failed_retry_count": 1,
+                    },
+                ]
+            },
+            {
+                "workflow_jobs": [
+                    {
+                        "name": "A job",
+                        "error_description": None,
+                        "id": jobs[4].id,
+                        "run_id": jobs[4].workflow_run_id,
+                        "steps": [
+                            {
+                                "name": "Run a step",
+                                "status": "completed",
+                                "conclusion": "failure",
+                                "number": 1,
+                                "started_at": jobs[4].steps[0]["started_at"],
+                                "completed_at": jobs[4].steps[0]["completed_at"],
+                            }
+                        ],
+                        "failed_step_number": 1,
+                        "started_at": jobs[4].started_at.isoformat(),
+                        "completed_at": jobs[4].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
                         "failed_retry_count": 1,
@@ -179,7 +203,29 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "flaky": "yes",
                         "run_attempt": 1,
                         "failed_retry_count": 2,
-                    }
+                    },
+                    {
+                        "name": "A job",
+                        "error_description": None,
+                        "id": jobs[1].id,
+                        "run_id": jobs[1].workflow_run_id,
+                        "steps": [
+                            {
+                                "name": "Run a step",
+                                "status": "completed",
+                                "conclusion": "failure",
+                                "number": 1,
+                                "started_at": jobs[1].steps[0]["started_at"],
+                                "completed_at": jobs[1].steps[0]["completed_at"],
+                            }
+                        ],
+                        "failed_step_number": 1,
+                        "started_at": jobs[1].started_at.isoformat(),
+                        "completed_at": jobs[1].completed_at.isoformat(),
+                        "flaky": "yes",
+                        "run_attempt": 2,
+                        "failed_retry_count": 2,
+                    },
                 ]
             },
             {
@@ -187,21 +233,21 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                     {
                         "name": "A job",
                         "error_description": None,
-                        "id": jobs[2].id,
-                        "run_id": jobs[2].workflow_run_id,
+                        "id": jobs[3].id,
+                        "run_id": jobs[3].workflow_run_id,
                         "steps": [
                             {
                                 "name": "Run a step",
                                 "status": "completed",
                                 "conclusion": "failure",
                                 "number": 1,
-                                "started_at": jobs[2].steps[0]["started_at"],
-                                "completed_at": jobs[2].steps[0]["completed_at"],
+                                "started_at": jobs[3].steps[0]["started_at"],
+                                "completed_at": jobs[3].steps[0]["completed_at"],
                             }
                         ],
                         "failed_step_number": 1,
-                        "started_at": jobs[2].started_at.isoformat(),
-                        "completed_at": jobs[2].completed_at.isoformat(),
+                        "started_at": jobs[3].started_at.isoformat(),
+                        "completed_at": jobs[3].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
                         "failed_retry_count": 1,
@@ -238,21 +284,21 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                     {
                         "name": "A job",
                         "error_description": None,
-                        "id": jobs[4].id,
-                        "run_id": jobs[4].workflow_run_id,
+                        "id": jobs[5].id,
+                        "run_id": jobs[5].workflow_run_id,
                         "steps": [
                             {
                                 "name": "Run a step",
                                 "status": "completed",
                                 "conclusion": "failure",
                                 "number": 1,
-                                "started_at": jobs[4].steps[0]["started_at"],
-                                "completed_at": jobs[4].steps[0]["completed_at"],
+                                "started_at": jobs[5].steps[0]["started_at"],
+                                "completed_at": jobs[5].steps[0]["completed_at"],
                             }
                         ],
                         "failed_step_number": 1,
-                        "started_at": jobs[4].started_at.isoformat(),
-                        "completed_at": jobs[4].completed_at.isoformat(),
+                        "started_at": jobs[5].started_at.isoformat(),
+                        "completed_at": jobs[5].completed_at.isoformat(),
                         "flaky": "unknown",
                         "run_attempt": 1,
                         "failed_retry_count": 1,
@@ -348,11 +394,13 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
         .all()
     )
 
-    # NOTE(Kontrolix): We do that to please mypy and tell it that these are not None
-    assert jobs[0].steps is not None
-    assert jobs[2].steps is not None
-    assert jobs[3].steps is not None
-    assert jobs[4].steps is not None
+    # NOTE(Kontrolix): We do that to please mypy
+    assert jobs[0].steps
+    assert jobs[1].steps
+    assert jobs[2].steps
+    assert jobs[3].steps
+    assert jobs[4].steps
+    assert jobs[5].steps
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock, populated_db, web_client, "OneAccount/OneRepo"
@@ -385,7 +433,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
         "run_attempt": 1,
         "failed_retry_count": 2,
         "embedded_log": "Some logs",
-        "neighbour_job_ids": [jobs[2].id],
+        "neighbour_job_ids": [jobs[1].id, jobs[3].id],
     }
 
     reply = await web_client.get(
@@ -415,7 +463,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
         "run_attempt": 1,
         "failed_retry_count": 2,
         "embedded_log": "Some logs",
-        "neighbour_job_ids": [jobs[2].id, jobs[3].id],
+        "neighbour_job_ids": [jobs[1].id, jobs[3].id, jobs[4].id],
     }
 
     reply = await web_client.get(
@@ -426,7 +474,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
     assert reply.status_code == 404
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/gha-failed-jobs/{jobs[4].id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/gha-failed-jobs/{jobs[5].id}",
         follow_redirects=False,
     )
 
@@ -437,28 +485,28 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
     )
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/colliding_acount_1/colliding_repo_name/gha-failed-jobs/{jobs[4].id}",
+        f"/front/proxy/engine/v1/repos/colliding_acount_1/colliding_repo_name/gha-failed-jobs/{jobs[5].id}",
         follow_redirects=False,
     )
 
     assert reply.json() == {
         "name": "A job",
         "error_description": None,
-        "id": jobs[4].id,
-        "run_id": jobs[4].workflow_run_id,
+        "id": jobs[5].id,
+        "run_id": jobs[5].workflow_run_id,
         "steps": [
             {
                 "name": "Run a step",
                 "status": "completed",
                 "conclusion": "failure",
                 "number": 1,
-                "started_at": jobs[4].steps[0]["started_at"],
-                "completed_at": jobs[4].steps[0]["completed_at"],
+                "started_at": jobs[5].steps[0]["started_at"],
+                "completed_at": jobs[5].steps[0]["completed_at"],
             }
         ],
         "failed_step_number": 1,
-        "started_at": jobs[4].started_at.isoformat(),
-        "completed_at": jobs[4].completed_at.isoformat(),
+        "started_at": jobs[5].started_at.isoformat(),
+        "completed_at": jobs[5].completed_at.isoformat(),
         "flaky": "unknown",
         "run_attempt": 1,
         "failed_retry_count": 1,
