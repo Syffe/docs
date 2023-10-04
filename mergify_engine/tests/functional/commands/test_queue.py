@@ -827,7 +827,7 @@ class TestQueueCommand(base.FunctionalTestBase):
     # shouldn't hit this limit of retries.
     @pytest.mark.logger_checker_ignore(
         "Merge queue check doesn't contain any TrainCarState",
-        "failed to merge after 15 refresh attempts",
+        "failed to merge after 5 refresh attempts",
     )
     async def test_pull_request_is_not_mergeable(self) -> None:
         await self.setup_repo()
@@ -852,13 +852,11 @@ class TestQueueCommand(base.FunctionalTestBase):
             in queue_comment["comment"]["body"]
         )
 
-        await self.wait_for_issue_comment(action="edited", test_id=str(p["number"]))
-
         queue_comment = await self.wait_for_issue_comment(
             action="edited", test_id=str(p["number"])
         )
         assert (
-            "GitHub can't merge the pull request after 15 retries."
+            "GitHub can't merge the pull request after 5 retries."
             in queue_comment["comment"]["body"]
         )
 

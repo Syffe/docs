@@ -2070,7 +2070,7 @@ class TestQueueAction(base.FunctionalTestBase):
     # shouldn't hit this limit of retries.
     @pytest.mark.logger_checker_ignore(
         "Merge queue check doesn't contain any TrainCarState",
-        "failed to merge after 15 refresh attempts",
+        "failed to merge after 5 refresh attempts",
     )
     async def test_queue_fast_forward_with_retries(self) -> None:
         rules = {
@@ -2170,7 +2170,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert pr_disembarked_check["check_run"]["output"]["summary"] == (
             "Mergify failed to merge the pull request\n"
-            "GitHub can't merge the pull request after 15 retries.\n"
+            "GitHub can't merge the pull request after 5 retries.\n"
             "Base branch was modified in the meantime"
         )
 
@@ -2183,7 +2183,7 @@ class TestQueueAction(base.FunctionalTestBase):
             == "Mergify failed to merge the pull request"
         )
         assert merge_check["check_run"]["output"]["summary"] == (
-            "GitHub can't merge the pull request after 15 retries.\n"
+            "GitHub can't merge the pull request after 5 retries.\n"
             "Base branch was modified in the meantime"
         )
 

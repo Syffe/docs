@@ -1,6 +1,7 @@
 import asyncio
 from collections import abc
 import contextlib
+import datetime
 import functools
 import logging
 import os
@@ -58,6 +59,19 @@ def msgpack_freezegun_fixes(obj: typing.Any) -> typing.Any:
             obj.tzinfo,
         )
     return obj
+
+
+@pytest.fixture(autouse=True)
+def short_merge_retry() -> abc.Generator[None, None, None]:
+    # Circular import
+    from mergify_engine.actions import merge_base
+
+    with mock.patch.object(
+        merge_base.MergeUtilsMixin,
+        "REFRESH_RETRY_EVERY",
+        datetime.timedelta(seconds=0.01),
+    ):
+        yield
 
 
 # serialize freezegum FakeDatetime as datetime
