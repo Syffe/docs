@@ -2704,10 +2704,12 @@ async def test_start_stop_cycle(
     # NOTE(sileht): ensure it doesn't crash instantly
     await asyncio.sleep(1)
 
-    assert len(w._services) == 9
+    assert len(w._services) == len(manager.AVAILABLE_WORKER_SERVICES)
 
     tasks = [a_task for serv in w._services for a_task in serv.tasks]
-    assert len(tasks) == 13
+    # +4 because there are 3 workers for `shared` (1 is included in the `len`)
+    # and 2 for `gitter-worker` (which aren't included in the `AVAILABLE_WORKER_SERVICES` since they are spawned)
+    assert len(tasks) == len(manager.AVAILABLE_WORKER_SERVICES) + 4
 
     serv_shared = w.get_service(shared_workers_spawner_service.SharedStreamService)
     assert serv_shared is not None
