@@ -820,6 +820,15 @@ class TestQueueCommand(base.FunctionalTestBase):
             in comment["comment"]["body"]
         )
 
+    # NOTE(charly): we don't check log errors for missing TrainCarState. The
+    # test volontarily mock GitHub to return an error, so the engine retries the
+    # merge with a limit of retries. In a normal situation, the merge conflict
+    # would be detected when the TrainCar is created and checked, and we
+    # shouldn't hit this limit of retries.
+    @pytest.mark.logger_checker_ignore(
+        "Merge queue check doesn't contain any TrainCarState",
+        "failed to merge after 15 refresh attempts",
+    )
     async def test_pull_request_is_not_mergeable(self) -> None:
         await self.setup_repo()
 
@@ -842,17 +851,28 @@ class TestQueueCommand(base.FunctionalTestBase):
             "🟠 The pull request is the 1st in the queue to be merged"
             in queue_comment["comment"]["body"]
         )
+
+        await self.wait_for_issue_comment(action="edited", test_id=str(p["number"]))
+
         queue_comment = await self.wait_for_issue_comment(
             action="edited", test_id=str(p["number"])
         )
         assert (
-            "GitHub can't merge the pull request for now."
+            "GitHub can't merge the pull request after 15 retries."
             in queue_comment["comment"]["body"]
         )
 
         # Second queue attempt succeeds
-        await self.create_comment(p["number"], "@mergifyio queue", as_="admin")
+        await self.create_comment(p["number"], "@mergifyio requeue", as_="admin")
         await self.run_engine()
+        queue_comment = await self.wait_for_issue_comment(
+            action="created", test_id=str(p["number"])
+        )
+        assert (
+            "This pull request will be re-embarked automatically"
+            in queue_comment["comment"]["body"]
+        )
+
         queue_comment = await self.wait_for_issue_comment(
             action="created", test_id=str(p["number"])
         )
