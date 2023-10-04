@@ -21,7 +21,6 @@ class CollidingRepoName(DbPopulator):
                 ),
                 name=github_types.GitHubRepositoryName("colliding_repo_name"),
                 owner=colliding_acount_1,
-                full_name="colliding_acount_1/colliding_repo_name",
                 private=False,
                 archived=False,
             )
@@ -40,7 +39,6 @@ class CollidingRepoName(DbPopulator):
                 ),
                 name=github_types.GitHubRepositoryName("colliding_repo_name"),
                 owner=colliding_acount_2,
-                full_name="colliding_acount_2/colliding_repo_name",
                 private=False,
                 archived=False,
             )

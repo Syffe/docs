@@ -41,32 +41,18 @@ class Base(orm.DeclarativeBase):
         else:
             included_columns = getattr(self, included_columns_attribute, ())
 
-        columns = self.__table__.columns.values()
+        result = {}
+        inspector = sqlalchemy.inspect(self.__class__)
+        for name, _desc in inspector.all_orm_descriptors.items():
+            if name.startswith("_"):
+                continue
+            if not (included_columns is None or name in included_columns):
+                continue
 
-        # NOTE(lecrepont01): for an inherited relation, the attributes of
-        # the parent class must be added
-        if (
-            "polymorphic_identity" in self.__mapper_args__
-            and "polymorphic_on" not in self.__mapper_args__
-        ):
-            parent_relation = self.__class__.__bases__[0]
-            columns += parent_relation.__table__.columns.values()  # type: ignore [attr-defined]
-
-        result = {
-            c.name: getattr(self, c.name)
-            for c in columns
-            if included_columns is None or c.name in included_columns
-        }
-        for relationship in sqlalchemy.inspect(self.__class__).relationships:
-            relationship_name = relationship.key
-            if included_columns is None or relationship_name in included_columns:
-                relationship_value = getattr(self, relationship_name)
-                if relationship_value is None:
-                    result[relationship_name] = None
-                else:
-                    result[relationship_name] = relationship_value._as_dict(
-                        included_columns_attribute
-                    )
+            value = getattr(self, name)
+            if value is not None and name in inspector.relationships:
+                value = value._as_dict(included_columns_attribute)
+            result[name] = value
 
         return result  # type: ignore [return-value]
 

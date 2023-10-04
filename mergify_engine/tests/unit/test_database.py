@@ -10,6 +10,7 @@ import warnings
 import alembic
 import sqlalchemy
 from sqlalchemy import orm
+import sqlalchemy.ext.hybrid
 
 from mergify_engine import database
 from mergify_engine import github_types
@@ -126,9 +127,14 @@ def test_model_as_dict() -> None:
 def test_relational_model_as_dict() -> None:
     class TestRelationalUserModel(models.Base):
         __tablename__ = "test_relational_user_table"
-        __github_attributes__ = ("id", "name")
+        __github_attributes__ = ("id", "name", "copy_id")
+
         id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
         name: orm.Mapped[str]
+
+        @sqlalchemy.ext.hybrid.hybrid_property
+        def copy_id(self) -> int:
+            return self.id
 
     class TestRelationalModel(models.Base):
         __tablename__ = "test_relational_table"
@@ -151,7 +157,7 @@ def test_relational_model_as_dict() -> None:
     assert obj.as_github_dict() == {
         "id": 0,
         "name": "hello",
-        "user": {"id": 0, "name": "me"},
+        "user": {"id": 0, "name": "me", "copy_id": 0},
     }
 
 

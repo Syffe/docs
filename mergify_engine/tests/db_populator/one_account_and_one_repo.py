@@ -21,7 +21,6 @@ class OneAccountAndOneRepo(DbPopulator):
                 ),
                 name=github_types.GitHubRepositoryName("OneRepo"),
                 owner=oneAccount,
-                full_name="OneAccount/OneRepo",
                 private=False,
                 archived=False,
             )

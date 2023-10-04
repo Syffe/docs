@@ -5,6 +5,7 @@ import typing
 import sqlalchemy
 from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
+import sqlalchemy.ext.hybrid
 
 from mergify_engine import github_types
 from mergify_engine import models
@@ -65,14 +66,29 @@ class GitHubRepository(models.Base):
         nullable=True,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
-    full_name: orm.Mapped[str | None] = orm.mapped_column(
-        sqlalchemy.Text,
-        nullable=True,
-        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
-    )
     archived: orm.Mapped[bool | None] = orm.mapped_column(
         sqlalchemy.Boolean, nullable=True, anonymizer_config=None
     )
+
+    @sqlalchemy.ext.hybrid.hybrid_property
+    def full_name(self) -> str | None:
+        if self.owner is None or self.name is None:
+            return None  # type: ignore[unreachable]
+        return f"{self.owner.login}/{self.name}"
+
+    @full_name.inplace.expression
+    @classmethod
+    def _full_name_expression(cls) -> sqlalchemy.ColumnElement[str]:
+        return sqlalchemy.type_coerce(
+            sqlalchemy.func.concat(
+                sqlalchemy.select(github_account.GitHubAccount.login)
+                .where(cls.owner_id == github_account.GitHubAccount.id)
+                .scalar_subquery(),
+                "/",
+                cls.name,
+            ),
+            sqlalchemy.Text,
+        )
 
     @classmethod
     async def get_by_name(
@@ -104,7 +120,6 @@ class GitHubRepository(models.Base):
             repository_obj.name = repository["name"]
             repository_obj.private = repository.get("private")
             repository_obj.default_branch = repository.get("default_branch")
-            repository_obj.full_name = repository.get("full_name")
             repository_obj.archived = repository.get("archived")
             return repository_obj
 
@@ -114,7 +129,6 @@ class GitHubRepository(models.Base):
             owner=owner,
             private=repository.get("private"),
             default_branch=repository.get("default_branch"),
-            full_name=repository.get("full_name"),
             archived=repository.get("archived"),
         )
 

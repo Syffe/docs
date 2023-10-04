@@ -126,7 +126,6 @@ def test_is_complete() -> None:
         name=github_types.GitHubRepositoryName("hello"),
         private=False,
         default_branch=github_types.GitHubRefType("main"),
-        full_name="hello/there",
         archived=False,
         owner=gh_models.GitHubAccount(
             login=github_types.GitHubLogin("Mergifyio"),

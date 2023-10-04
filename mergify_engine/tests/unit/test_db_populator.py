@@ -23,7 +23,6 @@ class DummyDataset(DbPopulator):
                 ),
                 name=github_types.GitHubRepositoryName("dds_repo1"),
                 owner=account,
-                full_name="account_dds/dds_repo1",
                 private=False,
                 archived=False,
             )
@@ -36,7 +35,6 @@ class DummyDataset(DbPopulator):
                 ),
                 name=github_types.GitHubRepositoryName("dds_repo2"),
                 owner=account,
-                full_name="account_dds/dds_repo2",
                 private=False,
                 archived=False,
             )
@@ -59,7 +57,6 @@ class AnotherDummyDataset(DbPopulator):
                 ),
                 name=github_types.GitHubRepositoryName("adds_repo1"),
                 owner=account,
-                full_name="account_adds/adds_repo1",
                 private=False,
                 archived=False,
             )
@@ -72,7 +69,6 @@ class AnotherDummyDataset(DbPopulator):
                 ),
                 name=github_types.GitHubRepositoryName("adds_repo2"),
                 owner=account,
-                full_name="account_adds/adds_repo2",
                 private=False,
                 archived=False,
             )
