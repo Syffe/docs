@@ -216,7 +216,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         # yamllint disable-line rule:line-length
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: aws-actions/configure-aws-credentials@v1.7.0
+        uses: aws-actions/configure-aws-credentials@v4.0.1
         with:
           role-to-assume: arn:aws:iam::912098512391:role/OIDC_RDS@engine_ci
           aws-region: us-east-1
