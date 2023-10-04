@@ -4,6 +4,7 @@ import zipfile
 
 import numpy as np
 import respx
+import respx.patterns
 import sqlalchemy
 import yaml
 
@@ -228,10 +229,13 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             # NOTE(Kontrolix): We must set `assert_all_called=True` here beacause
             # pass_through routes to github api will not be called in no recording mode
             with respx.mock(assert_all_called=False) as respx_mock:
+                # NOTE(Greesb): We need to mock like this because sometimes we get sent to some weird url
+                # like so: https://pipelinesghubeus5.actions.githubusercontent.com
+                pipelines_route = respx.patterns.M(
+                    host__regex=r"pipelines\w*\.actions\.githubusercontent\.com"
+                )
                 # NOTE(Kontrolix): Let github api pass through the mock to only catch openai api call
-                respx_mock.route(
-                    host="pipelines.actions.githubusercontent.com"
-                ).pass_through()
+                respx_mock.route(pipelines_route).pass_through()
                 respx_mock.route(host="api.github.com").pass_through()
 
                 respx_mock.post(f"{openai_api.OPENAI_API_BASE_URL}/embeddings").respond(
