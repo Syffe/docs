@@ -78,7 +78,7 @@ targets:
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: "(python = \">=)(3\\.\\d+)(,<4.0\")"
+      lineMatchPattern: "(python = \"~)(3\\.\\d+)(\")"
     transformers:
       - find: "^\\d+\\.\\d+"
       - replaceRegexGroup: 2
