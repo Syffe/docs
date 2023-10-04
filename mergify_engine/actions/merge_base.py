@@ -130,13 +130,6 @@ class MergeUtilsMixin:
         pending_result_builder: PendingResultBuilderT,
         branch_protection_injection_mode: queue.BranchProtectionInjectionModeT = "queue",
     ) -> check_api.Result:
-        if ctxt.pull["mergeable"] is None:
-            return await self._refresh_for_retry(
-                ctxt,
-                pending_result_builder,
-                "Waiting for GitHub to compute mergeability or to mark the pull request as conflict",
-            )
-
         data = {}
 
         on_behalf: github_user.GitHubUser | None = None
@@ -388,11 +381,13 @@ class MergeUtilsMixin:
                 )
 
             if e.message == PULL_REQUEST_IS_NOT_MERGEABLE:
-                return await self._refresh_for_retry(
-                    ctxt,
-                    pending_result_builder,
-                    "GitHub can't merge the pull request for an unknown reason",
-                    e,
+                # NOTE(charly): set neutral conclusion to be able to enqueue the
+                # pull request again
+                return check_api.Result(
+                    check_api.Conclusion.NEUTRAL,
+                    "GitHub can't merge the pull request for now.",
+                    "GitHub can't merge the pull request for an unknown reason. "
+                    "You should retry later.",
                 )
 
             ctxt.log.info(

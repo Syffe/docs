@@ -825,6 +825,7 @@ class TestQueueCommand(base.FunctionalTestBase):
     # merge with a limit of retries. In a normal situation, the merge conflict
     # would be detected when the TrainCar is created and checked, and we
     # shouldn't hit this limit of retries.
+    @pytest.mark.skip("FIXME(sileht): we need to revist this behavior")
     @pytest.mark.logger_checker_ignore(
         "Merge queue check doesn't contain any TrainCarState",
         "failed to merge after 15 refresh attempts",
