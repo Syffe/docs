@@ -9,3 +9,4 @@ excluded-packages:
   - systemd-sysv
   - systemd-timesyncd
   - libkrb5support0
+  - libx11-data
