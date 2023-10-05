@@ -14,7 +14,6 @@ updates:
       # FIXME(sileht): 2.0.0 pin some incompatible library
       # https://github.com/DataDog/dd-trace-py/issues/7142
       - dependency-name: "ddtrace"
-      - dependency-name: "setproctitle"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
