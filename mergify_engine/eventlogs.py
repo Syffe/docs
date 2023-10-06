@@ -4,6 +4,7 @@ Managing the old eventlog system which is stored in a Redis database
 import dataclasses
 import datetime
 import itertools
+import re
 import time
 import typing
 
@@ -479,6 +480,9 @@ def cast_event_item(event: GenericEvent) -> Event:
     raise UnsupportedEvent(event)
 
 
+REDIS_CURSOR_RE = re.compile(r"[+-](?:(\d+)-(\d+))?")
+
+
 async def get(
     repository: "context.Repository",
     page: pagination.CurrentPage,
@@ -512,6 +516,9 @@ async def get(
     older_event_id = f"{int(older_event.timestamp())}"
 
     pipe = await redis.pipeline()
+
+    if page.cursor and not REDIS_CURSOR_RE.fullmatch(page.cursor):
+        raise pagination.InvalidCursor(page.cursor)
 
     if not page.cursor:
         # first page

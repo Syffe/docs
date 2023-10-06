@@ -207,6 +207,7 @@ async def test_api_cursor_redis(
         "/v1/repos/Mergifyio/engine/logs?per_page=2&event_type=action.assign",
         headers={"Authorization": api_token.api_token},
     )
+    assert response.status_code == 200
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [anys.ANY_INT, anys.ANY_INT]
     assert [r["trigger"] for r in resp["events"]] == ["Rule: 5", "Rule: 4"]
@@ -217,6 +218,7 @@ async def test_api_cursor_redis(
         links["next"],
         headers={"Authorization": api_token.api_token},
     )
+    assert response.status_code == 200
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [anys.ANY_INT, anys.ANY_INT]
     assert [r["trigger"] for r in resp["events"]] == ["Rule: 3", "Rule: 2"]
@@ -226,6 +228,7 @@ async def test_api_cursor_redis(
         links["last"],
         headers={"Authorization": api_token.api_token},
     )
+    assert response.status_code == 200
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [anys.ANY_INT, anys.ANY_INT]
     assert [r["trigger"] for r in resp["events"]] == ["Rule: 1", "Rule: 0"]
@@ -343,6 +346,17 @@ async def test_api_cursor_invalid(
     # to default - not provided
     response = await web_client.get(
         "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=+",
+        headers={"Authorization": api_token.api_token},
+    )
+    assert response.status_code == 422
+
+
+async def test_api_cursor_invalid_redis(
+    web_client: tests_conftest.CustomTestClient,
+    api_token: tests_api_conftest.TokenUserRepo,
+) -> None:
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/events?per_page=20&cursor=%2B1696596904953-0%27%29+UNION+ALL+SELECT+NULL%2CNULL%2CNULL--+gMmJ",
         headers={"Authorization": api_token.api_token},
     )
     assert response.status_code == 422
