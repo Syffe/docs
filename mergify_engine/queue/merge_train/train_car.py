@@ -2008,7 +2008,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 checked_ctxt.log,
                 checked_ctxt.repository,
                 pull_requests,
-                evaluated_queue_rule,
+                evaluated_queue_rule.conditions,
                 wait_for_schedule_to_match=True,
             )
 

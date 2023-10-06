@@ -66,7 +66,7 @@ async def test_rules_conditions_update() -> None:
         mock.Mock(),
         FAKE_REPO,
         typing.cast(list[context.BasePullRequest], pulls),
-        mock.Mock(conditions=c),
+        c,
     )
     assert state == check_api.Conclusion.FAILURE
 
@@ -91,7 +91,7 @@ async def assert_queue_rule_checks_status(
         mock.Mock(),
         FAKE_REPO,
         [typing.cast(context.BasePullRequest, pull)],
-        mock.Mock(conditions=c),
+        c,
         wait_for_schedule_to_match=True,
     )
     assert state == expected_state

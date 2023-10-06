@@ -1,18 +1,12 @@
 from __future__ import annotations
 
 import logging
-import typing
 
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine.rules import conditions as rules_conditions
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
-
-
-if typing.TYPE_CHECKING:
-    from mergify_engine.rules.config import pull_request_rules as prr_config
-    from mergify_engine.rules.config import queue_rules as qr_config
 
 
 def get_conditions_with_ignored_attributes(
@@ -91,13 +85,11 @@ async def get_rule_checks_status(
     log: logging.LoggerAdapter[logging.Logger],
     repository: context.Repository,
     pulls: list[context.BasePullRequest],
-    rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
+    conditions: rules_conditions.PullRequestRuleConditions
+    | rules_conditions.QueueRuleMergeConditions,
     *,
     wait_for_schedule_to_match: bool = False,
-    conditions_type: typing.Literal["conditions", "queue_conditions"] = "conditions",
 ) -> check_api.Conclusion:
-    conditions = getattr(rule, conditions_type)
-
     if conditions.match:
         return check_api.Conclusion.SUCCESS
 
@@ -109,8 +101,7 @@ async def get_rule_checks_status(
         if result == check_api.Conclusion.SUCCESS:
             log.error(
                 "_get_checks_result() unexpectedly returned check_api.Conclusion.SUCCESS "
-                "while rule.%s.match is false",
-                conditions_type,
+                "while conditions.match is false",
                 tree=conditions.extract_raw_filter_tree(),
             )
             # So don't merge broken stuff

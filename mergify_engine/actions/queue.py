@@ -971,7 +971,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             ):
                 # NOTE(sileht) check first if PR should be removed from the queue
                 pull_rule_checks_status = await checks_status.get_rule_checks_status(
-                    ctxt.log, ctxt.repository, [ctxt.pull_request], rule
+                    ctxt.log, ctxt.repository, [ctxt.pull_request], rule.conditions
                 )
                 # NOTE(sileht): if the pull request rules are pending we wait their
                 # match before checking queue rules states, in case of one
