@@ -74,15 +74,11 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
         pulls: list[context.BasePullRequest],
         rule_hidden_from_merge_queue: bool,
     ) -> GenericRulesEvaluator[types.T_Rule, types.T_EvaluatedRule]:
-        # Circular import
-        from mergify_engine.rules.config import queue_rules as qr_config
-
         self = cls(rules)
 
         for rule in self.rules:
-            apply_configure_filter(repository, rule.conditions)
-            if isinstance(rule, qr_config.QueueRule):
-                apply_configure_filter(repository, rule.queue_conditions)
+            evaluated_rule_conditions = rule.get_conditions_used_by_evaluator()
+            apply_configure_filter(repository, evaluated_rule_conditions)
 
             evaluated_rule = typing.cast(types.T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
             del rule
@@ -95,16 +91,6 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
             # * rules where only BASE_ATTRIBUTES don't match (mainly to hide rule written for other branches) -> ignored_rules
             # * rules where only BASE_CHANGEABLE ATTRIBUTES don't match (they rarely change but are handled)-> not_applicable_base_changeable_attributes_rules
             categorized = False
-            evaluated_rule_conditions = evaluated_rule.conditions
-
-            # NOTE(Syffe): queue_conditions status can change even after the PR is queued.
-            # Thus we need to evaluate conditions and queue_conditions together when they are available
-            # since not matching queue_conditions are a motive for PR invalidity
-            if isinstance(evaluated_rule, qr_config.QueueRule):
-                evaluated_rule_conditions = conditions_mod.QueueRuleMergeConditions(
-                    evaluated_rule.conditions.condition.copy().conditions
-                    + evaluated_rule.queue_conditions.condition.copy().conditions
-                )
 
             if rule_hidden_from_merge_queue and not evaluated_rule_conditions.match:
                 if await cls.can_attributes_make_rule_always_false(

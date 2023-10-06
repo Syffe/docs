@@ -2361,7 +2361,9 @@ pull_request_rules:
 
     assert "shared" not in config
 
-    queue_condition = config["queue_rules"].rules[0].conditions.condition.conditions[0]
+    queue_condition = (
+        config["queue_rules"].rules[0].merge_conditions.condition.conditions[0]
+    )
     assert isinstance(queue_condition, conditions.RuleCondition)
     assert str(queue_condition) == "status-success=continuous-integration/fake-ci"
 

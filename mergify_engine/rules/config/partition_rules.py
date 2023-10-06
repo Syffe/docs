@@ -35,6 +35,11 @@ class PartitionRule:
     def from_dict(cls, d: T_from_dict) -> "PartitionRule":
         return cls(**d)
 
+    def get_conditions_used_by_evaluator(
+        self,
+    ) -> conditions_mod.PartitionRuleConditions:
+        return self.conditions
+
     async def evaluate(
         self, pulls: list[context.BasePullRequest]
     ) -> EvaluatedPartitionRule:

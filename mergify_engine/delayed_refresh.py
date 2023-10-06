@@ -11,11 +11,11 @@ from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
 from mergify_engine.rules.config import pull_request_rules as prr_config
+from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
-    from mergify_engine.rules.config import queue_rules as qr_config
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -73,7 +73,13 @@ async def plan_next_refresh(
     )
 
     for rule in _rules:
-        rule_conditions = rule.conditions.condition.copy().conditions
+        # FIXME(sileht): Why do we ignore queue_conditions hehe?
+        # TODO(sileht): Use rule.get_conditions_used_by_evaluator() instead
+        if isinstance(rule, qr_config.QueueRule):
+            rule_conditions = rule.merge_conditions.condition.copy().conditions
+        else:
+            rule_conditions = rule.conditions.condition.copy().conditions
+
         rule_success_conditions = []
 
         if isinstance(rule, prr_config.PullRequestRule):

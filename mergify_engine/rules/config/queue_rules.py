@@ -74,12 +74,6 @@ class QueueRule:
         require_branch_protection: bool
         branch_protection_injection_mode: queue.BranchProtectionInjectionModeT
 
-    @property
-    def conditions(self) -> conditions_mod.QueueRuleMergeConditions:
-        # NOTE(Greesb): This is needed by function using rules with
-        # the typing "T_Rule"
-        return self.merge_conditions
-
     @classmethod
     def from_dict(cls, d: T_from_dict) -> "QueueRule":
         name = d.pop("name")
@@ -190,6 +184,14 @@ class QueueRule:
             False,
         )
         return queue_rules_evaluator.matching_rules[0]
+
+    def get_conditions_used_by_evaluator(
+        self,
+    ) -> conditions_mod.QueueRuleMergeConditions:
+        return conditions_mod.QueueRuleMergeConditions(
+            self.merge_conditions.condition.conditions
+            + self.queue_conditions.condition.conditions
+        )
 
     async def evaluate(
         self, pulls: list[context.BasePullRequest]

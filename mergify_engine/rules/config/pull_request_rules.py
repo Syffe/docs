@@ -57,6 +57,11 @@ class PullRequestRule:
     def get_signal_trigger(self) -> str:
         return f"Rule: {self.name}"
 
+    def get_conditions_used_by_evaluator(
+        self,
+    ) -> conditions_mod.PullRequestRuleConditions:
+        return self.conditions
+
     async def evaluate(
         self, pulls: list["context.BasePullRequest"]
     ) -> EvaluatedPullRequestRule:
