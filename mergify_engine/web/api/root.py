@@ -69,6 +69,10 @@ def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
                 "description": "Operations with failed workflow jobs.",
             },
             {
+                "name": "pull_requests",
+                "description": "Operations with pull requests.",
+            },
+            {
                 "name": "queues",
                 "description": "Operations with queues.",
             },
