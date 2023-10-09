@@ -97,7 +97,7 @@ async def assert_queue_rule_checks_status(
     assert state == expected_state
 
 
-async def test_rules_checks_basic(logger_checker: None) -> None:
+async def test_rules_checks_basic() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
@@ -178,7 +178,7 @@ async def test_rules_checks_basic(logger_checker: None) -> None:
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
 
-async def test_rules_checks_with_and_or(logger_checker: None) -> None:
+async def test_rules_checks_with_and_or() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
@@ -250,9 +250,7 @@ async def test_rules_checks_with_and_or(logger_checker: None) -> None:
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
 
-async def test_rules_checks_status_with_negative_conditions1(
-    logger_checker: None,
-) -> None:
+async def test_rules_checks_status_with_negative_conditions1() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
@@ -363,9 +361,7 @@ async def test_rules_checks_status_with_negative_conditions2() -> None:
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
 
-async def test_rules_checks_status_with_negative_conditions3(
-    logger_checker: None,
-) -> None:
+async def test_rules_checks_status_with_negative_conditions3() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
@@ -616,7 +612,7 @@ async def test_rules_checks_status_regex() -> None:
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
 
-async def test_rules_checks_status_depop(logger_checker: None) -> None:
+async def test_rules_checks_status_depop() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
@@ -720,7 +716,7 @@ async def test_rules_checks_status_depop(logger_checker: None) -> None:
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
 
-async def test_rules_checks_status_ceph(logger_checker: None) -> None:
+async def test_rules_checks_status_ceph() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,

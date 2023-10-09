@@ -90,6 +90,7 @@ def commits_tree_generator(
     return behind, commits
 
 
+@pytest.mark.ignored_logging_errors("is_behind testing")
 async def test_pull_behind(
     commits_tree_generator: typing.Any, context_getter: conftest.ContextGetterFixture
 ) -> None:

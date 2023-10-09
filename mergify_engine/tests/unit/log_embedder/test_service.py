@@ -317,6 +317,9 @@ async def test_embed_logs_on_various_data(
     assert count == 7
 
 
+@pytest.mark.ignored_logging_errors(
+    "log-embedder: too many unexpected failures, giving up"
+)
 @mock.patch.object(
     exceptions, "need_retry", return_value=datetime.timedelta(seconds=-60)
 )
@@ -522,7 +525,6 @@ async def test_workflow_job_from_real_life(
     monkeypatch: pytest.MonkeyPatch,
     job_name: str,
     step: int,
-    logger_checker: None,
 ) -> None:
     owner = gh_models.GitHubAccount(id=1, login="owner")
     repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo1")

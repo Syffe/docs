@@ -6,7 +6,7 @@ from mergify_engine.tests.unit import conftest
 
 
 async def test_get_unqueue_reason_from_outcome_outdated_check_run(
-    context_getter: conftest.ContextGetterFixture, logger_checker: None
+    context_getter: conftest.ContextGetterFixture,
 ) -> None:
     async def fake_merge_queue_check_run_getter() -> dict[str, typing.Any]:
         return {

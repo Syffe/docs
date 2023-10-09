@@ -92,6 +92,7 @@ async def test_http_redirect_to_https() -> None:
             )
 
 
+@pytest.mark.ignored_logging_errors("request")
 @pytest.mark.parametrize(
     "status_code,log_level",
     ((0, logging.ERROR), (200, logging.INFO)),
@@ -99,7 +100,6 @@ async def test_http_redirect_to_https() -> None:
 async def test_logging_middleware(
     status_code: int, log_level: int, caplog: pytest.LogCaptureFixture
 ) -> None:
-    caplog.set_level(logging.INFO)
     app = fastapi.FastAPI(debug=True)
     app.add_middleware(LoggingMiddleware)
 

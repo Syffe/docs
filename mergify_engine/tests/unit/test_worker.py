@@ -233,7 +233,6 @@ async def test_worker_legacy_push(
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
     setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
@@ -345,7 +344,6 @@ async def test_worker_with_waiting_tasks(
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
     setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
@@ -578,7 +576,6 @@ async def test_worker_with_one_task(
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
     setup_database: None,
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
@@ -653,7 +650,6 @@ async def test_consume_unexisting_stream(
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
     stream_processor: stream.Processor,
-    logger_checker: None,
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
@@ -675,7 +671,6 @@ async def test_consume_good_stream(
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
-    logger_checker: None,
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
@@ -1326,7 +1321,6 @@ async def test_stream_processor_priority(
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
-    logger_checker: None,
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
 ) -> None:
@@ -1419,7 +1413,6 @@ async def test_stream_processor_date_scheduling(
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
-    logger_checker: None,
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
 ) -> None:
@@ -1530,7 +1523,6 @@ async def test_stream_processor_date_scheduling(
 async def test_worker_drop_bucket(
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
 
@@ -1625,7 +1617,6 @@ async def test_stream_processor_ignore_503(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
     setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
@@ -1668,7 +1659,6 @@ async def test_worker_with_multiple_workers(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -1738,7 +1728,6 @@ async def _test_worker_stuck_shutdown(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -1772,7 +1761,6 @@ async def test_dedicated_worker_scaleup_scaledown(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
 ) -> None:
@@ -1930,7 +1918,6 @@ async def test_dedicated_worker_process_scaleup_scaledown(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
 ) -> None:
@@ -2124,7 +2111,6 @@ async def test_separate_dedicated_worker(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
@@ -2527,7 +2513,6 @@ async def test_dedicated_multiple_processes(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
 ) -> None:
@@ -2680,7 +2665,6 @@ async def test_dedicated_multiple_processes(
 
 async def test_start_stop_cycle(
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
     setup_database: None,
@@ -2743,7 +2727,7 @@ async def test_start_stop_cycle(
 
 
 async def test_task_unexpected_cancellation(
-    logger_checker: pytest.LogCaptureFixture,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     counter = 0
 
@@ -2758,7 +2742,7 @@ async def test_task_unexpected_cancellation(
     await asyncio.sleep(0)
 
     assert counter == 1
-    assert [r.message for r in logger_checker.get_records(when="call")] == [
+    assert [r.message for r in caplog.get_records(when="call")] == [
         "foo starting",
     ]
     assert not t.task.done()
@@ -2768,7 +2752,7 @@ async def test_task_unexpected_cancellation(
     await asyncio.sleep(0)
     assert not t.task.done()
     assert counter == 2
-    assert [r.message for r in logger_checker.get_records(when="call")] == [
+    assert [r.message for r in caplog.get_records(when="call")] == [
         "foo starting",
         "foo task unexpectedly cancelled, ignoring",
     ]
@@ -2778,7 +2762,7 @@ async def test_task_unexpected_cancellation(
     await asyncio.sleep(0)
     assert not t.task.done()
     assert counter == 3
-    assert [r.message for r in logger_checker.get_records(when="call")] == [
+    assert [r.message for r in caplog.get_records(when="call")] == [
         "foo starting",
         "foo task unexpectedly cancelled, ignoring",
         "foo task unexpectedly cancelled, ignoring",
@@ -2788,7 +2772,7 @@ async def test_task_unexpected_cancellation(
     await task.stop_and_wait([t])
     assert t.task.done()
     assert counter == 3
-    assert [r.message for r in logger_checker.get_records(when="call")] == [
+    assert [r.message for r in caplog.get_records(when="call")] == [
         "foo starting",
         "foo task unexpectedly cancelled, ignoring",
         "foo task unexpectedly cancelled, ignoring",

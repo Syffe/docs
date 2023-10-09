@@ -40,7 +40,6 @@ async def test_process_event_stream_workflow_run(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     event_filename: str,
-    logger_checker: None,
 ) -> None:
     # Create the event twice, as we should handle duplicates
     stream_event = {
@@ -119,7 +118,6 @@ async def test_process_event_stream_workflow_job(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
-    logger_checker: None,
     event_file_name: str,
     conclusion: gh_models.WorkflowJobConclusion,
     failed_step_number: int,

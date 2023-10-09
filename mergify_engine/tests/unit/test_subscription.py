@@ -275,6 +275,9 @@ async def test_subscription_on_premise_valid(
     assert route.call_count == 1
 
 
+@pytest.mark.ignored_logging_errors(
+    "The SUBSCRIPTION_TOKEN is invalid, the subscription can't be checked"
+)
 async def test_subscription_on_premise_wrong_token(
     redis_cache: redis_utils.RedisCache,
     respx_mock: respx.MockRouter,
@@ -293,6 +296,9 @@ async def test_subscription_on_premise_wrong_token(
     assert route.call_count == 1
 
 
+@pytest.mark.ignored_logging_errors(
+    "The subscription attached to SUBSCRIPTION_TOKEN is not valid"
+)
 async def test_subscription_on_premise_invalid_sub(
     redis_cache: redis_utils.RedisCache,
     respx_mock: respx.MockRouter,

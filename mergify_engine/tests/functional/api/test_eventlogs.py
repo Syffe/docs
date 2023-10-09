@@ -660,7 +660,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         # We don't send any metadata on purpose
         with mock.patch.object(evt_utils, "insert", return_value=None):
             # NOTE(lecrepont01): An incomplete event should not be inserted in database, insert errors should be handled
-            # in the future by watching the error logs. Mock the insert to avoid teardown failure via logger_checker.
+            # in the future by watching the error logs. Mock the insert to avoid teardown failure via setup_logging.
             await signals.send(
                 self.repository_ctxt,
                 github_types.GitHubPullRequestNumber(123),

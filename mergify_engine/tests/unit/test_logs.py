@@ -11,7 +11,6 @@ from mergify_engine.config import types
 def test_strip_url_credentials(
     caplog: pytest.LogCaptureFixture,
     monkeypatch: pytest.MonkeyPatch,
-    logger_checker: None,
 ) -> None:
     monkeypatch.setattr(
         settings,

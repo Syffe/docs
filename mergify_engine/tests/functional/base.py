@@ -363,7 +363,7 @@ class EventReader:
         return data
 
 
-@pytest.mark.usefixtures("logger_checker", "unittest_asyncio_glue")
+@pytest.mark.usefixtures("unittest_asyncio_glue")
 class IsolatedAsyncioTestCaseWithPytestAsyncioGlue(unittest.IsolatedAsyncioTestCase):
     def _setupAsyncioRunner(self) -> None:
         # NOTE(sileht): py311 unittest internal interface
@@ -379,7 +379,7 @@ class IsolatedAsyncioTestCaseWithPytestAsyncioGlue(unittest.IsolatedAsyncioTestC
         pass
 
 
-@pytest.mark.usefixtures("logger_checker", "unittest_glue")
+@pytest.mark.usefixtures("unittest_glue")
 class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     # Compat mypy/pytest fixtures
     app: httpx.AsyncClient

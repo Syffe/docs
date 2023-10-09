@@ -13,7 +13,6 @@ from mergify_engine.tests import utils
 
 async def test_stream_status(
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
     setup_database: None,
 ) -> None:
     for installation_id in range(8):
@@ -45,7 +44,6 @@ async def test_stream_reschedule(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    logger_checker: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     get_installation_from_account_id.return_value = {

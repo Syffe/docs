@@ -147,7 +147,7 @@ pytest-flakefinder = "^1.1.0"
 minversion = "6.0"
 addopts = "--strict-markers --durations=10"
 asyncio_mode = "auto"
-markers = ["recorder", "subscription", "delete_branch_on_merge", "populated_db_datasets", "logger_checker_ignore"]
+markers = ["recorder", "subscription", "delete_branch_on_merge", "populated_db_datasets", "ignored_logging_errors"]
 filterwarnings = [
     "error",
     # FIXME(sileht): no idea where it comes from, backtraces are cryptic

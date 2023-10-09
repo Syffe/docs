@@ -18,6 +18,9 @@ from mergify_engine.clients import github
 from mergify_engine.clients import http
 
 
+@pytest.mark.ignored_logging_errors(
+    "Received unknown 'loser' permission from GitHub. Keeps processing with none permission."
+)
 async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> None:
     class FakeClient(github.AsyncGitHubInstallationClient):
         called: int
