@@ -333,7 +333,8 @@ class WorkflowJob(models.Base):
                 steps=workflow_job_data["steps"],
                 failed_step_number=failed_step["number"] if failed_step else None,
                 failed_step_name=failed_step["name"] if failed_step else None,
-                head_sha=workflow_job_data["head_sha"],
+                # FIXME(sileht): future events will  head_sha events always set
+                head_sha=workflow_job_data.get("head_sha", ""),
             )
             session.add(job)
 
