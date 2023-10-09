@@ -36,29 +36,6 @@ MERGIFY_OPENSOURCE_SPONSOR_DOC = (
     "for free to open source projects.\n\n"
     ":rocket:&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n"
 )
-MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC = f"""
-
----
-
-More information about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).
-
-<details>
-<summary>Mergify commands</summary>
-
-<br />
-
-You can also trigger Mergify actions by commenting on this pull request:
-
-- `@Mergifyio refresh` will re-evaluate the queue rules
-
-Additionally, on Mergify [dashboard]({settings.DASHBOARD_UI_FRONT_URL}) you can:
-
-- look at your merge queues
-- generate the Mergify configuration with the config editor.
-
-Finally, you can contact us on https://mergify.com
-</details>
-"""
 
 MERGIFY_PULL_REQUEST_DOC = f"""
 <details>

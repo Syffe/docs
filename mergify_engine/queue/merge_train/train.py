@@ -1295,8 +1295,6 @@ class Train:
             f" to check the state of the queue `{queue_rule_report.name}`.**"
         )
 
-        description += constants.MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC
-
         if for_queue_pull_request:
             # FIXME(sileht): This should be on top of the description in case
             # of the summary is truncated

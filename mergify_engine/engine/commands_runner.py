@@ -31,7 +31,7 @@ COMMAND_MATCHER = re.compile(
 )
 
 MERGE_QUEUE_COMMAND_MESSAGE = "Command not allowed on merge queue pull request."
-UNKNOWN_COMMAND_MESSAGE = "Sorry but I didn't understand the command. Please consult [the commands documentation](https://docs.mergify.com/commands.html) \U0001F4DA."
+UNKNOWN_COMMAND_MESSAGE = "Sorry but I didn't understand the command. Please consult [the commands documentation](https://docs.mergify.com/commands) \U0001F4DA."
 INVALID_COMMAND_ARGS_MESSAGE = "Sorry but I didn't understand the arguments of the command `{command}`. Please consult [the commands documentation](https://docs.mergify.com/commands/) \U0001F4DA."
 
 
@@ -708,7 +708,7 @@ class CommandNotAllowed(Exception):
 class CommandNotAllowedDueToRestriction(CommandNotAllowed):
     title: str = dataclasses.field(
         init=False,
-        default="Command disallowed due to [command restrictions](https://docs.mergify.com/configuration/#commands-restrictions) in the Mergify configuration.",
+        default="Command disallowed due to [command restrictions](https://docs.mergify.com/commands/restrictions) in the Mergify configuration.",
     )
     message: str = dataclasses.field(init=False)
     conditions: conditions_mod.PullRequestRuleConditions
