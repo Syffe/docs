@@ -1702,17 +1702,8 @@
   {
     "VulnerabilityID": "CVE-2023-27533",
     "PkgName": "curl",
-    "Status": "affected",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27533",
-    "Title": "TELNET option IAC injection",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-27533",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u8",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27533",
     "Title": "TELNET option IAC injection",
@@ -1722,7 +1713,8 @@
   {
     "VulnerabilityID": "CVE-2023-27533",
     "PkgName": "libcurl4",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u8",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27533",
     "Title": "TELNET option IAC injection",
@@ -1732,17 +1724,8 @@
   {
     "VulnerabilityID": "CVE-2023-27534",
     "PkgName": "curl",
-    "Status": "affected",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27534",
-    "Title": "SFTP path ~ resolving discrepancy",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-27534",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u8",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27534",
     "Title": "SFTP path ~ resolving discrepancy",
@@ -1752,7 +1735,8 @@
   {
     "VulnerabilityID": "CVE-2023-27534",
     "PkgName": "libcurl4",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u8",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27534",
     "Title": "SFTP path ~ resolving discrepancy",
@@ -1762,17 +1746,8 @@
   {
     "VulnerabilityID": "CVE-2023-27535",
     "PkgName": "curl",
-    "Status": "affected",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
-    "Title": "FTP too eager connection reuse",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-27535",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u8",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
     "Title": "FTP too eager connection reuse",
@@ -1782,7 +1757,8 @@
   {
     "VulnerabilityID": "CVE-2023-27535",
     "PkgName": "libcurl4",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u8",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
     "Title": "FTP too eager connection reuse",
@@ -1792,17 +1768,8 @@
   {
     "VulnerabilityID": "CVE-2023-27536",
     "PkgName": "curl",
-    "Status": "affected",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
-    "Title": "GSS delegation too eager connection re-use",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-27536",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u8",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
     "Title": "GSS delegation too eager connection re-use",
@@ -1812,7 +1779,8 @@
   {
     "VulnerabilityID": "CVE-2023-27536",
     "PkgName": "libcurl4",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u8",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
     "Title": "GSS delegation too eager connection re-use",
@@ -1822,17 +1790,8 @@
   {
     "VulnerabilityID": "CVE-2023-27538",
     "PkgName": "curl",
-    "Status": "affected",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27538",
-    "Title": "SSH connection too eager reuse still",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-27538",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u8",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27538",
     "Title": "SSH connection too eager reuse still",
@@ -1842,7 +1801,8 @@
   {
     "VulnerabilityID": "CVE-2023-27538",
     "PkgName": "libcurl4",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u8",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27538",
     "Title": "SSH connection too eager reuse still",
@@ -1882,17 +1842,8 @@
   {
     "VulnerabilityID": "CVE-2023-28321",
     "PkgName": "curl",
-    "Status": "affected",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
-    "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-05-26T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-28321",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u9",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
     "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
@@ -1902,7 +1853,8 @@
   {
     "VulnerabilityID": "CVE-2023-28321",
     "PkgName": "libcurl4",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u9",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
     "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
@@ -1912,17 +1864,8 @@
   {
     "VulnerabilityID": "CVE-2023-28322",
     "PkgName": "curl",
-    "Status": "affected",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
-    "Title": "more POST-after-PUT confusion",
-    "Severity": "LOW",
-    "PublishedDate": "2023-05-26T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-28322",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u9",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
     "Title": "more POST-after-PUT confusion",
@@ -1932,7 +1875,8 @@
   {
     "VulnerabilityID": "CVE-2023-28322",
     "PkgName": "libcurl4",
-    "Status": "affected",
+    "FixedVersion": "7.74.0-1.3+deb11u9",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
     "Title": "more POST-after-PUT confusion",
@@ -1982,7 +1926,8 @@
   {
     "VulnerabilityID": "CVE-2023-29491",
     "PkgName": "libncurses6",
-    "Status": "affected",
+    "FixedVersion": "6.2+20201114-2+deb11u2",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29491",
     "Title": "Local users can trigger security-relevant memory corruption via malformed data",
@@ -1992,7 +1937,8 @@
   {
     "VulnerabilityID": "CVE-2023-29491",
     "PkgName": "libncursesw6",
-    "Status": "affected",
+    "FixedVersion": "6.2+20201114-2+deb11u2",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29491",
     "Title": "Local users can trigger security-relevant memory corruption via malformed data",
@@ -2002,7 +1948,8 @@
   {
     "VulnerabilityID": "CVE-2023-29491",
     "PkgName": "libtinfo6",
-    "Status": "affected",
+    "FixedVersion": "6.2+20201114-2+deb11u2",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29491",
     "Title": "Local users can trigger security-relevant memory corruption via malformed data",
@@ -2012,7 +1959,8 @@
   {
     "VulnerabilityID": "CVE-2023-29491",
     "PkgName": "ncurses-base",
-    "Status": "affected",
+    "FixedVersion": "6.2+20201114-2+deb11u2",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29491",
     "Title": "Local users can trigger security-relevant memory corruption via malformed data",
@@ -2022,7 +1970,8 @@
   {
     "VulnerabilityID": "CVE-2023-29491",
     "PkgName": "ncurses-bin",
-    "Status": "affected",
+    "FixedVersion": "6.2+20201114-2+deb11u2",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29491",
     "Title": "Local users can trigger security-relevant memory corruption via malformed data",
@@ -2032,7 +1981,8 @@
   {
     "VulnerabilityID": "CVE-2023-29491",
     "PkgName": "ncurses-term",
-    "Status": "affected",
+    "FixedVersion": "6.2+20201114-2+deb11u2",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29491",
     "Title": "Local users can trigger security-relevant memory corruption via malformed data",
@@ -2252,7 +2202,8 @@
   {
     "VulnerabilityID": "CVE-2023-3446",
     "PkgName": "libssl1.1",
-    "Status": "fix_deferred",
+    "FixedVersion": "1.1.1v-0~deb11u1",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3446",
     "Title": "Excessive time spent checking DH keys and parameters",
@@ -2262,7 +2213,8 @@
   {
     "VulnerabilityID": "CVE-2023-3446",
     "PkgName": "openssl",
-    "Status": "fix_deferred",
+    "FixedVersion": "1.1.1v-0~deb11u1",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3446",
     "Title": "Excessive time spent checking DH keys and parameters",
@@ -2272,7 +2224,8 @@
   {
     "VulnerabilityID": "CVE-2023-34969",
     "PkgName": "dbus",
-    "Status": "affected",
+    "FixedVersion": "1.12.28-0+deb11u1",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-34969",
     "Title": "assertion failure when a monitor is active and a message from the driver cannot be delivered",
@@ -2282,7 +2235,8 @@
   {
     "VulnerabilityID": "CVE-2023-34969",
     "PkgName": "libdbus-1-3",
-    "Status": "affected",
+    "FixedVersion": "1.12.28-0+deb11u1",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-34969",
     "Title": "assertion failure when a monitor is active and a message from the driver cannot be delivered",
@@ -2292,7 +2246,8 @@
   {
     "VulnerabilityID": "CVE-2023-36054",
     "PkgName": "libgssapi-krb5-2",
-    "Status": "affected",
+    "FixedVersion": "1.18.3-6+deb11u4",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-36054",
     "Title": "Denial of service through freeing uninitialized pointer",
@@ -2302,7 +2257,8 @@
   {
     "VulnerabilityID": "CVE-2023-36054",
     "PkgName": "libk5crypto3",
-    "Status": "affected",
+    "FixedVersion": "1.18.3-6+deb11u4",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-36054",
     "Title": "Denial of service through freeing uninitialized pointer",
@@ -2312,7 +2268,8 @@
   {
     "VulnerabilityID": "CVE-2023-36054",
     "PkgName": "libkrb5-3",
-    "Status": "affected",
+    "FixedVersion": "1.18.3-6+deb11u4",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-36054",
     "Title": "Denial of service through freeing uninitialized pointer",
@@ -2322,7 +2279,8 @@
   {
     "VulnerabilityID": "CVE-2023-3817",
     "PkgName": "libssl1.1",
-    "Status": "fix_deferred",
+    "FixedVersion": "1.1.1v-0~deb11u1",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3817",
     "Title": "Excessive time spent checking DH q parameter value",
@@ -2332,7 +2290,8 @@
   {
     "VulnerabilityID": "CVE-2023-3817",
     "PkgName": "openssl",
-    "Status": "fix_deferred",
+    "FixedVersion": "1.1.1v-0~deb11u1",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3817",
     "Title": "Excessive time spent checking DH q parameter value",
@@ -2342,7 +2301,8 @@
   {
     "VulnerabilityID": "CVE-2023-38408",
     "PkgName": "openssh-client",
-    "Status": "affected",
+    "FixedVersion": "1:8.4p1-5+deb11u2",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
     "Title": "Remote code execution in ssh-agent PKCS#11 support",
@@ -2352,7 +2312,8 @@
   {
     "VulnerabilityID": "CVE-2023-38408",
     "PkgName": "openssh-server",
-    "Status": "affected",
+    "FixedVersion": "1:8.4p1-5+deb11u2",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
     "Title": "Remote code execution in ssh-agent PKCS#11 support",
@@ -2362,7 +2323,8 @@
   {
     "VulnerabilityID": "CVE-2023-38408",
     "PkgName": "openssh-sftp-server",
-    "Status": "affected",
+    "FixedVersion": "1:8.4p1-5+deb11u2",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
     "Title": "Remote code execution in ssh-agent PKCS#11 support",
