@@ -8810,6 +8810,90 @@ pull_request_rules:
                 <= 54000
             )
 
+    async def test_queue_auto_reembark(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "check-success=second-ci",
+                    ],
+                    "speculative_checks": 1,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "check-success=continuous-integration/fake-ci",
+                        f"base={self.main_branch_name}",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+
+        # To force others to be rebased
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        p = (await self.wait_for_pull_request("closed"))["pull_request"]
+        assert p["merge_commit_sha"] is not None
+
+        await self.create_status(p1)
+        await self.run_engine()
+
+        # p1 got rebased
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p["merge_commit_sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
+        head_sha = p1["head"]["sha"]
+        p1 = await self.get_pull(p1["number"])
+        assert p1["head"]["sha"] != head_sha  # ensure it have been rebased
+
+        # CI has failed ensure it have been unqueue
+        await self.create_status(p1, state="failure")
+        await self.run_engine()
+        await self.assert_merge_queue_contents(q, None, [])
+        p1 = await self.get_pull(p1["number"])
+        assert not p1["merged"]
+
+        # CI has been restart and works, we can reembark it automatically
+        await self.create_status(p1)
+        await self.run_engine()
+
+        # Back to the queue
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p["merge_commit_sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
 
 class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
     @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)

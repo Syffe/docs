@@ -119,16 +119,14 @@ class QueueRule:
             branch_protection_injection_mode=branch_protection_injection_mode,
         )
 
-    async def get_evaluated_queue_rule(
+    async def get_queue_rule_for_evaluator(
         self,
         repository: context.Repository,
         ref: github_types.GitHubRefType,
-        pulls: list[context.BasePullRequest],
         evaluated_pull_request_rule: pull_request_rules_config.EvaluatedPullRequestRule
         | None = None,
-    ) -> EvaluatedQueueRule:
+    ) -> "QueueRule":
         branch_protections: list[conditions_mod.RuleConditionNode] = []
-        pull_request_rules_conditions: list[conditions_mod.RuleConditionNode] = []
         if self.branch_protection_injection_mode != "none":
             branch_protections.extend(
                 await conditions_mod.get_branch_protection_conditions(
@@ -136,6 +134,7 @@ class QueueRule:
                 )
             )
 
+        pull_request_rules_conditions: list[conditions_mod.RuleConditionNode] = []
         if evaluated_pull_request_rule is not None:
             evaluated_pull_request_rule_conditions = (
                 evaluated_pull_request_rule.conditions.copy()
@@ -152,6 +151,12 @@ class QueueRule:
                     ]
                 )
 
+        merge_conditions = conditions_mod.QueueRuleMergeConditions(
+            branch_protections
+            + pull_request_rules_conditions
+            + self.merge_conditions.condition.copy().conditions
+        )
+
         if self.branch_protection_injection_mode == "queue":
             queue_conditions = conditions_mod.QueueRuleMergeConditions(
                 branch_protections
@@ -164,18 +169,26 @@ class QueueRule:
                 + self.queue_conditions.condition.copy().conditions
             )
 
-        queue_rule_with_extra_conditions = QueueRule(
+        return QueueRule(
             name=self.name,
-            merge_conditions=conditions_mod.QueueRuleMergeConditions(
-                branch_protections
-                + pull_request_rules_conditions
-                + self.merge_conditions.condition.copy().conditions
-            ),
+            merge_conditions=merge_conditions,
             queue_conditions=queue_conditions,
             config=self.config,
             priority_rules=self.priority_rules,
             require_branch_protection=self.require_branch_protection,
             branch_protection_injection_mode=self.branch_protection_injection_mode,
+        )
+
+    async def get_evaluated_queue_rule(
+        self,
+        repository: context.Repository,
+        ref: github_types.GitHubRefType,
+        pulls: list[context.BasePullRequest],
+        evaluated_pull_request_rule: pull_request_rules_config.EvaluatedPullRequestRule
+        | None = None,
+    ) -> EvaluatedQueueRule:
+        queue_rule_with_extra_conditions = await self.get_queue_rule_for_evaluator(
+            repository, ref, evaluated_pull_request_rule
         )
         queue_rules_evaluator = await QueuesRulesEvaluator.create(
             [queue_rule_with_extra_conditions],

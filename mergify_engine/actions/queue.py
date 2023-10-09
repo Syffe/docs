@@ -35,6 +35,7 @@ from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import pause
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.queue.merge_train import train_car_state as tcs
 from mergify_engine.queue.merge_train import types as merge_train_types
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
@@ -443,6 +444,43 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         self._set_action_config_from_queue_rules()
 
+    async def _can_be_reembarked_automatically(self) -> bool:
+        # NOTE(sileht): we allow auto reembark only for this configuration
+        if not (
+            self.queue_rule.config["speculative_checks"] == 1
+            and self.queue_rule.config["batch_size"] == 1
+            and self.queue_rule.config["allow_inplace_checks"]
+        ):
+            return False
+
+        # NOTE(sileht): Previous failure must be CHECKS_FAILED
+        check = await self.ctxt.get_merge_queue_check_run()
+        if check is None:
+            return False
+
+        train_car_state = tcs.TrainCarStateForSummary.deserialize_from_summary(check)
+        if (
+            train_car_state is None
+            or train_car_state.outcome != merge_train.TrainCarOutcome.CHECKS_FAILED
+        ):
+            return False
+
+        # NOTE(sileht): All rules must match again (pull request_rules, queue_rules/queue_conditions and merge_conditions)
+        # The two first are already checked because run() got call, we just need to check merge_conditions
+        queue_rule_for_evaluator = await self.queue_rule.get_queue_rule_for_evaluator(
+            self.ctxt.repository,
+            self.ctxt.pull["base"]["ref"],
+        )
+        status = await checks_status.get_rule_checks_status(
+            self.ctxt.log,
+            self.ctxt.repository,
+            [self.ctxt.pull_request],
+            queue_rule_for_evaluator.merge_conditions,
+            wait_for_schedule_to_match=False,
+        )
+        # Allow reembark if CIs states is not failing anymore
+        return status != check_api.Conclusion.FAILURE
+
     async def run(self) -> check_api.Result:
         if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
             await self.reembark_pull_request_if_possible()
@@ -465,6 +503,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         if result is not None:
             return result
+
+        if await self._can_be_reembarked_automatically():
+            await self.reembark_pull_request_if_possible()
 
         for car in cars:
             if car is not None:
