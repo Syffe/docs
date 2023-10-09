@@ -69,6 +69,7 @@ async def test_cleanup_pending_actions_with_no_associated_rules(
             app_id=settings.GITHUB_APP_ID,
             app_name="mergify",
             app_avatar_url="",
+            app_slug="mergify",
             external_id="",
             head_sha=github_types.SHAType("azertyio"),
             status="in_progress",

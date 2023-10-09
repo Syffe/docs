@@ -747,6 +747,7 @@ class CachedGitHubCheckRun(typing_extensions.TypedDict):
     app_id: int
     app_name: str
     app_avatar_url: str
+    app_slug: str
     external_id: str
     head_sha: SHAType
     name: str

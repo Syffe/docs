@@ -123,6 +123,7 @@ def to_check_run_light(
             "app_id": check["app"]["id"],
             "app_name": check["app"]["name"],
             "app_avatar_url": check["app"]["owner"]["avatar_url"],
+            "app_slug": check["app"]["slug"],
             "external_id": check["external_id"],
             "head_sha": check["head_sha"],
             "name": check["name"],
