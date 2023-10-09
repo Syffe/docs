@@ -5,7 +5,6 @@ from sqlalchemy.dialects import postgresql
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.ci import pull_registries
-from mergify_engine.models.github import workflows
 
 
 class PullRequest(models.Base):
@@ -28,12 +27,6 @@ class PullRequest(models.Base):
     state: orm.Mapped[github_types.GitHubPullRequestState] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
-    )
-
-    workflow_runs: orm.Mapped[list[workflows.WorkflowRun]] = orm.relationship(
-        secondary="jt_gha_workflow_run_pull_request",
-        back_populates="pull_requests",
-        viewonly=True,
     )
 
     @classmethod

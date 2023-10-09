@@ -21,12 +21,6 @@ from mergify_engine.models.github import account as gh_account
 from mergify_engine.models.github import repository as gh_repository
 
 
-if typing.TYPE_CHECKING:
-    # We need to importe only `PullRequest` otherwise sqlalchemy
-    # cannot find the `pull_request` module for some reason.
-    from mergify_engine.models.github.pull_request import PullRequest
-
-
 LOG = daiquiri.getLogger(__name__)
 
 NAME_AND_MATRIX_RE = re.compile(r"^([\w|-]+) \((.+)\)$")
@@ -90,12 +84,6 @@ class WorkflowRun(models.Base):
     )
     triggering_actor: orm.Mapped[gh_account.GitHubAccount] = orm.relationship(
         lazy="joined", foreign_keys=[triggering_actor_id]
-    )
-    pull_requests: orm.Mapped[list[PullRequest]] = orm.relationship(
-        secondary="jt_gha_workflow_run_pull_request",
-        back_populates="workflow_runs",
-        viewonly=True,
-        lazy="selectin",
     )
 
     repository_id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
@@ -616,38 +604,3 @@ class WorkflowJobLogNeighbours(models.Base):
     )
 
     cosine_similarity: orm.Mapped[float] = orm.mapped_column(anonymizer_config=None)
-
-
-# https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#association-object
-class PullRequestWorkflowRunAssociation(models.Base):
-    __tablename__ = "jt_gha_workflow_run_pull_request"
-
-    pull_request_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("pull_request.id"),
-        primary_key=True,
-        anonymizer_config=None,
-    )
-    workflow_run_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("gha_workflow_run.id"),
-        primary_key=True,
-        anonymizer_config=None,
-    )
-
-    pull_request: orm.Mapped[PullRequest] = orm.relationship()
-    workflow_run: orm.Mapped[WorkflowRun] = orm.relationship()
-
-    @classmethod
-    async def insert(
-        cls,
-        session: sqlalchemy.ext.asyncio.AsyncSession,
-        pull_request_id: int,
-        workflow_run_id: int,
-    ) -> None:
-        sql = (
-            postgresql.insert(cls)
-            .values(pull_request_id=pull_request_id, workflow_run_id=workflow_run_id)
-            .on_conflict_do_nothing(
-                index_elements=["pull_request_id", "workflow_run_id"]
-            )
-        )
-        await session.execute(sql)

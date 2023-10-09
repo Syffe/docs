@@ -77,13 +77,6 @@ async def test_process_event_stream_workflow_run(
     assert actual_pull.title == "hello"
     assert actual_pull.state == "open"
 
-    associations = list(
-        await db.scalars(sqlalchemy.select(gh_models.PullRequestWorkflowRunAssociation))
-    )
-    assert len(associations) == 1
-    actual_association = associations[0]
-    assert actual_association.pull_request_id == 1
-
     stream_events = await redis_links.stream.xrange("workflow_run")
     assert len(stream_events) == 0
 

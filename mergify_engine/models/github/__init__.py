@@ -4,7 +4,6 @@ from mergify_engine.models.github.pull_request import PullRequest
 from mergify_engine.models.github.repository import GitHubRepository
 from mergify_engine.models.github.repository import GitHubRepositoryDict
 from mergify_engine.models.github.user import GitHubUser
-from mergify_engine.models.github.workflows import PullRequestWorkflowRunAssociation
 from mergify_engine.models.github.workflows import WorkflowJob
 from mergify_engine.models.github.workflows import WorkflowJobConclusion
 from mergify_engine.models.github.workflows import WorkflowJobFailedStep
@@ -28,5 +27,4 @@ __all__ = [
     "WorkflowJobFailedStep",
     "WorkflowJob",
     "WorkflowJobLogNeighbours",
-    "PullRequestWorkflowRunAssociation",
 ]
