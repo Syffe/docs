@@ -354,6 +354,12 @@ class APISettings(pydantic_settings.BaseSettings):
     REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: int = 50
 
 
+class HTTPSettings(pydantic_settings.BaseSettings):
+    HTTP_TRUSTED_HOSTS: types.StrListFromStrWithComma = types.StrListFromStrWithComma(
+        ["*"]
+    )
+
+
 class SubscriptionSetting(pydantic_settings.BaseSettings):
     SAAS_MODE: bool = False
     SUBSCRIPTION_URL: str = pydantic.Field(
@@ -584,6 +590,7 @@ class EnvEngineSettingsSource(pydantic_settings.EnvSettingsSource):
 
 class EngineSettings(
     APISettings,
+    HTTPSettings,
     DatabaseSettings,
     LogsSettings,
     RedisSettings,

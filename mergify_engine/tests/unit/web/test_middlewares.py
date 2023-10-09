@@ -7,6 +7,8 @@ import pytest
 import starlette
 import starlette.middleware.sessions
 
+from mergify_engine import settings
+from mergify_engine.config import types
 from mergify_engine.middlewares.logging import LoggingMiddleware
 from mergify_engine.middlewares.security import SecurityMiddleware
 from mergify_engine.middlewares.sudo import SudoMiddleware
@@ -17,10 +19,14 @@ from mergify_engine.web import root as web_root
 router = fastapi.APIRouter()
 
 
-@router.get("/testing-heroku-headers")
-def _test_heroku_headers(request: fastapi.Request) -> fastapi.Response:
+@router.get("/testing-route", name="easy-route")
+def _testing_route(request: fastapi.Request) -> fastapi.Response:
     return fastapi.responses.JSONResponse(
-        {"scheme": request.scope["scheme"], "url": str(request.url)}
+        {
+            "scheme": request.scope["scheme"],
+            "url": str(request.url),
+            "url_for": str(request.url_for("easy-route")),
+        }
     )
 
 
@@ -64,13 +70,10 @@ async def test_heroku_proxying() -> None:
 
     async with asgi_lifespan.LifespanManager(app):
         async with conftest.CustomTestClient(app=app) as client:
-            r = await client.get("/testing-heroku-headers")
+            r = await client.get("/testing-route")
             r.raise_for_status()
             assert r.json()["scheme"] == "https"
-            assert (
-                r.json()["url"]
-                == "https://dashboard.mergify.com/testing-heroku-headers"
-            )
+            assert r.json()["url"] == "https://dashboard.mergify.com/testing-route"
 
 
 async def test_http_redirect_to_https() -> None:
@@ -81,14 +84,13 @@ async def test_http_redirect_to_https() -> None:
     async with asgi_lifespan.LifespanManager(app):
         async with conftest.CustomTestClient(app=app) as client:
             r = await client.get(
-                "http://dashboard.mergify.com/testing-heroku-headers",
+                "http://dashboard.mergify.com/testing-route",
                 follow_redirects=False,
             )
             assert r.status_code == 307, r.text
             assert "Location" in r.headers
             assert (
-                r.headers["Location"]
-                == "https://dashboard.mergify.com/testing-heroku-headers"
+                r.headers["Location"] == "https://dashboard.mergify.com/testing-route"
             )
 
 
@@ -177,3 +179,35 @@ async def test_security_middleware() -> None:
         "referrer-policy": "no-referrer",
         "permissions-policy": "accelerometer=(),ambient-light-sensor=(),attribution-reporting=(),autoplay=(),battery=(),camera=(),clipboard-read=(),clipboard-write=(),conversion-measurement=(),cross-origin-isolated=(),direct-sockets=(),display-capture=(),document-domain=(),encrypted-media=(),execution-while-not-rendered=(),execution-while-out-of-viewport=(),focus-without-user-activation=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),hid=(),idle-detection=(),interest-cohort=(),magnetometer=(),microphone=(),midi=(),navigation-override=(),otp-credentials=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),screen-wake-lock=(),serial=(),shared-autofill=(),speaker-selection=(),storage-access-api=(),sync-script=(),sync-xhr=(),trust-token-redemption=(),usb=(),vertical-scroll=(),wake-lock=(),web-share=(),window-placement=(),xr-spatial-tracking=()",
     }
+
+
+async def test_without_trusted_hosts() -> None:
+    app = web_root.create_app(https_only=False, debug=True)
+    app.include_router(router)
+    app.router.routes.insert(0, app.router.routes.pop(-1))
+
+    async with asgi_lifespan.LifespanManager(app):
+        async with conftest.CustomTestClient(app=app) as client:
+            r = await client.get("/testing-route", headers={"Host": "hacker.com"})
+            r.raise_for_status()
+            assert r.json()["url_for"] == "http://hacker.com/testing-route"
+
+
+async def test_with_trusted_hosts(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        settings, "HTTP_TRUSTED_HOSTS", types.StrListFromStrWithComma(["*.mergify.com"])
+    )
+
+    app = web_root.create_app(https_only=False, debug=True)
+    app.include_router(router)
+    app.router.routes.insert(0, app.router.routes.pop(-1))
+
+    async with asgi_lifespan.LifespanManager(app):
+        async with conftest.CustomTestClient(app=app) as client:
+            r = await client.get("/testing-route", headers={"Host": "api.mergify.com"})
+            r.raise_for_status()
+            assert r.json()["url_for"] == "http://api.mergify.com/testing-route"
+
+            r = await client.get("/testing-route", headers={"Host": "hacker.com"})
+            assert r.status_code == 400
+            assert r.text == "Invalid host header"

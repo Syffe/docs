@@ -1,6 +1,7 @@
 import daiquiri
 import fastapi
 from fastapi.middleware import httpsredirect
+from fastapi.middleware import trustedhost
 from uvicorn.middleware import proxy_headers
 
 from mergify_engine import settings
@@ -29,6 +30,9 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
     app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
     if https_only:
         app.add_middleware(httpsredirect.HTTPSRedirectMiddleware)
+    app.add_middleware(
+        trustedhost.TrustedHostMiddleware, allowed_hosts=settings.HTTP_TRUSTED_HOSTS
+    )
     app.add_middleware(
         proxy_headers.ProxyHeadersMiddleware,
         trusted_hosts="*",
