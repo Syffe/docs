@@ -969,6 +969,7 @@ class GitHubWorkflowJob(typing_extensions.TypedDict):
     run_attempt: int
     steps: list[GitHubWorkflowJobStep]
     runner_id: int
+    head_sha: SHAType
 
 
 class GitHubEventWorkflowJob(GitHubEventWithRepository):

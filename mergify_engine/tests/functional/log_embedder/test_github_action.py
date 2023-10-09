@@ -226,7 +226,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             )
             assert job is not None
 
-            # NOTE(Kontrolix): We must set `assert_all_called=True` here beacause
+            # NOTE(Kontrolix): We must not set `assert_all_called=True` here beacause
             # pass_through routes to github api will not be called in no recording mode
             with respx.mock(assert_all_called=False) as respx_mock:
                 # NOTE(Greesb): We need to mock like this because sometimes we get sent to some weird url

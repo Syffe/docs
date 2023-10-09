@@ -278,6 +278,10 @@ class WorkflowJob(models.Base):
     )
     matrix: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
 
+    head_sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
+        sqlalchemy.String, anonymizer_config=None
+    )
+
     def as_log_extras(self) -> dict[str, typing.Any]:
         return {
             "gh_owner": self.repository.owner.login,
@@ -329,6 +333,7 @@ class WorkflowJob(models.Base):
                 steps=workflow_job_data["steps"],
                 failed_step_number=failed_step["number"] if failed_step else None,
                 failed_step_name=failed_step["name"] if failed_step else None,
+                head_sha=workflow_job_data["head_sha"],
             )
             session.add(job)
 

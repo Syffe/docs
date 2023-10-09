@@ -130,6 +130,7 @@ async def test_process_event_stream_workflow_job(
         "gha_workflow_job",
         fields=stream_event,  # type: ignore[arg-type]
     )
+
     await event_processing.process_event_streams(redis_links)
 
     sql = sqlalchemy.select(gh_models.WorkflowJob)
@@ -145,6 +146,8 @@ async def test_process_event_stream_workflow_job(
 
     assert current_workflow_job.failed_step_number == failed_step_number
     assert current_workflow_job.failed_step_name == failed_step_name
+
+    assert current_workflow_job.head_sha == "967926ca14c083f858d26dd4a5e669febe9c3a2f"
 
     stream_events = await redis_links.stream.xrange("workflow_job")
     assert len(stream_events) == 0

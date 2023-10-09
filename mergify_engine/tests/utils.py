@@ -136,6 +136,7 @@ def add_workflow_job(
         failed_step_name=job_data.get("failed_step_name"),
         failed_step_number=job_data.get("failed_step_number"),
         steps=job_data.get("steps"),
+        head_sha=job_data.get("head_sha", ""),
     )
     session.add(job)
     return job

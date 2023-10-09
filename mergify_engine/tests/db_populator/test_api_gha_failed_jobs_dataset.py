@@ -45,6 +45,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
+                head_sha=github_types.SHAType(""),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -83,6 +84,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=2,
+                head_sha=github_types.SHAType(""),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -125,6 +127,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="success",
                 labels=[],
                 run_attempt=3,
+                head_sha=github_types.SHAType(""),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -159,6 +162,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
+                head_sha=github_types.SHAType(""),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -203,6 +207,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
+                head_sha=github_types.SHAType(""),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -261,6 +266,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
+                head_sha=github_types.SHAType(""),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -303,6 +309,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=2,
+                head_sha=github_types.SHAType(""),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",

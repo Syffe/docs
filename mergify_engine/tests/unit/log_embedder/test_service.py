@@ -129,7 +129,7 @@ async def test_embed_logs_on_controlled_data(
             },
         )
         respx_mock.get(
-            f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
+            f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
         ).respond(
             200, stream=GHA_CI_LOGS_ZIP  # type: ignore[arg-type]
         )
@@ -343,6 +343,7 @@ async def test_workflow_job_log_life_cycle(
         run_attempt=1,
         failed_step_name="toto",
         failed_step_number=1,
+        head_sha="",
     )
     job2 = gh_models.WorkflowJob(
         id=2,
@@ -356,6 +357,7 @@ async def test_workflow_job_log_life_cycle(
         run_attempt=1,
         failed_step_name="toto",
         failed_step_number=1,
+        head_sha="",
     )
     job3 = gh_models.WorkflowJob(
         id=3,
@@ -369,6 +371,7 @@ async def test_workflow_job_log_life_cycle(
         run_attempt=1,
         failed_step_name="toto",
         failed_step_number=1,
+        head_sha="",
     )
 
     db.add(owner)
@@ -379,7 +382,9 @@ async def test_workflow_job_log_life_cycle(
     await db.commit()
     db.expunge_all()
 
-    respx_mock.get(f"https://api.github.com/users/{owner.login}/installation").respond(
+    respx_mock.get(
+        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation"
+    ).respond(
         200,
         json=github_types.GitHubInstallation(  # type: ignore[arg-type]
             {
@@ -396,9 +401,9 @@ async def test_workflow_job_log_life_cycle(
             }
         ),
     )
-    respx_mock.post("https://api.github.com/app/installations/0/access_tokens").respond(
-        200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}
-    )
+    respx_mock.post(
+        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens"
+    ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
     ).respond(
@@ -417,16 +422,16 @@ async def test_workflow_job_log_life_cycle(
         },
     )
     respx_mock.get(
-        f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/runs/{job1.workflow_run_id}/attempts/{job1.run_attempt}/logs"
+        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job1.workflow_run_id}/attempts/{job1.run_attempt}/logs"
     ).respond(410)
     respx_mock.get(
-        f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/runs/{job2.workflow_run_id}/attempts/{job2.run_attempt}/logs"
+        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job2.workflow_run_id}/attempts/{job2.run_attempt}/logs"
     ).respond(
         200,
         stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
     )
     respx_mock.get(
-        f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/runs/{job3.workflow_run_id}/attempts/{job3.run_attempt}/logs"
+        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job3.workflow_run_id}/attempts/{job3.run_attempt}/logs"
     ).respond(500)
 
     respx_mock.post(
@@ -540,6 +545,7 @@ async def test_workflow_job_from_real_life(
         run_attempt=1,
         failed_step_name="toto",
         failed_step_number=step,
+        head_sha="",
     )
 
     db.add(owner)
@@ -548,7 +554,9 @@ async def test_workflow_job_from_real_life(
     await db.commit()
     db.expunge_all()
 
-    respx_mock.get(f"https://api.github.com/users/{owner.login}/installation").respond(
+    respx_mock.get(
+        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation"
+    ).respond(
         200,
         json=github_types.GitHubInstallation(  # type: ignore[arg-type]
             {
@@ -565,9 +573,9 @@ async def test_workflow_job_from_real_life(
             }
         ),
     )
-    respx_mock.post("https://api.github.com/app/installations/0/access_tokens").respond(
-        200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}
-    )
+    respx_mock.post(
+        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens"
+    ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
     ).respond(
@@ -608,7 +616,7 @@ async def test_workflow_job_from_real_life(
         },
     )
     respx_mock.get(
-        f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
+        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
     ).respond(
         200,
         stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]

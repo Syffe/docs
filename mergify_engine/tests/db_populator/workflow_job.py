@@ -44,6 +44,7 @@ class WorkflowJob(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
+                head_sha=github_types.SHAType(""),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="toto",
@@ -78,6 +79,7 @@ class WorkflowJob(DbPopulator):
                 conclusion="success",
                 labels=[],
                 run_attempt=2,
+                head_sha=github_types.SHAType(""),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="toto",
@@ -112,6 +114,7 @@ class WorkflowJob(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
+                head_sha=github_types.SHAType(""),
                 steps=[],
                 runner_id=1,
             ),
