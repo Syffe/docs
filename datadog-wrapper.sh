@@ -125,7 +125,7 @@ export DD_TRACE_SQLALCHEMY_ENABLED=1
 unset DD_CONF_DIR
 echo 'Datadog-agent startup.'
 datadog-agent run &
-/opt/datadog-agent/embedded/bin/trace-agent --cfgpath=/etc/datadog-agent &
+/opt/datadog-agent/embedded/bin/trace-agent --config=/etc/datadog-agent/datadog.yaml &
 /opt/datadog-agent/embedded/bin/process-agent --cfgpath=/etc/datadog-agent &
 
 startup_message
