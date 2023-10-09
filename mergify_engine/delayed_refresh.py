@@ -62,9 +62,11 @@ async def plan_next_refresh(
     pull_request: "context.BasePullRequest",
     only_if_earlier: bool = False,
 ) -> None:
-    best_bet = await _get_current_refresh_datetime(ctxt.repository, ctxt.pull["number"])
-    if best_bet is not None and best_bet < date.utcnow():
-        best_bet = None
+    plan_refresh_at = await _get_current_refresh_datetime(
+        ctxt.repository, ctxt.pull["number"]
+    )
+    if plan_refresh_at is not None and plan_refresh_at < date.utcnow():
+        plan_refresh_at = None
 
     refresh_time_conditions = (
         ctxt.pull["closed_at"] is None
@@ -72,46 +74,38 @@ async def plan_next_refresh(
         < STOP_REFRESH_PULL_REQUEST_CLOSED_WITH_TIME_CONDITIONS_SINCE
     )
 
+    conditions = []
     for rule in _rules:
-        # FIXME(sileht): Why do we ignore queue_conditions hehe?
-        # TODO(sileht): Use rule.get_conditions_used_by_evaluator() instead
-        if isinstance(rule, qr_config.QueueRule):
-            rule_conditions = rule.merge_conditions.condition.copy().conditions
-        else:
-            rule_conditions = rule.conditions.condition.copy().conditions
-
-        rule_success_conditions = []
+        conditions.extend(
+            rule.get_conditions_used_by_evaluator().condition.copy().conditions
+        )
 
         if isinstance(rule, prr_config.PullRequestRule):
             for action in rule.actions.values():
                 if action.config.get("success_conditions"):
-                    rule_success_conditions.extend(
+                    conditions.extend(
                         action.config["success_conditions"].condition.copy().conditions
                     )
 
-        conditions = conditions_mod.PullRequestRuleConditions(
-            rule_conditions + rule_success_conditions
-        )
+    rule_conditions = conditions_mod.BaseRuleConditions(conditions)
 
-        if not refresh_time_conditions:
-            for condition in conditions.walk():
-                attr = condition.get_attribute_name()
-                # Replace time conditions with an always true condition, so
-                # they will become date.DT_MAX when parsed by
-                # filter.NearDatetimeFilter
-                if attr == "schedule":
-                    condition.make_always_true()
+    if not refresh_time_conditions:
+        for condition in rule_conditions.walk():
+            attr = condition.get_attribute_name()
+            # Replace time conditions with an always true condition, so
+            # they will become date.DT_MAX when parsed by
+            # filter.NearDatetimeFilter
+            if attr == "schedule":
+                condition.make_always_true()
 
-        f = filter.NearDatetimeFilter(conditions.extract_raw_filter_tree())
-        live_resolvers.configure_filter(ctxt.repository, f)
-        try:
-            bet = await f(pull_request)
-        except live_resolvers.LiveResolutionFailure:
-            continue
-        if best_bet is None or best_bet > bet:
-            best_bet = bet
+    f = filter.NearDatetimeFilter(rule_conditions.extract_raw_filter_tree())
+    live_resolvers.configure_filter(ctxt.repository, f)
+    try:
+        plan_refresh_at = await f(pull_request)
+    except live_resolvers.LiveResolutionFailure:
+        plan_refresh_at = None
 
-    if best_bet is None or best_bet >= date.DT_MAX:
+    if plan_refresh_at is None or plan_refresh_at >= date.DT_MAX:
         if only_if_earlier:
             return
 
@@ -124,15 +118,15 @@ async def plan_next_refresh(
             current = await _get_current_refresh_datetime(
                 ctxt.repository, ctxt.pull["number"]
             )
-            if current is not None and best_bet >= current:
+            if current is not None and plan_refresh_at >= current:
                 return
 
         await _set_current_refresh_datetime(
-            ctxt.repository, ctxt.pull["number"], best_bet
+            ctxt.repository, ctxt.pull["number"], plan_refresh_at
         )
         ctxt.log.info(
             "plan to refresh pull request",
-            refresh_planned_at=best_bet.isoformat(),
+            refresh_planned_at=plan_refresh_at.isoformat(),
             refresh_time_conditions=refresh_time_conditions,
         )
 
