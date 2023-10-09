@@ -1,3 +1,5 @@
+import secrets
+
 import pytest
 import respx
 import sqlalchemy.orm
@@ -157,21 +159,33 @@ async def test_applications_limit(
         login="user1",
         oauth_access_token="token",
     )
+    account = gh_models.GitHubAccount(
+        id=user.id,
+        login=user.login,
+        type="User",
+    )
     db.add(user)
+    db.add(account)
     await db.commit()
 
-    await web_client.log_as(user.id)
+    api_access_key = f"mka_{secrets.token_urlsafe(21)}"
+    api_secret_key = secrets.token_urlsafe(32)  # 256bytes encoded in base64
 
     for i in range(application_keys.APPLICATIONS_LIMIT):
-        resp = await web_client.post(
-            "/front/github-account/424242/applications",
-            json={"name": "my last app"},
+        application = application_keys.ApplicationKey(
+            name=f"whatever {i}",
+            api_access_key=api_access_key,
+            api_secret_key=api_secret_key,
+            github_account_id=account.id,
+            created_by_github_user_id=user.id,
         )
-        resp.raise_for_status()
-        await assert_database_application_keys_count(user.id, i + 1)
+        db.add(application)
+
+    await db.commit()
 
     await assert_database_application_keys_count(user.id, 200)
 
+    await web_client.log_as(user.id)
     resp = await web_client.get("/front/github-account/424242/applications")
     assert resp.status_code == 200
     list_data = resp.json()
