@@ -67,6 +67,35 @@ jobs:
           tools/poetry-ci-install.sh
           poetry run poe linters
 
+  # TODO(sileht): We need to validate the idea before adding this requirements to Mergify config
+  poetry-wheel-check:
+    timeout-minutes: 20
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Setup Python 🔧
+        uses: actions/setup-python@v4.7.1
+        with:
+          python-version: 3.11.4
+
+      - name: Build 🔧 & Test 🔍
+        run: |
+          # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+          pip install -r requirements-poetry.txt
+          tools/poetry-ci-install.sh
+          poetry update --lock
+          if [[ $(git diff --quiet) != "" ]]; then
+            cat <<EOF
+          Your local poetry cache as some missing wheels. To fix it run:
+          $ poetry cache clear PyPI --all
+          $ poetry update --lock
+          EOF
+            exit 1
+          fi
+
+
   secrets-leakage:
     runs-on: ubuntu-22.04
     steps:
