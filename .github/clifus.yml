@@ -17,6 +17,13 @@ sources:
     spec:
       command: python3 .github/get-latest-datadog-mergify-integration-version.py
 
+  actionlint-version:
+    name: Get latest action lint version from GitHub release
+    kind: shell
+    spec:
+      # yamllint disable-line rule:line-length
+      command: bash -c "curl https://api.github.com/repos/rhysd/actionlint/releases?per_page=1 | jq -r .[0].name[1:]"
+
 targets:
   # PYTHON VERSION
   heroku_runtime.txt:
@@ -111,3 +118,13 @@ targets:
       file: datadog/mergify-integration-version.txt
       forcecreate: true
       content: "{{ source `datadog-mergify-integration-version` }}"
+
+  github-workflow-actionlint-version:
+    name: "Update CI file GitHub workflow"
+    kind: file
+    sourceID: actionlint-version
+    spec:
+      files: [".github/workflows/ci.yaml"]
+      lineMatchPattern: "(\\s+run: bash.*download-actionlint.bash\\) )(.+)"
+    transformers:
+      - replaceRegexGroup: 2
