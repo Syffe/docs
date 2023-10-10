@@ -7,8 +7,8 @@ from mergify_engine import models
 from mergify_engine.ci import pull_registries
 
 
-class PullRequest(models.Base):
-    __tablename__ = "pull_request"
+class PullRequestForCiEventProcessing(models.Base):
+    __tablename__ = "old_pull_request_for_ci_event_processing"
 
     id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.BigInteger,

@@ -98,7 +98,7 @@ async def _insert_pull_request(
     )
 
     for pull in pulls:
-        await gh_models.PullRequest.insert(session, pull)
+        await gh_models.PullRequestForCiEventProcessing.insert(session, pull)
 
 
 async def _process_workflow_job_stream(redis_links: redis_utils.RedisLinks) -> None:

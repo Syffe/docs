@@ -69,7 +69,9 @@ async def test_process_event_stream_workflow_run(
     actual_workflow_run = workflow_runs[0]
     assert actual_workflow_run.event == gh_models.WorkflowRunTriggerEvent.PULL_REQUEST
 
-    pulls = list(await db.scalars(sqlalchemy.select(gh_models.PullRequest)))
+    pulls = list(
+        await db.scalars(sqlalchemy.select(gh_models.PullRequestForCiEventProcessing))
+    )
     assert len(pulls) == 1
     actual_pull = pulls[0]
     assert actual_pull.id == 1
