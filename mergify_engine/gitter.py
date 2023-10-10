@@ -144,7 +144,7 @@ class Gitter:
 
     def log(self, message: str, level: int = logging.INFO, **extra: typing.Any) -> None:
         self._log_level = max(level, self._log_level)
-        self._messages.append(("git directory created", extra))
+        self._messages.append((message, extra))
 
     def prepare_safe_env(
         self,
