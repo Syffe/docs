@@ -18,6 +18,7 @@ shared:
     - check-success=import-checks
     - check-success=pep8
     - check-success=semgrep
+    - check-success=actionlint
     - check-success=secrets-leakage
     - check-success=test (1)
     - check-success=test (2)
