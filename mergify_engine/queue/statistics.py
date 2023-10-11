@@ -342,23 +342,11 @@ async def _get_stats_items(
         for _, raw_stat in result:
             stat = msgpack.unpackb(raw_stat[b"data"], timestamp=3)
 
-            # TODO(Greesb): Retrocompatibility for new default partition
-            # name, to remove the 24th June 2023
-            stat_partition_name = stat.get(
-                "partition_name", partr_config.DEFAULT_PARTITION_NAME
-            )
-            if stat_partition_name is None:
-                stat_partition_name = partr_config.DEFAULT_PARTITION_NAME
-
-            # NOTE(greesb): Replace ".get()" by "[]" when all the stats
-            # will have a partition_name (21th June 2023)
             if (
                 (queue_name is None or stat["queue_name"] == queue_name)
-                and stat_partition_name == partition_name
+                and stat["partition_name"] == partition_name
                 and stat["branch_name"] == branch_name
             ):
-                # TODO(Greesb): To remove the 21th June 2023
-                stat.setdefault("partition_name", partr_config.DEFAULT_PARTITION_NAME)
                 yield stat
 
 

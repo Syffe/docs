@@ -7,7 +7,6 @@ import msgpack
 from mergify_engine import yaml
 from mergify_engine.queue import statistics
 from mergify_engine.rules.config import partition_rules as partr_config
-from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import base
 
 
@@ -70,34 +69,6 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             assert unpacked["partition_name"] == partr_config.DEFAULT_PARTITION_NAME
 
             statistics.TimeToMerge(**unpacked)
-
-        # Add a statistic with the old format (without partition name)
-        # just to make sure that we are still able to use them.
-        await self.redis_links.stats.xadd(
-            time_to_merge_key,
-            fields={
-                b"version": statistics.VERSION,
-                b"data": msgpack.packb(
-                    {
-                        "queue_name": "default",
-                        "branch_name": self.main_branch_name,
-                        "time_seconds": 1,
-                    },
-                    datetime=True,
-                ),
-            },
-        )
-
-        assert await self.redis_links.stats.xlen(time_to_merge_key) == 3
-        # In this function, we instantiate `TimeToMerge` class,
-        # so this call also make sure that both new and old statistics can
-        # be used properly.
-        stats = await statistics.get_time_to_merge_stats(
-            self.repository_ctxt, partr_config.DEFAULT_PARTITION_NAME
-        )
-        assert len(stats) == 1
-        assert "default" in stats
-        assert len(stats[qr_config.QueueName("default")]) == 3
 
     async def test_statistics_format_in_redis_with_partitions(self) -> None:
         rules = {
