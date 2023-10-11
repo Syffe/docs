@@ -1,4 +1,3 @@
-import base64
 import datetime
 import os
 import secrets
@@ -34,11 +33,6 @@ pydantic_core.ValidationError.errors = errors_without_url  # type: ignore[method
 CONFIGURATION_FILE = os.getenv("MERGIFYENGINE_TEST_SETTINGS")
 
 DASHBOARD_DEFAULT_URL = "http://localhost:3000"
-
-
-class SecretStrFromBase64(pydantic.SecretStr):
-    def __init__(self, value: str):
-        super().__init__(base64.b64decode(value).decode())
 
 
 class DatabaseSettings(pydantic_settings.BaseSettings):
@@ -250,7 +244,7 @@ class GitHubSettings(pydantic_settings.BaseSettings):
     GITHUB_APP_ID: int = pydantic.Field(
         validation_alias=pydantic.AliasChoices("GITHUB_APP_ID", "INTEGRATION_ID")
     )
-    GITHUB_PRIVATE_KEY: SecretStrFromBase64 = pydantic.Field(
+    GITHUB_PRIVATE_KEY: types.SecretStrFromBase64 = pydantic.Field(
         validation_alias=pydantic.AliasChoices("GITHUB_PRIVATE_KEY", "PRIVATE_KEY")
     )
     GITHUB_OAUTH_CLIENT_ID: str = pydantic.Field(
@@ -488,6 +482,10 @@ class LogEmbedderSettings(pydantic_settings.BaseSettings):
     )
     LOG_EMBEDDER_ENABLED_ORGS: types.GitHubLoginListFromStrWithComma = (
         types.GitHubLoginListFromStrWithComma([])
+    )
+    LOG_EMBEDDER_GCS_BUCKET: str = pydantic.Field(default="mergify-ci-monitoring-logs")
+    LOG_EMBEDDER_GCS_CREDENTIALS: types.SecretStrFromBase64 | None = pydantic.Field(
+        default=None
     )
 
 

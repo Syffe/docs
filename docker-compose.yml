@@ -1,5 +1,10 @@
 version: "3.1"
 services:
+  google_cloud_storage:
+    image: fsouza/fake-gcs-server
+    ports:
+      - "${LOCAL_GCS_PORT:-0}:8000"
+    command: -scheme http -port 8000
   redis:
     image: redis
     ports:

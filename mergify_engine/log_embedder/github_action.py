@@ -1,3 +1,4 @@
+import codecs
 from collections import abc
 import contextlib
 import dataclasses
@@ -18,6 +19,7 @@ from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.clients import github
+from mergify_engine.clients import google_cloud_storage
 from mergify_engine.clients import http
 from mergify_engine.log_embedder import log_cleaner
 from mergify_engine.log_embedder import openai_api
@@ -49,7 +51,9 @@ class UnexpectedLogEmbedderError(Exception):
 
 
 async def embed_log(
-    openai_client: openai_api.OpenAIClient, job: gh_models.WorkflowJob
+    openai_client: openai_api.OpenAIClient,
+    gcs_client: google_cloud_storage.GoogleCloudStorageClient | None,
+    job: gh_models.WorkflowJob,
 ) -> None:
     if job.failed_step_number is None:
         log_lines = await download_failure_annotations(job)
@@ -69,6 +73,13 @@ async def embed_log(
     job.log_embedding = embedding
     job.embedded_log = truncated_log
     job.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+
+    if gcs_client is not None:
+        await gcs_client.upload(
+            settings.LOG_EMBEDDER_GCS_BUCKET,
+            f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
+            codecs.encode("".join(log_lines).encode(), encoding="zlib"),
+        )
 
 
 def get_lines_from_zip(
@@ -349,12 +360,19 @@ async def embed_logs() -> bool:
 
         LOG.info("log-embedder: %d jobs to embed", len(jobs), request=str(stmt))
 
+        gcs_client = (
+            None
+            if settings.LOG_EMBEDDER_GCS_CREDENTIALS is None
+            else google_cloud_storage.GoogleCloudStorageClient(
+                settings.LOG_EMBEDDER_GCS_CREDENTIALS
+            )
+        )
         async with openai_api.OpenAIClient() as openai_client:
             job_ids_to_compute_cosine_similarity = []
             for job in jobs:
                 with log_exception_and_maybe_retry(job):
                     if job.log_embedding is None:
-                        await embed_log(openai_client, job)
+                        await embed_log(openai_client, gcs_client, job)
 
                     if (
                         job.embedded_log_error_title is None

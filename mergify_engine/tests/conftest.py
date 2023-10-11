@@ -2,11 +2,13 @@ import asyncio
 from collections import abc
 import contextlib
 import functools
+import json
 import logging
 import os
 import re
 import typing
 from unittest import mock
+import uuid
 
 import asgi_lifespan
 import fastapi
@@ -15,6 +17,7 @@ import freezegun.api
 import httpx
 import imia
 import msgpack
+import pydantic
 import pytest
 import respx
 import sqlalchemy
@@ -27,6 +30,7 @@ from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
+from mergify_engine.clients import google_cloud_storage
 from mergify_engine.models import manage
 from mergify_engine.models.github import user as github_user
 from mergify_engine.tests import utils as test_utils
@@ -404,3 +408,33 @@ def pytest_configure(config: pytest.Config) -> None:
     logging_plugin = config.pluginmanager.get_plugin("logging-plugin")
     if logging_plugin:
         logging_plugin.report_handler.setFormatter(logs.CUSTOM_FORMATTER)
+
+
+@pytest.fixture(autouse=True)
+def prepare_google_cloud_storage_setup(
+    monkeypatch: pytest.MonkeyPatch,
+) -> typing.Generator[None, None, None]:
+    bucket_name = f"bucket-{uuid.uuid4()}"
+
+    from google.auth.credentials import AnonymousCredentials
+    from google.oauth2 import service_account
+
+    monkeypatch.setattr(
+        service_account.Credentials,
+        "from_service_account_info",
+        mock.Mock(return_value=AnonymousCredentials()),
+    )
+    monkeypatch.setattr(
+        settings, "LOG_EMBEDDER_GCS_CREDENTIALS", pydantic.SecretStr(json.dumps({}))
+    )
+    monkeypatch.setattr(settings, "LOG_EMBEDDER_GCS_BUCKET", bucket_name)
+
+    client = google_cloud_storage.GoogleCloudStorageClient(
+        settings.LOG_EMBEDDER_GCS_CREDENTIALS,
+    )
+    bucket = client.bucket(settings.LOG_EMBEDDER_GCS_BUCKET)
+    client.create_bucket(bucket_name)
+    try:
+        yield
+    finally:
+        bucket.delete(force=True)

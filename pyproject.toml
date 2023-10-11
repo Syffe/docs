@@ -56,6 +56,7 @@ pydantic = "^2.4"
 pydantic-settings = "^2.0.3"
 typing-extensions = "^4.8.0"
 alembic-utils = "^0.8.1"
+google-cloud-storage = "^2.11.0"
 
 [tool.poetry.group.dev.dependencies]
 sphinx = "^7.2.6"
@@ -157,7 +158,7 @@ filterwarnings = [
     # NOTE(sileht): until https://github.com/kvesteri/sqlalchemy-utils/issues/646 is fixed and released
     "ignore:'crypt' is deprecated and slated for removal:DeprecationWarning",
     # sqlalchemy 2.0 warning
-    "ignore:.*sqlalchemy.orm.mapper().*:sqlalchemy.exc.SADeprecationWarning"
+    "ignore:.*sqlalchemy.orm.mapper().*:sqlalchemy.exc.SADeprecationWarning",
 ]
 testpaths = ["mergify_engine/tests"]
 
@@ -190,6 +191,7 @@ module = [
        "starsessions.*",
        "sqlalchemy_utils.*",
        "alembic_utils.*",
+       "google.*",
 ]
 ignore_missing_imports = true
 

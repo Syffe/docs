@@ -10,6 +10,8 @@ import yaml
 
 from mergify_engine import database
 from mergify_engine import github_types
+from mergify_engine import settings
+from mergify_engine.clients import google_cloud_storage
 from mergify_engine.log_embedder import github_action as gha_embedder
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github as gh_models
@@ -71,12 +73,11 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
             assert job is not None
 
-            log = await gha_embedder.download_failed_step_log(job)
-
-            assert (
+            expected_log = (
                 f"I will fail on sha {pr['head']['sha']} run_attempt:{run_attempt}"
-                in "".join(log)
             )
+            log = await gha_embedder.download_failed_step_log(job)
+            assert expected_log in "".join(log)
 
         await download_and_check_log(job_event, 1)
 
@@ -254,8 +255,11 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     },
                 )
 
+                gcs_client = google_cloud_storage.GoogleCloudStorageClient(
+                    settings.LOG_EMBEDDER_GCS_CREDENTIALS,
+                )
                 async with openai_api.OpenAIClient() as openai_client:
-                    await gha_embedder.embed_log(openai_client, job)
+                    await gha_embedder.embed_log(openai_client, gcs_client, job)
 
             await session.commit()
 
@@ -277,6 +281,16 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
         assert np.array_equal(
             job.log_embedding, OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"]
+        )
+
+        gcs_client = google_cloud_storage.GoogleCloudStorageClient(
+            settings.LOG_EMBEDDER_GCS_CREDENTIALS,
+        )
+        blobs = list(gcs_client.list_blobs(settings.LOG_EMBEDDER_GCS_BUCKET))
+        assert len(blobs) == 1
+        assert (
+            blobs[0].name
+            == f"{self.installation_ctxt.owner_id}/{self.repository_ctxt.repo['id']}/{job.id}/logs.gz"
         )
 
     async def test_log_step_name_to_zip_filenames(self) -> None:

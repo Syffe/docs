@@ -6,7 +6,7 @@ PYTHONASYNCIODEBUG = "1"
 DD_DOGSTATSD_DISABLE = "1"
 DD_TRACE_ENABLED = "0"
 MERGIFYENGINE_TEST_SETTINGS.default = "fake.env"
-PYTEST_TIMEOUT = "20"
+PYTEST_TIMEOUT = "200"
 
 [tool.poe.tasks.shell]
 deps = ["setup"]

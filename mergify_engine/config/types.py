@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import logging
 import typing
 from urllib import parse
@@ -137,6 +138,11 @@ class DictFromStr(dict[str, TT]):
         cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
     ) -> pydantic_core.CoreSchema:
         return pydantic_core.core_schema.no_info_plain_validator_function(cls.parse)
+
+
+class SecretStrFromBase64(pydantic.SecretStr):
+    def __init__(self, value: str):
+        super().__init__(base64.b64decode(value).decode())
 
 
 class StrIntDictFromStr(DictFromStr[int]):

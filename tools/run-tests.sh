@@ -6,15 +6,22 @@ PYTHON_EXTRACT_DOCKER_PORT="
 import json, sys
 data = json.load(sys.stdin)
 if isinstance(data, list):
-    port = data[0]['Publishers'][0]['PublishedPort']
+    publishers = data[0]['Publishers']
 else:
-    port = data['Publishers'][0]['PublishedPort']
-print(port)
+    publishers = data['Publishers']
+
+for pub in publishers:
+    if pub['PublishedPort'] > 0:
+        print(pub['PublishedPort'])
+        sys.exit(0)
+
+sys.exit(1)
 "
 
 if [ "$CI" == "true" ]; then
     REDIS_PORT=6363
     POSTGRES_PORT=5432
+    GOOGLE_CLOUD_STORAGE_PORT=8000
 else
     docker compose up -d --force-recreate --always-recreate-deps --remove-orphans
 
@@ -31,6 +38,7 @@ else
 
     POSTGRES_PORT=$(docker compose ps postgres --format=json | python3 -c "$PYTHON_EXTRACT_DOCKER_PORT")
     REDIS_PORT=$(docker compose ps redis --format=json | python3 -c "$PYTHON_EXTRACT_DOCKER_PORT")
+    GOOGLE_CLOUD_STORAGE_PORT=$(docker compose ps google_cloud_storage --format=json | python3 -c "$PYTHON_EXTRACT_DOCKER_PORT")
 fi
 
 
@@ -38,6 +46,7 @@ fi
 export MERGIFYENGINE_DATABASE_URL=postgresql://postgres:password@localhost:${POSTGRES_PORT}/postgres
 export MERGIFYENGINE_DEFAULT_REDIS_URL="redis://localhost:${REDIS_PORT}"
 export MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT=$(pwgen -1 48)
+export STORAGE_EMULATOR_HOST="http://localhost:${GOOGLE_CLOUD_STORAGE_PORT}"
 
 while ! docker run --net host --rm redis redis-cli -h localhost -p "$REDIS_PORT" keys '*' ; do sleep 1 ; done
 while ! docker run --net host --rm postgres psql "$MERGIFYENGINE_DATABASE_URL" -c "select 1 as connected" ; do sleep 1 ; done

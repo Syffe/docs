@@ -36,6 +36,11 @@ jobs:
           - {"name": "GitHub Enterprise Server", "secret_name": "FIXTURES_RECORDER_CONFIG_GHES_DEV"}
 
     steps:
+      - name: start google_cloud_storage
+        # FIXME(sileht): move this in services when GitHub will support image args
+        run: |
+          docker pull fsouza/fake-gcs-server
+          docker run --rm -d -p 8000:8000 fsouza/fake-gcs-server -backend memory -scheme http -port 8000
 
       - name: Checkout 🛎️
         uses: actions/checkout@v4
