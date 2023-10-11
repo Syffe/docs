@@ -7,7 +7,7 @@ instances:
     password: <YOUR PASSWORD>
     dbname: <YOUR DBNAME>
     dbm: true
-    ssl: True
+    ssl: allow
     query_samples:
       # FIXME(sileht): This is broken and spam logs:
       # https://github.com/DataDog/integrations-core/issues/15833
