@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -eo pipefail
+
 # NOTE(sileht): don't use this script in pull_request_target GitHub Workflow as it could leak the password
 
 function urlencode() {
