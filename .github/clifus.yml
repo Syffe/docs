@@ -118,7 +118,6 @@ targets:
       file: datadog/mergify-integration-version.txt
       forcecreate: true
       content: "{{ source `datadog-mergify-integration-version` }}"
-
   github-workflow-actionlint-version:
     name: "Update CI file GitHub workflow"
     kind: file
@@ -128,3 +127,9 @@ targets:
       lineMatchPattern: "(\\s+run: bash.*download-actionlint.bash\\) )(.+)"
     transformers:
       - replaceRegexGroup: 2
+  github-workflow-env-actionlint-version:
+    name: "Set envs of GitHub workflow"
+    kind: github
+    sourceID: actionlint-version
+    spec:
+      variable: ACTIONLINT_VERSION
