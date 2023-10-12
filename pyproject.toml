@@ -98,7 +98,6 @@ pytest-flakefinder = "^1.1.0"
   mergify-count-seats = "mergify_engine.count_seats:main"
   mergify-admin = "mergify_engine.console_scripts.admin_cli:admin_cli"
   mergify-devtools = "mergify_engine.console_scripts.devtools_cli:devtools_cli"
-  mergify-test-postgres-events = "mergify_engine.console_scripts.test_db_events:main"
 
 [tool.poetry.plugins]
 
