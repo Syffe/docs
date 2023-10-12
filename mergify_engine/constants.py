@@ -2,6 +2,7 @@ import datetime
 
 from mergify_engine import github_types
 from mergify_engine import settings
+from mergify_engine import utils
 
 
 GITHUB_PULL_REQUEST_BODY_MAX_SIZE = 65535
@@ -16,9 +17,8 @@ SUMMARY_NAME = "Summary"
 MERGE_QUEUE_BRANCH_PREFIX = "mergify/merge-queue/"
 # Payload to put in the body of the main comment of a pull request
 # for us to be able to know that this pull request is a merge queue pull request
-MERGE_QUEUE_BODY_INFO = {
-    "merge-queue-pr": True,
-}
+MERGE_QUEUE_BODY_INFO = utils.MergifyCommentHiddenPayload({"merge-queue-pr": True})
+
 MERGE_QUEUE_OLD_SUMMARY_NAME = "Queue: Embarked in merge train"
 MERGE_QUEUE_SUMMARY_NAME = "Queue: Embarked in merge queue"
 CONFIGURATION_CHANGED_CHECK_NAME = "Configuration changed"

@@ -26,6 +26,7 @@ from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.actions import merge_base
 from mergify_engine.engine import actions_runner
+from mergify_engine.engine import commands_runner
 from mergify_engine.models import events as evt_models
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
@@ -5022,7 +5023,7 @@ previous_failed_batches:
 
 
 
-{utils.get_mergify_payload({"command": "refresh", "conclusion": "success", "action_is_running":  True})}"""
+{utils.get_mergify_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running":  True}))}"""
             == comments[-1]["body"]
         )
 

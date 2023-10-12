@@ -4,6 +4,7 @@ import io
 import os
 import pathlib
 import subprocess
+import typing
 from unittest import mock
 import warnings
 
@@ -118,10 +119,14 @@ def test_model_as_dict() -> None:
         not_a_github_thing: orm.Mapped[str]
 
     obj = TestSimpleModel(id=0)
-    assert obj.as_github_dict() == {"id": 0, "name": None}
+    assert obj.as_github_dict() == typing.cast(
+        models.ORMObjectAsDict, {"id": 0, "name": None}
+    )
 
     obj = TestSimpleModel(id=0, name="hello")
-    assert obj.as_github_dict() == {"id": 0, "name": "hello"}
+    assert obj.as_github_dict() == typing.cast(
+        models.ORMObjectAsDict, {"id": 0, "name": "hello"}
+    )
 
 
 def test_relational_model_as_dict() -> None:
@@ -149,16 +154,21 @@ def test_relational_model_as_dict() -> None:
         )
 
     obj = TestRelationalModel(id=0)
-    assert obj.as_github_dict() == {"id": 0, "name": None, "user": None}
+    assert obj.as_github_dict() == typing.cast(
+        models.ORMObjectAsDict, {"id": 0, "name": None, "user": None}
+    )
 
     obj = TestRelationalModel(
         id=0, name="hello", user_id=0, user=TestRelationalUserModel(id=0, name="me")
     )
-    assert obj.as_github_dict() == {
-        "id": 0,
-        "name": "hello",
-        "user": {"id": 0, "name": "me", "copy_id": 0},
-    }
+    assert obj.as_github_dict() == typing.cast(
+        models.ORMObjectAsDict,
+        {
+            "id": 0,
+            "name": "hello",
+            "user": {"id": 0, "name": "me", "copy_id": 0},
+        },
+    )
 
 
 async def test_get_or_create_on_conflict(setup_database: None) -> None:

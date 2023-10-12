@@ -187,16 +187,21 @@ def split_list(remaining: list[_T], part: int) -> abc.Generator[list[_T], None, 
         remaining = remaining[size:]
 
 
+MergifyCommentHiddenPayload = typing.TypedDict(
+    "MergifyCommentHiddenPayload", {"merge-queue-pr": bool}, total=False
+)
+
+
 def get_hidden_payload_from_comment_body(
     comment_body: str,
-) -> dict[str, typing.Any] | None:
+) -> MergifyCommentHiddenPayload | None:
     payload_match = MERGIFY_COMMENT_PAYLOAD_MATCHER.search(comment_body)
 
     if payload_match is None:
         return None
 
     try:
-        payload: dict[typing.Any, typing.Any] = json.loads(payload_match[1])
+        payload: MergifyCommentHiddenPayload = json.loads(payload_match[1])
     except Exception:
         LOG.error("Unable to load comment payload: '%s'", payload_match[1])
         return None
@@ -204,7 +209,7 @@ def get_hidden_payload_from_comment_body(
     return payload
 
 
-def get_mergify_payload(json_payload: dict[str, typing.Any]) -> str:
+def get_mergify_payload(json_payload: MergifyCommentHiddenPayload) -> str:
     return f"""<!---
 {MERGIFY_COMMENT_PAYLOAD_STR_PREFIX}
 {json.dumps(json_payload)}

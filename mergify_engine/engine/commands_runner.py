@@ -79,7 +79,7 @@ class NotACommand(Exception):
     message: str
 
 
-class CommandPayloadBase(typing.TypedDict):
+class CommandPayloadBase(utils.MergifyCommentHiddenPayload):
     command: str
     conclusion: str
     action_is_running: bool
@@ -135,7 +135,7 @@ def prepare_message(
 
 """
 
-    message += utils.get_mergify_payload(typing.cast(dict[str, typing.Any], payload))
+    message += utils.get_mergify_payload(payload)
     return message
 
 

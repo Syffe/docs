@@ -4,6 +4,7 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import utils
 from mergify_engine import yaml
+from mergify_engine.engine import commands_runner
 from mergify_engine.queue import merge_train
 from mergify_engine.tests.functional import base
 
@@ -74,7 +75,7 @@ class TestUnQueueCommand(base.FunctionalTestBase):
 
 
 
-{utils.get_mergify_payload({"command": "requeue", "conclusion": "neutral", "action_is_running": True})}"""
+{utils.get_mergify_payload(commands_runner.CommandPayload({"command": "requeue", "conclusion": "neutral", "action_is_running": True}))}"""
         )
 
         check = first(

@@ -1,4 +1,5 @@
 import random
+import typing
 from unittest import mock
 
 import anys
@@ -13,6 +14,7 @@ from mergify_engine import date
 from mergify_engine import eventlogs
 from mergify_engine import events as evt_utils
 from mergify_engine import github_types
+from mergify_engine import models
 from mergify_engine import signals
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_model
@@ -755,32 +757,35 @@ async def test_event_as_dict(
     event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseDelete))
 
     assert event is not None
-    assert event._as_dict() == {
-        "id": 1,
-        "deleted_by_id": 987,
-        "type": enumerations.EventType.QueuePauseDelete,
-        "received_at": mock.ANY,
-        "pull_request": None,
-        "trigger": "Rule: my rule",
-        "repository_id": 0,
-        "deleted_by": {
-            "id": 987,
-            "type": enumerations.GithubAuthenticatedActorType.USER,
-            "name": "cell",
-        },
-        "repository": {
-            "id": 0,
-            "owner_id": 0,
-            "name": "mergify-engine",
-            "private": False,
-            "default_branch": "main",
-            "full_name": "Mergifyio/mergify-engine",
-            "archived": False,
-            "owner": {
+    assert event._as_dict() == typing.cast(
+        models.ORMObjectAsDict,
+        {
+            "id": 1,
+            "deleted_by_id": 987,
+            "type": enumerations.EventType.QueuePauseDelete,
+            "received_at": mock.ANY,
+            "pull_request": None,
+            "trigger": "Rule: my rule",
+            "repository_id": 0,
+            "deleted_by": {
+                "id": 987,
+                "type": enumerations.GithubAuthenticatedActorType.USER,
+                "name": "cell",
+            },
+            "repository": {
                 "id": 0,
-                "login": "Mergifyio",
-                "type": "User",
-                "application_keys_count": 0,
+                "owner_id": 0,
+                "name": "mergify-engine",
+                "private": False,
+                "default_branch": "main",
+                "full_name": "Mergifyio/mergify-engine",
+                "archived": False,
+                "owner": {
+                    "id": 0,
+                    "login": "Mergifyio",
+                    "type": "User",
+                    "application_keys_count": 0,
+                },
             },
         },
-    }
+    )
