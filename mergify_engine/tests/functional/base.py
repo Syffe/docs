@@ -1048,7 +1048,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             client = self.client_integration
             login = github_types.GitHubLogin("mergifyio-testing")
 
-        resp = await client.post(
+        await client.post(
             f"{self.url_origin}/pulls",
             json={
                 "base": base,
@@ -1058,11 +1058,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 "draft": draft,
             },
         )
-        await self.wait_for("pull_request", {"action": "opened"})
+
+        pr_opened_event = await self.wait_for_pull_request("opened")
 
         self.created_branches.add(github_types.GitHubRefType(branch))
 
-        return typing.cast(github_types.GitHubPullRequest, resp.json())
+        return pr_opened_event["pull_request"]
 
     async def create_pr_with_specific_commits(
         self,
