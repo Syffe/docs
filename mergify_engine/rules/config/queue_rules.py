@@ -12,9 +12,9 @@ from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import queue
-from mergify_engine import rules as base_rules
 from mergify_engine.actions import merge_base
 from mergify_engine.rules import conditions as conditions_mod
+from mergify_engine.rules import generic_evaluator
 from mergify_engine.rules import types
 from mergify_engine.rules.config import conditions as cond_config
 from mergify_engine.rules.config import priority_rules as priority_rules_config
@@ -26,7 +26,9 @@ QueueName = typing.NewType("QueueName", str)
 
 EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
 
-QueuesRulesEvaluator = base_rules.GenericRulesEvaluator["QueueRule", EvaluatedQueueRule]
+QueuesRulesEvaluator = generic_evaluator.GenericRulesEvaluator[
+    "QueueRule", EvaluatedQueueRule
+]
 
 
 class QueueConfig(typing_extensions.TypedDict):

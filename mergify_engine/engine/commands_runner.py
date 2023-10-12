@@ -13,12 +13,12 @@ from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions as conditions_mod
+from mergify_engine.rules import live_resolvers
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
@@ -727,7 +727,7 @@ async def check_command_restrictions(
 
     if commands_restrictions is not None:
         restriction_conditions = commands_restrictions["conditions"].copy()
-        rules.apply_configure_filter(ctxt.repository, restriction_conditions)
+        live_resolvers.apply_configure_filter(ctxt.repository, restriction_conditions)
         user_permission = await ctxt.repository.get_user_permission(user)
         command_pull_request = context.CommandPullRequest(
             ctxt, user["login"], user_permission

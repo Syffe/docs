@@ -6,13 +6,13 @@ import voluptuous
 
 from mergify_engine import context
 from mergify_engine import queue
-from mergify_engine import rules
 from mergify_engine.rules import conditions as conditions_mod
+from mergify_engine.rules import generic_evaluator
 
 
 PriorityRuleName = typing.NewType("PriorityRuleName", str)
 EvaluatedPriorityRule = typing.NewType("EvaluatedPriorityRule", "PriorityRule")
-PriorityRulesEvaluator = rules.GenericRulesEvaluator[
+PriorityRulesEvaluator = generic_evaluator.GenericRulesEvaluator[
     "PriorityRule", EvaluatedPriorityRule
 ]
 

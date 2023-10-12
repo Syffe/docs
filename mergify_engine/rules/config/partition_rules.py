@@ -5,8 +5,8 @@ import typing
 import voluptuous
 
 from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine.rules import conditions as conditions_mod
+from mergify_engine.rules import generic_evaluator
 from mergify_engine.rules.config import conditions as cond_config
 
 
@@ -15,7 +15,7 @@ DEFAULT_PARTITION_NAME = PartitionRuleName("__default__")
 
 EvaluatedPartitionRule = typing.NewType("EvaluatedPartitionRule", "PartitionRule")
 
-PartitionRulesEvaluator = rules.GenericRulesEvaluator[
+PartitionRulesEvaluator = generic_evaluator.GenericRulesEvaluator[
     "PartitionRule", EvaluatedPartitionRule
 ]
 

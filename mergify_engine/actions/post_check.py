@@ -6,10 +6,10 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine.rules import conditions
+from mergify_engine.rules import live_resolvers
 from mergify_engine.rules import types
 from mergify_engine.rules.config import conditions as cond_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -63,7 +63,7 @@ class PostCheckExecutor(
             check_conditions = rule.conditions
         else:
             check_conditions = action.config["success_conditions"].copy()
-            rules.apply_configure_filter(ctxt.repository, check_conditions)
+            live_resolvers.apply_configure_filter(ctxt.repository, check_conditions)
             await check_conditions([ctxt.pull_request])
 
         extra_variables: dict[str, str | bool] = {

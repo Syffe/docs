@@ -7,8 +7,8 @@ import voluptuous
 
 from mergify_engine import actions as actions_mod
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine.rules import conditions as conditions_mod
+from mergify_engine.rules import generic_evaluator
 from mergify_engine.rules.config import conditions as cond_config
 
 
@@ -21,7 +21,7 @@ LOG = daiquiri.getLogger(__name__)
 
 PullRequestRuleName = typing.NewType("PullRequestRuleName", str)
 EvaluatedPullRequestRule = typing.NewType("EvaluatedPullRequestRule", "PullRequestRule")
-PullRequestRulesEvaluator = rules.GenericRulesEvaluator[
+PullRequestRulesEvaluator = generic_evaluator.GenericRulesEvaluator[
     "PullRequestRule", EvaluatedPullRequestRule
 ]
 

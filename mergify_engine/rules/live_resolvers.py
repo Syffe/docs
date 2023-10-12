@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import functools
 import itertools
@@ -5,6 +7,7 @@ import typing
 
 from mergify_engine import github_types
 from mergify_engine.clients import http
+from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import filter
 
 
@@ -18,7 +21,7 @@ class LiveResolutionFailure(Exception):
 
 
 async def _resolve_login(
-    repository: "context.Repository", name: str
+    repository: context.Repository, name: str
 ) -> list[github_types.GitHubLogin]:
     if not name:
         return []
@@ -60,7 +63,7 @@ async def _resolve_login(
 
 
 async def teams(
-    repository: "context.Repository",
+    repository: context.Repository,
     values: list[str] | tuple[str] | str | None,
 ) -> list[github_types.GitHubLogin]:
     if not values:
@@ -88,9 +91,25 @@ _TEAM_ATTRIBUTES = (
 
 
 def configure_filter(
-    repository: "context.Repository", f: filter.Filter[filter.FilterResultT]
+    repository: context.Repository, f: filter.Filter[filter.FilterResultT]
 ) -> None:
     for attrib in _TEAM_ATTRIBUTES:
         f.value_expanders[attrib] = functools.partial(  # type: ignore[assignment]
             teams, repository
         )
+
+
+def apply_configure_filter(
+    repository: context.Repository,
+    conditions: (
+        conditions_mod.PullRequestRuleConditions
+        | conditions_mod.QueueRuleMergeConditions
+        | conditions_mod.PriorityRuleConditions
+        | conditions_mod.PartitionRuleConditions
+    ),
+) -> None:
+    for condition in conditions.walk():
+        configure_filter(repository, condition.filters.boolean)
+        configure_filter(repository, condition.filters.next_evaluation)
+        if condition.filters.related_checks is not None:
+            configure_filter(repository, condition.filters.related_checks)
