@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import dataclasses
 import typing
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import signals
 from mergify_engine import subscription
@@ -14,6 +15,10 @@ from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 class UnqueueExecutorConfig(typing.TypedDict):
@@ -30,10 +35,10 @@ class UnqueueExecutor(
     @classmethod
     async def create(
         cls,
-        action: "UnqueueCommand",
-        ctxt: "context.Context",
+        action: UnqueueCommand,
+        ctxt: context.Context,
         rule: prr_config.EvaluatedPullRequestRule,
-    ) -> "UnqueueExecutor":
+    ) -> UnqueueExecutor:
         return cls(
             ctxt,
             rule,
@@ -150,6 +155,6 @@ class UnqueueCommand(actions.Action):
         init=False, repr=False
     )
 
-    def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
+    def validate_config(self, mergify_config: mergify_conf.MergifyConfig) -> None:
         self.queue_rules = mergify_config["queue_rules"]
         self.partition_rules = mergify_config["partition_rules"]

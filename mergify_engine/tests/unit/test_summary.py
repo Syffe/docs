@@ -3,7 +3,7 @@ import datetime
 from freezegun import freeze_time
 import voluptuous
 
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import date
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules.config import conditions as cond_config
@@ -427,7 +427,7 @@ async def test_queue_rules_summary() -> None:
         ]
     )
 
-    pulls: list[context.BasePullRequest] = [
+    pulls: list[condition_value_querier.BasePullRequest] = [
         conftest.FakePullRequest(
             {
                 "number": 1,
@@ -564,7 +564,7 @@ async def test_queue_rules_summary() -> None:
 
 @freeze_time("2021-09-22T08:00:05", tz_offset=0)
 async def test_rules_conditions_schedule() -> None:
-    pulls: list[context.BasePullRequest] = [
+    pulls: list[condition_value_querier.BasePullRequest] = [
         conftest.FakePullRequest(
             {
                 "number": 1,

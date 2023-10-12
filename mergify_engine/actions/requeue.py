@@ -7,7 +7,6 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import refresher
 from mergify_engine import signals
@@ -16,6 +15,9 @@ from mergify_engine.engine import commands_runner
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 LOG = daiquiri.getLogger(__name__)
 

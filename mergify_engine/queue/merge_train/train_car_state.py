@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import base64
 import dataclasses
 import datetime
@@ -5,7 +7,6 @@ import typing
 
 import daiquiri
 
-from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
@@ -18,6 +19,9 @@ from mergify_engine.queue.merge_train import train_car
 from mergify_engine.queue.merge_train import types as queue_types
 from mergify_engine.rules.config import queue_rules as qr_config
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -33,8 +37,8 @@ class TrainCarStateForSummary:
 
     @classmethod
     def from_train_car_state(
-        cls, train_car_state: "TrainCarState"
-    ) -> "TrainCarStateForSummary":
+        cls, train_car_state: TrainCarState
+    ) -> TrainCarStateForSummary:
         return cls(train_car_state.outcome, train_car_state.outcome_message)
 
     class Serialized(typing.TypedDict):
@@ -51,8 +55,8 @@ class TrainCarStateForSummary:
 
     @classmethod
     def deserialize(
-        cls, data: "TrainCarStateForSummary.Serialized"
-    ) -> "TrainCarStateForSummary":
+        cls, data: TrainCarStateForSummary.Serialized
+    ) -> TrainCarStateForSummary:
         return cls(
             outcome=data["outcome"],
             outcome_message=data["outcome_message"],
@@ -61,7 +65,7 @@ class TrainCarStateForSummary:
     @classmethod
     def deserialize_from_summary(
         cls, summary_check: github_types.CachedGitHubCheckRun | None
-    ) -> "TrainCarStateForSummary | None":
+    ) -> TrainCarStateForSummary | None:
         line = extract_encoded_train_car_state_data_from_summary(summary_check)
         if line is not None:
             serialized = typing.cast(
@@ -128,7 +132,7 @@ class TrainCarState:
         time_spent_outside_schedule_start_dates: list[datetime.datetime]
         time_spent_outside_schedule_end_dates: list[datetime.datetime]
 
-    def serialized(self) -> "TrainCarState.Serialized":
+    def serialized(self) -> TrainCarState.Serialized:
         frozen_by = None
         if self.frozen_by is not None:
             frozen_by = self.frozen_by.serialized()
@@ -159,8 +163,8 @@ class TrainCarState:
         cls,
         repository: context.Repository,
         queue_rules: qr_config.QueueRules,
-        data: "TrainCarState.Serialized",
-    ) -> "TrainCarState":
+        data: TrainCarState.Serialized,
+    ) -> TrainCarState:
         kwargs = {
             "waiting_for_freeze_start_dates": data.get(
                 "waiting_for_freeze_start_dates", []

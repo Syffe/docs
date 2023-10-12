@@ -8,7 +8,7 @@ import jinja2
 import jinja2.sandbox
 import pytest
 
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import date
 from mergify_engine.rules import filter
 from mergify_engine.rules import parser
@@ -19,7 +19,7 @@ class FakePR(dict):  # type: ignore[type-arg]
         try:
             return self[k]
         except KeyError:
-            raise context.PullRequestAttributeError(name=k)
+            raise condition_value_querier.PullRequestAttributeError(name=k)
 
 
 class AsyncFakePR:
@@ -30,7 +30,7 @@ class AsyncFakePR:
         try:
             return self.data[k]
         except KeyError:
-            raise context.PullRequestAttributeError(name=k)
+            raise condition_value_querier.PullRequestAttributeError(name=k)
 
     async def items(self) -> dict[str, typing.Any]:
         return self.data

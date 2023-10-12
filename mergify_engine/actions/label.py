@@ -7,10 +7,14 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import signals
 from mergify_engine.clients import http
 from mergify_engine.rules.config import pull_request_rules as prr_config
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 class LabelExecutorConfig(typing.TypedDict):
@@ -29,9 +33,10 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
         rule: prr_config.EvaluatedPullRequestRule,
         label: str,
     ) -> str:
+        pull_attrs = condition_value_querier.PullRequest(ctxt)
         try:
-            return await ctxt.pull_request.render_template(label)
-        except context.RenderTemplateFailure as rtf:
+            return await pull_attrs.render_template(label)
+        except condition_value_querier.RenderTemplateFailure as rtf:
             raise actions.InvalidDynamicActionConfiguration(
                 rule,
                 action,

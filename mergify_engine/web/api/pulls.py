@@ -7,6 +7,7 @@ import pydantic
 import typing_extensions
 import voluptuous
 
+from mergify_engine import condition_value_querier
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import pagination
@@ -143,7 +144,7 @@ async def get_pull_requests(
             else:
                 pull_context = context.Context(repository, pull)
 
-            pull_obj = context.PullRequest(pull_context)
+            pull_obj = condition_value_querier.PullRequest(pull_context)
 
             pull_conditions = base_pull_conditions.copy()
             match = await pull_conditions(pull_obj)

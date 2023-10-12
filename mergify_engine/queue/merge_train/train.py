@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import abc
 import dataclasses
 import datetime
@@ -10,8 +12,8 @@ import daiquiri
 import first
 import tenacity
 
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import github_types
@@ -35,6 +37,7 @@ from mergify_engine.rules.config import partition_rules as partr_config
 
 
 if typing.TYPE_CHECKING:
+    from mergify_engine import context
     from mergify_engine.queue.merge_train.convoy import Convoy
     from mergify_engine.rules.config import pull_request_rules as prr_config
     from mergify_engine.rules.config import queue_rules as qr_config
@@ -49,7 +52,7 @@ def get_redis_train_key(installation: context.Installation) -> str:
 
 @dataclasses.dataclass
 class Train:
-    convoy: "Convoy" = dataclasses.field(repr=False)
+    convoy: Convoy = dataclasses.field(repr=False)
 
     # Stored in redis
     partition_name: partr_config.PartitionRuleName = dataclasses.field(
@@ -129,7 +132,7 @@ class Train:
 
     def to_serialized(
         self, serialize_if_empty: bool = False
-    ) -> "Train.Serialized | None":
+    ) -> Train.Serialized | None:
         if not self._waiting_pulls and not self._cars and not serialize_if_empty:
             return None
 
@@ -271,7 +274,7 @@ class Train:
         evaluator = await partr_config.PartitionRulesEvaluator.create(
             partition_rule_to_evaluate,
             ctxt.repository,
-            [ctxt.pull_request],
+            [condition_value_querier.PullRequest(ctxt)],
             False,
         )
 
@@ -1156,7 +1159,7 @@ class Train:
     async def _start_checking_car(
         self,
         car: train_car.TrainCar,
-        previous_car: "train_car.TrainCar | None",
+        previous_car: train_car.TrainCar | None,
     ) -> None:
         do_inplace_checks = await car.can_be_checked_inplace()
         try:
@@ -1267,7 +1270,7 @@ class Train:
         self,
         queue_rule_report: merge_train_types.QueueRuleReport,
         *,
-        pull_rule: "prr_config.EvaluatedPullRequestRule | None" = None,
+        pull_rule: prr_config.EvaluatedPullRequestRule | None = None,
         for_queue_pull_request: bool = False,
         required_conditions_to_stay_in_queue: str | None = None,
     ) -> str:
@@ -1304,8 +1307,8 @@ class Train:
     async def get_pull_summary(
         self,
         ctxt: context.Context,
-        queue_rule: "qr_config.QueueRule",
-        pull_rule: "prr_config.EvaluatedPullRequestRule | None" = None,
+        queue_rule: qr_config.QueueRule,
+        pull_rule: prr_config.EvaluatedPullRequestRule | None = None,
         # This argument is mainly used by Convoy.get_pull_summary to avoid doing
         # Train.find_embarked_pull multiples times
         embarked_pull_with_car: merge_train_types.EmbarkedPullWithCar | None = None,

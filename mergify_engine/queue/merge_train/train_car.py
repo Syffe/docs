@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import abc
 import dataclasses
 import datetime
@@ -13,8 +15,8 @@ import tenacity
 
 from mergify_engine import branch_updater
 from mergify_engine import check_api
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import date
 from mergify_engine import delayed_refresh
@@ -42,6 +44,7 @@ from mergify_engine.rules.config import partition_rules as partr_config
 
 
 if typing.TYPE_CHECKING:
+    from mergify_engine import context
     from mergify_engine.queue.merge_train.train import Train
     from mergify_engine.queue.merge_train.train_car_state import TrainCarState
     from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -218,12 +221,12 @@ class TrainCarChecksType(enum.Enum):
 
 @dataclasses.dataclass
 class TrainCarPullRequestCreationPostponed(Exception):
-    car: "TrainCar"
+    car: TrainCar
 
 
 @dataclasses.dataclass
 class TrainCarPullRequestCreationFailure(Exception):
-    car: "TrainCar"
+    car: TrainCar
     guilty_prs: list[github_types.GitHubPullRequestNumber] = dataclasses.field(
         default_factory=list
     )
@@ -238,8 +241,8 @@ class TrainCarPullRequestCreationFailure(Exception):
 
 @dataclasses.dataclass
 class TrainCar:
-    train: "Train" = dataclasses.field(repr=False)
-    train_car_state: "TrainCarState" = dataclasses.field(repr=False)
+    train: Train = dataclasses.field(repr=False)
+    train_car_state: TrainCarState = dataclasses.field(repr=False)
     initial_embarked_pulls: list[ep_import.EmbarkedPull]
     still_queued_embarked_pulls: list[ep_import.EmbarkedPull]
     parent_pull_request_numbers: list[github_types.GitHubPullRequestNumber]
@@ -247,7 +250,7 @@ class TrainCar:
     queue_pull_request_number: None | (
         github_types.GitHubPullRequestNumber
     ) = dataclasses.field(default=None)
-    failure_history: list["TrainCar"] = dataclasses.field(
+    failure_history: list[TrainCar] = dataclasses.field(
         default_factory=list, repr=False
     )
     head_branch: str | None = None
@@ -269,13 +272,13 @@ class TrainCar:
     QUEUE_BRANCH_PREFIX: typing.ClassVar[str] = "tmp-"
 
     class Serialized(typing.TypedDict):
-        train_car_state: "TrainCarState.Serialized"
+        train_car_state: TrainCarState.Serialized
         initial_embarked_pulls: list[ep_import.EmbarkedPull.Serialized]
         still_queued_embarked_pulls: list[ep_import.EmbarkedPull.Serialized]
         parent_pull_request_numbers: list[github_types.GitHubPullRequestNumber]
         initial_current_base_sha: github_types.SHAType
         queue_pull_request_number: github_types.GitHubPullRequestNumber | None
-        failure_history: list["TrainCar.Serialized"]
+        failure_history: list[TrainCar.Serialized]
         head_branch: str | None
         last_checks: list[merge_train_checks.QueueCheck.Serialized]
         # retrocompat
@@ -286,7 +289,7 @@ class TrainCar:
         queue_branch_name: github_types.GitHubRefType | None
         delegating_train_cars_partition_names: list[partr_config.PartitionRuleName]
 
-    def serialized(self) -> "TrainCar.Serialized":
+    def serialized(self) -> TrainCar.Serialized:
         if self.last_merge_conditions_evaluation is not None:
             last_merge_conditions_evaluation = (
                 self.last_merge_conditions_evaluation.serialized()
@@ -326,12 +329,9 @@ class TrainCar:
     @classmethod
     def deserialize(
         cls,
-        train: "Train",
-        data: "TrainCar.Serialized",
-    ) -> "TrainCar":
-        # Avoid circular import
-        # from mergify_engine.rules import conditions
-
+        train: Train,
+        data: TrainCar.Serialized,
+    ) -> TrainCar:
         if "initial_embarked_pulls" in data:
             initial_embarked_pulls = [
                 ep_import.EmbarkedPull.deserialize(train, ep)
@@ -476,10 +476,10 @@ class TrainCar:
     def _deserialize_train_car_state(
         cls,
         repository: context.Repository,
-        queue_rules: "qr_config.QueueRules",
-        data: "TrainCar.Serialized",
+        queue_rules: qr_config.QueueRules,
+        data: TrainCar.Serialized,
         checks_type: TrainCarChecksType | None,
-    ) -> "TrainCarState":
+    ) -> TrainCarState:
         # Circular improt
         from mergify_engine.queue.merge_train import train_car_state
 
@@ -531,11 +531,11 @@ class TrainCar:
         )
 
     @property
-    def repository(self) -> "context.Repository":
+    def repository(self) -> context.Repository:
         return self.train.convoy.repository
 
     @property
-    def ref(self) -> "github_types.GitHubRefType":
+    def ref(self) -> github_types.GitHubRefType:
         return self.train.convoy.ref
 
     @property
@@ -658,7 +658,9 @@ class TrainCar:
             return refs[-1]
         return f"{', '.join(refs[:-1])} and {refs[-1]}"
 
-    async def get_pull_requests_to_evaluate(self) -> list[context.BasePullRequest]:
+    async def get_pull_requests_to_evaluate(
+        self,
+    ) -> list[condition_value_querier.BasePullRequest]:
         if self.train_car_state.checks_type in (
             TrainCarChecksType.INPLACE,
             TrainCarChecksType.DRAFT,
@@ -672,7 +674,7 @@ class TrainCar:
                 self.queue_pull_request_number
             )
             return [
-                context.QueuePullRequest(
+                condition_value_querier.QueuePullRequest(
                     await self.repository.get_pull_request_context(
                         ep.user_pull_request_number
                     ),
@@ -684,11 +686,11 @@ class TrainCar:
         if self.train_car_state.checks_type == TrainCarChecksType.FAILED:
             # Will be splitted or dropped soon
             return [
-                (
+                condition_value_querier.PullRequest(
                     await self.repository.get_pull_request_context(
                         ep.user_pull_request_number
                     )
-                ).pull_request
+                )
                 for ep in self.initial_embarked_pulls
             ]
 
@@ -712,7 +714,7 @@ class TrainCar:
             self.queue_pull_request_number
         )
 
-    def get_queue_name(self) -> "qr_config.QueueName":
+    def get_queue_name(self) -> qr_config.QueueName:
         return self.initial_embarked_pulls[0].config["name"]
 
     async def can_be_checked_inplace(self) -> bool:
@@ -1167,8 +1169,8 @@ class TrainCar:
 
     async def _get_draft_pr_setup(
         self,
-        queue_rule: "qr_config.QueueRule",
-        previous_car: "TrainCar | None",
+        queue_rule: qr_config.QueueRule,
+        previous_car: TrainCar | None,
     ) -> tuple[github_types.SHAType, list[github_types.GitHubPullRequestNumber]]:
         pulls_in_draft = []
         queue_branch_merge_method = queue_rule.config["queue_branch_merge_method"]
@@ -1205,7 +1207,7 @@ class TrainCar:
     @tracer.wrap("TrainCar.start_checking_with_draft")
     async def start_checking_with_draft(
         self,
-        previous_car: "TrainCar | None",
+        previous_car: TrainCar | None,
     ) -> None:
         queue_rule = self.get_queue_rule()
         self.head_branch = self._get_pulls_branch_ref(
@@ -1419,7 +1421,7 @@ class TrainCar:
         for_queue_pull_request: bool = False,
         show_queue: bool = True,
         headline: str | None = None,
-        pull_rule: "prr_config.EvaluatedPullRequestRule | None" = None,
+        pull_rule: prr_config.EvaluatedPullRequestRule | None = None,
     ) -> str:
         description = ""
         if headline:
@@ -1782,9 +1784,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     def _get_merge_conditions_with_ignored_attributes(
         self,
-        evaluated_queue_rule: "qr_config.EvaluatedQueueRule",
+        evaluated_queue_rule: qr_config.EvaluatedQueueRule,
         non_ignored_attributes: str | tuple[str, ...],
-    ) -> "conditions.QueueRuleMergeConditions":
+    ) -> conditions.QueueRuleMergeConditions:
         conditions_with_ignored_attributes = (
             evaluated_queue_rule.merge_conditions.copy()
         )
@@ -1829,7 +1831,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def get_unexpected_changes(
         self,
-        queue_rule: "qr_config.QueueRule",
+        queue_rule: qr_config.QueueRule,
     ) -> UnexpectedChanges | None:
         if self.queue_pull_request_number is None:
             raise RuntimeError(
@@ -1933,7 +1935,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         origin: typing.Literal[
             "original_pull_request", "draft_pull_request", "batch_split"
         ],
-        original_pull_request_rule: "prr_config.EvaluatedPullRequestRule | None",
+        original_pull_request_rule: prr_config.EvaluatedPullRequestRule | None,
         original_pull_request_number: github_types.GitHubPullRequestNumber | None,
     ) -> None:
         if self.queue_pull_request_number is None:
@@ -2133,7 +2135,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             priority=worker_pusher.Priority.immediate,
         )
 
-    def get_queue_rule(self) -> "qr_config.QueueRule":
+    def get_queue_rule(self) -> qr_config.QueueRule:
         queue_name = self.initial_embarked_pulls[0].config["name"]
         try:
             return self.train.convoy.queue_rules[queue_name]
@@ -2145,7 +2147,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
     async def update_state(
         self,
         queue_conditions_conclusion: check_api.Conclusion,
-        evaluated_queue_rule: "qr_config.EvaluatedQueueRule",
+        evaluated_queue_rule: qr_config.EvaluatedQueueRule,
         unexpected_changes: UnexpectedChanges | None = None,
     ) -> None:
         self.last_merge_conditions_evaluation = (
@@ -2742,7 +2744,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 else worker_pusher.Priority.medium,
             )
 
-    def _get_previous_car(self) -> "TrainCar | None":
+    def _get_previous_car(self) -> TrainCar | None:
         position = self.train._cars.index(self)
         if position == 0:
             return None

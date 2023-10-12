@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import typing
 
 import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
@@ -13,6 +15,9 @@ from mergify_engine.clients import http
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 EVENT_STATE_MAP = {
     "APPROVE": "APPROVED",
@@ -31,10 +36,10 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
     @classmethod
     async def create(
         cls,
-        action: "ReviewAction",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "ReviewExecutor":
+        action: ReviewAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> ReviewExecutor:
         try:
             bot_account = await action_utils.render_bot_account(
                 ctxt,
@@ -47,11 +52,10 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
             )
 
         if action.config["message"]:
+            pull_attrs = condition_value_querier.PullRequest(ctxt)
             try:
-                message = await ctxt.pull_request.render_template(
-                    action.config["message"]
-                )
-            except context.RenderTemplateFailure as rmf:
+                message = await pull_attrs.render_template(action.config["message"])
+            except condition_value_querier.RenderTemplateFailure as rmf:
                 raise actions.InvalidDynamicActionConfiguration(
                     rule, action, "Invalid review message", str(rmf)
                 )

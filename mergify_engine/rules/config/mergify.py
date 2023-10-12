@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import abc
 import dataclasses
 import functools
@@ -6,7 +8,7 @@ import typing
 
 import voluptuous
 
-from mergify_engine import context
+from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import rules
@@ -15,6 +17,7 @@ from mergify_engine.clients import http
 
 
 if typing.TYPE_CHECKING:
+    from mergify_engine import context
     from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config
     from mergify_engine.rules.config import queue_rules as qr_config
@@ -48,10 +51,10 @@ class Defaults(typing.TypedDict):
 
 class MergifyConfig(typing.TypedDict):
     extends: github_types.GitHubRepositoryName | None
-    pull_request_rules: "prr_config.PullRequestRules"
-    queue_rules: "qr_config.QueueRules"
-    partition_rules: "partr_config.PartitionRules"
-    commands_restrictions: dict[str, "prr_config.CommandsRestrictions"]
+    pull_request_rules: prr_config.PullRequestRules
+    queue_rules: qr_config.QueueRules
+    partition_rules: partr_config.PartitionRules
+    commands_restrictions: dict[str, prr_config.CommandsRestrictions]
     defaults: Defaults
     raw_config: typing.Any
 
@@ -268,7 +271,7 @@ async def get_mergify_extended_config(
         return await extended_repository_ctxt.get_mergify_config(
             allow_extend=False, allow_empty_configuration=False
         )
-    except context.MergifyConfigFileEmpty:
+    except exceptions.MergifyConfigFileEmpty:
         raise InvalidRules(
             voluptuous.Invalid(
                 f"Extended configuration repository `{extended_path}` doesn't have a Mergify configuration file.",

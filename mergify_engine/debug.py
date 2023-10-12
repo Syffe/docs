@@ -5,6 +5,7 @@ import pprint
 
 import daiquiri
 
+from mergify_engine import condition_value_querier
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
@@ -220,10 +221,8 @@ async def report(
             )
 
     print("* PULL REQUEST:")
-    pr_data = {
-        attr: await getattr(ctxt.pull_request, attr)
-        for attr in sorted(ctxt.pull_request)
-    }
+    attrs = condition_value_querier.PullRequest(ctxt)
+    pr_data = {attr: await getattr(attrs, attr) for attr in sorted(attrs)}
     pprint.pprint(pr_data, width=160)
 
     is_behind = await ctxt.is_behind

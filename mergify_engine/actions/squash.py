@@ -1,16 +1,22 @@
+from __future__ import annotations
+
 import typing
 
 import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine import squash_pull
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 class SquashExecutorConfig(typing.TypedDict):
@@ -22,10 +28,10 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
     @classmethod
     async def create(
         cls,
-        action: "SquashAction",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "SquashExecutor":
+        action: SquashAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> SquashExecutor:
         if isinstance(rule, prr_config.CommandRule):
             bot_account_fallback = rule.sender["login"]
         else:
@@ -61,9 +67,11 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
                 "",
             )
 
+        pull_attrs = condition_value_querier.PullRequest(self.ctxt)
+
         try:
-            commit_title_and_message = await self.ctxt.pull_request.get_commit_message()
-        except context.RenderTemplateFailure as rmf:
+            commit_title_and_message = await pull_attrs.get_commit_message()
+        except condition_value_querier.RenderTemplateFailure as rmf:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 "Invalid commit message",
@@ -85,7 +93,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
             message = f"{title}\n\n{message}"
 
         elif self.config["commit_message"] == "all-commits":
-            message = f"{(await self.ctxt.pull_request.title)} (#{(await self.ctxt.pull_request.number)})\n"
+            message = f"{(await pull_attrs.title)} (#{(await pull_attrs.number)})\n"
             message += "\n\n* ".join(
                 [commit.commit_message for commit in await self.ctxt.commits]
             )
@@ -94,8 +102,8 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
             message = (await self.ctxt.commits)[0].commit_message
 
         elif self.config["commit_message"] == "title+body":
-            message = f"{(await self.ctxt.pull_request.title)} (#{(await self.ctxt.pull_request.number)})"
-            message += f"\n\n{await self.ctxt.pull_request.body}"
+            message = f"{(await pull_attrs.title)} (#{(await pull_attrs.number)})"
+            message += f"\n\n{await pull_attrs.body}"
 
         else:
             raise RuntimeError("Unsupported commit_message option")

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 
 import voluptuous
@@ -5,7 +7,6 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import branch_updater
 from mergify_engine import check_api
-from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
@@ -13,6 +14,10 @@ from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 class RebaseExecutorConfig(typing.TypedDict):
@@ -24,10 +29,10 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
     @classmethod
     async def create(
         cls,
-        action: "RebaseAction",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "RebaseExecutor":
+        action: RebaseAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> RebaseExecutor:
         if isinstance(rule, prr_config.CommandRule):
             bot_account_fallback = rule.sender["login"]
         else:

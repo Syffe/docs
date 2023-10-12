@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import datetime
 import typing
@@ -5,7 +7,7 @@ import typing
 import voluptuous
 
 from mergify_engine import check_api
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import github_types
@@ -16,6 +18,9 @@ from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import train_car
 from mergify_engine.rules import types
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 GitHubLoginSchema = voluptuous.Schema(types.GitHubLogin)
 
@@ -67,8 +72,10 @@ async def render_bot_account(
         bot_account = str(bot_account_fallback)
     else:
         try:
-            bot_account = await ctxt.pull_request.render_template(bot_account_template)
-        except context.RenderTemplateFailure as rmf:
+            bot_account = await condition_value_querier.PullRequest(
+                ctxt
+            ).render_template(bot_account_template)
+        except condition_value_querier.RenderTemplateFailure as rmf:
             raise RenderBotAccountFailure(
                 check_api.Conclusion.FAILURE,
                 f"Invalid {option_name} template",
@@ -96,10 +103,11 @@ async def render_bot_account(
 
 async def render_users_template(ctxt: context.Context, users: list[str]) -> set[str]:
     wanted = set()
+    pull_attrs = condition_value_querier.PullRequest(ctxt)
     for user in set(users):
         try:
-            user = await ctxt.pull_request.render_template(user)
-        except context.RenderTemplateFailure:
+            user = await pull_attrs.render_template(user)
+        except condition_value_querier.RenderTemplateFailure:
             # NOTE: this should never happen since
             # the template is validated when parsing the config 🤷
             continue

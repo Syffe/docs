@@ -6,6 +6,7 @@ import pytest
 import voluptuous
 
 from mergify_engine import check_api
+from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine import queue as merge_queue
 from mergify_engine import rules
@@ -354,7 +355,10 @@ async def test_get_rule_checks_status(
     evaluated_rule = match.matching_rules[0]
     assert (
         await checks_status.get_rule_checks_status(
-            ctxt.log, ctxt.repository, [ctxt.pull_request], evaluated_rule.conditions
+            ctxt.log,
+            ctxt.repository,
+            [condition_value_querier.PullRequest(ctxt)],
+            evaluated_rule.conditions,
         )
     ) == conclusion
 

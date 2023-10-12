@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 
 from mergify_engine import check_api
+from mergify_engine import condition_value_querier
 from mergify_engine import context
 from mergify_engine.rules import conditions as rules_conditions
 from mergify_engine.rules import filter
@@ -27,7 +28,7 @@ def get_conditions_with_ignored_attributes(
 
 async def conditions_without_some_attributes_match_p(
     log: logging.LoggerAdapter[logging.Logger],
-    pulls: list[context.BasePullRequest],
+    pulls: list[condition_value_querier.BasePullRequest],
     conditions: rules_conditions.PullRequestRuleConditions
     | rules_conditions.QueueRuleMergeConditions,
     attribute_prefixes: tuple[str, ...],
@@ -45,7 +46,7 @@ async def conditions_without_some_attributes_match_p(
 
 async def _get_checks_result(
     repository: context.Repository,
-    pulls: list[context.BasePullRequest],
+    pulls: list[condition_value_querier.BasePullRequest],
     conditions: rules_conditions.PullRequestRuleConditions
     | rules_conditions.QueueRuleMergeConditions,
 ) -> check_api.Conclusion:
@@ -84,7 +85,7 @@ async def _get_checks_result(
 async def get_rule_checks_status(
     log: logging.LoggerAdapter[logging.Logger],
     repository: context.Repository,
-    pulls: list[context.BasePullRequest],
+    pulls: list[condition_value_querier.BasePullRequest],
     conditions: rules_conditions.PullRequestRuleConditions
     | rules_conditions.QueueRuleMergeConditions,
     *,

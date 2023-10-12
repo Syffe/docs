@@ -5,14 +5,15 @@ import typing
 
 import daiquiri
 
-from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
 from mergify_engine.rules import types
 
 
 if typing.TYPE_CHECKING:
+    from mergify_engine import condition_value_querier
     from mergify_engine import context
+    from mergify_engine.rules import conditions as conditions_mod
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -64,7 +65,7 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
         cls,
         rules: list[types.T_Rule],
         repository: context.Repository,
-        pulls: list[context.BasePullRequest],
+        pulls: list[condition_value_querier.BasePullRequest],
         rule_hidden_from_merge_queue: bool,
     ) -> GenericRulesEvaluator[types.T_Rule, types.T_EvaluatedRule]:
         self = cls(rules)
@@ -116,7 +117,7 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
         repository: context.Repository,
         conditions: conditions_mod.BaseRuleConditions,
         base_attributes: tuple[str, ...],
-        pulls: list[context.BasePullRequest],
+        pulls: list[condition_value_querier.BasePullRequest],
     ) -> bool:
         tree = conditions.extract_raw_filter_tree()
         for pull in pulls:

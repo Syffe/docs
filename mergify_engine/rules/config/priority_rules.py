@@ -1,14 +1,19 @@
+from __future__ import annotations
+
 from collections import abc
 import dataclasses
 import typing
 
 import voluptuous
 
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import queue
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import generic_evaluator
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 PriorityRuleName = typing.NewType("PriorityRuleName", str)
 EvaluatedPriorityRule = typing.NewType("EvaluatedPriorityRule", "PriorityRule")
@@ -29,20 +34,20 @@ class PriorityRule:
         priority: queue.PriorityT
 
     @classmethod
-    def from_dict(cls, d: T_from_dict) -> "PriorityRule":
+    def from_dict(cls, d: T_from_dict) -> PriorityRule:
         return cls(**d)
 
     def get_conditions_used_by_evaluator(self) -> conditions_mod.PriorityRuleConditions:
         return self.conditions
 
     async def evaluate(
-        self, pulls: list[context.BasePullRequest]
+        self, pulls: list[condition_value_querier.BasePullRequest]
     ) -> EvaluatedPriorityRule:
         evaluated_rule = typing.cast(EvaluatedPriorityRule, self)
         await evaluated_rule.conditions(pulls)
         return evaluated_rule
 
-    def copy(self) -> "PriorityRule":
+    def copy(self) -> PriorityRule:
         return self.__class__(
             name=self.name,
             conditions=conditions_mod.PriorityRuleConditions(
@@ -76,7 +81,7 @@ class PriorityRules:
         priority_rules_evaluator = await PriorityRulesEvaluator.create(
             priority_rules,
             ctxt.repository,
-            [ctxt.pull_request],
+            [condition_value_querier.PullRequest(ctxt)],
             False,
         )
         matching_priority_rules = [

@@ -4,7 +4,7 @@ import typing
 import pytest
 import voluptuous
 
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import rules
 from mergify_engine.rules import conditions as rule_conditions
 from mergify_engine.rules.config import pull_request_rules
@@ -205,7 +205,7 @@ async def test_condition_evaluation_result_serialization_with_related_checks() -
         def pull(self) -> dict[str, typing.Any]:
             return {"labels": []}
 
-    pr = context.PullRequest(MockedContext())  # type: ignore[arg-type]
+    pr = condition_value_querier.PullRequest(MockedContext())  # type: ignore[arg-type]
 
     config = """
 pull_request_rules:

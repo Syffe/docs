@@ -15,8 +15,8 @@ import pydantic
 import typing_extensions
 import voluptuous
 
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.clients import http
@@ -24,6 +24,9 @@ from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
 from mergify_engine.rules import parser
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -662,7 +665,9 @@ class BaseRuleConditions:
     def __post_init__(self, conditions: list[RuleConditionNode]) -> None:
         self.condition = RuleConditionCombination({"and": conditions})
 
-    async def __call__(self, objs: list[context.BasePullRequest]) -> bool:
+    async def __call__(
+        self, objs: list[condition_value_querier.BasePullRequest]
+    ) -> bool:
         if len(objs) > 1:
             raise RuntimeError(
                 f"{self.__class__.__name__} take only one pull request at a time"
@@ -720,7 +725,9 @@ class QueueRuleMergeConditions(BaseRuleConditions):
     def match(self) -> bool:
         return self._match
 
-    async def __call__(self, pull_requests: list[context.BasePullRequest]) -> bool:
+    async def __call__(
+        self, pull_requests: list[condition_value_querier.BasePullRequest]
+    ) -> bool:
         if self._used:
             raise RuntimeError(f"{self.__class__.__name__} cannot be re-used")
         self._used = True
@@ -1016,7 +1023,11 @@ class QueueConditionEvaluationResult:
     def display_evaluations(self) -> bool:
         if self.display_evaluations_ is not None:
             return self.display_evaluations_
-        return self.attribute_name not in context.QueuePullRequest.QUEUE_ATTRIBUTES
+
+        return (
+            self.attribute_name
+            not in condition_value_querier.QueuePullRequest.QUEUE_ATTRIBUTES
+        )
 
     @classmethod
     def from_evaluated_condition_node(

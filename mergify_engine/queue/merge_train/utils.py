@@ -1,7 +1,13 @@
-import dataclasses
+from __future__ import annotations
 
-from mergify_engine import context
+import dataclasses
+import typing
+
 from mergify_engine import github_types
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 def build_pr_link(

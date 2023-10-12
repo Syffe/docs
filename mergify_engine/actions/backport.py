@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import typing
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
 from mergify_engine import duplicate_pull
 from mergify_engine.actions import copy
 from mergify_engine.rules import conditions
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 class BackportExecutor(copy.CopyExecutor):

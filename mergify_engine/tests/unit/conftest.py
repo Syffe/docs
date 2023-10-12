@@ -12,6 +12,7 @@ import pytest
 import respx
 import voluptuous
 
+from mergify_engine import condition_value_querier
 from mergify_engine import context
 from mergify_engine import github_events
 from mergify_engine import github_types
@@ -265,15 +266,17 @@ async def jinja_environment() -> jinja2.sandbox.SandboxedEnvironment:
 
 
 @dataclasses.dataclass
-class FakePullRequest(context.BasePullRequest):
-    attrs: dict[str, context.ContextAttributeType]
+class FakePullRequest(condition_value_querier.BasePullRequest):
+    attrs: dict[str, condition_value_querier.PullRequestAttributeType]
 
-    async def __getattr__(self, name: str) -> context.ContextAttributeType:
+    async def __getattr__(
+        self, name: str
+    ) -> condition_value_querier.PullRequestAttributeType:
         fancy_name = name.replace("_", "-")
         try:
             return self.attrs[fancy_name]
         except KeyError:
-            raise context.PullRequestAttributeError(name=fancy_name)
+            raise condition_value_querier.PullRequestAttributeError(name=fancy_name)
 
     def sync_checks(self) -> None:
         self.attrs["check-success-or-neutral"] = (

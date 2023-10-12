@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import abc
 import dataclasses
 import datetime
@@ -7,8 +9,8 @@ import typing
 import typing_extensions
 import voluptuous
 
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import queue
@@ -20,6 +22,9 @@ from mergify_engine.rules.config import conditions as cond_config
 from mergify_engine.rules.config import priority_rules as priority_rules_config
 from mergify_engine.rules.config import pull_request_rules as pull_request_rules_config
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 QueueBranchMergeMethod = typing.Literal["fast-forward"] | None
 QueueName = typing.NewType("QueueName", str)
@@ -77,7 +82,7 @@ class QueueRule:
         branch_protection_injection_mode: queue.BranchProtectionInjectionModeT
 
     @classmethod
-    def from_dict(cls, d: T_from_dict) -> "QueueRule":
+    def from_dict(cls, d: T_from_dict) -> QueueRule:
         name = d.pop("name")
         # NOTE(jd): deprecated name, for backward compat
         merge_conditions = d.pop("conditions", None)
@@ -127,7 +132,7 @@ class QueueRule:
         ref: github_types.GitHubRefType,
         evaluated_pull_request_rule: pull_request_rules_config.EvaluatedPullRequestRule
         | None = None,
-    ) -> "QueueRule":
+    ) -> QueueRule:
         branch_protections: list[conditions_mod.RuleConditionNode] = []
         if self.branch_protection_injection_mode != "none":
             branch_protections.extend(
@@ -185,7 +190,7 @@ class QueueRule:
         self,
         repository: context.Repository,
         ref: github_types.GitHubRefType,
-        pulls: list[context.BasePullRequest],
+        pulls: list[condition_value_querier.BasePullRequest],
         evaluated_pull_request_rule: pull_request_rules_config.EvaluatedPullRequestRule
         | None = None,
     ) -> EvaluatedQueueRule:
@@ -209,17 +214,22 @@ class QueueRule:
         )
 
     async def evaluate(
-        self, pulls: list[context.BasePullRequest]
+        self, pulls: list[condition_value_querier.BasePullRequest]
     ) -> EvaluatedQueueRule:
         await self.merge_conditions(pulls)
-        if all(isinstance(p, context.QueuePullRequest) for p in pulls):
-            # NOTE(Greesb): We re-cast QueuePullRequest into simple PullRequest
-            # because we want to evaluate the queue_conditions on
-            # the queued pull requests, not the draft pr (if any).
-            # The type ignore is because mypy thinks the pulls are `BasePullRequest`
-            # and doesn't understand that in this `if` all the pull requests
-            # in `pulls` are of `QueuePullRequest` instance.
-            pulls = [context.PullRequest(p.context) for p in pulls]  # type: ignore[attr-defined]
+
+        # NOTE(Greesb): We re-cast QueuePullRequest into simple PullRequest
+        # because we want to evaluate the queue_conditions on
+        # the queued pull requests, not the draft pr (if any).
+        # The type ignore is because mypy thinks the pulls are `BasePullRequest`
+        # and doesn't understand that in this `if` all the pull requests
+        # in `pulls` are of `QueuePullRequest` instance.
+        pulls = [
+            condition_value_querier.PullRequest(
+                typing.cast(condition_value_querier.QueuePullRequest, p).context
+            )
+            for p in pulls
+        ]
 
         await self.queue_conditions(pulls)
         return typing.cast(EvaluatedQueueRule, self)
@@ -299,7 +309,7 @@ class QueueRules:
         routing_rules_evaluator = await QueuesRulesEvaluator.create(
             routing_rules,
             ctxt.repository,
-            [ctxt.pull_request],
+            [condition_value_querier.PullRequest(ctxt)],
             True,
         )
         return routing_rules_evaluator.matching_rules

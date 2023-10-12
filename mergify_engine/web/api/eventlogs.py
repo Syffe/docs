@@ -6,6 +6,7 @@ import pydantic
 
 from mergify_engine import database
 from mergify_engine import eventlogs
+from mergify_engine import events
 from mergify_engine import github_types
 from mergify_engine import pagination
 from mergify_engine.web import api
@@ -62,9 +63,6 @@ async def get_pull_request_eventlogs(
     ],
     current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:
-    # avoid circular import
-    from mergify_engine import events
-
     if not await eventlogs.use_events_redis_backend(repository_ctxt):
         # NOTE(lecrepont01): ensure transition from redis db to postgreSQL
         page = await events.get(session, current_page, repository_ctxt, pull)
@@ -92,9 +90,6 @@ async def get_repository_eventlogs(
     repository_ctxt: security.Repository,
     current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:
-    # avoid circular import
-    from mergify_engine import events
-
     if not await eventlogs.use_events_redis_backend(repository_ctxt):
         page = await events.get(session, current_page, repository_ctxt)
     else:

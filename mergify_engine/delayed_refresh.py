@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import datetime
 import typing
 
 import daiquiri
 
+from mergify_engine import condition_value_querier
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -25,13 +28,13 @@ STOP_REFRESH_PULL_REQUEST_CLOSED_WITH_TIME_CONDITIONS_SINCE = datetime.timedelta
 
 
 def _redis_key(
-    repository: "context.Repository", pull_number: github_types.GitHubPullRequestNumber
+    repository: context.Repository, pull_number: github_types.GitHubPullRequestNumber
 ) -> str:
     return f"{repository.installation.owner_id}~{repository.installation.owner_login}~{repository.repo['id']}~{repository.repo['name']}~{pull_number}"
 
 
 async def _get_current_refresh_datetime(
-    repository: "context.Repository",
+    repository: context.Repository,
     pull_number: github_types.GitHubPullRequestNumber,
 ) -> datetime.datetime | None:
     score = await repository.installation.redis.cache.zscore(
@@ -43,7 +46,7 @@ async def _get_current_refresh_datetime(
 
 
 async def _set_current_refresh_datetime(
-    repository: "context.Repository",
+    repository: context.Repository,
     pull_number: github_types.GitHubPullRequestNumber,
     at: datetime.datetime,
 ) -> None:
@@ -54,12 +57,11 @@ async def _set_current_refresh_datetime(
 
 
 async def plan_next_refresh(
-    ctxt: "context.Context",
+    ctxt: context.Context,
     _rules: (
-        list["prr_config.EvaluatedPullRequestRule"]
-        | list["qr_config.EvaluatedQueueRule"]
+        list[prr_config.EvaluatedPullRequestRule] | list[qr_config.EvaluatedQueueRule]
     ),
-    pull_request: "context.BasePullRequest",
+    pull_request: condition_value_querier.BasePullRequest,
     only_if_earlier: bool = False,
 ) -> None:
     plan_refresh_at = await _get_current_refresh_datetime(
@@ -132,7 +134,7 @@ async def plan_next_refresh(
 
 
 async def plan_refresh_at_least_at(
-    repository: "context.Repository",
+    repository: context.Repository,
     pull_number: github_types.GitHubPullRequestNumber,
     at: datetime.datetime,
 ) -> None:

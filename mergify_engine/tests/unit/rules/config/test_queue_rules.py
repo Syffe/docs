@@ -3,7 +3,7 @@ import typing
 import pytest
 import voluptuous
 
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import rules
 from mergify_engine.rules.config import queue_rules
 
@@ -39,7 +39,7 @@ async def test_evaluate_on_queue_pull_request() -> None:
         async def checks(self) -> dict[str, str]:
             return {}
 
-    pr = context.QueuePullRequest(MockedContext(), MockedQueueContext())  # type: ignore[arg-type]
+    pr = condition_value_querier.QueuePullRequest(MockedContext(), MockedQueueContext())  # type: ignore[arg-type]
 
     qrules = voluptuous.Schema(queue_rules.QueueRulesSchema)(
         rules.YamlSchema(

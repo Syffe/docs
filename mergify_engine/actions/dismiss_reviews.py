@@ -7,7 +7,7 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import signals
@@ -15,6 +15,9 @@ from mergify_engine.clients import http
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 DismissReviewWhenT = typing.Literal["synchronize", "always"]
 WHEN_SYNCHRONIZE: DismissReviewWhenT = "synchronize"
@@ -55,9 +58,10 @@ class DismissReviewsExecutor(
         else:
             message_raw = typing.cast(str, action.config["message"])
 
+        pull_attrs = condition_value_querier.PullRequest(ctxt)
         try:
-            message = await ctxt.pull_request.render_template(message_raw)
-        except context.RenderTemplateFailure as rmf:
+            message = await pull_attrs.render_template(message_raw)
+        except condition_value_querier.RenderTemplateFailure as rmf:
             raise actions.InvalidDynamicActionConfiguration(
                 rule, action, "Invalid dismiss reviews message", str(rmf)
             )

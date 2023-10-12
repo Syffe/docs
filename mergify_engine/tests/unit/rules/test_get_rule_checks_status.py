@@ -5,7 +5,7 @@ from unittest import mock
 import voluptuous
 
 from mergify_engine import check_api
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import filter
@@ -65,7 +65,7 @@ async def test_rules_conditions_update() -> None:
     state = await checks_status.get_rule_checks_status(
         mock.Mock(),
         FAKE_REPO,
-        typing.cast(list[context.BasePullRequest], pulls),
+        typing.cast(list[condition_value_querier.BasePullRequest], pulls),
         c,
     )
     assert state == check_api.Conclusion.FAILURE
@@ -90,7 +90,7 @@ async def assert_queue_rule_checks_status(
     state = await checks_status.get_rule_checks_status(
         mock.Mock(),
         FAKE_REPO,
-        [typing.cast(context.BasePullRequest, pull)],
+        [typing.cast(condition_value_querier.BasePullRequest, pull)],
         c,
         wait_for_schedule_to_match=True,
     )

@@ -1,16 +1,22 @@
+from __future__ import annotations
+
 import typing
 
 import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 class CommentExecutorConfig(typing.TypedDict):
@@ -22,10 +28,10 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
     @classmethod
     async def create(
         cls,
-        action: "CommentAction",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "CommentExecutor":
+        action: CommentAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> CommentExecutor:
         if action.config["message"] is None:
             # Happens when the config for a comment action is just `None` and
             # there is no "defaults" for the comment action.
@@ -46,10 +52,10 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
             raise actions.InvalidDynamicActionConfiguration(
                 rule, action, e.title, e.reason
             )
-
+        pull_attrs = condition_value_querier.PullRequest(ctxt)
         try:
-            message = await ctxt.pull_request.render_template(action.config["message"])
-        except context.RenderTemplateFailure as rmf:
+            message = await pull_attrs.render_template(action.config["message"])
+        except condition_value_querier.RenderTemplateFailure as rmf:
             raise actions.InvalidDynamicActionConfiguration(
                 rule, action, "Invalid comment message", str(rmf)
             )

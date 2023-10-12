@@ -1,12 +1,17 @@
+from __future__ import annotations
+
 import collections
 import dataclasses
 import datetime
 import typing
 
-from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import redis_utils
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 class CachedPullRequest(typing.TypedDict):

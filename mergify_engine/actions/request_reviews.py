@@ -6,7 +6,7 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine import utils
@@ -15,6 +15,9 @@ from mergify_engine.clients import http
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 ReviewEntityWithWeightT = dict[types.GitHubLogin, int] | dict[types.GitHubTeam, int]
 ReviewEntityT = list[types.GitHubLogin] | list[types.GitHubTeam]
@@ -165,10 +168,11 @@ class RequestReviewsExecutor(
             "commented-reviews-by",
             "review-requested",
         )
+        pull_attrs = condition_value_querier.PullRequest(self.ctxt)
         existing_reviews = {
             user.lower()
             for key in reviews_keys
-            for user in await getattr(self.ctxt.pull_request, key)
+            for user in await getattr(pull_attrs, key)
         }
 
         user_reviews_to_request, team_reviews_to_request = self._get_reviewers(
@@ -179,7 +183,7 @@ class RequestReviewsExecutor(
 
         if user_reviews_to_request or team_reviews_to_request:
             requested_reviews_nb = len(
-                typing.cast(list[str], await self.ctxt.pull_request.review_requested)
+                typing.cast(list[str], await pull_attrs.review_requested)
             )
 
             already_at_max = requested_reviews_nb == self.GITHUB_MAXIMUM_REVIEW_REQUEST

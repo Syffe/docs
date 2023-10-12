@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 from collections import abc
 import datetime
 import re
 import typing
 
 from mergify_engine import check_api
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import queue
@@ -17,6 +19,9 @@ from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.models.github import user as github_user
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 RECENTLY_MERGED_TRACKER_EXPIRATION = datetime.timedelta(hours=1)
 REQUIRED_STATUS_RE = re.compile(r'Required status check "([^"]*)" is expected.')
@@ -32,10 +37,14 @@ where repository activity is often reduced.
 """
 MERGE_COMMIT_SHA_EXPIRATION = int(datetime.timedelta(days=7).total_seconds())
 
-PendingResultBuilderT = abc.Callable[
-    [context.Context],
-    abc.Awaitable[check_api.Result],
-]
+if typing.TYPE_CHECKING:
+    PendingResultBuilderT = abc.Callable[
+        [context.Context],
+        abc.Awaitable[check_api.Result],
+    ]
+else:
+    PendingResultBuilderT = abc.Callable[..., abc.Awaitable[check_api.Result]]
+
 MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
 
 
@@ -190,11 +199,12 @@ class MergeUtilsMixin:
                 f"The pull request has been merged automatically at *{ctxt.pull['head']['sha']}*",
             )
 
+        attrs = condition_value_querier.PullRequest(ctxt)
         try:
-            commit_title_and_message = await ctxt.pull_request.get_commit_message(
+            commit_title_and_message = await attrs.get_commit_message(
                 commit_message_template,
             )
-        except context.RenderTemplateFailure as rmf:
+        except condition_value_querier.RenderTemplateFailure as rmf:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 "Invalid commit message",

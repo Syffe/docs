@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 from collections import abc
 import dataclasses
@@ -7,7 +9,6 @@ import daiquiri
 from ddtrace import tracer
 
 from mergify_engine import check_api
-from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import github_types
 from mergify_engine import queue
@@ -21,6 +22,7 @@ from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
+    from mergify_engine import context
     from mergify_engine.queue import freeze
     from mergify_engine.queue.merge_train import train_car as tc_import
     from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -31,22 +33,20 @@ LOG = daiquiri.getLogger(__name__)
 @dataclasses.dataclass
 class Convoy:
     repository: context.Repository
-    queue_rules: "qr_config.QueueRules"
-    partition_rules: "partr_config.PartitionRules"
+    queue_rules: qr_config.QueueRules
+    partition_rules: partr_config.PartitionRules
     ref: github_types.GitHubRefType
 
     _trains: list[train_import.Train] = dataclasses.field(default_factory=list)
-    _frozen_queues: dict[
-        "qr_config.QueueName", "freeze.QueueFreeze | None"
-    ] | None = None
+    _frozen_queues: dict[qr_config.QueueName, freeze.QueueFreeze | None] | None = None
 
     @classmethod
     async def from_context(
         cls,
         ctxt: context.Context,
-        queue_rules: "qr_config.QueueRules",
-        partition_rules: "partr_config.PartitionRules",
-    ) -> "Convoy":
+        queue_rules: qr_config.QueueRules,
+        partition_rules: partr_config.PartitionRules,
+    ) -> Convoy:
         convoy = cls(
             ctxt.repository,
             queue_rules,
@@ -123,7 +123,7 @@ class Convoy:
 
     async def load_from_bytes(
         self,
-        raw_trains: "abc.Mapping[partr_config.PartitionRuleName, bytes | None]",
+        raw_trains: abc.Mapping[partr_config.PartitionRuleName, bytes | None],
     ) -> None:
         self._trains = []
         partition_names = [part_rule.name for part_rule in self.partition_rules]
@@ -143,7 +143,7 @@ class Convoy:
         return iter(self._trains)
 
     def iter_trains_from_partition_names(
-        self, partition_names: list["partr_config.PartitionRuleName"]
+        self, partition_names: list[partr_config.PartitionRuleName]
     ) -> abc.Iterator[train_import.Train]:
         for train in self._trains:
             # If partition_names is an empty list, we return every train
@@ -153,7 +153,7 @@ class Convoy:
     def get_trains_and_car_from_context_and_partition_names(
         self,
         ctxt: context.Context,
-        partition_names: list["partr_config.PartitionRuleName"],
+        partition_names: list[partr_config.PartitionRuleName],
     ) -> list[merge_train_types.TrainAndTrainCar]:
         trains_and_cars = []
         for train in self.iter_trains_from_partition_names(partition_names):
@@ -206,7 +206,7 @@ class Convoy:
         self,
         ctxt: context.Context,
         config: queue.PullQueueConfig,
-        partition_names: list["partr_config.PartitionRuleName"],
+        partition_names: list[partr_config.PartitionRuleName],
         signal_trigger: str,
     ) -> None:
         # Ensure the pull is not in another branch
@@ -239,20 +239,20 @@ class Convoy:
             real_partition_names.pop(idx_part)
             await train.add_pull(ctxt, config, signal_trigger)
 
-    async def is_queue_frozen(self, queue_name: "qr_config.QueueName") -> bool:
+    async def is_queue_frozen(self, queue_name: qr_config.QueueName) -> bool:
         return queue_name in await self.get_frozen_queue_names()
 
     async def get_current_queue_freeze(
         self,
-        queue_name: "qr_config.QueueName",
-    ) -> "freeze.QueueFreeze | None":
+        queue_name: qr_config.QueueName,
+    ) -> freeze.QueueFreeze | None:
         # TODO(MRGFY-1975): Handle partition_name in queue freeze
         queues_with_freeze = await self.get_queue_freezes_by_names()
         return queues_with_freeze.get(queue_name)
 
     async def get_queue_freezes_by_names(
         self,
-    ) -> dict["qr_config.QueueName", "freeze.QueueFreeze | None"]:
+    ) -> dict[qr_config.QueueName, freeze.QueueFreeze | None]:
         # Circular import
         from mergify_engine.queue import freeze
 
@@ -279,7 +279,7 @@ class Convoy:
 
         return self._frozen_queues
 
-    async def get_frozen_queue_names(self) -> set["qr_config.QueueName"]:
+    async def get_frozen_queue_names(self) -> set[qr_config.QueueName]:
         # NOTE(Syffe): When checking for where to position a newly added PR in queues,
         # all unfrozen queues with lower priorities than the highest frozen queue have
         # to be considered as non-usable to queue the newly added PR.
@@ -344,8 +344,8 @@ class Convoy:
     async def get_pull_summary(
         self,
         ctxt: context.Context,
-        queue_rule: "qr_config.QueueRule",
-        pull_rule: "prr_config.EvaluatedPullRequestRule | None" = None,
+        queue_rule: qr_config.QueueRule,
+        pull_rule: prr_config.EvaluatedPullRequestRule | None = None,
     ) -> str:
         embarked_pulls = await self.find_embarked_pull_with_train(ctxt.pull["number"])
         if not embarked_pulls:
@@ -375,7 +375,7 @@ class Convoy:
 
     def get_train_cars_by_tmp_pull(
         self, ctxt: context.Context
-    ) -> list["tc_import.TrainCar"]:
+    ) -> list[tc_import.TrainCar]:
         train_cars = []
         for train in self._trains:
             car = train.get_car_by_tmp_pull(ctxt)
@@ -384,9 +384,7 @@ class Convoy:
 
         return train_cars
 
-    def get_train_cars_by_pull(
-        self, ctxt: context.Context
-    ) -> list["tc_import.TrainCar"]:
+    def get_train_cars_by_pull(self, ctxt: context.Context) -> list[tc_import.TrainCar]:
         train_cars = []
         for train in self._trains:
             car = train.get_car(ctxt)
@@ -402,7 +400,7 @@ class Convoy:
     async def find_prs_in_train_cars_and_add_delegation(
         self,
         pr_numbers: list[github_types.GitHubPullRequestNumber],
-        delegating_partition: "partr_config.PartitionRuleName",
+        delegating_partition: partr_config.PartitionRuleName,
     ) -> github_types.GitHubPullRequest | None:
         # FIXMEsileht): self._trains is always correctly initialized, we must drop this.
         # Reload trains instances
@@ -431,7 +429,7 @@ class Convoy:
         self,
         user_pull_request_number: github_types.GitHubPullRequestNumber,
         checked_pull: github_types.GitHubPullRequestNumber | None,
-        temporary_car: "tc_import.TrainCar",
+        temporary_car: tc_import.TrainCar,
     ) -> None:
         user_pr_context = await self.repository.get_pull_request_context(
             user_pull_request_number
@@ -603,7 +601,7 @@ class Convoy:
         queue_rules: qr_config.QueueRules,
         partition_rules: partr_config.PartitionRules,
         ref: github_types.GitHubRefType | None = None,
-    ) -> abc.AsyncIterator["Convoy"]:
+    ) -> abc.AsyncIterator[Convoy]:
         trains_by_convoy = await cls._get_raw_trains_by_convoy(repository.installation)
         for (repo_id, convoy_ref), convoy_raw in trains_by_convoy.items():
             if repo_id != repository.repo["id"]:

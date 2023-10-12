@@ -1,14 +1,19 @@
+from __future__ import annotations
+
 from collections import abc
 import dataclasses
 import typing
 
 import voluptuous
 
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import generic_evaluator
 from mergify_engine.rules.config import conditions as cond_config
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 PartitionRuleName = typing.NewType("PartitionRuleName", str)
 DEFAULT_PARTITION_NAME = PartitionRuleName("__default__")
@@ -32,7 +37,7 @@ class PartitionRule:
         fallback_partition: bool
 
     @classmethod
-    def from_dict(cls, d: T_from_dict) -> "PartitionRule":
+    def from_dict(cls, d: T_from_dict) -> PartitionRule:
         return cls(**d)
 
     def get_conditions_used_by_evaluator(
@@ -41,13 +46,13 @@ class PartitionRule:
         return self.conditions
 
     async def evaluate(
-        self, pulls: list[context.BasePullRequest]
+        self, pulls: list[condition_value_querier.BasePullRequest]
     ) -> EvaluatedPartitionRule:
         evaluated_part_rule = typing.cast(EvaluatedPartitionRule, self)
         await evaluated_part_rule.conditions(pulls)
         return evaluated_part_rule
 
-    def copy(self) -> "PartitionRule":
+    def copy(self) -> PartitionRule:
         return self.__class__(
             name=self.name,
             conditions=conditions_mod.PartitionRuleConditions(
@@ -116,7 +121,7 @@ class PartitionRules:
         evaluator = await PartitionRulesEvaluator.create(
             partition_rules,
             ctxt.repository,
-            [ctxt.pull_request],
+            [condition_value_querier.PullRequest(ctxt)],
             False,
         )
         fallback_partition_name = self.get_fallback_partition_name()

@@ -10,6 +10,7 @@ import ddtrace
 
 from mergify_engine import actions
 from mergify_engine import check_api
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
@@ -65,6 +66,7 @@ async def get_already_merged_summary(
         ctxt.pull["merged_by"] is not None
         and ctxt.pull["merged_by"]["id"] == mergify_bot["id"]
     ):
+        pull_attrs = condition_value_querier.PullRequest(ctxt)
         for rule in match.matching_rules:
             if "merge" in rule.actions or "queue" in rule.actions:
                 # NOTE(sileht): Replace all -merged -closed by closed/merged and
@@ -77,7 +79,7 @@ async def get_already_merged_summary(
                     elif attr == "closed":
                         condition.update({"=": ("closed", True)})
 
-                await custom_conditions([ctxt.pull_request])
+                await custom_conditions([pull_attrs])
                 if custom_conditions.match:
                     # We already have a fully detailled status in the rule
                     # associated with the action queue/merge
@@ -650,9 +652,8 @@ async def handle(
                 e.get_summary(),
             )
 
-    await delayed_refresh.plan_next_refresh(
-        ctxt, match.matching_rules, ctxt.pull_request
-    )
+    pull_attrs = condition_value_querier.PullRequest(ctxt)
+    await delayed_refresh.plan_next_refresh(ctxt, match.matching_rules, pull_attrs)
 
     if not ctxt.sources:
         # NOTE(sileht): Only comment/command, don't need to go further

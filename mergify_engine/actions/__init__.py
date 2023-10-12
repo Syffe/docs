@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 import dataclasses
 import enum
@@ -29,8 +31,8 @@ PluginGroupT = typing.Literal["mergify_commands", "mergify_actions"]
 
 
 class PluginClassT(typing.TypedDict, total=False):
-    mergify_actions: dict[str, type["Action"]]
-    mergify_commands: dict[str, type["Action"]]
+    mergify_actions: dict[str, type[Action]]
+    mergify_commands: dict[str, type[Action]]
 
 
 _CLASSES: PluginClassT = {}
@@ -58,7 +60,7 @@ class ActionFlag(enum.Flag):
     SAME_COMMAND_WITH_DIFFERENT_ARGS_CANCEL_PENDING_STATUS = enum.auto()
 
 
-def get_classes(group: PluginGroupT) -> dict[str, type["Action"]]:
+def get_classes(group: PluginGroupT) -> dict[str, type[Action]]:
     if group not in _CLASSES:
         _CLASSES[group] = {
             ep.name: ep.load() for ep in importlib.metadata.entry_points(group=group)
@@ -66,14 +68,14 @@ def get_classes(group: PluginGroupT) -> dict[str, type["Action"]]:
     return _CLASSES[group]
 
 
-def get_action_schemas() -> dict[str, type["Action"]]:
+def get_action_schemas() -> dict[str, type[Action]]:
     return {
         name: voluptuous.Coerce(obj)
         for name, obj in get_classes("mergify_actions").items()
     }
 
 
-def get_commands() -> dict[str, type["Action"]]:
+def get_commands() -> dict[str, type[Action]]:
     return get_classes("mergify_commands")
 
 
@@ -83,25 +85,19 @@ ActionExecutorConfigT = typing.TypeVar("ActionExecutorConfigT")
 
 @dataclasses.dataclass
 class InvalidDynamicActionConfiguration(Exception):
-    rule: "prr_config.EvaluatedPullRequestRule"
-    action: "Action"
+    rule: prr_config.EvaluatedPullRequestRule
+    action: Action
     reason: str
     details: str
 
     @property
     def action_name(self) -> str:
-        # Circular dependency
-        from mergify_engine.rules.config import pull_request_rules as prr_config
-
-        group: PluginGroupT
-        if isinstance(self.rule, prr_config.CommandRule):
-            group = "mergify_commands"
-        else:
-            group = "mergify_actions"
-
-        for name, obj in get_classes(group).items():
-            if isinstance(self.action, obj):
-                return name
+        global _CLASSES
+        groups: tuple[PluginGroupT, ...] = ("mergify_actions", "mergify_commands")
+        for group in groups:
+            for name, obj in get_classes(group).items():
+                if isinstance(self.action, obj):
+                    return name
         raise RuntimeError(f"Can't find action {self.action!r}")
 
     def get_summary(self) -> str:
@@ -113,15 +109,15 @@ class InvalidDynamicActionConfiguration(Exception):
 
 @dataclasses.dataclass
 class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
-    ctxt: "context.Context"
-    rule: "prr_config.EvaluatedPullRequestRule"
+    ctxt: context.Context
+    rule: prr_config.EvaluatedPullRequestRule
     config: ActionExecutorConfigT
     config_hidden_from_simulator: typing.ClassVar[tuple[str, ...]] = ()
 
     @abc.abstractmethod
     async def run(
         self,
-    ) -> "check_api.Result | commands_runner.FollowUpCommand":  # pragma: no cover
+    ) -> check_api.Result | commands_runner.FollowUpCommand:  # pragma: no cover
         ...
 
     @abc.abstractmethod
@@ -144,16 +140,16 @@ class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
     async def create(
         cls,
         # FIXME(sileht): pass just RawConfigT instead of the "Action"
-        action: "ActionT",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "ActionExecutor[ActionT, ActionExecutorConfigT]":
+        action: ActionT,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> ActionExecutor[ActionT, ActionExecutorConfigT]:
         ...
 
 
 class ActionExecutorProtocol(typing.Protocol):
-    ctxt: "context.Context"
-    rule: "prr_config.EvaluatedPullRequestRule"
+    ctxt: context.Context
+    rule: prr_config.EvaluatedPullRequestRule
     config: dict[str, typing.Any]
     config_hidden_from_simulator: typing.ClassVar[tuple[str, ...]]
 
@@ -180,10 +176,10 @@ class ActionExecutorProtocol(typing.Protocol):
     async def create(
         cls,
         # FIXME(sileht): pass just RawConfigT instead of the "Action"
-        action: "Action",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "ActionExecutorProtocol":
+        action: Action,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> ActionExecutorProtocol:
         ...
 
 
@@ -228,12 +224,12 @@ class Action(abc.ABC):
         )(self.raw_config)
 
     async def load_context(
-        self, ctxt: "context.Context", rule: "prr_config.EvaluatedPullRequestRule"
+        self, ctxt: context.Context, rule: prr_config.EvaluatedPullRequestRule
     ) -> None:
         self.executor = await self.executor_class.create(self, ctxt, rule)
 
     def validate_config(  # noqa: B027
-        self, mergify_config: "mergify_conf.MergifyConfig"
+        self, mergify_config: mergify_conf.MergifyConfig
     ) -> None:  # pragma: no cover
         pass
 
@@ -243,6 +239,6 @@ class Action(abc.ABC):
         return {}
 
     async def get_conditions_requirements(
-        self, ctxt: "context.Context"
+        self, ctxt: context.Context
     ) -> list[conditions.RuleConditionNode]:
         return []

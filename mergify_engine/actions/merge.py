@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import functools
 import typing
@@ -6,7 +8,6 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import merge_base
@@ -19,6 +20,10 @@ from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 class MergeExecutorConfig(typing.TypedDict):
@@ -43,10 +48,10 @@ class MergeExecutor(
     @classmethod
     async def create(
         cls,
-        action: "MergeAction",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "MergeExecutor":
+        action: MergeAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> MergeExecutor:
         try:
             merge_bot_account = await action_utils.render_bot_account(
                 ctxt,
@@ -131,7 +136,7 @@ class MergeExecutor(
         return actions.CANCELLED_CHECK_REPORT
 
     async def get_pending_merge_status(
-        self, ctxt: context.Context, rule: "prr_config.EvaluatedPullRequestRule"
+        self, ctxt: context.Context, rule: prr_config.EvaluatedPullRequestRule
     ) -> check_api.Result:
         return check_api.Result(
             check_api.Conclusion.PENDING, "The pull request will be merged soon", ""
@@ -203,6 +208,6 @@ class MergeAction(actions.Action):
         init=False, repr=False
     )
 
-    def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
+    def validate_config(self, mergify_config: mergify_conf.MergifyConfig) -> None:
         self.queue_rules = mergify_config["queue_rules"]
         self.partition_rules = mergify_config["partition_rules"]

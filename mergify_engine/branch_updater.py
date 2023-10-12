@@ -1,16 +1,22 @@
+from __future__ import annotations
+
 import dataclasses
 import logging
+import typing
 
 import tenacity
 
 from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine import settings
 from mergify_engine.clients import http
 from mergify_engine.models.github import user as github_user
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 @dataclasses.dataclass

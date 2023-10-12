@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 import dataclasses
 import re
@@ -10,7 +12,7 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import settings
@@ -22,6 +24,9 @@ from mergify_engine.rules import live_resolvers
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -605,7 +610,7 @@ async def run_command(
     conds = conditions_mod.PullRequestRuleConditions(
         await command.action.get_conditions_requirements(ctxt)
     )
-    await conds([ctxt.pull_request])
+    await conds([condition_value_querier.PullRequest(ctxt)])
     if conds.match or force_run:
         try:
             await command.action.load_context(
@@ -729,7 +734,7 @@ async def check_command_restrictions(
         restriction_conditions = commands_restrictions["conditions"].copy()
         live_resolvers.apply_configure_filter(ctxt.repository, restriction_conditions)
         user_permission = await ctxt.repository.get_user_permission(user)
-        command_pull_request = context.CommandPullRequest(
+        command_pull_request = condition_value_querier.CommandPullRequest(
             ctxt, user["login"], user_permission
         )
         await restriction_conditions([command_pull_request])

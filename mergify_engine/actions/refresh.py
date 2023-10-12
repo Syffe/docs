@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import typing
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
 from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine.rules.config import pull_request_rules as prr_config
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 class RefreshExecutorConfig(typing.TypedDict):
@@ -16,10 +21,10 @@ class RefreshExecutor(actions.ActionExecutor["RefreshCommand", RefreshExecutorCo
     @classmethod
     async def create(
         cls,
-        action: "RefreshCommand",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "RefreshExecutor":
+        action: RefreshCommand,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> RefreshExecutor:
         return cls(ctxt, rule, RefreshExecutorConfig())
 
     async def run(self) -> check_api.Result:

@@ -7,6 +7,7 @@ import zoneinfo
 from freezegun import freeze_time
 import pytest
 
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import settings
@@ -333,25 +334,33 @@ class TestAttributes(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, pr)
 
         # Test underscore/dash attributes
-        assert await ctxt.pull_request.review_requested == []
-        assert await ctxt.pull_request.branch_protection_review_decision is None
-        assert await ctxt.pull_request.review_threads_resolved == []
+        assert await condition_value_querier.PullRequest(ctxt).review_requested == []
+        assert (
+            await condition_value_querier.PullRequest(
+                ctxt
+            ).branch_protection_review_decision
+            is None
+        )
+        assert (
+            await condition_value_querier.PullRequest(ctxt).review_threads_resolved
+            == []
+        )
 
         with pytest.raises(AttributeError):
-            assert await ctxt.pull_request.foobar
+            assert await condition_value_querier.PullRequest(ctxt).foobar
 
         # Test items
-        assert list(ctxt.pull_request) == list(
-            context.PullRequest.STRING_ATTRIBUTES
-            | context.PullRequest.NUMBER_ATTRIBUTES
-            | context.PullRequest.BOOLEAN_ATTRIBUTES
-            | context.PullRequest.LIST_ATTRIBUTES
-            | context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION
+        assert list(condition_value_querier.PullRequest(ctxt)) == list(
+            condition_value_querier.PullRequest.STRING_ATTRIBUTES
+            | condition_value_querier.PullRequest.NUMBER_ATTRIBUTES
+            | condition_value_querier.PullRequest.BOOLEAN_ATTRIBUTES
+            | condition_value_querier.PullRequest.LIST_ATTRIBUTES
+            | condition_value_querier.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION
         )
         commit = (await ctxt.commits)[0]
         assert {
-            attr: await getattr(ctxt.pull_request, attr)
-            for attr in sorted(ctxt.pull_request)
+            attr: await getattr(condition_value_querier.PullRequest(ctxt), attr)
+            for attr in sorted(condition_value_querier.PullRequest(ctxt))
         } == {
             "#commits": 1,
             "#commits-behind": 2,
@@ -1161,9 +1170,9 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         ctxt = context.Context(self.repository_ctxt, pr_labeled["pull_request"])
         assert ctxt.get_depends_on() == [pr1["number"], pr2["number"], 9999999]
-        assert await ctxt.pull_request._get_consolidated_data(ctxt, "depends-on") == [
-            f"#{pr2['number']}"
-        ]
+        assert await condition_value_querier.PullRequest(ctxt)._get_consolidated_data(
+            ctxt, "depends-on"
+        ) == [f"#{pr2['number']}"]
 
         repo_url = ctxt.pull["base"]["repo"]["html_url"]
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)

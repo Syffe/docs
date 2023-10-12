@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import base64
 from collections import abc
 import datetime
@@ -9,8 +11,8 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import duplicate_pull
@@ -26,6 +28,10 @@ from mergify_engine.models.github import user as github_user
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.worker import gitter_service
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 def Regex(value: str) -> re.Pattern[str]:
@@ -90,10 +96,10 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
     @classmethod
     async def create(
         cls,
-        action: "CopyAction",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "CopyExecutor":
+        action: CopyAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> CopyExecutor:
         try:
             bot_account = await action_utils.render_bot_account(
                 ctxt,
@@ -105,21 +111,22 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 rule, action, e.title, e.reason
             )
 
+        pull_attrs = condition_value_querier.PullRequest(ctxt)
         try:
-            await ctxt.pull_request.render_template(
+            await pull_attrs.render_template(
                 action.config["title"], extra_variables=DUPLICATE_TITLE_EXTRA_VARIABLES
             )
-        except context.RenderTemplateFailure as rmf:
+        except condition_value_querier.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
             raise actions.InvalidDynamicActionConfiguration(
                 rule, action, "Invalid title message", str(rmf)
             )
 
         try:
-            await ctxt.pull_request.render_template(
+            await pull_attrs.render_template(
                 action.config["body"], extra_variables=DUPLICATE_BODY_EXTRA_VARIABLES
             )
-        except context.RenderTemplateFailure as rmf:
+        except condition_value_querier.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
             raise actions.InvalidDynamicActionConfiguration(
                 rule, action, "Invalid body message", str(rmf)

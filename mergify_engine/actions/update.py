@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 
 import voluptuous
@@ -5,7 +7,6 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import branch_updater
 from mergify_engine import check_api
-from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
@@ -16,6 +17,10 @@ from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
+
+
 class UpdateExecutorConfig(typing.TypedDict):
     bot_account: github_types.GitHubLogin | None
 
@@ -24,10 +29,10 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
     @classmethod
     async def create(
         cls,
-        action: "UpdateAction",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "UpdateExecutor":
+        action: UpdateAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> UpdateExecutor:
         try:
             bot_account = await action_utils.render_bot_account(
                 ctxt,

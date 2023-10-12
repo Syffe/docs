@@ -11,6 +11,7 @@ import respx
 import sqlalchemy.ext.asyncio
 import voluptuous
 
+from mergify_engine import condition_value_querier
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
@@ -1449,7 +1450,7 @@ queue_rules:
     match = await qr_config.QueuesRulesEvaluator.create(
         [queuerules["default"]],
         ctxt.repository,
-        [context.PullRequest(ctxt)],
+        [condition_value_querier.PullRequest(ctxt)],
         False,
     )
     assert match.rules[0].queue_conditions.match

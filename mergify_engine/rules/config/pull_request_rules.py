@@ -6,6 +6,7 @@ import daiquiri
 import voluptuous
 
 from mergify_engine import actions as actions_mod
+from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import generic_evaluator
@@ -63,13 +64,14 @@ class PullRequestRule:
         return self.conditions
 
     async def evaluate(
-        self, pulls: list["context.BasePullRequest"]
+        self, pulls: list[condition_value_querier.BasePullRequest]
     ) -> EvaluatedPullRequestRule:
         evaluated_rule = typing.cast(EvaluatedPullRequestRule, self)
         await evaluated_rule.conditions(pulls)
         for action in self.actions.values():
             await action.load_context(
-                typing.cast("context.PullRequest", pulls[0]).context, evaluated_rule
+                typing.cast(condition_value_querier.PullRequest, pulls[0]).context,
+                evaluated_rule,
             )
         return evaluated_rule
 
@@ -144,7 +146,7 @@ class PullRequestRules:
         return await PullRequestRulesEvaluator.create(
             runtime_rules,
             ctxt.repository,
-            [ctxt.pull_request],
+            [condition_value_querier.PullRequest(ctxt)],
             True,
         )
 

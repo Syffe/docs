@@ -8,6 +8,7 @@ from freezegun import freeze_time
 import msgpack
 import pytest
 
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
@@ -424,7 +425,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 self.repository_ctxt, tmp_mq_pr["pull_request"], []
             )
             assert "continuous-integration/fake-ci" in (  # type:ignore [operator]
-                await context.QueuePullRequest(ctxt, queue_ctxt).check
+                await condition_value_querier.QueuePullRequest(ctxt, queue_ctxt).check
             )
 
         repository_name = self.RECORD_CONFIG["repository_name"]

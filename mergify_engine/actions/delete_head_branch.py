@@ -1,14 +1,19 @@
+from __future__ import annotations
+
 import typing
 
 import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
 from mergify_engine import signals
 from mergify_engine.clients import http
 from mergify_engine.rules import conditions
 from mergify_engine.rules.config import pull_request_rules as prr_config
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 class DeleteHeadBranchExecutorConfig(typing.TypedDict):
@@ -21,10 +26,10 @@ class DeleteHeadBranchExecutor(
     @classmethod
     async def create(
         cls,
-        action: "DeleteHeadBranchAction",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "DeleteHeadBranchExecutor":
+        action: DeleteHeadBranchAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> DeleteHeadBranchExecutor:
         return cls(
             ctxt, rule, DeleteHeadBranchExecutorConfig(force=action.config["force"])
         )

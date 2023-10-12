@@ -15,8 +15,8 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import date
 from mergify_engine import delayed_refresh
@@ -45,6 +45,9 @@ from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
     "Require branches to be up to date before merging"
@@ -474,7 +477,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         status = await checks_status.get_rule_checks_status(
             self.ctxt.log,
             self.ctxt.repository,
-            [self.ctxt.pull_request],
+            [condition_value_querier.PullRequest(self.ctxt)],
             queue_rule_for_evaluator.merge_conditions,
             wait_for_schedule_to_match=False,
         )
@@ -1012,7 +1015,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
             ):
                 # NOTE(sileht) check first if PR should be removed from the queue
                 pull_rule_checks_status = await checks_status.get_rule_checks_status(
-                    ctxt.log, ctxt.repository, [ctxt.pull_request], rule.conditions
+                    ctxt.log,
+                    ctxt.repository,
+                    [condition_value_querier.PullRequest(ctxt)],
+                    rule.conditions,
                 )
                 # NOTE(sileht): if the pull request rules are pending we wait their
                 # match before checking queue rules states, in case of one

@@ -1,15 +1,15 @@
+from __future__ import annotations
+
 import dataclasses
 import typing
 
-import jinja2.exceptions
-import jinja2.sandbox
 import voluptuous
 
-from mergify_engine import context
 from mergify_engine import github_types
 
 
 if typing.TYPE_CHECKING:
+    from mergify_engine import context
     from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import priority_rules as pr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -42,158 +42,6 @@ class LineColumnPath:
         return f"line {self.line}, column {self.column}"
 
 
-class DummyList(list[str]):
-    def __getitem__(self, index: int) -> str:  # type: ignore [override]
-        return ""
-
-
-class DummyContext(context.Context):
-    @staticmethod
-    def ensure_complete() -> None:  # type: ignore[override]
-        return None
-
-
-class DummyPullRequest(context.PullRequest):
-    # This is only used to check Jinja2 syntax validity and must be sync
-    def __getattr__(self, name: str) -> context.ContextAttributeType:  # type: ignore[override]
-        key = name.replace("_", "-")
-        if key in context.PullRequest.STRING_ATTRIBUTES:
-            return ""
-        if key in context.PullRequest.NUMBER_ATTRIBUTES:
-            return 0
-        if key in context.PullRequest.BOOLEAN_ATTRIBUTES:
-            return False
-        if key in context.PullRequest.LIST_ATTRIBUTES:
-            return DummyList()
-        if key in context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION:
-            return 0
-
-        raise context.PullRequestAttributeError(key)
-
-    def render_template(self, template: str, extra_variables: dict[str, str] | None = None) -> str:  # type: ignore[override]
-        """Render a template interpolating variables based on pull request attributes."""
-        env = jinja2.sandbox.SandboxedEnvironment(
-            undefined=jinja2.StrictUndefined,
-        )
-        #
-        env.filters["markdownify"] = lambda s: s
-        env.filters["get_section"] = self.dummy_get_section
-
-        with self._template_exceptions_mapping():
-            used_variables = jinja2.meta.find_undeclared_variables(env.parse(template))
-            infos = {}
-            for k in used_variables:
-                if extra_variables and k in extra_variables:
-                    infos[k] = extra_variables[k]
-                else:
-                    infos[k] = getattr(self, k)
-            return env.from_string(template).render(**infos)
-
-    @staticmethod
-    def dummy_get_section(v: str, section: str, default: str | None = None) -> str:
-        return v
-
-
-_DUMMY_PR = DummyPullRequest(
-    DummyContext(
-        None,  # type: ignore
-        github_types.GitHubPullRequest(
-            {
-                "node_id": "42",
-                "locked": False,
-                "assignees": [],
-                "requested_reviewers": [],
-                "requested_teams": [],
-                "milestone": None,
-                "title": "",
-                "body": "",
-                "number": github_types.GitHubPullRequestNumber(0),
-                "html_url": "",
-                "issue_url": "",
-                "id": github_types.GitHubPullRequestId(0),
-                "maintainer_can_modify": False,
-                "state": "open",
-                "created_at": github_types.ISODateTimeType("2021-06-01T18:41:39Z"),
-                "updated_at": github_types.ISODateTimeType("2021-06-01T18:41:39Z"),
-                "merged": False,
-                "merged_by": None,
-                "merged_at": None,
-                "closed_at": None,
-                "draft": False,
-                "merge_commit_sha": None,
-                "commits": 0,
-                "mergeable_state": "unknown",
-                "mergeable": None,
-                "rebaseable": False,
-                "changed_files": 1,
-                "user": {
-                    "id": github_types.GitHubAccountIdType(0),
-                    "login": github_types.GitHubLogin(""),
-                    "type": "User",
-                    "avatar_url": "",
-                },
-                "labels": [],
-                "base": {
-                    "user": {
-                        "id": github_types.GitHubAccountIdType(0),
-                        "login": github_types.GitHubLogin(""),
-                        "type": "User",
-                        "avatar_url": "",
-                    },
-                    "label": github_types.GitHubBaseBranchLabel(""),
-                    "ref": github_types.GitHubRefType(""),
-                    "sha": github_types.SHAType(""),
-                    "repo": {
-                        "url": "",
-                        "html_url": "",
-                        "default_branch": github_types.GitHubRefType(""),
-                        "full_name": "",
-                        "archived": False,
-                        "id": github_types.GitHubRepositoryIdType(0),
-                        "private": False,
-                        "name": github_types.GitHubRepositoryName(""),
-                        "owner": {
-                            "login": github_types.GitHubLogin(""),
-                            "id": github_types.GitHubAccountIdType(0),
-                            "type": "User",
-                            "avatar_url": "",
-                        },
-                    },
-                },
-                "head": {
-                    "user": {
-                        "id": github_types.GitHubAccountIdType(0),
-                        "login": github_types.GitHubLogin(""),
-                        "type": "User",
-                        "avatar_url": "",
-                    },
-                    "label": github_types.GitHubHeadBranchLabel(""),
-                    "ref": github_types.GitHubRefType(""),
-                    "sha": github_types.SHAType(""),
-                    "repo": {
-                        "url": "",
-                        "html_url": "",
-                        "default_branch": github_types.GitHubRefType(""),
-                        "full_name": "",
-                        "archived": False,
-                        "id": github_types.GitHubRepositoryIdType(0),
-                        "private": False,
-                        "name": github_types.GitHubRepositoryName(""),
-                        "owner": {
-                            "login": github_types.GitHubLogin(""),
-                            "id": github_types.GitHubAccountIdType(0),
-                            "type": "User",
-                            "avatar_url": "",
-                        },
-                    },
-                },
-            }
-        ),
-        [],
-    )
-)
-
-
 def Jinja2(
     value: typing.Any,
     extra_variables: dict[str, typing.Any] | None = None,
@@ -203,10 +51,15 @@ def Jinja2(
         raise voluptuous.Invalid("Template cannot be null")
     if not isinstance(value, str):
         raise voluptuous.Invalid("Template must be a string")
+
+    # Postpone loading of context here to avoid rules module depending on context module
+    # as we make this dependency only for typing
+    from mergify_engine.rules import types_dummy_context
+
     try:
         # TODO: optimize this by returning, storing and using the parsed Jinja2 AST
-        _DUMMY_PR.render_template(value, extra_variables)
-    except context.RenderTemplateFailure as rtf:
+        types_dummy_context.DUMMY_PR.render_template(value, extra_variables)
+    except types_dummy_context.RenderTemplateFailure as rtf:
         if rtf.lineno is None:
             path = None
         else:
@@ -261,7 +114,7 @@ class _GitHubTeam:
     raw: str
 
     @classmethod
-    def from_string(cls, value: str) -> "_GitHubTeam":
+    def from_string(cls, value: str) -> _GitHubTeam:
         if not value:
             raise voluptuous.Invalid("A GitHub team cannot be an empty string")
 

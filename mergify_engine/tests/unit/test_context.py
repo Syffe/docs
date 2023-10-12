@@ -6,6 +6,7 @@ import zoneinfo
 
 import pytest
 
+from mergify_engine import condition_value_querier
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import dependabot_helpers
@@ -615,8 +616,8 @@ async def test_length_optimisation(
     a_pull_request["commits"] = 10
     a_pull_request["changed_files"] = 5
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    assert await getattr(ctxt.pull_request, "#commits") == 10
-    assert await getattr(ctxt.pull_request, "#files") == 5
+    assert await getattr(condition_value_querier.PullRequest(ctxt), "#commits") == 10
+    assert await getattr(condition_value_querier.PullRequest(ctxt), "#files") == 5
 
 
 async def test_context_depends_on(
@@ -775,7 +776,12 @@ async def test_context_body_null(
 ) -> None:
     a_pull_request["body"] = None
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    assert await ctxt.pull_request._get_consolidated_data(ctxt, "body") == ""
+    assert (
+        await condition_value_querier.PullRequest(ctxt)._get_consolidated_data(
+            ctxt, "body"
+        )
+        == ""
+    )
 
 
 async def test_context_body_html(
@@ -882,7 +888,7 @@ You can trigger Dependabot actions by commenting on this PR:
 
 """  # noqa
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    assert await ctxt.pull_request.get_commit_message(
+    assert await condition_value_querier.PullRequest(ctxt).get_commit_message(
         "{{ title }} (#{{ number }})\n\n{{ body | markdownify }}"
     ) == (expected_title, expected_body)
 
@@ -966,7 +972,7 @@ commits:
             ),
         ]
     )
-    assert await ctxt.pull_request.get_commit_message(
+    assert await condition_value_querier.PullRequest(ctxt).get_commit_message(
         "{{ title | striptags }} (#{{ number }})\n\n{{ body | get_section('### Description') }}\n\n"
         "{{ head | markdownify }}\n\ncommits:\n\n{% for c in commits %}* {{ c }}\n{% endfor %}",
     ) == (expected_title, expected_body)
@@ -977,7 +983,7 @@ async def test_context_unexisting_section(
 ) -> None:
     ctxt = context.Context(mock.Mock(), a_pull_request)
     assert (
-        await ctxt.pull_request.get_commit_message(
+        await condition_value_querier.PullRequest(ctxt).get_commit_message(
             "{{ body | get_section('### Description', '') }}",
         )
         is None
@@ -988,7 +994,7 @@ async def test_context_unexisting_section_with_templated_default(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    assert await ctxt.pull_request.get_commit_message(
+    assert await condition_value_querier.PullRequest(ctxt).get_commit_message(
         "{{ body | get_section('### Description', '{{number}}\n{{author}}') }}",
     ) == (str(a_pull_request["number"]), a_pull_request["user"]["login"])
 
@@ -1008,7 +1014,7 @@ BODY OF #{{number}}
 
 """
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    assert await ctxt.pull_request.get_commit_message(
+    assert await condition_value_querier.PullRequest(ctxt).get_commit_message(
         "TITLE\n{{ body | get_section('### Commit') }}",
     ) == ("TITLE", f"BODY OF #{a_pull_request['number']}")
 
@@ -1030,8 +1036,8 @@ Instructions
 
 """
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    with pytest.raises(context.RenderTemplateFailure):
-        await ctxt.pull_request.get_commit_message(
+    with pytest.raises(condition_value_querier.RenderTemplateFailure):
+        await condition_value_querier.PullRequest(ctxt).get_commit_message(
             "TITLE\n{{ body | get_section('### Commit') }}",
         )
 
@@ -1443,7 +1449,7 @@ async def test_template_with_mandatory_variables(
 ) -> None:
     a_pull_request["body"] = "Such a test."
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    output = await ctxt.pull_request.render_template(
+    output = await condition_value_querier.PullRequest(ctxt).render_template(
         "{{ body }}",
         extra_variables={"greeting": "Hello"},
         mandatory_template_variables={"greeting": "\n{{ greeting }} world."},
@@ -1513,7 +1519,7 @@ Yo!
     ctxt = context.Context(mock.Mock(), a_pull_request)
     ctxt._caches.commits.set(commits)
 
-    template = await ctxt.pull_request.render_template(a_pull_request["body"])  # type: ignore[arg-type]
+    template = await condition_value_querier.PullRequest(ctxt).render_template(a_pull_request["body"])  # type: ignore[arg-type]
     assert (
         template
         == """
@@ -1654,7 +1660,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>
 """
 
     assert (
-        await ctxt.pull_request.get_commit_message(
+        await condition_value_querier.PullRequest(ctxt).get_commit_message(
             """{{ title }}
 
 {{ body | get_section("## Description", "") }}

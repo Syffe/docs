@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import typing
 
@@ -5,7 +7,7 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine.rules import conditions
@@ -13,6 +15,10 @@ from mergify_engine.rules import live_resolvers
 from mergify_engine.rules import types
 from mergify_engine.rules.config import conditions as cond_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 
 def CheckRunJinja2(v: typing.Any) -> str | None:
@@ -43,10 +49,10 @@ class PostCheckExecutor(
     @classmethod
     async def create(
         cls,
-        action: "PostCheckAction",
-        ctxt: "context.Context",
+        action: PostCheckAction,
+        ctxt: context.Context,
         rule: prr_config.EvaluatedPullRequestRule,
-    ) -> "PostCheckExecutor":
+    ) -> PostCheckExecutor:
         if not ctxt.subscription.has_feature(subscription.Features.CUSTOM_CHECKS):
             raise actions.InvalidDynamicActionConfiguration(
                 rule,
@@ -57,6 +63,7 @@ class PostCheckExecutor(
                 ),
             )
 
+        pull_attrs = condition_value_querier.PullRequest(ctxt)
         # TODO(sileht): Don't run it if conditions contains the rule itself, as it can
         # created an endless loop of events.
         if action.config["success_conditions"] is None:
@@ -64,7 +71,7 @@ class PostCheckExecutor(
         else:
             check_conditions = action.config["success_conditions"].copy()
             live_resolvers.apply_configure_filter(ctxt.repository, check_conditions)
-            await check_conditions([ctxt.pull_request])
+            await check_conditions([pull_attrs])
 
         extra_variables: dict[str, str | bool] = {
             "check_rule_name": rule.name,
@@ -74,20 +81,20 @@ class PostCheckExecutor(
             "check_succeed": check_conditions.match,
         }
         try:
-            title = await ctxt.pull_request.render_template(
+            title = await pull_attrs.render_template(
                 action.config["title"],
                 extra_variables,
             )
-        except context.RenderTemplateFailure as rmf:
+        except condition_value_querier.RenderTemplateFailure as rmf:
             raise actions.InvalidDynamicActionConfiguration(
                 rule, action, "Invalid title template", str(rmf)
             )
 
         try:
-            summary = await ctxt.pull_request.render_template(
+            summary = await pull_attrs.render_template(
                 action.config["summary"], extra_variables
             )
-        except context.RenderTemplateFailure as rmf:
+        except condition_value_querier.RenderTemplateFailure as rmf:
             raise actions.InvalidDynamicActionConfiguration(
                 rule, action, "Invalid summary template", str(rmf)
             )

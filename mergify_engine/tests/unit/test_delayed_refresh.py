@@ -4,6 +4,7 @@ import typing
 from freezegun import freeze_time
 import pytest
 
+from mergify_engine import condition_value_querier
 from mergify_engine import delayed_refresh
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.tests import utils
@@ -46,7 +47,9 @@ pull_request_rules:
     rule = typing.cast(
         list[prr_config.EvaluatedPullRequestRule], config["pull_request_rules"].rules
     )
-    await delayed_refresh.plan_next_refresh(ctxt, rule, ctxt.pull_request)
+    await delayed_refresh.plan_next_refresh(
+        ctxt, rule, condition_value_querier.PullRequest(ctxt)
+    )
 
     when = await delayed_refresh._get_current_refresh_datetime(
         ctxt.repository, ctxt.pull["number"]
@@ -114,7 +117,9 @@ pull_request_rules:
             list[prr_config.EvaluatedPullRequestRule],
             config["pull_request_rules"].rules,
         )
-        await delayed_refresh.plan_next_refresh(ctxt, rule, ctxt.pull_request)
+        await delayed_refresh.plan_next_refresh(
+            ctxt, rule, condition_value_querier.PullRequest(ctxt)
+        )
 
         when = await delayed_refresh._get_current_refresh_datetime(
             ctxt.repository, ctxt.pull["number"]
@@ -186,7 +191,9 @@ pull_request_rules:
             list[prr_config.EvaluatedPullRequestRule],
             config["pull_request_rules"].rules,
         )
-        await delayed_refresh.plan_next_refresh(ctxt, rule, ctxt.pull_request)
+        await delayed_refresh.plan_next_refresh(
+            ctxt, rule, condition_value_querier.PullRequest(ctxt)
+        )
 
         when = await delayed_refresh._get_current_refresh_datetime(
             ctxt.repository, ctxt.pull["number"]
@@ -224,7 +231,7 @@ pull_request_rules:
 
     # No delay refresh yet
     await delayed_refresh.plan_next_refresh(
-        ctxt, rule, ctxt.pull_request, only_if_earlier=True
+        ctxt, rule, condition_value_querier.PullRequest(ctxt), only_if_earlier=True
     )
     when = await delayed_refresh._get_current_refresh_datetime(
         ctxt.repository, ctxt.pull["number"]
@@ -237,7 +244,7 @@ pull_request_rules:
         ctxt.repository, ctxt.pull["number"], future
     )
     await delayed_refresh.plan_next_refresh(
-        ctxt, rule, ctxt.pull_request, only_if_earlier=True
+        ctxt, rule, condition_value_querier.PullRequest(ctxt), only_if_earlier=True
     )
     when = await delayed_refresh._get_current_refresh_datetime(
         ctxt.repository, ctxt.pull["number"]
@@ -250,7 +257,7 @@ pull_request_rules:
         ctxt.repository, ctxt.pull["number"], past
     )
     await delayed_refresh.plan_next_refresh(
-        ctxt, rule, ctxt.pull_request, only_if_earlier=True
+        ctxt, rule, condition_value_querier.PullRequest(ctxt), only_if_earlier=True
     )
     when = await delayed_refresh._get_current_refresh_datetime(
         ctxt.repository, ctxt.pull["number"]
@@ -262,7 +269,9 @@ pull_request_rules:
     await delayed_refresh._set_current_refresh_datetime(
         ctxt.repository, ctxt.pull["number"], past
     )
-    await delayed_refresh.plan_next_refresh(ctxt, rule, ctxt.pull_request)
+    await delayed_refresh.plan_next_refresh(
+        ctxt, rule, condition_value_querier.PullRequest(ctxt)
+    )
     when = await delayed_refresh._get_current_refresh_datetime(
         ctxt.repository, ctxt.pull["number"]
     )

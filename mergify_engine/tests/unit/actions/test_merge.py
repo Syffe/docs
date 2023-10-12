@@ -1,6 +1,6 @@
 import pytest
 
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine.tests.unit import conftest
 
@@ -130,7 +130,9 @@ async def test_merge_commit_message(
         ]
     )
     ctxt._caches.pull_check_runs.set([])
-    assert await ctxt.pull_request.get_commit_message(template=template) == (
+
+    pull_attrs = condition_value_querier.PullRequest(ctxt)
+    assert await pull_attrs.get_commit_message(template=template) == (
         title,
         message,
     )
@@ -165,8 +167,8 @@ async def test_merge_commit_message_undefined(
     ctxt = await context_getter(
         github_types.GitHubPullRequestNumber(43), body=body, title="My PR title"
     )
-    with pytest.raises(context.RenderTemplateFailure) as x:
-        await ctxt.pull_request.get_commit_message()
+    with pytest.raises(condition_value_querier.RenderTemplateFailure) as x:
+        await condition_value_querier.PullRequest(ctxt).get_commit_message()
     assert "foobar" in str(x.value)
 
 
@@ -188,5 +190,5 @@ async def test_merge_commit_message_syntax_error(
     ctxt = await context_getter(
         github_types.GitHubPullRequestNumber(43), body=body, title="My PR title"
     )
-    with pytest.raises(context.RenderTemplateFailure):
-        await ctxt.pull_request.get_commit_message()
+    with pytest.raises(condition_value_querier.RenderTemplateFailure):
+        await condition_value_querier.PullRequest(ctxt).get_commit_message()

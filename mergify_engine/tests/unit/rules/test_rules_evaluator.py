@@ -1,5 +1,6 @@
 import pytest
 
+from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine import rules as rules_mod
 from mergify_engine.rules.config import mergify as mergify_conf
@@ -172,7 +173,7 @@ async def test_pull_request_rules_evaluator(
     evaluated_rules = await pull_request_rules.PullRequestRulesEvaluator.create(
         parsed_config["pull_request_rules"].rules,
         ctxt.repository,
-        [ctxt.pull_request],
+        [condition_value_querier.PullRequest(ctxt)],
         True,
     )
     if ignored:

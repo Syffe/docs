@@ -5,6 +5,7 @@ import typing
 
 import tenacity
 
+from mergify_engine import condition_value_querier
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
@@ -400,18 +401,19 @@ async def create_duplicate_pull(
     :param assignees: The list of users to be assigned to the created PR.
     """
 
+    pull_attrs = condition_value_querier.PullRequest(ctxt)
     try:
-        title = await ctxt.pull_request.render_template(
+        title = await pull_attrs.render_template(
             title_template,
             extra_variables={
                 "destination_branch": duplicate_branch_result.target_branch
             },
         )
-    except context.RenderTemplateFailure as rmf:
+    except condition_value_querier.RenderTemplateFailure as rmf:
         raise DuplicateFailed(f"Invalid title message: {rmf}")
 
     try:
-        body_without_error = await ctxt.pull_request.render_template(
+        body_without_error = await pull_attrs.render_template(
             body_template,
             extra_variables={
                 "destination_branch": duplicate_branch_result.target_branch,
@@ -428,7 +430,7 @@ async def create_duplicate_pull(
             "\n(…)\n",
             position="middle",
         )
-        body = await ctxt.pull_request.render_template(
+        body = await pull_attrs.render_template(
             body_template,
             extra_variables={
                 "destination_branch": duplicate_branch_result.target_branch,
@@ -438,7 +440,7 @@ async def create_duplicate_pull(
                 "cherry_pick_error": "\n{{ cherry_pick_error }}"
             },
         )
-    except context.RenderTemplateFailure as rmf:
+    except condition_value_querier.RenderTemplateFailure as rmf:
         raise DuplicateFailed(f"Invalid title message: {rmf}")
 
     try:

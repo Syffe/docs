@@ -1,8 +1,9 @@
 import pytest
 import voluptuous
 
-from mergify_engine import context
+from mergify_engine import condition_value_querier
 from mergify_engine.rules import types
+from mergify_engine.rules import types_dummy_context
 
 
 @pytest.mark.parametrize(
@@ -154,9 +155,9 @@ def test_jinja2_template_with_all_attributes(
     expectation: str,
     context_attributes_var: str,
 ) -> None:
-    for attr in getattr(context.PullRequest, context_attributes_var):
+    for attr in getattr(condition_value_querier.PullRequest, context_attributes_var):
         attr = attr.replace("-", "_")
         tmpl_attr = tmpl.format(attr=attr)
 
-        value = types._DUMMY_PR.render_template(tmpl_attr, None)
+        value = types_dummy_context.DUMMY_PR.render_template(tmpl_attr, None)
         assert value == expectation
