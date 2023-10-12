@@ -2,6 +2,7 @@ import copy
 import datetime
 import re
 import typing
+from unittest import mock
 from urllib import parse
 
 import anys
@@ -23,6 +24,7 @@ from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine import yaml
+from mergify_engine.actions import merge_base
 from mergify_engine.engine import actions_runner
 from mergify_engine.models import events as evt_models
 from mergify_engine.queue import merge_train
@@ -8201,6 +8203,123 @@ pull_request_rules:
 
         fixup_commits = await self.get_commits(pr_fixup["number"])
         assert len(fixup_commits) == 2
+
+    async def test_queue_inplace_with_outdated_pull_request_from_github(self) -> None:
+        rules = f"""
+shared:
+  merge_ci: &common_checks
+    - "check-success=ci/circleci: check_if_tests_done"
+    - "#approved-reviews-by>=1"
+
+queue_rules:
+  - name: master_queue
+    conditions: *common_checks
+    checks_timeout: 25m
+
+
+pull_request_rules:
+  - name: master
+    conditions:
+      - base={self.main_branch_name}
+      - label=to-be-merged
+      - and: *common_checks
+    actions:
+      queue:
+        name: master_queue
+        method: squash
+"""
+
+        await self.setup_repo(rules)
+
+        p1 = await self.create_pr()
+        await self.create_review(p1["number"])
+        await self.add_label(p1["number"], "to-be-merged")
+        await self.create_status(p1, "ci/circleci: check_if_tests_done")
+
+        p1 = await self.get_pull(p1["number"])
+        p1_ctxt = context.Context(self.repository_ctxt, p1, [])
+        p1_statuses = await p1_ctxt.pull_statuses
+
+        p2 = await self.create_pr()
+        await self.merge_pull_as_admin(p2["number"])
+        await self.wait_for_pull_request("closed", p2["number"], merged=True)
+
+        real_handle_merge_error = merge_base.MergeUtilsMixin._handle_merge_error
+
+        with respx.mock(assert_all_called=False) as respx_mock:
+            # Mock the merge response to get the one from the bug, otherwise
+            # we get a 409 but with a different message
+            respx_mock.put(
+                f"{settings.GITHUB_REST_API_URL}"
+                f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
+                f"/pulls/{p1['number']}/merge"
+            ).respond(
+                409,
+                json={
+                    "message": "Head branch is out of date. Review and try the merge again."
+                },
+            )
+
+            # Return an outdated p1 pull request
+            respx_mock.get(
+                f"{settings.GITHUB_REST_API_URL}"
+                f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
+                f"/pulls/{p1['number']}"
+            ).respond(
+                200,
+                json=p1,  # type: ignore[arg-type]
+            )
+
+            # Mock get on status, that are not for the old p1 head sha (before the inplace merge)
+            # or the p2 head sha, to return the status for the old p1 (before inplace merge)
+            # in order to reproduce the bug all the time.
+            respx_mock.route(
+                url__regex=f"{settings.GITHUB_REST_API_URL}"
+                f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
+                rf"/commits/(?!{p1['head']['sha']}|{p2['head']['sha']})\w+/status"
+            ).respond(
+                200,
+                json={
+                    "state": p1_statuses[0]["state"],
+                    "statuses": p1_statuses,
+                },
+            )
+
+            respx_mock.route(host="api.github.com").pass_through()
+
+            async def mocked_handle_merge_error(*args, **kwargs):  # type: ignore[no-untyped-def]
+                # Rollback the previous mock so we get the 409 error only once
+                respx_mock.rollback()
+                respx_mock.route(host="api.github.com").pass_through()
+                return await real_handle_merge_error(*args, **kwargs)
+
+            with mock.patch.object(
+                merge_base.MergeUtilsMixin,
+                "_handle_merge_error",
+                mocked_handle_merge_error,
+            ), mock.patch.object(
+                context.Context, "is_head_sha_outdated", return_value=False
+            ):
+                await self.run_full_engine()
+
+        # PR should still be in the queue since the merge conditions do not match anymore
+        # after the inplace update of the PR (the status success should be reset)
+        train = await self.get_train()
+        assert len(train._cars) == 1
+        assert len(train._cars[0].still_queued_embarked_pulls) == 1
+        assert [
+            p.user_pull_request_number
+            for p in train._cars[0].still_queued_embarked_pulls
+        ] == [p1["number"]]
+
+        assert (
+            f"""
+  - [ ] all of:
+    - [ ] `check-success=ci/circleci: check_if_tests_done`
+    - `#approved-reviews-by>=1`
+      - [X] #{p1['number']}"""
+            in train._cars[0].get_original_pr_summary(p1["number"]).merge_conditions
+        )
 
     async def test_queue_command_after_action_queue(self) -> None:
         rules = {

@@ -292,6 +292,13 @@ class MergeUtilsMixin:
                 "Head branch was modified in the meantime",
                 e,
             )
+        if "Head branch is out of date" in e.message:
+            return await self._refresh_for_retry(
+                ctxt,
+                pending_result_builder,
+                "Head branch is out of date",
+                e,
+            )
 
         if (
             "Update is not a fast forward" in e.message
