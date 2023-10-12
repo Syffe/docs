@@ -915,6 +915,26 @@ GitHubWorkflowRunConclusionType = typing.Literal[
 ]
 
 
+class GitHubWorkflowRunPullRequestRepository(typing_extensions.TypedDict):
+    id: GitHubRepositoryIdType
+    name: GitHubRepositoryName
+    url: str
+
+
+class GitHubWorkflowRunPullRequestBaseOrHead(typing_extensions.TypedDict):
+    ref: GitHubRefType
+    sha: SHAType
+    repo: GitHubWorkflowRunPullRequestRepository
+
+
+class GitHubWorkflowRunPullRequest(typing_extensions.TypedDict):
+    id: GitHubPullRequestId
+    number: GitHubPullRequestNumber
+    base: GitHubWorkflowRunPullRequestBaseOrHead
+    head: GitHubWorkflowRunPullRequestBaseOrHead
+    url: str
+
+
 class GitHubWorkflowRun(typing_extensions.TypedDict):
     id: int
     workflow_id: int
@@ -927,6 +947,7 @@ class GitHubWorkflowRun(typing_extensions.TypedDict):
     repository: GitHubRepository
     run_attempt: int
     run_started_at: ISODateTimeType
+    pull_requests: list[GitHubWorkflowRunPullRequest]
 
 
 class GitHubEventWorkflowRun(GitHubEventWithRepository):
