@@ -1,10 +1,12 @@
 import argparse
 from collections import abc
+import json.decoder as json_decoder
 import operator
 import time
 from unittest import mock
 
 import anys
+import daiquiri
 import pydantic
 import pytest
 
@@ -16,6 +18,9 @@ from mergify_engine import json
 from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
+
+
+LOG = daiquiri.getLogger(__name__)
 
 
 class TestCountSeats(base.FunctionalTestBase):
@@ -103,7 +108,13 @@ class TestCountSeats(base.FunctionalTestBase):
             database.APP_STATE = None
             await count_seats.report(args)
             s = "".join(call.args[0] for call in stdout.write.mock_calls)
-            json_reports = json.loads(s)
+
+            try:
+                json_reports = json.loads(s)
+            except json_decoder.JSONDecodeError:
+                LOG.error("report", report=s)
+                raise
+
             assert list(json_reports.keys()) == ["organizations"]
             assert len(json_reports["organizations"]) == 1
 
