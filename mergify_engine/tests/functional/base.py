@@ -692,14 +692,16 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     async def wait_for_pull_request(
         self,
-        action: github_types.GitHubEventPullRequestActionType,
+        action: github_types.GitHubEventPullRequestActionType | None = None,
         pr_number: github_types.GitHubPullRequestNumber | None = None,
         merged: bool | None = None,
     ) -> github_types.GitHubEventPullRequest:
         wait_for_payload: dict[
             str,
             typing.Any,
-        ] = {"action": action}
+        ] = {}
+        if action is not None:
+            wait_for_payload["action"] = action
         if pr_number is not None:
             wait_for_payload["number"] = pr_number
         if merged is not None:
