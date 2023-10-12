@@ -16,6 +16,7 @@ permissions: write-all
 jobs:
   add-linear-author-as-reviewer:
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'mergify/merge-queue/') }}
     steps:
       - name: Add reviewers
         # yamllint disable-line rule:line-length
