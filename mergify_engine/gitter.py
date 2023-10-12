@@ -69,6 +69,8 @@ GIT_MESSAGE_TO_EXCEPTION: dict[
         ("remote end hung up unexpectedly", GitErrorRetriable),
         ("gnutls_handshake() failed:", GitErrorRetriable),
         ("unexpected disconnect while reading sideband packet", GitErrorRetriable),
+        # https://github.com/orgs/community/discussions/15823
+        ("fatal error in commit_refs ", GitErrorRetriable),
         (
             re.compile(
                 "cannot lock ref 'refs/heads/mergify/[^']*': 'refs/heads/mergify(|/bp|/copy|/merge-queue)' exists"
