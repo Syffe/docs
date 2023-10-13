@@ -145,7 +145,7 @@ async def test_api_response(
                     "number": 456,
                     "in_place": True,
                     "checks_timed_out": False,
-                    "checks_conclusion": "failure",
+                    "checks_conclusion": "pending",
                     "checks_started_at": date.utcnow(),
                     "checks_ended_at": date.utcnow(),
                     "unsuccessful_checks": [
@@ -196,7 +196,7 @@ async def test_api_response(
                         "number": 456,
                         "in_place": True,
                         "checks_timed_out": False,
-                        "checks_conclusion": "failure",
+                        "checks_conclusion": "pending",
                         "checks_started_at": "2023-09-12T01:00:00Z",
                         "checks_ended_at": "2023-09-12T01:00:00Z",
                         "unsuccessful_checks": [
