@@ -242,16 +242,33 @@ class EventReader:
         forward_to_engine: bool = True,
         test_id: str | None = None,
     ) -> github_types.GitHubEvent:
-        LOG.log(
-            42,
-            "WAITING FOR %s/%s: %s",
-            event_type,
-            expected_payload.get("action"),
-            expected_payload,
-        )
+        return (
+            await self.wait_for_all(
+                [(event_type, expected_payload)], forward_to_engine, test_id
+            )
+        )[0][1]
+
+    async def wait_for_all(
+        self,
+        events: list[tuple[github_types.GitHubEventType, typing.Any]],
+        forward_to_engine: bool = True,
+        test_id: str | None = None,
+    ) -> list[tuple[github_types.GitHubEventType, github_types.GitHubEvent]]:
+        for event_type, expected_payload in events:
+            LOG.log(
+                42,
+                "WAITING FOR %s/%s: %s",
+                event_type,
+                expected_payload.get("action"),
+                expected_payload,
+            )
+
+        # NOTE(Kontrolix): Copy events to not alter the orignal list
+        events = list(events)
+
+        received_events = []
 
         started_at = time.monotonic()
-
         while time.monotonic() - started_at < self.EVENTS_WAITING_TIME_SECONDS:
             try:
                 event = self._handled_events.get_nowait()
@@ -263,12 +280,24 @@ class EventReader:
                     await asyncio.sleep(self.EVENTS_POLLING_INTERVAL_SECONDS)
                 continue
 
-            if event["type"] == event_type and self._match(
-                event["payload"], expected_payload
-            ):
-                return event["payload"]
+            for event_type, expected_payload in events:
+                if event["type"] == event_type and self._match(
+                    event["payload"], expected_payload
+                ):
+                    received_events.append((event_type, event["payload"]))
+                    events.remove((event_type, expected_payload))
+                    # NOTE(Kontrolix): Restart timer every time we receive an
+                    # expected event
+                    started_at = time.monotonic()
+                    break
 
-        raise MissingEventTimeout(event_type, expected_payload)
+            if not events:
+                break
+
+        if events:
+            raise MissingEventTimeout(*events[0])
+
+        return received_events
 
     def _match(self, data: github_types.GitHubEvent, expected_data: typing.Any) -> bool:
         if isinstance(expected_data, dict):
@@ -689,6 +718,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self, *args: typing.Any, **kwargs: typing.Any
     ) -> github_types.GitHubEvent:
         return await self._event_reader.wait_for(*args, **kwargs)
+
+    async def wait_for_all(
+        self, *args: typing.Any, **kwargs: typing.Any
+    ) -> list[tuple[github_types.GitHubEventType, github_types.GitHubEvent]]:
+        return await self._event_reader.wait_for_all(*args, **kwargs)
 
     async def wait_for_pull_request(
         self,
