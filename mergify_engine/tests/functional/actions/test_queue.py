@@ -4758,7 +4758,7 @@ previous_failed_batches:
         pulls = await self.get_pulls()
         assert len(pulls) == 0
 
-    async def test_queue_update_with_update_method_merge_without_bot_account(
+    async def test_queue_inplace_with_merge_update_method_without_bot_account(
         self,
     ) -> None:
         rules = {
@@ -4789,10 +4789,10 @@ previous_failed_batches:
         await self.setup_repo(yaml.dump(rules))
 
         p1 = await self.create_pr(as_="admin")
-        p2 = await self.create_pr(as_="admin")
+
+        p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.run_engine()
+        await self.wait_for_pull_request("closed", p2["number"], merged=True)
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
@@ -4806,7 +4806,7 @@ previous_failed_batches:
         assert "mergify" in push_event["head_commit"]["author"]["username"]
         assert "[bot]" in push_event["head_commit"]["author"]["username"]
 
-    async def test_queue_update_with_update_method_merge_and_bot_account(self) -> None:
+    async def test_queue_inplace_with_merge_update_method_and_bot_account(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -4836,10 +4836,10 @@ previous_failed_batches:
         await self.setup_repo(yaml.dump(rules))
 
         p1 = await self.create_pr(as_="admin")
-        p2 = await self.create_pr(as_="admin")
+
+        p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.run_engine()
+        await self.wait_for_pull_request("closed", p2["number"], merged=True)
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
