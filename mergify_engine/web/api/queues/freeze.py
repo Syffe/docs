@@ -115,7 +115,7 @@ async def create_queue_freeze(
                     "queue_name": queue_name,
                     "reason": queue_freeze.reason,
                     "cascading": queue_freeze.cascading,
-                    "created_by": auth.actor,
+                    "created_by": typing.cast(signals.Actor, auth.actor),
                 }
             ),
             "Create queue freeze",
@@ -140,7 +140,7 @@ async def create_queue_freeze(
                     "queue_name": queue_name,
                     "reason": queue_freeze.reason,
                     "cascading": queue_freeze.cascading,
-                    "updated_by": auth.actor,
+                    "updated_by": typing.cast(signals.Actor, auth.actor),
                 }
             ),
             "Update queue freeze",
@@ -205,7 +205,10 @@ async def delete_queue_freeze(
         None,
         "queue.freeze.delete",
         signals.EventQueueFreezeDeleteMetadata(
-            {"queue_name": queue_name, "deleted_by": auth.actor}
+            {
+                "queue_name": queue_name,
+                "deleted_by": typing.cast(signals.Actor, auth.actor),
+            }
         ),
         "Delete queue freeze",
     )

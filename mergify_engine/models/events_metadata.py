@@ -8,7 +8,7 @@ from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import models
-from mergify_engine.clients import github
+from mergify_engine import signals
 from mergify_engine.models import enumerations
 from mergify_engine.models.enumerations import GithubAuthenticatedActorType
 from mergify_engine.queue.merge_train import checks
@@ -83,7 +83,7 @@ class GithubAuthenticatedActor(models.Base):
     async def get_or_create(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        data: github.Actor,
+        data: signals.Actor,
     ) -> GithubAuthenticatedActor:
         result = await session.execute(
             sqlalchemy.select(cls).where(cls.id == data["id"])

@@ -8,7 +8,6 @@ import daiquiri
 import typing_extensions
 
 from mergify_engine import github_types
-from mergify_engine.clients import github
 from mergify_engine.models import enumerations
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import checks as merge_train_checks
@@ -201,37 +200,45 @@ class EventQueueChecksStartMetadata(EventMetadata, total=False):
     speculative_check_pull_request: SpeculativeCheckPullRequest
 
 
+class Actor(typing_extensions.TypedDict):
+    type: typing.Literal[
+        "user", "application"
+    ] | enumerations.GithubAuthenticatedActorType
+    id: int
+    name: str
+
+
 class EventQueueFreezeCreateMetadata(EventMetadata, total=False):
     queue_name: str
     reason: str
     cascading: bool
-    created_by: github.Actor
+    created_by: Actor
 
 
 class EventQueueFreezeUpdateMetadata(EventMetadata, total=False):
     queue_name: str
     reason: str
     cascading: bool
-    updated_by: github.Actor
+    updated_by: Actor
 
 
 class EventQueueFreezeDeleteMetadata(EventMetadata, total=False):
     queue_name: str
-    deleted_by: github.Actor
+    deleted_by: Actor
 
 
 class EventQueuePauseCreateMetadata(EventMetadata, total=False):
     reason: str
-    created_by: github.Actor
+    created_by: Actor
 
 
 class EventQueuePauseUpdateMetadata(EventMetadata, total=False):
     reason: str
-    updated_by: github.Actor
+    updated_by: Actor
 
 
 class EventQueuePauseDeleteMetadata(EventMetadata, total=False):
-    deleted_by: github.Actor
+    deleted_by: Actor
 
 
 class EventNoMetadata(EventMetadata):

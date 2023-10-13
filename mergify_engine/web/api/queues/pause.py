@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
+import typing
 
 import fastapi
 import pydantic
@@ -88,7 +89,7 @@ async def create_queue_pause(
             signals.EventQueuePauseCreateMetadata(
                 {
                     "reason": queue_pause.reason,
-                    "created_by": auth.actor,
+                    "created_by": typing.cast(signals.Actor, auth.actor),
                 }
             ),
             "Create queue pause",
@@ -107,7 +108,7 @@ async def create_queue_pause(
             signals.EventQueuePauseUpdateMetadata(
                 {
                     "reason": queue_pause.reason,
-                    "updated_by": auth.actor,
+                    "updated_by": typing.cast(signals.Actor, auth.actor),
                 }
             ),
             "Update queue pause",
@@ -159,7 +160,9 @@ async def delete_queue_pause(
         repository_ctxt,
         None,
         "queue.pause.delete",
-        signals.EventQueuePauseDeleteMetadata({"deleted_by": auth.actor}),
+        signals.EventQueuePauseDeleteMetadata(
+            {"deleted_by": typing.cast(signals.Actor, auth.actor)}
+        ),
         "Delete queue pause",
     )
 

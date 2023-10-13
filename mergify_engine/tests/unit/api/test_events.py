@@ -95,6 +95,7 @@ async def insert_data(
 
 
 async def test_api_response(
+    fake_repository: context.Repository,
     web_client: tests_conftest.CustomTestClient,
     switched_to_pg: None,
     api_token: tests_api_conftest.TokenUserRepo,
@@ -119,6 +120,136 @@ async def test_api_response(
                 "event": "action.merge",
                 "type": "action.merge",
                 "metadata": {"branch": "merge_branch"},
+            }
+        ],
+    }
+
+    await evt_utils.insert(
+        "action.queue.checks_end",
+        fake_repository.repo,
+        pull_request=None,
+        trigger="whatever",
+        metadata=signals.EventQueueChecksEndMetadata(
+            {
+                "branch": "feature_branch",
+                "partition_name": partition_rules.DEFAULT_PARTITION_NAME,
+                "position": 3,
+                "queue_name": "default",
+                "queued_at": date.utcnow(),
+                "aborted": True,
+                "abort_code": "PR_DEQUEUED",
+                "abort_reason": "Pull request has been dequeued.",
+                "abort_status": "DEFINITIVE",
+                "unqueue_code": None,
+                "speculative_check_pull_request": {
+                    "number": 456,
+                    "in_place": True,
+                    "checks_timed_out": False,
+                    "checks_conclusion": "failure",
+                    "checks_started_at": date.utcnow(),
+                    "checks_ended_at": date.utcnow(),
+                    "unsuccessful_checks": [
+                        checks.QueueCheck.Serialized(
+                            {
+                                "name": "ruff",
+                                "description": "Syntax check",
+                                "state": "failure",
+                                "url": None,
+                                "avatar_url": "some_url",
+                            }
+                        )
+                    ],
+                },
+            }
+        ),
+    )
+
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs?per_page=1&event_type=action.queue.checks_end",
+        headers={"Authorization": api_token.api_token},
+    )
+    assert response.json() == {
+        "size": 1,
+        "per_page": 1,
+        "total": None,
+        "events": [
+            {
+                "id": 4,
+                "received_at": anys.ANY_DATETIME_STR,
+                "timestamp": anys.ANY_DATETIME_STR,
+                "trigger": "whatever",
+                "repository": "Mergifyio/mergify-engine",
+                "pull_request": None,
+                "event": "action.queue.checks_end",
+                "type": "action.queue.checks_end",
+                "metadata": {
+                    "aborted": True,
+                    "abort_code": "PR_DEQUEUED",
+                    "abort_reason": "Pull request has been dequeued.",
+                    "abort_status": "DEFINITIVE",
+                    "branch": "feature_branch",
+                    "partition_name": "__default__",
+                    "position": 3,
+                    "queue_name": "default",
+                    "queued_at": "2023-09-12T01:00:00Z",
+                    "speculative_check_pull_request": {
+                        "number": 456,
+                        "in_place": True,
+                        "checks_timed_out": False,
+                        "checks_conclusion": "failure",
+                        "checks_started_at": "2023-09-12T01:00:00Z",
+                        "checks_ended_at": "2023-09-12T01:00:00Z",
+                        "unsuccessful_checks": [
+                            {
+                                "name": "ruff",
+                                "description": "Syntax check",
+                                "url": None,
+                                "state": "failure",
+                                "avatar_url": "some_url",
+                            }
+                        ],
+                    },
+                    "unqueue_code": None,
+                },
+            }
+        ],
+    }
+
+    await evt_utils.insert(
+        "queue.pause.create",
+        fake_repository.repo,
+        pull_request=None,
+        trigger="whatever",
+        metadata=signals.EventQueuePauseCreateMetadata(
+            {
+                "reason": "Incident in production",
+                "created_by": {"id": 145, "type": "user", "name": "vegeta"},
+            }
+        ),
+    )
+
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs?per_page=1&event_type=queue.pause.create",
+        headers={"Authorization": api_token.api_token},
+    )
+    assert response.json() == {
+        "size": 1,
+        "per_page": 1,
+        "total": None,
+        "events": [
+            {
+                "id": 5,
+                "received_at": anys.ANY_DATETIME_STR,
+                "timestamp": anys.ANY_DATETIME_STR,
+                "trigger": "whatever",
+                "repository": "Mergifyio/mergify-engine",
+                "pull_request": None,
+                "event": "queue.pause.create",
+                "type": "queue.pause.create",
+                "metadata": {
+                    "reason": "Incident in production",
+                    "created_by": {"type": "user", "id": 145, "name": "vegeta"},
+                },
             }
         ],
     }

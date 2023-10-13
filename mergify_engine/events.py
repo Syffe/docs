@@ -75,13 +75,19 @@ def format_event_item_response(event: evt_models.Event) -> dict[str, typing.Any]
         "pull_request": event.pull_request,
         "repository": event.repository.full_name,
     }
+
+    inspector = sqlalchemy.inspect(event.__class__)
+
     # place child model (event specific) attributes in the metadata key
     if event.__class__.__bases__[0] == evt_models.Event:
-        result["metadata"] = {
-            col.name: getattr(event, col.name)
-            for col in event.__table__.columns
-            if col.name not in ["id"]
-        }
+        metadata = {}
+        for col in event.__table__.columns:
+            if col.name not in ("id",):
+                metadata[col.name] = getattr(event, col.name)
+        for r in inspector.relationships:
+            if r.key not in ("repository",):
+                metadata[r.key] = getattr(event, r.key)._as_dict()
+        result["metadata"] = metadata
 
     return result
 
