@@ -522,6 +522,13 @@ Then, re-embark the pull request into the merge queue by posting the comment
             f"The pull request has been removed from the queue `{self.config['name']}`"
         )
 
+        if str(self.config["name"]) == "None":
+            self.ctxt.log.error(
+                "queue name is unexpectedly `None`",
+                is_string=isinstance(self.config["name"], str),
+                logged_from="actions.queue.run",
+            )
+
         # NOTE(sileht): the pull request gets checked and then changed
         # by user, we should unqueue and requeue it as the conditions still match.
         if await self.ctxt.synchronized_by_user_at():
@@ -755,6 +762,14 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 self.ctxt
             )
             unqueue_msg = f"The pull request has been removed from the queue `{self.config['name']}`"
+
+            if str(self.config["name"]) == "None":
+                self.ctxt.log.error(
+                    "queue name is unexpectedly `None`",
+                    is_string=isinstance(self.config["name"], str),
+                    logged_from="actions.queue.cancel",
+                )
+
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
                 unqueue_msg,
