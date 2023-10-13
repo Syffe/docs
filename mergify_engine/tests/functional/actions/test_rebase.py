@@ -142,7 +142,6 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
@@ -168,7 +167,6 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
@@ -194,7 +192,6 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
@@ -225,7 +222,6 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
@@ -255,7 +251,6 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
@@ -285,7 +280,6 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()

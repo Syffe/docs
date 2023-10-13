@@ -23,7 +23,6 @@ class TestCommandBackport(base.FunctionalTestBase):
         assert len(comments) == 2, comments
         assert "Waiting for conditions" in comments[-1]["body"]
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "edited"}, test_id=p["number"])
 
@@ -66,9 +65,7 @@ class TestCommandBackport(base.FunctionalTestBase):
         )
 
         await self.merge_pull(pulls_feature[0]["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.merge_pull(pulls_stable[0]["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
 
         refs = [
@@ -103,7 +100,6 @@ class TestCommandBackport(base.FunctionalTestBase):
             p["number"], f"@mergifyio backport {stable_branch} {feature_branch}"
         )
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
@@ -139,7 +135,6 @@ class TestCommandBackport(base.FunctionalTestBase):
         await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
 
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "edited"}, test_id=p["number"])
 
@@ -181,9 +176,7 @@ class TestCommandBackport(base.FunctionalTestBase):
         )
 
         await self.merge_pull(pulls_feature[0]["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.merge_pull(pulls_stable[0]["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
 
         refs = [
@@ -225,7 +218,6 @@ class TestCommandBackport(base.FunctionalTestBase):
 
         # triggers backport
         await self.merge_pull(p["number"])
-        await self.wait_for_pull_request("closed", p["number"])
         await self.run_engine()
         comment_1 = await self.wait_for_issue_comment(str(p["number"]), "edited")
         assert "in progress" in comment_1["comment"]["body"]

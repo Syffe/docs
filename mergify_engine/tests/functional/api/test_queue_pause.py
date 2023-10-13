@@ -198,8 +198,7 @@ class TestQueuePause(base.FunctionalTestBase):
 
         # To force others to be rebased
         p = await self.create_pr()
-        await self.merge_pull(p["number"])
-        p_closed = await self.wait_for_pull_request("closed", pr_number=p["number"])
+        p_closed = await self.merge_pull(p["number"])
         await self.run_engine()
 
         await self.add_label(p1["number"], "queue-urgent")
@@ -418,8 +417,7 @@ class TestQueuePause(base.FunctionalTestBase):
 
         # To force others to be rebased
         p = await self.create_pr()
-        await self.merge_pull(p["number"])
-        p_closed = await self.wait_for_pull_request("closed", pr_number=p["number"])
+        p_closed = await self.merge_pull(p["number"])
         await self.run_engine()
 
         await self.add_label(p1["number"], "queue-urgent")
@@ -619,8 +617,7 @@ class TestQueuePause(base.FunctionalTestBase):
 
         # To force others to be rebased
         p = await self.create_pr()
-        await self.merge_pull(p["number"])
-        p_closed = await self.wait_for_pull_request("closed", pr_number=p["number"])
+        p_closed = await self.merge_pull(p["number"])
         await self.run_engine()
 
         await self.add_label(p1["number"], "queue-urgent")

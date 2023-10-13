@@ -22,8 +22,6 @@ class TestBranchUpdatePublic(base.FunctionalTestBase):
         p2 = await self.create_pr(files={"TESTING3": "foobar"})
         await self.merge_pull(p1["number"])
 
-        await self.wait_for("pull_request", {"action": "closed"})
-
         await self.create_comment_as_admin(p2["number"], "@mergifyio update")
         await self.run_engine()
 

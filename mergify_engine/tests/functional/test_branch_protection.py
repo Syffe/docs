@@ -178,8 +178,6 @@ class TestBranchProtection(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"], "rebase")
-        p2_closed = await self.wait_for_pull_request("closed", p2["number"])
-        assert p2_closed["pull_request"]["merged"]
 
         await self.add_label(p1["number"], "ready-to-merge")
 
@@ -248,7 +246,6 @@ class TestBranchProtection(base.FunctionalTestBase):
 
         pr3 = await self.create_pr()
         await self.merge_pull_as_admin(pr3["number"])
-        await self.wait_for_pull_request("closed", pr3["number"], merged=True)
 
         await self.add_label(pr["number"], "queue")
         await self.run_engine()

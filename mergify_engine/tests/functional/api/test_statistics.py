@@ -334,7 +334,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             # To force others to be rebased
             p = await self.create_pr()
             await self.merge_pull(p["number"])
-            await self.wait_for("pull_request", {"action": "closed"})
 
             await self.add_label(p1["number"], "queue")
             await self.run_engine()
@@ -402,7 +401,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")

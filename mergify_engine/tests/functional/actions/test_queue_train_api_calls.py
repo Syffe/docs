@@ -387,7 +387,6 @@ pull_requests:
         p3 = await self.create_pr(files={"conflicts": "boom"})
 
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         q = await self.get_train()
         base_sha = await q.get_base_sha()
@@ -504,8 +503,7 @@ pull_requests:
 
             # To force others to be rebased
             p = await self.create_pr()
-            await self.merge_pull(p["number"])
-            p_closed = await self.wait_for_pull_request("closed", pr_number=p["number"])
+            p_closed = await self.merge_pull(p["number"])
             await self.run_engine()
 
             await self.add_label(p1["number"], "queue")

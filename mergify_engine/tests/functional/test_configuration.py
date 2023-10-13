@@ -477,7 +477,6 @@ did not find expected alphabetic or numeric character
 
         p2 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
         await self.merge_pull(p2["number"])
-        await self.wait_for_pull_request("closed", p2["number"], merged=True)
         await self.run_engine()
 
         p2 = await self.create_pr()

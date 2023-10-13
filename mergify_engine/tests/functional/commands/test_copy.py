@@ -59,9 +59,7 @@ class TestCommandCopy(base.FunctionalTestBase):
         )
 
         await self.merge_pull(pulls_feature[0]["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.merge_pull(pulls_stable[0]["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
 
         refs = [

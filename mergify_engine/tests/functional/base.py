@@ -2017,17 +2017,19 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         merge_method: typing.Literal["merge", "rebase", "squash"] = "merge",
-    ) -> None:
+    ) -> github_types.GitHubEventPullRequest:
         await self.client_integration.put(
             f"{self.url_origin}/pulls/{pull_number}/merge",
             json={"merge_method": merge_method},
         )
+        return await self.wait_for_pull_request("closed", pull_number, merged=True)
 
     async def merge_pull_as_admin(
         self,
         pull_number: github_types.GitHubPullRequestNumber,
-    ) -> None:
+    ) -> github_types.GitHubEventPullRequest:
         await self.client_admin.put(f"{self.url_origin}/pulls/{pull_number}/merge")
+        return await self.wait_for_pull_request("closed", pull_number, merged=True)
 
     async def get_labels(self) -> list[github_types.GitHubLabel]:
         return [

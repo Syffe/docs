@@ -21,7 +21,6 @@ class TestCommandUpdate(base.FunctionalTestBase):
         await self.setup_repo()
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.create_comment_as_admin(p["number"], "@mergifyio update")
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
@@ -61,7 +60,6 @@ class TestCommandUpdate(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for_pull_request("closed", p2["number"])
 
         await self.add_label(p["number"], "queue")
         await self.run_engine()

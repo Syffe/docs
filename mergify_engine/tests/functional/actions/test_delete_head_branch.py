@@ -54,7 +54,6 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "close")
 
         await self.merge_pull(p1["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.edit_pull(p2["number"], state="close")
         await self.wait_for("pull_request", {"action": "closed"})
@@ -103,7 +102,6 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         assert 1 == len(pulls)
 
         await self.merge_pull(p1["number"])
-        await self.wait_for_pull_request("closed", p1["number"])
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
         await self.wait_for("check_run", {"check_run": {"conclusion": "success"}})
@@ -189,9 +187,6 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         await self.create_pr(branch=second_branch, base=first_branch)
 
         await self.merge_pull(p1["number"])
-        await self.wait_for(
-            "pull_request", {"action": "closed", "number": p1["number"]}
-        )
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
 

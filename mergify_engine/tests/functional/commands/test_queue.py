@@ -185,10 +185,8 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         # To force others to be rebased
         p = await self.create_pr()
-        await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
+        p_merged = await self.merge_pull(p["number"])
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
         await self.create_comment_as_admin(p2["number"], "@mergifyio queue default")
@@ -201,22 +199,22 @@ class TestQueueCommand(base.FunctionalTestBase):
         assert len(pulls) == 4
 
         q = await self.get_train()
-        assert p["merge_commit_sha"]
+        assert p_merged["pull_request"]["merge_commit_sha"]
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_1["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_2["number"],
                 ),
@@ -275,7 +273,6 @@ class TestQueueCommand(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for_pull_request("closed", p["number"], merged=True)
         await self.run_engine()
 
         await self.branch_protection_protect(self.main_branch_name, protection)
@@ -676,7 +673,6 @@ class TestQueueCommand(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for_pull_request("closed", p["number"], merged=True)
         await self.run_engine()
 
         await self.branch_protection_protect(self.main_branch_name, protection)

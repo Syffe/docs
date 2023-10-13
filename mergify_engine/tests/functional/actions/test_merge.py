@@ -348,7 +348,6 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.create_status(p2)
         await self.run_engine()
@@ -485,7 +484,6 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         p2 = await self.create_pr(files={"conflicts": "boom"})
 
         await self.merge_pull(p1["number"])
-        await self.wait_for_pull_request("closed", pr_number=p1["number"])
         await self.run_engine()
 
         await self.add_label(p2["number"], "merge")

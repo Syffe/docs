@@ -18,7 +18,6 @@ class TestCommandRebase(base.FunctionalTestBase):
         p1 = await self.create_pr(files={"TESTING": "foobar\n\n\np1"}, as_="admin")
         p2 = await self.create_pr(files={"TESTING": "p2\n\nfoobar\n"}, as_="admin")
         await self.merge_pull(p1["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.create_comment_as_admin(p2["number"], "@mergifyio rebase")
         await self.run_engine()
@@ -26,10 +25,10 @@ class TestCommandRebase(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
 
         oldsha = p2["head"]["sha"]
-        await self.merge_pull(p2["number"])
 
-        p2_merged = await self.wait_for_pull_request("closed")
+        p2_merged = await self.merge_pull(p2["number"])
         assert oldsha != p2_merged["pull_request"]["head"]["sha"]
+
         f = typing.cast(
             github_types.GitHubContentFile,
             await self.client_integration.item(
@@ -71,7 +70,6 @@ class TestCommandRebase(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for_pull_request("closed", p2["number"])
 
         await self.add_label(p["number"], "queue")
         await self.run_engine()
@@ -102,7 +100,6 @@ class TestCommandRebase(base.FunctionalTestBase):
         p2 = await self.create_pr(files={"TESTING": "p2\n\nfoobar\n"}, as_="admin")
 
         await self.merge_pull(p1["number"])
-        await self.wait_for_pull_request("closed", pr_number=p1["number"], merged=True)
 
         # The repo is a fork with "maintainer_can_modify" authorization, but the
         # user is not a maintainer of the fork

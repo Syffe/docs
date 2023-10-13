@@ -324,7 +324,6 @@ class TestAttributes(base.FunctionalTestBase):
 
         pr_ahead = await self.create_pr()
         await self.merge_pull_as_admin(pr_ahead["number"])
-        await self.wait_for_pull_request("closed")
 
         await self.run_engine()
 
@@ -1350,7 +1349,6 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         p1 = await self.create_pr()
         p2 = await self.create_pr()
         await self.merge_pull(p1["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
 
         await self.client_integration.put(
             f"{self.repository_ctxt.base_url}/pulls/{p2['number']}/update-branch",
