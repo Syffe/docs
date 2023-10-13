@@ -288,7 +288,7 @@ class RedisLinks:
             "authentication",
         ):
             if db in self.__dict__:
-                await self.__dict__[db].close(close_connection_pool=True)
+                await self.__dict__[db].aclose(close_connection_pool=True)
 
     async def flushall(self) -> None:
         await self.cache.flushdb()
