@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 import respx
 import sqlalchemy
@@ -54,3 +56,75 @@ async def test_github_proxy(
     await web_client.logout()
     resp = await web_client.get("/front/proxy/github/repos?per_page=100")
     assert resp.status_code == 401
+
+
+@pytest.mark.ignored_logging_errors("an API proxy return unexpected content-type")
+async def test_text_html_github_proxy(
+    monkeypatch: pytest.MonkeyPatch,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.ERROR)
+    user = github_user.GitHubUser(
+        id=github_types.GitHubAccountIdType(42),
+        login=github_types.GitHubLogin("user-login"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
+    )
+    db.add(user)
+    await db.commit()
+
+    respx_mock.post(
+        "https://api.github.com/markdown",
+        headers={"Authorization": "token user-token"},
+    ).respond(
+        200,
+        text="hello world",
+        headers={
+            "content-type": "text/html",
+        },
+    )
+
+    respx_mock.post(
+        "https://api.github.com/markdown/raw",
+        headers={"Authorization": "token user-token"},
+    ).respond(
+        200,
+        text="hello world",
+        headers={
+            "content-type": "text/html",
+        },
+    )
+
+    respx_mock.post(
+        "https://api.github.com/maybe-text-html",
+        headers={"Authorization": "token user-token"},
+    ).respond(
+        200,
+        text="hello world",
+        headers={
+            "content-type": "text/html",
+        },
+    )
+    await web_client.log_as(user.id)
+
+    resp = await web_client.post(
+        "/front/proxy/github/markdown?whatever=100",
+        data={"text": "markdown"},
+    )
+    assert resp.headers["content-type"] == "text/plain"
+
+    resp = await web_client.post(
+        "/front/proxy/github/markdown/raw?whatever=100",
+        data={"text": "markdown"},
+    )
+    assert resp.headers["content-type"] == "text/plain"
+
+    resp = await web_client.post(
+        "/front/proxy/github/maybe-text-html?whatever=100",
+        data={"text": "markdown"},
+    )
+    assert resp.headers["content-type"] == "text/html"
+    assert len(caplog.records) == 1
+    assert caplog.records[0].message == "an API proxy return unexpected content-type"

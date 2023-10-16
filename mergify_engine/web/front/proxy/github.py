@@ -26,9 +26,9 @@ async def github_proxy(
     async with github.AsyncGitHubInstallationClient(
         github.GitHubTokenAuth(current_user.oauth_access_token)
     ) as client:
-        proxy_request: httpx.Request | None = None
+        proxy_request: httpx.Request
         try:
-            resp = await client.request(
+            proxy_response = await client.request(
                 method=request.method,
                 url=f"{settings.GITHUB_REST_API_URL}/{path}",
                 params=request.url.query,
@@ -36,19 +36,20 @@ async def github_proxy(
                 content=await request.body(),
                 follow_redirects=True,
             )
+            proxy_request = proxy_response.request
         except httpx.InvalidURL:
             raise fastapi.HTTPException(
                 status_code=422, detail={"messages": "Invalid request"}
             )
         except httpx.HTTPStatusError as e:
-            resp = e.response
+            proxy_response = e.response
             proxy_request = e.request
         except httpx.RequestError as e:
-            resp = None
+            proxy_response = None
             proxy_request = e.request
 
-        if resp is None or resp.status_code >= 500:
-            resp = httpx.Response(
+        if proxy_response is None or proxy_response.status_code >= 500:
+            proxy_response = httpx.Response(
                 status_code=502,
                 content="Bad Gateway",
                 request=proxy_request,
@@ -60,12 +61,21 @@ async def github_proxy(
         if request.url.port and request.url.port != default_port:
             base_url += f":{request.url.port}"
 
+        await utils.override_and_warn_unexpected_content_type(
+            proxy_request,
+            proxy_response,
+            [
+                ("POST", "/markdown", "text/plain"),
+                ("POST", "/markdown/raw", "text/plain"),
+            ],
+        )
+
         return fastapi.Response(
-            status_code=resp.status_code,
-            content=resp.content,
+            status_code=proxy_response.status_code,
+            content=proxy_response.content,
             headers=dict(
                 utils.httpx_to_fastapi_headers(
-                    resp.headers,
+                    proxy_response.headers,
                     rewrite_url=(
                         "https://api.github.com",
                         f"{base_url}/front/proxy/github",
