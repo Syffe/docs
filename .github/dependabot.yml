@@ -14,6 +14,10 @@ updates:
       # FIXME(sileht): 2.0.0 pin some incompatible library
       # https://github.com/DataDog/dd-trace-py/issues/7142
       - dependency-name: "ddtrace"
+      # FIXME(sileht):
+      # https://github.com/DataDog/dd-trace-py/issues/7142
+      # https://github.com/redis/redis-py/issues/2995
+      - dependency-name: "redis"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
