@@ -239,23 +239,24 @@ class RedisLinks:
             options["ssl_check_hostname"] = False
             options["ssl_cert_reqs"] = None
 
-        client = redispy.Redis(
-            connection_pool=self.connection_pool_cls.from_url(
-                url.geturl(),
-                max_connections=max_connections,
-                decode_responses=False,
-                client_name=f"{service.SERVICE_NAME}/{self.name}/{name}",
-                redis_connect_func=redis_connect_func,
-                health_check_interval=10,
-                retry=retry.Retry(redispy.default_backoff(), retries=3),
-                retry_on_timeout=True,
-                # Heroku H12 timeout is 30s and we retry 3 times
-                socket_timeout=5,
-                socket_connect_timeout=5,
-                socket_keepalive=True,
-                **options,
-            )
+        pool = self.connection_pool_cls.from_url(
+            url.geturl(),
+            max_connections=max_connections,
+            decode_responses=False,
+            client_name=f"{service.SERVICE_NAME}/{self.name}/{name}",
+            redis_connect_func=redis_connect_func,
+            health_check_interval=10,
+            retry=retry.Retry(redispy.default_backoff(), retries=3),
+            retry_on_timeout=True,
+            # Heroku H12 timeout is 30s and we retry 3 times
+            socket_timeout=5,
+            socket_connect_timeout=5,
+            socket_keepalive=True,
+            **options,
         )
+
+        client = redispy.Redis(connection_pool=pool)
+        client.auto_close_connection_pool = True
         ddtrace.Pin.override(client, service=f"engine-redis-{name}")
         return client
 
