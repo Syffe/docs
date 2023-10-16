@@ -9,6 +9,7 @@ import daiquiri
 from redis import exceptions as redis_exceptions
 import sqlalchemy.exc
 
+from mergify_engine.clients import github
 from mergify_engine.clients import http
 
 
@@ -110,7 +111,10 @@ def need_retry(
     if isinstance(exception, EngineNeedRetry):
         return exception.retry_in
 
-    if isinstance(exception, http.RequestError | http.HTTPServerSideError):
+    if isinstance(exception, http.RequestError | http.HTTPServerSideError) or (
+        isinstance(exception, github.GraphqlError)
+        and "Something went wrong while executing your query" in exception.message
+    ):
         # NOTE(sileht): We already retry locally with urllib3, so if we get there, GitHub
         # is in a really bad shape...
         return datetime.timedelta(minutes=base_retry_in)
