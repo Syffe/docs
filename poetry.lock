@@ -262,13 +262,13 @@ files = [
 
 [[package]]
 name = "bytecode"
-version = "0.15.0"
+version = "0.15.1"
 description = "Python module to generate and modify bytecode"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "bytecode-0.15.0-py3-none-any.whl", hash = "sha256:a66718dc1d246b4fec52b5850c15592344a56c8bdb28fd243c895ccf00f8371f"},
-    {file = "bytecode-0.15.0.tar.gz", hash = "sha256:0908a8348cabf366b5c1865daabcdc0d650cb0cbdeb1750cc90564852f81945c"},
+    {file = "bytecode-0.15.1-py3-none-any.whl", hash = "sha256:0a1dc340cac823cff605609b8b214f7f9bf80418c6b9e0fc8c6db1793c27137d"},
+    {file = "bytecode-0.15.1.tar.gz", hash = "sha256:7263239a8d3f70fc7c303862b20cd2c6788052e37ce0a26e67309d280e985984"},
 ]
 
 [[package]]
