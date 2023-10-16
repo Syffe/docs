@@ -239,10 +239,6 @@ class RedisLinks:
             options["ssl_check_hostname"] = False
             options["ssl_cert_reqs"] = None
 
-        if issubclass(self.connection_pool_cls, redispy.BlockingConnectionPool):
-            # Heroku H12 timeout is 30s and we retry 3 times
-            options["timeout"] = 5
-
         client = redispy.Redis(
             connection_pool=self.connection_pool_cls.from_url(
                 url.geturl(),
