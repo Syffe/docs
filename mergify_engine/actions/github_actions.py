@@ -8,9 +8,11 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
+from mergify_engine import condition_value_querier
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine.clients import http
+from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
@@ -32,18 +34,36 @@ class GhaExecutorConfig(typing.TypedDict):
 @dataclasses.dataclass
 class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
     @staticmethod
-    def _get_workflow_dispatch_config(
+    async def _get_workflow_dispatch_config(
         action: GhaAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
     ) -> list[GhaExecutorDispatchConfig]:
-        return [
-            GhaExecutorDispatchConfig(
-                {
-                    "workflow": wf["workflow"],
-                    "inputs": wf["inputs"],
-                }
+        pull_attrs = condition_value_querier.PullRequest(ctxt)
+
+        workflows = []
+        for wf in action.config["workflow"]["dispatch"]:
+            inputs: dict[str, str | int | bool] = {}
+            for ik, iv in wf["inputs"].items():
+                if isinstance(iv, str):
+                    try:
+                        inputs[ik] = await pull_attrs.render_template(iv)
+                    except condition_value_querier.RenderTemplateFailure as rmf:
+                        raise actions.InvalidDynamicActionConfiguration(
+                            rule, action, "Invalid input value", str(rmf)
+                        )
+                else:
+                    inputs[ik] = iv
+
+            workflows.append(
+                GhaExecutorDispatchConfig(
+                    {
+                        "workflow": wf["workflow"],
+                        "inputs": inputs,
+                    }
+                )
             )
-            for wf in action.config["workflow"]["dispatch"]
-        ]
+        return workflows
 
     @classmethod
     async def create(
@@ -54,7 +74,7 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
     ) -> GhaExecutor:
         try:
             config = GhaExecutorConfig(
-                workflows=cls._get_workflow_dispatch_config(action)
+                workflows=await cls._get_workflow_dispatch_config(action, ctxt, rule)
             )
         except KeyError as e:
             raise actions.InvalidDynamicActionConfiguration(
@@ -173,7 +193,7 @@ class GhaAction(actions.Action):
                             str, urllib.parse.quote
                         ),
                         voluptuous.Required("inputs", default={}): voluptuous.All(
-                            {str: voluptuous.Any(str, int, bool)},
+                            {str: voluptuous.Any(types.Jinja2, int, bool)},
                             voluptuous.Length(max=10),
                         ),
                     }

@@ -44,6 +44,35 @@ async def test_github_actions_get_config() -> None:
     )
 
 
+async def test_github_actions_template_inputs() -> None:
+    await mergify_conf.get_mergify_config_from_dict(
+        mock.MagicMock(),
+        {
+            "pull_request_rules": [
+                {
+                    "name": "Trigger GHA",
+                    "conditions": ["label=ready"],
+                    "actions": {
+                        "github_actions": {
+                            "workflow": {
+                                "dispatch": [
+                                    {
+                                        "workflow": "my_first_workflow.yaml",
+                                        "inputs": {
+                                            "input1": "{{ head }}",
+                                        },
+                                    },
+                                ]
+                            }
+                        }
+                    },
+                },
+            ]
+        },
+        "",
+    )
+
+
 async def test_github_actions_get_schema_error() -> None:
     # Too many dispatched events
     with pytest.raises(voluptuous.Invalid) as e:

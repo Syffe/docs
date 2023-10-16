@@ -1,5 +1,7 @@
+import io
 import typing
 from unittest import mock
+import zipfile
 
 import respx
 
@@ -488,3 +490,99 @@ Workflow successfully dispatched:
             == f"""Failed to dispatch workflow `workflow_dispatch_forbidden.yaml`. The new Mergify permissions must be accepted to dispatch actions.
 You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
         )
+
+    async def test_gha_with_template_input(self) -> None:
+        dynamic_workflow = {
+            "name": "dynamic_workflow",
+            "on": {
+                "pull_request": {"branches": self.main_branch_name},
+                "workflow_dispatch": {
+                    "inputs": {
+                        "author": {"required": True, "type": "string"},
+                    }
+                },
+            },
+            "jobs": {
+                "test-dispatch": {
+                    "runs-on": self.RUNNER,
+                    "steps": [
+                        {
+                            "name": "Show author",
+                            "run": "echo author=${{ inputs.author }}",
+                        }
+                    ],
+                }
+            },
+        }
+
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Dispatch GHA",
+                    "conditions": [
+                        "label=dispatch",
+                    ],
+                    "actions": {
+                        "github_actions": {
+                            "workflow": {
+                                "dispatch": [
+                                    {
+                                        "workflow": "dynamic_workflow.yaml",
+                                        "inputs": {
+                                            "author": "{{author}}",
+                                        },
+                                    },
+                                ]
+                            }
+                        }
+                    },
+                },
+            ]
+        }
+
+        await self.setup_repo(
+            yaml.dump(rules),
+            files={
+                ".github/workflows/dynamic_workflow.yaml": yaml.dump(dynamic_workflow),
+            },
+        )
+
+        p = await self.create_pr()
+        await self.add_label(p["number"], "dispatch")
+        await self.run_engine()
+
+        # Workflow is triggered twice because of the necessary push trigger, see note in the first test
+        # most recent one is dispatched
+        workflow_job_events = [
+            typing.cast(github_types.GitHubEventWorkflowJob, wf[-1])
+            for wf in await self.wait_for_all(
+                events=[
+                    (
+                        "workflow_job",
+                        {"action": "completed"},
+                    ),
+                    (
+                        "workflow_job",
+                        {"action": "completed"},
+                    ),
+                ]
+            )
+        ]
+
+        assert all(wf is not None for wf in workflow_job_events)
+        dispatched_event = sorted(
+            workflow_job_events, key=lambda wf: wf["workflow_job"]["started_at"]  # type: ignore[index]
+        )[-1]
+
+        log = await self.client_integration.get(
+            f"{self.url_origin}/actions/runs/{dispatched_event['workflow_job']['run_id']}/logs"  # type: ignore[index]
+        )
+
+        with io.BytesIO(log.content) as stream:
+            with zipfile.ZipFile(stream, "r") as zip_file:
+                for file_name in zip_file.namelist():
+                    if "show author" in file_name.lower():
+                        file_content = zip_file.read(file_name).decode("utf-8")
+                        break
+
+        assert f"author={self.RECORD_CONFIG['app_user_login']}" in file_content
