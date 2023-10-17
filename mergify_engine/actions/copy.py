@@ -242,15 +242,12 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 label_conflicts=self.config["label_conflicts"],
                 assignees=assignees,
             )
-        except duplicate_pull.DuplicateAlreadyExists as e:
+        except duplicate_pull.DuplicateAlreadyExists:
             new_pull = await self.get_existing_duplicate_pull(branch_name)
             if new_pull is None:
-                # FIXME(sileht): this case should never occurs. If it does it
-                # means we don't recover from a failure correctly.
-                self.ctxt.log.error(
-                    "%s already exists, but pull request not found", self.KIND
-                )
-                return self._get_failure_copy_result(branch_name, e.reason)
+                # NOTE(sileht): the pull request may already have been created, but not yet
+                # visible on pulls API...
+                return self._get_inprogress_copy_result(branch_name, job.id)
             return self._get_success_copy_result(branch_name, new_pull)
 
         except duplicate_pull.DuplicateNotNeeded:
