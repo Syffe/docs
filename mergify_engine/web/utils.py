@@ -29,13 +29,16 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
             return responses.Response(status_code=503)
         raise exc
 
-    @app.exception_handler(redis_exceptions.ConnectionError)
     async def redis_errors(
-        request: requests.Request, exc: redis_exceptions.ConnectionError
+        request: requests.Request,
+        exc: redis_exceptions.ConnectionError | redis_exceptions.TimeoutError,
     ) -> responses.Response:
         statsd.increment("redis.client.connection.errors")
         LOG.warning("FastAPI lost Redis connection", exc_info=exc)
         return responses.Response(status_code=503)
+
+    app.exception_handler(redis_exceptions.ConnectionError)(redis_errors)
+    app.exception_handler(redis_exceptions.TimeoutError)(redis_errors)
 
     @app.exception_handler(engine_exceptions.RateLimited)
     async def rate_limited_handler(
