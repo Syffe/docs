@@ -35,7 +35,11 @@ async def override_and_warn_unexpected_content_type(
     # So here an helper to detect this security issue.
     # TODO(sileht): replace LOG.error by an HTTPException once we are ready to block anything not json
 
-    if 300 <= response.status_code < 400 or response.status_code >= 500:
+    if (
+        300 <= response.status_code < 400
+        or response.status_code >= 500
+        or response.status_code in (401, 403)
+    ):
         return
 
     requests_to_not_warn = requests_to_not_warn or []
