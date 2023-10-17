@@ -1,7 +1,6 @@
 import datetime
 
 import anys
-from dateutil.relativedelta import relativedelta
 import pytest
 import respx
 import sqlalchemy
@@ -160,7 +159,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
     }
 
     # Change parameters
-    test_date = (datetime.datetime.utcnow() - relativedelta(days=2)).strftime(
+    test_date = (datetime.datetime.utcnow() - datetime.timedelta(days=2)).strftime(
         "%Y-%m-%d"
     )
     reply = await web_client.get(

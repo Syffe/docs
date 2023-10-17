@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import calendar
 import dataclasses
 import datetime
 import functools
@@ -8,7 +9,6 @@ import time
 import typing
 import zoneinfo
 
-import dateutil
 import pydantic
 import typing_extensions
 
@@ -44,6 +44,34 @@ def extract_timezone(
         raise InvalidDate("Invalid timezone")
 
     return value, UTC
+
+
+def relativedelta(
+    d: datetime.datetime, months: int = 0, years: int = 0
+) -> datetime.datetime:
+    objective_year = d.year + years
+    objective_month = d.month
+
+    while months > 0:
+        objective_month += 1
+        if objective_month > 12:
+            objective_month = 1
+            objective_year += 1
+        months -= 1
+    while months < 0:
+        objective_month -= 1
+        if objective_month < 0:
+            objective_month = 12
+            objective_year -= 1
+        months += 1
+
+    objective_month_max_days = calendar.monthrange(objective_year, objective_month)[1]
+    if d.day <= objective_month_max_days:
+        return d.replace(year=objective_year, month=objective_month)
+
+    return d.replace(
+        year=objective_year, month=objective_month, day=objective_month_max_days
+    )
 
 
 def has_timezone(value: str) -> bool:
@@ -825,21 +853,19 @@ class UncertainDate:
             # in the following months.
             # We add a while loop just to make sure we land on the correct day,
             # for example if we want the 31st of each month, then we won't have a 31st for each month.
-            as_dt += dateutil.relativedelta.relativedelta(months=1)
+            as_dt = relativedelta(as_dt, months=1)
             while as_dt.day != self.day:
-                as_dt += dateutil.relativedelta.relativedelta(months=1)
+                as_dt = relativedelta(as_dt, months=1)
 
             return as_dt
 
         if isinstance(self.year, UncertainDatePart) and isinstance(
             self.day, UncertainDatePart
         ):
-            return as_dt.replace(day=1) + dateutil.relativedelta.relativedelta(
-                months=12
-            )
+            return relativedelta(as_dt.replace(day=1), months=12)
 
         # Only `year` is `UncertainDatePart`
-        return as_dt + dateutil.relativedelta.relativedelta(years=1)
+        return relativedelta(as_dt, years=1)
 
 
 def fromisoformat(s: str) -> datetime.datetime:

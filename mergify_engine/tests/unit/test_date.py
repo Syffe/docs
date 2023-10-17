@@ -1090,3 +1090,82 @@ def test_datetimerange_equality(actual: date.DateTimeRange, other: object) -> No
 )
 def test_datetimerange_inequality(actual: date.DateTimeRange, other: object) -> None:
     assert actual != other
+
+
+@pytest.mark.parametrize(
+    "current_date,months,years,expected_date",
+    (
+        (
+            "2023-10-16",
+            1,
+            0,
+            "2023-11-16",
+        ),
+        (
+            "2023-10-16",
+            0,
+            1,
+            "2024-10-16",
+        ),
+        (
+            "2023-10-16",
+            0,
+            -1,
+            "2022-10-16",
+        ),
+        (
+            "2023-10-16",
+            -1,
+            0,
+            "2023-09-16",
+        ),
+        (
+            "2023-10-16",
+            -1,
+            -1,
+            "2022-09-16",
+        ),
+        (
+            "2023-10-16",
+            -6,
+            1,
+            "2024-04-16",
+        ),
+        (
+            "2023-01-31",
+            2,
+            0,
+            "2023-03-31",
+        ),
+        (
+            "2023-01-31",
+            1,
+            0,
+            "2023-02-28",
+        ),
+        (
+            "2023-03-31",
+            -2,
+            0,
+            "2023-01-31",
+        ),
+        (
+            "2023-03-31",
+            -1,
+            0,
+            "2023-02-28",
+        ),
+        (
+            "2023-03-31",
+            0,
+            0,
+            "2023-03-31",
+        ),
+    ),
+)
+def test_relativedelta(
+    current_date: str, months: int, years: int, expected_date: str
+) -> None:
+    assert date.relativedelta(
+        date.fromisoformat(current_date), months=months, years=years
+    ) == date.fromisoformat(expected_date)

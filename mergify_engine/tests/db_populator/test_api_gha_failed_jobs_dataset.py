@@ -1,7 +1,6 @@
-from datetime import datetime
+import datetime
 import typing
 
-from dateutil.relativedelta import relativedelta
 import numpy as np
 import sqlalchemy.ext.asyncio
 
@@ -38,9 +37,11 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 run_id=cls.next_id(gh_models.WorkflowRun),
                 name="A job",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                started_at=github_types.ISODateTimeType(
+                    datetime.datetime.utcnow().isoformat()
+                ),
                 completed_at=github_types.ISODateTimeType(
-                    datetime.utcnow().isoformat()
+                    datetime.datetime.utcnow().isoformat()
                 ),
                 conclusion="failure",
                 labels=[],
@@ -52,10 +53,10 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         status="completed",
                     )
@@ -77,9 +78,11 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 run_id=cls.current_id(gh_models.WorkflowRun),
                 name="A job",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                started_at=github_types.ISODateTimeType(
+                    datetime.datetime.utcnow().isoformat()
+                ),
                 completed_at=github_types.ISODateTimeType(
-                    datetime.utcnow().isoformat()
+                    datetime.datetime.utcnow().isoformat()
                 ),
                 conclusion="failure",
                 labels=[],
@@ -91,10 +94,10 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         status="completed",
                     )
@@ -120,9 +123,11 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 run_id=cls.current_id(gh_models.WorkflowRun),
                 name="A job",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                started_at=github_types.ISODateTimeType(
+                    datetime.datetime.utcnow().isoformat()
+                ),
                 completed_at=github_types.ISODateTimeType(
-                    datetime.utcnow().isoformat()
+                    datetime.datetime.utcnow().isoformat()
                 ),
                 conclusion="success",
                 labels=[],
@@ -134,10 +139,10 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="success",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         status="completed",
                     )
@@ -155,9 +160,11 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 run_id=cls.next_id(gh_models.WorkflowRun),
                 name="A job",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                started_at=github_types.ISODateTimeType(
+                    datetime.datetime.utcnow().isoformat()
+                ),
                 completed_at=github_types.ISODateTimeType(
-                    datetime.utcnow().isoformat()
+                    datetime.datetime.utcnow().isoformat()
                 ),
                 conclusion="failure",
                 labels=[],
@@ -169,10 +176,10 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         status="completed",
                     )
@@ -199,10 +206,14 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 name="A job",
                 workflow_name="unit-test",
                 started_at=github_types.ISODateTimeType(
-                    (datetime.utcnow() - relativedelta(days=10)).isoformat()
+                    (
+                        datetime.datetime.utcnow() - datetime.timedelta(days=10)
+                    ).isoformat()
                 ),
                 completed_at=github_types.ISODateTimeType(
-                    (datetime.utcnow() - relativedelta(days=10)).isoformat()
+                    (
+                        datetime.datetime.utcnow() - datetime.timedelta(days=10)
+                    ).isoformat()
                 ),
                 conclusion="failure",
                 labels=[],
@@ -214,10 +225,12 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            (datetime.utcnow() - relativedelta(days=10)).isoformat()
+                            (
+                                datetime.datetime.utcnow() - datetime.timedelta(days=10)
+                            ).isoformat()
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         status="completed",
                     )
@@ -259,9 +272,11 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 run_id=cls.next_id(gh_models.WorkflowRun),
                 name="A job",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                started_at=github_types.ISODateTimeType(
+                    datetime.datetime.utcnow().isoformat()
+                ),
                 completed_at=github_types.ISODateTimeType(
-                    datetime.utcnow().isoformat()
+                    datetime.datetime.utcnow().isoformat()
                 ),
                 conclusion="failure",
                 labels=[],
@@ -273,10 +288,10 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         status="completed",
                     )
@@ -302,9 +317,11 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 run_id=job1.workflow_run_id,
                 name="A job",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                started_at=github_types.ISODateTimeType(
+                    datetime.datetime.utcnow().isoformat()
+                ),
                 completed_at=github_types.ISODateTimeType(
-                    datetime.utcnow().isoformat()
+                    datetime.datetime.utcnow().isoformat()
                 ),
                 conclusion="failure",
                 labels=[],
@@ -316,10 +333,10 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            datetime.datetime.utcnow().isoformat()
                         ),
                         status="completed",
                     )
