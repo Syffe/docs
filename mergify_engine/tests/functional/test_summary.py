@@ -120,7 +120,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-conflict` [:pushpin: merge requirement]\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
             in summary["output"]["summary"]
         )
 
@@ -131,7 +131,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            f"### Rule: test (merge)\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] `label=test`\n"
+            f"### Rule: test (merge)\n- [X] `-conflict` [:pushpin: merge requirement]\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] `label=test`\n"
             in summary["output"]["summary"]
         )
 
@@ -163,7 +163,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            f"### Rule: test (merge)\n- [ ] `label=test`\n- [ ] all of:\n  - [ ] `label=test2`\n  - [ ] `label=test3`\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [ ] all of:\n  - [ ] `label=test2`\n  - [ ] `label=test3`\n- [X] `-conflict` [:pushpin: merge requirement]\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
             in summary["output"]["summary"]
         )
 
@@ -174,7 +174,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            f"\n### Rule: test (merge)\n- [ ] `label=test`\n- [ ] all of:\n  - [ ] `label=test3`\n  - [X] `label=test2`\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
+            f"\n### Rule: test (merge)\n- [ ] `label=test`\n- [ ] all of:\n  - [ ] `label=test3`\n  - [X] `label=test2`\n- [X] `-conflict` [:pushpin: merge requirement]\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
             in summary["output"]["summary"]
         )
 
@@ -185,7 +185,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] all of:\n  - [X] `label=test2`\n  - [X] `label=test3`\n"
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-conflict` [:pushpin: merge requirement]\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] all of:\n  - [X] `label=test2`\n  - [X] `label=test3`\n"
             in summary["output"]["summary"]
         )
 
@@ -217,7 +217,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            f"### Rule: test (merge)\n- [ ] `label=test`\n- [ ] any of:\n  - [ ] `label=test2`\n  - [ ] `label=test3`\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [ ] any of:\n  - [ ] `label=test2`\n  - [ ] `label=test3`\n- [X] `-conflict` [:pushpin: merge requirement]\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
             in summary["output"]["summary"]
         )
 
@@ -228,7 +228,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] any of:\n  - [X] `label=test2`\n  - [ ] `label=test3`\n"
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-conflict` [:pushpin: merge requirement]\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] any of:\n  - [X] `label=test2`\n  - [ ] `label=test3`\n"
             in summary["output"]["summary"]
         )
 
@@ -239,7 +239,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] any of:\n  - [X] `label=test2`\n  - [X] `label=test3`\n"
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-conflict` [:pushpin: merge requirement]\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] any of:\n  - [X] `label=test2`\n  - [X] `label=test3`\n"
             in summary["output"]["summary"]
         )
 
