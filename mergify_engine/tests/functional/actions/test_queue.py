@@ -4817,7 +4817,76 @@ previous_failed_batches:
             f"Merge branch '{self.main_branch_name}' into {p1['head']['ref']}"
             in push_event["head_commit"]["message"]
         )
-        assert push_event["head_commit"]["author"]["username"] == "mergify-test1"
+        assert "mergify" in push_event["head_commit"]["author"]["username"]
+        assert "[bot]" in push_event["head_commit"]["author"]["username"]
+
+    async def test_queue_inplace_with_merge_update_method_and_different_bot_account(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "merge default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "update_method": "merge",
+                            "update_bot_account": "mergify-test4",
+                        }
+                    },
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        protection = {
+            "required_status_checks": {
+                "strict": True,
+                "contexts": [
+                    "continuous-integration/fake-ci",
+                ],
+            },
+            "required_conversation_resolution": True,
+            "required_linear_history": False,
+            "required_pull_request_reviews": None,
+            "restrictions": None,
+            "enforce_admins": False,
+        }
+        await self.branch_protection_protect(self.main_branch_name, protection)
+
+        p1 = await self.create_pr(as_="fork")
+
+        p2 = await self.create_pr()
+        await self.merge_pull_as_admin(p2["number"])
+
+        await self.add_label(p1["number"], "queue")
+        await self.create_status(p1)
+        await self.run_full_engine()
+
+        p1_synced = await self.wait_for_pull_request("synchronize", p1["number"])
+        await self.create_status(p1_synced["pull_request"])
+        with mock.patch.object(
+            merge_train.Train,
+            "_send_queue_leave_signal",
+            autospec=True,
+        ) as mocked_queue_leave:
+            await self.run_full_engine()
+
+        # p1 should not have been removed from the train due to anything
+        mocked_queue_leave.assert_not_called()
+
+        await self.wait_for_pull_request("closed", p1["number"], merged=True)
 
     async def test_queue_with_ci_in_pull_request_rules(self) -> None:
         rules = {

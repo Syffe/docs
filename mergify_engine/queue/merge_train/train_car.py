@@ -795,23 +795,10 @@ class TrainCar:
             raise TrainCarPullRequestCreationFailure(self) from exc
 
     async def _start_checking_inplace_merge(self, ctxt: context.Context) -> None:
-        bot_account = self.still_queued_embarked_pulls[0].config.get(
-            "update_bot_account"
-        )
-        on_behalf = None
-        if bot_account is not None:
-            try:
-                on_behalf = await action_utils.get_github_user_from_bot_account(
-                    self.repository, "update", bot_account, required_permissions=[]
-                )
-            except action_utils.BotAccountNotFound as exc:
-                await self._set_creation_failure(
-                    f"{exc.title}\n\n{exc.reason}", operation="updated"
-                )
-                raise TrainCarPullRequestCreationFailure(self) from exc
-
+        # Do not use any oauth_token for this update, otherwise we won't be able
+        # to detect when we did the merge or if the user did it.
         try:
-            await branch_updater.update_with_api(ctxt, on_behalf)
+            await branch_updater.update_with_api(ctxt)
         except branch_updater.BranchUpdateFailure as exc:
             self.train_car_state.outcome = TrainCarOutcome.BRANCH_UPDATE_FAILED
             await self._set_creation_failure(
