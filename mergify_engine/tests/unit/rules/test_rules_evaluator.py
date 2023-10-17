@@ -138,12 +138,27 @@ pull_request_rules:
           - head=do-not-match
           - label=do-not-match
     actions: {}
+""",
+            False,
+        ),
+        (
+            """
 pull_request_rules:
   - name: no head
     conditions:
       - or:
         - label=do-not-match
         - label=other-do-no-match
+    actions: {}
+""",
+            False,
+        ),
+        (
+            """
+pull_request_rules:
+  - name: only-checks
+    conditions:
+      - check-success=test
     actions: {}
 """,
             False,
@@ -156,6 +171,9 @@ async def test_pull_request_rules_evaluator(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     ctxt = await context_getter(1)
+    ctxt.repository._caches.branch_protections[github_types.GitHubRefType("main")] = {}
+    ctxt._caches.pull_check_runs.set([])
+    ctxt._caches.pull_statuses.set([])
     ctxt.pull["head"]["ref"] = github_types.GitHubRefType("match")
     ctxt.pull["labels"] = [
         {
