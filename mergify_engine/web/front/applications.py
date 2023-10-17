@@ -10,6 +10,7 @@ from mergify_engine import github_types
 from mergify_engine.models import application_keys
 from mergify_engine.models import github as gh_models
 from mergify_engine.web.front import security
+from mergify_engine.web.front import utils
 
 
 @pydantic.dataclasses.dataclass
@@ -37,11 +38,7 @@ class ApplicationsList:
 
 
 class ApplicationBody(pydantic.BaseModel):
-    name: str = pydantic.Field(
-        min_length=1,
-        max_length=255,
-        json_schema_extra={"strip_whitespace": True},
-    )
+    name: utils.PostgresText
 
 
 router = fastapi.APIRouter(

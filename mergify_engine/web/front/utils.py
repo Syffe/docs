@@ -1,7 +1,10 @@
 from collections import abc
+import typing
 
 import daiquiri
 import httpx
+import pydantic
+from pydantic import functional_validators
 
 from mergify_engine.clients import http
 
@@ -10,6 +13,22 @@ HEADERS_TO_FORWARD = ("content-type", "date", "etag", "link", "location")
 HEADERS_TO_REWRITE = ("link", "location")
 
 LOG = daiquiri.getLogger(__name__)
+
+
+def CheckNullChar(v: str) -> str:
+    assert "\x00" not in v, f"{v} is not a valid string"
+    return v
+
+
+PostgresText = typing.Annotated[
+    str,
+    pydantic.Field(
+        min_length=1,
+        max_length=255,
+        json_schema_extra={"strip_whitespace": True},
+    ),
+    functional_validators.AfterValidator(CheckNullChar),
+]
 
 
 def httpx_to_fastapi_headers(

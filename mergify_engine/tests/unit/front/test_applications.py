@@ -373,6 +373,12 @@ async def test_applications_bad_body(
     assert resp.status_code == 404
     assert resp.json()["detail"] == "Not Found"
 
+    resp = await web_client.post(
+        "/front/github-account/424242/applications",
+        json={"name": "such-\x00-string"},
+    )
+    assert resp.status_code == 422
+
 
 @pytest.mark.parametrize(
     "role, status_code",
