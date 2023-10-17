@@ -307,6 +307,12 @@ def _check_rate_limit(client: http.AsyncClient, response: httpx.Response) -> Non
             )
         raise exceptions.RateLimited(delta, remaining)
 
+    if (
+        response.status_code == 403
+        and "You have exceeded a secondary rate limit" in http.extract_message(response)
+    ):
+        raise exceptions.SecondaryRateLimited(datetime.timedelta(seconds=30), 0)
+
 
 DEFAULT_GITHUB_TRANSPORT = httpx.AsyncHTTPTransport(
     limits=httpx.Limits(max_connections=None, max_keepalive_connections=20),

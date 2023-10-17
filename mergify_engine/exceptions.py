@@ -40,6 +40,11 @@ class RateLimited(Exception):
 
 
 @dataclasses.dataclass
+class SecondaryRateLimited(RateLimited):
+    pass
+
+
+@dataclasses.dataclass
 class EngineNeedRetry(Exception):
     message: str
     retry_in: datetime.timedelta = dataclasses.field(
