@@ -471,10 +471,7 @@ QueueRulesSchema = voluptuous.All(
                     "commit_message_template", default=None
                 ): types.Jinja2WithNone,
                 voluptuous.Required("merge_method", default="merge"): voluptuous.Any(
-                    "rebase",
-                    "merge",
-                    "squash",
-                    "fast-forward",
+                    *typing.get_args(merge_base.MergeMethodT)
                 ),
                 voluptuous.Required(
                     "merge_bot_account", default=None
