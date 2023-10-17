@@ -664,16 +664,6 @@ async def handle(
         sources=ctxt.sources,
         configuration_changed=ctxt.configuration_changed,
     )
-
-    summary_check = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
-    previous_conclusions = load_conclusions(ctxt, summary_check)
-
-    checks = {c["name"]: c for c in await ctxt.pull_engine_check_runs}
-    conclusions = await run_actions(ctxt, match, checks, previous_conclusions)
-    await cleanup_pending_actions_with_no_associated_rules(
-        ctxt, queue_rules, partition_rules, conclusions, previous_conclusions
-    )
-
     ctxt.log.info(
         "ignored pull request rules",
         pull_request_rules=[
@@ -684,6 +674,15 @@ async def handle(
             }
             for rule in match.ignored_rules
         ],
+    )
+
+    summary_check = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+    previous_conclusions = load_conclusions(ctxt, summary_check)
+
+    checks = {c["name"]: c for c in await ctxt.pull_engine_check_runs}
+    conclusions = await run_actions(ctxt, match, checks, previous_conclusions)
+    await cleanup_pending_actions_with_no_associated_rules(
+        ctxt, queue_rules, partition_rules, conclusions, previous_conclusions
     )
 
     return await get_summary_check_result(
