@@ -129,10 +129,14 @@ async def _check_configuration_changes(
         # Nothing change between main branch and the pull request
         return False
 
-    config_content = typing.cast(
-        github_types.GitHubContentFile,
-        await ctxt.client.item(future_mergify_config_file["contents_url"]),
-    )
+    try:
+        config_content = typing.cast(
+            github_types.GitHubContentFile,
+            await ctxt.client.item(future_mergify_config_file["contents_url"]),
+        )
+    except http.HTTPNotFound:
+        # Deleted in the meantime, we will received another event soon
+        return True
 
     try:
         await mergify_conf.get_mergify_config_from_file(
