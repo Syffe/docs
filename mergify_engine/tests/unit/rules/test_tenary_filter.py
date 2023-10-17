@@ -34,11 +34,11 @@ async def test_operator_negate(
         ),
         (
             [filter.UnknownOnlyAttribute, False],
-            filter.UnknownOrFalseAttribute,
+            filter.UnknownOnlyAttribute,
         ),
         (
             [filter.UnknownOrFalseAttribute, False],
-            filter.UnknownOrFalseAttribute,
+            filter.UnknownOnlyAttribute,
         ),
         (
             [filter.UnknownOrTrueAttribute, False],

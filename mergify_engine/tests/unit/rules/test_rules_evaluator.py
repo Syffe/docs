@@ -163,6 +163,38 @@ pull_request_rules:
 """,
             False,
         ),
+        (
+            r"""
+pull_request_rules:
+  - name: customer case MRGY-2780
+    conditions:
+      - 'label!=multiple-reviewers'
+      - '#approved-reviews-by>=1'
+      - 'label=match'
+      - 'label!=blocked'
+      - 'check-success=test'
+      - 'check-failure!=percy/Rider-Web'
+      - 'check-failure!=percy/Admin'
+      - -draft
+      - or:
+          # Order here matter to reproduce the bug
+          - body-raw~=(https:\/\/yo\.atlassian\.net\/).*([a-zA-Z]{2,}(-|\s)[0-9]+)
+          - body-raw~=(https:\/\/yo\.pagerduty\.com\/incidents\/)
+          - body-raw~=(https:\/\/yo\.slack\.com)
+          - author=dependabot[bot]
+      - or:
+        - and:
+          - "#approved-reviews-by>=1"
+          - "#changes-requested-reviews-by=0"
+          - branch-protection-review-decision=APPROVED
+          - or:
+            - check-success=Summary
+            - check-neutral=Summary
+            - check-skipped=Summary
+    actions: {}
+""",
+            False,
+        ),
     ),
 )
 async def test_pull_request_rules_evaluator(
@@ -172,8 +204,61 @@ async def test_pull_request_rules_evaluator(
 ) -> None:
     ctxt = await context_getter(1)
     ctxt.repository._caches.branch_protections[github_types.GitHubRefType("main")] = {}
-    ctxt._caches.pull_check_runs.set([])
+    ctxt._caches.pull_check_runs.set(
+        [
+            {
+                "id": 123456,
+                "app_id": 1234,
+                "app_name": "Mergify",
+                "output": {
+                    "title": "",
+                    "summary": "",
+                    "text": "",
+                    "annotations": [],
+                    "annotations_count": 0,
+                    "annotations_url": "",
+                },
+                "head_sha": github_types.SHAType("sha"),
+                "app_slug": "github-actions",
+                "app_avatar_url": "https://avatars.githubusercontent.com/in/15368?s=40&v=4",
+                "name": "Summary",
+                "conclusion": "success",
+                "completed_at": github_types.ISODateTimeType("2021-06-02T10:00:00Z"),
+                "html_url": "",
+                "external_id": "123456",
+                "status": "completed",
+            },
+            {
+                "id": 123456,
+                "app_id": 1234,
+                "app_name": "github-actions",
+                "output": {
+                    "title": "",
+                    "summary": "",
+                    "text": "",
+                    "annotations": [],
+                    "annotations_count": 0,
+                    "annotations_url": "",
+                },
+                "head_sha": github_types.SHAType("sha"),
+                "app_slug": "github-actions",
+                "app_avatar_url": "https://avatars.githubusercontent.com/in/15368?s=40&v=4",
+                "name": "test",
+                "conclusion": None,
+                "completed_at": github_types.ISODateTimeType("2021-06-02T10:00:00Z"),
+                "html_url": "",
+                "external_id": "123456",
+                "status": "in_progress",
+            },
+        ]
+    )
     ctxt._caches.pull_statuses.set([])
+    ctxt._caches.consolidated_reviews.set(
+        ([], [{"state": "APPROVED", "user": {"login": "foobar"}}])  # type: ignore[typeddict-item]
+    )
+    ctxt._caches.review_threads.set([])
+    ctxt._caches.review_decision.set("APPROVED")
+    ctxt.pull["body"] = "This is the body\nhttps://yo.atlassian.net/browse/LOCO-1202\n"
     ctxt.pull["head"]["ref"] = github_types.GitHubRefType("match")
     ctxt.pull["labels"] = [
         {
@@ -194,6 +279,7 @@ async def test_pull_request_rules_evaluator(
         [condition_value_querier.PullRequest(ctxt)],
         True,
     )
+
     if ignored:
         assert len(evaluated_rules.ignored_rules) == 1
         assert len(evaluated_rules.matching_rules) == 0

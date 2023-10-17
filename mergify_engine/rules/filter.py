@@ -598,8 +598,8 @@ MultipleOperatorPrecedencesT = dict[
 # X OR Y = Z
 ANY_PRECEDENCES: MultipleOperatorPrecedencesT = {
     (False, False): False,
-    (False, UnknownOrFalseAttribute): UnknownOrFalseAttribute,
-    (False, UnknownOnlyAttribute): UnknownOrFalseAttribute,
+    (False, UnknownOrFalseAttribute): UnknownOnlyAttribute,
+    (False, UnknownOnlyAttribute): UnknownOnlyAttribute,
     (False, UnknownOrTrueAttribute): UnknownOrTrueAttribute,
     (False, True): True,
     (True, UnknownOrFalseAttribute): True,
