@@ -71,6 +71,7 @@ GIT_MESSAGE_TO_EXCEPTION = {
     "couldn't find remote ref": DuplicateFailed,
     "does not have a commit checked": DuplicateFailed,
     "Merge conflict in .gitmodules": DuplicateFailedConflicts,
+    "Protected branch update failed for": DuplicateFailed,
 }
 
 
