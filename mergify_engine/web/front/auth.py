@@ -153,7 +153,7 @@ async def auth_via_github(
         token = await oauth.github.authorize_access_token(request)
     except starlette_client.OAuthError as e:
         await clear_session_and_auth(request)
-        if "access_denied" == e.error:
+        if e.error in ("access_denied", "not_found"):
             raise fastapi.HTTPException(403)
         if e.error in (
             "bad_verification_code",
