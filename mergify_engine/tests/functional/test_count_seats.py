@@ -1,9 +1,8 @@
 import argparse
 from collections import abc
-import json.decoder as json_decoder
+import io
 import operator
 import time
-from unittest import mock
 
 import anys
 import daiquiri
@@ -102,51 +101,46 @@ class TestCountSeats(base.FunctionalTestBase):
         if github_types.GitHubLogin("mergify-test2") is None:
             raise RuntimeError("client_fork owner is None")
         args = argparse.Namespace(json=True, daemon=False)
-        with mock.patch("sys.stdout") as stdout:
-            assert database.APP_STATE is not None
-            await database.APP_STATE["engine"].dispose()
-            database.APP_STATE = None
-            await count_seats.report(args)
-            s = "".join(call.args[0] for call in stdout.write.mock_calls)
+        assert database.APP_STATE is not None
+        await database.APP_STATE["engine"].dispose()
+        database.APP_STATE = None
 
-            try:
-                json_reports = json.loads(s)
-            except json_decoder.JSONDecodeError:
-                LOG.error("report", report=s)
-                raise
+        fake_stdout = io.StringIO()
+        await count_seats.report(args, fake_stdout)
+        json_reports = json.loads(fake_stdout.getvalue())
 
-            assert list(json_reports.keys()) == ["organizations"]
-            assert len(json_reports["organizations"]) == 1
+        assert list(json_reports.keys()) == ["organizations"]
+        assert len(json_reports["organizations"]) == 1
 
-            org = json_reports["organizations"][0]
-            assert org["id"] == settings.TESTING_ORGANIZATION_ID
-            assert org["login"] == settings.TESTING_ORGANIZATION_NAME
+        org = json_reports["organizations"][0]
+        assert org["id"] == settings.TESTING_ORGANIZATION_ID
+        assert org["login"] == settings.TESTING_ORGANIZATION_NAME
 
-            assert len(org["repositories"]) == 1
-            repo = org["repositories"][0]
-            assert sorted(
-                repo["collaborators"]["active_users"],
-                key=operator.itemgetter("id"),
-            ) == sorted(
-                [
-                    {
-                        "id": github_types.GitHubAccountIdType(
-                            settings.TESTING_MERGIFY_TEST_1_ID
-                        ),
-                        "login": github_types.GitHubLogin("mergify-test1"),
-                        "seen_at": anys.ANY_AWARE_DATETIME_STR,
-                    },
-                    {
-                        "id": github_types.GitHubAccountIdType(
-                            settings.TESTING_MERGIFY_TEST_2_ID
-                        ),
-                        "login": github_types.GitHubLogin("mergify-test2"),
-                        "seen_at": anys.ANY_AWARE_DATETIME_STR,
-                    },
-                ],
-                key=operator.itemgetter("id"),
-            )
-            assert len(repo["collaborators"]["active_users"]) == 2
+        assert len(org["repositories"]) == 1
+        repo = org["repositories"][0]
+        assert sorted(
+            repo["collaborators"]["active_users"],
+            key=operator.itemgetter("id"),
+        ) == sorted(
+            [
+                {
+                    "id": github_types.GitHubAccountIdType(
+                        settings.TESTING_MERGIFY_TEST_1_ID
+                    ),
+                    "login": github_types.GitHubLogin("mergify-test1"),
+                    "seen_at": anys.ANY_AWARE_DATETIME_STR,
+                },
+                {
+                    "id": github_types.GitHubAccountIdType(
+                        settings.TESTING_MERGIFY_TEST_2_ID
+                    ),
+                    "login": github_types.GitHubLogin("mergify-test2"),
+                    "seen_at": anys.ANY_AWARE_DATETIME_STR,
+                },
+            ],
+            key=operator.itemgetter("id"),
+        )
+        assert len(repo["collaborators"]["active_users"]) == 2
 
     async def test_stored_user_in_redis(self) -> None:
         rules = {

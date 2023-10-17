@@ -369,7 +369,7 @@ async def count_and_send(redis: redis_utils.RedisActiveUsers) -> None:
         await asyncio.sleep(12 * HOUR)
 
 
-async def report(args: argparse.Namespace) -> None:
+async def report(args: argparse.Namespace, dest: typing.IO[str] | None = None) -> None:
     redis_links = redis_utils.RedisLinks(name="report")
     try:
         if args.daemon:
@@ -382,7 +382,7 @@ async def report(args: argparse.Namespace) -> None:
             else:
                 seats = await Seats.get(redis_links.active_users)
                 if args.json:
-                    print(json.dumps(seats.jsonify()))
+                    print(json.dumps(seats.jsonify()), file=dest)
                 else:
                     seats_count = seats.count()
                     LOG.info("Active users: %s", seats_count.active_users)
