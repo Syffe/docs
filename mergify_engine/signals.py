@@ -2,6 +2,7 @@ import abc
 import collections
 import datetime
 import importlib.metadata
+import logging
 import typing
 
 import daiquiri
@@ -591,8 +592,15 @@ async def send(
     metadata: EventMetadata,
     trigger: str,
 ) -> None:
+    # circular import
+    from mergify_engine import exceptions
+
     for name, signal in SIGNALS.items():
         try:
             await signal(repository, pull_request, event, metadata, trigger)
-        except Exception:
-            LOG.error("failed to run signal: %s", name, exc_info=True)
+        except Exception as e:
+            if exceptions.need_retry(e) is not None or exceptions.should_be_ignored(e):
+                level = logging.WARNING
+            else:
+                level = logging.ERROR
+            LOG.log(level, "failed to run signal: %s", name, exc_info=True)
