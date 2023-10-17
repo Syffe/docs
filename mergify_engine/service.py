@@ -1,4 +1,5 @@
 import os
+import typing
 
 from datadog import statsd  # type: ignore[attr-defined]
 import ddtrace
@@ -31,6 +32,16 @@ def ddtrace_hook(span: ddtrace.Span) -> None:
         span.set_tag("gh_owner", owner)
 
 
+def sentry_before_send(
+    event: dict[str, typing.Any], hint: dict[str, typing.Any]
+) -> dict[str, typing.Any] | None:
+    # NOTE(sileht): malicious user can craft a traceparent header with an invalid version, this is logged as an exception
+    # by ddtrace
+    if "received invalid w3c traceparent:" in event.get("message", ""):
+        return None
+    return event
+
+
 def setup(
     service_name: str, dump_config: bool = True, stdout_logging_only: bool = False
 ) -> None:
@@ -51,6 +62,7 @@ def setup(
                 fastapi.FastApiIntegration(),
                 sqlalchemy.SqlalchemyIntegration(),
             ],
+            before_send=sentry_before_send,
         )
 
     ddtrace.config.version = VERSION
