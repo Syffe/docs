@@ -18,6 +18,7 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
+from mergify_engine.clients import http
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import live_resolvers
@@ -188,11 +189,15 @@ async def on_each_event(event: github_types.GitHubEventIssueComment) -> None:
         repo_name = event["repository"]["name"]
         installation_json = await github.get_installation_from_account_id(owner_id)
         async with github.aget_client(installation_json) as client:
-            await client.post(
-                f"/repos/{owner_login}/{repo_name}/issues/comments/{event['comment']['id']}/reactions",
-                json={"content": "+1"},
-                api_version="squirrel-girl",
-            )
+            try:
+                await client.post(
+                    f"/repos/{owner_login}/{repo_name}/issues/comments/{event['comment']['id']}/reactions",
+                    json={"content": "+1"},
+                    api_version="squirrel-girl",
+                )
+            except http.HTTPNotFound:
+                # we don't care if the comment was deleted
+                pass
 
 
 # NOTE(sileht): Unlike the Python dict, this one move to the end key that have been updated
