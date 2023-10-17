@@ -536,7 +536,7 @@ class BasePullRequest:
             if name == "dependabot-dependency-type":
                 return dependabot_attributes["dependency-type"]
             if name == "dependabot-update-type":
-                return dependabot_attributes["update-type"]
+                return dependabot_attributes.get("update-type")
             raise PullRequestAttributeError(name)
 
         if name == "branch-protection-review-decision":
