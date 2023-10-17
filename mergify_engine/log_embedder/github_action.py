@@ -55,16 +55,16 @@ async def embed_log(
     gcs_client: google_cloud_storage.GoogleCloudStorageClient | None,
     job: gh_models.WorkflowJob,
 ) -> None:
-    if job.failed_step_number is None:
-        log_lines = await download_failure_annotations(job)
-    else:
-        try:
+    try:
+        if job.failed_step_number is None:
+            log_lines = await download_failure_annotations(job)
+        else:
             log_lines = await download_failed_step_log(job)
-        except http.HTTPStatusError as e:
-            if e.response.status_code == 410:
-                job.log_status = gh_models.WorkflowJobLogStatus.GONE
-                return
-            raise
+    except http.HTTPStatusError as e:
+        if e.response.status_code in (410, 404):
+            job.log_status = gh_models.WorkflowJobLogStatus.GONE
+            return
+        raise
 
     tokens, truncated_log = await get_tokenized_cleaned_log(log_lines)
 
