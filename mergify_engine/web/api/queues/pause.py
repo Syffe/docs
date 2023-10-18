@@ -66,7 +66,7 @@ class QueuePausePayload(pydantic.BaseModel):
 )
 async def create_queue_pause(
     queue_pause_payload: QueuePausePayload,
-    auth: security.HttpAuth,
+    authentication_actor: security.AuthenticatedActor,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
@@ -89,7 +89,9 @@ async def create_queue_pause(
             signals.EventQueuePauseCreateMetadata(
                 {
                     "reason": queue_pause.reason,
-                    "created_by": typing.cast(signals.Actor, auth.actor),
+                    "created_by": typing.cast(
+                        signals.Actor, authentication_actor.actor
+                    ),
                 }
             ),
             "Create queue pause",
@@ -108,7 +110,9 @@ async def create_queue_pause(
             signals.EventQueuePauseUpdateMetadata(
                 {
                     "reason": queue_pause.reason,
-                    "updated_by": typing.cast(signals.Actor, auth.actor),
+                    "updated_by": typing.cast(
+                        signals.Actor, authentication_actor.actor
+                    ),
                 }
             ),
             "Update queue pause",
@@ -142,7 +146,7 @@ async def create_queue_pause(
     },
 )
 async def delete_queue_pause(
-    auth: security.HttpAuth,
+    authentication_actor: security.AuthenticatedActor,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
@@ -161,7 +165,7 @@ async def delete_queue_pause(
         None,
         "queue.pause.delete",
         signals.EventQueuePauseDeleteMetadata(
-            {"deleted_by": typing.cast(signals.Actor, auth.actor)}
+            {"deleted_by": typing.cast(signals.Actor, authentication_actor.actor)}
         ),
         "Delete queue pause",
     )

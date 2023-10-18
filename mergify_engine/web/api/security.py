@@ -30,10 +30,19 @@ ScopeT = typing.NewType("ScopeT", str)
 
 AUTH_CACHE_EXPIRE = datetime.timedelta(days=7)
 
+_RepositoryOwnerLogin = typing.Annotated[
+    github_types.GitHubLogin,
+    fastapi.Path(description="The owner of the repository"),
+]
+_RepositoryName = typing.Annotated[
+    github_types.GitHubRepositoryName,
+    fastapi.Path(description="The name of the repository"),
+]
 
-class _HttpAuth(typing.NamedTuple):
+
+class _AuthenticationActor(typing.NamedTuple):
     installation: github_types.GitHubInstallation
-    auth: github.GitHubAppInstallationAuth | github.GitHubTokenAuth
+    github_client_auth: github.GitHubAppInstallationAuth | github.GitHubTokenAuth
     actor: github.Actor
 
 
@@ -153,39 +162,38 @@ LoggedUser = typing.Annotated[
 ]
 
 
-async def get_http_auth(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
+async def _get_authenticated_actor(
+    owner: _RepositoryOwnerLogin,
     application: LoggedApplication,
     logged_user: LoggedUser,
-) -> _HttpAuth:
-    auth: github.GitHubAppInstallationAuth | github.GitHubTokenAuth
+) -> _AuthenticationActor:
+    github_client_auth: github.GitHubAppInstallationAuth | github.GitHubTokenAuth
     if application is not None:
         installation_json = await github.get_installation_from_login(owner)
         # Authenticated by token
         if application.github_account.id != installation_json["account"]["id"]:
             raise fastapi.HTTPException(status_code=403)
-        auth = github.GitHubAppInstallationAuth(installation_json)
+        github_client_auth = github.GitHubAppInstallationAuth(installation_json)
         actor = build_actor(auth_method=application)
 
     elif logged_user is not None:
         # Authenticated by cookie session
         installation_json = await github.get_installation_from_login(owner)
-        auth = github.GitHubTokenAuth(logged_user.oauth_access_token)
+        github_client_auth = github.GitHubTokenAuth(logged_user.oauth_access_token)
         actor = build_actor(auth_method=logged_user)
     else:
         raise fastapi.HTTPException(403)
 
-    return _HttpAuth(
+    return _AuthenticationActor(
         installation=installation_json,
-        auth=auth,
+        github_client_auth=github_client_auth,
         actor=actor,
     )
 
 
-HttpAuth = typing.Annotated[_HttpAuth, fastapi.Depends(get_http_auth)]
+AuthenticatedActor = typing.Annotated[
+    _AuthenticationActor, fastapi.Depends(_get_authenticated_actor)
+]
 
 
 def get_redis_key_for_repo_access_check(
@@ -194,7 +202,7 @@ def get_redis_key_for_repo_access_check(
     return f"api/security/repositories-access/{installation_account_login}"
 
 
-class AuthCache(typing.TypedDict):
+class _ApplicationAuthCache(typing.TypedDict):
     # GitHub's response to our repository request.
     # Will be set to `200` if the request was successfuly made,
     # otherwise it will contain the status code of the response's error.
@@ -204,7 +212,7 @@ class AuthCache(typing.TypedDict):
     data: github_types.GitHubRepository | str
 
 
-async def application_auth_with_cache(
+async def _application_actor_with_cache(
     owner: github_types.GitHubLogin,
     repository: github_types.GitHubRepositoryName,
     installation: github_types.GitHubInstallation,
@@ -218,7 +226,7 @@ async def application_auth_with_cache(
         repo_access_redis_key, f"{owner}/{repository}"
     )
     if raw_redis_value is not None:
-        redis_value: AuthCache = json.loads(raw_redis_value)
+        redis_value: _ApplicationAuthCache = json.loads(raw_redis_value)
         if redis_value["status_code"] != 200:
             # Means the installation's account doesn't have access to owner/repository
             # (set in the `except` case below)
@@ -260,26 +268,17 @@ async def application_auth_with_cache(
 
 
 async def get_repository_context(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
-    repository: typing.Annotated[
-        github_types.GitHubRepositoryName,
-        fastapi.Path(description="The name of the repository"),
-    ],
+    owner: _RepositoryOwnerLogin,
+    repository: _RepositoryName,
+    authenticated_actor: AuthenticatedActor,
     redis_links: redis.RedisLinks,
     application: LoggedApplication,
     logged_user: LoggedUser,
 ) -> abc.AsyncGenerator[context.Repository, None]:
-    installation_json, auth, actor = await get_http_auth(
-        owner, application, logged_user
-    )
-
     async with github.AsyncGitHubInstallationClient(
-        auth,
+        authenticated_actor.github_client_auth,
     ) as client:
-        if actor["type"] == "user":
+        if authenticated_actor.actor["type"] == "user":
             try:
                 repo = typing.cast(
                     github_types.GitHubRepository,
@@ -287,12 +286,14 @@ async def get_repository_context(
                 )
             except (http.HTTPNotFound, http.HTTPForbidden, http.HTTPUnauthorized):
                 raise fastapi.HTTPException(status_code=404)
-        elif actor["type"] == "application":
-            repo = await application_auth_with_cache(
-                owner, repository, installation_json, redis_links, client
+        elif authenticated_actor.actor["type"] == "application":
+            repo = await _application_actor_with_cache(
+                owner, repository, authenticated_actor.installation, redis_links, client
             )
         else:
-            raise RuntimeError("Unknown actor type %s", actor["type"])
+            raise RuntimeError(
+                "Unknown actor type %s", authenticated_actor.actor["type"]
+            )
 
         sub = await subscription.Subscription.get_subscription(
             redis_links.cache, repo["owner"]["id"]
@@ -300,7 +301,9 @@ async def get_repository_context(
         if sub.has_feature(subscription.Features.PRIVATE_REPOSITORY):
             client.enable_extra_metrics()
 
-        installation = context.Installation(installation_json, sub, client, redis_links)
+        installation = context.Installation(
+            authenticated_actor.installation, sub, client, redis_links
+        )
 
         repository_ctxt = installation.get_repository_from_github_data(repo)
 

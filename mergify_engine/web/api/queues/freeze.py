@@ -16,6 +16,11 @@ from mergify_engine.web import api
 from mergify_engine.web.api import security
 
 
+_QueueName = typing.Annotated[
+    qr_config.QueueName, fastapi.Path(description="The name of the queue")
+]
+
+
 router = fastapi.APIRouter(
     tags=["queues"],
     dependencies=[
@@ -77,10 +82,8 @@ class QueueFreezePayload(pydantic.BaseModel):
 )
 async def create_queue_freeze(
     queue_freeze_payload: QueueFreezePayload,
-    queue_name: typing.Annotated[
-        qr_config.QueueName, fastapi.Path(description="The name of the queue")
-    ],
-    auth: security.HttpAuth,
+    queue_name: _QueueName,
+    authentication_actor: security.AuthenticatedActor,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
@@ -115,7 +118,9 @@ async def create_queue_freeze(
                     "queue_name": queue_name,
                     "reason": queue_freeze.reason,
                     "cascading": queue_freeze.cascading,
-                    "created_by": typing.cast(signals.Actor, auth.actor),
+                    "created_by": typing.cast(
+                        signals.Actor, authentication_actor.actor
+                    ),
                 }
             ),
             "Create queue freeze",
@@ -140,7 +145,9 @@ async def create_queue_freeze(
                     "queue_name": queue_name,
                     "reason": queue_freeze.reason,
                     "cascading": queue_freeze.cascading,
-                    "updated_by": typing.cast(signals.Actor, auth.actor),
+                    "updated_by": typing.cast(
+                        signals.Actor, authentication_actor.actor
+                    ),
                 }
             ),
             "Update queue freeze",
@@ -174,10 +181,8 @@ async def create_queue_freeze(
     },
 )
 async def delete_queue_freeze(
-    queue_name: typing.Annotated[
-        qr_config.QueueName, fastapi.Path(description="The name of the queue")
-    ],
-    auth: security.HttpAuth,
+    queue_name: _QueueName,
+    authentication_actor: security.AuthenticatedActor,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
@@ -207,7 +212,7 @@ async def delete_queue_freeze(
         signals.EventQueueFreezeDeleteMetadata(
             {
                 "queue_name": queue_name,
-                "deleted_by": typing.cast(signals.Actor, auth.actor),
+                "deleted_by": typing.cast(signals.Actor, authentication_actor.actor),
             }
         ),
         "Delete queue freeze",
@@ -228,9 +233,7 @@ async def delete_queue_freeze(
     },
 )
 async def get_queue_freeze(
-    queue_name: typing.Annotated[
-        qr_config.QueueName, fastapi.Path(description="The name of the queue")
-    ],
+    queue_name: _QueueName,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
 ) -> QueueFreezeResponse:
