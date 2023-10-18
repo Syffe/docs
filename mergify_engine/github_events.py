@@ -242,6 +242,22 @@ async def clean_and_fill_caches(
                 redis_links.user_permissions_cache, event["organization"]
             )
 
+    elif event_type == "installation_repositories":
+        # NOTE: Use this event to invalidate api authentication cache
+
+        event = typing.cast(github_types.GitHubEventInstallationRepositories, event)
+        await clear_api_authentication_cache(redis_links, event)
+        await clear_mergify_installed_cache(redis_links, event)
+        await context.Installation.clear_team_members_cache_for_org(
+            redis_links.team_members_cache, event["installation"]["account"]
+        )
+        await context.Repository.clear_team_permission_cache_for_org(
+            redis_links.team_permissions_cache, event["installation"]["account"]
+        )
+        await context.Repository.clear_user_permission_cache_for_org(
+            redis_links.user_permissions_cache, event["installation"]["account"]
+        )
+
     elif event_type == "member":
         event = typing.cast(github_types.GitHubEventMember, event)
         await context.Repository.clear_user_permission_cache_for_user(
@@ -406,12 +422,6 @@ async def event_classifier(
         "team_add",
         "repository",
     ):
-        if event_type == "installation_repositories":
-            # NOTE: Use this event to invalidate api authentication cache
-            event = typing.cast(github_types.GitHubEventInstallationRepositories, event)
-            await clear_api_authentication_cache(redis_links, event)
-            await clear_mergify_installed_cache(redis_links, event)
-
         return EventToIgnore(event_type, event_id, event, f"{event_type} event")
 
     if "repository" in event:

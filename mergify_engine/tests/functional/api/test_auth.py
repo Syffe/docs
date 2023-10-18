@@ -188,7 +188,7 @@ async def test_api_repository_auth_cached(
     # Make sure that a "installation_repositories" event cleans up the associated
     # repositories of the event.
     # NOTE: This is impossible to test with a real event, so we need to manually send one
-    await github_events.event_classifier(
+    await github_events.clean_and_fill_caches(
         redis_links,
         "installation_repositories",
         "123eventid",
@@ -198,6 +198,7 @@ async def test_api_repository_auth_cached(
             {
                 "installation": {
                     "account": {
+                        "id": recorder.config["organization_id"],
                         "login": recorder.config["organization_name"],
                     }
                 },
@@ -213,8 +214,6 @@ async def test_api_repository_auth_cached(
                 ],
             }
         ),
-        # We don't need the bot infos
-        github_types.GitHubAccount({}),  # type: ignore[typeddict-item]
     )
 
     raw_redis_value = await redis_links.cache.hget(

@@ -666,7 +666,7 @@ did not find expected alphabetic or numeric character
 
         # Make sure that a "installation_repositories" event cleans up the mergify installation status
         # NOTE: This is impossible to test with a real event, so we need to manually send one
-        await github_events.event_classifier(
+        await github_events.clean_and_fill_caches(
             self.redis_links,
             "installation_repositories",
             "123eventid",
@@ -676,6 +676,7 @@ did not find expected alphabetic or numeric character
                 {
                     "installation": {
                         "account": {
+                            "id": settings.TESTING_ORGANIZATION_ID,
                             "login": settings.TESTING_ORGANIZATION_NAME,
                         }
                     },
@@ -687,8 +688,6 @@ did not find expected alphabetic or numeric character
                     "repositories_removed": [],
                 }
             ),
-            # We don't need the bot infos
-            github_types.GitHubAccount({}),  # type: ignore[typeddict-item]
         )
 
         cache_value = await self.redis_links.cache.get(
