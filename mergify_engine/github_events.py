@@ -633,11 +633,12 @@ async def filter_and_dispatch(
         redis_links, event_type, event_id, event, mergify_bot
     )
 
+    await clean_and_fill_caches(redis_links, event_type, event_id, event)
+
     if not isinstance(classified_event, EventToIgnore):
         classified_event.set_sentry_info()
 
     if isinstance(classified_event, EventToProcess):
-        await clean_and_fill_caches(redis_links, event_type, event_id, event)
         await event_preprocessing(
             background_tasks, redis_links, event_type, event_id, event
         )
