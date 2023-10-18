@@ -1,15 +1,17 @@
-import typing
 from unittest import mock
 
 import fastapi
 import httpx
 import pydantic
 import pytest
+import respx
 
 from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import redis_utils
+from mergify_engine import settings
+from mergify_engine.clients import github
 from mergify_engine.tests.functional import conftest as func_conftest
 from mergify_engine.web.api import security
 
@@ -28,14 +30,7 @@ def create_testing_router(web_server: fastapi.FastAPI) -> None:
         response_model=ResponseTest,
     )
     async def test_explicit_deps(
-        owner: typing.Annotated[
-            github_types.GitHubLogin,
-            fastapi.Path(description="The owner of the repository"),
-        ],
-        repository: typing.Annotated[
-            github_types.GitHubRepositoryName,
-            fastapi.Path(description="The name of the repository"),
-        ],
+        owner: security._RepositoryOwnerLogin,
         repository_ctxt: security.Repository,
     ) -> ResponseTest:
         org = await repository_ctxt.installation.client.item(f"/users/{owner}")
@@ -138,7 +133,26 @@ async def test_api_repository_auth_cached(
     shadow_office: func_conftest.SubscriptionFixture,
     recorder: func_conftest.RecorderFixture,
     redis_links: redis_utils.RedisLinks,
+    respx_mock: respx.MockRouter,
 ) -> None:
+    # simulate that this repository has mergify installed to test only the user permissions
+    mocked_request = respx.patterns.M(
+        method="GET",
+        path__startswith=f"/repos/{recorder.config['organization_name']}/testbar",
+    )
+    respx_mock.route(~mocked_request).pass_through()
+    installation_json = await github.get_installation_from_account_id(
+        settings.TESTING_ORGANIZATION_ID
+    )
+    respx_mock.get(
+        f"/repos/{recorder.config['organization_name']}/testbar/installation",
+    ).respond(
+        200, json=installation_json  # type: ignore[arg-type]
+    )
+    respx_mock.get(
+        f"/repos/{recorder.config['organization_name']}/testbar",
+    ).respond(404)
+
     # Make sure that a person having access to a repository makes it so that
     # the repository is correctly stored as a dict in redis.
     r = await web_client.get(

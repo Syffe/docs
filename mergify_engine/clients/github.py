@@ -237,6 +237,27 @@ async def get_installation_from_account_id(
             raise exceptions.MergifyNotInstalled()
 
 
+async def get_installation_from_repository(
+    login: github_types.GitHubLogin,
+    repository: github_types.GitHubRepositoryName,
+) -> github_types.GitHubInstallation:
+    async with AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
+        try:
+            return typing.cast(
+                github_types.GitHubInstallation,
+                await client.item(
+                    f"{settings.GITHUB_REST_API_URL}/repos/{login}/{repository}/installation"
+                ),
+            )
+        except http.HTTPNotFound as e:
+            LOG.debug(
+                "Mergify not installed",
+                gh_owner=login,
+                error_message=e.message,
+            )
+            raise exceptions.MergifyNotInstalled()
+
+
 async def get_installation_from_login(
     login: github_types.GitHubLogin,
 ) -> github_types.GitHubInstallation:

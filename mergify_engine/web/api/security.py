@@ -34,8 +34,14 @@ _RepositoryOwnerLogin = typing.Annotated[
     github_types.GitHubLogin,
     fastapi.Path(description="The owner of the repository"),
 ]
+
 _RepositoryName = typing.Annotated[
     github_types.GitHubRepositoryName,
+    fastapi.Path(description="The name of the repository"),
+]
+
+_OptionalRepositoryName = typing.Annotated[
+    github_types.GitHubRepositoryName | None,
     fastapi.Path(description="The name of the repository"),
 ]
 
@@ -164,31 +170,42 @@ LoggedUser = typing.Annotated[
 
 async def _get_authenticated_actor(
     owner: _RepositoryOwnerLogin,
+    repository: _OptionalRepositoryName,
     application: LoggedApplication,
     logged_user: LoggedUser,
 ) -> _AuthenticationActor:
     github_client_auth: github.GitHubAppInstallationAuth | github.GitHubTokenAuth
-    if application is not None:
-        installation_json = await github.get_installation_from_login(owner)
-        # Authenticated by token
-        if application.github_account.id != installation_json["account"]["id"]:
-            raise fastapi.HTTPException(status_code=403)
-        github_client_auth = github.GitHubAppInstallationAuth(installation_json)
-        actor = build_actor(auth_method=application)
 
-    elif logged_user is not None:
-        # Authenticated by cookie session
-        installation_json = await github.get_installation_from_login(owner)
-        github_client_auth = github.GitHubTokenAuth(logged_user.oauth_access_token)
-        actor = build_actor(auth_method=logged_user)
-    else:
-        raise fastapi.HTTPException(403)
+    if application is not None or logged_user is not None:
+        if repository is None:
+            installation_json = await github.get_installation_from_login(owner)
+        else:
+            installation_json = await github.get_installation_from_repository(
+                owner, repository
+            )
 
-    return _AuthenticationActor(
-        installation=installation_json,
-        github_client_auth=github_client_auth,
-        actor=actor,
-    )
+        if application is not None:
+            # Authenticated by token
+            if application.github_account.id != installation_json["account"]["id"]:
+                raise fastapi.HTTPException(status_code=403)
+            github_client_auth = github.GitHubAppInstallationAuth(installation_json)
+            actor = build_actor(auth_method=application)
+
+        elif logged_user is not None:
+            # Authenticated by cookie session
+            github_client_auth = github.GitHubTokenAuth(logged_user.oauth_access_token)
+            actor = build_actor(auth_method=logged_user)
+
+        else:
+            RuntimeError("logged_user and application must have been checked earlier")
+
+        return _AuthenticationActor(
+            installation=installation_json,
+            github_client_auth=github_client_auth,
+            actor=actor,
+        )
+
+    raise fastapi.HTTPException(403)
 
 
 AuthenticatedActor = typing.Annotated[

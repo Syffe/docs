@@ -161,7 +161,7 @@ async def mock_user_authorization_on_repo(
         await db.commit()
 
     respx_mock.get(
-        f"https://api.github.com/users/{repo['owner']['login']}/installation"
+        f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}/installation"
     ).respond(200, json={"account": repo["owner"]})
     respx_mock.get(
         f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}"

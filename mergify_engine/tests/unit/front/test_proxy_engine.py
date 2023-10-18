@@ -55,9 +55,9 @@ queue_rules:
             ),
         )
 
-    respx_mock.get("https://api.github.com/users/Mergifyio/installation").respond(
-        200, json={"account": api_user}
-    )
+    respx_mock.get(
+        "https://api.github.com/repos/Mergifyio/engine/installation"
+    ).respond(200, json={"account": api_user})
     respx_mock.get("https://api.github.com/repos/Mergifyio/engine").respond(
         200,
         json=github_types.GitHubRepository(  # type: ignore[arg-type]

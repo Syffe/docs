@@ -32,15 +32,11 @@ async def api_token(
     await db.commit()
 
     # Mock different GitHub responses
-    # get installation from login
     gh_owner = github_types.GitHubAccount(
         id=github_types.GitHubAccountIdType(0),
         login=github_types.GitHubLogin("Mergifyio"),
         type="User",
         avatar_url="",
-    )
-    respx_mock.get("https://api.github.com/users/Mergifyio/installation").respond(
-        200, json={"account": gh_owner, "id": 42}
     )
 
     repo = github_types.GitHubRepository(
@@ -56,6 +52,12 @@ async def api_token(
             "owner": gh_owner,
         }
     )
+
+    # get installation from repository
+    respx_mock.get(
+        "https://api.github.com/repos/Mergifyio/engine/installation"
+    ).respond(200, json={"account": gh_owner, "id": 42})
+
     # get the repository
     respx_mock.get("https://api.github.com/repos/Mergifyio/engine").respond(
         200,
