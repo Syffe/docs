@@ -2539,6 +2539,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
             TrainCarOutcome.CHECKS_FAILED,
             TrainCarOutcome.CHECKS_TIMEOUT,
             TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS,
+            TrainCarOutcome.CONFLICT_WITH_BASE_BRANCH,
+            TrainCarOutcome.CONFLICT_WITH_PULL_AHEAD,
+            TrainCarOutcome.BRANCH_UPDATE_FAILED,
         ):
             return f"The pull request embarked with {self._get_embarked_refs(include_my_self=False)} cannot be merged and has been disembarked"
 
