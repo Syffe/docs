@@ -100,6 +100,9 @@ def UserConfigurationSchema(
         voluptuous.Required(
             "defaults", default={}
         ): defaults_config.get_defaults_schema(),
+        voluptuous.Required(
+            "_checks_to_retry_on_failure", default={}
+        ): voluptuous.Schema({str: int}),
         voluptuous.Remove("shared"): voluptuous.Any(dict, list, str, int, float, bool),
     }
 

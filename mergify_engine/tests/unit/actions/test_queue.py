@@ -211,7 +211,7 @@ def fake_client() -> mock.Mock:
 
     def item_call(
         url: str, *args: typing.Any, **kwargs: typing.Any
-    ) -> github_types.GitHubBranch:
+    ) -> github_types.GitHubBranch | github_types.GitHubContentFile:
         if url == "/repos/Mergifyio/mergify-engine/branches/main":
             return github_types.GitHubBranch(
                 {
@@ -259,6 +259,18 @@ def fake_client() -> mock.Mock:
         if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
             raise http.HTTPNotFound(
                 message="boom", response=mock.Mock(), request=mock.Mock()
+            )
+
+        if url == "/repos/Mergifyio/mergify-engine/contents/.mergify.yml":
+            return github_types.GitHubContentFile(
+                {
+                    "content": "",
+                    "type": "file",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
+                    "sha": github_types.SHAType(
+                        "8ac2d8f970ab504e4d65351b10a2b5d8480bc38a"
+                    ),
+                }
             )
 
         raise Exception(f"url not mocked: {url}")  # noqa: TRY002

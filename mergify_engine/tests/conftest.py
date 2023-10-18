@@ -21,6 +21,7 @@ import pydantic
 import pytest
 import respx
 import sqlalchemy
+import sqlalchemy.ext.asyncio
 import starlette
 
 from mergify_engine import config
@@ -238,6 +239,8 @@ async def db(
     async with database.create_session() as session:
         yield session
         DbPopulator.loaded_dadaset = set()
+        DbPopulator.id_auto_increment = {}
+        DbPopulator.internal_ref = {}
 
 
 @pytest.fixture

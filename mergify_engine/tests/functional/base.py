@@ -42,6 +42,7 @@ from mergify_engine.ci import event_processing
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.github_in_postgres import process_events as github_event_processing
+from mergify_engine.log_embedder import github_action
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -899,6 +900,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             while await self.redis_links.stream.xlen("github_in_postgres"):
                 await github_event_processing.store_redis_events_in_pg(self.redis_links)
             LOG.info("github-in-postgres finished")
+
+        if additionnal_services and "log-embedder" in additionnal_services:
+            pending_work = True
+            while pending_work:
+                pending_work = await github_action.embed_logs(self.redis_links)
 
     def get_gitter(
         self, logger: "logging.LoggerAdapter[logging.Logger]"

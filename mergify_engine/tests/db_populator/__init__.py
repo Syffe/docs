@@ -10,6 +10,7 @@ class DbPopulator:
     id_auto_increment: typing.ClassVar[dict[str, int]] = {}
     dataset_registry: typing.ClassVar[dict[str, type[DbPopulator]]] = {}
     loaded_dadaset: typing.ClassVar[set[str]] = set()
+    internal_ref: typing.ClassVar[dict[str, int]] = {}
 
     def __init_subclass__(cls, *args: typing.Any, **kwargs: typing.Any) -> None:
         if cls.__name__ in cls.dataset_registry:

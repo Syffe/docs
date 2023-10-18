@@ -204,6 +204,7 @@ async def test_pull_request_rules_evaluator(
 ) -> None:
     ctxt = await context_getter(1)
     ctxt.repository._caches.branch_protections[github_types.GitHubRefType("main")] = {}
+    ctxt.repository._caches.mergify_config.set(rules_mod.UserConfigurationSchema({}))
     ctxt._caches.pull_check_runs.set(
         [
             {

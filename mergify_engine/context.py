@@ -27,6 +27,7 @@ from mergify_engine import date
 from mergify_engine import dependabot_helpers
 from mergify_engine import dependabot_types
 from mergify_engine import exceptions
+from mergify_engine import flaky_check
 from mergify_engine import github_graphql_types
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -1147,6 +1148,9 @@ class Context:
     log: logging.LoggerAdapter[logging.Logger] = dataclasses.field(
         init=False, repr=False
     )
+    flaky_checks_to_rerun: list[flaky_check.CheckToRerunResult] = dataclasses.field(
+        default_factory=list
+    )
 
     _caches: ContextCaches = dataclasses.field(
         default_factory=ContextCaches, repr=False
@@ -1761,17 +1765,30 @@ class Context:
                 }
             )
 
+        pull_check_runs = await self.pull_check_runs
+
+        self.flaky_checks_to_rerun = await flaky_check.get_checks_to_rerun(
+            self.repository, pull_check_runs
+        )
+
         # NOTE(sileht): conclusion can be one of success, failure, neutral,
         # cancelled, timed_out, or action_required, and  None for "pending"
         checks.update(
             {
                 c["name"]: c["conclusion"]
-                for c in sorted(await self.pull_check_runs, key=self._check_runs_sorter)
+                for c in sorted(pull_check_runs, key=self._check_runs_sorter)
             }
         )
         # NOTE(sileht): state can be one of error, failure, pending,
         # or success.
         checks.update({s["context"]: s["state"] for s in await self.pull_statuses})
+
+        # NOTE(Kontrolix): Makeup results to pending for checks that need reruns
+        # or those that we don't know yet
+        checks.update(
+            {check["check_name"]: None for check in self.flaky_checks_to_rerun}
+        )
+
         return checks
 
     @staticmethod

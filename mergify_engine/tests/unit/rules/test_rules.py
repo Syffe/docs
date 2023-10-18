@@ -1122,6 +1122,7 @@ async def test_extends_infinite_loop() -> None:
             "raw_config": {
                 "extends": github_types.GitHubRepositoryName(".github"),
             },
+            "_checks_to_retry_on_failure": {},
         }
     )
     repository_ctxt = mock.MagicMock()
@@ -1156,6 +1157,7 @@ async def test_extends_limit(
             "raw_config": {
                 "extends": github_types.GitHubRepositoryName(".github"),
             },
+            "_checks_to_retry_on_failure": {},
         }
     )
 
@@ -1206,6 +1208,7 @@ async def test_extends_without_database_cache(
             "defaults": mergify_conf.Defaults({"actions": {"hello": {}}}),
             "commands_restrictions": {},
             "raw_config": {},
+            "_checks_to_retry_on_failure": {},
         }
     )
 
@@ -1281,6 +1284,7 @@ async def test_extends_with_database_cache(
             "defaults": mergify_conf.Defaults({"actions": {"hello": {}}}),
             "commands_restrictions": {},
             "raw_config": {},
+            "_checks_to_retry_on_failure": {},
         }
     )
 
@@ -1499,6 +1503,14 @@ async def test_get_pull_request_rules_evaluator(
             raise http.HTTPNotFound(
                 message="boom", response=mock.Mock(), request=mock.Mock()
             )
+
+        if url == "/repos/Mergifyio/mergify-engine/contents/.mergify.yml":
+            return {
+                "content": "",
+                "type": "file",
+                "path": github_types.GitHubFilePath(".mergify.yml"),
+                "sha": github_types.SHAType("8ac2d8f970ab504e4d65351b10a2b5d8480bc38a"),
+            }
 
         raise RuntimeError(f"not handled url {url}")
 

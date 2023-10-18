@@ -1,1 +1,189 @@
-[{"args": ["version"], "kwargs": {}, "out": "git version 2.41.0\n"}, {"args": ["init", "--initial-branch=tmp-mergify-trunk"], "kwargs": {}, "out": "Initialized empty Git repository in /private/var/folders/0k/lvrj3pjx10x7m_6wr44r71xm0000gn/T/mergify-gitterzt7d5_3z/repository/.git/\n"}, {"args": ["config", "core.repositoryformatversion", "1"], "kwargs": {}, "out": ""}, {"args": ["config", "gc.auto", "0"], "kwargs": {}, "out": ""}, {"args": ["config", "credential.useHttpPath", "true"], "kwargs": {}, "out": ""}, {"args": ["config", "credential.helper", "cache --timeout=300 --socket=/tmp/mergify-gitter<random>/.git-creds-socket"], "kwargs": {}, "out": ""}, {"args": ["config", "checkout.workers", "0"], "kwargs": {}, "out": ""}, {"args": ["config", "user.name", "Mergify"], "kwargs": {}, "out": ""}, {"args": ["config", "user.email", "132445501+mergify-kontrolix[bot]@users.noreply.github.com"], "kwargs": {}, "out": ""}, {"args": ["credential", "approve"], "kwargs": {"_input": "url=https://<TOKEN>:@github.com/mergifyio-testing/functional-testing-repo-Kontrolix\n\n"}, "out": ""}, {"args": ["remote", "add", "origin", "https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix"], "kwargs": {}, "out": ""}, {"args": ["config", "remote.origin.promisor", "true"], "kwargs": {}, "out": ""}, {"args": ["config", "remote.origin.partialclonefilter", "blob:none"], "kwargs": {}, "out": ""}, {"args": ["fetch", "--quiet", "--no-tags", "origin", "pull/4844/head"], "kwargs": {}, "out": ""}, {"args": ["fetch", "--quiet", "--no-tags", "origin", "20231016205538/test_command_backport_without_config/main"], "kwargs": {}, "out": ""}, {"args": ["fetch", "--quiet", "--no-tags", "origin", "20231016205538/test_command_backport_without_config/feature/one"], "kwargs": {}, "out": ""}, {"args": ["checkout", "--quiet", "-b", "mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844", "origin/20231016205538/test_command_backport_without_config/feature/one"], "kwargs": {}, "out": ""}, {"args": ["cherry-pick", "-x", "58587bafe6ce03c3498cc69f7b8896d84301fd48"], "kwargs": {}, "out": "[mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844 699544b] test_command_backport_without_config: pull request n1 from integration\n Date: Mon Oct 16 22:55:44 2023 +0200\n 1 file changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 test1\n"}, {"args": ["push", "origin", "mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844"], "kwargs": {}, "out": "remote: \nremote: Create a pull request for 'mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844' on GitHub by visiting:        \nremote:      https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/pull/new/mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844        \nremote: \nTo https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix\n * [new branch]      mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844 -> mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844\n"}, {"args": ["credential-cache", "--socket=/tmp/mergify-gitter<random>/.git-creds-socket", "exit"], "kwargs": {}, "out": ""}]
+[
+    {
+        "args": [
+            "version"
+        ],
+        "kwargs": {},
+        "out": "git version 2.41.0\n"
+    },
+    {
+        "args": [
+            "init",
+            "--initial-branch=tmp-mergify-trunk"
+        ],
+        "kwargs": {},
+        "out": "Initialized empty Git repository in /private/var/folders/0k/lvrj3pjx10x7m_6wr44r71xm0000gn/T/mergify-gitterzt7d5_3z/repository/.git/\n"
+    },
+    {
+        "args": [
+            "config",
+            "core.repositoryformatversion",
+            "1"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "config",
+            "gc.auto",
+            "0"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "config",
+            "credential.useHttpPath",
+            "true"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "config",
+            "credential.helper",
+            "cache --timeout=300 --socket=/tmp/mergify-gitter<random>/.git-creds-socket"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "config",
+            "checkout.workers",
+            "0"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "config",
+            "user.name",
+            "Mergify"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "config",
+            "user.email",
+            "132445501+mergify-kontrolix[bot]@users.noreply.github.com"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "credential",
+            "approve"
+        ],
+        "kwargs": {
+            "_input": "url=https://<TOKEN>:@github.com/mergifyio-testing/functional-testing-repo-Kontrolix\n\n"
+        },
+        "out": ""
+    },
+    {
+        "args": [
+            "remote",
+            "add",
+            "origin",
+            "https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "config",
+            "remote.origin.promisor",
+            "true"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "config",
+            "remote.origin.partialclonefilter",
+            "blob:none"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "fetch",
+            "--quiet",
+            "--no-tags",
+            "origin",
+            "pull/4844/head"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "fetch",
+            "--quiet",
+            "--no-tags",
+            "origin",
+            "20231016205538/test_command_backport_without_config/main"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "fetch",
+            "--quiet",
+            "--no-tags",
+            "origin",
+            "20231016205538/test_command_backport_without_config/feature/one"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "checkout",
+            "--quiet",
+            "-b",
+            "mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844",
+            "origin/20231016205538/test_command_backport_without_config/feature/one"
+        ],
+        "kwargs": {},
+        "out": ""
+    },
+    {
+        "args": [
+            "cherry-pick",
+            "-x",
+            "58587bafe6ce03c3498cc69f7b8896d84301fd48"
+        ],
+        "kwargs": {},
+        "out": "[mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844 699544b] test_command_backport_without_config: pull request n1 from integration\n Date: Mon Oct 16 22:55:44 2023 +0200\n 1 file changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 test1\n"
+    },
+    {
+        "args": [
+            "push",
+            "origin",
+            "mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844"
+        ],
+        "kwargs": {},
+        "out": "remote: \nremote: Create a pull request for 'mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844' on GitHub by visiting:        \nremote:      https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/pull/new/mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844        \nremote: \nTo https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix\n * [new branch]      mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844 -> mergify/bp/7993d407-3167-5ac1-ac08-5d877435c420/20231016205538/test_command_backport_without_config/feature/one/pr-4844\n"
+    },
+    {
+        "args": [
+            "credential-cache",
+            "--socket=/tmp/mergify-gitter<random>/.git-creds-socket",
+            "exit"
+        ],
+        "kwargs": {},
+        "out": ""
+    }
+]

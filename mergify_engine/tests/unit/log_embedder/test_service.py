@@ -16,6 +16,7 @@ import sqlalchemy.ext.asyncio
 from mergify_engine import exceptions
 from mergify_engine import github_events
 from mergify_engine import github_types
+from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_api
@@ -47,6 +48,7 @@ async def test_embed_logs_on_controlled_data(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
 ) -> None:
     owner = gh_models.GitHubAccount(
         id=1, login="owner_login", avatar_url="https://dummy.com"
@@ -138,7 +140,7 @@ async def test_embed_logs_on_controlled_data(
 
     await db.commit()
 
-    pending_work = await github_action.embed_logs()
+    pending_work = await github_action.embed_logs(redis_links)
     assert not pending_work
     jobs = (await db.scalars(sqlalchemy.select(gh_models.WorkflowJob))).all()
     assert len(jobs) == 3
@@ -151,9 +153,9 @@ async def test_embed_logs_on_controlled_data(
         "LOG_EMBEDDER_ENABLED_ORGS",
         [owner.login],
     )
-    pending_work = await github_action.embed_logs()
+    pending_work = await github_action.embed_logs(redis_links)
     assert pending_work
-    pending_work = await github_action.embed_logs()
+    pending_work = await github_action.embed_logs(redis_links)
     assert not pending_work
 
     jobs = (await db.scalars(sqlalchemy.select(gh_models.WorkflowJob))).all()
@@ -178,7 +180,7 @@ async def test_embed_logs_on_controlled_data(
     jobs[0].neighbours_computed_at = None
     await db.commit()
 
-    pending_work = await github_action.embed_logs()
+    pending_work = await github_action.embed_logs(redis_links)
     assert not pending_work
 
     db.expunge_all()
@@ -202,6 +204,7 @@ async def test_embed_logs_on_various_data(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
 ) -> None:
     respx_mock.get(
         re.compile(f"{settings.GITHUB_REST_API_URL}/users/.+/installation")
@@ -306,7 +309,7 @@ async def test_embed_logs_on_various_data(
 
     pending_work = True
     while pending_work:
-        pending_work = await github_action.embed_logs()
+        pending_work = await github_action.embed_logs(redis_links)
 
     count = (
         await populated_db.execute(
@@ -330,6 +333,7 @@ async def test_workflow_job_log_life_cycle(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
 ) -> None:
     owner = gh_models.GitHubAccount(id=1, login="owner", avatar_url="https://dummy.com")
     repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo1")
@@ -503,7 +507,7 @@ async def test_workflow_job_log_life_cycle(
     assert jobs[2].log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
     db.expunge_all()
 
-    await github_action.embed_logs()
+    await github_action.embed_logs(redis_links)
 
     jobs = await get_jobs()
     assert len(jobs) == 3
@@ -512,7 +516,7 @@ async def test_workflow_job_log_life_cycle(
     assert jobs[2].log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
     db.expunge_all()
 
-    await github_action.embed_logs()
+    await github_action.embed_logs(redis_links)
 
     jobs = await get_jobs()
     assert len(jobs) == 3
@@ -532,6 +536,7 @@ async def test_workflow_job_from_real_life(
     monkeypatch: pytest.MonkeyPatch,
     job_name: str,
     step: int,
+    redis_links: redis_utils.RedisLinks,
 ) -> None:
     owner = gh_models.GitHubAccount(id=1, login="owner", avatar_url="https://dummy.com")
     repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo1")
@@ -631,7 +636,7 @@ async def test_workflow_job_from_real_life(
     assert jobs[0].log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
     db.expunge_all()
 
-    await github_action.embed_logs()
+    await github_action.embed_logs(redis_links)
 
     jobs = list((await db.scalars(sqlalchemy.select(gh_models.WorkflowJob))).all())
     assert len(jobs) == 1

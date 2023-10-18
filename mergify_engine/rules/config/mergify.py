@@ -57,6 +57,7 @@ class MergifyConfig(typing.TypedDict):
     commands_restrictions: dict[str, prr_config.CommandsRestrictions]
     defaults: Defaults
     raw_config: typing.Any
+    _checks_to_retry_on_failure: dict[str, int]
 
 
 def merge_raw_configs(

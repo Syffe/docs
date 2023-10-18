@@ -116,7 +116,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         )
 
         # Successful job
-        await gh_models.WorkflowJob.insert(
+        succesful_job = await gh_models.WorkflowJob.insert(
             session,
             github_types.GitHubWorkflowJob(
                 id=cls.next_id(gh_models.WorkflowJob),
@@ -151,6 +151,8 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             ),
             repo,
         )
+
+        cls.internal_ref["successful_flaky_job"] = succesful_job.id
 
         # Failed job similar to the job1
         job3 = await gh_models.WorkflowJob.insert(
@@ -196,6 +198,8 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
             session, [job3.id]
         )
+
+        cls.internal_ref["failed_job_with_flaky_nghb"] = job3.id
 
         # Failed job completly different to the job1
         job4 = await gh_models.WorkflowJob.insert(
@@ -247,6 +251,8 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
             session, [job4.id]
         )
+
+        cls.internal_ref["failed_job_with_no_flaky_nghb"] = job4.id
 
         # Failed job similar to the job1 but on another repo
         colliding_repo = typing.cast(
@@ -349,3 +355,5 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         uncomputed_job.log_embedding = None
         uncomputed_job.embedded_log = None
         uncomputed_job.log_status = gh_models.WorkflowJobLogStatus.UNKNOWN
+
+        cls.internal_ref["failed_job_uncomputed"] = uncomputed_job.id

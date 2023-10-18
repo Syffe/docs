@@ -2,6 +2,7 @@ import pytest
 
 from mergify_engine import condition_value_querier
 from mergify_engine import github_types
+from mergify_engine import rules
 from mergify_engine.tests.unit import conftest
 
 
@@ -116,6 +117,7 @@ async def test_merge_commit_message(
     ctxt.repository._caches.branch_protections[
         github_types.GitHubRefType("main")
     ] = None
+    ctxt.repository._caches.mergify_config.set(rules.UserConfigurationSchema({}))
     ctxt._caches.pull_statuses.set(
         [
             github_types.GitHubStatus(

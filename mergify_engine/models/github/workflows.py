@@ -12,11 +12,13 @@ from pgvector.sqlalchemy import Vector  # type: ignore
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
+import sqlalchemy.exc
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import constants
 from mergify_engine import github_types
 from mergify_engine import models
+from mergify_engine.flaky_check.utils import NeedRerunStatus
 from mergify_engine.models.github import account as gh_account
 from mergify_engine.models.github import repository as gh_repository
 
@@ -591,6 +593,108 @@ class WorkflowJob(models.Base):
         )
 
         return await session.execute(stmt)
+
+    @classmethod
+    async def is_rerun_needed(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        job_id: int,
+        max_rerun: int,
+        neighbour_cosine_similarity_threshold: float = 0.9,
+    ) -> NeedRerunStatus:
+        tj_job = orm.aliased(WorkflowJobLogNeighbours, name="tj_job")
+        job = orm.aliased(cls, name="job")
+        job_neighb = orm.aliased(cls, name="job_neighb")
+        job_rerun = orm.aliased(cls, name="job_rerun")
+
+        sub_query = (
+            sqlalchemy.select(
+                sqlalchemy.func.array_agg(
+                    sqlalchemy.func.distinct(
+                        sqlalchemy.case(
+                            (job.id == tj_job.job_id, tj_job.neighbour_job_id),
+                            else_=tj_job.job_id,
+                        )
+                    ),
+                ).label("neighbour_job_ids"),
+                job.run_attempt,
+                job.neighbours_computed_at,
+                job.conclusion,
+            )
+            .join(
+                tj_job,
+                sqlalchemy.and_(
+                    job.id.in_((tj_job.job_id, tj_job.neighbour_job_id)),
+                    tj_job.cosine_similarity >= neighbour_cosine_similarity_threshold,
+                ),
+                isouter=True,
+            )
+            .where(job.id == job_id)
+            .group_by(job.id)
+            .subquery()
+        )
+
+        stmt = (
+            sqlalchemy.select(
+                sub_query.c["run_attempt"],
+                sqlalchemy.func.bool_and(job_rerun.id.is_not(None)).label(
+                    "flaky_neighb"
+                ),
+                sub_query.c["neighbours_computed_at"],
+                sub_query.c["conclusion"],
+            )
+            .join(
+                job_neighb,
+                sub_query.c["neighbour_job_ids"].any(job_neighb.id),
+                isouter=True,
+            )
+            .join(
+                job_rerun,
+                sqlalchemy.and_(
+                    job_rerun.repository_id == job_neighb.repository_id,
+                    job_rerun.name == job_neighb.name,
+                    job_rerun.workflow_run_id == job_neighb.workflow_run_id,
+                    job_rerun.run_attempt > job_neighb.run_attempt,
+                    job_rerun.conclusion == WorkflowJobConclusion.SUCCESS,
+                ),
+                isouter=True,
+            )
+            .group_by(
+                sub_query.c["run_attempt"],
+                sub_query.c["neighbours_computed_at"],
+                sub_query.c["conclusion"],
+            )
+        )
+
+        try:
+            result = (await session.execute(stmt)).one()
+        except sqlalchemy.exc.NoResultFound:
+            # NOTE(Kontrolix): We haven't yet received the job
+            return NeedRerunStatus.UNKONWN
+
+        if result.neighbours_computed_at is None:
+            # NOTE(Kontrolix): Safety in case we would have called this method with a
+            # succesful job. Normaly we should never enter this.
+            if result.conclusion == WorkflowJobConclusion.SUCCESS:
+                return NeedRerunStatus.DONT_NEED_RERUN
+
+            # NOTE(Kontrolix): Job is not yet fully processed
+            return NeedRerunStatus.UNKONWN
+
+        # NOTE(Kontrolix): We use the run_attempt value to know how many time
+        # this job has been rerun. It's imperfect because if a human rerun manually
+        # the job it will be taken into account as if Mergify already rerun it
+
+        # NOTE(Konrolix): Case where there is a known flaky job as neighbour
+        if result.flaky_neighb is True and result.run_attempt < max_rerun:
+            return NeedRerunStatus.NEED_RERUN
+
+        # NOTE(Kontrolix): Case where the is no known flaky neighbour so we
+        # rerun once to try
+        if result.flaky_neighb is not True and result.run_attempt == 1:
+            return NeedRerunStatus.NEED_RERUN
+
+        return NeedRerunStatus.DONT_NEED_RERUN
 
 
 class WorkflowJobLogNeighbours(models.Base):

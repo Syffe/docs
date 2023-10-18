@@ -13,6 +13,7 @@ from mergify_engine import dependabot_helpers
 from mergify_engine import dependabot_types
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import rules
 from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine.clients import github
@@ -506,110 +507,6 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
     assert client.called == 7
 
 
-@pytest.fixture
-def a_pull_request() -> github_types.GitHubPullRequest:
-    gh_owner = github_types.GitHubAccount(
-        {
-            "login": github_types.GitHubLogin("user"),
-            "id": github_types.GitHubAccountIdType(0),
-            "type": "User",
-            "avatar_url": "",
-        }
-    )
-
-    gh_repo = github_types.GitHubRepository(
-        {
-            "archived": False,
-            "url": "",
-            "html_url": "",
-            "default_branch": github_types.GitHubRefType(""),
-            "id": github_types.GitHubRepositoryIdType(456),
-            "full_name": "user/repo",
-            "name": github_types.GitHubRepositoryName("repo"),
-            "private": False,
-            "owner": gh_owner,
-        }
-    )
-
-    return github_types.GitHubPullRequest(
-        {
-            "node_id": "42",
-            "locked": False,
-            "assignees": [],
-            "requested_reviewers": [],
-            "requested_teams": [],
-            "milestone": None,
-            "title": "",
-            "updated_at": github_types.ISODateTimeType("2021-06-01T18:41:39Z"),
-            "created_at": github_types.ISODateTimeType("2021-06-01T18:41:39Z"),
-            "closed_at": None,
-            "id": github_types.GitHubPullRequestId(0),
-            "maintainer_can_modify": False,
-            "rebaseable": False,
-            "draft": False,
-            "merge_commit_sha": None,
-            "labels": [],
-            "number": github_types.GitHubPullRequestNumber(6),
-            "commits": 1,
-            "merged": True,
-            "state": "closed",
-            "changed_files": 1,
-            "html_url": "<html_url>",
-            "issue_url": "",
-            "base": {
-                "label": github_types.GitHubBaseBranchLabel(""),
-                "sha": github_types.SHAType("sha"),
-                "user": {
-                    "login": github_types.GitHubLogin("user"),
-                    "id": github_types.GitHubAccountIdType(0),
-                    "type": "User",
-                    "avatar_url": "",
-                },
-                "ref": github_types.GitHubRefType("ref"),
-                "repo": gh_repo,
-            },
-            "head": {
-                "label": github_types.GitHubHeadBranchLabel(""),
-                "sha": github_types.SHAType("old-sha-one"),
-                "ref": github_types.GitHubRefType("fork"),
-                "user": {
-                    "login": github_types.GitHubLogin("user"),
-                    "id": github_types.GitHubAccountIdType(0),
-                    "type": "User",
-                    "avatar_url": "",
-                },
-                "repo": {
-                    "archived": False,
-                    "url": "",
-                    "html_url": "",
-                    "default_branch": github_types.GitHubRefType(""),
-                    "id": github_types.GitHubRepositoryIdType(123),
-                    "full_name": "fork/other",
-                    "name": github_types.GitHubRepositoryName("other"),
-                    "private": False,
-                    "owner": {
-                        "login": github_types.GitHubLogin("user"),
-                        "id": github_types.GitHubAccountIdType(0),
-                        "type": "User",
-                        "avatar_url": "",
-                    },
-                },
-            },
-            "user": {
-                "login": github_types.GitHubLogin("user"),
-                "id": github_types.GitHubAccountIdType(0),
-                "type": "User",
-                "avatar_url": "",
-            },
-            "merged_by": None,
-            "merged_at": None,
-            "mergeable_state": "clean",
-            "mergeable": True,
-            "body": None,
-        }
-    )
-
-
 async def test_length_optimisation(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
@@ -1047,6 +944,9 @@ async def test_check_runs_ordering(
 ) -> None:
     repo = mock.Mock()
     repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
+    repo.get_mergify_config = mock.AsyncMock(
+        return_value=rules.UserConfigurationSchema({})
+    )
     repo.installation.client.items = mock.MagicMock(__aiter__=[])
     ctxt = context.Context(repo, a_pull_request)
     with mock.patch(

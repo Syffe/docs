@@ -47,6 +47,7 @@ from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import engine
 from mergify_engine import exceptions
+from mergify_engine import flaky_check
 from mergify_engine import github_types
 from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
@@ -206,6 +207,9 @@ async def run_engine(
                 action="internal",
                 source="engine",
             )
+
+        if ctxt.flaky_checks_to_rerun:
+            await flaky_check.rerun_flaky_checks(ctxt)
 
         if result is not None:
             result.started_at = started_at

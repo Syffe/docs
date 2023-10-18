@@ -16,8 +16,10 @@ from sqlalchemy import orm
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import exceptions
+from mergify_engine import flaky_check
 from mergify_engine import github_types
 from mergify_engine import json
+from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.clients import google_cloud_storage
@@ -321,7 +323,7 @@ def log_exception_and_maybe_retry(
 
 
 @tracer.wrap("embed-logs")
-async def embed_logs() -> bool:
+async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
     if not settings.LOG_EMBEDDER_ENABLED_ORGS:
         return False
 
@@ -394,4 +396,9 @@ async def embed_logs() -> bool:
             session, job_ids_to_compute_cosine_similarity
         )
         await session.commit()
+
+        await flaky_check.send_pull_refresh_for_jobs(
+            redis_links, job_ids_to_compute_cosine_similarity
+        )
+
         return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
