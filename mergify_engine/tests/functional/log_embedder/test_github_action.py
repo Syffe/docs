@@ -287,9 +287,13 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             settings.LOG_EMBEDDER_GCS_CREDENTIALS,
         )
         blobs = list(gcs_client.list_blobs(settings.LOG_EMBEDDER_GCS_BUCKET))
-        assert len(blobs) == 1
+        assert len(blobs) == 2
         assert (
             blobs[0].name
+            == f"{self.installation_ctxt.owner_id}/{self.repository_ctxt.repo['id']}/{job.id}/jobs.json"
+        )
+        assert (
+            blobs[1].name
             == f"{self.installation_ctxt.owner_id}/{self.repository_ctxt.repo['id']}/{job.id}/logs.gz"
         )
 

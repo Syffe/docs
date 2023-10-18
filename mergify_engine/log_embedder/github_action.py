@@ -17,6 +17,7 @@ from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
+from mergify_engine import json
 from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.clients import google_cloud_storage
@@ -79,6 +80,11 @@ async def embed_log(
             settings.LOG_EMBEDDER_GCS_BUCKET,
             f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
             codecs.encode("".join(log_lines).encode(), encoding="zlib"),
+        )
+        await gcs_client.upload(
+            settings.LOG_EMBEDDER_GCS_BUCKET,
+            f"{job.repository.owner.id}/{job.repository.id}/{job.id}/jobs.json",
+            json.dumps(job.as_github_dict()).encode("utf-8"),
         )
 
 
