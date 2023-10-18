@@ -1,4 +1,5 @@
 from mergify_engine.models.github.account import GitHubAccount
+from mergify_engine.models.github.pull_request import PullRequest
 from mergify_engine.models.github.pull_request import PullRequestForCiEventProcessing
 from mergify_engine.models.github.repository import GitHubRepository
 from mergify_engine.models.github.repository import GitHubRepositoryDict
@@ -17,6 +18,7 @@ __all__ = [
     "GitHubRepository",
     "GitHubRepositoryDict",
     "GitHubUser",
+    "PullRequest",
     "PullRequestForCiEventProcessing",
     "WorkflowJobConclusion",
     "WorkflowRunTriggerEvent",

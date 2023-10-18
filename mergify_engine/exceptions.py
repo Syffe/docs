@@ -9,7 +9,6 @@ import daiquiri
 from redis import exceptions as redis_exceptions
 import sqlalchemy.exc
 
-from mergify_engine.clients import github
 from mergify_engine.clients import http
 
 
@@ -108,6 +107,9 @@ def should_be_ignored(exception: Exception) -> bool:
 def need_retry(
     exception: Exception, base_retry_in: int = 1
 ) -> datetime.timedelta | None:  # pragma: no cover
+    # circular import
+    from mergify_engine.clients import github
+
     if isinstance(exception, RateLimited):
         # NOTE(sileht): when we are close to reset date, and since utc time between us and
         # github differ a bit, we can have negative delta, so set a minimun for retrying

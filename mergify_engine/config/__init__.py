@@ -335,6 +335,8 @@ class WorkerSettings(pydantic_settings.BaseSettings):
     CI_EVENT_INGESTION: bool = False
     CI_DOWNLOAD_BATCH_SIZE: int = 50
     EVENTLOG_EVENTS_DB_INGESTION: bool = False
+    GITHUB_IN_POSTGRES_EVENTS_INGESTION: bool = False
+    GITHUB_IN_POSTGRES_PROCESSING_BATCH_SIZE: int = 1000
 
 
 class APISettings(pydantic_settings.BaseSettings):

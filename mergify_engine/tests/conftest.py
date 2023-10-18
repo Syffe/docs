@@ -135,6 +135,11 @@ def enable_ci_dump_ingestion() -> None:
     settings.CI_EVENT_INGESTION = True
 
 
+@pytest.fixture(autouse=True, scope="session")
+def enable_github_in_postgres_event_ingestion() -> None:
+    settings.GITHUB_IN_POSTGRES_EVENTS_INGESTION = True
+
+
 @pytest.fixture()
 def enable_events_db_ingestion() -> abc.Generator[None, None, None]:
     initial_state = settings.EVENTLOG_EVENTS_DB_INGESTION

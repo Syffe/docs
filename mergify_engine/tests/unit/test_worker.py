@@ -2844,6 +2844,7 @@ async def test_task_stop_ordering(
         "log-embedder",
         "event-forwarder",
         "delayed-refresh",
+        "github-in-postgres",
     }
 
 

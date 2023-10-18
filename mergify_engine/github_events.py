@@ -21,7 +21,6 @@ from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine import worker_pusher
 from mergify_engine.ci import job_registries
-from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
 from mergify_engine.engine import commands_runner
 from mergify_engine.queue import utils as queue_utils
@@ -112,6 +111,11 @@ class EventToProcess(EventBase):
 
 
 @dataclasses.dataclass
+class SendEventDataInPg(EventToProcess):
+    pass
+
+
+@dataclasses.dataclass
 class CIEventToProcess(EventBase):
     event: github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob
 
@@ -173,24 +177,6 @@ async def clean_and_fill_caches(
         if event["action"] in ("opened", "synchronize", "edited", "closed", "reopened"):
             await pull_request_finder.PullRequestFinder.sync(
                 redis_links.cache, event["pull_request"]
-            )
-
-            commit_shas: set[github_types.SHAType] = (
-                {event["before"], event["after"]}
-                if event["action"] == "synchronize"
-                else {event["pull_request"]["head"]["sha"]}
-            )
-            await pull_registries.RedisPullRequestRegistry.register_commits(
-                redis_links.cache,
-                event["pull_request"]["base"]["repo"]["owner"]["login"],
-                event["pull_request"]["base"]["repo"]["name"],
-                commit_shas,
-                pull_registries.PullRequest(
-                    id=event["pull_request"]["id"],
-                    number=event["pull_request"]["number"],
-                    title=event["pull_request"]["title"],
-                    state=event["pull_request"]["state"],
-                ),
             )
 
         if event["action"] in ("opened", "edited"):
@@ -408,7 +394,7 @@ async def event_classifier(
     event_id: str,
     event: github_types.GitHubEvent,
     mergify_bot: github_types.GitHubAccount,
-) -> EventToIgnore | EventToProcess | CIEventToProcess:
+) -> EventToIgnore | EventToProcess | CIEventToProcess | SendEventDataInPg:
     # NOTE(sileht): those events are only used by synack or cache cleanup/feed
     if event_type in (
         "installation",
@@ -436,6 +422,8 @@ async def event_classifier(
     if event_type == "pull_request":
         event = typing.cast(github_types.GitHubEventPullRequest, event)
         if (
+            # XXX: Do we still want to ignore those and not update
+            # draft PR when the body is edited ?
             event["action"] == "edited"
             and event["sender"]["id"] == mergify_bot["id"]
             and (
@@ -456,7 +444,7 @@ async def event_classifier(
                 "mergify merge queue description update",
             )
 
-        return EventToProcess(
+        return SendEventDataInPg(
             event_type, event_id, event, event["pull_request"]["number"]
         )
 
@@ -645,8 +633,10 @@ async def filter_and_dispatch(
         redis_links, event_type, event_id, event, mergify_bot
     )
 
-    if isinstance(classified_event, EventToProcess):
+    if not isinstance(classified_event, EventToIgnore):
         classified_event.set_sentry_info()
+
+    if isinstance(classified_event, EventToProcess):
         await clean_and_fill_caches(redis_links, event_type, event_id, event)
         await event_preprocessing(
             background_tasks, redis_links, event_type, event_id, event
@@ -665,12 +655,24 @@ async def filter_and_dispatch(
         )
 
     if settings.CI_EVENT_INGESTION and isinstance(classified_event, CIEventToProcess):
-        classified_event.set_sentry_info()
         await worker_pusher.push_ci_event(
             redis_links.stream,
             event_type,
             event_id,
             classified_event.slim_event,
+        )
+
+    if settings.GITHUB_IN_POSTGRES_EVENTS_INGESTION and isinstance(
+        classified_event, SendEventDataInPg
+    ):
+        await worker_pusher.push_github_in_pg_event(
+            redis_links.stream,
+            event_type,
+            event_id,
+            filtered_github_types.extract_github_data_from_github_event(
+                event_type,
+                classified_event.event,
+            ),
         )
 
     classified_event.emit_log()

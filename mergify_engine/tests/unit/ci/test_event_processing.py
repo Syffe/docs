@@ -1,5 +1,4 @@
 import typing
-from unittest import mock
 
 import msgpack
 import pytest
@@ -10,7 +9,6 @@ from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.ci import event_processing
-from mergify_engine.ci import pull_registries
 from mergify_engine.models import github as gh_models
 
 
@@ -55,29 +53,12 @@ async def test_process_event_stream_workflow_run(
         fields=stream_event,  # type: ignore[arg-type]
     )
 
-    with mock.patch.object(
-        pull_registries.RedisPullRequestRegistry,
-        "get_from_commit",
-        return_value=[
-            pull_registries.PullRequest(id=1, number=1, title="hello", state="open")
-        ],
-    ):
-        await event_processing.process_event_streams(redis_links)
+    await event_processing.process_event_streams(redis_links)
 
     workflow_runs = list(await db.scalars(sqlalchemy.select(gh_models.WorkflowRun)))
     assert len(workflow_runs) == 1
     actual_workflow_run = workflow_runs[0]
     assert actual_workflow_run.event == gh_models.WorkflowRunTriggerEvent.PULL_REQUEST
-
-    pulls = list(
-        await db.scalars(sqlalchemy.select(gh_models.PullRequestForCiEventProcessing))
-    )
-    assert len(pulls) == 1
-    actual_pull = pulls[0]
-    assert actual_pull.id == 1
-    assert actual_pull.number == 1
-    assert actual_pull.title == "hello"
-    assert actual_pull.state == "open"
 
     stream_events = await redis_links.stream.xrange("workflow_run")
     assert len(stream_events) == 0

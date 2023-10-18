@@ -1,3 +1,4 @@
+import datetime
 import typing
 
 from alembic_utils import pg_extension
@@ -51,7 +52,14 @@ class Base(orm.DeclarativeBase):
 
             value = getattr(self, name)
             if value is not None and name in inspector.relationships:
-                value = value._as_dict(included_columns_attribute)
+                if isinstance(value, list):
+                    value = [v._as_dict(included_columns_attribute) for v in value]
+                else:
+                    value = value._as_dict(included_columns_attribute)
+            elif isinstance(value, datetime.datetime):
+                # Replace the +00:00 with Z to be iso with GitHub's way of returning iso dates
+                value = value.isoformat().replace("+00:00", "Z")
+
             result[name] = value
 
         return result  # type: ignore [return-value]

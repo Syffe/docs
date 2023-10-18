@@ -8,19 +8,19 @@ from mergify_engine.clients import github
 
 
 @pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
-async def test_get_from_commit(respx_mock: respx.MockRouter) -> None:
+async def test_get_from_commit(
+    respx_mock: respx.MockRouter,
+    fake_pull_request: github_types.GitHubPullRequest,
+) -> None:
     client = github.AsyncGitHubClient(auth=None)  # type: ignore [arg-type]
     registry = pull_registries.HTTPPullRequestRegistry(client=client)
     respx_mock.get("/repos/some-owner/some-repo/commits/some-sha/pulls").respond(
         200,
-        json=[
-            {
-                "id": 1234,
-                "number": 12,
-                "title": "feat: my awesome feature",
-                "state": "open",
-            }
-        ],
+        json=[fake_pull_request],
+    )
+    respx_mock.get("/repos/some-owner/some-repo/pulls/69").respond(
+        200,
+        json=fake_pull_request,  # type: ignore[arg-type]
     )
 
     pulls = await registry.get_from_commit(
@@ -31,6 +31,6 @@ async def test_get_from_commit(respx_mock: respx.MockRouter) -> None:
 
     assert len(pulls) == 1
     pull = pulls[0]
-    assert pull.id == 1234
-    assert pull.number == 12
-    assert pull.title == "feat: my awesome feature"
+    assert pull["id"] == 42
+    assert pull["number"] == 69
+    assert pull["title"] == "feat: my awesome feature"

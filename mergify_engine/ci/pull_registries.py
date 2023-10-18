@@ -1,31 +1,12 @@
 from collections import abc
 import dataclasses
-import datetime
 import typing
 
-import msgpack
+import sqlalchemy
 
 from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine.clients import github
-
-
-@dataclasses.dataclass
-class PullRequest:
-    id: int
-    number: int
-    title: str
-    state: github_types.GitHubPullRequestState
-
-
-class PullRequestFromCommitRegistry(typing.Protocol):
-    async def get_from_commit(
-        self,
-        owner: github_types.GitHubLogin,
-        repository: github_types.GitHubRepositoryName,
-        commit_sha: github_types.SHAType,
-    ) -> list[PullRequest]:
-        ...
+from mergify_engine.models.github import pull_request as gh_pull_request_mod
 
 
 @dataclasses.dataclass
@@ -52,10 +33,11 @@ class HTTPPullRequestRegistry:
         owner: github_types.GitHubLogin,
         repository: github_types.GitHubRepositoryName,
         commit_sha: github_types.SHAType,
-    ) -> list[PullRequest]:
+    ) -> list[github_types.GitHubPullRequest]:
         # https://docs.github.com/en/rest/commits/commits#list-pull-requests-associated-with-a-commit
         client = await self.get_client()
-        pull_payloads = typing.cast(
+
+        pulls = typing.cast(
             abc.AsyncIterable[github_types.GitHubPullRequest],
             client.items(
                 f"/repos/{owner}/{repository}/commits/{commit_sha}/pulls",
@@ -63,104 +45,55 @@ class HTTPPullRequestRegistry:
                 page_limit=None,
             ),
         )
+
         return [
-            PullRequest(
-                id=p["id"], number=p["number"], title=p["title"], state=p["state"]
+            typing.cast(
+                github_types.GitHubPullRequest,
+                await client.item(
+                    f"/repos/{owner}/{repository}/pulls/{pull['number']}"
+                ),
             )
-            async for p in pull_payloads
+            async for pull in pulls
         ]
 
 
 @dataclasses.dataclass
-class RedisPullRequestRegistry:
-    """Commit cache is stored in Redis as hashes:
-
-         key                                                  field: 1234                       field: 3456
-    ┌──────────────────────────────────────────┬──────────────────────────────────────┬─────────────────────────────┐
-    |                                          | {                                    | {                           |
-    |                                          |   "id": 1234,                        |   "id": 3456,               |
-    |commits/<owner>/<repository>/<commit_sha> |   "number": 12,                      |   "number": 34,             |
-    |                                          |   "title": "feat: my awesome feature"|   "title": "fix: my bad bug"|
-    |                                          | }                                    | }                           |
-    └──────────────────────────────────────────┴──────────────────────────────────────┴─────────────────────────────┘
-
-    """
-
-    redis: redis_utils.RedisCache
-    source_registry: PullRequestFromCommitRegistry
-    CACHE_EXPIRATION: typing.ClassVar[datetime.timedelta] = datetime.timedelta(days=30)
-
-    @staticmethod
-    def cache_key(
-        owner: github_types.GitHubLogin,
-        repository: github_types.GitHubRepositoryName,
-        commit_sha: github_types.SHAType,
-    ) -> str:
-        return f"commits/{owner}/{repository}/{commit_sha}"
+class PostgresPullRequestRegistry:
+    database_session: sqlalchemy.ext.asyncio.AsyncSession
+    http_pull_registry: HTTPPullRequestRegistry
 
     async def get_from_commit(
         self,
         owner: github_types.GitHubLogin,
         repository: github_types.GitHubRepositoryName,
         commit_sha: github_types.SHAType,
-    ) -> list[PullRequest]:
-        cache = await self.redis.hgetall(self.cache_key(owner, repository, commit_sha))
-        if cache:
-            return self._parse(cache)
+    ) -> list[gh_pull_request_mod.PullRequest]:
+        pulls_from_db = (
+            await self.database_session.scalars(
+                sqlalchemy.select(gh_pull_request_mod.PullRequest).where(
+                    gh_pull_request_mod.PullRequest.head["sha"].astext == commit_sha
+                )
+            )
+        ).all()
 
-        pulls = await self.source_registry.get_from_commit(
+        if pulls_from_db:
+            return typing.cast(list[gh_pull_request_mod.PullRequest], pulls_from_db)
+
+        pulls_from_github = await self.http_pull_registry.get_from_commit(
             owner, repository, commit_sha
         )
-        await self._store(self.redis, owner, repository, {commit_sha}, pulls)
 
-        return pulls
+        pulls_validated_typing = [
+            gh_pull_request_mod.PullRequest.type_adapter.validate_python(pull)
+            for pull in pulls_from_github
+        ]
+        new_inserted_pulls = (
+            await self.database_session.scalars(
+                sqlalchemy.insert(gh_pull_request_mod.PullRequest).returning(
+                    gh_pull_request_mod.PullRequest
+                ),
+                pulls_validated_typing,
+            )
+        ).all()
 
-    def _parse(self, cache: dict[bytes, bytes]) -> list[PullRequest]:
-        pulls = []
-        for raw in cache.values():
-            data = msgpack.unpackb(raw)
-            if data["id"]:
-                pulls.append(PullRequest(**data))
-        return pulls
-
-    @classmethod
-    async def _store(
-        cls,
-        redis: redis_utils.RedisCache,
-        owner: github_types.GitHubLogin,
-        repository: github_types.GitHubRepositoryName,
-        commit_shas: set[github_types.SHAType],
-        pulls: list[PullRequest],
-    ) -> None:
-        # NOTE(charly): no pull requests means that the commit is not associated
-        # to any. We store a fake pull request to return an empty list and avoid
-        # doint HTTP request later.
-        if not pulls:
-            pulls = [
-                PullRequest(
-                    0, 0, "No pull request associated to this commit", state="closed"
-                )
-            ]
-
-        for commit_sha in commit_shas:
-            cache_key = cls.cache_key(owner, repository, commit_sha)
-            pipe = await redis.pipeline()
-            for pull in pulls:
-                await pipe.hset(
-                    cache_key,
-                    str(pull.id),
-                    msgpack.packb(dataclasses.asdict(pull)),
-                )
-            await pipe.expire(cache_key, cls.CACHE_EXPIRATION)
-        await pipe.execute()
-
-    @classmethod
-    async def register_commits(
-        cls,
-        redis: redis_utils.RedisCache,
-        owner: github_types.GitHubLogin,
-        repository: github_types.GitHubRepositoryName,
-        commit_shas: set[github_types.SHAType],
-        pull_request: PullRequest,
-    ) -> None:
-        await cls._store(redis, owner, repository, commit_shas, [pull_request])
+        return typing.cast(list[gh_pull_request_mod.PullRequest], new_inserted_pulls)

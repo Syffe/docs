@@ -4,15 +4,12 @@ import typing
 import daiquiri
 from ddtrace import tracer
 import msgpack
-import sqlalchemy
-import sqlalchemy.ext.asyncio
 
 from mergify_engine import database
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
-from mergify_engine.ci import pull_registries
 from mergify_engine.models import github as gh_models
 
 
@@ -68,37 +65,9 @@ async def _process_workflow_run_event(
                     session, workflow_run, workflow_run_event["repository"]
                 )
 
-                if workflow_run["event"] in ("pull_request", "pull_request_target"):
-                    await _insert_pull_request(redis_links, session, workflow_run_event)
-
                 await session.commit()
 
     await redis_links.stream.xdel("gha_workflow_run", stream_event_id)
-
-
-async def _insert_pull_request(
-    redis_links: redis_utils.RedisLinks,
-    session: sqlalchemy.ext.asyncio.AsyncSession,
-    workflow_run_event: github_types.GitHubEventWorkflowRun,
-) -> None:
-    try:
-        login = workflow_run_event["organization"]["login"]
-    except KeyError:
-        login = workflow_run_event["repository"]["owner"]["login"]
-
-    http_pull_registry = pull_registries.RedisPullRequestRegistry(
-        redis_links.cache, pull_registries.HTTPPullRequestRegistry(login=login)
-    )
-
-    workflow_run = workflow_run_event["workflow_run"]
-    pulls = await http_pull_registry.get_from_commit(
-        workflow_run["repository"]["owner"]["login"],
-        workflow_run["repository"]["name"],
-        workflow_run["head_sha"],
-    )
-
-    for pull in pulls:
-        await gh_models.PullRequestForCiEventProcessing.insert(session, pull)
 
 
 async def _process_workflow_job_stream(redis_links: redis_utils.RedisLinks) -> None:

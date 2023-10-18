@@ -41,6 +41,7 @@ from mergify_engine.actions import copy as copy_action
 from mergify_engine.ci import event_processing
 from mergify_engine.clients import github
 from mergify_engine.clients import http
+from mergify_engine.github_in_postgres import process_events as github_event_processing
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -893,6 +894,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 await event_processing.process_event_streams(self.redis_links)
             LOG.info("ci-event-processing finished")
 
+        if additionnal_services and "github-in-postgres" in additionnal_services:
+            LOG.info("Running github-in-postgres")
+            while await self.redis_links.stream.xlen("github_in_postgres"):
+                await github_event_processing.store_redis_events_in_pg(self.redis_links)
+            LOG.info("github-in-postgres finished")
+
     def get_gitter(
         self, logger: "logging.LoggerAdapter[logging.Logger]"
     ) -> GitterRecorder:
@@ -1473,12 +1480,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         reviewers: list[str],
-    ) -> None:
+    ) -> github_types.GitHubEventPullRequest:
         await self.client_integration.post(
             f"{self.url_origin}/pulls/{pull_number}/requested_reviewers",
             json={"reviewers": reviewers},
         )
-        await self.wait_for("pull_request", {"action": "review_requested"})
+        return await self.wait_for_pull_request("review_requested")
 
     async def get_comment(self, comment_id: int) -> github_types.GitHubComment:
         r = await self.client_integration.get(

@@ -161,3 +161,24 @@ async def push_ci_event(
         fields=event,  # type: ignore[arg-type]
         minid=redis_utils.get_expiration_minid(CI_EVENT_EXPIRATION),
     )
+
+
+async def push_github_in_pg_event(
+    redis_stream: redis_utils.RedisStream,
+    event_type: github_types.GitHubEventType,
+    event_id: str,
+    # NOTE(Greesb): Use same typing as the return type of
+    # `filtered_github_types.extract_github_data_from_github_event`
+    # when it will have multiple possible return types
+    data: github_types.GitHubPullRequest,
+) -> None:
+    fields = {
+        "event_type": event_type,
+        "event_id": event_id,
+        "data": msgpack.packb(data),
+        "timestamp": date.utcnow().isoformat(),
+    }
+    await redis_stream.xadd(
+        "github_in_postgres",
+        fields=fields,  # type: ignore[arg-type]
+    )

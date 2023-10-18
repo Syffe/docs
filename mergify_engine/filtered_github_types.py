@@ -1,6 +1,7 @@
 import typing
 
 from mergify_engine import date
+from mergify_engine import github_types
 from mergify_engine import utils
 
 
@@ -175,3 +176,16 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
     slim_event["delivery_id"] = event_id
     slim_event["received_at"] = date.utcnow().isoformat()
     return slim_event
+
+
+def extract_github_data_from_github_event(
+    event_type: str,
+    event: github_types.GitHubEvent,
+    # NOTE(Greesb): When there will be multiple event handled, create a new
+    # type containing all the possible return types as an union
+) -> github_types.GitHubPullRequest:
+    if event_type == "pull_request":
+        cast_event = typing.cast(github_types.GitHubEventPullRequest, event)
+        return cast_event["pull_request"]
+
+    raise RuntimeError(f"Unhandled event type to extract data from: {event_type}")

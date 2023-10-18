@@ -12,6 +12,12 @@ from mergify_engine import github_types
 from mergify_engine import models
 
 
+if typing.TYPE_CHECKING:
+    # Need to import directly the PullRequest object otherwise sqlalchemy throws
+    # an error saying it can't find the "<name_of_import>.PullRequest"
+    from mergify_engine.models.github.pull_request import PullRequest
+
+
 class GitHubAccountType(enum.StrEnum):
     USER = "User"
     ORGANIZATION = "Organization"
@@ -49,6 +55,23 @@ class GitHubAccount(models.Base):
     avatar_url: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
+
+    # We need late evaluation of imports on these 2, otherwise we get a circular import
+    _pull_request_assignees: orm.Mapped[
+        list["PullRequest"]  # noqa: UP037
+    ] = orm.relationship(
+        secondary="at_pull_request_assignees_github_account",
+        back_populates="assignees",
+        viewonly=True,
+    )
+
+    _pull_request_requested_reviewers: orm.Mapped[
+        list["PullRequest"]  # noqa: UP037
+    ] = orm.relationship(
+        secondary="at_pull_request_assignees_github_account",
+        back_populates="requested_reviewers",
+        viewonly=True,
     )
 
     @classmethod

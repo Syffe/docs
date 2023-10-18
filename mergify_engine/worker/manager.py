@@ -76,6 +76,7 @@ ServiceNameT = typing.Literal[
     "log-embedder",
     "dedicated-workers-cache-syncer",
     "event-forwarder",
+    "github-in-postgres",
 ]
 ServiceNamesT = set[ServiceNameT]
 AVAILABLE_WORKER_SERVICES = set(ServiceNameT.__dict__["__args__"])
@@ -133,6 +134,9 @@ class ServiceManager:
 
     # CIDownloadService
     ci_event_processing_idle_time: float = 30
+
+    # GitHubInPostgresService
+    github_in_postgres_idle_time: float = 5
 
     # LogEmbedderProcessingService
     log_embedder_idle_time: float = 60
