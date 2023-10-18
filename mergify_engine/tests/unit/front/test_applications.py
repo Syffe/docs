@@ -163,6 +163,7 @@ async def test_applications_limit(
         id=user.id,
         login=user.login,
         type="User",
+        avatar_url="https://dummy.com",
     )
     db.add(user)
     db.add(account)
@@ -280,6 +281,7 @@ async def test_applications_bad_body(
     gha = gh_models.GitHubAccount(
         id=424242,
         login="user1",
+        avatar_url="https://dummy.com",
     )
     user = gh_models.GitHubUser(
         id=424242,
@@ -394,6 +396,7 @@ async def test_applications_permissions_for_orgs(
     gha = gh_models.GitHubAccount(
         id=1234,
         login="org1",
+        avatar_url="https://dummy.com",
     )
     user = gh_models.GitHubUser(
         id=424242,

@@ -12,12 +12,6 @@ from mergify_engine import github_types
 from mergify_engine import models
 
 
-class GitHubAccountDict(typing.TypedDict):
-    login: github_types.GitHubLogin
-    id: github_types.GitHubAccountIdType
-    type: github_types.GitHubAccountType
-
-
 class GitHubAccountType(enum.StrEnum):
     USER = "User"
     ORGANIZATION = "Organization"
@@ -30,6 +24,7 @@ class GitHubAccount(models.Base):
         "id",
         "login",
         "type",
+        "avatar_url",
     )
 
     id: orm.Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
@@ -48,20 +43,30 @@ class GitHubAccount(models.Base):
         nullable=True,
         anonymizer_config="anon.random_in_enum(type)",
     )
-
     application_keys_count: orm.Mapped[int] = orm.mapped_column(
         nullable=False, server_default="0", anonymizer_config=None
+    )
+    avatar_url: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
     )
 
     @classmethod
     async def create_or_update(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        account: github_types.GitHubAccount | GitHubAccountDict,
+        account: github_types.GitHubAccount,
     ) -> None:
         sql = (
             postgresql.insert(cls)
-            .values(id=account["id"], login=account["login"], type=account.get("type"))
+            .values(
+                id=account["id"],
+                login=account["login"],
+                type=account.get("type"),
+                avatar_url=account.get(
+                    "avatar_url", cls.build_avatar_url(account["id"])
+                ),
+            )
             .on_conflict_do_update(
                 index_elements=[cls.id],
                 set_={"login": account["login"]},
@@ -73,7 +78,7 @@ class GitHubAccount(models.Base):
     async def get_or_create(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        account: github_types.GitHubAccount | GitHubAccountDict,
+        account: github_types.GitHubAccount,
     ) -> GitHubAccount:
         result = await session.execute(
             sqlalchemy.select(cls).where(cls.id == account["id"])
@@ -81,6 +86,9 @@ class GitHubAccount(models.Base):
         if (account_obj := result.scalar_one_or_none()) is not None:
             # NOTE(lecrepont01): update attributes
             account_obj.login = account["login"]
+            account_obj.avatar_url = account.get(
+                "avatar_url", cls.build_avatar_url(account["id"])
+            )
             if "type" in account:
                 account_obj.type = GitHubAccountType(account["type"])
             return account_obj
@@ -89,8 +97,13 @@ class GitHubAccount(models.Base):
             id=account["id"],
             login=account["login"],
             type=account.get("type"),
+            avatar_url=account.get("avatar_url", cls.build_avatar_url(account["id"])),
             application_keys_count=0,
         )
 
-    def as_github_dict(self) -> GitHubAccountDict:
-        return typing.cast(GitHubAccountDict, super().as_github_dict())
+    def as_github_dict(self) -> github_types.GitHubAccount:
+        return typing.cast(github_types.GitHubAccount, super().as_github_dict())
+
+    @staticmethod
+    def build_avatar_url(account_id: int) -> str:
+        return f"https://avatars.githubusercontent.com/u/{account_id}?v=4"

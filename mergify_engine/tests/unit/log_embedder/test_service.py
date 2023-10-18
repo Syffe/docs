@@ -48,7 +48,9 @@ async def test_embed_logs_on_controlled_data(
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    owner = gh_models.GitHubAccount(id=1, login="owner_login")
+    owner = gh_models.GitHubAccount(
+        id=1, login="owner_login", avatar_url="https://dummy.com"
+    )
     db.add(owner)
     repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo_name")
     db.add(repo)
@@ -329,7 +331,7 @@ async def test_workflow_job_log_life_cycle(
     respx_mock: respx.MockRouter,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    owner = gh_models.GitHubAccount(id=1, login="owner")
+    owner = gh_models.GitHubAccount(id=1, login="owner", avatar_url="https://dummy.com")
     repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo1")
     job1 = gh_models.WorkflowJob(
         id=1,
@@ -531,7 +533,7 @@ async def test_workflow_job_from_real_life(
     job_name: str,
     step: int,
 ) -> None:
-    owner = gh_models.GitHubAccount(id=1, login="owner")
+    owner = gh_models.GitHubAccount(id=1, login="owner", avatar_url="https://dummy.com")
     repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo1")
     job = gh_models.WorkflowJob(
         id=1,

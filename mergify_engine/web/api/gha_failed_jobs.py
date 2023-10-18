@@ -20,6 +20,7 @@ router = fastapi.APIRouter(tags=["gha_failed_jobs"])
 class Owner(typing_extensions.TypedDict):
     id: int
     login: str
+    avatar_url: str
 
 
 class Repository(typing_extensions.TypedDict):
@@ -127,6 +128,7 @@ async def get_gha_failed_jobs(
             owner=Owner(
                 id=repository_ctxt.repo["owner"]["id"],
                 login=repository_ctxt.repo["owner"]["login"],
+                avatar_url=repository_ctxt.repo["owner"]["avatar_url"],
             ),
         ),
         start_at=start_at,

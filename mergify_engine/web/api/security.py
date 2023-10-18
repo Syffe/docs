@@ -89,6 +89,9 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
                     github_account=gh_models.GitHubAccount(
                         id=github_types.GitHubAccountIdType(data["account_id"]),
                         login=github_types.GitHubLogin(data["account_login"]),
+                        avatar_url=gh_models.GitHubAccount.build_avatar_url(
+                            data["account_id"]
+                        ),
                     ),
                     created_at=date.utcnow(),
                 )

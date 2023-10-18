@@ -12,6 +12,7 @@ class OneAccountAndOneRepo(DbPopulator):
             id=github_types.GitHubAccountIdType(cls.next_id(gh_models.GitHubAccount)),
             login=github_types.GitHubLogin("OneAccount"),
             type="User",
+            avatar_url="https://dummy.com",
         )
 
         session.add(

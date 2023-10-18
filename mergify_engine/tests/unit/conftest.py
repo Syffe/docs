@@ -110,7 +110,7 @@ def fake_repository(
             "login": github_types.GitHubLogin("Mergifyio"),
             "id": github_types.GitHubAccountIdType(0),
             "type": "User",
-            "avatar_url": "",
+            "avatar_url": "https://avatars.githubusercontent.com/u/0?v=4",
         }
     )
 
@@ -241,7 +241,7 @@ async def build_fake_context(
             "ref": github_types.GitHubRefType("main"),
             "repo": repository.repo,  # type: ignore [typeddict-item]
             "sha": github_types.SHAType("the-base-sha"),
-            "user": repository.repo["owner"],  # type: ignore [typeddict-item]
+            "user": repository.repo["owner"],
         },
     }
     pull.update(kwargs)  # type: ignore

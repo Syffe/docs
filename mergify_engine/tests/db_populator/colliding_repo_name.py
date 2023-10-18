@@ -12,6 +12,7 @@ class CollidingRepoName(DbPopulator):
             id=github_types.GitHubAccountIdType(cls.next_id(gh_models.GitHubAccount)),
             login=github_types.GitHubLogin("colliding_acount_1"),
             type="User",
+            avatar_url="https://dummy.com",
         )
 
         session.add(
@@ -30,6 +31,7 @@ class CollidingRepoName(DbPopulator):
             id=github_types.GitHubAccountIdType(cls.next_id(gh_models.GitHubAccount)),
             login=github_types.GitHubLogin("colliding_acount_2"),
             type="User",
+            avatar_url="https://dummy.com",
         )
 
         session.add(

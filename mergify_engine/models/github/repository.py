@@ -14,7 +14,7 @@ from mergify_engine.models.github import account as github_account
 
 class GitHubRepositoryDict(models.ORMObjectAsDict):
     id: github_types.GitHubRepositoryIdType
-    owner: github_account.GitHubAccountDict
+    owner: github_types.GitHubAccount
     name: github_types.GitHubRepositoryName
     private: bool
     default_branch: github_types.GitHubRefType

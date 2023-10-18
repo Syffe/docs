@@ -784,6 +784,7 @@ async def test_event_as_dict(
                     "id": 0,
                     "login": "Mergifyio",
                     "type": "User",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/0?v=4",
                     "application_keys_count": 0,
                 },
             },

@@ -27,7 +27,7 @@ async def test_compute_log_embedding_cosine_similarity(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     # Create dataset ===================================================================
-    owner = gh_models.GitHubAccount(id=1, login="owner")
+    owner = gh_models.GitHubAccount(id=1, login="owner", avatar_url="https://dummy.com")
     db.add(owner)
     repo1 = gh_models.GitHubRepository(id=1, owner=owner, name="repo1")
     db.add(repo1)

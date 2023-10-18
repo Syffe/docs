@@ -107,19 +107,21 @@ async def create_application(
     if "organization" in membership:
         account = await gh_models.GitHubAccount.get_or_create(
             session,
-            gh_models.GitHubAccountDict(
+            github_types.GitHubAccount(
                 id=account_id,
                 login=membership["organization"]["login"],
                 type="Organization",
+                avatar_url=gh_models.GitHubAccount.build_avatar_url(account_id),
             ),
         )
     else:
         account = await gh_models.GitHubAccount.get_or_create(
             session,
-            gh_models.GitHubAccountDict(
+            github_types.GitHubAccount(
                 id=account_id,
                 login=membership["user"]["login"],
                 type=membership["user"]["type"],
+                avatar_url=gh_models.GitHubAccount.build_avatar_url(account_id),
             ),
         )
 

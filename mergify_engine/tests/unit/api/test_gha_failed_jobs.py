@@ -54,6 +54,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
             "owner": {
                 "id": anys.ANY_INT,
                 "login": "OneAccount",
+                "avatar_url": anys.ANY_STR,
             },
         },
         "start_at": None,
@@ -174,6 +175,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
             "owner": {
                 "id": anys.ANY_INT,
                 "login": "OneAccount",
+                "avatar_url": anys.ANY_STR,
             },
         },
         "start_at": test_date,
@@ -273,6 +275,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
             "owner": {
                 "id": anys.ANY_INT,
                 "login": "colliding_acount_1",
+                "avatar_url": anys.ANY_STR,
             },
         },
         "start_at": "2023-01-01",
@@ -347,6 +350,7 @@ async def test_api_get_gha_failed_jobs_no_steps(
             "owner": {
                 "id": anys.ANY_INT,
                 "login": "colliding_acount_1",
+                "avatar_url": anys.ANY_STR,
             },
         },
         "start_at": None,
