@@ -23,6 +23,7 @@ from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.queue import merge_train
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -622,6 +623,7 @@ async def cleanup_pending_actions_with_no_associated_rules(
             partition_rules,
             ctxt.pull["number"],
             signal_trigger,
+            queue_utils.PrDequeued(ctxt.pull["number"], " by workflow automation"),
         )
 
 

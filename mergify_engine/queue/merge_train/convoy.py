@@ -177,6 +177,7 @@ class Convoy:
             self.partition_rules,
             pull_number,
             signal_trigger,
+            queue_utils.TargetBranchChanged(),
             exclude_ref=self.ref,
         )
         for train in self._trains:
@@ -190,17 +191,14 @@ class Convoy:
         partition_rules: partr_config.PartitionRules,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
+        unqueue_reason: queue_utils.BaseUnqueueReason,
         exclude_ref: github_types.GitHubRefType | None = None,
     ) -> None:
         async for convoy in cls.iter_convoys(repository, queue_rules, partition_rules):
             if exclude_ref is not None and exclude_ref == convoy.ref:
                 continue
             for train in convoy.iter_trains():
-                await train.remove_pull(
-                    pull_number,
-                    signal_trigger,
-                    queue_utils.TargetBranchChanged(),
-                )
+                await train.remove_pull(pull_number, signal_trigger, unqueue_reason)
 
     async def add_pull(
         self,
@@ -217,6 +215,7 @@ class Convoy:
             self.partition_rules,
             ctxt.pull["number"],
             signal_trigger,
+            queue_utils.TargetBranchChanged(),
             exclude_ref=ctxt.pull["base"]["ref"],
         )
 
