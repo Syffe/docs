@@ -61,7 +61,7 @@ async def github_proxy(
         if request.url.port and request.url.port != default_port:
             base_url += f":{request.url.port}"
 
-        await utils.override_and_warn_unexpected_content_type(
+        await utils.override_or_raise_unexpected_content_type(
             proxy_request,
             proxy_response,
             [
