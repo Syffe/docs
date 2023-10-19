@@ -1,4 +1,3 @@
-import datetime
 import itertools
 
 import click
@@ -50,12 +49,12 @@ async def stream_status() -> None:
 
     for worker_id, org_buckets_by_worker in itertools.groupby(org_buckets, key=sorter):
         for org_bucket, score in org_buckets_by_worker:
-            date = datetime.datetime.utcfromtimestamp(score).isoformat(" ", "seconds")
+            bucket_date = date.fromtimestamp(score).isoformat(" ", "seconds")
             owner_id = org_bucket.split(b"~")[1]
             event_org_buckets = await redis_links.stream.zrange(org_bucket, 0, -1)
             count = sum([await redis_links.stream.xlen(es) for es in event_org_buckets])
             items = f"{len(event_org_buckets)} pull requests, {count} events"
-            click.echo(f"{{{worker_id}}} [{date}] {owner_id.decode()}: {items}")
+            click.echo(f"{{{worker_id}}} [{bucket_date}] {owner_id.decode()}: {items}")
 
     await redis_links.shutdown_all()
 

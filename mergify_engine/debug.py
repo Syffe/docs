@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 import itertools
 import pprint
 
@@ -7,6 +6,7 @@ import daiquiri
 
 from mergify_engine import condition_value_querier
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
@@ -63,7 +63,7 @@ async def report_worker_status(
         print("* WORKER: Installation not queued to process")
         return
 
-    planned = datetime.datetime.utcfromtimestamp(streams[pos][1]).isoformat()
+    planned = date.fromtimestamp(streams[pos][1]).isoformat()
 
     attempts_raw = await redis_links.stream.hget("attempts", stream_name)
     if attempts_raw is None:

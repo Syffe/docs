@@ -1,8 +1,8 @@
-import datetime
 from unittest import mock
 
 import pytest
 
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import worker_pusher
@@ -72,7 +72,7 @@ async def test_stream_reschedule(
     )
 
     score = (await redis_links.stream.zrange("streams", 0, -1, withscores=True))[0][1]
-    planned_for = datetime.datetime.utcfromtimestamp(score)
+    planned_for = date.fromtimestamp(score)
 
     result = utils.test_console_scripts(
         admin_cli.admin_cli, ["stream-reschedule-now", "other"]
@@ -83,9 +83,7 @@ async def test_stream_reschedule(
     score_not_rescheduled = (
         await redis_links.stream.zrange("streams", 0, -1, withscores=True)
     )[0][1]
-    planned_for_not_rescheduled = datetime.datetime.utcfromtimestamp(
-        score_not_rescheduled
-    )
+    planned_for_not_rescheduled = date.fromtimestamp(score_not_rescheduled)
     assert planned_for == planned_for_not_rescheduled
 
     result = utils.test_console_scripts(
@@ -97,5 +95,5 @@ async def test_stream_reschedule(
     score_rescheduled = (
         await redis_links.stream.zrange("streams", 0, -1, withscores=True)
     )[0][1]
-    planned_for_rescheduled = datetime.datetime.utcfromtimestamp(score_rescheduled)
+    planned_for_rescheduled = date.fromtimestamp(score_rescheduled)
     assert planned_for > planned_for_rescheduled

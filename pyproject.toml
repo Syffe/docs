@@ -225,6 +225,8 @@ ignore = [
     "TRY004",
     # FIXME(sileht): very interresting, ruff BLE is far better that flake8-blind-except
     "BLE001",
+    # NOTE(Greesb): mypy doesn't support the `type myvar = [...]` syntax yet
+    "UP040",
 ]
 
 [tool.ruff.isort]

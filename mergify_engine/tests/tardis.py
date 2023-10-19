@@ -203,7 +203,7 @@ def convert_to_timezone_naive(time_to_convert: datetime.datetime) -> datetime.da
 
 def _parse_time(time_to_convert: ParsableTimeT) -> datetime.datetime:
     if time_to_convert is None:
-        time_to_convert = datetime.datetime.utcnow()
+        time_to_convert = datetime.datetime.now(tz=datetime.UTC)
 
     if isinstance(time_to_convert, datetime.datetime):
         return convert_to_timezone_naive(time_to_convert)
@@ -214,7 +214,9 @@ def _parse_time(time_to_convert: ParsableTimeT) -> datetime.datetime:
         )
 
     if isinstance(time_to_convert, datetime.timedelta):
-        return convert_to_timezone_naive(datetime.datetime.utcnow() + time_to_convert)
+        return convert_to_timezone_naive(
+            datetime.datetime.now(tz=datetime.UTC) + time_to_convert
+        )
 
     # isinstance(time_to_convert, str)
     return convert_to_timezone_naive(datetime.datetime.fromisoformat(time_to_convert))
@@ -534,7 +536,9 @@ class FakeDatetime(real_datetime, FakeDate, metaclass=FakeDatetimeMeta):
 
     @classmethod
     def utcnow(cls) -> FakeDatetime:
-        result = cls._time_traveled_to() or real_datetime.utcnow()
+        result = cls._time_traveled_to() or real_datetime.now(tz=datetime.UTC).replace(
+            tzinfo=None
+        )
         return datetime_to_fakedatetime(result)
 
     @staticmethod
