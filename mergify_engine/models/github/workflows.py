@@ -14,6 +14,7 @@ from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.exc
 import sqlalchemy.ext.asyncio
+import sqlalchemy.ext.hybrid
 
 from mergify_engine import constants
 from mergify_engine import github_types
@@ -26,6 +27,21 @@ from mergify_engine.models.github import repository as gh_repository
 LOG = daiquiri.getLogger(__name__)
 
 NAME_AND_MATRIX_RE = re.compile(r"^([\w|-]+) \((.+)\)$")
+
+
+class GitHubWorkflowJobDict(typing.TypedDict):
+    id: int
+    workflow_run_id: int
+    github_name: str
+    started_at: github_types.ISODateTimeType
+    completed_at: github_types.ISODateTimeType
+    conclusion: WorkflowJobConclusion
+    labels: list[str]
+    repository_id: github_types.GitHubRepositoryIdType
+    repository: github_types.GitHubRepository
+    run_attempt: int
+    steps: list[github_types.GitHubWorkflowJobStep]
+    head_sha: github_types.SHAType
 
 
 class WorkflowJobConclusion(enum.Enum):
@@ -193,6 +209,21 @@ class WorkflowJob(models.Base):
         ),
     )
 
+    __github_attributes__ = (
+        "id",
+        "workflow_run_id",
+        "github_name",
+        "started_at",
+        "completed_at",
+        "conclusion",
+        "labels",
+        "repository_id",
+        "repository",
+        "run_attempt",
+        "steps",
+        "head_sha",
+    )
+
     id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.BigInteger,
         primary_key=True,
@@ -283,6 +314,12 @@ class WorkflowJob(models.Base):
     head_sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
         sqlalchemy.String, anonymizer_config=None
     )
+
+    @sqlalchemy.ext.hybrid.hybrid_property
+    def github_name(self) -> str:
+        if self.matrix is not None:
+            return f"{self.name_without_matrix} ({self.matrix})"
+        return self.name_without_matrix
 
     def as_log_extras(self) -> dict[str, typing.Any]:
         return {
@@ -697,6 +734,9 @@ class WorkflowJob(models.Base):
             return NeedRerunStatus.NEED_RERUN
 
         return NeedRerunStatus.DONT_NEED_RERUN
+
+    def as_github_dict(self) -> GitHubWorkflowJobDict:
+        return typing.cast(GitHubWorkflowJobDict, super().as_github_dict())
 
 
 class WorkflowJobLogNeighbours(models.Base):
