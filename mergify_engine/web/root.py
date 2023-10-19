@@ -1,3 +1,6 @@
+import contextlib
+import typing
+
 import daiquiri
 import fastapi
 from fastapi.middleware import httpsredirect
@@ -26,8 +29,28 @@ def saas_root_endpoint() -> fastapi.Response:
     return fastapi.responses.JSONResponse({})
 
 
+@contextlib.asynccontextmanager
+async def lifespan(app: fastapi.FastAPI) -> typing.AsyncGenerator[None, None]:
+    await redis.startup()
+    # NOTE(sileht): Warm GitHubAppInfo cache
+    redis_links = redis.get_redis_links()
+    signals.register()
+    await github.GitHubAppInfo.warm_cache(redis_links.cache)
+
+    yield
+
+    await redis.shutdown()
+    signals.unregister()
+
+
 def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
-    app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
+    app = fastapi.FastAPI(
+        openapi_url=None,
+        redoc_url=None,
+        docs_url=None,
+        debug=debug,
+        lifespan=lifespan,
+    )
     if https_only:
         app.add_middleware(httpsredirect.HTTPSRedirectMiddleware)
     app.add_middleware(
@@ -53,18 +76,5 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
         app.include_router(react.router)
 
     utils.setup_exception_handlers(app)
-
-    @app.on_event("startup")
-    async def startup() -> None:
-        await redis.startup()
-        # NOTE(sileht): Warm GitHubAppInfo cache
-        redis_links = redis.get_redis_links()
-        signals.register()
-        await github.GitHubAppInfo.warm_cache(redis_links.cache)
-
-    @app.on_event("shutdown")
-    async def shutdown() -> None:
-        await redis.shutdown()
-        signals.unregister()
 
     return app
