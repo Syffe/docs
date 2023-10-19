@@ -63,7 +63,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
             {
                 "workflow_jobs": [
                     {
-                        "name": "A job",
+                        "name_without_matrix": "A job",
                         "error_description": None,
                         "id": jobs[0].id,
                         "run_id": jobs[0].workflow_run_id,
@@ -85,7 +85,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "failed_retry_count": 2,
                     },
                     {
-                        "name": "A job",
+                        "name_without_matrix": "A job",
                         "error_description": None,
                         "id": jobs[1].id,
                         "run_id": jobs[1].workflow_run_id,
@@ -107,7 +107,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "failed_retry_count": 2,
                     },
                     {
-                        "name": "A job",
+                        "name_without_matrix": "A job",
                         "error_description": None,
                         "id": jobs[3].id,
                         "run_id": jobs[3].workflow_run_id,
@@ -133,7 +133,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
             {
                 "workflow_jobs": [
                     {
-                        "name": "A job",
+                        "name_without_matrix": "A job",
                         "error_description": None,
                         "id": jobs[4].id,
                         "run_id": jobs[4].workflow_run_id,
@@ -184,7 +184,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
             {
                 "workflow_jobs": [
                     {
-                        "name": "A job",
+                        "name_without_matrix": "A job",
                         "error_description": None,
                         "id": jobs[0].id,
                         "run_id": jobs[0].workflow_run_id,
@@ -206,7 +206,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
                         "failed_retry_count": 2,
                     },
                     {
-                        "name": "A job",
+                        "name_without_matrix": "A job",
                         "error_description": None,
                         "id": jobs[1].id,
                         "run_id": jobs[1].workflow_run_id,
@@ -232,7 +232,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
             {
                 "workflow_jobs": [
                     {
-                        "name": "A job",
+                        "name_without_matrix": "A job",
                         "error_description": None,
                         "id": jobs[3].id,
                         "run_id": jobs[3].workflow_run_id,
@@ -284,7 +284,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
             {
                 "workflow_jobs": [
                     {
-                        "name": "A job",
+                        "name_without_matrix": "A job",
                         "error_description": None,
                         "id": jobs[5].id,
                         "run_id": jobs[5].workflow_run_id,
@@ -359,7 +359,7 @@ async def test_api_get_gha_failed_jobs_no_steps(
             {
                 "workflow_jobs": [
                     {
-                        "name": "A job",
+                        "name_without_matrix": "A job",
                         "error_description": None,
                         "id": job.id,
                         "run_id": job.workflow_run_id,
@@ -415,7 +415,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
     )
 
     assert reply.json() == {
-        "name": "A job",
+        "name_without_matrix": "A job",
         "error_description": None,
         "id": jobs[0].id,
         "run_id": jobs[0].workflow_run_id,
@@ -445,7 +445,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
     )
 
     assert reply.json() == {
-        "name": "A job",
+        "name_without_matrix": "A job",
         "error_description": None,
         "id": jobs[0].id,
         "run_id": jobs[0].workflow_run_id,
@@ -493,7 +493,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
     )
 
     assert reply.json() == {
-        "name": "A job",
+        "name_without_matrix": "A job",
         "error_description": None,
         "id": jobs[5].id,
         "run_id": jobs[5].workflow_run_id,

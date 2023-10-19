@@ -36,7 +36,7 @@ class FlakyStatus(enum.Enum):
 
 
 class WorkflowJob(typing_extensions.TypedDict):
-    name: str
+    name_without_matrix: str
     error_description: str | None
     id: int
     run_id: int
@@ -103,7 +103,7 @@ async def get_gha_failed_jobs(
 
         wfj_group["workflow_jobs"].append(
             WorkflowJob(
-                name=failed_job.name,
+                name_without_matrix=failed_job.name_without_matrix,
                 error_description=failed_job.embedded_log_error_title,
                 id=failed_job.id,
                 run_id=failed_job.workflow_run_id,
@@ -177,7 +177,7 @@ async def get_gha_failed_job_detail(
         raise RuntimeError("This should never happens")
 
     return WorkflowJobDetails(
-        name=results[0].name,
+        name_without_matrix=results[0].name_without_matrix,
         error_description=results[0].embedded_log_error_title,
         id=results[0].id,
         run_id=results[0].workflow_run_id,

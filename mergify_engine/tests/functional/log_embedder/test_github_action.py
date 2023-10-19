@@ -421,7 +421,9 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             ("unit-tests", "windows, 3.5"),
         ]
         for job in jobs:
-            if (job.name, job.matrix) in expected_job_name_and_matrix:
-                expected_job_name_and_matrix.remove((job.name, job.matrix))
+            if (job.name_without_matrix, job.matrix) in expected_job_name_and_matrix:
+                expected_job_name_and_matrix.remove(
+                    (job.name_without_matrix, job.matrix)
+                )
 
         assert expected_job_name_and_matrix == []

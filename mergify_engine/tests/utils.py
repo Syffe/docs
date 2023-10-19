@@ -121,7 +121,7 @@ def add_workflow_job(
         log_status=job_data.get("log_status"),
         embedded_log=job_data.get("embedded_log"),
         workflow_run_id=job_data.get("workflow_run_id", 1),
-        name=job_data.get("name", "job_name"),
+        name_without_matrix=job_data.get("name_without_matrix", "job_name"),
         started_at=job_data.get(
             "started_at",
             github_types.ISODateTimeType(date.utcnow().isoformat()),

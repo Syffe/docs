@@ -39,7 +39,7 @@ async def test_compute_log_embedding_cosine_similarity(
         db,
         {
             "id": 1,
-            "name": "pep8",
+            "name_without_matrix": "pep8",
             "repository": repo1,
             "log_embedding": [1] * 1536,
             "embedded_log": "whatever",
@@ -50,7 +50,7 @@ async def test_compute_log_embedding_cosine_similarity(
         db,
         {
             "id": 2,
-            "name": "pep8",
+            "name_without_matrix": "pep8",
             "repository": repo1,
             "log_embedding": [2] * 1536,
             "embedded_log": "whatever",
@@ -61,7 +61,7 @@ async def test_compute_log_embedding_cosine_similarity(
         db,
         {
             "id": 3,
-            "name": "pep8",
+            "name_without_matrix": "pep8",
             "repository": repo1,
             "log_embedding": [-1] * 1536,
             "embedded_log": "whatever",
@@ -72,7 +72,7 @@ async def test_compute_log_embedding_cosine_similarity(
         db,
         {
             "id": 4,
-            "name": "pep8",
+            "name_without_matrix": "pep8",
             "repository": repo2,
             "log_embedding": [1] * 1536,
             "embedded_log": "whatever",
@@ -83,7 +83,7 @@ async def test_compute_log_embedding_cosine_similarity(
         db,
         {
             "id": 5,
-            "name": "pep8",
+            "name_without_matrix": "pep8",
             "repository": repo2,
             "log_embedding": [2] * 1536,
             "embedded_log": "whatever",
@@ -94,7 +94,7 @@ async def test_compute_log_embedding_cosine_similarity(
         db,
         {
             "id": 6,
-            "name": "docker",
+            "name_without_matrix": "docker",
             "repository": repo2,
             "log_embedding": [1] * 1536,
             "embedded_log": "whatever",
@@ -105,7 +105,7 @@ async def test_compute_log_embedding_cosine_similarity(
         db,
         {
             "id": 7,
-            "name": "docker",
+            "name_without_matrix": "docker",
             "repository": repo2,
             "log_embedding": [2] * 1536,
             "embedded_log": "whatever",

@@ -159,7 +159,7 @@ class WorkflowJob(models.Base):
             "idx_gha_workflow_job_rerun_compound",
             "run_attempt",
             "repository_id",
-            "name",
+            "name_without_matrix",
             "workflow_run_id",
             "conclusion",
             postgresql_where="conclusion = 'SUCCESS'::workflowjobconclusion",
@@ -203,7 +203,7 @@ class WorkflowJob(models.Base):
         sqlalchemy.BigInteger,
         anonymizer_config=None,
     )
-    name: orm.Mapped[str] = orm.mapped_column(
+    name_without_matrix: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.String,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
@@ -291,7 +291,7 @@ class WorkflowJob(models.Base):
             "job": {
                 "id": self.id,
                 "workflow_run_id": self.workflow_run_id,
-                "name": self.name,
+                "name_without_matrix": self.name_without_matrix,
                 "conclusion": self.conclusion,
                 "steps": self.steps,
                 "run_attempt": self.run_attempt,
@@ -318,11 +318,13 @@ class WorkflowJob(models.Base):
         if job is None:
             failed_step = cls.get_failed_step(workflow_job_data)
 
-            name, matrix = cls.get_job_name_and_matrix(workflow_job_data["name"])
+            name_without_matrix, matrix = cls.get_job_name_and_matrix(
+                workflow_job_data["name"]
+            )
             job = cls(
                 id=workflow_job_data["id"],
                 workflow_run_id=workflow_job_data["run_id"],
-                name=name,
+                name_without_matrix=name_without_matrix,
                 matrix=matrix,
                 started_at=workflow_job_data["started_at"],
                 completed_at=workflow_job_data["completed_at"],
@@ -396,7 +398,7 @@ class WorkflowJob(models.Base):
                 other_job,
                 sqlalchemy.and_(
                     other_job.id != job.id,
-                    other_job.name == job.name,
+                    other_job.name_without_matrix == job.name_without_matrix,
                     other_job.log_embedding.isnot(None),
                     other_job.repository_id == job.repository_id,
                 ),
@@ -455,7 +457,7 @@ class WorkflowJob(models.Base):
                         )
                     ),
                 ).label("neighbour_job_ids"),
-                job.name,
+                job.name_without_matrix,
                 job.embedded_log_error_title,
                 job.workflow_run_id,
                 job.steps,
@@ -474,7 +476,7 @@ class WorkflowJob(models.Base):
                 job_rerun_success,
                 sqlalchemy.and_(
                     job_rerun_success.repository_id == job.repository_id,
-                    job_rerun_success.name == job.name,
+                    job_rerun_success.name_without_matrix == job.name_without_matrix,
                     job_rerun_success.workflow_run_id == job.workflow_run_id,
                     job_rerun_success.run_attempt > job.run_attempt,
                     job_rerun_success.conclusion == WorkflowJobConclusion.SUCCESS,
@@ -485,7 +487,7 @@ class WorkflowJob(models.Base):
                 job_rerun_failure,
                 sqlalchemy.and_(
                     job_rerun_failure.repository_id == job.repository_id,
-                    job_rerun_failure.name == job.name,
+                    job_rerun_failure.name_without_matrix == job.name_without_matrix,
                     job_rerun_failure.workflow_run_id == job.workflow_run_id,
                     job_rerun_failure.conclusion == WorkflowJobConclusion.FAILURE,
                 ),
@@ -540,7 +542,7 @@ class WorkflowJob(models.Base):
                         )
                     ),
                 ).label("neighbour_job_ids"),
-                job.name,
+                job.name_without_matrix,
                 job.embedded_log_error_title,
                 job.workflow_run_id,
                 job.steps,
@@ -560,7 +562,7 @@ class WorkflowJob(models.Base):
                 job_rerun_success,
                 sqlalchemy.and_(
                     job_rerun_success.repository_id == job.repository_id,
-                    job_rerun_success.name == job.name,
+                    job_rerun_success.name_without_matrix == job.name_without_matrix,
                     job_rerun_success.workflow_run_id == job.workflow_run_id,
                     job_rerun_success.run_attempt > job.run_attempt,
                     job_rerun_success.conclusion == WorkflowJobConclusion.SUCCESS,
@@ -571,7 +573,7 @@ class WorkflowJob(models.Base):
                 job_rerun_failure,
                 sqlalchemy.and_(
                     job_rerun_failure.repository_id == job.repository_id,
-                    job_rerun_failure.name == job.name,
+                    job_rerun_failure.name_without_matrix == job.name_without_matrix,
                     job_rerun_failure.workflow_run_id == job.workflow_run_id,
                     job_rerun_failure.conclusion == WorkflowJobConclusion.FAILURE,
                 ),
@@ -652,7 +654,7 @@ class WorkflowJob(models.Base):
                 job_rerun,
                 sqlalchemy.and_(
                     job_rerun.repository_id == job_neighb.repository_id,
-                    job_rerun.name == job_neighb.name,
+                    job_rerun.name_without_matrix == job_neighb.name_without_matrix,
                     job_rerun.workflow_run_id == job_neighb.workflow_run_id,
                     job_rerun.run_attempt > job_neighb.run_attempt,
                     job_rerun.conclusion == WorkflowJobConclusion.SUCCESS,

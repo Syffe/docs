@@ -127,7 +127,7 @@ async def test_embed_logs_on_controlled_data(
                 "id": i,
                 "repository": repo,
                 "conclusion": gh_models.WorkflowJobConclusion.FAILURE,
-                "name": "job_toto",
+                "name_without_matrix": "job_toto",
                 "failed_step_name": "toto",
                 "failed_step_number": 1,
             },
@@ -277,7 +277,11 @@ async def test_embed_logs_on_various_data(
     # Update jobs name and failed step to match the zip archive mock
     await populated_db.execute(
         sqlalchemy.update(gh_models.WorkflowJob)
-        .values(failed_step_name="toto", failed_step_number=1, name="job_toto")
+        .values(
+            failed_step_name="toto",
+            failed_step_number=1,
+            name_without_matrix="job_toto",
+        )
         .where(
             gh_models.WorkflowJob.failed_step_name.is_not(None),
             gh_models.WorkflowJob.failed_step_number.is_not(None),
@@ -341,7 +345,7 @@ async def test_workflow_job_log_life_cycle(
         id=1,
         repository=repo,
         workflow_run_id=1,
-        name="job_toto",
+        name_without_matrix="job_toto",
         started_at=datetime.datetime.now(),
         completed_at=datetime.datetime.now(),
         conclusion=gh_models.WorkflowJobConclusion.FAILURE,
@@ -355,7 +359,7 @@ async def test_workflow_job_log_life_cycle(
         id=2,
         repository=repo,
         workflow_run_id=2,
-        name="job_toto",
+        name_without_matrix="job_toto",
         started_at=datetime.datetime.now(),
         completed_at=datetime.datetime.now(),
         conclusion=gh_models.WorkflowJobConclusion.FAILURE,
@@ -369,7 +373,7 @@ async def test_workflow_job_log_life_cycle(
         id=3,
         repository=repo,
         workflow_run_id=3,
-        name="job_toto",
+        name_without_matrix="job_toto",
         started_at=datetime.datetime.now(),
         completed_at=datetime.datetime.now(),
         conclusion=gh_models.WorkflowJobConclusion.FAILURE,
@@ -544,7 +548,7 @@ async def test_workflow_job_from_real_life(
         id=1,
         repository=repo,
         workflow_run_id=1,
-        name=job_name,
+        name_without_matrix=job_name,
         started_at=datetime.datetime.now(),
         completed_at=datetime.datetime.now(),
         conclusion=gh_models.WorkflowJobConclusion.FAILURE,

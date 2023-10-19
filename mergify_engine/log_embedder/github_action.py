@@ -99,9 +99,9 @@ def get_lines_from_zip(
         )
 
     if job.matrix:
-        raw_job_name = f"{job.name} ({job.matrix})"
+        raw_job_name = f"{job.name_without_matrix} ({job.matrix})"
     else:
-        raw_job_name = job.name
+        raw_job_name = job.name_without_matrix
 
     cleaned_job_name = WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP.sub("", raw_job_name)
 
