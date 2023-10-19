@@ -1,6 +1,5 @@
 import datetime
 
-from freezegun import freeze_time
 import msgpack
 
 from mergify_engine import context
@@ -10,11 +9,12 @@ from mergify_engine.queue import statistics as queue_stats
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
+from mergify_engine.tests.tardis import time_travel
 from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 def test_is_timestamp_in_future() -> None:
-    with freeze_time("2022-10-14T10:00:00"):
+    with time_travel("2022-10-14T10:00:00"):
         now_ts = int(date.utcnow().timestamp())
         assert not web_stat_utils.is_timestamp_in_future(now_ts)
         assert web_stat_utils.is_timestamp_in_future(now_ts + 1)

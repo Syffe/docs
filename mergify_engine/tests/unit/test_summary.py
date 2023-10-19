@@ -1,12 +1,12 @@
 import datetime
 
-from freezegun import freeze_time
 import voluptuous
 
 from mergify_engine import condition_value_querier
 from mergify_engine import date
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules.config import conditions as cond_config
+from mergify_engine.tests.tardis import time_travel
 from mergify_engine.tests.unit import conftest
 
 
@@ -562,7 +562,7 @@ async def test_queue_rules_summary() -> None:
     assert conditions.get_evaluation_result().as_markdown() == expected_summary
 
 
-@freeze_time("2021-09-22T08:00:05", tz_offset=0)
+@time_travel("2021-09-22T08:00:05Z")
 async def test_rules_conditions_schedule() -> None:
     pulls: list[condition_value_querier.BasePullRequest] = [
         conftest.FakePullRequest(

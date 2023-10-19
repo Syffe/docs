@@ -3,7 +3,6 @@ import datetime
 import typing
 import zoneinfo
 
-from freezegun import freeze_time
 import jinja2
 import jinja2.sandbox
 import pytest
@@ -12,6 +11,7 @@ from mergify_engine import condition_value_querier
 from mergify_engine import date
 from mergify_engine.rules import filter
 from mergify_engine.rules import parser
+from mergify_engine.tests.tardis import time_travel
 
 
 class FakePR(dict):  # type: ignore[type-arg]
@@ -237,7 +237,7 @@ def dtime(day: int) -> datetime.datetime:
     return date.utcnow().replace(day=day)
 
 
-@freeze_time("2012-01-14")
+@time_travel("2012-01-14")
 async def test_datetime_binary() -> None:
     assert "foo>=2012-01-05T00:00:00" == str(
         filter.BinaryFilter({">=": ("foo", dtime(5))})
@@ -264,7 +264,7 @@ async def test_datetime_binary() -> None:
     assert await f(FakePR({"foo": dtime(23)}))
 
 
-@freeze_time("2012-01-14")
+@time_travel("2012-01-14")
 async def test_time_binary() -> None:
     assert "foo>=00:00" == str(
         filter.BinaryFilter({">=": ("foo", date.Time(0, 0, date.UTC))})
@@ -307,7 +307,7 @@ async def test_time_binary() -> None:
     assert await f(FakePR({"foo": now.replace(hour=7, minute=9)}))
 
 
-@freeze_time("2012-01-14T05:08:00")
+@time_travel("2012-01-14T05:08:00")
 async def test_datetime_near_datetime() -> None:
     # Condition on past date
     for op in ("<=", ">=", ">", "<", "=", "!="):
@@ -352,7 +352,7 @@ def rdtime(day: int) -> date.RelativeDatetime:
     return date.RelativeDatetime(dtime(day))
 
 
-@freeze_time("2012-01-14T05:08:00")
+@time_travel("2012-01-14T05:08:00")
 async def test_relative_datetime_binary() -> None:
     tree = parser.parse("updated-at<2 days ago")
     f = filter.BinaryFilter(tree)
@@ -392,7 +392,7 @@ async def test_relative_datetime_binary() -> None:
 
 
 async def test_relative_datetime_neardatetime_filter() -> None:
-    with freeze_time("2012-01-10T05:08:00", tz_offset=0) as frozen_time:
+    with time_travel("2012-01-10T05:08:00Z") as frozen_time:
         tzinfo = date.UTC
         day10 = frozen_time().replace(tzinfo=tzinfo)
         day14 = day10 + datetime.timedelta(days=4)
@@ -535,7 +535,7 @@ def get_scheduled_pr() -> FakePR:
 
 
 async def test_schedule_with_timezone() -> None:
-    with freeze_time("2021-10-19T22:01:31.610725", tz_offset=0) as frozen_time:
+    with time_travel("2021-10-19T22:01:31.610725Z") as frozen_time:
         tree = parser.parse("schedule=Mon-Fri 09:00-17:30[Europe/Paris]")
         f = filter.NearDatetimeFilter(tree)
 
@@ -558,7 +558,7 @@ async def test_schedule_with_timezone() -> None:
             2021, 10, 25, 7, tzinfo=date.UTC
         )
 
-    with freeze_time("2022-09-16T10:38:18.019100", tz_offset=0) as frozen_time:
+    with time_travel("2022-09-16T10:38:18.019100Z") as frozen_time:
         tree = parser.parse("schedule=Mon-Fri 06:00-17:00[America/Los_Angeles]")
         f = filter.NearDatetimeFilter(tree)
 
@@ -576,7 +576,7 @@ async def test_schedule_with_timezone() -> None:
 
 
 async def test_current_datetime() -> None:
-    with freeze_time("2023-07-13"):
+    with time_travel("2023-07-13"):
         tree = parser.parse("current-datetime<=2023-07-13T14:00[Europe/Paris]")
         f = filter.NearDatetimeFilter(tree)
 
@@ -586,7 +586,7 @@ async def test_current_datetime() -> None:
 
         assert await f(get_scheduled_pr()) == next_refresh_at
 
-    with freeze_time("2023-07-14"):
+    with time_travel("2023-07-14"):
         assert await f(get_scheduled_pr()) == date.DT_MAX
 
 
@@ -598,7 +598,7 @@ async def test_current_datetime() -> None:
     ),
 )
 async def test_current_datetime_range(condition: str) -> None:
-    with freeze_time("2023-07-13T13:00+02"):
+    with time_travel("2023-07-13T13:00+02"):
         tree = parser.parse(condition)
         f = filter.NearDatetimeFilter(tree)
 
@@ -607,18 +607,18 @@ async def test_current_datetime_range(condition: str) -> None:
         )
         assert await f(get_scheduled_pr()) == next_refresh_at
 
-    with freeze_time("2023-07-13T15:00+02"):
+    with time_travel("2023-07-13T15:00+02"):
         next_refresh_at = datetime.datetime.fromisoformat("2023-07-13T16:01").replace(
             tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
         )
         assert await f(get_scheduled_pr()) == next_refresh_at
 
-    with freeze_time("2023-07-13T17:00+02"):
+    with time_travel("2023-07-13T17:00+02"):
         assert await f(get_scheduled_pr()) == date.DT_MAX
 
 
 @pytest.mark.parametrize(
-    "condition,freeze_time_before_range,freeze_time_inside_range,freeze_time_after_range,next_refresh_before_range,next_refresh_inside_range,next_refresh_after_range",
+    "condition,time_travel_before_range,time_travel_inside_range,time_travel_after_range,next_refresh_before_range,next_refresh_inside_range,next_refresh_after_range",
     (
         (
             "current-datetime=XXXX-07-14T00:00/XXXX-07-14T23:59[Europe/Paris]",
@@ -714,23 +714,23 @@ async def test_current_datetime_range(condition: str) -> None:
 )
 async def test_current_datetime_range_uncertain_date(
     condition: str,
-    freeze_time_before_range: str,
-    freeze_time_inside_range: str,
-    freeze_time_after_range: str,
+    time_travel_before_range: str,
+    time_travel_inside_range: str,
+    time_travel_after_range: str,
     next_refresh_before_range: datetime.datetime,
     next_refresh_inside_range: datetime.datetime,
     next_refresh_after_range: datetime.datetime,
 ) -> None:
-    with freeze_time(freeze_time_before_range):
+    with time_travel(time_travel_before_range):
         tree = parser.parse(condition)
         f = filter.NearDatetimeFilter(tree)
 
         assert await f(get_scheduled_pr()) == next_refresh_before_range
 
-    with freeze_time(freeze_time_inside_range):
+    with time_travel(time_travel_inside_range):
         assert await f(get_scheduled_pr()) == next_refresh_inside_range
 
-    with freeze_time(freeze_time_after_range):
+    with time_travel(time_travel_after_range):
         assert await f(get_scheduled_pr()) == next_refresh_after_range
 
 
@@ -756,7 +756,7 @@ async def test_regex_jinja_template(
 
 async def test_schedule_neardatetime_filter() -> None:
     # Saturday
-    with freeze_time("2022-11-12", tz_offset=0) as frozen_time:
+    with time_travel("2022-11-12") as frozen_time:
         tree_eq = parser.parse("schedule=MON-FRI 08:00-17:00")
         tree_ne = parser.parse("schedule!=MON-FRI 08:00-17:00")
         f_eq = filter.NearDatetimeFilter(tree_eq)

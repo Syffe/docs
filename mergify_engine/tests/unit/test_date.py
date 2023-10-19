@@ -1,10 +1,10 @@
 import datetime
 import zoneinfo
 
-from freezegun import freeze_time
 import pytest
 
 from mergify_engine import date
+from mergify_engine.tests.tardis import time_travel
 
 
 TZ_PARIS = zoneinfo.ZoneInfo("Europe/Paris")
@@ -78,12 +78,12 @@ def test_pretty_datetime(dt: datetime.datetime, expected_string: str) -> None:
 
 def test_time_compare() -> None:
     utc = date.UTC
-    with freeze_time("2021-09-22T08:00:05", tz_offset=0):
+    with time_travel("2021-09-22T08:00:05Z"):
         assert datetime.datetime(2021, 9, 22, 8, 0, 5, tzinfo=utc) >= date.Time(
             8, 0, utc
         )
 
-    with freeze_time("2012-01-14T12:15:00", tz_offset=0):
+    with time_travel("2012-01-14T12:15:00Z"):
         assert date.Time(12, 0, utc) < date.utcnow()
         assert date.Time(15, 45, utc) > date.utcnow()
         assert date.Time(12, 15, utc) == date.utcnow()
@@ -151,7 +151,7 @@ def test_day_of_week_from_string(dow: str, expected_int: int) -> None:
     ],
 )
 def test_relative_datetime_from_string(string: str, expected_value: str) -> None:
-    with freeze_time("2021-09-22T08:00:05", tz_offset=0):
+    with time_travel("2021-09-22T08:00:05Z"):
         dt = date.RelativeDatetime.from_string(string)
         assert dt.value == date.fromisoformat(expected_value)
 
@@ -475,10 +475,10 @@ def test_schedule_next_datetime(
 )
 def test_schedule_equality(schedule1: date.Schedule, schedule2: date.Schedule) -> None:
     # In winter
-    with freeze_time("2023-01-01T00:00:00", tz_offset=0):
+    with time_travel("2023-01-01T00:00:00Z"):
         assert schedule1 == schedule2
     # In summer
-    with freeze_time("2023-07-01T00:00:00", tz_offset=0):
+    with time_travel("2023-07-01T00:00:00Z"):
         assert schedule1 == schedule2
 
 
@@ -507,10 +507,10 @@ def test_schedule_inequality(
     schedule1: date.Schedule, schedule2: date.Schedule
 ) -> None:
     # In winter
-    with freeze_time("2023-01-01T00:00:00", tz_offset=0):
+    with time_travel("2023-01-01T00:00:00Z"):
         assert schedule1 != schedule2
     # In summer
-    with freeze_time("2023-07-01T00:00:00", tz_offset=0):
+    with time_travel("2023-07-01T00:00:00Z"):
         assert schedule1 != schedule2
 
 

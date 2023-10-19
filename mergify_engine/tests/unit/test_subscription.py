@@ -2,7 +2,6 @@ import enum
 import typing
 from unittest import mock
 
-from freezegun import freeze_time
 import pydantic
 import pytest
 import respx
@@ -13,6 +12,7 @@ from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine.clients import http
+from mergify_engine.tests.tardis import time_travel
 
 
 async def test_init(redis_cache: redis_utils.RedisCache) -> None:
@@ -130,7 +130,7 @@ async def test_subscription_db_unavailable(
     retrieve_subscription_from_db_mock: mock.Mock,
     redis_cache: redis_utils.RedisCache,
 ) -> None:
-    with freeze_time("2023-08-25 12:00") as frozen_time:
+    with time_travel("2023-08-25 12:00") as frozen_time:
         owner_id = github_types.GitHubAccountIdType(1234)
         sub = subscription.Subscription(
             redis_cache,

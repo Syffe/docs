@@ -4,7 +4,6 @@ import typing
 from unittest import mock
 
 import anys
-from freezegun import freeze_time
 import pytest
 import sqlalchemy
 from sqlalchemy import func
@@ -19,6 +18,7 @@ from mergify_engine import yaml
 from mergify_engine.models import events as evt_models
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.tardis import time_travel
 
 
 @pytest.mark.usefixtures("enable_events_db_ingestion")
@@ -1186,7 +1186,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
 
-        with freeze_time(datetime.now(), tick=True):
+        with time_travel(datetime.now(), tick=True):
             pr = await self.create_pr()
 
             await self.add_label(pr["number"], "queue")
@@ -1203,7 +1203,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 pr, "continuous-integration/fake-ci_3", state="pending"
             )
 
-            with freeze_time(datetime.now() + timedelta(minutes=15), tick=True):
+            with time_travel(datetime.now() + timedelta(minutes=15), tick=True):
                 await self.run_full_engine()
 
                 r = await self.admin_app.get(

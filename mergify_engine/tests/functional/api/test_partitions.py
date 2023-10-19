@@ -1,12 +1,12 @@
 import datetime
 
 import anys
-from freezegun import freeze_time
 
 from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.tardis import time_travel
 
 
 class TestPartitionsApi(base.FunctionalTestBase):
@@ -412,7 +412,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
         }
 
         start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1_a = await self.create_pr(files={"projA/test1.txt": "test1"})
@@ -429,7 +429,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
             tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
             tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=1), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=1), tick=True):
             # Both p1 on projA and projB are closed 1 hour after being queued
             await self.create_status(tmp_mq_pr_1["pull_request"])
             await self.create_status(tmp_mq_pr_2["pull_request"])
@@ -450,14 +450,14 @@ class TestPartitionsApi(base.FunctionalTestBase):
 
             tmp_mq_pr_2_b = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=3), tick=True):
             # p2 on projA is closed 2 hours after being queued
             await self.create_status(tmp_mq_pr_2_a["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-        with freeze_time(start_date + datetime.timedelta(hours=5), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=5), tick=True):
             # p2 on projB is closed 4 hours after being queued
             await self.create_status(tmp_mq_pr_2_b["pull_request"])
             await self.run_engine()

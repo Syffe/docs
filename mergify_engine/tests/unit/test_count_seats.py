@@ -4,7 +4,6 @@ import os
 from unittest import mock
 
 import anys
-from freezegun import freeze_time
 import httpx
 import msgpack
 import pydantic
@@ -16,6 +15,7 @@ from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import signals
+from mergify_engine.tests.tardis import time_travel
 from mergify_engine.tests.unit import conftest
 
 
@@ -86,7 +86,7 @@ for filename in os.listdir(_EVENT_DIR):
         GITHUB_SAMPLE_EVENTS[filename] = (event_type, json.load(event))
 
 
-@freeze_time("2011-11-11")
+@time_travel("2011-11-11")
 @pytest.mark.parametrize("event_type, event", list(GITHUB_SAMPLE_EVENTS.values()))
 async def test_store_active_users(
     event_type: str,
@@ -137,7 +137,7 @@ async def test_store_active_users(
         )
 
 
-@freeze_time("2011-11-11")
+@time_travel("2011-11-11")
 @pytest.mark.parametrize("event_type, event", list(GITHUB_SAMPLE_EVENTS.values()))
 async def test_get_usage_count_seats(
     web_client: httpx.AsyncClient,
@@ -215,7 +215,7 @@ async def test_get_usage_count_seats(
         }
 
 
-@freeze_time("2011-11-11")
+@time_travel("2011-11-11")
 async def test_get_usage_last_seen(
     context_getter: conftest.ContextGetterFixture, web_client: httpx.AsyncClient
 ) -> None:

@@ -1,13 +1,13 @@
 import datetime
 from unittest import mock
 
-from freezegun import freeze_time
 import msgpack
 
 from mergify_engine import yaml
 from mergify_engine.queue import statistics
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.tardis import time_travel
 
 
 class TestStatisticsRedis(base.FunctionalTestBase):
@@ -163,7 +163,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
 
         start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=datetime.UTC)
 
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1 = await self.create_pr()
@@ -176,7 +176,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
 
             tmp_mq_pr1 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=1), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=1), tick=True):
             # Merge first PR 1 hour after
             await self.create_status(tmp_mq_pr1["pull_request"])
             await self.run_engine()
@@ -189,7 +189,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
 
             tmp_mq_pr2 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
             # Merge 2nd PR 1 hour after
             await self.create_status(tmp_mq_pr2["pull_request"])
             await self.run_engine()
@@ -200,7 +200,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             checks_duration_key = self.get_statistic_redis_key("checks_duration")
             assert await self.redis_links.stats.xlen(checks_duration_key) == 2
 
-        with freeze_time(
+        with time_travel(
             start_date + datetime.timedelta(hours=2, minutes=5),
             tick=True,
         ):
@@ -210,7 +210,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
 
             tmp_mq_pr_3_4 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(
+        with time_travel(
             start_date + datetime.timedelta(hours=3), tick=True
         ), mock.patch("mergify_engine.queue.statistics_accuracy.statsd") as statsd:
             statsd.gauge = mock.Mock()

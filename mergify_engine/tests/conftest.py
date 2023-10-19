@@ -12,8 +12,6 @@ import uuid
 
 import asgi_lifespan
 import fastapi
-import freezegun
-import freezegun.api
 import httpx
 import imia
 import msgpack
@@ -34,25 +32,24 @@ from mergify_engine.clients import github
 from mergify_engine.clients import google_cloud_storage
 from mergify_engine.models import manage
 from mergify_engine.models.github import user as github_user
+from mergify_engine.tests import tardis
 from mergify_engine.tests import utils as test_utils
 from mergify_engine.tests.db_populator import DbPopulator
 from mergify_engine.web import root as web_root
 
 
 # for jwt generation
-freezegun.configure(  # type:ignore[attr-defined]
-    extend_ignore_list=["mergify_engine.clients.github_app"]
-)
+tardis.configure(extend_ignore_list=["mergify_engine.clients.github_app"])
 
 GITHUB_CI = utils.strtobool(os.getenv("CI", "false"))
 
 
-def msgpack_freezegun_fixes(obj: typing.Any) -> typing.Any:
+def msgpack_fakedatetime_fixes(obj: typing.Any) -> typing.Any:
     # NOTE(sileht): msgpack isinstance check doesn't support override of
     # __instancecheck__ like freezegun does, so we convert the fake one into a
     # real one
-    if isinstance(obj, freezegun.api.FakeDatetime):  # type: ignore[attr-defined]
-        return freezegun.api.real_datetime(  # type: ignore[attr-defined]
+    if isinstance(obj, tardis.FakeDatetime):
+        return tardis.real_datetime(
             obj.year,
             obj.month,
             obj.day,
@@ -66,7 +63,7 @@ def msgpack_freezegun_fixes(obj: typing.Any) -> typing.Any:
 
 
 # serialize freezegum FakeDatetime as datetime
-msgpack.packb = functools.partial(msgpack.packb, default=msgpack_freezegun_fixes)
+msgpack.packb = functools.partial(msgpack.packb, default=msgpack_fakedatetime_fixes)
 
 original_os_environ = os.environ.copy()
 

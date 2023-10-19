@@ -3,7 +3,6 @@ import typing
 from unittest import mock
 
 import anys
-from freezegun import freeze_time
 import pytest
 import sqlalchemy
 from sqlalchemy import func
@@ -20,6 +19,7 @@ from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_model
 from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
+from mergify_engine.tests.tardis import time_travel
 
 
 async def insert_event(
@@ -277,7 +277,7 @@ async def test_event_action_github_actions_consistency(
     assert event.inputs == inputs
 
 
-@freeze_time("2023-07-10T14:00:00", tz_offset=0)
+@time_travel("2023-07-10T14:00:00Z")
 async def test_event_action_queue_enter_consistency(
     db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
 ) -> None:
@@ -322,7 +322,7 @@ async def test_event_action_queue_enter_consistency(
     )
 
 
-@freeze_time("2023-07-10T14:00:00", tz_offset=0)
+@time_travel("2023-07-10T14:00:00Z")
 async def test_event_action_queue_merged_consistency(
     db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
 ) -> None:
@@ -351,7 +351,7 @@ async def test_event_action_queue_merged_consistency(
     assert set(event.partition_names) == {"partA", "partB"}
 
 
-@freeze_time("2023-07-10T14:00:00", tz_offset=0)
+@time_travel("2023-07-10T14:00:00Z")
 async def test_event_action_queue_leave_consistency(
     db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
 ) -> None:
@@ -409,7 +409,7 @@ async def test_events_with_no_metadata(
     assert set(events_types.all()) == events_set
 
 
-@freeze_time("2023-07-17T14:00:00", tz_offset=0)
+@time_travel("2023-07-17T14:00:00Z")
 async def test_event_action_queue_checks_start_consistency(
     db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
 ) -> None:
@@ -466,7 +466,7 @@ async def test_event_action_queue_checks_start_consistency(
     assert spec_check_pr.unsuccessful_checks == [unsuccessful_check]
 
 
-@freeze_time("2023-07-17T14:00:00", tz_offset=0)
+@time_travel("2023-07-17T14:00:00Z")
 async def test_event_action_queue_checks_end_consistency(
     db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
 ) -> None:

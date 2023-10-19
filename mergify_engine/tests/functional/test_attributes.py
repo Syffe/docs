@@ -4,7 +4,6 @@ import operator
 from unittest import mock
 import zoneinfo
 
-from freezegun import freeze_time
 import pytest
 
 from mergify_engine import condition_value_querier
@@ -14,6 +13,7 @@ from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.tardis import time_travel
 
 
 LOG = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ class TestAttributes(base.FunctionalTestBase):
                 }
             ],
         }
-        with freeze_time("2021-09-22T08:00:02", tick=True):
+        with time_travel("2021-09-22T08:00:02", tick=True):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr()
             pr_force_rebase = await self.create_pr()
@@ -134,7 +134,7 @@ class TestAttributes(base.FunctionalTestBase):
             ]
         }
         # Sunday
-        with freeze_time("2021-05-30T10:00:00", tick=True):
+        with time_travel("2021-05-30T10:00:00", tick=True):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr()
             comments = await self.get_issue_comments(pr["number"])
@@ -147,7 +147,7 @@ class TestAttributes(base.FunctionalTestBase):
             assert await self.redis_links.cache.zcard("delayed-refresh") == 1
 
         # Wednesday
-        with freeze_time("2021-06-02T14:00:00", tick=True):
+        with time_travel("2021-06-02T14:00:00", tick=True):
             await self.run_full_engine()
 
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
@@ -165,7 +165,7 @@ class TestAttributes(base.FunctionalTestBase):
         }
         # Sunday 19:00 for UTC
         # Monday 07:00 for NZST (Auckland)
-        with freeze_time("2022-09-04T19:00:00+00:00", tick=True):
+        with time_travel("2022-09-04T19:00:00+00:00", tick=True):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr()
             comments = await self.get_issue_comments(pr["number"])
@@ -179,7 +179,7 @@ class TestAttributes(base.FunctionalTestBase):
 
         # Sunday 21:00 for UTC
         # Monday 09:00 for NZST (Auckland)
-        with freeze_time("2022-09-04T21:00:00+00:00", tick=True):
+        with time_travel("2022-09-04T21:00:00+00:00", tick=True):
             await self.run_full_engine()
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
             assert comment["comment"]["body"] == "it's time"
@@ -600,12 +600,12 @@ class TestAttributes(base.FunctionalTestBase):
             ]
         }
         start_date = datetime.datetime(2022, 12, 12, tzinfo=datetime.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr(commit_date=start_date)
             await self.run_full_engine()
 
-        with freeze_time(start_date + datetime.timedelta(days=2), tick=True):
+        with time_travel(start_date + datetime.timedelta(days=2), tick=True):
             await self.run_full_engine()
 
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
@@ -1094,7 +1094,7 @@ class TestAttributes(base.FunctionalTestBase):
             ]
         }
 
-        with freeze_time("2023-12-31T22:00:00", tz_offset=0, tick=True):
+        with time_travel("2023-12-31T22:00:00Z", tick=True):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr()
 
@@ -1104,7 +1104,7 @@ class TestAttributes(base.FunctionalTestBase):
 
             assert await self.redis_links.cache.zcard("delayed-refresh") == 1
 
-        with freeze_time("2024-01-01T00:00:00", tz_offset=0, tick=True):
+        with time_travel("2024-01-01T00:00:00Z", tick=True):
             await self.run_full_engine()
 
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
@@ -1123,7 +1123,7 @@ class TestAttributes(base.FunctionalTestBase):
             ]
         }
 
-        with freeze_time("2023-12-31T23:59+01", tz_offset=0, tick=True):
+        with time_travel("2023-12-31T23:59+01", tick=True):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr()
 
@@ -1133,7 +1133,7 @@ class TestAttributes(base.FunctionalTestBase):
 
             assert await self.redis_links.cache.zcard("delayed-refresh") == 1
 
-        with freeze_time("2024-01-01T00:00+01", tz_offset=0, tick=True):
+        with time_travel("2024-01-01T00:00+01", tick=True):
             await self.run_full_engine()
 
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
@@ -1203,7 +1203,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         }
         # 12:00 18th April 2023
         start_date = datetime.datetime(2023, 4, 18, 12)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             body = "Awesome body\nMerge-After: 2023-04-19"
@@ -1231,7 +1231,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             pr = await self.get_pull(pr["number"])
             assert not pr["merged"]
 
-        with freeze_time(start_date + datetime.timedelta(days=1), tick=True):
+        with time_travel(start_date + datetime.timedelta(days=1), tick=True):
             await self.run_full_engine()
 
             p_merged = await self.wait_for_pull_request("closed", pr["number"])

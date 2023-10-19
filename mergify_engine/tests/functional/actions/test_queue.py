@@ -7,7 +7,6 @@ from urllib import parse
 
 import anys
 from first import first
-from freezegun import freeze_time
 import pytest
 import respx
 import sqlalchemy
@@ -32,6 +31,7 @@ from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.tardis import time_travel
 
 
 TEMPLATE_GITHUB_ACTION = """
@@ -7049,7 +7049,7 @@ previous_failed_batches:
                 },
             ],
         }
-        with freeze_time("2021-05-30T10:00:00", tick=True):
+        with time_travel("2021-05-30T10:00:00", tick=True):
             await self.setup_repo(yaml.dump(config))
 
             p1 = await self.create_pr()
@@ -7079,7 +7079,7 @@ previous_failed_batches:
             )
             assert len(pulls_to_refresh) == 1
 
-        with freeze_time("2021-05-30T10:12:00", tick=True):
+        with time_travel("2021-05-30T10:12:00", tick=True):
             await self.run_full_engine()
 
             # Check-runs arrive in random order, so we need to retrieve all of them and check
@@ -7143,7 +7143,7 @@ previous_failed_batches:
                 },
             ],
         }
-        with freeze_time("2021-05-30T10:00:00", tick=True):
+        with time_travel("2021-05-30T10:00:00", tick=True):
             await self.setup_repo(yaml.dump(config))
 
             p1 = await self.create_pr()
@@ -7171,7 +7171,7 @@ previous_failed_batches:
             )
             assert len(pulls_to_refresh) == 1
 
-        with freeze_time("2021-05-30T10:12:00", tick=True):
+        with time_travel("2021-05-30T10:12:00", tick=True):
             await self.run_full_engine()
 
             # Check-runs arrive in random order, so we need to retrieve all of them and check
@@ -7238,7 +7238,7 @@ previous_failed_batches:
                 },
             ],
         }
-        with freeze_time("2021-05-30T10:00:00", tick=True):
+        with time_travel("2021-05-30T10:00:00", tick=True):
             await self.setup_repo(yaml.dump(config))
 
             p1 = await self.create_pr()
@@ -7265,7 +7265,7 @@ previous_failed_batches:
             )
             assert len(pulls_to_refresh) == 1
 
-        with freeze_time("2021-05-30T10:12:00", tick=True):
+        with time_travel("2021-05-30T10:12:00", tick=True):
             await self.run_full_engine()
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -7313,7 +7313,7 @@ previous_failed_batches:
         }
 
         start_date = datetime.datetime(2021, 5, 30, 20, tzinfo=date.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(config))
 
             p1 = await self.create_pr()
@@ -7354,7 +7354,7 @@ previous_failed_batches:
             )
             assert len(pulls_to_refresh) == 1
 
-        with freeze_time(
+        with time_travel(
             start_date + datetime.timedelta(minutes=12 + minutes_delay), tick=True
         ):
             await self.run_full_engine()
@@ -7404,7 +7404,7 @@ previous_failed_batches:
             ],
         }
 
-        with freeze_time("2021-05-30T20:00:00", tick=True):
+        with time_travel("2021-05-30T20:00:00", tick=True):
             await self.setup_repo(yaml.dump(config))
 
             p1 = await self.create_pr()
@@ -7432,7 +7432,7 @@ previous_failed_batches:
             assert len(pulls_to_refresh) == 1
             await self.create_status(tmp_pull["pull_request"])
 
-        with freeze_time("2021-05-30T20:12:00", tick=True):
+        with time_travel("2021-05-30T20:12:00", tick=True):
             await self.run_full_engine()
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -7464,7 +7464,7 @@ previous_failed_batches:
                 },
             ],
         }
-        with freeze_time("2023-06-30T15:00:00", tick=True):
+        with time_travel("2023-06-30T15:00:00", tick=True):
             await self.setup_repo(yaml.dump(config))
 
             r = await self.admin_app.put(
@@ -7491,7 +7491,7 @@ previous_failed_batches:
             )
             assert r.status_code == 204
 
-        with freeze_time("2023-06-30T18:59:00", tick=True):
+        with time_travel("2023-06-30T18:59:00", tick=True):
             await self.run_engine()
 
             train = await self.get_train()
@@ -7504,7 +7504,7 @@ previous_failed_batches:
         pr = await self.get_pull(pr["number"])
         assert pr["merged"] is False
 
-        with freeze_time("2023-07-03T08:10:00", tick=True):
+        with time_travel("2023-07-03T08:10:00", tick=True):
             await self.run_full_engine()
 
         await self.wait_for_pull_request("closed", pr_number=pr["number"], merged=True)
@@ -8862,7 +8862,7 @@ pull_request_rules:
             ],
         }
         start_date = datetime.datetime(2023, 9, 28, 16, tzinfo=datetime.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1 = await self.create_pr()
@@ -8872,7 +8872,7 @@ pull_request_rules:
 
             await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=3), tick=True):
             # The delayed_refresh should refresh the train car and add a
             # value to `train_car_state.seconds_spent_outside_schedule_start_dates`
             await self.run_full_engine()
@@ -8895,7 +8895,7 @@ pull_request_rules:
             )
 
         # Next day at the start of schedule
-        with freeze_time(
+        with time_travel(
             datetime.datetime(2023, 9, 29, 9, tzinfo=datetime.UTC), tick=True
         ):
             # The delayed_refresh should refresh the train car and add a

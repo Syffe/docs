@@ -1,7 +1,6 @@
 import datetime
 from unittest import mock
 
-from freezegun import freeze_time
 import pytest
 import voluptuous
 
@@ -18,6 +17,7 @@ from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
+from mergify_engine.tests.tardis import time_travel
 from mergify_engine.tests.unit import conftest
 from mergify_engine.tests.unit.merge_train import conftest as mt_conftest
 
@@ -1408,7 +1408,7 @@ async def test_train_batch_max_wait_time(
     context_getter: conftest.ContextGetterFixture,
     convoy: merge_train.Convoy,
 ) -> None:
-    with freeze_time("2021-09-22T08:00:00") as freezed_time:
+    with time_travel("2021-09-22T08:00:00") as freezed_time:
         t = merge_train.Train(convoy)
         await t.test_helper_load_from_redis()
 
@@ -1440,7 +1440,7 @@ async def test_train_batch_max_wait_time(
             minutes=5
         )
 
-    with freeze_time("2021-09-22T08:05:02"):
+    with time_travel("2021-09-22T08:05:02"):
         await t.refresh()
         assert [[1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
         assert [] == mt_conftest.get_train_waiting_pulls_content(t)

@@ -4,13 +4,13 @@ import typing
 from unittest import mock
 import zoneinfo
 
-from freezegun import freeze_time
 import pytest
 
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.rules import filter
 from mergify_engine.rules import parser
+from mergify_engine.tests.tardis import time_travel
 
 
 now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
@@ -470,7 +470,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
         ),
     ),
 )
-@freeze_time(now)
+@time_travel(now)
 def test_parse(line: str, result: typing.Any) -> None:
     assert result == parser.parse(line, allow_command_attributes=True)
 

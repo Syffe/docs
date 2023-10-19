@@ -3,7 +3,6 @@ import typing
 from unittest import mock
 
 from first import first
-from freezegun import freeze_time
 import httpx
 import msgpack
 import pytest
@@ -22,6 +21,7 @@ from mergify_engine.rules import conditions
 from mergify_engine.rules.config import priority_rules as pr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.tardis import time_travel
 
 
 class TestTrainApiCalls(base.FunctionalTestBase):
@@ -495,7 +495,7 @@ pull_requests:
         # Friday, 18:00 UTC
         start_date = datetime.datetime(2022, 11, 4, 18, tzinfo=datetime.UTC)
 
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1 = await self.create_pr()

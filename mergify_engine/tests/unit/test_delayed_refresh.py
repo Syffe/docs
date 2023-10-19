@@ -1,17 +1,17 @@
 import datetime
 import typing
 
-from freezegun import freeze_time
 import pytest
 
 from mergify_engine import condition_value_querier
 from mergify_engine import delayed_refresh
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.tests import utils
+from mergify_engine.tests.tardis import time_travel
 from mergify_engine.tests.unit import conftest
 
 
-@freeze_time("2021-09-22T08:00:05", tz_offset=0)
+@time_travel("2021-09-22T08:00:05Z")
 @pytest.mark.parametrize(
     "pull, expected_refresh",
     (
@@ -111,7 +111,7 @@ pull_request_rules:
           {% endif %}
 """
     )
-    with freeze_time(start_datetime, tick=False):
+    with time_travel(start_datetime, tick=False):
         ctxt = await context_getter(0)
         rule = typing.cast(
             list[prr_config.EvaluatedPullRequestRule],
@@ -185,7 +185,7 @@ pull_request_rules:
           {% endif %}
 """
     )
-    with freeze_time(start_datetime, tick=True):
+    with time_travel(start_datetime, tick=True):
         ctxt = await context_getter(0, **pull)
         rule = typing.cast(
             list[prr_config.EvaluatedPullRequestRule],
@@ -201,7 +201,7 @@ pull_request_rules:
         assert when == expected_refresh
 
 
-@freeze_time("2021-09-22T08:00:05", tz_offset=0)
+@time_travel("2021-09-22T08:00:05Z")
 async def test_delayed_refresh_only_if_earlier(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:

@@ -3,7 +3,6 @@ import enum
 import typing
 
 import anys
-from freezegun import freeze_time
 import pytest
 import tenacity
 
@@ -11,6 +10,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import utils
+from mergify_engine.tests.tardis import time_travel
 from mergify_engine.web import utils as web_utils
 
 
@@ -215,7 +215,7 @@ def test_payload_dumper() -> None:
     assert data == expected_data
 
 
-@freeze_time("2022-08-03T15:43:50.478Z")
+@time_travel("2022-08-03T15:43:50.478Z")
 def test_get_retention_minid() -> None:
     retention = datetime.timedelta(days=1)
     expected_minid = 1659455030478  # 2022-08-02T15:43:50.478Z

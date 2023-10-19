@@ -7,7 +7,6 @@ import typing
 from unittest import mock
 
 import daiquiri
-from freezegun import freeze_time
 import httpx
 import msgpack
 import pytest
@@ -23,6 +22,7 @@ from mergify_engine import redis_utils
 from mergify_engine import worker_pusher
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
+from mergify_engine.tests.tardis import time_travel
 from mergify_engine.worker import dedicated_workers_cache_syncer_service
 from mergify_engine.worker import dedicated_workers_spawner_service
 from mergify_engine.worker import delayed_refresh_service
@@ -846,7 +846,7 @@ async def test_stream_processor_retrying_pull(
         HTTP_500_EXCEPTION,
     ]
 
-    with freeze_time("2020-01-01 22:00:00", tick=True):
+    with time_travel("2020-01-01 22:00:00", tick=True):
         await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(123),
@@ -878,7 +878,7 @@ async def test_stream_processor_retrying_pull(
     assert 1 == await redis_links.stream.xlen("bucket-sources~123~123")
     assert 1 == await redis_links.stream.xlen("bucket-sources~123~42")
 
-    with freeze_time("2020-01-01 22:00:20", tick=True):
+    with time_travel("2020-01-01 22:00:20", tick=True):
         await stream_processor.consume(
             stream_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -934,7 +934,7 @@ async def test_stream_processor_retrying_pull(
         b"bucket-sources~123~123": b"1",
     } == await redis_links.stream.hgetall("attempts")
 
-    with freeze_time("2020-01-01 22:00:35", tick=True):
+    with time_travel("2020-01-01 22:00:35", tick=True):
         await stream_processor.consume(
             stream_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -955,7 +955,7 @@ async def test_stream_processor_retrying_pull(
     )
 
     # Check nothing is retried if we replay the steram before 30s
-    with freeze_time("2020-01-01 22:00:58", tick=True):
+    with time_travel("2020-01-01 22:00:58", tick=True):
         await stream_processor.consume(
             stream_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -977,7 +977,7 @@ async def test_stream_processor_retrying_pull(
     when = date.fromisoformat("2020-01-01 22:01:33")
     for _ in range(14):
         when += datetime.timedelta(seconds=30)
-        with freeze_time(when, tick=True):
+        with time_travel(when, tick=True):
             await stream_processor.consume(
                 stream_lua.BucketOrgKeyType("bucket~123"),
                 github_types.GitHubAccountIdType(123),
@@ -1029,7 +1029,7 @@ async def test_stream_processor_retrying_stream_recovered(
         message="foobar", request=response.request, response=response
     )
 
-    with freeze_time("2020-01-01 22:00:00", tick=True):
+    with time_travel("2020-01-01 22:00:00", tick=True):
         await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(123),
@@ -1102,7 +1102,7 @@ async def test_stream_processor_retrying_stream_recovered(
 
         run_engine.side_effect = None
 
-    with freeze_time("2020-01-01 22:00:31", tick=True):
+    with time_travel("2020-01-01 22:00:31", tick=True):
         await stream_processor.consume(
             stream_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -1145,7 +1145,7 @@ async def test_stream_processor_retrying_stream_failure(
         message="foobar", request=response.request, response=response
     )
 
-    with freeze_time("2020-01-01 22:00:00", tick=True):
+    with time_travel("2020-01-01 22:00:00", tick=True):
         await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(123),
@@ -1175,7 +1175,7 @@ async def test_stream_processor_retrying_stream_failure(
         assert 2 == await redis_links.stream.xlen("bucket-sources~123~123")
         assert 0 == len(await redis_links.stream.hgetall("attempts"))
 
-    with freeze_time("2020-01-01 22:00:31", tick=True):
+    with time_travel("2020-01-01 22:00:31", tick=True):
         await stream_processor.consume(
             stream_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -1215,7 +1215,7 @@ async def test_stream_processor_retrying_stream_failure(
 
         assert {b"bucket~123": b"1"} == await redis_links.stream.hgetall("attempts")
 
-    with freeze_time("2020-01-01 22:01:03", tick=True):
+    with time_travel("2020-01-01 22:01:03", tick=True):
         await stream_processor.consume(
             stream_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -1270,7 +1270,7 @@ async def test_stream_processor_pull_unexpected_error(
     get_subscription.side_effect = fake_get_subscription
     run_engine.side_effect = Exception
 
-    with freeze_time("2020-01-01 22:00:00", tick=True):
+    with time_travel("2020-01-01 22:00:00", tick=True):
         await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(123),
@@ -1289,7 +1289,7 @@ async def test_stream_processor_pull_unexpected_error(
             github_types.GitHubLogin("owner-123"),
         )
 
-    with freeze_time("2020-01-01 22:00:40", tick=True):
+    with time_travel("2020-01-01 22:00:40", tick=True):
         await stream_processor.consume(
             stream_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -1340,7 +1340,7 @@ async def test_stream_processor_priority(
             score=str(worker_pusher.get_priority_score(prio)),
         )
 
-    with freeze_time("2020-01-01", tick=True):
+    with time_travel("2020-01-01", tick=True):
         await push_prio(1, worker_pusher.Priority.low)
         await push_prio(2, worker_pusher.Priority.low)
         await push_prio(3, worker_pusher.Priority.high)
@@ -1350,7 +1350,7 @@ async def test_stream_processor_priority(
         await push_prio(7, worker_pusher.Priority.high)
         await push_prio(8, worker_pusher.Priority.low)
 
-    with freeze_time("2020-01-04", tick=True):
+    with time_travel("2020-01-04", tick=True):
         await push_prio(9, worker_pusher.Priority.high)
         await push_prio(10, worker_pusher.Priority.low)
         await push_prio(11, worker_pusher.Priority.medium)
@@ -1395,7 +1395,7 @@ async def test_stream_processor_priority(
         )
     )
 
-    with freeze_time("2020-01-14", tick=True):
+    with time_travel("2020-01-14", tick=True):
         await shared_service._stream_worker_task(stream_processor)
 
     assert 0 == (await redis_links.stream.zcard("streams"))
@@ -1419,7 +1419,7 @@ async def test_stream_processor_date_scheduling(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
     # Don't process it before 2040
-    with freeze_time("2040-01-01"):
+    with time_travel("2040-01-01"):
         await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(123),
@@ -1432,7 +1432,7 @@ async def test_stream_processor_date_scheduling(
         )
         unwanted_owner_id = "owner-123"
 
-    with freeze_time("2020-01-01"):
+    with time_travel("2020-01-01"):
         await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(234),
@@ -1484,7 +1484,7 @@ async def test_stream_processor_date_scheduling(
 
     run_engine.side_effect = fake_engine
 
-    with freeze_time("2020-01-14"):
+    with time_travel("2020-01-14"):
         await shared_service._stream_worker_task(stream_processor)
 
     assert 1 == (await redis_links.stream.zcard("streams"))
@@ -1492,7 +1492,7 @@ async def test_stream_processor_date_scheduling(
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
     assert received == [wanted_owner_id]
 
-    with freeze_time("2030-01-14"):
+    with time_travel("2030-01-14"):
         await shared_service._stream_worker_task(stream_processor)
 
     assert 1 == (await redis_links.stream.zcard("streams"))
@@ -1501,7 +1501,7 @@ async def test_stream_processor_date_scheduling(
     assert received == [wanted_owner_id]
 
     # We are in 2041, we have something todo :)
-    with freeze_time("2041-01-14"):
+    with time_travel("2041-01-14"):
         await shared_service._stream_worker_task(stream_processor)
 
     assert 0 == (await redis_links.stream.zcard("streams"))
@@ -2497,7 +2497,7 @@ async def test_stream_processor_ignoring_error_422(
 def test_score_priority_helpers(
     priority: worker_pusher.Priority, timestamp: str
 ) -> None:
-    with freeze_time(timestamp) as frozen_time:
+    with time_travel(timestamp) as frozen_time:
         score = float(worker_pusher.get_priority_score(priority))
         assert worker_pusher.get_priority_level_from_score(score) == priority
         assert worker_pusher.get_date_from_score(score) == frozen_time().replace(

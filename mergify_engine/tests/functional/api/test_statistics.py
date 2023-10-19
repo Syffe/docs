@@ -1,7 +1,5 @@
 import datetime
 
-from freezegun import freeze_time
-
 from mergify_engine import date
 from mergify_engine import settings
 from mergify_engine import yaml
@@ -9,6 +7,7 @@ from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.tardis import time_travel
 
 
 class TestStatisticsEndpoints(base.FunctionalTestBase):
@@ -41,7 +40,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
         start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=datetime.UTC)
 
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             r = await self.admin_app.get(
@@ -72,7 +71,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             tmp_mq_pr = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
             await self.create_status(tmp_mq_pr["pull_request"])
             await self.run_engine()
 
@@ -108,7 +107,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                 r.json()[0]["queues"][0]["time_to_merge"]["median"] == previous_result
             )
 
-        with freeze_time(
+        with time_travel(
             start_date + (queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION / 2),
             tick=True,
         ):
@@ -160,7 +159,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         # Friday
         start_date = datetime.datetime(2022, 10, 14, 10, tzinfo=datetime.UTC)
 
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             r = await self.admin_app.get(
@@ -181,13 +180,13 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             tmp_mq_pr = await self.wait_for_pull_request("opened")
 
         # Friday at 18:00, outside schedule
-        with freeze_time(start_date + datetime.timedelta(hours=8), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=8), tick=True):
             # Create status for the schedule to be the only condition not valid
             await self.create_status(tmp_mq_pr["pull_request"])
             # Run the engine for it to update train state
             await self.run_full_engine()
 
-        with freeze_time(start_date + datetime.timedelta(days=3), tick=True):
+        with time_travel(start_date + datetime.timedelta(days=3), tick=True):
             # We are in schedule again, PR should be updated itself because
             # of delayed refresh
             await self.run_full_engine()
@@ -238,7 +237,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
         start_date = datetime.datetime(2022, 10, 14, 10, tzinfo=datetime.UTC)
 
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             r = await self.admin_app.get(
@@ -265,12 +264,12 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             assert r.status_code == 200
             await self.run_engine()
 
-        with freeze_time(start_date + datetime.timedelta(days=1), tick=True):
+        with time_travel(start_date + datetime.timedelta(days=1), tick=True):
             await self.create_status(tmp_mq_pr["pull_request"])
             # Run the engine for it to update train state
             await self.run_engine()
 
-        with freeze_time(start_date + datetime.timedelta(days=1, hours=8), tick=True):
+        with time_travel(start_date + datetime.timedelta(days=1, hours=8), tick=True):
             r = await self.admin_app.delete(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
             )
@@ -319,7 +318,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                 },
             ],
         }
-        with freeze_time("2022-08-18T10:00:00", tick=True):
+        with time_travel("2022-08-18T10:00:00", tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             r = await self.admin_app.get(
@@ -340,7 +339,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             tmp_mq_pr = await self.wait_for_pull_request("opened")
 
-        with freeze_time("2022-08-18T12:00:00", tick=True):
+        with time_travel("2022-08-18T12:00:00", tick=True):
             await self.create_status(tmp_mq_pr["pull_request"])
             await self.run_engine()
 
@@ -477,7 +476,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
         start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=datetime.UTC)
 
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             r = await self.admin_app.get(
@@ -497,7 +496,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             tmp_mq_pr = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
             await self.create_status(tmp_mq_pr["pull_request"])
             await self.run_engine()
 
@@ -563,7 +562,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                 },
             ],
         }
-        with freeze_time("2022-08-18T10:00:00", tick=True):
+        with time_travel("2022-08-18T10:00:00", tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             r = await self.admin_app.get(
@@ -621,7 +620,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             draft_pr = await self.wait_for_pull_request("opened")
             await self.create_status(draft_pr["pull_request"])
 
-        with freeze_time("2022-08-18T12:00:00", tick=True):
+        with time_travel("2022-08-18T12:00:00", tick=True):
             await self.run_full_engine()
 
             await self.wait_for_pull_request("closed", draft_pr["number"])
@@ -660,7 +659,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             assert r.json()[0]["queues"][0]["queue_checks_outcome"]["SUCCESS"] == 1
 
     async def test_stats_endpoint_timestamp_in_future(self) -> None:
-        with freeze_time("2022-08-18T10:00:00"):
+        with time_travel("2022-08-18T10:00:00"):
             future_timestamp = int(date.utcnow().timestamp()) + 1000
             fail_urls = [
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={future_timestamp}",

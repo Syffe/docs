@@ -4,7 +4,6 @@ import re
 import urllib.parse
 
 import anys
-import freezegun
 import pytest
 import sqlalchemy.ext.asyncio
 
@@ -22,6 +21,7 @@ from mergify_engine.models.github import repository as github_repository
 from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
 from mergify_engine.tests import conftest as tests_conftest
+from mergify_engine.tests.tardis import time_travel
 from mergify_engine.tests.unit.api import conftest as tests_api_conftest
 
 
@@ -38,7 +38,7 @@ async def switched_to_pg(
     monkeypatch: pytest.MonkeyPatch, redis_links: redis_utils.RedisLinks
 ) -> abc.AsyncGenerator[None, None]:
     await redis_links.cache.set(eventlogs.DB_SWITCH_KEY, INITIAL_TIMESTAMP.timestamp())
-    with freezegun.freeze_time(DB_SWITCHED_TIMESTAMP):
+    with time_travel(DB_SWITCHED_TIMESTAMP):
         yield
 
 
@@ -506,7 +506,7 @@ async def test_new_api_db_switch(
     timedelta = datetime.timedelta()
     for i in range(6):
         # add redis entries
-        with freezegun.freeze_time(INITIAL_TIMESTAMP + timedelta):
+        with time_travel(INITIAL_TIMESTAMP + timedelta):
             await signals.send(
                 repository=fake_repository,
                 pull_request=github_types.GitHubPullRequestNumber(1),
@@ -524,7 +524,7 @@ async def test_new_api_db_switch(
         trigger="pg_evt",
     )
 
-    with freezegun.freeze_time(INITIAL_TIMESTAMP, tick=True):
+    with time_travel(INITIAL_TIMESTAMP, tick=True):
         # first
         response = await web_client.get(
             "/v1/repos/Mergifyio/engine/logs?per_page=2",
@@ -579,7 +579,7 @@ async def test_new_api_db_switch(
         assert len(response.json()["events"]) == 3
 
     # switched to postgres
-    with freezegun.freeze_time(
+    with time_travel(
         INITIAL_TIMESTAMP
         + eventlogs.EVENTLOGS_LONG_RETENTION
         + datetime.timedelta(hours=1)
@@ -612,7 +612,7 @@ async def test_old_api_db_switch(
 
     # test one redis event
     monkeypatch.setattr(settings, "EVENTLOG_EVENTS_DB_INGESTION", False)
-    with freezegun.freeze_time(INITIAL_TIMESTAMP + datetime.timedelta(minutes=1)):
+    with time_travel(INITIAL_TIMESTAMP + datetime.timedelta(minutes=1)):
         await signals.send(
             repository=fake_repository,
             pull_request=github_types.GitHubPullRequestNumber(1),
@@ -645,7 +645,7 @@ async def test_old_api_db_switch(
         }
 
     # passed the eventlogs TTL the old API will use the postgreSQL backend
-    with freezegun.freeze_time(
+    with time_travel(
         INITIAL_TIMESTAMP
         + eventlogs.EVENTLOGS_LONG_RETENTION
         + datetime.timedelta(hours=1)
@@ -734,7 +734,7 @@ async def test_event_with_enum_metadata(
         trigger="Rule: some dummmy rule",
     )
 
-    with freezegun.freeze_time(
+    with time_travel(
         INITIAL_TIMESTAMP
         + eventlogs.EVENTLOGS_LONG_RETENTION
         + datetime.timedelta(hours=1)

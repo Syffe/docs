@@ -2,16 +2,15 @@ import datetime
 import typing
 from unittest import mock
 
-from freezegun import freeze_time
-
 from mergify_engine import date
 from mergify_engine.rules import conditions as rule_conditions
 from mergify_engine.rules.config import queue_rules as qr_config
+from mergify_engine.tests.tardis import time_travel
 from mergify_engine.web.api.queues import estimated_time_to_merge
 
 
 async def test_compute_estimation_no_batch_first_pr() -> None:
-    with freeze_time("2023-08-29"):
+    with time_travel("2023-08-29"):
         embarked_pull = mock.Mock()
         embarked_pull_position = 0
         queue_rule_config = typing.cast(
@@ -44,7 +43,7 @@ async def test_compute_estimation_no_batch_first_pr() -> None:
 
 
 async def test_compute_estimation_no_batch_second_pr() -> None:
-    with freeze_time("2023-08-29"):
+    with time_travel("2023-08-29"):
         embarked_pull = mock.Mock()
         embarked_pull_position = 1
         queue_rule_config = typing.cast(
@@ -68,7 +67,7 @@ async def test_compute_estimation_no_batch_second_pr() -> None:
 
 
 async def test_compute_estimation_batch_second_pr() -> None:
-    with freeze_time("2023-08-29"):
+    with time_travel("2023-08-29"):
         embarked_pull = mock.Mock()
         embarked_pull_position = 1
         queue_rule_config = typing.cast(
@@ -95,7 +94,7 @@ async def test_compute_estimation_batch_second_pr() -> None:
 
 
 async def test_compute_estimation_batch_third_pr() -> None:
-    with freeze_time("2023-08-29"):
+    with time_travel("2023-08-29"):
         embarked_pull = mock.Mock()
         embarked_pull_position = 2
         queue_rule_config = typing.cast(
@@ -119,7 +118,7 @@ async def test_compute_estimation_batch_third_pr() -> None:
 
 
 async def test_compute_estimation_in_schedule() -> None:
-    with freeze_time("2023-08-29 12:00"):
+    with time_travel("2023-08-29 12:00"):
         embarked_pull = mock.Mock()
         embarked_pull.queued_at = date.utcnow()
         embarked_pull_position = 0
@@ -163,7 +162,7 @@ async def test_compute_estimation_in_schedule() -> None:
 
 
 async def test_compute_estimation_out_of_schedule() -> None:
-    with freeze_time("2023-08-29 00:00"):
+    with time_travel("2023-08-29 00:00"):
         embarked_pull = mock.Mock()
         embarked_pull.queued_at = date.utcnow()
         embarked_pull_position = 0
@@ -207,7 +206,7 @@ async def test_compute_estimation_out_of_schedule() -> None:
 
 
 async def test_compute_estimation_checks_end_in_schedule() -> None:
-    with freeze_time("2023-08-29 08:55"):
+    with time_travel("2023-08-29 08:55"):
         embarked_pull = mock.Mock()
         embarked_pull.queued_at = date.utcnow()
         embarked_pull_position = 0

@@ -4,7 +4,6 @@ import statistics
 from unittest import mock
 
 import anys
-from freezegun import freeze_time
 import msgpack
 import pytest
 
@@ -16,6 +15,7 @@ from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.tardis import time_travel
 
 
 class TestQueueApi(base.FunctionalTestBase):
@@ -410,7 +410,7 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         # Tuesday
-        with freeze_time("2023-01-10T14:00:00", tick=True):
+        with time_travel("2023-01-10T14:00:00", tick=True):
             p = await self.create_pr()
             await self.add_label(p["number"], "queue")
             await self.run_engine()
@@ -592,7 +592,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
         start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1 = await self.create_pr()
@@ -606,7 +606,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=1), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=1), tick=True):
             await self.create_status(tmp_mq_pr_1["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -617,7 +617,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
             await self.create_status(tmp_mq_pr_2["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -628,7 +628,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_3 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=3), tick=True):
             await self.create_status(tmp_mq_pr_3["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -696,7 +696,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
         start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1 = await self.create_pr()
@@ -711,7 +711,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=1), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=1), tick=True):
             await self.create_status(tmp_mq_pr_1["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -722,7 +722,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
             await self.create_status(tmp_mq_pr_2["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -733,7 +733,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_3 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=3), tick=True):
             await self.create_status(tmp_mq_pr_3["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -821,7 +821,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
         start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1 = await self.create_pr()
@@ -836,7 +836,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=1), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=1), tick=True):
             await self.create_status(tmp_mq_pr_1["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -847,7 +847,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
             await self.create_status(tmp_mq_pr_2["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -858,7 +858,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_3 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=3), tick=True):
             await self.create_status(tmp_mq_pr_3["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -964,7 +964,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
         start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1 = await self.create_pr()
@@ -982,7 +982,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=1), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=1), tick=True):
             await self.create_status(tmp_mq_pr_1["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -993,7 +993,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
             await self.create_status(tmp_mq_pr_2["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -1004,7 +1004,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_3 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=3), tick=True):
             await self.create_status(tmp_mq_pr_3["pull_request"])
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
@@ -1206,7 +1206,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
         # Friday, 15:00 UTC
         start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1 = await self.create_pr()
@@ -1233,7 +1233,7 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.wait_for_pull_request("opened")
 
         # Friday, 18:00 UTC
-        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+        with time_travel(start_date + datetime.timedelta(hours=3), tick=True):
             await self.run_full_engine()
 
             r = await self.admin_app.get(
@@ -1253,7 +1253,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ) == datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC)
 
         # Monday, 08:00 UTC, at the very start of the schedule
-        with freeze_time(
+        with time_travel(
             datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC), tick=True
         ):
             await self.run_full_engine()
@@ -1300,7 +1300,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
         # Friday, 15:00 UTC
         start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1 = await self.create_pr()
@@ -1371,7 +1371,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
         # Friday, 15:00 UTC
         start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.UTC)
-        with freeze_time(start_date, tick=True):
+        with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             p1 = await self.create_pr()
@@ -1383,7 +1383,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
 
-        with freeze_time(start_date + datetime.timedelta(minutes=10), tick=True):
+        with time_travel(start_date + datetime.timedelta(minutes=10), tick=True):
             # This will make the time_to_merge >10 minutes
             await self.create_status(tmp_mq_pr_1["pull_request"])
 
@@ -1399,7 +1399,7 @@ class TestQueueApi(base.FunctionalTestBase):
         date_close_to_end_schedule = datetime.datetime(
             2022, 10, 14, 16, 52, tzinfo=datetime.UTC
         )
-        with freeze_time(date_close_to_end_schedule, tick=True):
+        with time_travel(date_close_to_end_schedule, tick=True):
             await self.add_label(p2["number"], "queue")
             await self.run_engine()
 
