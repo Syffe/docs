@@ -162,7 +162,7 @@ async def mock_user_authorization_on_repo(
 
     respx_mock.get(
         f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}/installation"
-    ).respond(200, json={"account": repo["owner"]})
+    ).respond(200, json={"account": repo["owner"], "suspended_at": None})
     respx_mock.get(
         f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}"
     ).respond(

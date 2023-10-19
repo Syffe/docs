@@ -56,7 +56,7 @@ async def api_token(
     # get installation from repository
     respx_mock.get(
         "https://api.github.com/repos/Mergifyio/engine/installation"
-    ).respond(200, json={"account": gh_owner, "id": 42})
+    ).respond(200, json={"account": gh_owner, "id": 42, "suspended_at": None})
 
     # get the repository
     respx_mock.get("https://api.github.com/repos/Mergifyio/engine").respond(

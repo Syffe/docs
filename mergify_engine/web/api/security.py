@@ -184,6 +184,9 @@ async def _get_authenticated_actor(
                 owner, repository
             )
 
+        if installation_json["suspended_at"]:
+            raise fastapi.HTTPException(403)
+
         if application is not None:
             # Authenticated by token
             if application.github_account.id != installation_json["account"]["id"]:
