@@ -3,7 +3,7 @@ permissions: read-all
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 6 * * 1-5"
+    - cron: "30 6 * * 1"
 
 concurrency:
   group: "${{ github.workflow }}"
@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   testing-database-sync:
-    timeout-minutes: 15
+    timeout-minutes: 30
     runs-on: ubuntu-22.04
     permissions:
       contents: "read"
