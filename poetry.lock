@@ -630,13 +630,13 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "daiquiri"
-version = "3.2.1"
+version = "3.2.3"
 description = "Library to configure Python logging easily"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8"
 files = [
-    {file = "daiquiri-3.2.1-py3-none-any.whl", hash = "sha256:b797a7ac94219dc26ef8ebf04f1f507eefa83a7d174e9eb41acc33e3ebf16f38"},
-    {file = "daiquiri-3.2.1.tar.gz", hash = "sha256:408c4d28ec8f0ea23e965374479829bd22364d0c08d791cbeb7bba245963e0fd"},
+    {file = "daiquiri-3.2.3-py3-none-any.whl", hash = "sha256:a8a7b034b9d12bb957e49ffbfecdbe6de74c176b3e19ae4f521d108fc79b8e1d"},
+    {file = "daiquiri-3.2.3.tar.gz", hash = "sha256:3fcaef376fd68088b923913747ab7ee12d8b7fb2af7f8c5f20e5980997e9e835"},
 ]
 
 [package.dependencies]
