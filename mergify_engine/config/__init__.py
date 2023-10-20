@@ -337,6 +337,7 @@ class WorkerSettings(pydantic_settings.BaseSettings):
     EVENTLOG_EVENTS_DB_INGESTION: bool = False
     GITHUB_IN_POSTGRES_EVENTS_INGESTION: bool = False
     GITHUB_IN_POSTGRES_PROCESSING_BATCH_SIZE: int = 1000
+    EVENTLOG_EVENTS_REDIS_INGESTION: bool = True
 
 
 class APISettings(pydantic_settings.BaseSettings):

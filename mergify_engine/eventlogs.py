@@ -360,40 +360,43 @@ class EventLogsSignal(signals.SignalBase):
         else:
             return
 
-        pipe = await redis.pipeline()
-        now = date.utcnow()
-        fields = {
-            b"version": DEFAULT_VERSION,
-            b"data": msgpack.packb(
-                RedisGenericEvent(
-                    {
-                        "timestamp": now,
-                        "event": event,
-                        "repository": repository.repo["full_name"],
-                        "pull_request": pull_request,
-                        "metadata": metadata,
-                        "trigger": trigger,
-                    }
+        if settings.EVENTLOG_EVENTS_REDIS_INGESTION:
+            pipe = await redis.pipeline()
+            now = date.utcnow()
+            fields = {
+                b"version": DEFAULT_VERSION,
+                b"data": msgpack.packb(
+                    RedisGenericEvent(
+                        {
+                            "timestamp": now,
+                            "event": event,
+                            "repository": repository.repo["full_name"],
+                            "pull_request": pull_request,
+                            "metadata": metadata,
+                            "trigger": trigger,
+                        }
+                    ),
+                    datetime=True,
                 ),
-                datetime=True,
-            ),
-        }
-        minid = redis_utils.get_expiration_minid(retention)
+            }
+            minid = redis_utils.get_expiration_minid(retention)
 
-        repo_key = _get_repository_key(
-            repository.installation.owner_id, repository.repo["id"]
-        )
-        await pipe.xadd(repo_key, fields=fields, minid=minid)
-        await pipe.expire(repo_key, int(retention.total_seconds()))
-
-        if pull_request is not None:
-            pull_key = _get_pull_request_key(
-                repository.installation.owner_id, repository.repo["id"], pull_request
+            repo_key = _get_repository_key(
+                repository.installation.owner_id, repository.repo["id"]
             )
-            await pipe.xadd(pull_key, fields=fields, minid=minid)
-            await pipe.expire(pull_key, int(retention.total_seconds()))
+            await pipe.xadd(repo_key, fields=fields, minid=minid)
+            await pipe.expire(repo_key, int(retention.total_seconds()))
 
-        await pipe.execute()
+            if pull_request is not None:
+                pull_key = _get_pull_request_key(
+                    repository.installation.owner_id,
+                    repository.repo["id"],
+                    pull_request,
+                )
+                await pipe.xadd(pull_key, fields=fields, minid=minid)
+                await pipe.expire(pull_key, int(retention.total_seconds()))
+
+            await pipe.execute()
 
         if settings.EVENTLOG_EVENTS_DB_INGESTION:
             from mergify_engine import events as evt_utils
