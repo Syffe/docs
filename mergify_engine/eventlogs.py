@@ -398,19 +398,18 @@ class EventLogsSignal(signals.SignalBase):
 
             await pipe.execute()
 
-        if settings.EVENTLOG_EVENTS_DB_INGESTION:
-            from mergify_engine import events as evt_utils
+        from mergify_engine import events as evt_utils
 
-            if event in evt_utils.EVENT_NAME_TO_MODEL:
-                await evt_utils.insert(
-                    event=event,
-                    repository=repository.repo,
-                    pull_request=pull_request,
-                    metadata=metadata,
-                    trigger=trigger,
-                )
-            else:
-                LOG.debug("skipping event-type not supported in database", event=event)
+        if event in evt_utils.EVENT_NAME_TO_MODEL:
+            await evt_utils.insert(
+                event=event,
+                repository=repository.repo,
+                pull_request=pull_request,
+                metadata=metadata,
+                trigger=trigger,
+            )
+        else:
+            LOG.debug("skipping event-type not supported in database", event=event)
 
 
 def cast_event_item(event: GenericEvent) -> Event:

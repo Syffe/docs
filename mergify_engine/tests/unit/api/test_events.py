@@ -13,7 +13,6 @@ from mergify_engine import eventlogs
 from mergify_engine import events as evt_utils
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine.models import events as event_models
@@ -501,8 +500,6 @@ async def test_new_api_db_switch(
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
 ) -> None:
-    monkeypatch.setattr(settings, "EVENTLOG_EVENTS_DB_INGESTION", False)
-
     timedelta = datetime.timedelta()
     for i in range(6):
         # add redis entries
@@ -515,6 +512,7 @@ async def test_new_api_db_switch(
                 trigger=f"redis_evt_{i}",
             )
         timedelta += datetime.timedelta(hours=1)
+
     # add a postgres entries
     await evt_utils.insert(
         event="action.comment",
@@ -590,157 +588,3 @@ async def test_new_api_db_switch(
         )
         assert response is not None
         assert response.json()["events"][0]["trigger"] == "pg_evt"
-
-
-@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
-async def test_old_api_db_switch(
-    monkeypatch: pytest.MonkeyPatch,
-    redis_links: redis_utils.RedisLinks,
-    fake_repository: context.Repository,
-    web_client: tests_conftest.CustomTestClient,
-    api_token: tests_api_conftest.TokenUserRepo,
-) -> None:
-    await redis_links.cache.set(eventlogs.DB_SWITCH_KEY, INITIAL_TIMESTAMP.timestamp())
-
-    await evt_utils.insert(
-        event="action.comment",
-        repository=fake_repository.repo,
-        pull_request=github_types.GitHubPullRequestNumber(1),
-        metadata=signals.EventCommentMetadata(message=""),
-        trigger="pg_evt",
-    )
-
-    # test one redis event
-    monkeypatch.setattr(settings, "EVENTLOG_EVENTS_DB_INGESTION", False)
-    with time_travel(INITIAL_TIMESTAMP + datetime.timedelta(minutes=1)):
-        await signals.send(
-            repository=fake_repository,
-            pull_request=github_types.GitHubPullRequestNumber(1),
-            event="action.comment",
-            metadata=signals.EventCommentMetadata(message=""),
-            trigger="redis_evt",
-        )
-
-        response = await web_client.get(
-            "/v1/repos/Mergifyio/engine/events",
-            headers={"Authorization": api_token.api_token},
-        )
-        assert response.json() == {
-            "size": 1,
-            "per_page": 10,
-            "total": 1,
-            "events": [
-                {
-                    "id": anys.ANY_INT,
-                    "received_at": anys.ANY_DATETIME_STR,
-                    "timestamp": anys.ANY_DATETIME_STR,
-                    "trigger": "redis_evt",
-                    "repository": "Mergifyio/mergify-engine",
-                    "pull_request": 1,
-                    "event": "action.comment",
-                    "type": "action.comment",
-                    "metadata": {"message": ""},
-                }
-            ],
-        }
-
-    # passed the eventlogs TTL the old API will use the postgreSQL backend
-    with time_travel(
-        INITIAL_TIMESTAMP
-        + eventlogs.EVENTLOGS_LONG_RETENTION
-        + datetime.timedelta(hours=1)
-    ):
-        response = await web_client.get(
-            "/v1/repos/Mergifyio/engine/events",
-            headers={"Authorization": api_token.api_token},
-        )
-        assert response is not None
-        payload = response.json()
-        assert payload == {
-            "size": 1,
-            "per_page": 10,
-            "total": None,
-            "events": [
-                {
-                    "id": 1,
-                    "timestamp": anys.ANY_DATETIME_STR,
-                    "received_at": anys.ANY_DATETIME_STR,
-                    "trigger": "pg_evt",
-                    "repository": "Mergifyio/mergify-engine",
-                    "pull_request": 1,
-                    "event": "action.comment",
-                    "type": "action.comment",
-                    "metadata": {"message": ""},
-                }
-            ],
-        }
-
-        # test the second endpoint (pull request path param)
-        response = await web_client.get(
-            "/v1/repos/Mergifyio/engine/pulls/1/events",
-            headers={"Authorization": api_token.api_token},
-        )
-        assert len(response.json()["events"]) == 1
-
-
-@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
-async def test_event_with_enum_metadata(
-    monkeypatch: pytest.MonkeyPatch,
-    fake_repository: context.Repository,
-    web_client: tests_conftest.CustomTestClient,
-    api_token: tests_api_conftest.TokenUserRepo,
-    redis_links: redis_utils.RedisLinks,
-) -> None:
-    await redis_links.cache.set(eventlogs.DB_SWITCH_KEY, INITIAL_TIMESTAMP.timestamp())
-
-    unsuccessful_check = checks.QueueCheck.Serialized(
-        {
-            "name": "trivy",
-            "description": "Security check",
-            "state": "failure",
-            "url": None,
-            "avatar_url": "some_url",
-        }
-    )
-
-    monkeypatch.setattr(settings, "EVENTLOG_EVENTS_DB_INGESTION", False)
-    await evt_utils.insert(
-        event="action.queue.checks_end",
-        repository=fake_repository.repo,
-        pull_request=github_types.GitHubPullRequestNumber(1),
-        metadata=signals.EventQueueChecksEndMetadata(
-            {
-                "branch": "feature_branch",
-                "partition_name": partition_rules.DEFAULT_PARTITION_NAME,
-                "position": 3,
-                "queue_name": "default",
-                "queued_at": date.utcnow(),
-                "aborted": True,
-                "abort_code": "PR_DEQUEUED",
-                "abort_reason": "Pull request has been dequeued.",
-                "abort_status": "DEFINITIVE",
-                "unqueue_code": None,
-                "speculative_check_pull_request": {
-                    "number": 456,
-                    "in_place": True,
-                    "checks_timed_out": False,
-                    "checks_conclusion": "failure",
-                    "checks_started_at": date.utcnow(),
-                    "checks_ended_at": date.utcnow(),
-                    "unsuccessful_checks": [unsuccessful_check],
-                },
-            }
-        ),
-        trigger="Rule: some dummmy rule",
-    )
-
-    with time_travel(
-        INITIAL_TIMESTAMP
-        + eventlogs.EVENTLOGS_LONG_RETENTION
-        + datetime.timedelta(hours=1)
-    ):
-        response = await web_client.get(
-            "/v1/repos/Mergifyio/engine/logs",
-            headers={"Authorization": api_token.api_token},
-        )
-        assert response.status_code == 200

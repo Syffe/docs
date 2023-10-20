@@ -55,7 +55,6 @@ jobs:
 # the keyword "conditions" instead of "merge_conditions" for queue_rules config
 # in order to keep the backward compatibility tested. They should not be changed
 # until we totally deprecate the "conditions" keyword.
-@pytest.mark.usefixtures("enable_events_db_ingestion")
 class TestQueueAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 

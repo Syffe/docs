@@ -21,7 +21,6 @@ from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
 
 
-@pytest.mark.usefixtures("enable_events_db_ingestion")
 @pytest.mark.subscription(
     subscription.Features.QUEUE_ACTION,
     subscription.Features.EVENTLOGS_SHORT,

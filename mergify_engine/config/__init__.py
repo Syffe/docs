@@ -334,7 +334,6 @@ class WorkerSettings(pydantic_settings.BaseSettings):
     # FIXME: stop injecting events until we reenable the consuming part
     CI_EVENT_INGESTION: bool = False
     CI_DOWNLOAD_BATCH_SIZE: int = 50
-    EVENTLOG_EVENTS_DB_INGESTION: bool = False
     GITHUB_IN_POSTGRES_EVENTS_INGESTION: bool = False
     GITHUB_IN_POSTGRES_PROCESSING_BATCH_SIZE: int = 1000
     EVENTLOG_EVENTS_REDIS_INGESTION: bool = True
