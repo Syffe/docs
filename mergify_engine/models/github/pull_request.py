@@ -265,6 +265,9 @@ class PullRequest(models.Base):
 
         await session.merge(cls(**data_for_obj))
 
+    def as_github_dict(self) -> github_types.GitHubPullRequest:
+        return typing.cast(github_types.GitHubPullRequest, super().as_github_dict())
+
 
 class PullRequestAssigneesGitHubAccountAssociationTable(models.Base):
     __tablename__ = "at_pull_request_assignees_github_account"

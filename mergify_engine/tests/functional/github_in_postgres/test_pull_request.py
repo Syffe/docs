@@ -78,7 +78,7 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
             assert isinstance(
                 pulls_in_db[0].requested_reviewers[0], gh_account_mod.GitHubAccount
             )
-            assert pulls_in_db[0].as_github_dict()["requested_reviewers"] == [  # type: ignore[typeddict-item]
+            assert pulls_in_db[0].as_github_dict()["requested_reviewers"] == [
                 typing.cast(
                     github_types.GitHubAccount,
                     {
