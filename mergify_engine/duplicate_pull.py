@@ -72,6 +72,7 @@ GIT_MESSAGE_TO_EXCEPTION = {
     "does not have a commit checked": DuplicateFailed,
     "Merge conflict in .gitmodules": DuplicateFailedConflicts,
     "Protected branch update failed for": DuplicateFailed,
+    "Failed to merge submodule": DuplicateFailed,
 }
 
 
