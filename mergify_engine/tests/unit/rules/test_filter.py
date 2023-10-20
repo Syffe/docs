@@ -598,10 +598,10 @@ async def test_current_datetime() -> None:
     ),
 )
 async def test_current_datetime_range(condition: str) -> None:
-    with time_travel("2023-07-13T13:00+02"):
-        tree = parser.parse(condition)
-        f = filter.NearDatetimeFilter(tree)
+    tree = parser.parse(condition)
+    f = filter.NearDatetimeFilter(tree)
 
+    with time_travel("2023-07-13T13:00+02"):
         next_refresh_at = datetime.datetime.fromisoformat("2023-07-13T14:00").replace(
             tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
         )
@@ -674,10 +674,25 @@ async def test_current_datetime_range(condition: str) -> None:
                 2023, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
             ),
             datetime.datetime(  # next refresh inside range
-                2023, 7, 2, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023, 8, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
             ),
             datetime.datetime(  # next refresh after range
                 2024, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+        ),
+        (
+            "current-datetime=XXXX-07-XXT08:00/XXXX-07-XXT15:00[Europe/Paris]",
+            "2023-06-10",  # freeze time before range
+            "2023-07-10T10:00+02",  # freeze time inside range
+            "2023-08-01",  # freeze time after range
+            datetime.datetime(  # next refresh before range
+                2023, 7, 1, 8, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh inside range
+                2023, 7, 10, 15, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh after range
+                2024, 7, 1, 8, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
             ),
         ),
         (
@@ -689,7 +704,7 @@ async def test_current_datetime_range(condition: str) -> None:
                 2023, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
             ),
             datetime.datetime(  # next refresh inside range
-                2023, 7, 2, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023, 8, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
             ),
             datetime.datetime(  # next refresh after range
                 2024, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
@@ -756,7 +771,7 @@ async def test_regex_jinja_template(
 
 async def test_schedule_neardatetime_filter() -> None:
     # Saturday
-    with time_travel("2022-11-12") as frozen_time:
+    with time_travel(datetime.datetime(2022, 11, 12, tzinfo=date.UTC)) as frozen_time:
         tree_eq = parser.parse("schedule=MON-FRI 08:00-17:00")
         tree_ne = parser.parse("schedule!=MON-FRI 08:00-17:00")
         f_eq = filter.NearDatetimeFilter(tree_eq)

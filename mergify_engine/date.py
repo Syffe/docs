@@ -842,7 +842,12 @@ class UncertainDate:
 
         if as_dt >= from_time:
             if isinstance(self.day, UncertainDatePart):
+                if self.month == from_time.month:
+                    return as_dt
+
+                # self.month > from_time.month
                 return as_dt.replace(day=1)
+
             return as_dt
 
         # as_dt < from_time
@@ -998,7 +1003,21 @@ class DateTimeRange:
         if from_time <= self.end:
             if isinstance(self.end, datetime.datetime):
                 return self.end + datetime.timedelta(minutes=1)
-            return self.end.get_next_datetime(from_time) + datetime.timedelta(minutes=1)
+
+            next_datetime = self.end.get_next_datetime(from_time) + datetime.timedelta(
+                minutes=1
+            )
+            if self.start <= next_datetime <= self.end:
+                # This allows to handle range with a full day and uncertain days
+                # (like 2023-07-XXT00:00/2023-07-XXT23:59).
+                # If inside the range (eg: 2023-07-10), then the next valid datetime
+                # at the end of the month (2023-08-01)
+                return relativedelta(
+                    next_datetime.replace(day=1),
+                    months=1,
+                )
+
+            return next_datetime
 
         # from_time > self.end > self.start
         if isinstance(self.start, UncertainDate):
