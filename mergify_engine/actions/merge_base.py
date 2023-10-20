@@ -36,6 +36,7 @@ It should avoid loosing information or keeping them for too long to make decisio
 where repository activity is often reduced.
 """
 MERGE_COMMIT_SHA_EXPIRATION = int(datetime.timedelta(days=7).total_seconds())
+MERGE_METHOD_EXPIRATION = datetime.timedelta(hours=1)
 
 if typing.TYPE_CHECKING:
     PendingResultBuilderT = abc.Callable[
@@ -46,6 +47,7 @@ else:
     PendingResultBuilderT = abc.Callable[..., abc.Awaitable[check_api.Result]]
 
 MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
+PullMergePayload = dict[str, str]
 
 
 class MergeUtilsMixin:
@@ -133,13 +135,13 @@ class MergeUtilsMixin:
         self,
         kind: str,
         ctxt: context.Context,
-        merge_method: MergeMethodT,
+        merge_method: MergeMethodT | None,
         merge_bot_account: github_types.GitHubLogin | None,
         commit_message_template: str | None,
         pending_result_builder: PendingResultBuilderT,
         branch_protection_injection_mode: queue.BranchProtectionInjectionModeT = "queue",
     ) -> check_api.Result:
-        data = {}
+        pull_merge_payload = {}
 
         on_behalf: github_user.GitHubUser | None = None
         if merge_bot_account:
@@ -213,18 +215,19 @@ class MergeUtilsMixin:
 
         if commit_title_and_message is not None:
             title, message = commit_title_and_message
-            data["commit_title"] = title
-            data["commit_message"] = message
+            pull_merge_payload["commit_title"] = title
+            pull_merge_payload["commit_message"] = message
 
-        data["sha"] = ctxt.pull["head"]["sha"]
-        data["merge_method"] = merge_method
+        pull_merge_payload["sha"] = ctxt.pull["head"]["sha"]
 
         try:
-            await ctxt.client.put(
-                f"{ctxt.base_url}/pulls/{ctxt.pull['number']}/merge",
-                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
-                json=data,
-            )
+            if merge_method is None:
+                merge_method = await self._request_merge_without_method(
+                    ctxt, pull_merge_payload, on_behalf
+                )
+            else:
+                pull_merge_payload["merge_method"] = merge_method
+                await self._request_merge(ctxt, pull_merge_payload, on_behalf)
         except http.HTTPUnauthorized:
             if on_behalf is None:
                 raise
@@ -237,7 +240,7 @@ class MergeUtilsMixin:
                 return await self._handle_merge_error(e, ctxt, pending_result_builder)
         else:
             await ctxt.update(wait_merged=True, wait_merge_commit_sha=True)
-            ctxt.log.info("merged")
+            ctxt.log.info("merged", merge_method=merge_method)
 
         if ctxt.pull["merge_commit_sha"]:
             await ctxt.repository.installation.redis.queue.set(
@@ -261,6 +264,93 @@ class MergeUtilsMixin:
             check_api.Conclusion.SUCCESS,
             "The pull request has been merged automatically",
             f"The pull request has been merged automatically at *{ctxt.pull['merge_commit_sha']}*",
+        )
+
+    async def _request_merge_without_method(
+        self,
+        ctxt: context.Context,
+        pull_merge_payload: PullMergePayload,
+        on_behalf: github_user.GitHubUser | None,
+    ) -> MergeMethodT:
+        methods: list[MergeMethodT] = ["merge", "squash", "rebase"]
+
+        # NOTE(charly): retrieve cached merge method and test it first
+        cached_method = await self._get_merge_method(ctxt)
+        if cached_method:
+            methods.remove(cached_method)
+            methods.insert(0, cached_method)
+
+        last_client_error: http.HTTPClientSideError | None = None
+
+        for method in methods:
+            pull_merge_payload["merge_method"] = method
+
+            try:
+                await self._request_merge(ctxt, pull_merge_payload, on_behalf)
+            except http.HTTPClientSideError as e:
+                # NOTE(charly): if the merge method is not allowed, test the
+                # next merge method and save the response in case none works
+                # (theoretically impossible)
+                if e.status_code == 405 and (
+                    FORBIDDEN_MERGE_COMMITS_MSG in e.message
+                    or FORBIDDEN_SQUASH_MERGE_MSG in e.message
+                    or FORBIDDEN_REBASE_MERGE_MSG in e.message
+                ):
+                    last_client_error = e
+                    continue
+                raise
+            else:
+                # NOTE(charly): new working merge method, store it in the cache
+                if method != cached_method:
+                    await self._store_merge_method(ctxt, method)
+                return method
+
+        # NOTE(charly): no merge method worked, raise the last error
+        if last_client_error is not None:
+            raise last_client_error
+
+        raise RuntimeError("There should have been a success or a failure")
+
+    async def _get_merge_method(self, ctxt: context.Context) -> MergeMethodT | None:
+        cached_method = await ctxt.redis.cache.get(
+            self._merge_method_redis_key(
+                ctxt.repository.installation.owner_id,
+                ctxt.repository.repo["id"],
+            ),
+        )
+        if cached_method is not None:
+            return typing.cast(MergeMethodT, cached_method.decode())
+        return None
+
+    async def _store_merge_method(
+        self, ctxt: context.Context, method: MergeMethodT
+    ) -> None:
+        await ctxt.redis.cache.set(
+            self._merge_method_redis_key(
+                ctxt.repository.installation.owner_id,
+                ctxt.repository.repo["id"],
+            ),
+            method,
+            ex=MERGE_METHOD_EXPIRATION,
+        )
+
+    @staticmethod
+    def _merge_method_redis_key(
+        owner_id: github_types.GitHubAccountIdType,
+        repository_id: github_types.GitHubRepositoryIdType,
+    ) -> str:
+        return f"merge-method/{owner_id}/{repository_id}"
+
+    async def _request_merge(
+        self,
+        ctxt: context.Context,
+        pull_merge_payload: PullMergePayload,
+        on_behalf: github_user.GitHubUser | None,
+    ) -> None:
+        await ctxt.client.put(
+            f"{ctxt.base_url}/pulls/{ctxt.pull['number']}/merge",
+            oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+            json=pull_merge_payload,
         )
 
     async def _handle_merge_error(
@@ -427,7 +517,7 @@ class MergeUtilsMixin:
     async def pre_merge_checks(
         self,
         ctxt: context.Context,
-        merge_method: MergeMethodT,
+        merge_method: MergeMethodT | None,
         merge_bot_account: github_types.GitHubLogin | None,
     ) -> check_api.Result | None:
         if ctxt.pull["merged"]:

@@ -1,8 +1,15 @@
+from unittest import mock
+
 import pytest
+import respx
 
 from mergify_engine import condition_value_querier
 from mergify_engine import github_types
+from mergify_engine import redis_utils
 from mergify_engine import rules
+from mergify_engine.actions import merge
+from mergify_engine.actions import merge_base
+from mergify_engine.clients import http
 from mergify_engine.tests.unit import conftest
 
 
@@ -194,3 +201,151 @@ async def test_merge_commit_message_syntax_error(
     )
     with pytest.raises(condition_value_querier.RenderTemplateFailure):
         await condition_value_querier.PullRequest(ctxt).get_commit_message()
+
+
+async def test_request_merge_without_method_merge_success(
+    context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    context = await context_getter(123)
+
+    executor = merge.MergeExecutor(
+        ctxt=context,
+        rule=mock.Mock(),
+        config=mock.Mock(),
+        queue_rules=mock.Mock(),
+        partition_rules=mock.Mock(),
+    )
+
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="merge",
+    ).respond(200)
+
+    await executor._request_merge_without_method(
+        ctxt=context, pull_merge_payload={}, on_behalf=None
+    )
+
+    assert await redis_links.cache.get("merge-method/0/0") == b"merge"
+
+
+async def test_request_merge_without_method_rebase_success(
+    context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    context = await context_getter(123)
+    executor = merge.MergeExecutor(
+        ctxt=context,
+        rule=mock.Mock(),
+        config=mock.Mock(),
+        queue_rules=mock.Mock(),
+        partition_rules=mock.Mock(),
+    )
+
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="merge",
+    ).respond(405, json={"message": merge_base.FORBIDDEN_MERGE_COMMITS_MSG})
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="squash",
+    ).respond(405, json={"message": merge_base.FORBIDDEN_SQUASH_MERGE_MSG})
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="rebase",
+    ).respond(200)
+
+    await executor._request_merge_without_method(
+        ctxt=context, pull_merge_payload={}, on_behalf=None
+    )
+
+    assert await redis_links.cache.get("merge-method/0/0") == b"rebase"
+
+
+async def test_request_merge_without_method_failure(
+    context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    context = await context_getter(123)
+    executor = merge.MergeExecutor(
+        ctxt=context,
+        rule=mock.Mock(),
+        config=mock.Mock(),
+        queue_rules=mock.Mock(),
+        partition_rules=mock.Mock(),
+    )
+
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="merge",
+    ).respond(405, json={"message": merge_base.FORBIDDEN_MERGE_COMMITS_MSG})
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="squash",
+    ).respond(405, json={"message": merge_base.FORBIDDEN_SQUASH_MERGE_MSG})
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="rebase",
+    ).respond(405, json={"message": merge_base.FORBIDDEN_REBASE_MERGE_MSG})
+
+    with pytest.raises(http.HTTPClientSideError):
+        await executor._request_merge_without_method(
+            ctxt=context, pull_merge_payload={}, on_behalf=None
+        )
+
+
+async def test_request_merge_without_method_rebase_success_with_cache(
+    context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    context = await context_getter(123)
+    executor = merge.MergeExecutor(
+        ctxt=context,
+        rule=mock.Mock(),
+        config=mock.Mock(),
+        queue_rules=mock.Mock(),
+        partition_rules=mock.Mock(),
+    )
+    await redis_links.cache.set("merge-method/0/0", "rebase")
+
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="rebase",
+    ).respond(200)
+
+    await executor._request_merge_without_method(
+        ctxt=context, pull_merge_payload={}, on_behalf=None
+    )
+
+
+async def test_request_merge_without_method_rebase_success_with_invalid_cache(
+    context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    context = await context_getter(123)
+    executor = merge.MergeExecutor(
+        ctxt=context,
+        rule=mock.Mock(),
+        config=mock.Mock(),
+        queue_rules=mock.Mock(),
+        partition_rules=mock.Mock(),
+    )
+    await redis_links.cache.set("merge-method/0/0", "rebase")
+
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="rebase",
+    ).respond(405, json={"message": merge_base.FORBIDDEN_REBASE_MERGE_MSG})
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="merge",
+    ).respond(200)
+
+    await executor._request_merge_without_method(
+        ctxt=context, pull_merge_payload={}, on_behalf=None
+    )

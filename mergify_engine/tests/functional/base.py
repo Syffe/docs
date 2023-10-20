@@ -1,5 +1,6 @@
 import asyncio
 from collections import abc
+import contextlib
 import copy
 import datetime
 import itertools
@@ -21,6 +22,7 @@ import daiquiri
 from first import first
 import httpx
 import pytest
+import respx
 
 from mergify_engine import branch_updater
 from mergify_engine import constants
@@ -38,6 +40,7 @@ from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine.actions import backport
 from mergify_engine.actions import copy as copy_action
+from mergify_engine.actions import merge_base
 from mergify_engine.ci import event_processing
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -2289,3 +2292,52 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
         assert r.status_code == expected_status_code
         return r
+
+    @contextlib.asynccontextmanager
+    async def allow_merge_methods(
+        self,
+        repository_url: str,
+        pr_number: github_types.GitHubPullRequestNumber,
+        methods: tuple[typing.Literal["merge", "squash", "rebase"], ...] = (),
+    ) -> typing.AsyncGenerator[None, None]:
+        repository_data = await self.installation_ctxt.client.item(repository_url)
+
+        with respx.mock(assert_all_called=False) as respx_mock:
+            if "merge" not in methods:
+                respx_mock.put(
+                    f"{repository_url}/pulls/{pr_number}/merge",
+                    json__merge_method="merge",
+                ).respond(
+                    405,
+                    json={"message": merge_base.FORBIDDEN_MERGE_COMMITS_MSG},
+                )
+            if "squash" not in methods:
+                respx_mock.put(
+                    f"{repository_url}/pulls/{pr_number}/merge",
+                    json__merge_method="squash",
+                ).respond(
+                    405,
+                    json={"message": merge_base.FORBIDDEN_SQUASH_MERGE_MSG},
+                )
+            if "rebase" not in methods:
+                respx_mock.put(
+                    f"{repository_url}/pulls/{pr_number}/merge",
+                    json__merge_method="rebase",
+                ).respond(
+                    405,
+                    json={"message": merge_base.FORBIDDEN_REBASE_MERGE_MSG},
+                )
+
+            respx_mock.get(repository_url).respond(
+                200,
+                json=repository_data
+                | {
+                    "allow_merge_commit": "merge" in methods,
+                    "allow_squash_merge": "squash" in methods,
+                    "allow_rebase_merge": "rebase" in methods,
+                },
+            )
+
+            respx_mock.route(host=settings.GITHUB_REST_API_HOST).pass_through()
+
+            yield

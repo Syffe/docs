@@ -8,6 +8,7 @@ from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import yaml
+from mergify_engine.actions import merge_base
 from mergify_engine.tests.functional import base
 
 
@@ -154,7 +155,7 @@ class TestMergeAction(base.FunctionalTestBase):
                 {
                     "name": "merge",
                     "conditions": [f"base={self.main_branch_name}"],
-                    "actions": {"merge": {}},
+                    "actions": {"merge": {"method": "merge"}},
                 }
             ]
         }
@@ -495,3 +496,70 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         check = await ctxt_p2.get_engine_check_run("Summary")
         assert check is not None
         assert "[ ] `-conflict`" in check["output"]["summary"]
+
+    async def test_default_merge_method(self) -> None:
+        async def assert_cached_merge_method(expected_method: bytes) -> None:
+            owner_id = self.RECORD_CONFIG["organization_id"]
+            repository_id = self.RECORD_CONFIG["repository_id"]
+            cached_method = await self.redis_links.cache.get(
+                f"merge-method/{owner_id}/{repository_id}"
+            )
+            assert cached_method == expected_method
+
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "merge on main",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {"merge": {}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        # Allow merge
+        pull = await self.create_pr()
+        async with self.allow_merge_methods(
+            self.url_origin, pull["number"], ("merge",)
+        ):
+            await self.run_engine()
+        await self.wait_for_pull_request(
+            action="closed", pr_number=pull["number"], merged=True
+        )
+        await assert_cached_merge_method(b"merge")
+
+        # Allow squash
+        pull = await self.create_pr()
+        async with self.allow_merge_methods(
+            self.url_origin, pull["number"], ("squash",)
+        ):
+            await self.run_engine()
+        await self.wait_for_pull_request(
+            action="closed", pr_number=pull["number"], merged=True
+        )
+        await assert_cached_merge_method(b"squash")
+
+        # Allow rebase
+        pull = await self.create_pr()
+        async with self.allow_merge_methods(
+            self.url_origin, pull["number"], ("rebase",)
+        ):
+            await self.run_engine()
+        await self.wait_for_pull_request(
+            action="closed", pr_number=pull["number"], merged=True
+        )
+        await assert_cached_merge_method(b"rebase")
+
+        # Disallow every merge methods
+        pull = await self.create_pr()
+        async with self.allow_merge_methods(self.url_origin, pull["number"]):
+            await self.run_engine()
+        check_run = await self.wait_for_check_run(
+            conclusion="cancelled", name="Rule: merge on main (merge)"
+        )
+        assert check_run["check_run"]["output"]["title"] in (
+            merge_base.FORBIDDEN_MERGE_COMMITS_MSG,
+            merge_base.FORBIDDEN_REBASE_MERGE_MSG,
+            merge_base.FORBIDDEN_SQUASH_MERGE_MSG,
+        )

@@ -27,7 +27,7 @@ if typing.TYPE_CHECKING:
 
 
 class MergeExecutorConfig(typing.TypedDict):
-    method: merge_base.MergeMethodT
+    method: merge_base.MergeMethodT | None
     commit_message_template: str | None
     merge_bot_account: github_types.GitHubLogin | None
     allow_merging_configuration_change: bool
@@ -153,8 +153,8 @@ class MergeAction(actions.Action):
     )
 
     validator: typing.ClassVar[actions.ValidatorT] = {
-        voluptuous.Required("method", default="merge"): voluptuous.Any(
-            *typing.get_args(merge_base.MergeMethodT)
+        voluptuous.Required("method", default=None): voluptuous.Any(
+            None, *typing.get_args(merge_base.MergeMethodT)
         ),
         voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,
         voluptuous.Required(
