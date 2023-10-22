@@ -4,6 +4,7 @@ import typing
 
 import daiquiri
 import fastapi
+from pydantic import functional_validators
 import sentry_sdk
 
 from mergify_engine import context
@@ -30,19 +31,37 @@ ScopeT = typing.NewType("ScopeT", str)
 
 AUTH_CACHE_EXPIRE = datetime.timedelta(days=7)
 
-_RepositoryOwnerLogin = typing.Annotated[
+
+def NoStartingEndingHyphen(v: str) -> str:
+    # FIXME(sileht): pydantic does not support look-ahead/look-behind regex
+    # so we can't check for starting and ending hyphen with a readable regex
+    assert not (v.startswith("-") or v.endswith("-"))
+    return v
+
+
+RepositoryOwnerLogin = typing.Annotated[
     github_types.GitHubLogin,
-    fastapi.Path(description="The owner of the repository"),
+    fastapi.Path(
+        description="The owner of the repository",
+        pattern=r"^[a-zA-Z0-9\-]+$",
+        min_length=1,
+        max_length=40,
+    ),
+    functional_validators.AfterValidator(NoStartingEndingHyphen),
 ]
 
-_RepositoryName = typing.Annotated[
+_RepositoryNamePathConfig = fastapi.Path(
+    description="The name of the repository", pattern=r"^[\w\-\.]+$", min_length=1
+)
+
+RepositoryName = typing.Annotated[
     github_types.GitHubRepositoryName,
-    fastapi.Path(description="The name of the repository"),
+    _RepositoryNamePathConfig,
 ]
 
-_OptionalRepositoryName = typing.Annotated[
+OptionalRepositoryName = typing.Annotated[
     github_types.GitHubRepositoryName | None,
-    fastapi.Path(description="The name of the repository"),
+    _RepositoryNamePathConfig,
 ]
 
 
@@ -169,8 +188,8 @@ LoggedUser = typing.Annotated[
 
 
 async def _get_authenticated_actor(
-    owner: _RepositoryOwnerLogin,
-    repository: _OptionalRepositoryName,
+    owner: RepositoryOwnerLogin,
+    repository: OptionalRepositoryName,
     application: LoggedApplication,
     logged_user: LoggedUser,
 ) -> _AuthenticationActor:
@@ -288,8 +307,8 @@ async def _application_actor_with_cache(
 
 
 async def get_repository_context(
-    owner: _RepositoryOwnerLogin,
-    repository: _RepositoryName,
+    owner: RepositoryOwnerLogin,
+    repository: RepositoryName,
     authenticated_actor: AuthenticatedActor,
     redis_links: redis.RedisLinks,
     application: LoggedApplication,

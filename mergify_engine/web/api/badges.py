@@ -3,9 +3,9 @@ import typing
 import fastapi
 from starlette import responses
 
-from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.web import api
+from mergify_engine.web.api import security
 
 
 router = fastapi.APIRouter(
@@ -14,13 +14,13 @@ router = fastapi.APIRouter(
 
 
 def _get_badge_url(
-    owner: github_types.GitHubLogin,
-    repo: github_types.GitHubRepositoryName,
+    owner: security.RepositoryOwnerLogin,
+    repository: security.RepositoryName,
     ext: str,
     style: str,
 ) -> responses.RedirectResponse:
     return responses.RedirectResponse(
-        url=f"https://img.shields.io/endpoint.{ext}?url={settings.SUBSCRIPTION_URL}/badges/{owner}/{repo}&style={style}",
+        url=f"https://img.shields.io/endpoint.{ext}?url={settings.SUBSCRIPTION_URL}/badges/{owner}/{repository}&style={style}",
         status_code=302,
     )
 
@@ -40,14 +40,8 @@ def _get_badge_url(
     },
 )
 async def badge_png(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
-    repository: typing.Annotated[
-        github_types.GitHubRepositoryName,
-        fastapi.Path(description="The name of the repository"),
-    ],
+    owner: security.RepositoryOwnerLogin,
+    repository: security.RepositoryName,
     style: typing.Annotated[
         str,
         fastapi.Query(
@@ -73,14 +67,8 @@ async def badge_png(
     },
 )
 async def badge_svg(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
-    repository: typing.Annotated[
-        github_types.GitHubRepositoryName,
-        fastapi.Path(description="The name of the repository"),
-    ],
+    owner: security.RepositoryOwnerLogin,
+    repository: security.RepositoryName,
     style: typing.Annotated[
         str,
         fastapi.Query(
@@ -106,14 +94,8 @@ async def badge_svg(
     },
 )
 async def badge(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
-    repository: typing.Annotated[
-        github_types.GitHubRepositoryName,
-        fastapi.Path(description="The name of the repository"),
-    ],
+    owner: security.RepositoryOwnerLogin,
+    repository: security.RepositoryName,
 ) -> responses.RedirectResponse:
     return responses.RedirectResponse(
         url=f"{settings.SUBSCRIPTION_URL}/badges/{owner}/{repository}"

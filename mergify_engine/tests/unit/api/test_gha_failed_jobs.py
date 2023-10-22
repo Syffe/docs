@@ -260,11 +260,11 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
 
     # Request another repo
     await tests_utils.configure_web_client_to_work_with_a_repo(
-        respx_mock, populated_db, web_client, "colliding_acount_1/colliding_repo_name"
+        respx_mock, populated_db, web_client, "colliding-account-1/colliding_repo_name"
     )
 
     reply = await web_client.get(
-        "/front/proxy/engine/v1/repos/colliding_acount_1/colliding_repo_name/gha-failed-jobs?neighbour_cosine_similarity_threshold=1&start_at=2023-01-01",
+        "/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/gha-failed-jobs?neighbour_cosine_similarity_threshold=1&start_at=2023-01-01",
         follow_redirects=False,
     )
 
@@ -274,7 +274,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
             "name": "colliding_repo_name",
             "owner": {
                 "id": anys.ANY_INT,
-                "login": "colliding_acount_1",
+                "login": "colliding-account-1",
                 "avatar_url": anys.ANY_STR,
             },
         },
@@ -324,7 +324,7 @@ async def test_api_get_gha_failed_jobs_no_steps(
         .join(gh_models.GitHubRepository)
         .where(
             gh_models.GitHubRepository.full_name
-            == "colliding_acount_1/colliding_repo_name"
+            == "colliding-account-1/colliding_repo_name"
         )
         .limit(1)
     )
@@ -335,11 +335,11 @@ async def test_api_get_gha_failed_jobs_no_steps(
     job.failed_step_number = None
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
-        respx_mock, populated_db, web_client, "colliding_acount_1/colliding_repo_name"
+        respx_mock, populated_db, web_client, "colliding-account-1/colliding_repo_name"
     )
 
     reply = await web_client.get(
-        "/front/proxy/engine/v1/repos/colliding_acount_1/colliding_repo_name/gha-failed-jobs",
+        "/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/gha-failed-jobs",
         follow_redirects=False,
     )
 
@@ -349,7 +349,7 @@ async def test_api_get_gha_failed_jobs_no_steps(
             "name": "colliding_repo_name",
             "owner": {
                 "id": anys.ANY_INT,
-                "login": "colliding_acount_1",
+                "login": "colliding-account-1",
                 "avatar_url": anys.ANY_STR,
             },
         },
@@ -484,11 +484,11 @@ async def test_api_gha_failed_jobs_get_gha_failed_job_detail(
     assert reply.status_code == 404
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
-        respx_mock, populated_db, web_client, "colliding_acount_1/colliding_repo_name"
+        respx_mock, populated_db, web_client, "colliding-account-1/colliding_repo_name"
     )
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/colliding_acount_1/colliding_repo_name/gha-failed-jobs/{jobs[5].id}",
+        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/gha-failed-jobs/{jobs[5].id}",
         follow_redirects=False,
     )
 

@@ -310,14 +310,6 @@ class Queues:
     },
 )
 async def repository_queues(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
-    repository: typing.Annotated[
-        github_types.GitHubRepositoryName,
-        fastapi.Path(description="The name of the repository"),
-    ],
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,

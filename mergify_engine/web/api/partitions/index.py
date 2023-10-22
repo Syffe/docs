@@ -86,14 +86,6 @@ class BranchPartitions:
     },
 )
 async def repository_partitions(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
-    repository: typing.Annotated[
-        github_types.GitHubRepositoryName,
-        fastapi.Path(description="The name of the repository"),
-    ],
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
@@ -163,14 +155,6 @@ async def repository_partitions(
     },
 )
 async def repository_partitions_branch(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
-    repository: typing.Annotated[
-        github_types.GitHubRepositoryName,
-        fastapi.Path(description="The name of the repository"),
-    ],
     branch_name: typing.Annotated[
         github_types.GitHubRefType,
         fastapi.Path(description="The name of the branch"),
@@ -237,14 +221,6 @@ async def repository_partitions_branch(
     },
 )
 async def repository_partition_branch(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
-    repository: typing.Annotated[
-        github_types.GitHubRepositoryName,
-        fastapi.Path(description="The name of the repository"),
-    ],
     partition_name: typing.Annotated[
         partr_config.PartitionRuleName,
         fastapi.Path(description="The partition name"),

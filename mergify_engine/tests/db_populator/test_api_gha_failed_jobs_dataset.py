@@ -263,7 +263,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         sqlalchemy.select(gh_models.GitHubRepository)
                         .where(
                             gh_models.GitHubRepository.full_name
-                            == "colliding_acount_1/colliding_repo_name"
+                            == "colliding-account-1/colliding_repo_name"
                         )
                         .limit(1)
                     )

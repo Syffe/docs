@@ -30,7 +30,7 @@ def create_testing_router(web_server: fastapi.FastAPI) -> None:
         response_model=ResponseTest,
     )
     async def test_explicit_deps(
-        owner: security._RepositoryOwnerLogin,
+        owner: security.RepositoryOwnerLogin,
         repository_ctxt: security.Repository,
     ) -> ResponseTest:
         org = await repository_ctxt.installation.client.item(f"/users/{owner}")

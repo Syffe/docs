@@ -326,14 +326,6 @@ class EnhancedPullRequestQueued:
     },
 )
 async def repository_queue_pull_request(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
-    repository: typing.Annotated[
-        github_types.GitHubRepositoryName,
-        fastapi.Path(description="The name of the repository"),
-    ],
     queue_name: typing.Annotated[
         qr_config.QueueName, fastapi.Path(description="The queue name")
     ],
