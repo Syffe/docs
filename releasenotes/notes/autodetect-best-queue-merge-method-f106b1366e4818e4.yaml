@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Autodetect the most appropriate merge method for the queue action when not
+    specified.

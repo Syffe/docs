@@ -122,7 +122,7 @@ QueueUpdateT = typing.Literal["merge", "rebase"]
 
 class QueueExecutorConfig(typing.TypedDict):
     name: qr_config.QueueName
-    merge_method: merge_base.MergeMethodT
+    merge_method: merge_base.MergeMethodT | None
     merge_bot_account: github_types.GitHubLogin | None
     update_bot_account: github_types.GitHubLogin | None
     update_method: QueueUpdateT
@@ -255,7 +255,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "Shouldn't be in queue_branch_merge_fastforward with partition rules in use"
             )
 
-        if self.config["merge_method"] != "merge":
+        if (
+            self.config["merge_method"] is not None
+            and self.config["merge_method"] != "merge"
+        ):
             return check_api.Result(
                 check_api.Conclusion.ACTION_REQUIRED,
                 f"Cannot use merge_method={self.config['merge_method']} with queue_branch_merge_method=fast-forward",

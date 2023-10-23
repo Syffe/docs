@@ -51,7 +51,7 @@ class QueueConfig(typing_extensions.TypedDict):
     batch_max_failure_resolution_attempts: int | None
     # queue action config
     commit_message_template: str | None
-    merge_method: merge_base.MergeMethodT
+    merge_method: merge_base.MergeMethodT | None
     merge_bot_account: github_types.GitHubLogin | None
     update_method: typing.Literal["rebase", "merge"] | None
     update_bot_account: github_types.GitHubLogin | None
@@ -470,8 +470,8 @@ QueueRulesSchema = voluptuous.All(
                 voluptuous.Required(
                     "commit_message_template", default=None
                 ): types.Jinja2WithNone,
-                voluptuous.Required("merge_method", default="merge"): voluptuous.Any(
-                    *typing.get_args(merge_base.MergeMethodT)
+                voluptuous.Required("merge_method", default=None): voluptuous.Any(
+                    None, *typing.get_args(merge_base.MergeMethodT)
                 ),
                 voluptuous.Required(
                     "merge_bot_account", default=None

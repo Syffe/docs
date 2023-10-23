@@ -6568,7 +6568,7 @@ previous_failed_batches:
                                     "speculative_checks": 5,
                                     "batch_max_failure_resolution_attempts": None,
                                     "commit_message_template": None,
-                                    "merge_method": "merge",
+                                    "merge_method": None,
                                     "merge_bot_account": None,
                                     "update_method": None,
                                     "update_bot_account": None,
@@ -6607,7 +6607,7 @@ previous_failed_batches:
                                     "speculative_checks": 5,
                                     "batch_max_failure_resolution_attempts": None,
                                     "commit_message_template": None,
-                                    "merge_method": "merge",
+                                    "merge_method": None,
                                     "merge_bot_account": None,
                                     "update_method": None,
                                     "update_bot_account": None,
@@ -6641,7 +6641,7 @@ previous_failed_batches:
                                     "speculative_checks": 5,
                                     "batch_max_failure_resolution_attempts": None,
                                     "commit_message_template": None,
-                                    "merge_method": "merge",
+                                    "merge_method": None,
                                     "merge_bot_account": None,
                                     "update_method": None,
                                     "update_bot_account": None,
@@ -9007,6 +9007,49 @@ pull_request_rules:
                     p1["number"],
                 ),
             ],
+        )
+
+    async def test_queue_default_merge_method(self) -> None:
+        rules = {
+            "queue_rules": [{"name": "default", "conditions": []}],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        # Allow merge
+        pull = await self.create_pr()
+        async with self.allow_merge_methods(
+            self.url_origin, pull["number"], ("merge",)
+        ):
+            await self.run_engine()
+        await self.wait_for_pull_request(
+            action="closed", pr_number=pull["number"], merged=True
+        )
+
+        # Allow squash
+        pull = await self.create_pr()
+        async with self.allow_merge_methods(
+            self.url_origin, pull["number"], ("rebase",)
+        ):
+            await self.run_engine()
+        await self.wait_for_pull_request(
+            action="closed", pr_number=pull["number"], merged=True
+        )
+
+        # Allow rebase
+        pull = await self.create_pr()
+        async with self.allow_merge_methods(
+            self.url_origin, pull["number"], ("squash",)
+        ):
+            await self.run_engine()
+        await self.wait_for_pull_request(
+            action="closed", pr_number=pull["number"], merged=True
         )
 
 
