@@ -16,14 +16,3 @@ instances:
       - gha_workflow_job
     tags:
       - role:streams
-
-  - host: <EVENTLOGS HOST>
-    port: <EVENTLOGS PORT>
-    password: <EVENTLOGS PASSWORD>
-    ssl: <EVENTLOGS SSL>
-    db: 1
-    ssl_cert_reqs: 0
-    slowlog-max-len: 0
-    collect_client_metrics: true
-    tags:
-      - role:eventlogs

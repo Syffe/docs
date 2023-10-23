@@ -88,16 +88,6 @@ if [ "$DYNOTYPE" == "worker-shared" ] ; then
 
     fi
 
-    if [ -n "$MERGIFYENGINE_EVENTLOGS_URL" ]; then
-        if [[ $MERGIFYENGINE_EVENTLOGS_URL =~ $REDIS_REGEX ]]; then
-            [ "${BASH_REMATCH[1]}" ] && REDIS_SSL="true" || REDIS_SSL="false"
-            sed -i "s/<EVENTLOGS SSL>/$REDIS_SSL/" "$REDIS_FILE"
-            sed -i "s/<EVENTLOGS HOST>/${BASH_REMATCH[4]}/" "$REDIS_FILE"
-            sed -i "s/<EVENTLOGS PASSWORD>/${BASH_REMATCH[3]}/" "$REDIS_FILE"
-            sed -i "s/<EVENTLOGS PORT>/${BASH_REMATCH[5]}/" "$REDIS_FILE"
-        fi
-    fi
-
     if [ -n "$MERGIFYENGINE_DEFAULT_REDIS_URL" ]; then
         if [[ $MERGIFYENGINE_DEFAULT_REDIS_URL =~ $REDIS_REGEX ]]; then
             [ "${BASH_REMATCH[1]}" ] && REDIS_SSL="true" || REDIS_SSL="false"
