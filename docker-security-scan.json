@@ -2040,6 +2040,26 @@
     "PublishedDate": "2023-09-13T09:15:00Z"
   },
   {
+    "VulnerabilityID": "CVE-2023-44487",
+    "PkgName": "libnghttp2-14",
+    "Status": "affected",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-44487",
+    "Title": "Multiple HTTP/2 enabled web servers are vulnerable to a DDoS attack (Rapid Reset Attack)",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-10-10T14:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-45853",
+    "PkgName": "zlib1g",
+    "Status": "affected",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-45853",
+    "Title": "integer overflow and resultant heap-based buffer overflow in zipOpenNewFileInZip4_6",
+    "Severity": "CRITICAL",
+    "PublishedDate": "2023-10-14T02:15:00Z"
+  },
+  {
     "VulnerabilityID": "CVE-2023-4641",
     "PkgName": "login",
     "Status": "affected",
