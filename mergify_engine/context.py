@@ -2145,3 +2145,13 @@ class Context:
             f"{self.base_url}/issues/comments/{comment_id}",
             json={"body": message},
         )
+
+    async def is_branch_protection_linear_history_enabled(self) -> bool:
+        protection = await self.repository.get_branch_protection(
+            self.pull["base"]["ref"]
+        )
+        return (
+            protection is not None
+            and "required_linear_history" in protection
+            and protection["required_linear_history"]["enabled"]
+        )

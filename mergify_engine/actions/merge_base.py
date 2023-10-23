@@ -551,7 +551,7 @@ class MergeUtilsMixin:
             title = "The pull request has been closed manually"
             summary = ""
         elif (
-            await self._is_branch_protection_linear_history_enabled(ctxt)
+            await ctxt.is_branch_protection_linear_history_enabled()
             and merge_method == "merge"
         ):
             conclusion = check_api.Conclusion.FAILURE
@@ -580,16 +580,3 @@ In the meantime, the pull request must be merged manually."
             return None
 
         return check_api.Result(conclusion, title, summary)
-
-    @staticmethod
-    async def _is_branch_protection_linear_history_enabled(
-        ctxt: context.Context,
-    ) -> bool:
-        protection = await ctxt.repository.get_branch_protection(
-            ctxt.pull["base"]["ref"]
-        )
-        return (
-            protection is not None
-            and "required_linear_history" in protection
-            and protection["required_linear_history"]["enabled"]
-        )
