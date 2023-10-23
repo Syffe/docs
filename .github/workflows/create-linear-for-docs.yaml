@@ -12,11 +12,27 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          EMAIL_MAPPING: ${{ vars.LINEAR_EMAIL_MAPPING }}
         run: |
+          ASSIGNEE_EMAIL=$(echo "$EMAIL_MAPPING" | awk '/ '"${PR_AUTHOR}"'$/{print $1}')
+          JSON_PAYLOAD=$(jq -n \
+             --arg email "$ASSIGNEE_EMAIL" \
+            '{
+              "query" : "query Query($filter: UserFilter) { users(filter: $filter) { nodes { id } } }",
+              "variables": {"filter":{"email":{"eq":$email}}}
+            }'
+          )
+          ASSIGNEE_ID=$(curl -X POST "https://api.linear.app/graphql" \
+          -H "Authorization: ${{ secrets.LINEAR_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d "$JSON_PAYLOAD" | jq -r .data.users.nodes[0].id)
+
           JSON_PAYLOAD=$(jq -n \
                           --arg title "Docs for $PR_TITLE" \
                           --arg desc "Documentation needed for merged PR: $PR_URL" \
                           --arg teamId "b3feece8-d97e-4d35-85f0-dd0e45be5d53" \
+                          --arg assigneeId "$ASSIGNEE_ID" \
                           --arg labelId "4e23b066-c7a3-4def-9596-ee18b455fe15" \
                           '{
                             "query": "mutation ($title: String!, $description: String!, $teamId: String!, $labelId: String!) { issueCreate(input: { title: $title, description: $description, teamId: $teamId, labelIds: [$labelId], stateId: \"cdd327d2-7875-4636-ba9d-adccf335d888\" }) { success issue { id title } } }",
@@ -25,6 +41,7 @@ jobs:
                               "description": $desc,
                               "teamId": $teamId,
                               "labelId": $labelId
+                              "assigneeId": $assigneeId
                             }
                           }')
           curl -X POST "https://api.linear.app/graphql" \
