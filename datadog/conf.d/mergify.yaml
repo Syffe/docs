@@ -5,7 +5,7 @@ instances:
     repositories:
       mergifyio/engine:
         - main
-      mergifyio/dashboard:
+      mergifyio/shadow-office:
         - main
       mergifyio/dashboard-ui:
         - main
