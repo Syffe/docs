@@ -27,6 +27,7 @@ from mergify_engine.clients import http
 from mergify_engine.log_embedder import log_cleaner
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github as gh_models
+from mergify_engine.models.ci_issue import CiIssue
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -218,35 +219,17 @@ async def get_tokenized_cleaned_log(
     return cleaned_tokens, truncated_log
 
 
-async def set_embedded_log_error_title(
+async def set_ci_issue_name(
     openai_client: openai_api.OpenAIClient, job: gh_models.WorkflowJob
 ) -> None:
     if job.embedded_log is None:
-        raise RuntimeError(
-            "set_embedded_log_error_title canlled with job.embedded_log=None"
-        )
+        raise RuntimeError("set_ci_issue_name called with job.embedded_log=None")
 
     query = openai_api.ChatCompletionQuery(
         role=ERROR_TITLE_QUERY_TEMPLATE.role,
         content=f"{ERROR_TITLE_QUERY_TEMPLATE.content}{job.embedded_log}",
         answer_size=ERROR_TITLE_QUERY_TEMPLATE.answer_size,
     )
-
-    tokens_count_limit = openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
-    if query.get_tokens_size() > tokens_count_limit:
-        # NOTE(sileht): the job.embedded_log has been created with an old
-        # version of get_tokenized_cleaned_log() that doesn't truncate the log correctly
-        # So just reset the state of this job
-        job.log_status = gh_models.WorkflowJobLogStatus.UNKNOWN
-        job.embedded_log = None
-        job.log_embedding = None
-        raise UnexpectedLogEmbedderError(
-            "we prepared a query too big for ChatGPT",
-            log_extras={
-                "tokens_count": query.get_tokens_size(),
-                "tokens_count_limit": tokens_count_limit,
-            },
-        )
 
     chat_completion = await openai_client.get_chat_completion(query)
     title = chat_completion.get("choices", [{}])[0].get("message", {}).get("content")  # type: ignore[typeddict-item]
@@ -257,7 +240,7 @@ async def set_embedded_log_error_title(
             log_extras={"chat_completion": chat_completion},
         )
 
-    job.embedded_log_error_title = title
+    job.ci_issue.name = title
 
 
 @contextlib.contextmanager
@@ -327,6 +310,7 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
     async with database.create_session() as session:
         stmt = (
             sqlalchemy.select(wjob)
+            .options(orm.joinedload(wjob.ci_issue))
             .join(gh_models.GitHubRepository)
             .join(
                 gh_models.GitHubAccount,
@@ -353,7 +337,8 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                 sqlalchemy.or_(
                     wjob.log_embedding.is_(None),
                     wjob.neighbours_computed_at.is_(None),
-                    wjob.embedded_log_error_title.is_(None),
+                    wjob.ci_issue_id.is_(None),
+                    wjob.ci_issue.has(CiIssue.name.is_(None)),
                 ),
             )
             .order_by(wjob.completed_at.asc())
@@ -378,10 +363,17 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                         await embed_log(openai_client, gcs_client, job)
 
                     if (
-                        job.embedded_log_error_title is None
-                        and job.embedded_log is not None
+                        job.log_status == gh_models.WorkflowJobLogStatus.EMBEDDED
+                        and job.ci_issue_id is None
                     ):
-                        await set_embedded_log_error_title(openai_client, job)
+                        await CiIssue.link_job_to_ci_issue(session, job)
+
+                    if (
+                        job.ci_issue is not None
+                        and job.embedded_log is not None
+                        and job.ci_issue.name is None
+                    ):
+                        await set_ci_issue_name(openai_client, job)
 
                 if job.log_embedding is not None and job.neighbours_computed_at is None:
                     job_ids_to_compute_cosine_similarity.append(job.id)

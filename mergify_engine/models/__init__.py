@@ -99,3 +99,4 @@ from mergify_engine.models import application_keys  # noqa
 from mergify_engine.models import enumerations  # noqa
 from mergify_engine.models import events  # noqa
 from mergify_engine.models import github  # noqa
+from mergify_engine.models import ci_issue  # noqa

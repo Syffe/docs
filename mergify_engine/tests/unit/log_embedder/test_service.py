@@ -11,6 +11,7 @@ import numpy.typing as npt
 import pytest
 import respx
 import sqlalchemy
+from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import exceptions
@@ -21,6 +22,7 @@ from mergify_engine import settings
 from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github as gh_models
+from mergify_engine.models.ci_issue import CiIssue
 from mergify_engine.tests import utils as tests_utils
 from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATASET
 from mergify_engine.tests.openai_embedding_dataset import (
@@ -169,7 +171,6 @@ async def test_embed_logs_on_controlled_data(
         for job in jobs
     )
     assert all(job.neighbours_computed_at is not None for job in jobs)
-    assert all(job.embedded_log_error_title == "Toto title" for job in jobs)
 
     # NOTE(Kontolix): Validate that if embedding has been computed for a job but neighbours
     # have not been computed, if we call the service, only neighbours are computed for that job.
@@ -185,17 +186,23 @@ async def test_embed_logs_on_controlled_data(
 
     db.expunge_all()
 
-    a_job = await db.scalar(
-        sqlalchemy.select(gh_models.WorkflowJob).where(
-            gh_models.WorkflowJob.id == jobs[0].id
-        )
+    a_job = await db.get(
+        gh_models.WorkflowJob,
+        jobs[0].id,
+        options=[
+            orm.joinedload(gh_models.WorkflowJob.ci_issue).selectinload(CiIssue.jobs)
+        ],
     )
+
     assert a_job is not None
     assert np.array_equal(
         typing.cast(npt.NDArray[np.float32], a_job.log_embedding),
         embedding_control_value,
     )
     assert a_job.neighbours_computed_at is not None
+    assert a_job.ci_issue_id is not None
+    assert a_job.ci_issue.name == "Toto title"
+    assert len(a_job.ci_issue.jobs) == 3
 
 
 @pytest.mark.populated_db_datasets("WorkflowJob")

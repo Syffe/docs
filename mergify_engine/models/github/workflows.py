@@ -24,6 +24,9 @@ from mergify_engine.models.github import account as gh_account
 from mergify_engine.models.github import repository as gh_repository
 
 
+if typing.TYPE_CHECKING:
+    from mergify_engine.models.ci_issue import CiIssue
+
 LOG = daiquiri.getLogger(__name__)
 
 NAME_AND_MATRIX_RE = re.compile(r"^([\w|-]+) \((.+)\)$")
@@ -314,6 +317,13 @@ class WorkflowJob(models.Base):
     head_sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
         sqlalchemy.String, anonymizer_config=None
     )
+
+    ci_issue_id: orm.Mapped[int | None] = orm.mapped_column(
+        sqlalchemy.ForeignKey("ci_issue.id"),
+        anonymizer_config=None,
+    )
+
+    ci_issue: orm.Mapped[CiIssue] = orm.relationship(lazy="raise_on_sql")
 
     @sqlalchemy.ext.hybrid.hybrid_property
     def github_name(self) -> str:

@@ -70,6 +70,8 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job1.embedded_log = "Some logs"
         job1.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
 
+        cls.internal_ref["OneAccount/OneRepo/failed_job"] = job1.id
+
         # Another failed job
         job2 = await gh_models.WorkflowJob.insert(
             session,
@@ -115,6 +117,8 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             session, [job2.id]
         )
 
+        cls.internal_ref["OneAccount/OneRepo/flaky_failed_job"] = job2.id
+
         # Successful job
         succesful_job = await gh_models.WorkflowJob.insert(
             session,
@@ -152,7 +156,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             repo,
         )
 
-        cls.internal_ref["successful_flaky_job"] = succesful_job.id
+        cls.internal_ref["OneAccount/OneRepo/successful_flaky_job"] = succesful_job.id
 
         # Failed job similar to the job1
         job3 = await gh_models.WorkflowJob.insert(
@@ -199,7 +203,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             session, [job3.id]
         )
 
-        cls.internal_ref["failed_job_with_flaky_nghb"] = job3.id
+        cls.internal_ref["OneAccount/OneRepo/failed_job_with_flaky_nghb"] = job3.id
 
         # Failed job completly different to the job1
         job4 = await gh_models.WorkflowJob.insert(
@@ -252,7 +256,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             session, [job4.id]
         )
 
-        cls.internal_ref["failed_job_with_no_flaky_nghb"] = job4.id
+        cls.internal_ref["OneAccount/OneRepo/failed_job_with_no_flaky_nghb"] = job4.id
 
         # Failed job similar to the job1 but on another repo
         colliding_repo = typing.cast(
@@ -315,6 +319,10 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             session, [job5.id]
         )
 
+        cls.internal_ref[
+            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"
+        ] = job5.id
+
         # Failed job similar to the first one but not yet computed, it should be excluded
         uncomputed_job = await gh_models.WorkflowJob.insert(
             session,
@@ -356,4 +364,4 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         uncomputed_job.embedded_log = None
         uncomputed_job.log_status = gh_models.WorkflowJobLogStatus.UNKNOWN
 
-        cls.internal_ref["failed_job_uncomputed"] = uncomputed_job.id
+        cls.internal_ref["OneAccount/OneRepo/failed_job_uncomputed"] = uncomputed_job.id

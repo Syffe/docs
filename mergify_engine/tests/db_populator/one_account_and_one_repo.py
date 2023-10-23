@@ -14,15 +14,18 @@ class OneAccountAndOneRepo(DbPopulator):
             type="User",
             avatar_url="https://dummy.com",
         )
+        DbPopulator.internal_ref["OneAccount"] = oneAccount.id
 
-        session.add(
-            gh_models.GitHubRepository(
-                id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(gh_models.GitHubRepository)
-                ),
-                name=github_types.GitHubRepositoryName("OneRepo"),
-                owner=oneAccount,
-                private=False,
-                archived=False,
-            )
+        oneRepo = gh_models.GitHubRepository(
+            id=github_types.GitHubRepositoryIdType(
+                cls.next_id(gh_models.GitHubRepository)
+            ),
+            name=github_types.GitHubRepositoryName("OneRepo"),
+            owner=oneAccount,
+            private=False,
+            archived=False,
         )
+
+        session.add(oneRepo)
+
+        DbPopulator.internal_ref["OneRepo"] = oneRepo.id

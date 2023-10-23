@@ -15,17 +15,18 @@ class CollidingRepoName(DbPopulator):
             avatar_url="https://dummy.com",
         )
 
-        session.add(
-            gh_models.GitHubRepository(
-                id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(gh_models.GitHubRepository)
-                ),
-                name=github_types.GitHubRepositoryName("colliding_repo_name"),
-                owner=colliding_account_1,
-                private=False,
-                archived=False,
-            )
+        colliding_repo_1 = gh_models.GitHubRepository(
+            id=github_types.GitHubRepositoryIdType(
+                cls.next_id(gh_models.GitHubRepository)
+            ),
+            name=github_types.GitHubRepositoryName("colliding_repo_name"),
+            owner=colliding_account_1,
+            private=False,
+            archived=False,
         )
+
+        DbPopulator.internal_ref["colliding_repo_1"] = colliding_repo_1.id
+        session.add(colliding_repo_1)
 
         colliding_account_2 = gh_models.GitHubAccount(
             id=github_types.GitHubAccountIdType(cls.next_id(gh_models.GitHubAccount)),
@@ -34,14 +35,15 @@ class CollidingRepoName(DbPopulator):
             avatar_url="https://dummy.com",
         )
 
-        session.add(
-            gh_models.GitHubRepository(
-                id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(gh_models.GitHubRepository)
-                ),
-                name=github_types.GitHubRepositoryName("colliding_repo_name"),
-                owner=colliding_account_2,
-                private=False,
-                archived=False,
-            )
+        colliding_repo_2 = gh_models.GitHubRepository(
+            id=github_types.GitHubRepositoryIdType(
+                cls.next_id(gh_models.GitHubRepository)
+            ),
+            name=github_types.GitHubRepositoryName("colliding_repo_name"),
+            owner=colliding_account_2,
+            private=False,
+            archived=False,
         )
+
+        DbPopulator.internal_ref["colliding_repo_2"] = colliding_repo_2.id
+        session.add(colliding_repo_2)
