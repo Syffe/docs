@@ -218,6 +218,9 @@ async def test_request_merge_without_method_merge_success(
         partition_rules=mock.Mock(),
     )
 
+    respx_mock.get(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/branches/main/protection"
+    ).respond(200, json={})
     respx_mock.put(
         "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
         json__merge_method="merge",
@@ -244,6 +247,9 @@ async def test_request_merge_without_method_rebase_success(
         partition_rules=mock.Mock(),
     )
 
+    respx_mock.get(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/branches/main/protection"
+    ).respond(200, json={})
     respx_mock.put(
         "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
         json__merge_method="merge",
@@ -267,7 +273,6 @@ async def test_request_merge_without_method_rebase_success(
 async def test_request_merge_without_method_failure(
     context_getter: conftest.ContextGetterFixture,
     respx_mock: respx.MockRouter,
-    redis_links: redis_utils.RedisLinks,
 ) -> None:
     context = await context_getter(123)
     executor = merge.MergeExecutor(
@@ -278,6 +283,9 @@ async def test_request_merge_without_method_failure(
         partition_rules=mock.Mock(),
     )
 
+    respx_mock.get(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/branches/main/protection"
+    ).respond(200, json={})
     respx_mock.put(
         "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
         json__merge_method="merge",
@@ -312,6 +320,9 @@ async def test_request_merge_without_method_rebase_success_with_cache(
     )
     await redis_links.cache.set("merge-method/0/0", "rebase")
 
+    respx_mock.get(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/branches/main/protection"
+    ).respond(200, json={})
     respx_mock.put(
         "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
         json__merge_method="rebase",
@@ -337,6 +348,9 @@ async def test_request_merge_without_method_rebase_success_with_invalid_cache(
     )
     await redis_links.cache.set("merge-method/0/0", "rebase")
 
+    respx_mock.get(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/branches/main/protection"
+    ).respond(200, json={})
     respx_mock.put(
         "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
         json__merge_method="rebase",
@@ -349,3 +363,32 @@ async def test_request_merge_without_method_rebase_success_with_invalid_cache(
     await executor._request_merge_without_method(
         ctxt=context, pull_merge_payload={}, on_behalf=None
     )
+
+
+async def test_request_merge_without_method_rebase_success_with_linear_history_required(
+    context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    context = await context_getter(123)
+    executor = merge.MergeExecutor(
+        ctxt=context,
+        rule=mock.Mock(),
+        config=mock.Mock(),
+        queue_rules=mock.Mock(),
+        partition_rules=mock.Mock(),
+    )
+
+    respx_mock.get(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/branches/main/protection"
+    ).respond(200, json={"required_linear_history": {"enabled": True}})
+    respx_mock.put(
+        "https://api.github.com/repos/Mergifyio/mergify-engine/pulls/123/merge",
+        json__merge_method="squash",
+    ).respond(200)
+
+    await executor._request_merge_without_method(
+        ctxt=context, pull_merge_payload={}, on_behalf=None
+    )
+
+    assert await redis_links.cache.get("merge-method/0/0") == b"squash"

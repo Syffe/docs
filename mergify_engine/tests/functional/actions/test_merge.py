@@ -188,6 +188,37 @@ class TestMergeAction(base.FunctionalTestBase):
             == checks[0]["output"]["title"]
         )
 
+    async def test_merge_branch_protection_linear_history_without_merge_method(
+        self,
+    ) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "merge",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {"merge": {}},
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        protection = {
+            "required_status_checks": None,
+            "required_linear_history": True,
+            "required_pull_request_reviews": None,
+            "restrictions": None,
+            "enforce_admins": False,
+        }
+
+        await self.branch_protection_protect(self.main_branch_name, protection)
+
+        p1 = await self.create_pr()
+        await self.run_engine()
+        await self.wait_for_pull_request(
+            action="closed", pr_number=p1["number"], merged=True
+        )
+
     async def test_merge_template_with_empty_body(self) -> None:
         rules = {
             "pull_request_rules": [

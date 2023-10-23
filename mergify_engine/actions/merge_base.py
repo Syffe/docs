@@ -280,6 +280,11 @@ class MergeUtilsMixin:
             methods.remove(cached_method)
             methods.insert(0, cached_method)
 
+        # NOTE(charly): merge method is not allowed if linear history is
+        # required
+        if await ctxt.is_branch_protection_linear_history_enabled():
+            methods.remove("merge")
+
         last_client_error: http.HTTPClientSideError | None = None
 
         for method in methods:
