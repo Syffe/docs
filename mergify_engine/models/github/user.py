@@ -61,6 +61,7 @@ class OAuthTokenEncryptedType(sqlalchemy_utils.StringEncryptedType):  # type: ig
 
 class GitHubUser(models.Base):
     __tablename__ = "github_user"
+    __repr_attributes__ = ("id", "login")
 
     id: Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
         sqlalchemy.Integer,

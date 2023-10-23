@@ -27,6 +27,7 @@ class GitHubRepository(models.Base):
     __table_args__ = (
         sqlalchemy.Index("github_repository_owner_id_name_idx", "owner_id", "name"),
     )
+    __repr_attributes__ = ("id", "full_name")
     __github_attributes__ = (
         "id",
         "owner",

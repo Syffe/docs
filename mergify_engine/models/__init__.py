@@ -15,6 +15,8 @@ class ORMObjectAsDict(typing.TypedDict):
 class Base(orm.DeclarativeBase):
     __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {"eager_defaults": True}  # type: ignore [misc]
     __github_attributes__: typing.ClassVar[tuple[str, ...]] = ()
+    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ("id",)
+
     __postgres_entities__: typing.ClassVar[
         tuple[replaceable_entity.ReplaceableEntity, ...]
     ] = ()
@@ -83,6 +85,12 @@ class Base(orm.DeclarativeBase):
                 getattr(mapper.class_, "__postgres_entities__", ())
             )
         return postgres_entities
+
+    def __repr__(self) -> str:
+        r = super().__repr__()
+        # To get better Sentry data
+        attrs = [f"{attr}={getattr(self, attr)!r}" for attr in self.__repr_attributes__]
+        return f"{r[:-1]} {' '.join(attrs)}>"
 
 
 # NOTE(charly): ensure all models are loaded, to

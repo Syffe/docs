@@ -26,6 +26,7 @@ class GitHubAccountType(enum.StrEnum):
 
 class GitHubAccount(models.Base):
     __tablename__ = "github_account"
+    __repr_attributes__ = ("id", "login", "type")
     __github_attributes__ = (
         "id",
         "login",
