@@ -43,16 +43,16 @@ tz = ["python-dateutil"]
 
 [[package]]
 name = "alembic-utils"
-version = "0.8.1"
+version = "0.8.2"
 description = "A sqlalchemy/alembic extension for migrating procedures and views"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "alembic_utils-0.8.1.tar.gz", hash = "sha256:073626217c8d8bdc66d1f66f8866d4f743969ac08502ba3bc15bcd60190460d7"},
+    {file = "alembic_utils-0.8.2.tar.gz", hash = "sha256:d7b3f179dd750a4d457f298642871e36fd85e20af97cf526df86fbc5ebecfd3a"},
 ]
 
 [package.dependencies]
-alembic = ">=1.5.7"
+alembic = ">=1.9"
 flupy = "*"
 parse = ">=1.8.4"
 sqlalchemy = ">=1.4"
@@ -4625,4 +4625,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "76133584c88ed47f5f3903d475e58e9e7832273b6dcd376987dce3108ad76a17"
+content-hash = "b35b3cdc6f7188e2bf48bcc8a70fef9344627f0a88d456d9f0eeb33cccf170dc"
