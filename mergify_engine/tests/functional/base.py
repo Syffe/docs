@@ -734,6 +734,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         action: github_types.GitHubEventPullRequestActionType | None = None,
         pr_number: github_types.GitHubPullRequestNumber | None = None,
         merged: bool | None = None,
+        forward_to_engine: bool = True,
     ) -> github_types.GitHubEventPullRequest:
         wait_for_payload: dict[
             str,
@@ -748,7 +749,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         return typing.cast(
             github_types.GitHubEventPullRequest,
-            await self.wait_for("pull_request", wait_for_payload),
+            await self.wait_for(
+                "pull_request", wait_for_payload, forward_to_engine=forward_to_engine
+            ),
         )
 
     async def wait_for_issue_comment(
@@ -995,6 +998,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         commit_body: str | None = None,
         commit_date: datetime.datetime | None = None,
         commit_author: str | None = None,
+        forward_event_to_engine: bool = True,
     ) -> github_types.GitHubPullRequest:
         self.pr_counter += 1
 
@@ -1109,7 +1113,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             },
         )
 
-        pr_opened_event = await self.wait_for_pull_request("opened")
+        pr_opened_event = await self.wait_for_pull_request(
+            "opened", forward_to_engine=forward_event_to_engine
+        )
 
         self.created_branches.add(github_types.GitHubRefType(branch))
 
@@ -1127,6 +1133,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         verified: bool = False,
         commits_body: list[str] | None = None,
         commits_author: list[str] | None = None,
+        forward_event_to_engine: bool = True,
     ) -> github_types.GitHubPullRequest:
         self.pr_counter += 1
 
@@ -1224,7 +1231,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 "draft": draft,
             },
         )
-        await self.wait_for("pull_request", {"action": "opened"})
+        await self.wait_for(
+            "pull_request",
+            {"action": "opened"},
+            forward_to_engine=forward_event_to_engine,
+        )
 
         self.created_branches.add(github_types.GitHubRefType(branch))
 
