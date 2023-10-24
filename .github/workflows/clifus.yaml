@@ -12,46 +12,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - uses: ./.github/actions/tooling-setup
+      # yamllint disable-line rule:line-length
+      # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+      - uses: Mergifyio/clifus@main
         with:
-          github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
-
-      - name: Clifus
-        id: clifus
-        run: |
-          python ${{ runner.temp }}/tooling/clifus.py -c ./.github/clifus.yml -s python-version
-          echo "PYTHON_VERSION=$(cut -d- -f2 < runtime.txt)" >> "$GITHUB_OUTPUT"
-
-      - name: Create the Pull Request
-        id: cpr
-        # yamllint disable-line rule:line-length
-        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
-          author: mergify-ci-bot <mergify-ci-bot@users.noreply.github.com>
-          title: "chore: bump python version to ${{ steps.clifus.outputs.PYTHON_VERSION }}"
-          commit-message: "chore: bump python version to ${{ steps.clifus.outputs.PYTHON_VERSION }}"
-          body: This is an automated bump of python version to ${{ steps.clifus.outputs.PYTHON_VERSION }}
-          branch: clifus/python-version-upgrade
-          base: main
-          labels: |
-            python
-            dependencies
-
-      - name: Check outputs
-        run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-
-      - name: Report Status
-        if: failure()
-        # yamllint disable-line rule:line-length
-        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: Mergifyio/gha-slack-notification@main
-        with:
-          message: "Clifus: Python version bump"
+          NAME: Python
+          SOURCE: python-version
+          GITHUB_TOKEN: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+          LABELS: python,dependencies
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
 
   datadog-agent-bump:
@@ -59,46 +27,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - uses: ./.github/actions/tooling-setup
+      # yamllint disable-line rule:line-length
+      # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+      - uses: Mergifyio/clifus@main
         with:
-          github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
-
-      - name: Clifus
-        id: clifus
-        run: |
-          python ${{ runner.temp }}/tooling/clifus.py -c ./.github/clifus.yml -s datadog-agent-version
-          echo "DD_AGENT_VERSION=$(cat datadog/agent-version.txt)" >> "$GITHUB_OUTPUT"
-
-      - name: Create the Pull Request
-        id: cpr
-        # yamllint disable-line rule:line-length
-        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
-          title: "chore: bump datadog-agent version to ${{ steps.clifus.outputs.DD_AGENT_VERSION }}"
-          commit-message: "chore: bump datadog-agent version to ${{ steps.clifus.outputs.DD_AGENT_VERSION }}"
-          body: >
-            This is an automated bump of datadog-agent version to
-            ${{ steps.clifus.outputs.DD_AGENT_VERSION }}
-          branch: clifus/datadog-agent-upgrade
-          base: main
-          labels: |
-            dependencies
-
-      - name: Check outputs
-        run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-
-      - name: Report Status
-        if: failure()
-        # yamllint disable-line rule:line-length
-        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: Mergifyio/gha-slack-notification@main
-        with:
-          message: "Clifus: Datadog Agent bump"
+          NAME: Datadog agent
+          SOURCE: datadog-agent-version
+          GITHUB_TOKEN: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+          LABELS: dependencies
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
 
   datadog-mergify-integration-bump:
@@ -106,93 +42,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - uses: ./.github/actions/tooling-setup
+      # yamllint disable-line rule:line-length
+      # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+      - uses: Mergifyio/clifus@main
         with:
-          github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
-
-      - name: Clifus
-        id: clifus
-        # yamllint disable rule:line-length
-        run: |
-          python ${{ runner.temp }}/tooling/clifus.py -c ./.github/clifus.yml -s datadog-mergify-integration-version
-          echo "DD_MERGIFY_VERSION=$(cat datadog/mergify-integration-version.txt)" >> "$GITHUB_OUTPUT"
-        # yamllint enable rule:line-length
-
-      - name: Create the Pull Request
-        id: cpr
-        # yamllint disable-line rule:line-length
-        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
-          # yamllint disable-line rule:line-length
-          title: "chore: bump datadog-mergify integration version to ${{ steps.clifus.outputs.DD_MERGIFY_VERSION }}"
-          # yamllint disable-line rule:line-length
-          commit-message: "chore: bump datadog-mergify integration version to ${{ steps.clifus.outputs.DD_MERGIFY_VERSION }}"
-          body: >
-            This is an automated bump of datadog-mergify integration version to
-            ${{ steps.clifus.outputs.DD_MERGIFY_VERSION }}
-          branch: clifus/datadog-mergify-integration-upgrade
-          base: main
-          labels: |
-            dependencies
-
-      - name: Check outputs
-        run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-
-      - name: Report Status
-        if: failure()
-        # yamllint disable-line rule:line-length
-        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: Mergifyio/gha-slack-notification@main
-        with:
-          message: "Clifus: Datadog Mergify Integration bump"
+          NAME: Datadog Mergify integration
+          SOURCE: datadog-mergify-integration-version
+          GITHUB_TOKEN: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+          LABELS: dependencies
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
+
   actionlint-version-bump:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - uses: ./.github/actions/tooling-setup
+      # yamllint disable-line rule:line-length
+      # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+      - uses: Mergifyio/clifus@main
         with:
-          github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
-
-      - name: Clifus
-        id: clifus
-        run: |
-          python ${{ runner.temp }}/tooling/clifus.py -c ./.github/clifus.yml -s actionlint-version
-
-      - name: Create the Pull Request
-        id: cpr
-        # yamllint disable-line rule:line-length
-        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
-          author: mergify-ci-bot <mergify-ci-bot@users.noreply.github.com>
-          title: "chore: bump actionlint version to ${{ steps.clifus.outputs.ACTIONLINT_VERSION }}"
-          commit-message: "chore: bump actionlint version to ${{ steps.clifus.outputs.ACTIONLINT_VERSION }}"
-          # yamllint disable-line rule:line-length
-          body: This is an automated bump of actionlint version to ${{ steps.clifus.outputs.ACTIONLINT_VERSION }}
-          branch: clifus/actionlint-version-upgrade
-          base: main
-          labels: |
-            dependencies
-
-      - name: Check outputs
-        run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-
-      - name: Report Status
-        if: failure()
-        # yamllint disable-line rule:line-length
-        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: Mergifyio/gha-slack-notification@main
-        with:
-          message: "Clifus: actionlint version bump"
+          NAME: Actionlint
+          SOURCE: actionlint-version
+          GITHUB_TOKEN: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+          LABELS: dependencies
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
