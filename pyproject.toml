@@ -85,7 +85,7 @@ filelock = "^3.12.4"
 poethepoet = "^0.24.1"
 pytest-rerunfailures = "^12.0"
 ruff = "^0.1.1"
-black = "^23.10.0"
+black = "^23.10.1"
 click = "^8.1.7"
 pytest-flakefinder = "^1.1.0"
 
