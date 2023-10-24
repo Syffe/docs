@@ -220,6 +220,10 @@ class PullRequest(models.Base):
         await gh_account_model.GitHubAccount.create_or_update(session, user)
 
         assignees = data_for_obj.pop("assignees")
+        requested_reviewers = data_for_obj.pop("requested_reviewers")
+        pull_obj = cls(**data_for_obj)
+        await session.merge(pull_obj)
+
         for assignee in assignees:
             await gh_account_model.GitHubAccount.create_or_update(session, assignee)
             await PullRequestAssigneesGitHubAccountAssociationTable.insert(
@@ -238,7 +242,6 @@ class PullRequest(models.Base):
             )
         )
 
-        requested_reviewers = data_for_obj.pop("requested_reviewers")
         for requested_reviewer in requested_reviewers:
             await gh_account_model.GitHubAccount.create_or_update(
                 session, requested_reviewer
@@ -262,8 +265,6 @@ class PullRequest(models.Base):
                 ),
             )
         )
-
-        await session.merge(cls(**data_for_obj))
 
     def as_github_dict(self) -> github_types.GitHubPullRequest:
         return typing.cast(github_types.GitHubPullRequest, super().as_github_dict())
