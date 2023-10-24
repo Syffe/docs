@@ -29,6 +29,7 @@ for img in ${TO_BUILD[@]}; do
         --build-arg MERGIFYENGINE_SHA="$(git log -1 --format='%H')" \
         --build-arg MERGIFYENGINE_VERSION=dev \
         --build-arg MERGIFYUI_VERSION=latest \
+        --build-arg MERGIFYINSTALLER_VERSION=latest \
         --build-arg BUILD_DATE="never" \
 	    --target "$img" \
 	    --tag engine-"$img" \
