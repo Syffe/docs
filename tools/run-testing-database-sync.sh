@@ -25,7 +25,7 @@ echo "* Production database number of rows"
 psql "$PRODUCTION_DATABASE_BASE_URL/engine_prod" -c "SELECT schemaname,relname,n_live_tup FROM pg_stat_user_tables ORDER BY n_live_tup DESC;"
 
 echo "Syncing databases..."
-pg_dump --no-acl --no-owner --no-comments --format=c --encoding=UTF8 --extension=vector "$PRODUCTION_DATABASE_BASE_URL/engine_prod" \
+pg_dump --no-acl --no-owner --no-comments --no-privileges --format=c --encoding=UTF8 --extension=vector "$PRODUCTION_DATABASE_BASE_URL/engine_prod" \
  | pg_restore --no-owner --no-acl --no-comments --exit-on-error -d "$PRODUCTION_DATABASE_BASE_URL/engine_ci_testing"
 
 echo "* CI Testing database size"
