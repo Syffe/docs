@@ -15,7 +15,7 @@ class ORMObjectAsDict(typing.TypedDict):
 class Base(orm.DeclarativeBase):
     __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {"eager_defaults": True}  # type: ignore [misc]
     __github_attributes__: typing.ClassVar[tuple[str, ...]] = ()
-    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ("id",)
+    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ()
 
     __postgres_entities__: typing.ClassVar[
         tuple[replaceable_entity.ReplaceableEntity, ...]

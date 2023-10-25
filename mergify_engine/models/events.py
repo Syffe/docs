@@ -30,6 +30,7 @@ class Event(models.Base):
         "polymorphic_on": "type",
         "polymorphic_identity": "event.base",
     }
+    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ("id", "type")
 
     id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.BigInteger,

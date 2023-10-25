@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import typing
 
 from alembic_utils import pg_function
 from alembic_utils import pg_trigger
@@ -26,6 +27,7 @@ class ApplicationKeyLimitReached(database.CustomPostgresException):
 
 class ApplicationKey(models.Base):
     __tablename__ = "application"
+    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ("id", "name")
 
     id: Mapped[int] = orm.mapped_column(
         sqlalchemy.Integer,

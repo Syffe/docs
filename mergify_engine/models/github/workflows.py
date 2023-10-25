@@ -73,6 +73,7 @@ class WorkflowRun(models.Base):
             "repository_id",
         ),
     )
+    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ("id",)
 
     id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.BigInteger,
@@ -212,6 +213,7 @@ class WorkflowJob(models.Base):
         ),
     )
 
+    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ("id",)
     __github_attributes__ = (
         "id",
         "workflow_run_id",
@@ -745,6 +747,10 @@ class WorkflowJob(models.Base):
 
 class WorkflowJobLogNeighbours(models.Base):
     __tablename__ = "gha_workflow_job_log_neighbours"
+    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = (
+        "job_id",
+        "neighbour_job_id)",
+    )
 
     job_id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.ForeignKey("gha_workflow_job.id"),

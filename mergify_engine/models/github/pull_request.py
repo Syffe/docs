@@ -14,6 +14,11 @@ from mergify_engine.models.github import account as gh_account_model
 class PullRequest(models.Base):
     __tablename__ = "pull_request"
 
+    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = (
+        "id",
+        "number",
+        "state",
+    )
     __github_attributes__ = (
         "id",
         "number",

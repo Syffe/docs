@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import typing
+
 import sqlalchemy
 from sqlalchemy import orm
 import sqlalchemy.event
@@ -17,6 +19,10 @@ COSINE_SIMILARITY_THRESHOLD = 0.9
 
 class CiIssueCounter(models.Base):
     __tablename__ = "ci_issue_counter"
+    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = (
+        "repository_id",
+        "current_value",
+    )
 
     repository_id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
         sqlalchemy.ForeignKey("github_repository.id"),
@@ -58,6 +64,7 @@ class CiIssue(models.Base):
             "short_id_suffix",
         ),
     )
+    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ("id", "short_id_suffix")
 
     id: orm.Mapped[int] = orm.mapped_column(
         primary_key=True,
