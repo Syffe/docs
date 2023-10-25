@@ -404,4 +404,7 @@ def main() -> None:
         action="store_true",
         help="Output detailed usage in JSON format",
     )
-    return asyncio.run(report(parser.parse_args()))
+    try:
+        return asyncio.run(report(parser.parse_args()))
+    except KeyboardInterrupt:
+        pass
