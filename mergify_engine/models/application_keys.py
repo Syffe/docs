@@ -43,7 +43,10 @@ class ApplicationKey(models.Base):
         anonymizer_config="anon.lorem_ipsum( words := 7 )",
     )
     api_access_key: Mapped[str] = orm.mapped_column(
-        sqlalchemy.String(255), nullable=False, anonymizer_config="''CONFIDENTIAL''"
+        sqlalchemy.String(255),
+        nullable=False,
+        index=True,
+        anonymizer_config="''CONFIDENTIAL''",
     )
 
     api_secret_key: Mapped[str] = orm.mapped_column(
