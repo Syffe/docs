@@ -297,10 +297,6 @@ class WorkflowJob(models.Base):
         anonymizer_config="anon.lorem_ipsum( words := 20 )",
     )
 
-    embedded_log_error_title: orm.Mapped[str | None] = orm.mapped_column(
-        sqlalchemy.String,
-        anonymizer_config="anon.lorem_ipsum( words := 10 )",
-    )
     log_status: orm.Mapped[WorkflowJobLogStatus] = orm.mapped_column(
         sqlalchemy.Enum(WorkflowJobLogStatus),
         server_default="UNKNOWN",
@@ -505,7 +501,6 @@ class WorkflowJob(models.Base):
                     ),
                 ).label("neighbour_job_ids"),
                 job.name_without_matrix,
-                job.embedded_log_error_title,
                 job.workflow_run_id,
                 job.steps,
                 job.failed_step_number,
@@ -590,7 +585,6 @@ class WorkflowJob(models.Base):
                     ),
                 ).label("neighbour_job_ids"),
                 job.name_without_matrix,
-                job.embedded_log_error_title,
                 job.workflow_run_id,
                 job.steps,
                 job.failed_step_number,
