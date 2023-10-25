@@ -6,12 +6,16 @@ FROM mergifyio/installer:${MERGIFYINSTALLER_VERSION} as js-installer
 ### ON PREMISE ###
 # hadolint ignore=DL3006
 FROM runner-tagged as onpremise
+ARG OVERMIND_VERSION=2.4.0
 # FIXME(sileht): clearly a semgrep bug...
 # nosemgrep: dockerfile.security.last-user-is-root.last-user-is-root
 USER root
 COPY --from=js-installer /installer /installer
 COPY --from=js-ui /ui /ui
 COPY onpremise /onpremise
+# hadolint ignore=DL4006
+RUN curl -s -L https://github.com/DarthSim/overmind/releases/download/v${OVERMIND_VERSION}/overmind-v${OVERMIND_VERSION}-linux-amd64.gz -o - | gunzip > /usr/bin/overmind && \
+    chmod +x /usr/bin/overmind
 ENV MERGIFYENGINE_DASHBOARD_UI_STATIC_FILES_DIRECTORY=/ui
 USER mergify
 ENTRYPOINT ["/onpremise/entrypoint.sh"]

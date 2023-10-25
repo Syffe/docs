@@ -7,10 +7,12 @@ FROM python:${PYTHON_VERSION}-slim-bullseye as python-base
 ARG BUILD_DATE
 RUN test -n "$BUILD_DATE"
 ENV DEBIAN_FRONTEND=noninteractive
+# We don't care about the tmux version on debian stable it's stable enough
+# hadolint ignore=DL3008
 RUN useradd -m mergify && \
     printf 'APT::Get::Install-Recommends "false";\nAPT::Get::Install-Suggests "false";\n' > /etc/apt/apt.conf.d/99local && \
     printf 'deb http://deb.debian.org/debian bullseye-backports main contrib non-free\n' > /etc/apt/sources.list.d/backports.list && \
-    apt-get update -y && apt-get upgrade -y && apt-get install -y git/bullseye-backports git-man/bullseye-backports && apt-get autoremove --purge -y
+    apt-get update -y && apt-get upgrade -y && apt-get install -y git/bullseye-backports git-man/bullseye-backports tmux && apt-get autoremove --purge -y
 
 ### BUILDER PYTHON ###
 FROM python-base as python-builder

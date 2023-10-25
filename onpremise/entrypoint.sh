@@ -10,7 +10,8 @@ echo "MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA"
 if [ "$MERGIFYENGINE_INTEGRATION_ID" ]; then
   cd /onpremise
   mergify-database-update
-  exec honcho start
+  export OVERMIND_SOCKET=/tmp/.overmind
+  exec overmind start
 elif [ "$MERGIFYENGINE_INSTALLER" ]; then
   cd /installer
   python -m http.server ${PORT:=5000}

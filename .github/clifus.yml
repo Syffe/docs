@@ -24,6 +24,13 @@ sources:
       # yamllint disable-line rule:line-length
       command: bash -c "curl https://api.github.com/repos/rhysd/actionlint/releases?per_page=1 | jq -r .[0].name[1:]"
 
+  overmind-version:
+    name: Get latest overmind version from GitHub release
+    kind: shell
+    spec:
+      # yamllint disable-line rule:line-length
+      command: bash -c "curl https://api.github.com/repos/DarthSim/overmind/releases?per_page=1 | jq -r .[0].tag_name[1:]"
+
 targets:
   # PYTHON VERSION
   heroku_runtime.txt:
@@ -128,3 +135,12 @@ targets:
       lineMatchPattern: "(\\s+run: bash.*download-actionlint.bash\\) )(.+)"
     transformers:
       - replaceRegexGroup: 2
+  overmind-version:
+    name: "Update overmind version"
+    kind: file
+    sourceID: overmind-version
+    spec:
+      file: dockerfiles/Dockerfile.onpremise.footer
+      lineMatchPattern: "^ARG OVERMIND_VERSION="
+    transformers:
+      - addPrefix: "ARG OVERMIND_VERSION="

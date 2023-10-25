@@ -22,7 +22,6 @@ first = "*"
 graphql-utils = ">=0.4"
 gunicorn = {extras = ["setproctitle"], version = "*"}
 hiredis = "*"
-honcho = "*"
 httpx = {version = ">=0.20.0", extras = ["http2"]}
 jinja2 = "*"
 markdownify = "*"

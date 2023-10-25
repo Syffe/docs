@@ -82,11 +82,12 @@ DD_API_KEY = "testing-false-key"
 [tool.poe.tasks.serve]
 deps = ["setup"]
 help = "Start mergify-engine workers and API"
-cmd = "./tools/run-tests.sh honcho start --port 8802"
+cmd = "./tools/run-tests.sh overmind start --port 8802"
 use_exec = true
 [tool.poe.tasks.serve.env]
 PYTHONUNBUFFERED = "1"
 DD_DOGSTATSD_DISABLE = "1"
+DD_REMOTE_CONFIGURATION_ENABLED = "0"
 DD_TRACE_ENABLED = "0"
 MERGIFYENGINE_API_ENABLE = "1"
 MERGIFYENGINE_TEST_SETTINGS = "test.env"
@@ -111,7 +112,11 @@ cmd = "semgrep --config=auto --error"
 [tool.poe.tasks.setup]
 help = "Sync poetry virtualenv"
 executor = { type  = "simple" }
-cmd = "./tools/poetry-ci-install.sh"
+default_item_type = "cmd"
+sequence = [
+    "./tools/poetry-ci-install.sh",
+    "./tools/brew-requirements.sh"
+]
 
 [tool.poe.tasks.revision]
 deps = ["setup"]
