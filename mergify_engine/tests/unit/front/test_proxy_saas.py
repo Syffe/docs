@@ -318,3 +318,40 @@ async def test_saas_proxy_redirect(
     resp = await web_client.get(url, follow_redirects=False)
     assert resp.status_code == 307, (resp.text, url)
     assert resp.headers["Location"] == expected_location
+
+
+async def test_saas_proxy_content_type(
+    monkeypatch: pytest.MonkeyPatch,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+) -> None:
+    monkeypatch.setattr(settings, "SAAS_MODE", True)
+
+    user = github_user.GitHubUser(
+        id=github_types.GitHubAccountIdType(42),
+        login=github_types.GitHubLogin("user-login"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
+    )
+    db.add(user)
+    await db.commit()
+
+    mocked_request = respx_mock.post(
+        f"{settings.SUBSCRIPTION_URL}/engine/saas/plain/bug-report",
+    ).respond(204, json={})
+
+    await web_client.log_as(user.id)
+    resp = await web_client.post(
+        "/front/proxy/saas/plain/bug-report",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        data={"message": "help me"},
+    )
+    assert resp.status_code == 204, resp.text
+
+    assert mocked_request.calls[-1].request.headers["Mergify-On-Behalf-Of"] == str(
+        user.id
+    )
+    assert (
+        mocked_request.calls[-1].request.headers["Content-Type"]
+        == "application/x-www-form-urlencoded"
+    )

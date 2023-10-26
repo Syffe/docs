@@ -143,6 +143,9 @@ async def saas_proxy(
             510, "On-Premise installation must not use SaaS endpoints"
         )
 
+    headers = utils.headers_to_forward(request)
+    headers["Mergify-On-Behalf-Of"] = str(current_user.id)
+
     # nosemgrep: python.django.security.injection.tainted-url-host.tainted-url-host
     async with shadow_office.AsyncShadowOfficeSaasClient() as client:
         proxy_request: httpx.Request
@@ -150,7 +153,7 @@ async def saas_proxy(
             proxy_response = await client.request(
                 method=request.method,
                 url=f"/engine/saas/{path}",
-                headers={"Mergify-On-Behalf-Of": str(current_user.id)},
+                headers=headers,
                 params=request.url.query,
                 content=await request.body(),
                 follow_redirects=False,

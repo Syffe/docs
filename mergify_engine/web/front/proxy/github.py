@@ -19,9 +19,7 @@ async def github_proxy(
     path: str,
     current_user: security.CurrentUser,
 ) -> fastapi.responses.Response:
-    headers = {
-        k: v for k, v in request.headers.items() if k.lower().startswith("accept")
-    }
+    headers = utils.headers_to_forward(request)
 
     async with github.AsyncGitHubInstallationClient(
         github.GitHubTokenAuth(current_user.oauth_access_token)

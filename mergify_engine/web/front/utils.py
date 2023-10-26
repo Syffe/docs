@@ -30,6 +30,14 @@ PostgresText = typing.Annotated[
 ]
 
 
+def headers_to_forward(request: fastapi.Request) -> dict[str, str]:
+    return {
+        k: v
+        for k, v in request.headers.items()
+        if k.lower().startswith("accept") or k.lower() == "content-type"
+    }
+
+
 def httpx_to_fastapi_headers(
     headers: httpx.Headers,
     rewrite_url: tuple[str, str] | None = None,
