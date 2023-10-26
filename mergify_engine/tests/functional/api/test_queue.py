@@ -1159,9 +1159,6 @@ class TestQueueApi(base.FunctionalTestBase):
 
         await self.wait_for_pull_request("opened")
 
-        time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-        assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
-
         r = await self.admin_app.put(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/foo/freeze",
             json={"reason": "test freeze"},
@@ -1223,10 +1220,6 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 1
-
-            # Create draft pr for p2 but dont merge it
             await self.add_label(p2["number"], "queue")
             await self.run_full_engine()
 
@@ -1317,9 +1310,6 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 1
-
             # Create draft pr for p2 but dont merge it
             await self.add_label(p2["number"], "queue")
             await self.run_engine()
@@ -1390,9 +1380,6 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.run_engine()
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
-
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 1
 
         # This should make the ETA out of schedule
         # (16:52 + more than 10 minutes > 17:00 on the schedule)

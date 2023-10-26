@@ -10,6 +10,7 @@ from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine import pagination
@@ -48,6 +49,7 @@ class Event(models.Base):
     received_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime(timezone=True),
         server_default=func.now(),
+        default=date.utcnow,
         anonymizer_config="anon.dnoise(received_at, ''2 days'')",
     )
     pull_request: orm.Mapped[int | None] = orm.mapped_column(

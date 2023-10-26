@@ -77,60 +77,6 @@ async def get_checks_duration_stats_for_queue(
     return web_stat_types.ChecksDurationResponse(mean=None, median=None)
 
 
-async def get_time_to_merge_stats_for_queue(
-    repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName,
-    queue_name: qr_config.QueueName,
-    branch_name: str | None = None,
-    at: int | None = None,
-) -> web_stat_types.TimeToMergeResponse:
-    stats = await queue_statistics.get_time_to_merge_stats(
-        repository_ctxt,
-        partition_name,
-        queue_name=queue_name,
-        branch_name=branch_name,
-        at=at,
-    )
-    if qstats := stats.get(queue_name, []):
-        return web_stat_types.TimeToMergeResponse(
-            mean=statistics.fmean(qstats), median=statistics.median(qstats)
-        )
-
-    return web_stat_types.TimeToMergeResponse(mean=None, median=None)
-
-
-async def get_time_to_merge_stats_for_all_queues(
-    repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName,
-    branch_name: str | None = None,
-    at: int | None = None,
-) -> dict[qr_config.QueueName, web_stat_types.TimeToMergeResponse]:
-    """
-    Returns a dict containing a web_stat_types.TimeToMergeResponse for each queue.
-    If a queue is not in the returned dict, that means there are no available data
-    for this queue.
-    """
-    stats_dict = await queue_statistics.get_time_to_merge_stats(
-        repository_ctxt,
-        partition_name,
-        branch_name=branch_name,
-        at=at,
-    )
-    stats_out: dict[qr_config.QueueName, web_stat_types.TimeToMergeResponse] = {}
-    for queue_name, stats_list in stats_dict.items():
-        if len(stats_list) == 0:
-            stats_out[queue_name] = web_stat_types.TimeToMergeResponse(
-                mean=None, median=None
-            )
-        else:
-            stats_out[queue_name] = web_stat_types.TimeToMergeResponse(
-                mean=statistics.fmean(stats_list),
-                median=statistics.median(stats_list),
-            )
-
-    return stats_out
-
-
 def is_timestamp_in_future(timestamp: int) -> bool:
     return timestamp > int(date.utcnow().timestamp())
 

@@ -79,9 +79,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
-
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge",
             )
@@ -195,9 +192,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
-
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge",
             )
@@ -279,9 +273,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
-
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge",
             )
@@ -345,9 +336,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
-
-            checks_duration_key = self.get_statistic_redis_key("checks_duration")
-            assert await self.redis_links.stats.xlen(checks_duration_key) == 1
 
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration",
@@ -500,9 +488,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
-
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
 
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge",

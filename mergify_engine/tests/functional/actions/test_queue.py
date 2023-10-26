@@ -7596,8 +7596,6 @@ previous_failed_batches:
         assert len(pulls) == 0
 
         await self.assert_merge_queue_contents(q, None, [])
-        time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-        assert await self.redis_links.stats.xlen(time_to_merge_key) == 1
 
     async def _test_queue_without_branch_protection_for_queueing(
         self, rules: dict[str, typing.Any]

@@ -92,9 +92,6 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             await self.wait_for_pull_request("closed")
             await self.wait_for_pull_request("closed")
 
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
-
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/partitions/projA/queues/default/stats/time_to_merge",
             )
@@ -116,9 +113,6 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             await self.wait_for_pull_request("closed", tmp_mq_pr_projB["number"])
             await self.wait_for_pull_request("closed")
             await self.wait_for_pull_request("closed")
-
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 4
 
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/partitions/projB/queues/default/stats/time_to_merge",
@@ -225,9 +219,6 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
-
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/partitions/projA/queues/default/stats/time_to_merge",
             )
@@ -314,9 +305,6 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             await self.wait_for_pull_request("closed", tmp_mq_pr["number"])
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
-
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
 
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/partitions/projA/queues/default/stats/time_to_merge",

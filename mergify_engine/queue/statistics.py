@@ -38,10 +38,7 @@ def get_redis_query_older_id() -> int:
     return int((date.utcnow() - QUERY_MERGE_QUEUE_STATS_RETENTION).timestamp() * 1000)
 
 
-AvailableStatsKeyT = typing.Literal[
-    "time_to_merge",
-    "checks_duration",
-]
+AvailableStatsKeyT = typing.Literal["checks_duration",]
 
 
 @dataclasses.dataclass
@@ -68,14 +65,6 @@ class BaseQueueStats:
             for k, v in self.__dict__.items()
             if not k.startswith("_") and k not in self._todict_ignore_vars
         }
-
-
-TimeToMergeT = list[int]
-
-
-@dataclasses.dataclass
-class TimeToMerge(BaseQueueStats):
-    time_seconds: int
 
 
 # Every key is an `abort_code` of a class that inherits from `BaseAbortReason`
@@ -188,22 +177,6 @@ async def get_stats_from_event_metadata(
     event_name: signals.EventName,
     metadata: signals.EventMetadata,
 ) -> BaseQueueStats | None:
-    if event_name == "action.queue.leave":
-        metadata = typing.cast(signals.EventQueueLeaveMetadata, metadata)
-        if not metadata["merged"]:
-            return None
-
-        return TimeToMerge(
-            queue_name=qr_config.QueueName(metadata["queue_name"]),
-            branch_name=metadata["branch"],
-            partition_name=metadata["partition_name"],
-            time_seconds=(
-                _get_seconds_since_datetime(metadata["queued_at"])
-                - metadata.get("seconds_waiting_for_schedule", 0)
-                - metadata.get("seconds_waiting_for_freeze", 0)
-            ),
-        )
-
     if event_name == "action.queue.checks_end":
         metadata = typing.cast(signals.EventQueueChecksEndMetadata, metadata)
         if metadata["aborted"]:
@@ -237,7 +210,6 @@ async def get_stats_from_event_metadata(
 
 class StatisticsSignal(signals.SignalBase):
     SUPPORTED_EVENT_NAMES: typing.ClassVar[tuple[str, ...]] = (
-        "action.queue.leave",  # time_to_merge
         "action.queue.checks_end",  # check_duration
     )
 
@@ -399,32 +371,6 @@ async def _get_stats_items_at_timestamp(
         branch_name,
     ):
         yield item
-
-
-async def get_time_to_merge_stats(
-    repository: "context.Repository",
-    partition_name: partr_config.PartitionRuleName,
-    queue_name: qr_config.QueueName | None = None,
-    branch_name: str | None = None,
-    at: int | None = None,
-) -> dict[qr_config.QueueName, TimeToMergeT]:
-    stats: dict[qr_config.QueueName, TimeToMergeT] = {}
-
-    async for stat in _get_stats_items_at_timestamp(
-        repository,
-        ["time_to_merge"],
-        partition_name,
-        queue_name=queue_name,
-        branch_name=branch_name,
-        at=at,
-    ):
-        stat_obj = TimeToMerge(**stat)
-        if stat_obj.queue_name not in stats:
-            stats[stat_obj.queue_name] = []
-
-        stats[stat_obj.queue_name].append(stat_obj.time_seconds)
-
-    return stats
 
 
 async def get_checks_duration_stats(
