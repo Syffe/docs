@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    The pull request has a new ``head-repo-full-name`` attribute.

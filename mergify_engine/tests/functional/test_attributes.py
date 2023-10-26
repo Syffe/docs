@@ -321,6 +321,7 @@ class TestAttributes(base.FunctionalTestBase):
 
         pr = await self.create_pr(draft=True)
         assert pr["draft"]
+        assert pr["head"]["repo"] is not None
 
         pr_ahead = await self.create_pr()
         await self.merge_pull_as_admin(pr_ahead["number"])
@@ -398,6 +399,7 @@ class TestAttributes(base.FunctionalTestBase):
             "merged": False,
             "commits": [commit],
             "head": self.get_full_branch_name("integration/pr2"),
+            "head-repo-full-name": pr["head"]["repo"]["full_name"],
             "author": self.RECORD_CONFIG["app_user_login"],
             "dismissed-reviews-by": [],
             "merged-by": "",
@@ -1138,6 +1140,51 @@ class TestAttributes(base.FunctionalTestBase):
 
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
             assert comment["comment"]["body"] == "Happy New Year!"
+
+    async def test_head_repo_full_name(self) -> None:
+        head_repo_full_name_og = f"{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}"
+        head_repo_full_name_fork = (
+            f"mergify-test2/{self.RECORD_CONFIG['repository_name']}"
+        )
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "test-on-origin",
+                    "conditions": [f"head-repo-full-name={head_repo_full_name_og}"],
+                    "actions": {
+                        "comment": {
+                            "message": "head-repo-full-name={{ head_repo_full_name }}"
+                        }
+                    },
+                },
+                {
+                    "name": "test-on-fork",
+                    "conditions": [f"head-repo-full-name={head_repo_full_name_fork}"],
+                    "actions": {
+                        "comment": {
+                            "message": "head-repo-full-name={{ head_repo_full_name }}"
+                        }
+                    },
+                },
+            ]
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.run_engine()
+        comment = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        assert (
+            comment["comment"]["body"]
+            == f"head-repo-full-name={head_repo_full_name_og}"
+        )
+
+        p2 = await self.create_pr(as_="fork")
+        await self.run_engine()
+        comment = await self.wait_for_issue_comment(str(p2["number"]), "created")
+        assert (
+            comment["comment"]["body"]
+            == f"head-repo-full-name={head_repo_full_name_fork}"
+        )
 
 
 class TestAttributesWithSub(base.FunctionalTestBase):

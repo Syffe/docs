@@ -138,6 +138,7 @@ class TestDebugger(base.FunctionalTestBase):
         await self.create_main_branch_protection()
 
         p = await self.create_pr()
+        assert p["head"]["repo"] is not None
 
         await self._mock_get_all_branch_protection_rules()
 
@@ -242,6 +243,7 @@ pull_request_rules:
  'dismissed-reviews-by': [],
  'files': ['test1'],
  'head': '{p['head']['ref']}',
+ 'head-repo-full-name': '{p['head']['repo']['full_name']}',
  'label': [],
  'linear-history': True,
  'locked': False,
@@ -385,6 +387,7 @@ mergeable_state: blocked
         await self.create_main_branch_protection()
 
         p = await self.create_pr()
+        assert p["head"]["repo"] is not None
 
         await self._mock_get_all_branch_protection_rules()
 
@@ -513,6 +516,7 @@ pull_request_rules:
  'dismissed-reviews-by': [],
  'files': ['test1'],
  'head': '{p['head']['ref']}',
+ 'head-repo-full-name': '{p['head']['repo']['full_name']}',
  'label': [],
  'linear-history': True,
  'locked': False,

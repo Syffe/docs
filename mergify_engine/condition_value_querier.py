@@ -319,6 +319,13 @@ class BasePullRequest:
         if name == "head":
             return ctxt.pull["head"]["ref"]
 
+        if name == "head-repo-full-name":
+            return (
+                repo["full_name"]
+                if (repo := ctxt.pull["head"]["repo"]) is not None
+                else ""
+            )
+
         if name == "locked":
             return ctxt.pull["locked"]
 
@@ -581,6 +588,7 @@ class PullRequest(BasePullRequest):
         "milestone",
         "base",
         "head",
+        "head-repo-full-name",
         "title",
         "body",
         "body-raw",

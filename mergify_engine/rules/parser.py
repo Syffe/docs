@@ -94,6 +94,7 @@ CONDITION_PARSERS = {
     "review-threads-unresolved": Parser.TEXT,
     "repository-name": Parser.TEXT,
     "repository-full-name": Parser.TEXT,
+    "head-repo-full-name": Parser.TEXT,
     "schedule": Parser.SCHEDULE,
     "created-at": Parser.TIMESTAMP_OR_TIMEDELTA,
     "updated-at": Parser.TIMESTAMP_OR_TIMEDELTA,

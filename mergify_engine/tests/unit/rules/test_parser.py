@@ -66,6 +66,15 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
         ("base:main", {"=": ("base", "main")}),
         ("base!=main", {"!=": ("base", "main")}),
         ("base~=^stable/", {"~=": ("base", "^stable/")}),
+        (
+            "head-repo-full-name=some-fork/repo",
+            {
+                "=": (
+                    "head-repo-full-name",
+                    "some-fork/repo",
+                )
+            },
+        ),
         ("-base:foobar", {"-": {"=": ("base", "foobar")}}),
         ("-author~=jd", {"-": {"~=": ("author", "jd")}}),
         ("¬author~=jd", {"-": {"~=": ("author", "jd")}}),
