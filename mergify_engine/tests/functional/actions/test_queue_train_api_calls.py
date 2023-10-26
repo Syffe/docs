@@ -147,9 +147,6 @@ pull_requests:
 
         await self.wait_for_pull_request("closed", tmp_pull["number"])
 
-        failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
-        assert await self.redis_links.stats.xlen(failure_by_reason_key) == 1
-
         await self.assert_eventlog_check_end("REEMBARKED")
 
     async def assert_eventlog_check_end(

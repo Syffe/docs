@@ -1,7 +1,6 @@
 from collections import abc
 import dataclasses
 import datetime
-import enum
 import re
 import typing
 
@@ -41,7 +40,6 @@ def get_redis_query_older_id() -> int:
 
 AvailableStatsKeyT = typing.Literal[
     "time_to_merge",
-    "failure_by_reason",
     "checks_duration",
 ]
 
@@ -209,20 +207,7 @@ async def get_stats_from_event_metadata(
     if event_name == "action.queue.checks_end":
         metadata = typing.cast(signals.EventQueueChecksEndMetadata, metadata)
         if metadata["aborted"]:
-            if metadata["abort_code"] is None:
-                return None
-
-            abort_code = (
-                metadata["abort_code"].value
-                if isinstance(metadata["abort_code"], enum.Enum)
-                else metadata["abort_code"]
-            )
-            return FailureByReason.from_reason_code_str(
-                queue_name=qr_config.QueueName(metadata["queue_name"]),
-                branch_name=metadata["branch"],
-                partition_name=metadata["partition_name"],
-                reason_code_str=abort_code,
-            )
+            return None
 
         checks_ended_at = metadata["speculative_check_pull_request"].get(
             "checks_ended_at"
@@ -253,7 +238,7 @@ async def get_stats_from_event_metadata(
 class StatisticsSignal(signals.SignalBase):
     SUPPORTED_EVENT_NAMES: typing.ClassVar[tuple[str, ...]] = (
         "action.queue.leave",  # time_to_merge
-        "action.queue.checks_end",  # check_duration and failure_by_reason
+        "action.queue.checks_end",  # check_duration
     )
 
     async def __call__(
@@ -493,36 +478,3 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
         "BRANCH_UPDATE_FAILED": 0,
     }
 )
-
-
-async def get_queue_checks_outcome_stats(
-    repository: "context.Repository",
-    partition_name: partr_config.PartitionRuleName,
-    queue_name: qr_config.QueueName | None = None,
-    branch_name: str | None = None,
-    start_at: int | None = None,
-    end_at: int | None = None,
-) -> dict[qr_config.QueueName, QueueChecksOutcomeT]:
-    stats_dict: dict[qr_config.QueueName, QueueChecksOutcomeT] = {}
-    # Retrieve all the checks duration on the same period of time, this will tell us
-    # the number of success, since if a check wasn't aborted it is added as a `CheckDuration` stat,
-    # and if it was aborted it is added as a `FailureByReason` stat.
-    async for stat in _get_stats_items_date_range(
-        repository,
-        ["checks_duration", "failure_by_reason"],
-        partition_name,
-        queue_name=queue_name,
-        branch_name=branch_name,
-        start_at=start_at,
-        end_at=end_at,
-    ):
-        if stat["queue_name"] not in stats_dict:
-            stats_dict[stat["queue_name"]] = BASE_QUEUE_CHECKS_OUTCOME_T_DICT.copy()
-
-        if "duration_seconds" in stat:
-            stats_dict[stat["queue_name"]]["SUCCESS"] += 1
-        else:
-            stat_obj = FailureByReason(**stat)
-            stats_dict[stat["queue_name"]][stat_obj.reason_code_str] += 1
-
-    return stats_dict

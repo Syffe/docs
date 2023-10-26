@@ -1,3 +1,4 @@
+import datetime
 import statistics
 import typing
 
@@ -12,42 +13,8 @@ from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api.statistics import types as web_stat_types
 
 
-async def get_queue_checks_outcome_for_queue(
-    repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName,
-    queue_name: qr_config.QueueName,
-    branch_name: str | None = None,
-    start_at: int | None = None,
-    end_at: int | None = None,
-) -> queue_statistics.QueueChecksOutcomeT:
-    stats = await queue_statistics.get_queue_checks_outcome_stats(
-        repository_ctxt,
-        partition_name,
-        queue_name=queue_name,
-        branch_name=branch_name,
-        start_at=start_at,
-        end_at=end_at,
-    )
-    if queue_name not in stats:
-        return queue_statistics.BASE_QUEUE_CHECKS_OUTCOME_T_DICT
-
-    return stats[queue_name]
-
-
-async def get_queue_checks_outcome_for_all_queues(
-    repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName,
-    branch_name: str | None = None,
-    start_at: int | None = None,
-    end_at: int | None = None,
-) -> dict[qr_config.QueueName, queue_statistics.QueueChecksOutcomeT]:
-    return await queue_statistics.get_queue_checks_outcome_stats(
-        repository_ctxt,
-        partition_name,
-        branch_name=branch_name,
-        start_at=start_at,
-        end_at=end_at,
-    )
+def get_oldest_datetime() -> datetime.datetime:
+    return date.utcnow() - queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION
 
 
 async def get_checks_duration_stats_for_all_queues(

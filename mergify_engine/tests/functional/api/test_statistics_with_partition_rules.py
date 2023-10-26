@@ -489,9 +489,6 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             await self.wait_for_pull_request("closed", draft_pr["number"])
             draft_pr = await self.wait_for_pull_request("opened")
 
-            failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
-            assert await self.redis_links.stats.xlen(failure_by_reason_key) == 3
-
             await self.close_pull(p1["number"])
             await self.wait_for_pull_request("closed", p1["number"])
             await self.close_pull(p2["number"])

@@ -3,7 +3,13 @@ import typing
 
 import fastapi
 import pydantic
+import sqlalchemy
+import sqlalchemy.ext.asyncio
 
+from mergify_engine import database
+from mergify_engine import date
+from mergify_engine.models import enumerations
+from mergify_engine.models import events as evt_models
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
@@ -13,6 +19,68 @@ from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 router = fastapi.APIRouter()
+
+
+async def get_queue_checks_end_events(
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    partition_rules: security.PartitionRules,
+    queue_names: tuple[qr_config.QueueName, ...],
+    partition_names: tuple[partr_config.PartitionRuleName, ...],
+    start_at: web_stat_utils.TimestampNotInFuture | None = None,
+    end_at: web_stat_utils.TimestampNotInFuture | None = None,
+    branch: str | None = None,
+) -> sqlalchemy.ScalarResult[evt_models.EventActionQueueChecksEnd]:
+    model = evt_models.EventActionQueueChecksEnd
+
+    query_filter = {
+        model.repository_id == repository_ctxt.repo["id"],
+        model.type == enumerations.EventType.ActionQueueChecksEnd,
+        model.received_at >= web_stat_utils.get_oldest_datetime(),
+    }
+    if partition_names:
+        query_filter.add(model.partition_name.in_(partition_names))
+    if queue_names:
+        query_filter.add(model.queue_name.in_(queue_names))
+    if branch is not None:
+        query_filter.add(model.branch == branch)
+    if start_at is not None:
+        query_filter.add(model.received_at >= date.fromtimestamp(start_at))
+    if end_at is not None:
+        query_filter.add(model.received_at <= date.fromtimestamp(end_at))
+
+    stmt = sqlalchemy.select(model).where(*query_filter).order_by(model.id.desc())
+    return await session.scalars(stmt)
+
+
+async def get_queue_checks_outcome(
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    partition_rules: security.PartitionRules,
+    partition_name: partr_config.PartitionRuleName,
+    queue_name: qr_config.QueueName,
+    start_at: web_stat_utils.TimestampNotInFuture | None = None,
+    end_at: web_stat_utils.TimestampNotInFuture | None = None,
+    branch: str | None = None,
+) -> web_stat_types.QueueChecksOutcome:
+    events = await get_queue_checks_end_events(
+        session=session,
+        repository_ctxt=repository_ctxt,
+        partition_rules=partition_rules,
+        partition_names=(partition_name,),
+        queue_names=(queue_name,),
+        start_at=start_at,
+        end_at=end_at,
+        branch=branch,
+    )
+
+    stats = queue_statistics.BASE_QUEUE_CHECKS_OUTCOME_T_DICT.copy()
+    for event in events.all():
+        if event.abort_code is None:
+            stats["SUCCESS"] += 1
+        else:
+            stats[event.abort_code.value] += 1
+    return web_stat_types.QueueChecksOutcome(**stats)
 
 
 @pydantic.dataclasses.dataclass
@@ -48,6 +116,7 @@ class QueueChecksOutcomePerPartition:
     response_model=list[QueueChecksOutcomePerPartition],
 )
 async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
+    session: database.Session,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
@@ -70,45 +139,59 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
         ),
     ] = None,
 ) -> list[QueueChecksOutcomePerPartition]:
-    if not partition_rules:
-        partition_names = [partr_config.DEFAULT_PARTITION_NAME]
+    queue_names = tuple(rule.name for rule in queue_rules)
+    if partition_rules:
+        partition_names = tuple(rule.name for rule in partition_rules)
     else:
-        partition_names = [rule.name for rule in partition_rules]
+        partition_names = (partr_config.DEFAULT_PARTITION_NAME,)
 
-    queue_names = [rule.name for rule in queue_rules]
+    events = await get_queue_checks_end_events(
+        session=session,
+        repository_ctxt=repository_ctxt,
+        partition_rules=partition_rules,
+        partition_names=partition_names,
+        queue_names=queue_names,
+        start_at=start_at,
+        end_at=end_at,
+        branch=branch,
+    )
 
-    data: list[QueueChecksOutcomePerPartition] = []
-    for part_name in partition_names:
-        ttm_queues = await web_stat_utils.get_queue_checks_outcome_for_all_queues(
-            repository_ctxt,
-            part_name,
-            branch,
-            start_at,
-            end_at,
-        )
+    data: dict[
+        partr_config.PartitionRuleName,
+        dict[qr_config.QueueName, queue_statistics.QueueChecksOutcomeT],
+    ] = {}
 
-        queues: list[QueueChecksOutcomePerQueue] = []
-        for queue_name in queue_names:
-            if queue_name in ttm_queues:
-                qco_data = ttm_queues[queue_name]
-            else:
-                qco_data = queue_statistics.BASE_QUEUE_CHECKS_OUTCOME_T_DICT
+    for partition_name in partition_names:
+        data[partition_name] = {}
+        for queue in queue_names:
+            data[partition_name][
+                queue
+            ] = queue_statistics.BASE_QUEUE_CHECKS_OUTCOME_T_DICT.copy()
 
-            queues.append(
-                QueueChecksOutcomePerQueue(
-                    queue_name=queue_name,
-                    queue_checks_outcome=web_stat_types.QueueChecksOutcome(**qco_data),
-                )
-            )
+    for event in events.all():
+        partition_name = event.partition_name or partr_config.DEFAULT_PARTITION_NAME
+        queue_name = qr_config.QueueName(event.queue_name)
+        if event.abort_code is None:
+            data[partition_name][queue_name]["SUCCESS"] += 1
+        else:
+            data[partition_name][queue_name][event.abort_code.value] += 1
 
-        data.append(
+    result: list[QueueChecksOutcomePerPartition] = []
+    for partition_name, queues_data in data.items():
+        result.append(
             QueueChecksOutcomePerPartition(
-                partition_name=part_name,
-                queues=queues,
+                partition_name=partition_name,
+                queues=[
+                    QueueChecksOutcomePerQueue(
+                        queue_name=queue_name,
+                        queue_checks_outcome=web_stat_types.QueueChecksOutcome(**stats),
+                    )
+                    for queue_name, stats in queues_data.items()
+                ],
             )
         )
 
-    return data
+    return result
 
 
 @router.get(
@@ -118,6 +201,7 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
     response_model=web_stat_types.QueueChecksOutcome,
 )
 async def get_queue_checks_outcome_stats_all_partitions_endpoint(
+    session: database.Session,
     repository_ctxt: security.Repository,
     queue_name: typing.Annotated[
         qr_config.QueueName,
@@ -151,17 +235,15 @@ async def get_queue_checks_outcome_stats_all_partitions_endpoint(
             detail="This endpoint cannot be called for this repository because it uses partition rules.",
         )
 
-    return web_stat_types.QueueChecksOutcome(
-        **(
-            await web_stat_utils.get_queue_checks_outcome_for_queue(
-                repository_ctxt,
-                partr_config.DEFAULT_PARTITION_NAME,
-                queue_name=queue_name,
-                branch_name=branch,
-                start_at=start_at,
-                end_at=end_at,
-            )
-        )
+    return await get_queue_checks_outcome(
+        session=session,
+        repository_ctxt=repository_ctxt,
+        partition_rules=partition_rules,
+        partition_name=partr_config.DEFAULT_PARTITION_NAME,
+        queue_name=queue_name,
+        start_at=start_at,
+        end_at=end_at,
+        branch=branch,
     )
 
 
@@ -172,6 +254,7 @@ async def get_queue_checks_outcome_stats_all_partitions_endpoint(
     response_model=web_stat_types.QueueChecksOutcome,
 )
 async def get_queue_checks_outcome_stats_partition_endpoint(
+    session: database.Session,
     repository_ctxt: security.Repository,
     partition_name: typing.Annotated[
         partr_config.PartitionRuleName,
@@ -212,15 +295,13 @@ async def get_queue_checks_outcome_stats_partition_endpoint(
             detail=f"Partition `{partition_name}` does not exist",
         )
 
-    return web_stat_types.QueueChecksOutcome(
-        **(
-            await web_stat_utils.get_queue_checks_outcome_for_queue(
-                repository_ctxt,
-                partition_name,
-                queue_name=queue_name,
-                branch_name=branch,
-                start_at=start_at,
-                end_at=end_at,
-            )
-        )
+    return await get_queue_checks_outcome(
+        session=session,
+        repository_ctxt=repository_ctxt,
+        partition_rules=partition_rules,
+        partition_name=partition_name,
+        queue_name=queue_name,
+        start_at=start_at,
+        end_at=end_at,
+        branch=branch,
     )

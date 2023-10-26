@@ -413,9 +413,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
         await self.wait_for("pull_request", {"action": "closed"})
 
-        failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
-        assert await self.redis_links.stats.xlen(failure_by_reason_key) == 3
-
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?start_at={timestamp}",
         )
@@ -596,9 +593,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             await self.wait_for_pull_request("closed", draft_pr["number"])
             draft_pr = await self.wait_for_pull_request("opened")
-
-            failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
-            assert await self.redis_links.stats.xlen(failure_by_reason_key) == 3
 
             await self.close_pull(p1["number"])
             await self.wait_for_pull_request("closed", p1["number"])
