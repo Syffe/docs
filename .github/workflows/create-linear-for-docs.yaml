@@ -15,7 +15,10 @@ jobs:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           EMAIL_MAPPING: ${{ vars.LINEAR_EMAIL_MAPPING }}
         run: |
+          echo "Author: ${PR_AUTHOR}"
           ASSIGNEE_EMAIL=$(echo "$EMAIL_MAPPING" | awk '/ '"${PR_AUTHOR}"'$/{print $1}')
+          echo "Author email: ${ASSIGNEE_EMAIL}"
+
           JSON_PAYLOAD=$(jq -n \
              --arg email "$ASSIGNEE_EMAIL" \
             '{
@@ -23,10 +26,16 @@ jobs:
               "variables": {"filter":{"email":{"eq":$email}}}
             }'
           )
-          ASSIGNEE_ID=$(curl -X POST "https://api.linear.app/graphql" \
+
+          echo "Author linear id getter request: $JSON_PAYLOAD"
+          ASSIGNEE_ID_RESPONSE=$(curl -X POST "https://api.linear.app/graphql" \
           -H "Authorization: ${{ secrets.LINEAR_API_KEY }}" \
           -H "Content-Type: application/json" \
-          -d "$JSON_PAYLOAD" | jq -r .data.users.nodes[0].id)
+          -d "$JSON_PAYLOAD")
+          echo "Author linear id getter response: $ASSIGNEE_ID_RESPONSE"
+
+          ASSIGNEE_ID=$(echo "$ASSIGNEE_ID_RESPONSE" | jq -r .data.users.nodes[0].id)
+          echo "Author linear id: ${ASSIGNEE_ID}"
 
           JSON_PAYLOAD=$(jq -n \
                           --arg title "Docs for $PR_TITLE" \
@@ -35,7 +44,7 @@ jobs:
                           --arg assigneeId "$ASSIGNEE_ID" \
                           --arg labelId "4e23b066-c7a3-4def-9596-ee18b455fe15" \
                           '{
-                            "query": "mutation ($title: String!, $description: String!, $teamId: String!, $labelId: String!) { issueCreate(input: { title: $title, description: $description, teamId: $teamId, labelIds: [$labelId], stateId: \"cdd327d2-7875-4636-ba9d-adccf335d888\" }) { success issue { id title } } }",
+                            "query": "mutation ($title: String!, $description: String!, $teamId: String!, $labelId: String!, $assigneeId: String!) { issueCreate(input: { title: $title, description: $description, teamId: $teamId, assigneeId: $assigneeId, labelIds: [$labelId], stateId: \"cdd327d2-7875-4636-ba9d-adccf335d888\" }) { success issue { id title } } }",
                             "variables": {
                               "title": $title,
                               "description": $desc,
@@ -44,6 +53,9 @@ jobs:
                               "assigneeId": $assigneeId
                             }
                           }')
+
+          echo "Linear ticket creation request: $JSON_PAYLOAD"
+
           curl -X POST "https://api.linear.app/graphql" \
           -H "Authorization: ${{ secrets.LINEAR_API_KEY }}" \
           -H "Content-Type: application/json" \
