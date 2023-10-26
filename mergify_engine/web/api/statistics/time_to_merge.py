@@ -11,7 +11,6 @@ from mergify_engine import database
 from mergify_engine import date
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_models
-from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api import security
@@ -56,13 +55,13 @@ async def get_queue_leave_events(
                 detail=(
                     f"The provided 'at' timestamp ({at}) is too far in the past. "
                     "You can only query a maximum of "
-                    f"{queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION.days} days in the past."
+                    f"{web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION.days} days in the past."
                 ),
             )
 
         query_filter.add(
             model.received_at
-            >= at_dt - queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION
+            >= at_dt - web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION
         )
         query_filter.add(model.received_at <= at_dt)
 

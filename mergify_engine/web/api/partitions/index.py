@@ -5,6 +5,7 @@ import typing
 import fastapi
 import pydantic
 
+from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine.queue import merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -86,6 +87,7 @@ class BranchPartitions:
     },
 )
 async def repository_partitions(
+    session: database.Session,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
@@ -118,6 +120,8 @@ async def repository_partitions(
                 previous_eta = (
                     estimated_time_of_merge
                 ) = await estimated_time_to_merge.get_estimation(
+                    session,
+                    partition_rules,
                     train,
                     embarked_pull,
                     position,
@@ -155,6 +159,7 @@ async def repository_partitions(
     },
 )
 async def repository_partitions_branch(
+    session: database.Session,
     branch_name: typing.Annotated[
         github_types.GitHubRefType,
         fastapi.Path(description="The name of the branch"),
@@ -187,6 +192,8 @@ async def repository_partitions_branch(
             previous_eta = (
                 estimated_time_of_merge
             ) = await estimated_time_to_merge.get_estimation(
+                session,
+                partition_rules,
                 train,
                 embarked_pull,
                 position,
@@ -221,6 +228,7 @@ async def repository_partitions_branch(
     },
 )
 async def repository_partition_branch(
+    session: database.Session,
     partition_name: typing.Annotated[
         partr_config.PartitionRuleName,
         fastapi.Path(description="The partition name"),
@@ -263,6 +271,8 @@ async def repository_partition_branch(
             previous_eta = (
                 estimated_time_of_merge
             ) = await estimated_time_to_merge.get_estimation(
+                session,
+                partition_rules,
                 train,
                 embarked_pull,
                 position,

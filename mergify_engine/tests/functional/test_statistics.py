@@ -71,9 +71,6 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             await self.wait_for_pull_request("closed", tmp_mq_pr2["number"])
             await self.wait_for_pull_request("closed", p2["number"])
 
-            checks_duration_key = self.get_statistic_redis_key("checks_duration")
-            assert await self.redis_links.stats.xlen(checks_duration_key) == 2
-
         with time_travel(
             start_date + datetime.timedelta(hours=2, minutes=5),
             tick=True,
@@ -94,8 +91,6 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             await self.wait_for_pull_request("closed", tmp_mq_pr_3_4["number"])
             await self.wait_for_pull_request("closed")
             await self.wait_for_pull_request("closed")
-
-            assert await self.redis_links.stats.xlen(checks_duration_key) == 4
 
             # Called twice per PR for the last 2 PRs
             assert statsd.gauge.call_count == 4

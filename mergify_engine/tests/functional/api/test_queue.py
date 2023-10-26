@@ -1,21 +1,21 @@
 import datetime
 import os
-import statistics
 from unittest import mock
 
 import anys
-import msgpack
 import pytest
 
 from mergify_engine import condition_value_querier
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
+from mergify_engine.web.api.statistics import utils as web_stats_utils
 
 
 class TestQueueApi(base.FunctionalTestBase):
@@ -568,6 +568,19 @@ class TestQueueApi(base.FunctionalTestBase):
         assert r.status_code == 404
         assert r.json()["detail"] == "Pull request not found."
 
+    async def _get_median_check_durations(self) -> float:
+        async with database.create_session() as session:
+            stat = await web_stats_utils.get_queue_checks_duration(
+                session,
+                self.repository_ctxt,
+                await self.get_partition_rules(),
+                queue_names=(),
+                partition_names=(),
+            )
+            assert stat["median"] is not None
+            assert stat["median"] > 0
+            return stat["median"]
+
     async def test_estimated_time_of_merge_normal(self) -> None:
         rules = {
             "queue_rules": [
@@ -634,16 +647,7 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            checks_duration_key = self.get_statistic_redis_key("checks_duration")
-            assert await self.redis_links.stats.xlen(checks_duration_key) == 3
-            items = await self.redis_links.stats.xrange(checks_duration_key, "-", "+")
-            stats = [
-                msgpack.unpackb(v[b"data"], timestamp=3)["duration_seconds"]
-                for _, v in items
-            ]
-            assert len(stats) > 0
-            median_checks_duration = statistics.median(stats)
-            assert median_checks_duration > 0
+            median_checks_duration = await self._get_median_check_durations()
 
             await self.add_label(p4["number"], "queue")
             await self.run_engine()
@@ -739,16 +743,7 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            checks_duration_key = self.get_statistic_redis_key("checks_duration")
-            assert await self.redis_links.stats.xlen(checks_duration_key) == 3
-            items = await self.redis_links.stats.xrange(checks_duration_key, "-", "+")
-            stats = [
-                msgpack.unpackb(v[b"data"], timestamp=3)["duration_seconds"]
-                for _, v in items
-            ]
-            assert len(stats) > 0
-            median_checks_duration = statistics.median(stats)
-            assert median_checks_duration > 0
+            median_checks_duration = await self._get_median_check_durations()
 
             await self.add_label(p4["number"], "queue")
             await self.run_engine()
@@ -864,16 +859,7 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            checks_duration_key = self.get_statistic_redis_key("checks_duration")
-            assert await self.redis_links.stats.xlen(checks_duration_key) == 3
-            items = await self.redis_links.stats.xrange(checks_duration_key, "-", "+")
-            stats = [
-                msgpack.unpackb(v[b"data"], timestamp=3)["duration_seconds"]
-                for _, v in items
-            ]
-            assert len(stats) > 0
-            median_checks_duration = statistics.median(stats)
-            assert median_checks_duration > 0
+            median_checks_duration = await self._get_median_check_durations()
 
             await self.add_label(p4["number"], "queue")
             await self.add_label(p5["number"], "queue")
@@ -1010,16 +996,7 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            checks_duration_key = self.get_statistic_redis_key("checks_duration")
-            assert await self.redis_links.stats.xlen(checks_duration_key) == 3
-            items = await self.redis_links.stats.xrange(checks_duration_key, "-", "+")
-            stats = [
-                msgpack.unpackb(v[b"data"], timestamp=3)["duration_seconds"]
-                for _, v in items
-            ]
-            assert len(stats) > 0
-            median_checks_duration = statistics.median(stats)
-            assert median_checks_duration > 0
+            median_checks_duration = await self._get_median_check_durations()
 
             await self.add_label(p4["number"], "queue")
             await self.add_label(p5["number"], "queue")

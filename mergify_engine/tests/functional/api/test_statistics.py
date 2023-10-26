@@ -3,11 +3,12 @@ import datetime
 from mergify_engine import date
 from mergify_engine import settings
 from mergify_engine import yaml
-from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
+from mergify_engine.web.api.statistics import queue_checks_outcome
+from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 class TestStatisticsEndpoints(base.FunctionalTestBase):
@@ -105,7 +106,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
 
         with time_travel(
-            start_date + (queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION / 2),
+            start_date + (web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION / 2),
             tick=True,
         ):
             at_timestamp = int((start_date + datetime.timedelta(hours=3)).timestamp())
@@ -420,7 +421,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
     async def test_time_to_merge_endpoint_at_timestamp_too_far(self) -> None:
         at_timestamp = int(
             (
-                date.utcnow() - (queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION * 2)
+                date.utcnow() - (web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION * 2)
             ).timestamp()
         )
 
@@ -558,7 +559,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             assert r.json()[0]["queues"][0]["queue_name"] == "default"
             assert (
                 r.json()[0]["queues"][0]["queue_checks_outcome"]
-                == queue_statistics.BASE_QUEUE_CHECKS_OUTCOME_T_DICT
+                == queue_checks_outcome.BASE_QUEUE_CHECKS_OUTCOME_T_DICT
             )
             # #####
             # Create FailureByReason

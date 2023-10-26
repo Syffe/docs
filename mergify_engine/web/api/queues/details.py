@@ -8,6 +8,7 @@ import fastapi
 import pydantic
 
 from mergify_engine import constants
+from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.queue import merge_train
@@ -73,7 +74,9 @@ class MergeabilityCheck:
     state: merge_train.CheckStateT = dataclasses.field(
         metadata={"description": "The global state of the checks"}
     )
-    conditions_evaluation: rules_conditions.QueueConditionEvaluationJsonSerialized | None = dataclasses.field(
+    conditions_evaluation: (
+        rules_conditions.QueueConditionEvaluationJsonSerialized | None
+    ) = dataclasses.field(
         metadata={"description": "The queue rule conditions evaluation"}
     )
 
@@ -307,6 +310,7 @@ class EnhancedPullRequestQueued:
     },
 )
 async def repository_queue_pull_request(
+    session: database.Session,
     queue_name: typing.Annotated[
         qr_config.QueueName,
         fastapi.Path(description="The queue name"),
@@ -343,6 +347,8 @@ async def repository_queue_pull_request(
 
                 mergeability_check = MergeabilityCheck.from_train_car(car)
                 estimated_time_of_merge = await estimated_time_to_merge.get_estimation(
+                    session,
+                    partition_rules,
                     train,
                     embarked_pull,
                     position,

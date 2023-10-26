@@ -105,7 +105,6 @@ pytest-flakefinder = "^1.1.0"
   last_seen = "mergify_engine.usage.last_seen:Signal"
   datadog = "mergify_engine._datadog:Signal"
   eventlogs = "mergify_engine.eventlogs:EventLogsSignal"
-  queue_statistics = "mergify_engine.queue.statistics:StatisticsSignal"
   queue_statistics_accuracy = "mergify_engine.queue.statistics_accuracy:StatisticsAccuracyMeasurement"
 
 [tool.poetry.plugins.mergify_actions]

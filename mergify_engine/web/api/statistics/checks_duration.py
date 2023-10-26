@@ -2,6 +2,7 @@ import typing
 
 import fastapi
 
+from mergify_engine import database
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api import security
@@ -19,6 +20,7 @@ router = fastapi.APIRouter()
     response_model=web_stat_types.ChecksDurationResponse,
 )
 async def get_checks_duration_stats_endpoint(
+    session: database.Session,
     repository_ctxt: security.Repository,
     queue_name: typing.Annotated[
         qr_config.QueueName,
@@ -49,14 +51,15 @@ async def get_checks_duration_stats_endpoint(
             status_code=400,
             detail="This endpoint cannot be called for this repository because it uses partition rules.",
         )
-
-    return await web_stat_utils.get_checks_duration_stats_for_queue(
-        repository_ctxt,
-        partr_config.DEFAULT_PARTITION_NAME,
-        queue_name=queue_name,
-        branch_name=branch,
+    return await web_stat_utils.get_queue_checks_duration(
+        session=session,
+        repository_ctxt=repository_ctxt,
+        partition_rules=partition_rules,
+        queue_names=(queue_name,),
+        partition_names=(partr_config.DEFAULT_PARTITION_NAME,),
         start_at=start_at,
         end_at=end_at,
+        branch=branch,
     )
 
 
@@ -67,6 +70,7 @@ async def get_checks_duration_stats_endpoint(
     response_model=web_stat_types.ChecksDurationResponse,
 )
 async def get_checks_duration_stats_partition_endpoint(
+    session: database.Session,
     repository_ctxt: security.Repository,
     partition_name: typing.Annotated[
         partr_config.PartitionRuleName,
@@ -104,12 +108,13 @@ async def get_checks_duration_stats_partition_endpoint(
             status_code=404,
             detail=f"Partition `{partition_name}` does not exist",
         )
-
-    return await web_stat_utils.get_checks_duration_stats_for_queue(
-        repository_ctxt,
-        partition_name,
-        queue_name=queue_name,
-        branch_name=branch,
+    return await web_stat_utils.get_queue_checks_duration(
+        session=session,
+        repository_ctxt=repository_ctxt,
+        partition_rules=partition_rules,
+        queue_names=(queue_name,),
+        partition_names=(partition_name,),
         start_at=start_at,
         end_at=end_at,
+        branch=branch,
     )

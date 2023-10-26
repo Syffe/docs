@@ -3,19 +3,22 @@ import typing
 
 from datadog import statsd  # type: ignore[attr-defined]
 
+from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine.queue import merge_train
-from mergify_engine.queue import statistics as queue_stats
 from mergify_engine.web.api.queues import estimated_time_to_merge as eta_queues_api
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
     from mergify_engine.rules.config import partition_rules as partr_config
+
+# The retention time for the eta in Redis
+BACKEND_MERGE_QUEUE_STATS_RETENTION = datetime.timedelta(days=60)
 
 
 def get_statistic_redis_key(
@@ -24,7 +27,7 @@ def get_statistic_redis_key(
     partition_name: "partr_config.PartitionRuleName | None",
     pull_number: github_types.GitHubPullRequestNumber,
 ) -> str:
-    return f"{queue_stats._get_repository_key(repository_owner_id, repository_id)}/eta_accuracy/{partition_name}/{pull_number}"
+    return f"merge-queue-stats/repository/{repository_owner_id}/{repository_id}/eta_accuracy/{partition_name}/{pull_number}"
 
 
 class StatisticsAccuracyMeasurement(signals.SignalBase):
@@ -52,10 +55,14 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
         if event == "action.queue.leave":
             await self.queue_leave(repository, pull_request_number, metadata)
         else:
-            await self.queue_checks_start(repository, pull_request_number, metadata)
+            async with database.create_session() as session:
+                await self.queue_checks_start(
+                    session, repository, pull_request_number, metadata
+                )
 
     async def queue_checks_start(
         self,
+        session: database.Session,
         repository: "context.Repository",
         pull_request_number: github_types.GitHubPullRequestNumber,
         metadata: signals.EventMetadata,
@@ -111,6 +118,8 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
                         previous_eta = previous_pr_data["eta"]
 
             eta = await eta_queues_api.get_estimation(
+                session,
+                mergify_config["partition_rules"],
                 train,
                 embarked_pull,
                 position,
@@ -134,7 +143,7 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
             await pipe.set(
                 redis_key,
                 json.dumps(data),
-                ex=int(queue_stats.BACKEND_MERGE_QUEUE_STATS_RETENTION.total_seconds()),
+                ex=int(BACKEND_MERGE_QUEUE_STATS_RETENTION.total_seconds()),
             )
 
         await pipe.execute()

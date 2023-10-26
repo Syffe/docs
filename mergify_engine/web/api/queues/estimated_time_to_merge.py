@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import datetime
+import statistics
 
+from mergify_engine import database
 from mergify_engine import date
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions as rules_conditions
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
-from mergify_engine.web.api.statistics import types as web_stat_types
 from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
@@ -15,34 +17,7 @@ async def get_estimation_from_stats(
     train: merge_train.Train,
     embarked_pull: merge_train.EmbarkedPull,
     embarked_pull_position: int,
-    checks_duration_stats: dict[
-        qr_config.QueueName, web_stat_types.ChecksDurationResponse
-    ],
-    car: merge_train.TrainCar | None,
-    previous_eta: datetime.datetime | None = None,
-) -> datetime.datetime | None:
-    queue_name = embarked_pull.config["name"]
-    if await train.convoy.is_queue_frozen(queue_name):
-        return None
-
-    queue_checks_duration_stats = checks_duration_stats.get(
-        queue_name,
-        web_stat_types.ChecksDurationResponse(mean=None, median=None),
-    )
-    return await compute_estimation(
-        embarked_pull,
-        embarked_pull_position,
-        train.convoy.queue_rules[queue_name].config,
-        queue_checks_duration_stats["median"],
-        car,
-        previous_eta,
-    )
-
-
-async def get_estimation(
-    train: merge_train.Train,
-    embarked_pull: merge_train.EmbarkedPull,
-    embarked_pull_position: int,
+    checks_duration_stats: web_stat_utils.QueueChecksDurationsPerPartitionQueueBranchT,
     car: merge_train.TrainCar | None,
     previous_eta: datetime.datetime | None = None,
 ) -> datetime.datetime | None:
@@ -51,12 +26,44 @@ async def get_estimation(
         return None
 
     queue_checks_duration_stats = (
-        await web_stat_utils.get_checks_duration_stats_for_queue(
-            train.convoy.repository,
-            train.partition_name,
-            queue_name,
-            branch_name=train.convoy.ref,
-        )
+        checks_duration_stats.get(train.partition_name, {})
+        .get(queue_name, {})
+        .get(train.convoy.ref, None)
+    )
+    if queue_checks_duration_stats is None:
+        median = None
+    else:
+        median = statistics.median(queue_checks_duration_stats)
+    return await compute_estimation(
+        embarked_pull,
+        embarked_pull_position,
+        train.convoy.queue_rules[queue_name].config,
+        median,
+        car,
+        previous_eta,
+    )
+
+
+async def get_estimation(
+    session: database.Session,
+    partition_rules: partr_config.PartitionRules,
+    train: merge_train.Train,
+    embarked_pull: merge_train.EmbarkedPull,
+    embarked_pull_position: int,
+    car: merge_train.TrainCar | None,
+    previous_eta: datetime.datetime | None = None,
+) -> datetime.datetime | None:
+    queue_name = embarked_pull.config["name"]
+    if await train.convoy.is_queue_frozen(queue_name):
+        return None
+
+    queue_checks_duration_stats = await web_stat_utils.get_queue_checks_duration(
+        session=session,
+        repository_ctxt=train.convoy.repository,
+        partition_rules=partition_rules,
+        queue_names=(queue_name,),
+        partition_names=(train.partition_name,),
+        branch=train.convoy.ref,
     )
     return await compute_estimation(
         embarked_pull,

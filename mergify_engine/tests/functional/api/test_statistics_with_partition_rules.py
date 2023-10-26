@@ -2,10 +2,10 @@ import datetime
 
 from mergify_engine import settings
 from mergify_engine import yaml
-from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
+from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
@@ -129,7 +129,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             previous_result_projB = r.json()["median"]
 
         with time_travel(
-            start_date + (queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION / 2),
+            start_date + (web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION / 2),
             tick=True,
         ):
             at_timestamp = int((start_date + datetime.timedelta(hours=5)).timestamp())
@@ -385,9 +385,6 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
 
             await self.wait_for_pull_request("closed", tmp_mq_pr["number"])
             await self.wait_for("pull_request", {"action": "closed"})
-
-            checks_duration_key = self.get_statistic_redis_key("checks_duration")
-            assert await self.redis_links.stats.xlen(checks_duration_key) == 1
 
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/partitions/projA/queues/default/stats/checks_duration",

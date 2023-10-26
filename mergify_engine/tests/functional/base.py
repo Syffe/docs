@@ -47,7 +47,6 @@ from mergify_engine.clients import http
 from mergify_engine.github_in_postgres import process_events as github_event_processing
 from mergify_engine.log_embedder import github_action
 from mergify_engine.queue import merge_train
-from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import conftest as func_conftest
@@ -2212,14 +2211,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         for i, expected_waiting_pull in enumerate(expected_waiting_pulls):
             wp = q._waiting_pulls[i]
             assert wp.user_pull_request_number == expected_waiting_pull
-
-    def get_statistic_redis_key(
-        self,
-        stat_name: queue_statistics.AvailableStatsKeyT,
-    ) -> str:
-        return queue_statistics.get_statistic_redis_key(
-            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"], stat_name
-        )
 
     async def push_file(
         self,

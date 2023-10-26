@@ -10,7 +10,6 @@ from mergify_engine import database
 from mergify_engine import date
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_models
-from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api import security
@@ -19,6 +18,57 @@ from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 router = fastapi.APIRouter()
+
+
+# Every key is an `abort_code` of a class that inherits from `BaseAbortReason`
+# in mergify_engine/queue/utils.py
+class QueueChecksOutcomeT(typing.TypedDict):
+    PR_DEQUEUED: int
+    PR_AHEAD_DEQUEUED: int
+    PR_AHEAD_FAILED_TO_MERGE: int
+    PR_WITH_HIGHER_PRIORITY_QUEUED: int
+    PR_QUEUED_TWICE: int
+    SPECULATIVE_CHECK_NUMBER_REDUCED: int
+    CHECKS_TIMEOUT: int
+    CHECKS_FAILED: int
+    QUEUE_RULE_MISSING: int
+    UNEXPECTED_QUEUE_CHANGE: int
+    PR_FROZEN_NO_CASCADING: int
+    TARGET_BRANCH_CHANGED: int
+    TARGET_BRANCH_MISSING: int
+    PR_UNEXPECTEDLY_FAILED_TO_MERGE: int
+    BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS: int
+    PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE: int
+    CONFLICT_WITH_BASE_BRANCH: int
+    CONFLICT_WITH_PULL_AHEAD: int
+    BRANCH_UPDATE_FAILED: int
+    SUCCESS: int
+
+
+BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
+    {
+        "PR_DEQUEUED": 0,
+        "PR_AHEAD_DEQUEUED": 0,
+        "PR_AHEAD_FAILED_TO_MERGE": 0,
+        "PR_WITH_HIGHER_PRIORITY_QUEUED": 0,
+        "PR_QUEUED_TWICE": 0,
+        "SPECULATIVE_CHECK_NUMBER_REDUCED": 0,
+        "CHECKS_TIMEOUT": 0,
+        "CHECKS_FAILED": 0,
+        "QUEUE_RULE_MISSING": 0,
+        "UNEXPECTED_QUEUE_CHANGE": 0,
+        "PR_FROZEN_NO_CASCADING": 0,
+        "SUCCESS": 0,
+        "TARGET_BRANCH_CHANGED": 0,
+        "TARGET_BRANCH_MISSING": 0,
+        "PR_UNEXPECTEDLY_FAILED_TO_MERGE": 0,
+        "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS": 0,
+        "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE": 0,
+        "CONFLICT_WITH_BASE_BRANCH": 0,
+        "CONFLICT_WITH_PULL_AHEAD": 0,
+        "BRANCH_UPDATE_FAILED": 0,
+    }
+)
 
 
 async def get_queue_checks_end_events(
@@ -74,7 +124,7 @@ async def get_queue_checks_outcome(
         branch=branch,
     )
 
-    stats = queue_statistics.BASE_QUEUE_CHECKS_OUTCOME_T_DICT.copy()
+    stats = BASE_QUEUE_CHECKS_OUTCOME_T_DICT.copy()
     for event in events.all():
         if event.abort_code is None:
             stats["SUCCESS"] += 1
@@ -158,15 +208,13 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
 
     data: dict[
         partr_config.PartitionRuleName,
-        dict[qr_config.QueueName, queue_statistics.QueueChecksOutcomeT],
+        dict[qr_config.QueueName, QueueChecksOutcomeT],
     ] = {}
 
     for partition_name in partition_names:
         data[partition_name] = {}
         for queue in queue_names:
-            data[partition_name][
-                queue
-            ] = queue_statistics.BASE_QUEUE_CHECKS_OUTCOME_T_DICT.copy()
+            data[partition_name][queue] = BASE_QUEUE_CHECKS_OUTCOME_T_DICT.copy()
 
     for event in events.all():
         partition_name = event.partition_name or partr_config.DEFAULT_PARTITION_NAME

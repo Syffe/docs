@@ -13,7 +13,7 @@ async def test_signals(
 ) -> None:
     signals.register()
     request.addfinalizer(signals.unregister)
-    assert len(signals.SIGNALS) == 6
+    assert len(signals.SIGNALS) == 5
 
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     with mock.patch("mergify_engine.signals.NoopSignal.__call__") as signal_method:
@@ -38,7 +38,7 @@ async def test_copy_signal(
 ) -> None:
     signals.register()
     request.addfinalizer(signals.unregister)
-    assert len(signals.SIGNALS) == 6
+    assert len(signals.SIGNALS) == 5
 
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     with mock.patch("mergify_engine.signals.NoopSignal.__call__") as signal_method:
@@ -65,7 +65,7 @@ async def test_datadog(
 ) -> None:
     signals.register()
     request.addfinalizer(signals.unregister)
-    assert len(signals.SIGNALS) == 6
+    assert len(signals.SIGNALS) == 5
 
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
 

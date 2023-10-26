@@ -4,77 +4,24 @@ import typing
 
 import pydantic
 import pydantic_core
+import sqlalchemy
 
-from mergify_engine import context
+from mergify_engine import database
 from mergify_engine import date
-from mergify_engine.queue import statistics as queue_statistics
+from mergify_engine.models import enumerations
+from mergify_engine.models import events as evt_models
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
+from mergify_engine.web.api import security
 from mergify_engine.web.api.statistics import types as web_stat_types
 
 
+# The maximum time in the past we allow users to query
+QUERY_MERGE_QUEUE_STATS_RETENTION: datetime.timedelta = datetime.timedelta(days=30)
+
+
 def get_oldest_datetime() -> datetime.datetime:
-    return date.utcnow() - queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION
-
-
-async def get_checks_duration_stats_for_all_queues(
-    repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName,
-    branch_name: str | None = None,
-    start_at: int | None = None,
-    end_at: int | None = None,
-) -> dict[qr_config.QueueName, web_stat_types.ChecksDurationResponse]:
-    """
-    Returns a dict containing a web_stat_types.ChecksDurationResponse for each queue.
-    If a queue is not in the returned dict, that means there are no available data
-    for this queue.
-    """
-    stats_dict = await queue_statistics.get_checks_duration_stats(
-        repository_ctxt,
-        partition_name,
-        branch_name=branch_name,
-        start_at=start_at,
-        end_at=end_at,
-    )
-    stats_out: dict[qr_config.QueueName, web_stat_types.ChecksDurationResponse] = {}
-    for queue_name, stats_list in stats_dict.items():
-        if len(stats_list) == 0:
-            stats_out[queue_name] = web_stat_types.ChecksDurationResponse(
-                mean=None, median=None
-            )
-        else:
-            stats_out[queue_name] = web_stat_types.ChecksDurationResponse(
-                mean=statistics.fmean(stats_list),
-                median=statistics.median(stats_list),
-            )
-
-    return stats_out
-
-
-async def get_checks_duration_stats_for_queue(
-    repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName,
-    queue_name: qr_config.QueueName,
-    branch_name: str | None = None,
-    start_at: int | None = None,
-    end_at: int | None = None,
-) -> web_stat_types.ChecksDurationResponse:
-    stats = await queue_statistics.get_checks_duration_stats(
-        repository_ctxt,
-        partition_name,
-        queue_name=queue_name,
-        branch_name=branch_name,
-        start_at=start_at,
-        end_at=end_at,
-    )
-
-    if qstats := stats.get(queue_name, []):
-        return web_stat_types.ChecksDurationResponse(
-            mean=statistics.fmean(qstats),
-            median=statistics.median(qstats),
-        )
-
-    return web_stat_types.ChecksDurationResponse(mean=None, median=None)
+    return date.utcnow() - QUERY_MERGE_QUEUE_STATS_RETENTION
 
 
 def is_timestamp_in_future(timestamp: int) -> bool:
@@ -106,3 +53,123 @@ class TimestampNotInFuture(int):
             raise ValueError("Timestamp cannot be in the future")
 
         return int(v)
+
+
+async def get_queue_checks_end_events(
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    partition_rules: security.PartitionRules,
+    queue_names: tuple[qr_config.QueueName, ...],
+    partition_names: tuple[partr_config.PartitionRuleName, ...],
+    start_at: TimestampNotInFuture | None = None,
+    end_at: TimestampNotInFuture | None = None,
+    branch: str | None = None,
+) -> sqlalchemy.ScalarResult[evt_models.EventActionQueueChecksEnd]:
+    model = evt_models.EventActionQueueChecksEnd
+
+    query_filter = {
+        model.repository_id == repository_ctxt.repo["id"],
+        model.type == enumerations.EventType.ActionQueueChecksEnd,
+        model.aborted.is_(False),
+        model.received_at >= get_oldest_datetime(),
+    }
+    if partition_names:
+        query_filter.add(model.partition_name.in_(partition_names))
+    if queue_names:
+        query_filter.add(model.queue_name.in_(queue_names))
+    if branch is not None:
+        query_filter.add(model.branch == branch)
+
+    if start_at is not None:
+        query_filter.add(model.received_at >= date.fromtimestamp(start_at))
+    if end_at is not None:
+        query_filter.add(model.received_at <= date.fromtimestamp(end_at))
+
+    stmt = sqlalchemy.select(model).where(*query_filter).order_by(model.id.asc())
+    return await session.scalars(stmt)
+
+
+async def get_queue_checks_duration(
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    partition_rules: security.PartitionRules,
+    queue_names: tuple[qr_config.QueueName, ...],
+    partition_names: tuple[partr_config.PartitionRuleName, ...],
+    start_at: TimestampNotInFuture | None = None,
+    end_at: TimestampNotInFuture | None = None,
+    branch: str | None = None,
+) -> web_stat_types.ChecksDurationResponse:
+    events = await get_queue_checks_end_events(
+        session=session,
+        repository_ctxt=repository_ctxt,
+        partition_rules=partition_rules,
+        queue_names=queue_names,
+        partition_names=partition_names,
+        start_at=start_at,
+        end_at=end_at,
+        branch=branch,
+    )
+
+    qstats = []
+    for event in events.all():
+        if not (
+            event.speculative_check_pull_request.checks_ended_at
+            and event.speculative_check_pull_request.checks_started_at
+        ):
+            continue
+        qstats.append(
+            (
+                event.speculative_check_pull_request.checks_ended_at
+                - event.speculative_check_pull_request.checks_started_at
+            ).total_seconds()
+        )
+
+    if qstats:
+        return web_stat_types.ChecksDurationResponse(
+            mean=statistics.fmean(qstats),
+            median=statistics.median(qstats),
+        )
+    return web_stat_types.ChecksDurationResponse(mean=None, median=None)
+
+
+QueueChecksDurationsPerPartitionQueueBranchT = dict[
+    str, dict[str, dict[str, list[float]]]
+]
+
+
+async def get_queue_check_durations_per_partition_queue_branch(
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    partition_rules: security.PartitionRules,
+    partition_names: tuple[partr_config.PartitionRuleName, ...],
+    queue_names: tuple[qr_config.QueueName, ...],
+) -> QueueChecksDurationsPerPartitionQueueBranchT:
+    events = await get_queue_checks_end_events(
+        session, repository_ctxt, partition_rules, queue_names, partition_names
+    )
+
+    stats: QueueChecksDurationsPerPartitionQueueBranchT = {}
+    for event in events.all():
+        if not (
+            event.speculative_check_pull_request.checks_ended_at
+            and event.speculative_check_pull_request.checks_started_at
+        ):
+            continue
+
+        partition_name = event.partition_name or partr_config.DEFAULT_PARTITION_NAME
+        if partition_name not in stats:
+            stats[partition_name] = {}
+
+        if event.queue_name not in stats[partition_name]:
+            stats[partition_name][event.queue_name] = {}
+
+        if event.branch not in stats[partition_name][event.queue_name]:
+            stats[partition_name][event.queue_name][event.branch] = []
+
+        stats[partition_name][event.queue_name][event.branch].append(
+            (
+                event.speculative_check_pull_request.checks_ended_at
+                - event.speculative_check_pull_request.checks_started_at
+            ).total_seconds()
+        )
+    return stats
