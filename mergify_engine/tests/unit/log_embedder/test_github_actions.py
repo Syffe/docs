@@ -1,5 +1,3 @@
-import typing
-
 import numpy as np
 import pytest
 import sqlalchemy.ext.asyncio
@@ -8,19 +6,6 @@ from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github as gh_models
 from mergify_engine.tests import utils as tests_utils
-
-
-async def get_cosine_similarity_for_job(
-    session: sqlalchemy.ext.asyncio.AsyncSession,
-    job: gh_models.WorkflowJob,
-) -> typing.Sequence[gh_models.WorkflowJobLogNeighbours]:
-    return (
-        await session.scalars(
-            sqlalchemy.select(gh_models.WorkflowJobLogNeighbours)
-            .where(gh_models.WorkflowJobLogNeighbours.job_id == job.id)
-            .order_by(gh_models.WorkflowJobLogNeighbours.neighbour_job_id)
-        )
-    ).all()
 
 
 async def test_compute_log_embedding_cosine_similarity(
@@ -114,13 +99,13 @@ async def test_compute_log_embedding_cosine_similarity(
     )
     # ==================================================================================
 
-    results = await get_cosine_similarity_for_job(db, job_pep8_1_repo1)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_1_repo1)
     assert len(results) == 0
 
     await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
         db, [job_pep8_1_repo1.id]
     )
-    results = await get_cosine_similarity_for_job(db, job_pep8_1_repo1)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_1_repo1)
 
     assert len(results) == 2
     assert results[0].job_id == job_pep8_1_repo1.id
@@ -130,16 +115,16 @@ async def test_compute_log_embedding_cosine_similarity(
     assert results[1].neighbour_job_id == job_pep8_3_repo1.id
     assert results[1].cosine_similarity == -1
 
-    results = await get_cosine_similarity_for_job(db, job_pep8_2_repo1)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_2_repo1)
     assert len(results) == 0
-    results = await get_cosine_similarity_for_job(db, job_pep8_3_repo1)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_3_repo1)
     assert len(results) == 0
 
     await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
         db, [job_pep8_2_repo1.id, job_pep8_3_repo1.id]
     )
 
-    results = await get_cosine_similarity_for_job(db, job_pep8_2_repo1)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_2_repo1)
     assert len(results) == 2
     assert results[0].job_id == job_pep8_2_repo1.id
     assert results[0].neighbour_job_id == job_pep8_1_repo1.id
@@ -148,7 +133,7 @@ async def test_compute_log_embedding_cosine_similarity(
     assert results[1].neighbour_job_id == job_pep8_3_repo1.id
     assert results[1].cosine_similarity == -1
 
-    results = await get_cosine_similarity_for_job(db, job_pep8_3_repo1)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_3_repo1)
     assert len(results) == 2
     assert results[0].job_id == job_pep8_3_repo1.id
     assert results[0].neighbour_job_id == job_pep8_1_repo1.id
@@ -158,13 +143,13 @@ async def test_compute_log_embedding_cosine_similarity(
     assert results[1].cosine_similarity == -1
 
     # Test filter repo and name
-    results = await get_cosine_similarity_for_job(db, job_pep8_1_repo2)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_1_repo2)
     assert len(results) == 0
-    results = await get_cosine_similarity_for_job(db, job_pep8_2_repo2)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_2_repo2)
     assert len(results) == 0
-    results = await get_cosine_similarity_for_job(db, job_docker_1_repo2)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_docker_1_repo2)
     assert len(results) == 0
-    results = await get_cosine_similarity_for_job(db, job_docker_2_repo2)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_docker_2_repo2)
     assert len(results) == 0
 
     await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
@@ -177,25 +162,25 @@ async def test_compute_log_embedding_cosine_similarity(
         ],
     )
 
-    results = await get_cosine_similarity_for_job(db, job_pep8_1_repo2)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_1_repo2)
     assert len(results) == 1
     assert results[0].job_id == job_pep8_1_repo2.id
     assert results[0].neighbour_job_id == job_pep8_2_repo2.id
     assert results[0].cosine_similarity == 1
 
-    results = await get_cosine_similarity_for_job(db, job_pep8_2_repo2)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_2_repo2)
     assert len(results) == 1
     assert results[0].job_id == job_pep8_2_repo2.id
     assert results[0].neighbour_job_id == job_pep8_1_repo2.id
     assert results[0].cosine_similarity == 1
 
-    results = await get_cosine_similarity_for_job(db, job_docker_1_repo2)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_docker_1_repo2)
     assert len(results) == 1
     assert results[0].job_id == job_docker_1_repo2.id
     assert results[0].neighbour_job_id == job_docker_2_repo2.id
     assert results[0].cosine_similarity == 1
 
-    results = await get_cosine_similarity_for_job(db, job_docker_2_repo2)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_docker_2_repo2)
     assert len(results) == 1
     assert results[0].job_id == job_docker_2_repo2.id
     assert results[0].neighbour_job_id == job_docker_1_repo2.id
@@ -206,7 +191,7 @@ async def test_compute_log_embedding_cosine_similarity(
     await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
         db, [job_pep8_1_repo2.id]
     )
-    results = await get_cosine_similarity_for_job(db, job_pep8_1_repo2)
+    results = await tests_utils.get_cosine_similarity_for_job(db, job_pep8_1_repo2)
     assert len(results) == 1
     assert results[0].job_id == job_pep8_1_repo2.id
     assert results[0].neighbour_job_id == job_pep8_2_repo2.id

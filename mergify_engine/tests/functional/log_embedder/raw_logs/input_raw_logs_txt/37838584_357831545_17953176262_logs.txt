@@ -1,0 +1,126 @@
+2023-10-23T08:32:20.0647727Z ##[group]Run Mergifyio/add-linear-author-as-reviewer@main
+2023-10-23T08:32:20.0648457Z with:
+2023-10-23T08:32:20.0649207Z   GITHUB_TOKEN: ***
+2023-10-23T08:32:20.0649808Z   LINEAR_API_KEY: ***
+2023-10-23T08:32:20.0652164Z   EMAIL_MAPPING: jd@mergify.com jd
+sileht@mergify.com sileht
+fabien.martinet@mergify.com Syffe
+alexandre.gaubert@mergify.com AlexandreGaubert
+charly.laurent@mergify.com DouglasBlackwood
+guillaume.risbourg@mergify.com Greesb
+leo.ecrepont@mergify.com lecrepont01
+damien.couppe@mergify.com Kontrolix
+samuel.billaud@mergify.com samuelbillaud
+2023-10-23T08:32:20.0654598Z ##[endgroup]
+2023-10-23T08:32:20.0994894Z ##[group]Run python3 -m venv venv
+2023-10-23T08:32:20.0995522Z [36;1mpython3 -m venv venv[0m
+2023-10-23T08:32:20.0995986Z [36;1mvenv/bin/pip install httpx[0m
+2023-10-23T08:32:20.0997236Z [36;1mvenv/bin/python /home/runner/work/_actions/Mergifyio/add-linear-author-as-reviewer/main/linear-extract-reviewers.py >> $GITHUB_OUTPUT[0m
+2023-10-23T08:32:20.1060047Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2023-10-23T08:32:20.1060800Z env:
+2023-10-23T08:32:20.1061501Z   INPUT_LINEAR_API_KEY: ***
+2023-10-23T08:32:20.1063911Z   INPUT_EMAIL_MAPPING: jd@mergify.com jd
+sileht@mergify.com sileht
+fabien.martinet@mergify.com Syffe
+alexandre.gaubert@mergify.com AlexandreGaubert
+charly.laurent@mergify.com DouglasBlackwood
+guillaume.risbourg@mergify.com Greesb
+leo.ecrepont@mergify.com lecrepont01
+damien.couppe@mergify.com Kontrolix
+samuel.billaud@mergify.com samuelbillaud
+2023-10-23T08:32:20.1066750Z   INPUT_PULL_REQUEST_BODY: Fixes MRGFY-1672
+
+Change-Id: Icc856f9acf20252e1e8cddad0ba196229636b3fd
+2023-10-23T08:32:20.1067637Z ##[endgroup]
+2023-10-23T08:32:25.2770604Z Collecting httpx
+2023-10-23T08:32:25.3777193Z   Downloading httpx-0.25.0-py3-none-any.whl (75 kB)
+2023-10-23T08:32:25.5866344Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 75.7/75.7 KB 2.8 MB/s eta 0:00:00
+2023-10-23T08:32:25.5872094Z Collecting sniffio
+2023-10-23T08:32:25.5872928Z   Downloading sniffio-1.3.0-py3-none-any.whl (10 kB)
+2023-10-23T08:32:25.5874190Z Collecting idna
+2023-10-23T08:32:25.5874767Z   Downloading idna-3.4-py3-none-any.whl (61 kB)
+2023-10-23T08:32:25.5875663Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.5/61.5 KB 8.8 MB/s eta 0:00:00
+2023-10-23T08:32:25.5876391Z Collecting httpcore<0.19.0,>=0.18.0
+2023-10-23T08:32:25.5877125Z   Downloading httpcore-0.18.0-py3-none-any.whl (76 kB)
+2023-10-23T08:32:25.5878022Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 76.0/76.0 KB 12.3 MB/s eta 0:00:00
+2023-10-23T08:32:25.6076892Z Collecting certifi
+2023-10-23T08:32:25.6176553Z   Downloading certifi-2023.7.22-py3-none-any.whl (158 kB)
+2023-10-23T08:32:25.6331175Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 158.3/158.3 KB 11.6 MB/s eta 0:00:00
+2023-10-23T08:32:25.6685881Z Collecting h11<0.15,>=0.13
+2023-10-23T08:32:25.6782688Z   Downloading h11-0.14.0-py3-none-any.whl (58 kB)
+2023-10-23T08:32:25.6834323Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 58.3/58.3 KB 17.4 MB/s eta 0:00:00
+2023-10-23T08:32:25.7295750Z Collecting anyio<5.0,>=3.0
+2023-10-23T08:32:25.7375750Z   Downloading anyio-4.0.0-py3-none-any.whl (83 kB)
+2023-10-23T08:32:25.7454510Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 83.1/83.1 KB 13.2 MB/s eta 0:00:00
+2023-10-23T08:32:25.8009679Z Collecting exceptiongroup>=1.0.2
+2023-10-23T08:32:25.8089132Z   Downloading exceptiongroup-1.1.3-py3-none-any.whl (14 kB)
+2023-10-23T08:32:25.8768271Z Installing collected packages: sniffio, idna, h11, exceptiongroup, certifi, anyio, httpcore, httpx
+2023-10-23T08:32:26.2184172Z Successfully installed anyio-4.0.0 certifi-2023.7.22 exceptiongroup-1.1.3 h11-0.14.0 httpcore-0.18.0 httpx-0.25.0 idna-3.4 sniffio-1.3.0
+2023-10-23T08:32:26.4275931Z {'query': 'query { MRGFY_1672: issue(id: "MRGFY-1672") { creator { email } }  }'}
+2023-10-23T08:32:41.5866632Z Traceback (most recent call last):
+2023-10-23T08:32:41.5878205Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_exceptions.py", line 10, in map_exceptions
+2023-10-23T08:32:41.5879896Z     yield
+2023-10-23T08:32:41.5881148Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_backends/sync.py", line 126, in read
+2023-10-23T08:32:41.5882400Z     return self._sock.recv(max_bytes)
+2023-10-23T08:32:41.5883045Z   File "/usr/lib/python3.10/ssl.py", line 1259, in recv
+2023-10-23T08:32:41.5883691Z     return self.read(buflen)
+2023-10-23T08:32:41.5884276Z   File "/usr/lib/python3.10/ssl.py", line 1132, in read
+2023-10-23T08:32:41.5884919Z     return self._sslobj.read(len)
+2023-10-23T08:32:41.5885487Z TimeoutError: The read operation timed out
+2023-10-23T08:32:41.5885916Z 
+2023-10-23T08:32:41.5886333Z The above exception was the direct cause of the following exception:
+2023-10-23T08:32:41.5886946Z 
+2023-10-23T08:32:41.5887135Z Traceback (most recent call last):
+2023-10-23T08:32:41.5888679Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_transports/default.py", line 66, in map_httpcore_exceptions
+2023-10-23T08:32:41.5890057Z     yield
+2023-10-23T08:32:41.5891372Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_transports/default.py", line 228, in handle_request
+2023-10-23T08:32:41.5892744Z     resp = self._pool.handle_request(req)
+2023-10-23T08:32:41.5894284Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_sync/connection_pool.py", line 262, in handle_request
+2023-10-23T08:32:41.5895637Z     raise exc
+2023-10-23T08:32:41.5897003Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_sync/connection_pool.py", line 245, in handle_request
+2023-10-23T08:32:41.5898445Z     response = connection.handle_request(request)
+2023-10-23T08:32:41.5900004Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_sync/connection.py", line 103, in handle_request
+2023-10-23T08:32:41.5901421Z     return self._connection.handle_request(request)
+2023-10-23T08:32:41.5902972Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_sync/http11.py", line 133, in handle_request
+2023-10-23T08:32:41.5904487Z     raise exc
+2023-10-23T08:32:41.5905797Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_sync/http11.py", line 111, in handle_request
+2023-10-23T08:32:41.5907153Z     ) = self._receive_response_headers(**kwargs)
+2023-10-23T08:32:41.5908955Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_sync/http11.py", line 176, in _receive_response_headers
+2023-10-23T08:32:41.5910410Z     event = self._receive_event(timeout=timeout)
+2023-10-23T08:32:41.5912036Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_sync/http11.py", line 212, in _receive_event
+2023-10-23T08:32:41.5913344Z     data = self._network_stream.read(
+2023-10-23T08:32:41.5914553Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_backends/sync.py", line 124, in read
+2023-10-23T08:32:41.5915645Z     with map_exceptions(exc_map):
+2023-10-23T08:32:41.5916281Z   File "/usr/lib/python3.10/contextlib.py", line 153, in __exit__
+2023-10-23T08:32:41.5916953Z     self.gen.throw(typ, value, traceback)
+2023-10-23T08:32:41.5918230Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+2023-10-23T08:32:41.5919352Z     raise to_exc(exc) from exc
+2023-10-23T08:32:41.5919871Z httpcore.ReadTimeout: The read operation timed out
+2023-10-23T08:32:41.5920299Z 
+2023-10-23T08:32:41.5920640Z The above exception was the direct cause of the following exception:
+2023-10-23T08:32:41.5921184Z 
+2023-10-23T08:32:41.5921338Z Traceback (most recent call last):
+2023-10-23T08:32:41.5922581Z   File "/home/runner/work/_actions/Mergifyio/add-linear-author-as-reviewer/main/linear-extract-reviewers.py", line 52, in <module>
+2023-10-23T08:32:41.5923681Z     main()
+2023-10-23T08:32:41.5924774Z   File "/home/runner/work/_actions/Mergifyio/add-linear-author-as-reviewer/main/linear-extract-reviewers.py", line 38, in main
+2023-10-23T08:32:41.5926183Z     responses = linear.post("/graphql", json=query).json()
+2023-10-23T08:32:41.5927441Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 1132, in post
+2023-10-23T08:32:41.5928447Z     return self.request(
+2023-10-23T08:32:41.5929511Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 814, in request
+2023-10-23T08:32:41.5930728Z     return self.send(request, auth=auth, follow_redirects=follow_redirects)
+2023-10-23T08:32:41.5932058Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 901, in send
+2023-10-23T08:32:41.5933086Z     response = self._send_handling_auth(
+2023-10-23T08:32:41.5934336Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 929, in _send_handling_auth
+2023-10-23T08:32:41.5935484Z     response = self._send_handling_redirects(
+2023-10-23T08:32:41.5936802Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 966, in _send_handling_redirects
+2023-10-23T08:32:41.5938020Z     response = self._send_single_request(request)
+2023-10-23T08:32:41.5939337Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 1002, in _send_single_request
+2023-10-23T08:32:41.5940521Z     response = transport.handle_request(request)
+2023-10-23T08:32:41.5941861Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_transports/default.py", line 227, in handle_request
+2023-10-23T08:32:41.5943030Z     with map_httpcore_exceptions():
+2023-10-23T08:32:41.5943662Z   File "/usr/lib/python3.10/contextlib.py", line 153, in __exit__
+2023-10-23T08:32:41.5944331Z     self.gen.throw(typ, value, traceback)
+2023-10-23T08:32:41.5945702Z   File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_transports/default.py", line 83, in map_httpcore_exceptions
+2023-10-23T08:32:41.5946937Z     raise mapped_exc(message) from exc
+2023-10-23T08:32:41.5947671Z httpx.ReadTimeout: The read operation timed out
+2023-10-23T08:32:41.6124872Z ##[error]Process completed with exit code 1.

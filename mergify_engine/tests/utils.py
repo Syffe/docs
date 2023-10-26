@@ -110,6 +110,19 @@ def test_console_scripts(
         database.APP_STATE = saved_state
 
 
+async def get_cosine_similarity_for_job(
+    session: sqlalchemy.ext.asyncio.AsyncSession,
+    job: gh_models.WorkflowJob,
+) -> typing.Sequence[gh_models.WorkflowJobLogNeighbours]:
+    return (
+        await session.scalars(
+            sqlalchemy.select(gh_models.WorkflowJobLogNeighbours)
+            .where(gh_models.WorkflowJobLogNeighbours.job_id == job.id)
+            .order_by(gh_models.WorkflowJobLogNeighbours.neighbour_job_id)
+        )
+    ).all()
+
+
 def add_workflow_job(
     session: sqlalchemy.ext.asyncio.AsyncSession,
     job_data: dict[str, typing.Any],

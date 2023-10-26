@@ -1,8 +1,12 @@
 import io
+import json
+import os
 import typing
 import zipfile
 
+import daiquiri
 import numpy as np
+import pytest
 import respx
 import respx.patterns
 import sqlalchemy
@@ -12,15 +16,74 @@ from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.clients import google_cloud_storage
+from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import github_action as gha_embedder
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github as gh_models
+from mergify_engine.tests import utils as tests_utils
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATASET
 from mergify_engine.tests.openai_embedding_dataset import (
     OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT,
 )
 from mergify_engine.worker.manager import ServicesSet
+
+
+LOG = daiquiri.getLogger(__name__)
+
+PATH_INPUT_JOBS_JSON = os.path.join(
+    os.path.dirname(__file__), "raw_logs/input_jobs_json"
+)
+PATH_INPUT_RAW_LOG_TXT = os.path.join(
+    os.path.dirname(__file__), "raw_logs/input_raw_logs_txt"
+)
+COSINE_BY_ID: dict[int, dict[str, dict[int, dict[str, float]]]] = {
+    17901659641: {"expected_matching_job_ids": {}},
+    17952684380: {
+        "expected_matching_job_ids": {
+            17892796183: {"expected_cosine": 0.851},
+            17892931465: {"expected_cosine": 0.859},
+            17921959372: {"expected_cosine": 0.89},
+            17925396037: {"expected_cosine": 0.867},
+        }
+    },
+    17892796183: {
+        "expected_matching_job_ids": {
+            17892931465: {"expected_cosine": 0.939},
+            17921959372: {"expected_cosine": 0.856},
+            17925396037: {"expected_cosine": 0.864},
+            17952684380: {"expected_cosine": 0.851},
+        },
+    },
+    17892931465: {
+        "expected_matching_job_ids": {
+            17892796183: {"expected_cosine": 0.939},
+            17921959372: {"expected_cosine": 0.858},
+            17925396037: {"expected_cosine": 0.864},
+            17952684380: {"expected_cosine": 0.859},
+        }
+    },
+    17949965633: {"expected_matching_job_ids": {}},
+    17953176262: {"expected_matching_job_ids": {17953417253: {"expected_cosine": 1.0}}},
+    17953417253: {"expected_matching_job_ids": {17953176262: {"expected_cosine": 1.0}}},
+    17921959372: {
+        "expected_matching_job_ids": {
+            17892796183: {"expected_cosine": 0.856},
+            17892931465: {"expected_cosine": 0.858},
+            17925396037: {"expected_cosine": 0.938},
+            17952684380: {"expected_cosine": 0.89},
+        }
+    },
+    17925396037: {
+        "expected_matching_job_ids": {
+            17892796183: {"expected_cosine": 0.864},
+            17892931465: {"expected_cosine": 0.864},
+            17921959372: {"expected_cosine": 0.938},
+            17952684380: {"expected_cosine": 0.867},
+        }
+    },
+    17865682999: {"expected_matching_job_ids": {}},
+}
 
 
 class TestLogEmbedderGithubAction(base.FunctionalTestBase):
@@ -427,3 +490,81 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 )
 
         assert expected_job_name_and_matrix == []
+
+    @pytest.mark.make_real_openai_calls()
+    async def test_cosine_similarity_accuracy(
+        self,
+    ) -> None:
+        jobs_to_compare = []
+        job_ids_to_compare = []
+
+        async with database.create_session() as session:
+            # loop the job files and fill the DB
+            # NOTE(Syffe): we sort here since depending on the OS the order of the files might not be the same
+            for job_json_filename in sorted(os.listdir(PATH_INPUT_JOBS_JSON)):
+                with open(
+                    f"{PATH_INPUT_JOBS_JSON}/{job_json_filename}"
+                ) as job_json_file:
+                    job_json = json.load(job_json_file)
+
+                    job_json.update(
+                        {
+                            "name": job_json["github_name"],
+                            "run_id": job_json["workflow_run_id"],
+                            "conclusion": "failure",
+                        }
+                    )
+                    job = await gh_models.WorkflowJob.insert(
+                        session, job_json, job_json["repository"]
+                    )
+
+                    owner_id = job_json["repository"]["owner"]["id"]
+                    repo_id = job_json["repository"]["id"]
+                    job_id = job_json["id"]
+
+                    with open(
+                        f"{PATH_INPUT_RAW_LOG_TXT}/{owner_id}_{repo_id}_{job_id}_logs.txt"
+                    ) as log_file:
+                        (
+                            tokens,
+                            truncated_log,
+                        ) = await github_action.get_tokenized_cleaned_log(
+                            log_file.readlines()
+                        )
+                    async with openai_api.OpenAIClient() as openai_client:
+                        embedding = await openai_client.get_embedding(tokens)
+
+                    job.log_embedding = embedding
+                    job.embedded_log = truncated_log
+                    job.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+
+                    jobs_to_compare.append(job)
+                    job_ids_to_compare.append(job.id)
+
+            await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
+                session, job_ids_to_compare
+            )
+
+            # loop over every computed job and assert the values against our mapping structure of expected values
+            for job in jobs_to_compare:
+                results = await tests_utils.get_cosine_similarity_for_job(session, job)
+
+                if not COSINE_BY_ID[job.id]["expected_matching_job_ids"]:
+                    assert not results
+                    continue
+
+                assert results
+                assert len(results) == len(
+                    COSINE_BY_ID[job.id]["expected_matching_job_ids"]
+                )
+                for result in results:
+                    assert (
+                        result.neighbour_job_id
+                        in COSINE_BY_ID[job.id]["expected_matching_job_ids"]
+                    )
+                    assert (
+                        round(result.cosine_similarity, 3)
+                        == COSINE_BY_ID[job.id]["expected_matching_job_ids"][
+                            result.neighbour_job_id
+                        ]["expected_cosine"]
+                    )

@@ -315,13 +315,15 @@ async def recorder(
             shutil.rmtree(cassette_library_dir)
         os.makedirs(cassette_library_dir)
 
+    ignored_host = []
     # NOTE(Kontrolix): Those are hosts that VCR will ignore. When adding one to the
     # list please add the reason why we ignore it.
     # Reasons:
     # - api.openai.com : We currently use this endpoint only for embedding and there no
     #                    is value to call it for real. It will systematicaly be mocked
     #                    in the test
-    ignored_host = ["api.openai.com"]
+    if request.node.get_closest_marker("make_real_openai_calls") is None:
+        ignored_host.append("api.openai.com")
 
     recorder = vcr.VCR(
         cassette_library_dir=cassette_library_dir,
