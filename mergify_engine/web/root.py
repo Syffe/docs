@@ -65,7 +65,7 @@ async def lifespan(app: fastapi.FastAPI) -> typing.AsyncGenerator[None, None]:
 
 
 def create_app(
-    https_only: bool = True, debug: bool = False, rate_limiter: bool = True
+    https_only: bool = True, debug: bool = False, rate_limiter: bool = False
 ) -> fastapi.FastAPI:
     app = fastapi.FastAPI(
         openapi_url=None,
