@@ -1,6 +1,5 @@
 import dataclasses
 import datetime
-import typing
 
 import fastapi
 import pydantic
@@ -160,10 +159,7 @@ async def repository_partitions(
 )
 async def repository_partitions_branch(
     session: database.Session,
-    branch_name: typing.Annotated[
-        github_types.GitHubRefType,
-        fastapi.Path(description="The name of the branch"),
-    ],
+    branch_name: security.BranchFromPath,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
@@ -229,14 +225,8 @@ async def repository_partitions_branch(
 )
 async def repository_partition_branch(
     session: database.Session,
-    partition_name: typing.Annotated[
-        partr_config.PartitionRuleName,
-        fastapi.Path(description="The partition name"),
-    ],
-    branch_name: typing.Annotated[
-        github_types.GitHubRefType,
-        fastapi.Path(description="The name of the branch"),
-    ],
+    partition_name: security.PartitionNameFromPath,
+    branch_name: security.BranchFromPath,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,

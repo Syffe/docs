@@ -64,7 +64,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         r = await self._create_queue_freeze(
-            queue_name="false_queue_name", freeze_payload=None, expected_status_code=422
+            queue_name="default", freeze_payload=None, expected_status_code=422
         )
         assert r.json() == {
             "detail": [
@@ -78,7 +78,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         }
 
         r = await self._create_queue_freeze(
-            queue_name="false_queue_name",
+            queue_name="default",
             freeze_payload={"false_key": "test freeze reason"},
             expected_status_code=422,
         )
@@ -115,7 +115,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             freeze_payload={"reason": "test freeze reason"},
             expected_status_code=404,
         )
-        assert r.json() == {"detail": 'The queue "false_queue_name" does not exist.'}
+        assert r.json() == {"detail": "The queue `false_queue_name` does not exist."}
 
     async def test_create_queue_freeze(self) -> None:
         rules = {
@@ -472,7 +472,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         r = await self._delete_queue_freeze(
             queue_name=queue_name, expected_status_code=404
         )
-        assert r.json() == {"detail": f'The queue "{queue_name}" does not exist.'}
+        assert r.json() == {"detail": f"The queue `{queue_name}` does not exist."}
 
         queue_name = "default"
         r = await self._delete_queue_freeze(
@@ -665,7 +665,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         r = await self._get_queue_freeze(
             queue_name="false_queue_name", expected_status_code=404
         )
-        assert r.json() == {"detail": 'The queue "false_queue_name" does not exist.'}
+        assert r.json() == {"detail": "The queue `false_queue_name` does not exist."}
 
         r = await self._get_queue_freeze(queue_name="urgent", expected_status_code=404)
         assert r.json() == {"detail": 'The queue "urgent" is not currently frozen.'}

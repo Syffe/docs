@@ -57,7 +57,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/partition/partition_test/branch/{self.escaped_main_branch_name}",
         )
         assert r.status_code == 404
-        assert r.json()["detail"] == "Partition `partition_test` does not exist"
+        assert r.json()["detail"] == "The partition `partition_test` does not exist."
 
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")

@@ -23,6 +23,7 @@ from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import redis
+from mergify_engine.web import utils
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -467,6 +468,53 @@ async def get_queue_rules(repository_ctxt: Repository) -> qr_config.QueueRules:
 
 QueueRules = typing.Annotated[qr_config.QueueRules, fastapi.Depends(get_queue_rules)]
 
+_QueueNameFromPathPartiallyValidated = typing.Annotated[
+    qr_config.QueueName,
+    fastapi.Path(description="Name of the queue"),
+    functional_validators.AfterValidator(utils.CheckNullChar),
+]
+
+
+async def get_queue_rule_by_name_from_path(
+    queue_rules: QueueRules, queue_name: _QueueNameFromPathPartiallyValidated
+) -> qr_config.QueueRule:
+    try:
+        return queue_rules[queue_name]
+    except KeyError:
+        raise fastapi.HTTPException(
+            status_code=404,
+            detail=f"The queue `{queue_name}` does not exist.",
+        )
+
+
+QueueRuleByNameFromPath = typing.Annotated[
+    qr_config.QueueRule, fastapi.Depends(get_queue_rule_by_name_from_path)
+]
+
+
+async def get_queue_rule_name(
+    queue_rule: QueueRuleByNameFromPath,
+) -> qr_config.QueueName:
+    return queue_rule.name
+
+
+QueueNameFromPath = typing.Annotated[
+    qr_config.QueueName, fastapi.Depends(get_queue_rule_name)
+]
+
+
+BranchFromPath = typing.Annotated[
+    github_types.GitHubRefType,
+    fastapi.Path(description="The name of the branch"),
+    functional_validators.AfterValidator(utils.CheckNullChar),
+]
+
+OptionalBranchFromQuery = typing.Annotated[
+    github_types.GitHubRefType | None,
+    fastapi.Query(description="The name of the branch"),
+    functional_validators.AfterValidator(utils.CheckNullChar),
+]
+
 
 async def get_partition_rules(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
@@ -485,4 +533,30 @@ async def get_partition_rules(
 
 PartitionRules = typing.Annotated[
     partr_config.PartitionRules, fastapi.Depends(get_partition_rules)
+]
+
+
+_PartitionName = typing.Annotated[
+    partr_config.PartitionRuleName,
+    fastapi.Path(title="PartitionName", description="The name of the partition"),
+    functional_validators.AfterValidator(utils.CheckNullChar),
+]
+
+
+async def get_validated_partition_name(
+    partition_rules: PartitionRules, partition_name: _PartitionName
+) -> partr_config.PartitionRuleName:
+    if (
+        partition_name != partr_config.DEFAULT_PARTITION_NAME
+        and partition_name not in partition_rules
+    ):
+        raise fastapi.HTTPException(
+            status_code=404,
+            detail=f"The partition `{partition_name}` does not exist.",
+        )
+    return partition_name
+
+
+PartitionNameFromPath = typing.Annotated[
+    partr_config.PartitionRuleName, fastapi.Depends(get_validated_partition_name)
 ]

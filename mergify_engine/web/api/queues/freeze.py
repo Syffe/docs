@@ -11,14 +11,8 @@ from starlette.status import HTTP_204_NO_CONTENT
 from mergify_engine import date
 from mergify_engine import signals
 from mergify_engine.queue import freeze
-from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
-
-
-_QueueName = typing.Annotated[
-    qr_config.QueueName, fastapi.Path(description="The name of the queue")
-]
 
 
 router = fastapi.APIRouter(
@@ -82,7 +76,7 @@ class QueueFreezePayload(pydantic.BaseModel):
 )
 async def create_queue_freeze(
     queue_freeze_payload: QueueFreezePayload,
-    queue_name: _QueueName,
+    queue_rule: security.QueueRuleByNameFromPath,
     authentication_actor: security.AuthenticatedActor,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
@@ -90,13 +84,6 @@ async def create_queue_freeze(
 ) -> QueueFreezeResponse:
     if queue_freeze_payload.reason == "":
         queue_freeze_payload.reason = "No freeze reason was specified."
-
-    try:
-        queue_rule = queue_rules[queue_name]
-    except KeyError:
-        raise fastapi.HTTPException(
-            status_code=404, detail=f'The queue "{queue_name}" does not exist.'
-        )
 
     queue_freeze = await freeze.QueueFreeze.get(repository_ctxt, queue_rule)
     if queue_freeze is None:
@@ -115,7 +102,7 @@ async def create_queue_freeze(
             "queue.freeze.create",
             signals.EventQueueFreezeCreateMetadata(
                 {
-                    "queue_name": queue_name,
+                    "queue_name": queue_rule.name,
                     "reason": queue_freeze.reason,
                     "cascading": queue_freeze.cascading,
                     "created_by": typing.cast(
@@ -142,7 +129,7 @@ async def create_queue_freeze(
             "queue.freeze.update",
             signals.EventQueueFreezeUpdateMetadata(
                 {
-                    "queue_name": queue_name,
+                    "queue_name": queue_rule.name,
                     "reason": queue_freeze.reason,
                     "cascading": queue_freeze.cascading,
                     "updated_by": typing.cast(
@@ -181,28 +168,21 @@ async def create_queue_freeze(
     },
 )
 async def delete_queue_freeze(
-    queue_name: _QueueName,
     authentication_actor: security.AuthenticatedActor,
     repository_ctxt: security.Repository,
+    queue_rule: security.QueueRuleByNameFromPath,
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
 ) -> fastapi.Response:
-    try:
-        queue_rule = queue_rules[queue_name]
-    except KeyError:
-        raise fastapi.HTTPException(
-            status_code=404, detail=f'The queue "{queue_name}" does not exist.'
-        )
-
     queue_freeze = freeze.QueueFreeze(
         repository=repository_ctxt,
         queue_rule=queue_rule,
-        name=queue_name,
+        name=queue_rule.name,
     )
     if not await queue_freeze.delete(queue_rules, partition_rules):
         raise fastapi.HTTPException(
             status_code=404,
-            detail=f'The queue "{queue_name}" is not currently frozen.',
+            detail=f'The queue "{queue_rule.name}" is not currently frozen.',
         )
 
     await signals.send(
@@ -211,7 +191,7 @@ async def delete_queue_freeze(
         "queue.freeze.delete",
         signals.EventQueueFreezeDeleteMetadata(
             {
-                "queue_name": queue_name,
+                "queue_name": queue_rule.name,
                 "deleted_by": typing.cast(signals.Actor, authentication_actor.actor),
             }
         ),
@@ -233,22 +213,14 @@ async def delete_queue_freeze(
     },
 )
 async def get_queue_freeze(
-    queue_name: _QueueName,
     repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
+    queue_rule: security.QueueRuleByNameFromPath,
 ) -> QueueFreezeResponse:
-    try:
-        queue_rule = queue_rules[queue_name]
-    except KeyError:
-        raise fastapi.HTTPException(
-            status_code=404, detail=f'The queue "{queue_name}" does not exist.'
-        )
-
     queue_freeze = await freeze.QueueFreeze.get(repository_ctxt, queue_rule)
     if queue_freeze is None:
         raise fastapi.HTTPException(
             status_code=404,
-            detail=f'The queue "{queue_name}" is not currently frozen.',
+            detail=f'The queue "{queue_rule.name}" is not currently frozen.',
         )
 
     return QueueFreezeResponse(

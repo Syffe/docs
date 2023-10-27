@@ -9,8 +9,8 @@ from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine.models import application_keys
 from mergify_engine.models import github as gh_models
+from mergify_engine.web import utils
 from mergify_engine.web.front import security
-from mergify_engine.web.front import utils
 
 
 @pydantic.dataclasses.dataclass

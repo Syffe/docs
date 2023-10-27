@@ -182,12 +182,7 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
             description="Retrieve the stats that happened before this timestamp (in seconds)",
         ),
     ] = None,
-    branch: typing.Annotated[
-        str | None,
-        fastapi.Query(
-            description="The name of the branch on which we want the statistics",
-        ),
-    ] = None,
+    branch: security.OptionalBranchFromQuery = None,
 ) -> list[QueueChecksOutcomePerPartition]:
     queue_names = tuple(rule.name for rule in queue_rules)
     if partition_rules:
@@ -251,12 +246,7 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
 async def get_queue_checks_outcome_stats_all_partitions_endpoint(
     session: database.Session,
     repository_ctxt: security.Repository,
-    queue_name: typing.Annotated[
-        qr_config.QueueName,
-        fastapi.Path(
-            description="Name of the queue",
-        ),
-    ],
+    queue_name: security.QueueNameFromPath,
     partition_rules: security.PartitionRules,
     start_at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
@@ -270,12 +260,7 @@ async def get_queue_checks_outcome_stats_all_partitions_endpoint(
             description="Retrieve the stats that happened before this timestamp (in seconds)",
         ),
     ] = None,
-    branch: typing.Annotated[
-        str | None,
-        fastapi.Query(
-            description="The name of the branch on which we want the statistics",
-        ),
-    ] = None,
+    branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.QueueChecksOutcome:
     if len(partition_rules):
         raise fastapi.HTTPException(
@@ -304,16 +289,8 @@ async def get_queue_checks_outcome_stats_all_partitions_endpoint(
 async def get_queue_checks_outcome_stats_partition_endpoint(
     session: database.Session,
     repository_ctxt: security.Repository,
-    partition_name: typing.Annotated[
-        partr_config.PartitionRuleName,
-        fastapi.Path(description="The partition name"),
-    ],
-    queue_name: typing.Annotated[
-        qr_config.QueueName,
-        fastapi.Path(
-            description="Name of the queue",
-        ),
-    ],
+    partition_name: security.PartitionNameFromPath,
+    queue_name: security.QueueNameFromPath,
     partition_rules: security.PartitionRules,
     start_at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
@@ -327,12 +304,7 @@ async def get_queue_checks_outcome_stats_partition_endpoint(
             description="Retrieve the stats that happened before this timestamp (in seconds)",
         ),
     ] = None,
-    branch: typing.Annotated[
-        str | None,
-        fastapi.Query(
-            description="The name of the branch on which we want the statistics",
-        ),
-    ] = None,
+    branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.QueueChecksOutcome:
     if (
         partition_name != partr_config.DEFAULT_PARTITION_NAME

@@ -14,7 +14,6 @@ from mergify_engine import github_types
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions as rules_conditions
 from mergify_engine.rules.config import partition_rules as partr_config
-from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 from mergify_engine.web.api.queues import estimated_time_to_merge
@@ -311,27 +310,15 @@ class EnhancedPullRequestQueued:
 )
 async def repository_queue_pull_request(
     session: database.Session,
-    queue_name: typing.Annotated[
-        qr_config.QueueName,
-        fastapi.Path(description="The queue name"),
-    ],
     pr_number: typing.Annotated[
         github_types.GitHubPullRequestNumber,
         fastapi.Path(description="The queued pull request number"),
     ],
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
+    queue_rule: security.QueueRuleByNameFromPath,
     partition_rules: security.PartitionRules,
 ) -> EnhancedPullRequestQueued:
-    try:
-        queue_rule = queue_rules[queue_name]
-    except KeyError:
-        # The queue we seek is not defined in the configuration
-        raise fastapi.HTTPException(
-            status_code=404,
-            detail=f"Queue `{queue_name}` does not exist.",
-        )
-
     async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt, queue_rules, partition_rules
     ):

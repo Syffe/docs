@@ -4,7 +4,6 @@ import fastapi
 
 from mergify_engine import database
 from mergify_engine.rules.config import partition_rules as partr_config
-from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api import security
 from mergify_engine.web.api.statistics import types as web_stat_types
 from mergify_engine.web.api.statistics import utils as web_stat_utils
@@ -22,10 +21,7 @@ router = fastapi.APIRouter()
 async def get_checks_duration_stats_endpoint(
     session: database.Session,
     repository_ctxt: security.Repository,
-    queue_name: typing.Annotated[
-        qr_config.QueueName,
-        fastapi.Path(description="Name of the queue"),
-    ],
+    queue_name: security.QueueNameFromPath,
     partition_rules: security.PartitionRules,
     start_at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
@@ -39,12 +35,7 @@ async def get_checks_duration_stats_endpoint(
             description="Retrieve the stats that happened before this timestamp (in seconds)",
         ),
     ] = None,
-    branch: typing.Annotated[
-        str | None,
-        fastapi.Query(
-            description="The name of the branch on which we want the statistics",
-        ),
-    ] = None,
+    branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.ChecksDurationResponse:
     if len(partition_rules):
         raise fastapi.HTTPException(
@@ -72,14 +63,8 @@ async def get_checks_duration_stats_endpoint(
 async def get_checks_duration_stats_partition_endpoint(
     session: database.Session,
     repository_ctxt: security.Repository,
-    partition_name: typing.Annotated[
-        partr_config.PartitionRuleName,
-        fastapi.Path(description="The partition name"),
-    ],
-    queue_name: typing.Annotated[
-        qr_config.QueueName,
-        fastapi.Path(description="Name of the queue"),
-    ],
+    partition_name: security.PartitionNameFromPath,
+    queue_name: security.QueueNameFromPath,
     partition_rules: security.PartitionRules,
     start_at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
@@ -93,12 +78,7 @@ async def get_checks_duration_stats_partition_endpoint(
             description="Retrieve the stats that happened before this timestamp (in seconds)",
         ),
     ] = None,
-    branch: typing.Annotated[
-        str | None,
-        fastapi.Query(
-            description="The name of the branch on which we want the statistics",
-        ),
-    ] = None,
+    branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.ChecksDurationResponse:
     if (
         partition_name != partr_config.DEFAULT_PARTITION_NAME

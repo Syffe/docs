@@ -560,7 +560,7 @@ class TestQueueApi(base.FunctionalTestBase):
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/unknown_queue/pull/{p['number']}",
         )
         assert r.status_code == 404
-        assert r.json()["detail"] == "Queue `unknown_queue` does not exist."
+        assert r.json()["detail"] == "The queue `unknown_queue` does not exist."
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/0",

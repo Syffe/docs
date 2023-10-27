@@ -5,6 +5,8 @@ import typing
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
 import fastapi
+import pydantic
+from pydantic import functional_validators
 from redis import exceptions as redis_exceptions
 import sqlalchemy
 from starlette import requests
@@ -15,6 +17,22 @@ from mergify_engine import pagination
 
 
 LOG = daiquiri.getLogger(__name__)
+
+
+def CheckNullChar(v: str) -> str:
+    assert "\x00" not in v, f"{v} is not a valid string"
+    return v
+
+
+PostgresText = typing.Annotated[
+    str,
+    pydantic.Field(
+        min_length=1,
+        max_length=255,
+        json_schema_extra={"strip_whitespace": True},
+    ),
+    functional_validators.AfterValidator(CheckNullChar),
+]
 
 
 def setup_exception_handlers(app: fastapi.FastAPI) -> None:
