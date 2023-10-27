@@ -14,6 +14,7 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           EMAIL_MAPPING: ${{ vars.LINEAR_EMAIL_MAPPING }}
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
         run: |
           echo "Author: ${PR_AUTHOR}"
           ASSIGNEE_EMAIL=$(echo "$EMAIL_MAPPING" | awk '/ '"${PR_AUTHOR}"'$/{print $1}')
@@ -29,7 +30,7 @@ jobs:
 
           echo "Author linear id getter request: $JSON_PAYLOAD"
           ASSIGNEE_ID_RESPONSE=$(curl -X POST "https://api.linear.app/graphql" \
-          -H "Authorization: ${{ secrets.LINEAR_API_KEY }}" \
+          -H "Authorization: ${LINEAR_API_KEY}" \
           -H "Content-Type: application/json" \
           -d "$JSON_PAYLOAD")
           echo "Author linear id getter response: $ASSIGNEE_ID_RESPONSE"
@@ -43,21 +44,35 @@ jobs:
                           --arg teamId "b3feece8-d97e-4d35-85f0-dd0e45be5d53" \
                           --arg assigneeId "$ASSIGNEE_ID" \
                           --arg labelId "4e23b066-c7a3-4def-9596-ee18b455fe15" \
-                          '{
-                            "query": "mutation ($title: String!, $description: String!, $teamId: String!, $labelId: String!, $assigneeId: String!) { issueCreate(input: { title: $title, description: $description, teamId: $teamId, assigneeId: $assigneeId, labelIds: [$labelId], stateId: \"cdd327d2-7875-4636-ba9d-adccf335d888\" }) { success issue { id title } } }",
-                            "variables": {
-                              "title": $title,
-                              "description": $desc,
-                              "teamId": $teamId,
-                              "labelId": $labelId
-                              "assigneeId": $assigneeId
-                            }
-                          }')
-
+                          '{ "query": "mutation (
+                                 $title: String!,
+                                 $description: String!,
+                                 $teamId: String!,
+                                 $labelId: String!,
+                                 $assigneeId: String!
+                               ) {
+                                 issueCreate(input: {
+                                   title: $title,
+                                   description: $description,
+                                   teamId: $teamId,
+                                   assigneeId: $assigneeId,
+                                   labelIds: [$labelId],
+                                   stateId: \"cdd327d2-7875-4636-ba9d-adccf335d888\"
+                                 })
+                                 { success issue { id title } }
+                             }",
+                             "variables": {
+                               "title": $title,
+                               "description": $desc,
+                               "teamId": $teamId,
+                               "labelId": $labelId,
+                               "assigneeId": $assigneeId
+                             }
+                           }')
           echo "Linear ticket creation request: $JSON_PAYLOAD"
 
           curl -X POST "https://api.linear.app/graphql" \
-          -H "Authorization: ${{ secrets.LINEAR_API_KEY }}" \
+          -H "Authorization: ${LINEAR_API_KEY}" \
           -H "Content-Type: application/json" \
           -d "$JSON_PAYLOAD"
 
