@@ -310,6 +310,7 @@ class GitHubContentFile(typing_extensions.TypedDict):
     content: str
     sha: SHAType
     path: GitHubFilePath
+    encoding: typing.Literal["base64", "none"]
 
 
 GitHubFileStatus = typing.Literal[

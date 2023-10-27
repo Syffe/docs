@@ -574,6 +574,7 @@ async def test_get_mergify_config(
                 "path": github_types.GitHubFilePath(".mergify.yml"),
                 "type": "file",
                 "sha": github_types.SHAType("azertyu"),
+                "encoding": "base64",
             }
         )
 
@@ -624,6 +625,7 @@ pull_request_rules:
                 "path": github_types.GitHubFilePath(".mergify.yml"),
                 "type": "file",
                 "sha": github_types.SHAType("azertyu"),
+                "encoding": "base64",
             }
         )
 
@@ -713,6 +715,7 @@ async def test_get_mergify_config_file_content_from_cache(
                 "type": "file",
                 "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
+                "encoding": "base64",
             }
         ),
     ]
@@ -745,6 +748,7 @@ async def test_get_mergify_config_location_from_cache(
                 "type": "file",
                 "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
+                "encoding": "base64",
             }
         ),
     ]
@@ -776,6 +780,7 @@ async def test_get_mergify_config_location_from_cache(
                 "type": "file",
                 "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
+                "encoding": "base64",
             }
         ),
     ]
@@ -817,6 +822,7 @@ async def test_get_mergify_config_invalid(
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "type": "file",
                     "sha": github_types.SHAType("azertyu"),
+                    "encoding": "base64",
                 }
             )
 
@@ -1179,6 +1185,7 @@ async def test_extends_limit(
                 sha=github_types.SHAType("azertyuiop"),
                 path=github_types.GitHubFilePath("whatever"),
                 decoded_content="extends: faraway",
+                encoding="base64",
             )
         ),
     ):
@@ -1492,7 +1499,7 @@ async def test_get_pull_request_rules_evaluator(
 
     async def client_item(
         url: str, *args: typing.Any, **kwargs: typing.Any
-    ) -> dict[str, str] | None:
+    ) -> dict[str, str] | github_types.GitHubContentFile | None:
         if url == "/repos/Mergifyio/mergify-engine/collaborators/sileht/permission":
             return {"permission": "write"}
 
@@ -1505,12 +1512,17 @@ async def test_get_pull_request_rules_evaluator(
             )
 
         if url == "/repos/Mergifyio/mergify-engine/contents/.mergify.yml":
-            return {
-                "content": "",
-                "type": "file",
-                "path": github_types.GitHubFilePath(".mergify.yml"),
-                "sha": github_types.SHAType("8ac2d8f970ab504e4d65351b10a2b5d8480bc38a"),
-            }
+            return github_types.GitHubContentFile(
+                {
+                    "content": "",
+                    "type": "file",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
+                    "sha": github_types.SHAType(
+                        "8ac2d8f970ab504e4d65351b10a2b5d8480bc38a"
+                    ),
+                    "encoding": "base64",
+                }
+            )
 
         raise RuntimeError(f"not handled url {url}")
 
@@ -2045,6 +2057,7 @@ async def test_actions_with_options_none() -> None:
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
         decoded_content="""
 defaults:
   actions:
@@ -2088,6 +2101,7 @@ async def test_action_queue_with_duplicate_queue() -> None:
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
         decoded_content="""
 queue_rules:
   - name: default
@@ -2119,6 +2133,7 @@ async def test_action_queue_with_no_default_queue() -> None:
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
         decoded_content="""
 pull_request_rules:
   - name: ahah
@@ -2142,6 +2157,7 @@ async def test_default_with_no_pull_requests_rules() -> None:
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
         decoded_content="""
 defaults:
   actions:
@@ -2162,6 +2178,7 @@ async def test_multiple_cascaded_errors() -> None:
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
         decoded_content="""
 pull_request_rules:
   - name: automatic merge for Dependabot pull requests
@@ -2194,6 +2211,7 @@ async def test_queue_action_defaults() -> None:
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
         decoded_content="""
 defaults:
   actions:
@@ -2233,6 +2251,7 @@ async def test_invalid_disallow_checks_interruption_from_queues() -> None:
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
         decoded_content="""
 queue_rules:
 - name: default
@@ -2256,6 +2275,7 @@ async def test_valid_disallow_checks_interruption_from_queues() -> None:
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
         decoded_content="""
 queue_rules:
 - name: default
@@ -2279,6 +2299,7 @@ async def test_invalid_interval() -> None:
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
         decoded_content="""
 queue_rules:
 - name: default
@@ -2304,6 +2325,7 @@ queue_rules:
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
         decoded_content="""
 queue_rules:
 - name: default

@@ -52,6 +52,7 @@ queue_rules:
                 content=encodebytes(config.encode()).decode(),
                 sha=github_types.SHAType("azertyuiop"),
                 path=github_types.GitHubFilePath("whatever"),
+                encoding="base64",
             ),
         )
 

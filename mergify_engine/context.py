@@ -59,6 +59,7 @@ def content_file_to_config_file(
         content=content["content"],
         path=content["path"],
         sha=content["sha"],
+        encoding=content["encoding"],
         decoded_content=base64.b64decode(
             bytearray(content["content"], "utf-8")
         ).decode(),
@@ -71,6 +72,7 @@ DEFAULT_CONFIG_FILE = MergifyConfigFile(
     content="<default>",
     sha=github_types.SHAType("<default>"),
     path=github_types.GitHubFilePath("<default>"),
+    encoding="base64",
 )
 
 
@@ -373,6 +375,24 @@ class Repository:
                     continue
                 raise
 
+            # More than 1M, see https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-contents
+            if content["encoding"] == "none":
+                self.log.warning(
+                    "configuration file too big, skipping it.",
+                    config_filename=filename,
+                )
+                continue
+
+            # Mypy thinks it's unreachable, because the literal don't have more value
+            # But GitHub API may have more we are not aware of as it's not well documented
+            elif content["encoding"] != "base64":
+                self.log.warning(  # type: ignore[unreachable]
+                    "configuration has unhandled encoding, skipping it.",
+                    config_filename=filename,
+                    encoding=content["encoding"],
+                )
+                continue
+
             yield content_file_to_config_file(content)
 
     def clear_caches(self) -> None:
@@ -442,6 +462,7 @@ class Repository:
                             "content": config_file["content"],
                             "path": config_file["path"],
                             "sha": config_file["sha"],
+                            "encoding": config_file["encoding"],
                         }
                     )
                 ),

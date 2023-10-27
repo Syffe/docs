@@ -270,6 +270,7 @@ def fake_client() -> mock.Mock:
                     "sha": github_types.SHAType(
                         "8ac2d8f970ab504e4d65351b10a2b5d8480bc38a"
                     ),
+                    "encoding": "base64",
                 }
             )
 

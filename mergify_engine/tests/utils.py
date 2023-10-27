@@ -33,6 +33,7 @@ async def load_mergify_config(content: str) -> mergify_conf.MergifyConfig:
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
         decoded_content=content,
+        encoding="base64",
     )
 
     return await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)

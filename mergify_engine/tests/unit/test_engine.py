@@ -309,6 +309,7 @@ async def test_configuration_changed(
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
+                    "encoding": "base64",
                 }
             ),
         ),
@@ -330,6 +331,7 @@ async def test_configuration_changed(
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
+                    "encoding": "base64",
                 }
             ),
         ),
@@ -433,6 +435,7 @@ async def test_configuration_duplicated(
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
+                    "encoding": "base64",
                 }
             ),
         ),
@@ -536,6 +539,7 @@ async def test_configuration_not_changed(
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
+                    "encoding": "base64",
                 }
             ),
         ),
@@ -647,6 +651,7 @@ async def test_configuration_initial(
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
+                    "encoding": "base64",
                 }
             ),
         ),
@@ -720,6 +725,7 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
+                    "encoding": "base64",
                 }
             ),
         ),
@@ -790,6 +796,7 @@ async def test_configuration_check_not_needed_with_configuration_changed(
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
+                    "encoding": "base64",
                 }
             ),
         ),
@@ -861,6 +868,7 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
+                    "encoding": "base64",
                 }
             ),
         ),

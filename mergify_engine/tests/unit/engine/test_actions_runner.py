@@ -109,6 +109,7 @@ async def test_get_already_merged_summary(
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
         decoded_content=raw_config,
+        encoding="base64",
     )
 
     config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
@@ -145,6 +146,7 @@ async def test_get_already_merged_summary_without_rules(
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
         decoded_content="",
+        encoding="base64",
     )
 
     config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)

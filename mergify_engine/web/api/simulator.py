@@ -54,6 +54,7 @@ class SimulatorPayload(pydantic.BaseModel):
                         "sha": github_types.SHAType("whatever"),
                         "path": github_types.GitHubFilePath(".mergify.yml"),
                         "decoded_content": self.mergify_yml,
+                        "encoding": "base64",
                     }
                 ),
             )

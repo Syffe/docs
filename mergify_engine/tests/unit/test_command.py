@@ -26,6 +26,7 @@ async def get_empty_config() -> mergify_conf.MergifyConfig:
             sha=github_types.SHAType("azertyuiop"),
             path=github_types.GitHubFilePath("whatever"),
             decoded_content="",
+            encoding="base64",
         ),
     )
 
@@ -122,6 +123,7 @@ defaults:
         sha=github_types.SHAType("azertyuiop"),
         path=github_types.GitHubFilePath("whatever"),
         decoded_content=raw_config,
+        encoding="base64",
     )
     config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
     command = commands_runner.load_command(config, "@mergifyio backport")
@@ -504,6 +506,7 @@ commands_restrictions:
             sha=github_types.SHAType("azertyuiop"),
             path=github_types.GitHubFilePath("whatever"),
             decoded_content=config,
+            encoding="base64",
         ),
     )
 
