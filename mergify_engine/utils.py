@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from collections import abc
 import enum
 import functools
@@ -312,16 +311,6 @@ def github_url_parser(
         else github_types.GitHubPullRequestNumber(int(pull_number)),
         None if branch is None else github_types.GitHubRefType(branch),
     )
-
-
-def make_sync_for_entrypoint(
-    func: abc.Callable[[], abc.Coroutine[typing.Any, typing.Any, None]]
-) -> abc.Callable[[], None]:
-    @functools.wraps(func)
-    def inner_func() -> None:
-        asyncio.run(func())
-
-    return inner_func
 
 
 _D = typing.TypeVar("_D", bound=typing.Mapping[str, typing.Any])
