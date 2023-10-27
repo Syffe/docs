@@ -486,6 +486,8 @@ class Repository:
         content = typing.cast(
             github_types.GitHubContentFile, json.loads(config_file_raw)
         )
+        # Backward compatibility add in 7.8.0
+        content.setdefault("encoding", "base64")
         return content_file_to_config_file(content)
 
     async def get_commits(
