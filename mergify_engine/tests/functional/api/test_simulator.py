@@ -1,3 +1,4 @@
+import anys
 import pytest
 
 from mergify_engine import settings
@@ -229,4 +230,69 @@ did not find expected alphabetic or numeric character
                     "type": "missing",
                 },
             ],
+        }
+
+
+class TestApiConfigurationSimulator(base.FunctionalTestBase):
+    @pytest.mark.subscription(subscription.Features.CUSTOM_CHECKS)
+    async def test_config_editor_simulator(self) -> None:
+        await self.setup_repo()
+        p = await self.create_pr()
+
+        mergify_yaml = f"""
+pull_request_rules:
+  - name: a lot of stuff
+    conditions:
+      - base={self.main_branch_name}
+      - or:
+        - schedule=MON-SUN 00:00-23:59
+        - label=foobar
+    actions:
+      post_check:
+        summary: "Did you check {{{{ author }}}}?"
+        success_conditions:
+          - "author=foobar"
+          - "label=whatever"
+          - "base={self.main_branch_name}"
+      comment:
+        message: "Welcome {{{{ author }}}}."
+      edit:
+        draft: True
+      assign:
+        users:
+          - mergify-test1
+"""
+
+        r = await self.admin_app.post(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/configuration-simulator",
+            json={"mergify_yml": mergify_yaml},
+        )
+        assert r.status_code == 200, r.json()
+        assert r.json()["message"] == "The configuration is valid"
+
+        r = await self.admin_app.post(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/configuration-simulator",
+            json={"mergify_yml": mergify_yaml},
+        )
+        assert r.status_code == 200, r.json()
+        assert r.json()["message"] == "The configuration is valid"
+        assert len(r.json()["pull_request_rules"]) == 1
+        pull_request_rule = r.json()["pull_request_rules"][0]
+        assert pull_request_rule["name"] == "a lot of stuff"
+        assert len(pull_request_rule["actions"]) == 4
+        actions = pull_request_rule["actions"]
+        assert actions["post_check"] == {
+            "always_show": False,
+            "check_conditions": anys.ANY_DICT,
+            "summary": anys.AnyFullmatch(r"Did you check .+\[bot\]\?"),
+            "title": "'a lot of stuff' failed",
+        }
+        assert actions["comment"] == {
+            "message": anys.AnyFullmatch(r"Welcome .+\[bot\]\."),
+            "bot_account": None,
+        }
+        assert actions["edit"] == {"draft": True, "bot_account": None}
+        assert actions["assign"] == {
+            "users_to_add": ["mergify-test1"],
+            "users_to_remove": [],
         }

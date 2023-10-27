@@ -60,6 +60,11 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
         types.T_EvaluatedRule
     ] = dataclasses.field(init=False, default_factory=list)
 
+    # The rules evaluated with the pull request.
+    evaluated_rules: list[types.T_EvaluatedRule] = dataclasses.field(
+        init=False, default_factory=list
+    )
+
     @classmethod
     async def create(
         cls,
@@ -74,7 +79,10 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
             evaluated_rule_conditions = rule.get_conditions_used_by_evaluator()
             live_resolvers.apply_configure_filter(repository, evaluated_rule_conditions)
 
-            evaluated_rule = typing.cast(types.T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
+            evaluated_rule = typing.cast(  # type: ignore[redundant-cast]
+                types.T_EvaluatedRule, await rule.evaluate(pulls)
+            )
+            self.evaluated_rules.append(evaluated_rule)
             del rule
 
             # NOTE(sileht):

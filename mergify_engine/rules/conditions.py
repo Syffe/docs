@@ -61,9 +61,9 @@ class RuleConditionFilters:
 
     boolean: filter.Filter[bool] = dataclasses.field(init=False)
     next_evaluation: filter.Filter[datetime.datetime] = dataclasses.field(init=False)
-    related_checks: filter.Filter[
-        filter.ListValuesFilterResult
-    ] | None = dataclasses.field(init=False)
+    related_checks: (
+        filter.Filter[filter.ListValuesFilterResult] | None
+    ) = dataclasses.field(init=False)
 
     def __post_init__(self, condition: filter.TreeT) -> None:
         self.boolean = filter.BinaryFilter(condition)
@@ -260,7 +260,8 @@ class RuleConditionGroup(abstract.ABC):
         self, filter_key: ConditionFilterKeyT | None = None
     ) -> ConditionEvaluationResult:
         return ConditionEvaluationResult.from_rule_condition_node(
-            self, filter_key=filter_key  # type:ignore [arg-type]
+            self,  # type:ignore [arg-type]
+            filter_key=filter_key,
         )
 
     @staticmethod
@@ -832,7 +833,7 @@ class ConditionEvaluationResult:
         default_factory=list
     )
 
-    class Serialized(typing.TypedDict):
+    class Serialized(typing_extensions.TypedDict):
         match: bool
         label: str
         is_label_user_input: bool
