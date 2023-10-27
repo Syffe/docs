@@ -28,6 +28,7 @@ async def test_github_actions_get_config() -> None:
                                     },
                                     {
                                         "workflow": "my_second_workflow.yaml",
+                                        "ref": "master",
                                         "inputs": {
                                             "input1": "value1",
                                             "input2": "value2",

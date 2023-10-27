@@ -24,6 +24,7 @@ MAX_DISPATCHED_EVENTS: int = 10
 
 class GhaExecutorDispatchConfig(typing.TypedDict):
     workflow: str
+    ref: str
     inputs: dict[str, str | int | bool]
 
 
@@ -40,9 +41,12 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
         rule: prr_config.EvaluatedPullRequestRule,
     ) -> list[GhaExecutorDispatchConfig]:
         pull_attrs = condition_value_querier.PullRequest(ctxt)
-
         workflows = []
+
         for wf in action.config["workflow"]["dispatch"]:
+            if (ref := wf["ref"]) is None:
+                ref = ctxt.repository.repo["default_branch"]
+
             inputs: dict[str, str | int | bool] = {}
             for ik, iv in wf["inputs"].items():
                 if isinstance(iv, str):
@@ -59,6 +63,7 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
                 GhaExecutorDispatchConfig(
                     {
                         "workflow": wf["workflow"],
+                        "ref": ref,
                         "inputs": inputs,
                     }
                 )
@@ -137,7 +142,7 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
             await self.ctxt.client.post(
                 f"{self.ctxt.base_url}/actions/workflows/{wf['workflow']}/dispatches",
                 json={
-                    "ref": self.ctxt.pull["head"]["ref"],
+                    "ref": wf["ref"],
                     "inputs": wf["inputs"],
                 },
             )
@@ -191,6 +196,9 @@ class GhaAction(actions.Action):
                     {
                         voluptuous.Required("workflow"): voluptuous.All(
                             str, urllib.parse.quote
+                        ),
+                        voluptuous.Required("ref", default=None): voluptuous.Any(
+                            str, None
                         ),
                         voluptuous.Required("inputs", default={}): voluptuous.All(
                             {str: voluptuous.Any(types.Jinja2, int, bool)},

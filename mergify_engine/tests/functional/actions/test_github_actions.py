@@ -586,3 +586,72 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
                         break
 
         assert f"author={self.RECORD_CONFIG['app_user_login']}" in file_content
+
+    async def test_gha_specified_ref(self) -> None:
+        workflow_with_ref = {
+            "name": "workflow_with_ref",
+            "on": {
+                "pull_request": {"branches": self.main_branch_name},
+                "workflow_dispatch": {"inputs": {}},
+            },
+            "jobs": {
+                "test-dispatch": {
+                    "runs-on": self.RUNNER,
+                    "steps": [
+                        {
+                            "name": "Hello world",
+                            "run": "echo hello world",
+                        }
+                    ],
+                }
+            },
+        }
+
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Dispatch GHA",
+                    "conditions": [
+                        "label=dispatch",
+                    ],
+                    "actions": {
+                        "github_actions": {
+                            "workflow": {
+                                "dispatch": [
+                                    {
+                                        "workflow": "workflow_with_ref.yaml",
+                                        "ref": "branch-does-not-exist",
+                                    },
+                                ]
+                            }
+                        }
+                    },
+                },
+            ]
+        }
+
+        await self.setup_repo(
+            yaml.dump(rules),
+            files={
+                ".github/workflows/workflow_with_ref.yaml": yaml.dump(
+                    workflow_with_ref
+                ),
+            },
+        )
+
+        p = await self.create_pr()
+        await self.add_label(p["number"], "dispatch")
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(
+            name="Rule: Dispatch GHA (github_actions)",
+            conclusion="failure",
+        )
+        assert (
+            check_run["check_run"]["output"]["title"]
+            == "Failed to dispatch workflow `workflow_with_ref.yaml`"
+        )
+        assert (
+            check_run["check_run"]["output"]["summary"]
+            == "Failed to dispatch workflow `workflow_with_ref.yaml`. No ref found for: branch-does-not-exist."
+        )
