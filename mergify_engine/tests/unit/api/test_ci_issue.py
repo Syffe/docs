@@ -234,3 +234,125 @@ async def test_api_ci_issue_get_ci_issue(
         "name": "Failure of A job",
         "short_id": job.ci_issue.short_id,
     }
+
+
+@pytest.mark.populated_db_datasets("TestApiGhaFailedJobsDataset")
+async def test_api_ci_issue_get_ci_issue_event_detail(
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+) -> None:
+    for job in await populated_db.scalars(
+        sqlalchemy.select(gh_models.WorkflowJob).where(
+            gh_models.WorkflowJob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
+            gh_models.WorkflowJob.log_embedding.isnot(None),
+            gh_models.WorkflowJob.ci_issue_id.is_(None),
+        )
+    ):
+        await CiIssue.link_job_to_ci_issue(populated_db, job)
+    await populated_db.commit()
+
+    await tests_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock, populated_db, web_client, "OneAccount/OneRepo"
+    )
+
+    job = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issue)],
+    )
+
+    assert job.ci_issue_id is not None
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{job.ci_issue_id}/events/{job.id}",
+        follow_redirects=False,
+    )
+
+    assert job.steps is not None
+
+    assert reply.json() == {
+        "name": "A job",
+        "id": job.id,
+        "run_id": job.workflow_run_id,
+        "steps": [
+            {
+                "name": "Run a step",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 1,
+                "started_at": job.steps[0]["started_at"],
+                "completed_at": job.steps[0]["completed_at"],
+            }
+        ],
+        "failed_step_number": 1,
+        "started_at": job.started_at.isoformat(),
+        "completed_at": job.completed_at.isoformat(),
+        "flaky": "flaky",
+        "run_attempt": 1,
+        "failed_run_count": 3,
+        "embedded_log": "Some logs",
+    }
+
+    job = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_2"],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issue)],
+    )
+
+    assert job.ci_issue_id is not None
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{job.ci_issue_id}/events/{job.id}",
+        follow_redirects=False,
+    )
+
+    assert job.steps is not None
+
+    assert reply.json() == {
+        "name": "A job",
+        "id": job.id,
+        "run_id": job.workflow_run_id,
+        "steps": [
+            {
+                "name": "Run a step",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 1,
+                "started_at": job.steps[0]["started_at"],
+                "completed_at": job.steps[0]["completed_at"],
+            }
+        ],
+        "failed_step_number": 1,
+        "started_at": job.started_at.isoformat(),
+        "completed_at": job.completed_at.isoformat(),
+        "flaky": "flaky",
+        "run_attempt": 2,
+        "failed_run_count": 3,
+        "embedded_log": "Some logs",
+    }
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{job.ci_issue_id}/events/9999999",
+        follow_redirects=False,
+    )
+
+    assert reply.status_code == 404
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/9999999/events/{job.id}",
+        follow_redirects=False,
+    )
+
+    assert reply.status_code == 404
+
+    await tests_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock, populated_db, web_client, "colliding-account-1/colliding_repo_name"
+    )
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{job.ci_issue_id}/events/{job.id}",
+        follow_redirects=False,
+    )
+
+    assert reply.status_code == 404
