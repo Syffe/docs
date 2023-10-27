@@ -146,3 +146,4 @@ class CiIssue(models.Base):
             issue = await CiIssue.insert(session, job.repository_id)
 
         job.ci_issue = issue
+        job.ci_issue_id = issue.id

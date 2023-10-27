@@ -366,6 +366,9 @@ class WorkflowJob(models.Base):
             name_without_matrix, matrix = cls.get_job_name_and_matrix(
                 workflow_job_data["name"]
             )
+            repo = await gh_repository.GitHubRepository.get_or_create(
+                session, repository
+            )
             job = cls(
                 id=workflow_job_data["id"],
                 workflow_run_id=workflow_job_data["run_id"],
@@ -375,9 +378,8 @@ class WorkflowJob(models.Base):
                 completed_at=workflow_job_data["completed_at"],
                 conclusion=WorkflowJobConclusion(workflow_job_data["conclusion"]),
                 labels=workflow_job_data["labels"],
-                repository=await gh_repository.GitHubRepository.get_or_create(
-                    session, repository
-                ),
+                repository=repo,
+                repository_id=repo.id,
                 run_attempt=workflow_job_data["run_attempt"],
                 steps=workflow_job_data["steps"],
                 failed_step_number=failed_step["number"] if failed_step else None,

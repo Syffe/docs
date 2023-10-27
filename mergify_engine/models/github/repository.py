@@ -128,6 +128,7 @@ class GitHubRepository(models.Base):
             id=repository["id"],
             name=repository["name"],
             owner=owner,
+            owner_id=owner.id,
             private=repository.get("private"),
             default_branch=repository.get("default_branch"),
             archived=repository.get("archived"),
