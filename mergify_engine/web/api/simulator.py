@@ -28,9 +28,18 @@ router = fastapi.APIRouter(
     ],
 )
 
+MergifyConfigYaml = typing.Annotated[
+    str,
+    pydantic.Field(
+        description="A Mergify configuration",
+        # It's the same limitation as https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-contents
+        max_length=1 * 1024 * 1024,
+    ),
+]
+
 
 class SimulatorPayload(pydantic.BaseModel):
-    mergify_yml: str = pydantic.Field(description="A Mergify configuration")
+    mergify_yml: MergifyConfigYaml
 
     async def get_config(
         self, repository_ctxt: context.Repository
