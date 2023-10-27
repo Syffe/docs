@@ -329,6 +329,17 @@ class WorkflowJob(models.Base):
             return f"{self.name_without_matrix} ({self.matrix})"
         return self.name_without_matrix
 
+    @github_name.inplace.expression
+    @classmethod
+    def _github_name_expression(cls) -> sqlalchemy.ColumnElement[str]:
+        return sqlalchemy.case(
+            (
+                cls.matrix.isnot(None),
+                sqlalchemy.func.concat(cls.name_without_matrix, " (", cls.matrix, ")"),
+            ),
+            else_=cls.name_without_matrix,
+        )
+
     def as_log_extras(self) -> dict[str, typing.Any]:
         return {
             "gh_owner": self.repository.owner.login,

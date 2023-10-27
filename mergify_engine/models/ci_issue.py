@@ -105,10 +105,49 @@ class CiIssue(models.Base):
         session.add(issue)
         return issue
 
-    @property
+    @sqlalchemy.ext.hybrid.hybrid_property
     def short_id(self) -> str:
         prefix = self.repository.name.upper()
         return f"{prefix}-{self.short_id_suffix}"
+
+    @short_id.inplace.expression
+    @classmethod
+    def _short_id_expression(cls) -> sqlalchemy.ColumnElement[str]:
+        """
+        Warning: When using this field in a sql query, don't forget to specify
+        the join clause, otherwise sqlachemy will assume that it's a cross-join.
+
+        This:
+            sqlalchemy.select(CiIssue.id, CiIssue.short_id)
+        Will produce:
+            SELECT
+                ci_issue.id,
+                concat(github_repository.name, '-', ci_issue.short_id_suffix) AS short_id
+            FROM ci_issue, github_repository
+
+        This:
+            sqlalchemy.select(CiIssue.id, CiIssue.short_id).join(
+            gh_models.GitHubRepository,
+            gh_models.GitHubRepository.id == CiIssue.repository_id,
+        )
+        Will produce:
+            SELECT
+                ci_issue.id,
+                concat(github_repository.name, '-', ci_issue.short_id_suffix) AS short_id
+            FROM
+                ci_issue
+                JOIN github_repository ON github_repository.id = ci_issue.repository_id
+
+
+        """
+        return sqlalchemy.type_coerce(
+            sqlalchemy.func.concat(
+                sqlalchemy.func.upper(gh_repository.GitHubRepository.name),
+                "-",
+                cls.short_id_suffix,
+            ),
+            sqlalchemy.Text,
+        ).label("short_id")
 
     @classmethod
     async def link_job_to_ci_issue(

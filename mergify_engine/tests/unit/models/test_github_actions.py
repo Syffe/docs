@@ -76,9 +76,6 @@ async def test_is_rerun_needed(
     second_rerun_needed: NeedRerunStatus,
     final_rerun_needed: NeedRerunStatus,
 ) -> None:
-    # TODO: To remove before commit
-    await populated_db.commit()
-
     job = (
         await populated_db.execute(
             sqlalchemy.select(gh_models.WorkflowJob).where(

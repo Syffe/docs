@@ -70,7 +70,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job1.embedded_log = "Some logs"
         job1.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
 
-        cls.internal_ref["OneAccount/OneRepo/failed_job"] = job1.id
+        cls.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"] = job1.id
 
         # Another failed job
         job2 = await gh_models.WorkflowJob.insert(
@@ -117,7 +117,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
             session, [job2.id]
         )
 
-        cls.internal_ref["OneAccount/OneRepo/flaky_failed_job"] = job2.id
+        cls.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_2"] = job2.id
 
         # Successful job
         succesful_job = await gh_models.WorkflowJob.insert(

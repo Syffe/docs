@@ -1,3 +1,5 @@
+import operator
+
 import fastapi
 from starlette.middleware import cors
 
@@ -6,6 +8,7 @@ from mergify_engine.web import api
 from mergify_engine.web import utils as web_utils
 from mergify_engine.web.api import applications
 from mergify_engine.web.api import badges
+from mergify_engine.web.api import ci_issue
 from mergify_engine.web.api import eventlogs
 from mergify_engine.web.api import events
 from mergify_engine.web.api import gha_failed_jobs
@@ -32,6 +35,7 @@ def include_api_routes(router: fastapi.APIRouter | fastapi.FastAPI) -> None:
     router.include_router(events.router)
     router.include_router(gha_failed_jobs.router)
     router.include_router(pulls.router)
+    router.include_router(ci_issue.router)
 
 
 def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
@@ -47,44 +51,51 @@ def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
         },
         redoc_url=None,
         docs_url=None,
-        openapi_tags=[
-            {
-                "name": "applications",
-                "description": "Operations with applications.",
-            },
-            {
-                "name": "badges",
-                "description": "Operations with badges.",
-            },
-            {
-                "name": "eventlogs",
-                "description": "Operations with event logs.",
-            },
-            {
-                "name": "events",
-                "description": "Enhanced operations with events.",
-            },
-            {
-                "name": "gha_failed_jobs",
-                "description": "Operations with failed workflow jobs.",
-            },
-            {
-                "name": "pull_requests",
-                "description": "Operations with pull requests.",
-            },
-            {
-                "name": "queues",
-                "description": "Operations with queues.",
-            },
-            {
-                "name": "simulator",
-                "description": "Mergify configuration simulator.",
-            },
-            {
-                "name": "statistics",
-                "description": "Operations with statistics.",
-            },
-        ],
+        openapi_tags=sorted(
+            [
+                {
+                    "name": "applications",
+                    "description": "Operations with applications.",
+                },
+                {
+                    "name": "badges",
+                    "description": "Operations with badges.",
+                },
+                {
+                    "name": "ci_issues",
+                    "description": "Operations with failed ci issues.",
+                },
+                {
+                    "name": "eventlogs",
+                    "description": "Operations with event logs.",
+                },
+                {
+                    "name": "events",
+                    "description": "Enhanced operations with events.",
+                },
+                {
+                    "name": "gha_failed_jobs",
+                    "description": "Operations with failed workflow jobs.",
+                },
+                {
+                    "name": "pull_requests",
+                    "description": "Operations with pull requests.",
+                },
+                {
+                    "name": "queues",
+                    "description": "Operations with queues.",
+                },
+                {
+                    "name": "simulator",
+                    "description": "Mergify configuration simulator.",
+                },
+                {
+                    "name": "statistics",
+                    "description": "Operations with statistics.",
+                },
+            ],
+            key=operator.itemgetter("name"),
+        ),
         servers=[{"url": "https://api.mergify.com/v1", "description": "default"}],
         dependencies=[fastapi.Depends(api_enabled)],
         reponses=api.default_responses,

@@ -144,9 +144,9 @@ async def test_link_job_to_ci_issue(
 
     params: list[tuple[str, list[str]]] = [
         (
-            "OneAccount/OneRepo/failed_job",
+            "OneAccount/OneRepo/flaky_failed_job_attempt_1",
             [
-                "OneAccount/OneRepo/flaky_failed_job",
+                "OneAccount/OneRepo/flaky_failed_job_attempt_2",
                 "OneAccount/OneRepo/failed_job_with_flaky_nghb",
             ],
         ),
