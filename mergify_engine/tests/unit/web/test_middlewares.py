@@ -9,6 +9,7 @@ import starlette.middleware.sessions
 
 from mergify_engine import settings
 from mergify_engine.config import types
+from mergify_engine.middlewares.content_length import ContentLengthMiddleware
 from mergify_engine.middlewares.logging import LoggingMiddleware
 from mergify_engine.middlewares.security import SecurityMiddleware
 from mergify_engine.middlewares.sudo import SudoMiddleware
@@ -211,3 +212,39 @@ async def test_with_trusted_hosts(monkeypatch: pytest.MonkeyPatch) -> None:
             r = await client.get("/testing-route", headers={"Host": "hacker.com"})
             assert r.status_code == 400
             assert r.text == "Invalid host header"
+
+
+async def test_content_length_middleware() -> None:
+    app = fastapi.FastAPI(debug=True)
+    app.add_middleware(ContentLengthMiddleware, max_content_size=10)
+
+    @app.post("/")
+    async def root(request: fastapi.Request) -> starlette.responses.PlainTextResponse:
+        return starlette.responses.PlainTextResponse(
+            content=(await request.body()).decode(), status_code=200
+        )
+
+    client = fastapi.testclient.TestClient(app)
+
+    # Too big body with wrong content-length
+    response = client.post(
+        "/",
+        json={"fooooooooooo": "barrrrrrrrrrrrrrr"},
+        headers={"Content-Length": "3"},
+    )
+    assert response.status_code == 413
+
+    # Too big content-length
+    response = client.post("/", json={}, headers={"Content-Length": "30000"})
+    assert response.status_code == 413
+
+    # Invalid content-length
+    response = client.post("/", json={}, headers={"Content-Length": "foobar"})
+    assert response.status_code == 411
+
+    # Looks good
+    response = client.post(
+        "/",
+        json={"f": "b"},
+    )
+    assert response.status_code == 200

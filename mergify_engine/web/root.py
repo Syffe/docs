@@ -16,6 +16,7 @@ from uvicorn.middleware import proxy_headers
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine.clients import github
+from mergify_engine.middlewares import content_length
 from mergify_engine.middlewares import security
 from mergify_engine.web import github_webhook
 from mergify_engine.web import healthcheck
@@ -87,6 +88,8 @@ def create_app(
             },
             on_blocked=on_ratelimit_hook,
         )
+
+    app.add_middleware(content_length.ContentLengthMiddleware)
 
     if https_only:
         app.add_middleware(httpsredirect.HTTPSRedirectMiddleware)
