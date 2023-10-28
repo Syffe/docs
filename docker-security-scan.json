@@ -1905,7 +1905,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading distributions over HTTPS",
+    "Title": "CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1915,7 +1915,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading distributions over HTTPS",
+    "Title": "CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1925,7 +1925,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading distributions over HTTPS",
+    "Title": "CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1935,7 +1935,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading distributions over HTTPS",
+    "Title": "CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
