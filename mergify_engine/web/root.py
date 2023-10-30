@@ -94,7 +94,9 @@ def create_app(
     if https_only:
         app.add_middleware(httpsredirect.HTTPSRedirectMiddleware)
     app.add_middleware(
-        trustedhost.TrustedHostMiddleware, allowed_hosts=settings.HTTP_TRUSTED_HOSTS
+        trustedhost.TrustedHostMiddleware,
+        allowed_hosts=settings.HTTP_TRUSTED_HOSTS,
+        www_redirect=False,
     )
     app.add_middleware(
         proxy_headers.ProxyHeadersMiddleware,
