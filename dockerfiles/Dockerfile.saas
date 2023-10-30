@@ -7,7 +7,7 @@ COPY datadog/conf.d/engine-web.yaml /etc/datadog-agent/conf.d/engine-web.d/conf.
 ENV PORT=8002
 EXPOSE $PORT
 USER mergify
-CMD ["/datadog-wrapper.sh", "gunicorn", "--worker-class=uvicorn.workers.UvicornH11Worker", "--statsd-host=localhost:8125", "--log-level=warning", "mergify_engine.web.asgi"]
+CMD ["/datadog-wrapper.sh", "gunicorn", "--worker-class=uvicorn.workers.UvicornWorker", "--statsd-host=localhost:8125", "--log-level=warning", "mergify_engine.web.asgi"]
 
 ### WORKER ###
 # hadolint ignore=DL3006
