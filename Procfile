@@ -1,4 +1,4 @@
-web: uvicorn --log-level warning mergify_engine.web.asgi_testing:application --port 8802 --host localhost --reload
+web: uvicorn --log-level warning mergify_engine.web.asgi:application --port 8802 --host localhost --reload
 worker-shared: ddtrace-run mergify-engine-worker --enabled-services=shared-workers-spawner,gitter
 worker-dedicated: ddtrace-run mergify-engine-worker --enabled-services=dedicated-workers-spawner,gitter
 worker-monitoring: ddtrace-run mergify-engine-worker --enabled-services=stream-monitoring,delayed-refresh,event-forwarder

@@ -63,8 +63,9 @@ class FakeHTTPSHerokuProxyMiddleware:
         await self.app(scope, receive, send)
 
 
-async def test_heroku_proxying() -> None:
-    app = web_root.create_app(https_only=False, debug=True)
+async def test_heroku_proxying(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "HTTP_TO_HTTPS_REDIRECT", False)
+    app = web_root.create_app(debug=True)
     app.add_middleware(FakeHTTPSHerokuProxyMiddleware)
     app.include_router(router)
     app.router.routes.insert(0, app.router.routes.pop(-1))
@@ -77,8 +78,9 @@ async def test_heroku_proxying() -> None:
             assert r.json()["url"] == "https://dashboard.mergify.com/testing-route"
 
 
-async def test_http_redirect_to_https() -> None:
-    app = web_root.create_app(https_only=True, debug=True)
+async def test_http_redirect_to_https(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "HTTP_TO_HTTPS_REDIRECT", True)
+    app = web_root.create_app(debug=True)
     app.include_router(router)
     app.router.routes.insert(0, app.router.routes.pop(-1))
 
@@ -182,8 +184,9 @@ async def test_security_middleware() -> None:
     }
 
 
-async def test_without_trusted_hosts() -> None:
-    app = web_root.create_app(https_only=False, debug=True)
+async def test_without_trusted_hosts(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "HTTP_TO_HTTPS_REDIRECT", False)
+    app = web_root.create_app(debug=True)
     app.include_router(router)
     app.router.routes.insert(0, app.router.routes.pop(-1))
 
@@ -195,11 +198,12 @@ async def test_without_trusted_hosts() -> None:
 
 
 async def test_with_trusted_hosts(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "HTTP_TO_HTTPS_REDIRECT", False)
     monkeypatch.setattr(
         settings, "HTTP_TRUSTED_HOSTS", types.StrListFromStrWithComma(["*.mergify.com"])
     )
 
-    app = web_root.create_app(https_only=False, debug=True)
+    app = web_root.create_app(debug=True)
     app.include_router(router)
     app.router.routes.insert(0, app.router.routes.pop(-1))
 

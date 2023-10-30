@@ -82,7 +82,7 @@ DD_API_KEY = "testing-false-key"
 [tool.poe.tasks.serve]
 deps = ["setup"]
 help = "Start mergify-engine workers and API"
-cmd = "./tools/run-tests.sh overmind start --port 8802"
+cmd = "./tools/run-tests.sh ./tools/serve.sh"
 use_exec = true
 [tool.poe.tasks.serve.env]
 PYTHONUNBUFFERED = "1"
@@ -90,6 +90,7 @@ DD_DOGSTATSD_DISABLE = "1"
 DD_REMOTE_CONFIGURATION_ENABLED = "0"
 DD_TRACE_ENABLED = "0"
 MERGIFYENGINE_API_ENABLE = "1"
+MERGIFYENGINE_HTTP_TO_HTTPS_REDIRECT = "0"
 MERGIFYENGINE_TEST_SETTINGS = "test.env"
 MERGIFYENGINE_DASHBOARD_UI_FEATURES = "subscriptions;applications;intercom;statuspage"
 MERGIFYENGINE_DASHBOARD_UI_FRONT_BACKEND_URL = "http://localhost:8802"

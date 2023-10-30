@@ -354,6 +354,7 @@ class HTTPSettings(pydantic_settings.BaseSettings):
     HTTP_TRUSTED_HOSTS: types.StrListFromStrWithComma = types.StrListFromStrWithComma(
         ["*"]
     )
+    HTTP_TO_HTTPS_REDIRECT: bool = True
 
 
 class SubscriptionSetting(pydantic_settings.BaseSettings):

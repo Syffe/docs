@@ -365,8 +365,11 @@ class CustomTestClient(httpx.AsyncClient):
 
 
 @pytest.fixture
-async def web_server() -> abc.AsyncGenerator[fastapi.FastAPI, None]:
-    app = web_root.create_app(https_only=False, debug=True, rate_limiter=False)
+async def web_server(
+    monkeypatch: pytest.MonkeyPatch,
+) -> abc.AsyncGenerator[fastapi.FastAPI, None]:
+    monkeypatch.setattr(settings, "HTTP_TO_HTTPS_REDIRECT", False)
+    app = web_root.create_app(debug=True, rate_limiter=False)
 
     async with asgi_lifespan.LifespanManager(app):
         yield app

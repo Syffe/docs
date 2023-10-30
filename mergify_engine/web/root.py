@@ -64,9 +64,7 @@ async def lifespan(app: fastapi.FastAPI) -> typing.AsyncGenerator[None, None]:
     signals.unregister()
 
 
-def create_app(
-    https_only: bool = True, debug: bool = False, rate_limiter: bool = False
-) -> fastapi.FastAPI:
+def create_app(debug: bool = False, rate_limiter: bool = False) -> fastapi.FastAPI:
     app = fastapi.FastAPI(
         openapi_url=None,
         redoc_url=None,
@@ -91,8 +89,9 @@ def create_app(
 
     app.add_middleware(content_length.ContentLengthMiddleware)
 
-    if https_only:
+    if settings.HTTP_TO_HTTPS_REDIRECT:
         app.add_middleware(httpsredirect.HTTPSRedirectMiddleware)
+
     app.add_middleware(
         trustedhost.TrustedHostMiddleware,
         allowed_hosts=settings.HTTP_TRUSTED_HOSTS,
