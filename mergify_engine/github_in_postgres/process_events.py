@@ -1,10 +1,8 @@
-import typing
-
 import daiquiri
 import msgpack
+import pydantic_core
 
 from mergify_engine import database
-from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.models import github as gh_models
@@ -37,17 +35,22 @@ async def store_redis_events_in_pg(redis_links: redis_utils.RedisLinks) -> None:
             continue
 
         event_data = msgpack.unpackb(event[b"data"])
-        if event_type == "pull_request":
-            typed_event_data = typing.cast(github_types.GitHubPullRequest, event_data)
-        else:
-            raise RuntimeError(
-                f"Should not have landed here with event_type {event_type}"
+        model = EVENT_TO_MODEL_MAPPING[event_type]
+        try:
+            typed_event_data = model.type_adapter.validate_python(event_data)
+        except pydantic_core.ValidationError:
+            LOG.warning(
+                "Dropping event %s/id=%s because it cannot be validated by its model's type adapter",
+                event_type,
+                event_id,
+                raw_event=event,
+                event_data=event_data,
             )
+            await redis_links.stream.xdel("github_in_postgres", event_id)
+            continue
 
         async with database.create_session() as session:
-            await EVENT_TO_MODEL_MAPPING[event_type].insert_or_update(
-                session, typed_event_data
-            )
+            await model.insert_or_update(session, typed_event_data)
             await session.commit()
 
         await redis_links.stream.xdel("github_in_postgres", event_id)
