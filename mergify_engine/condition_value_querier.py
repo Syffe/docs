@@ -21,6 +21,7 @@ from mergify_engine import constants
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.clients import http
+from mergify_engine.rules.config import partition_rules
 
 
 if typing.TYPE_CHECKING:
@@ -54,6 +55,7 @@ PullRequestAttributeType = (
     | list[github_types.GitHubLogin]
     | list[github_types.GitHubBranchCommit]
     | list[github_types.CachedGitHubBranchCommit]
+    | list[partition_rules.PartitionRuleName]
     | github_types.GitHubRepositoryPermission
     | set[CommitAuthor]
 )
@@ -212,6 +214,14 @@ class BasePullRequest:
             return date.RelativeDatetime(started_at)
 
         if name == "queue-partition-name":
+            return await partition_rules.get_evaluated_partition_names_from_context(
+                ctxt
+            )
+
+        # NOTE(Syffe): this attribute in only used for merge-conditions internally. Because at this point
+        # we want only the partitions the PR is currently queued in. Whereas with "queue-partition-name"
+        # we return all the partitions the PR could be queued in.
+        if name == "queue-current-partition-name":
             return convoy.get_queue_pull_request_partition_names_from_context(ctxt)
 
         if name == "queue-dequeue-reason":
@@ -815,6 +825,8 @@ class QueuePullRequest(BasePullRequest):
     async def __getattr__(self, name: str) -> PullRequestAttributeType:
         fancy_name = name.replace("_", "-")
         if fancy_name in self.QUEUE_ATTRIBUTES:
+            if fancy_name == "queue-partition-name":
+                fancy_name = "queue-current-partition-name"
             return await self._get_consolidated_data(self.queue_context, fancy_name)
         return await self._get_consolidated_data(self.context, fancy_name)
 

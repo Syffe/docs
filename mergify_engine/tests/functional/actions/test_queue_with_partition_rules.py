@@ -1,6 +1,9 @@
 from unittest import mock
 from urllib import parse
 
+from first import first
+
+from mergify_engine import context
 from mergify_engine import settings
 from mergify_engine import yaml
 import mergify_engine.queue.merge_train
@@ -10,6 +13,227 @@ from mergify_engine.tests.functional import base
 
 class TestQueueWithPartitionRules(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
+
+    async def test_pr_matches_only_one_partition_with_several_partitions_and_queues(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "urgent",
+                    "queue_conditions": [
+                        "label=urgent-projA",
+                        "queue-partition-name=projA",
+                        "status-success=continuous-integration/fake-ci-A",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-global-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                },
+                {
+                    "name": "default",
+                    "queue_conditions": [
+                        {
+                            "or": [
+                                "queue-partition-name!=projA",
+                                "status-success=continuous-integration/fake-ci-A",
+                            ]
+                        },
+                        {
+                            "or": [
+                                "queue-partition-name!=projB",
+                                "status-success=continuous-integration/fake-ci-B",
+                            ]
+                        },
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-global-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr(
+            files={
+                "projB/test.txt": "testB",
+            }
+        )
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p1["number"], "urgent-projA")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Automatic merge (queue)",
+        )
+        assert check is None
+
+        await self.create_status(p1, "continuous-integration/fake-ci-B")
+        await self.run_engine()
+
+        check_run_p1 = await self.wait_for_check_run(
+            name="Rule: Automatic merge (queue)"
+        )
+
+        assert (
+            check_run_p1["check_run"]["output"]["title"]
+            == "The pull request is the 1st in the `projB` partition queue to be merged"
+        )
+
+        convoy = await self.get_convoy()
+        cars = convoy.get_train_cars_by_pull(
+            await self.repository_ctxt.get_pull_request_context(p1["number"])
+        )
+
+        assert cars is not None
+        assert len(cars) == 1
+        assert cars[0].get_queue_name() == "default"
+
+        await self.create_status(p1, "continuous-integration/fake-global-ci")
+        await self.run_engine()
+
+        p1_closed = await self.wait_for_pull_request("closed", p1["number"])
+        assert p1_closed["pull_request"]["merged"]
+
+    async def test_pr_queued_in_multiple_partitions_and_different_queues(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "urgent",
+                    "queue_conditions": [
+                        "label=urgent-projA",
+                        "queue-partition-name=projA",
+                        "status-success=continuous-integration/fake-ci-A",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-global-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                },
+                {
+                    "name": "default",
+                    "queue_conditions": [
+                        {
+                            "or": [
+                                "queue-partition-name!=projA",
+                                "status-success=continuous-integration/fake-ci-A",
+                            ]
+                        },
+                        {
+                            "or": [
+                                "queue-partition-name!=projB",
+                                "status-success=continuous-integration/fake-ci-B",
+                            ]
+                        },
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-global-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr(
+            files={
+                "projA/test.txt": "testA",
+                "projB/test.txt": "testB",
+            }
+        )
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p1["number"], "urgent-projA")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Automatic merge (queue)",
+        )
+        assert check is None
+
+        await self.create_status(p1, "continuous-integration/fake-ci-A")
+        await self.create_status(p1, "continuous-integration/fake-ci-B")
+        await self.run_engine()
+
+        check_run_p1 = await self.wait_for_check_run(
+            name="Rule: Automatic merge (queue)"
+        )
+
+        assert (
+            check_run_p1["check_run"]["output"]["title"]
+            == "The pull request is queued in the following partitions to be merged: 1st in projA, 1st in projB"
+        )
+
+        convoy = await self.get_convoy()
+        cars = convoy.get_train_cars_by_pull(
+            await self.repository_ctxt.get_pull_request_context(p1["number"])
+        )
+
+        assert cars is not None
+        assert len(cars) == 2
+        assert cars[0].get_queue_name() == "urgent"
+        assert cars[1].get_queue_name() == "urgent"
+
+        await self.create_status(p1, "continuous-integration/fake-global-ci")
+        await self.run_engine()
+
+        p1_closed = await self.wait_for_pull_request("closed", p1["number"])
+        assert p1_closed["pull_request"]["merged"]
 
     async def test_multi_partition_pull_request_reporting_when_pr_in_only_one_partition(
         self,
@@ -1413,19 +1637,15 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                     "merge_conditions": [
                         {
                             "or": [
-                                {
-                                    "and": [
-                                        "queue-partition-name=projA",
-                                        "status-success=continuous-integration/fake-ci-A",
-                                    ]
-                                },
-                                {
-                                    "and": [
-                                        "queue-partition-name=projB",
-                                        "status-success=continuous-integration/fake-ci-B",
-                                    ]
-                                },
-                            ],
+                                "queue-partition-name!=projA",
+                                "status-success=continuous-integration/fake-ci-A",
+                            ]
+                        },
+                        {
+                            "or": [
+                                "queue-partition-name!=projB",
+                                "status-success=continuous-integration/fake-ci-B",
+                            ]
                         },
                     ],
                     "allow_inplace_checks": False,
