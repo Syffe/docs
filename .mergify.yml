@@ -177,3 +177,16 @@ pull_request_rules:
       label:
         toggle:
           - docker
+
+  - name: resolve poetry.lock conflicts
+    conditions:
+      - conflict
+      - files=poetry.lock
+    actions:
+      github_actions:
+        workflow:
+          dispatch:
+            - workflow: deps-conflicts-resolver.yaml
+              inputs:
+                head-repo: "{{ head_repo_full_name }}"
+                head-branch: "{{ head }}"

@@ -1,0 +1,40 @@
+---
+name: Dependencies conflicts resolver
+
+on:
+  workflow_dispatch:
+    inputs:
+      head-repo:
+        description: "Full name of the head repository"
+        type: string
+        required: true
+      head-branch:
+        description: "Head branch"
+        type: string
+        required: true
+      base-branch:
+        description: "Base branch"
+        type: string
+        required: false
+        default: "main"
+
+jobs:
+  resolve_conflicts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+          token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+
+      - name: resolve-poetry-conflicts
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+        uses: Mergifyio/gha-versionining-conflict-resolver@main
+        with:
+          head-repo: ${{ inputs.head-repo }}
+          head-branch: ${{ inputs.head-branch }}
+          base-branch: ${{ inputs.base-branch }}
+          user: mergify-ci-bot
+          email: mergify-ci-bot@users.noreply.github.com
