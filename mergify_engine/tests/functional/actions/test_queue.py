@@ -9030,17 +9030,17 @@ pull_request_rules:
             action="closed", pr_number=pull["number"], merged=True
         )
 
-        # Allow squash
+        # Allow rebase
         pull = await self.create_pr()
         async with self.allow_merge_methods(
             self.url_origin, pull["number"], ("rebase",)
         ):
-            await self.run_engine()
+            await self.run_full_engine()
         await self.wait_for_pull_request(
             action="closed", pr_number=pull["number"], merged=True
         )
 
-        # Allow rebase
+        # Allow squash
         pull = await self.create_pr()
         async with self.allow_merge_methods(
             self.url_origin, pull["number"], ("squash",)
