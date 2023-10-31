@@ -44,6 +44,7 @@ class EmbarkedPull:
         train: "Train",
         data: "EmbarkedPull.Serialized | EmbarkedPull.OldSerialized",
     ) -> "EmbarkedPull":
+        # Backward compat, introduced in 7.6.0
         if isinstance(data, tuple | list):
             user_pull_request_number = data[0]
             config = data[1]

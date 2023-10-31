@@ -281,7 +281,7 @@ class TrainCar:
         failure_history: list[TrainCar.Serialized]
         head_branch: str | None
         last_checks: list[merge_train_checks.QueueCheck.Serialized]
-        # retrocompat
+        # Backward compat, introduced in 7.6.0
         last_conditions_evaluation: conditions.QueueConditionEvaluationResult.Serialized | None
         last_merge_conditions_evaluation: conditions.QueueConditionEvaluationResult.Serialized | None
         last_queue_conditions_evaluation: conditions.QueueConditionEvaluationResult.Serialized | None
@@ -332,93 +332,32 @@ class TrainCar:
         train: Train,
         data: TrainCar.Serialized,
     ) -> TrainCar:
-        if "initial_embarked_pulls" in data:
-            initial_embarked_pulls = [
-                ep_import.EmbarkedPull.deserialize(train, ep)
-                for ep in data["initial_embarked_pulls"]
-            ]
-            still_queued_embarked_pulls = [
-                ep_import.EmbarkedPull.deserialize(train, ep)
-                for ep in data["still_queued_embarked_pulls"]
-            ]
+        initial_embarked_pulls = [
+            ep_import.EmbarkedPull.deserialize(train, ep)
+            for ep in data["initial_embarked_pulls"]
+        ]
+        still_queued_embarked_pulls = [
+            ep_import.EmbarkedPull.deserialize(train, ep)
+            for ep in data["still_queued_embarked_pulls"]
+        ]
 
-        else:
-            # old format < 7.0
-            initial_embarked_pulls = [  # type: ignore[unreachable]
-                ep_import.EmbarkedPull(
-                    train,
-                    data["user_pull_request_number"],
-                    data["config"],
-                    data["queued_at"],
-                )
-            ]
-            still_queued_embarked_pulls = initial_embarked_pulls.copy()
+        failure_history = [
+            TrainCar.deserialize(train, fh) for fh in data["failure_history"]
+        ]
 
-        checks_type: TrainCarChecksType | None = None
-        if "creation_state" in data:
-            if data["creation_state"] == "updated":  # type: ignore[typeddict-item]
-                checks_type = TrainCarChecksType.INPLACE
-            elif data["creation_state"] == "created":  # type: ignore[typeddict-item]
-                checks_type = TrainCarChecksType.DRAFT
-            elif data["creation_state"] == "failed":  # type: ignore[typeddict-item]
-                checks_type = TrainCarChecksType.FAILED
-        elif "state" in data:
-            if data["state"] == "updated":  # type: ignore[typeddict-item]
-                checks_type = TrainCarChecksType.INPLACE
-            elif data["state"] == "created":  # type: ignore[typeddict-item]
-                checks_type = TrainCarChecksType.DRAFT
-            elif data["state"] == "failed":  # type: ignore[typeddict-item]
-                checks_type = TrainCarChecksType.FAILED
-        elif "train_car_state" in data:
-            checks_type = data["train_car_state"]["checks_type"]
+        last_checks = [
+            merge_train_checks.QueueCheck.deserialize(c) for c in data["last_checks"]
+        ]
 
-        if "failure_history" in data:
-            failure_history = [
-                TrainCar.deserialize(train, fh) for fh in data["failure_history"]
-            ]
-        else:
-            # backward compat <= 7.2.1
-            failure_history = []  # type: ignore[unreachable]
-
-        if "last_checks" in data:
-            last_checks = [
-                merge_train_checks.QueueCheck.deserialize(c)
-                for c in data["last_checks"]
-            ]
-        else:
-            # backward compat <= 7.2.1
-            last_checks = []  # type: ignore[unreachable]
-
-        if (
-            checks_type == TrainCarChecksType.INPLACE
-            and data["queue_pull_request_number"] is None
-        ):
-            data["queue_pull_request_number"] = still_queued_embarked_pulls[
-                0
-            ].user_pull_request_number
-
-        if "head_branch" not in data:
-            # backward compat <= 7.2.1
-            if checks_type == TrainCarChecksType.DRAFT:  # type: ignore[unreachable]
-                data["head_branch"] = cls._get_pulls_branch_ref(
-                    initial_embarked_pulls,
-                    data["parent_pull_request_numbers"],
-                )
-            else:
-                data["head_branch"] = None
-
-        # backward compat <= 7.2.1
-        if "queue_branch_name" not in data:
-            data["queue_branch_name"] = github_types.GitHubRefType(  # type: ignore[unreachable]
-                f"{constants.MERGE_QUEUE_BRANCH_PREFIX}{train.convoy.ref}/{cls._get_pulls_branch_ref(initial_embarked_pulls)}"
-            )
-
-        # NOTE(Syffe): Backward compatibility for old TrainCar without TrainCarState attribute
-        # (Released in version 6.0)
-        train_car_state = cls._deserialize_train_car_state(
-            train.convoy.repository, train.convoy.queue_rules, data, checks_type
+        from mergify_engine.queue.merge_train import (
+            train_car_state as train_car_state_mod,
         )
 
+        train_car_state = train_car_state_mod.TrainCarState.deserialize(
+            train.convoy.repository, train.convoy.queue_rules, data["train_car_state"]
+        )
+
+        # Backward compat, introduced in 7.6.0
         if data.get("last_merge_conditions_evaluation") is not None:
             last_merge_conditions_evaluation = (
                 conditions.QueueConditionEvaluationResult.deserialize(
@@ -440,6 +379,7 @@ class TrainCar:
         else:
             last_merge_conditions_evaluation = None
 
+        # Backward compat, introduced in 7.6.0
         if data.get("last_queue_conditions_evaluation") is not None:
             last_queue_conditions_evaluation = (
                 conditions.QueueConditionEvaluationResult.deserialize(
@@ -470,64 +410,6 @@ class TrainCar:
             delegating_train_cars_partition_names=data.get(
                 "delegating_train_cars_partition_names", []
             ),
-        )
-
-    @classmethod
-    def _deserialize_train_car_state(
-        cls,
-        repository: context.Repository,
-        queue_rules: qr_config.QueueRules,
-        data: TrainCar.Serialized,
-        checks_type: TrainCarChecksType | None,
-    ) -> TrainCarState:
-        # Circular improt
-        from mergify_engine.queue.merge_train import train_car_state
-
-        if "train_car_state" in data:
-            return train_car_state.TrainCarState.deserialize(
-                repository, queue_rules, data["train_car_state"]
-            )
-
-        # backward compat < 6.0
-        outcome = TrainCarOutcome.UNKNOWN  # type: ignore[unreachable]
-        ci_state = merge_train_types.CiState.PENDING
-        outcome_message = ""
-        legacy_queue_conditions_conclusion = check_api.Conclusion.PENDING
-
-        if "checks_conclusion" in data:
-            legacy_queue_conditions_conclusion = data["checks_conclusion"]
-
-        if "has_timed_out" in data and data["has_timed_out"]:
-            outcome = TrainCarOutcome.CHECKS_TIMEOUT
-            outcome_message = CHECKS_TIMEOUT_MESSAGE
-
-        if "ci_has_passed" in data:
-            if data["ci_has_passed"]:
-                ci_state = merge_train_types.CiState.SUCCESS
-            elif legacy_queue_conditions_conclusion == check_api.Conclusion.FAILURE:
-                ci_state = merge_train_types.CiState.FAILED
-                if outcome == TrainCarOutcome.UNKNOWN:
-                    outcome = TrainCarOutcome.CHECKS_FAILED
-                    outcome_message = CI_FAILED_MESSAGE
-
-        if (
-            legacy_queue_conditions_conclusion == check_api.Conclusion.SUCCESS
-            and ci_state == merge_train_types.CiState.SUCCESS
-            and outcome == TrainCarOutcome.UNKNOWN
-        ):
-            outcome = TrainCarOutcome.MERGEABLE
-
-        if "creation_date" in data:
-            creation_date = data["creation_date"]
-        else:
-            creation_date = date.utcnow()
-
-        return train_car_state.TrainCarState(
-            outcome=outcome,
-            ci_state=ci_state,
-            outcome_message=outcome_message,
-            checks_type=checks_type,
-            ci_started_at=creation_date,
         )
 
     @property

@@ -123,7 +123,9 @@ class TrainCarState:
         ci_ended_at: datetime.datetime | None
         outcome_message: str | None
         checks_type: train_car.TrainCarChecksType | None
+        # None support is for backward compat, introduced in 7.6.0
         frozen_by: freeze.QueueFreeze.Serialized | None
+        # None support is for backward compat, introduced in 7.6.0
         paused_by: pause.QueuePause.Serialized | None
         waiting_for_freeze_start_dates: list[datetime.datetime]
         waiting_for_freeze_end_dates: list[datetime.datetime]
@@ -165,6 +167,7 @@ class TrainCarState:
         queue_rules: qr_config.QueueRules,
         data: TrainCarState.Serialized,
     ) -> TrainCarState:
+        # Backward compat, introduced in 7.6.0
         kwargs = {
             "waiting_for_freeze_start_dates": data.get(
                 "waiting_for_freeze_start_dates", []
@@ -186,9 +189,10 @@ class TrainCarState:
             ),
         }
 
+        # Backward compat, introduced in 7.6.0
         legacy_creation_date: datetime.datetime | None = data.get("creation_date")  # type: ignore[assignment]
 
-        # backward compatibility following the implementation of "frozen_by" attribute
+        # backward compatibility following the implementation of "frozen_by" attribute, introduced in 7.6.0
         frozen_by = None
         if (frozen_by_raw := data.get("frozen_by")) is not None:
             try:
@@ -200,7 +204,7 @@ class TrainCarState:
                     repository, queue_rule, frozen_by_raw
                 )
 
-        # backward compatibility following the implementation of "paused_by" attribute
+        # backward compatibility following the implementation of "paused_by" attribute, introduced in 7.6.0
         paused_by = None
         if (paused_by_raw := data.get("paused_by")) is not None:
             paused_by = pause.QueuePause.deserialize(repository, paused_by_raw)

@@ -70,6 +70,7 @@ class Train:
         current_base_sha: github_types.SHAType | None
         # TODO(Greesb): Retrocompatibility, remove the `| None` part
         # once all trains have been saved with the new default partition name
+        # Backward compat, introduced in 7.6.0
         partition_name: partr_config.PartitionRuleName | None
 
     def _get_redis_key(self) -> str:
@@ -100,6 +101,7 @@ class Train:
             )
             # NOTE(Greesb): Default partition retrocompatibility, to remove once
             # all trains have been saved with the new default partition name.
+            # Backward compat, introduced in 7.6.0
             self.partition_name = partition_name or partr_config.DEFAULT_PARTITION_NAME
         else:
             self._cars = []
