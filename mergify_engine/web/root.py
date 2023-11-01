@@ -1,16 +1,9 @@
 import contextlib
 import typing
 
-import daiquiri
-from datadog import statsd  # type: ignore[attr-defined]
 import fastapi
 from fastapi.middleware import httpsredirect
 from fastapi.middleware import trustedhost
-import ratelimit
-import ratelimit.backends.simple
-import ratelimit.core
-import ratelimit.types
-import starlette.types
 from uvicorn.middleware import proxy_headers
 
 from mergify_engine import settings
@@ -27,23 +20,6 @@ from mergify_engine.web import utils
 from mergify_engine.web.api import root as api_root
 from mergify_engine.web.front import react
 from mergify_engine.web.front import root as front_root
-
-
-LOG = daiquiri.getLogger(__name__)
-
-
-def on_ratelimit_hook(retry_after: int) -> ratelimit.types.ASGIApp:
-    statsd.increment("engine.asgi.ratelimit")
-    return ratelimit.core._on_blocked(retry_after)
-
-
-async def get_ratelimit_identifier(
-    scope: starlette.types.Scope,
-) -> tuple[str, str]:
-    if scope["client"]:
-        return scope["client"][0], "default"
-
-    return "127.0.0.1", "default"
 
 
 def saas_root_endpoint() -> fastapi.Response:
@@ -64,7 +40,7 @@ async def lifespan(app: fastapi.FastAPI) -> typing.AsyncGenerator[None, None]:
     signals.unregister()
 
 
-def create_app(debug: bool = False, rate_limiter: bool = False) -> fastapi.FastAPI:
+def create_app(debug: bool = False) -> fastapi.FastAPI:
     app = fastapi.FastAPI(
         openapi_url=None,
         redoc_url=None,
@@ -72,20 +48,6 @@ def create_app(debug: bool = False, rate_limiter: bool = False) -> fastapi.FastA
         debug=debug,
         lifespan=lifespan,
     )
-
-    if rate_limiter:
-        app.add_middleware(
-            ratelimit.RateLimitMiddleware,
-            authenticate=get_ratelimit_identifier,
-            backend=ratelimit.backends.simple.MemoryBackend(),  # type: ignore[no-untyped-call]
-            config={
-                r"^/": [ratelimit.Rule(second=30, block_time=60, group="default")],
-                r"^/front/proxy/sentry": [
-                    ratelimit.Rule(second=5, block_time=60, group="default")
-                ],
-            },
-            on_blocked=on_ratelimit_hook,
-        )
 
     app.add_middleware(content_length.ContentLengthMiddleware)
 
