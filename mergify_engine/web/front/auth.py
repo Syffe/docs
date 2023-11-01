@@ -114,6 +114,7 @@ async def create_or_update_user(
     request: fastapi.Request,
     session: sqlalchemy.ext.asyncio.AsyncSession,
     token: github_types.GitHubOAuthToken,
+    refresh_installations: bool = False,
 ) -> github_user.GitHubUser:
     async with github.AsyncGitHubInstallationClient(
         github.GitHubTokenAuth(token)
@@ -131,6 +132,9 @@ async def create_or_update_user(
     )
 
     if settings.SAAS_MODE:
+        params = {}
+        if refresh_installations:
+            params["refresh_installations"] = "true"
         # NOTE(sileht): This part is critical if we fail this call, future API calls token
         # /front/proxy/saas/ will fail as the accounts attached to this user will
         # TODO(sileht): This API call may call back the engine API to cleanup the token
@@ -139,6 +143,7 @@ async def create_or_update_user(
         async with shadow_office.AsyncShadowOfficeSaasClient() as client:
             await client.post(
                 url="/engine/user-update",
+                params=params,
                 json={"user": user_data, "token": token},
             )
     return user
@@ -198,7 +203,12 @@ async def auth_setup(
             raise fastapi.HTTPException(400, "No installation_id passed")
 
         # We need to sync subscription
-        await create_or_update_user(request, session, current_user.oauth_access_token)
+        await create_or_update_user(
+            request,
+            session,
+            current_user.oauth_access_token,
+            refresh_installations=True,
+        )
 
         # NOTE(sileht): didn't found a better way to get the owner id from the
         # installation id with listing all installations
