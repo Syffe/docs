@@ -480,6 +480,12 @@ async def test_api_cursor_invalid(
     )
     assert response.status_code == 422
 
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=",
+        headers={"Authorization": api_token.api_token},
+    )
+    assert response.status_code == 200
+
 
 async def test_api_cursor_invalid_redis(
     web_client: tests_conftest.CustomTestClient,

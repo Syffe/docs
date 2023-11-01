@@ -117,7 +117,7 @@ class Event(models.Base):
         }
 
         cursor = page.cursor
-        if cursor is not None and cursor != "-":
+        if cursor and cursor != "-":
             if (cursor_idx := re.fullmatch(r"[+-](\d+)", cursor)) is None:
                 raise pagination.InvalidCursor(cursor)
             if backward:
