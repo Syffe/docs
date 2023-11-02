@@ -4,14 +4,13 @@ from unittest import mock
 
 from first import first
 import httpx
-import msgpack
 import pytest
 
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
-from mergify_engine import eventlogs
 from mergify_engine import queue
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -152,19 +151,11 @@ pull_requests:
     async def assert_eventlog_check_end(
         self, abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"]
     ) -> None:
-        redis_repo_key = eventlogs._get_repository_key(
-            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?event_type=action.queue.checks_end"
         )
-        bdata = await self.redis_links.eventlogs.xrange(redis_repo_key)
-        events = [msgpack.unpackb(raw[b"data"]) for _, raw in bdata]
-        check_end_events = [
-            e for e in events if e["event"] == "action.queue.checks_end"
-        ]
-
-        assert len(check_end_events) == 1
-
-        event = check_end_events[0]
-        assert event["metadata"]["abort_status"] == abort_status
+        assert r.status_code == 200
+        assert r.json()["events"][0]["metadata"]["abort_status"] == abort_status
 
     async def test_create_pull_after_failure(self) -> None:
         config = {

@@ -217,7 +217,9 @@ async def test_get_usage_count_seats(
 
 @time_travel("2011-11-11")
 async def test_get_usage_last_seen(
-    context_getter: conftest.ContextGetterFixture, web_client: httpx.AsyncClient
+    context_getter: conftest.ContextGetterFixture,
+    web_client: httpx.AsyncClient,
+    setup_database: None,
 ) -> None:
     ctxt = await context_getter(number=1)
 

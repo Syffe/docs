@@ -5,7 +5,6 @@ import fastapi
 import pydantic
 
 from mergify_engine import database
-from mergify_engine import eventlogs
 from mergify_engine import events as evt_utils
 from mergify_engine import github_types
 from mergify_engine import pagination
@@ -76,26 +75,15 @@ async def get_repository_events(
         fastapi.Query(description="Get the events received until this date"),
     ] = None,
 ) -> EventsResponse:
-    # NOTE(lecrepont01): ensure transition from redis db to postgreSQL
-    if await eventlogs.use_events_redis_backend(repository):
-        page_response = await eventlogs.get(
-            repository,
-            page,
-            pull_request,
-            event_type,
-            received_from,
-            received_to,
-        )
-    else:
-        page_response = await evt_utils.get(
-            session,
-            page,
-            repository,
-            pull_request,
-            event_type,
-            received_from,
-            received_to,
-        )
+    page_response = await evt_utils.get(
+        session,
+        page,
+        repository,
+        pull_request,
+        event_type,
+        received_from,
+        received_to,
+    )
 
     return EventsResponse(  # type: ignore[call-arg]
         page=page_response,

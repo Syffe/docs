@@ -74,11 +74,7 @@ async def get_pull_request_eventlogs(
     ],
     current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:
-    if not await eventlogs.use_events_redis_backend(repository_ctxt):
-        # NOTE(lecrepont01): ensure transition from redis db to postgreSQL
-        page = await events.get(session, current_page, repository_ctxt, pull)
-    else:
-        page = await eventlogs.get(repository_ctxt, current_page, pull)
+    page = await events.get(session, current_page, repository_ctxt, pull)
 
     return EventLogsResponse(page)  # type: ignore[misc, call-arg]
 
@@ -112,9 +108,6 @@ async def get_repository_eventlogs(
     repository_ctxt: security.Repository,
     current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:
-    if not await eventlogs.use_events_redis_backend(repository_ctxt):
-        page = await events.get(session, current_page, repository_ctxt)
-    else:
-        page = await eventlogs.get(repository_ctxt, current_page)
+    page = await events.get(session, current_page, repository_ctxt)
 
     return EventLogsResponse(page)  # type: ignore[misc, call-arg]

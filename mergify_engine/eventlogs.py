@@ -4,48 +4,19 @@ Managing the old eventlog system which is stored in a Redis database
 import dataclasses
 import datetime
 import itertools
-import re
-import time
 import typing
 
 import daiquiri
-import msgpack
 import typing_extensions
 
-from mergify_engine import date
 from mergify_engine import github_types
-from mergify_engine import pagination
-from mergify_engine import redis_utils
-from mergify_engine import settings
 from mergify_engine import signals
-from mergify_engine import subscription
-from mergify_engine.models import enumerations
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
 
 LOG = daiquiri.getLogger(__name__)
-
-EVENTLOGS_LONG_RETENTION = datetime.timedelta(days=7)
-EVENTLOGS_SHORT_RETENTION = datetime.timedelta(days=1)
-
-DB_SWITCH_KEY = "events-db-switch-marker"
-
-
-async def use_events_redis_backend(
-    repository: "context.Repository",
-) -> bool:
-    redis = repository.installation.redis.cache
-
-    result = await redis.get(DB_SWITCH_KEY)
-    if result is None:
-        ts = time.time()
-        await redis.set(DB_SWITCH_KEY, ts)
-    else:
-        ts = float(result.decode())
-
-    return (date.utcnow() - date.fromtimestamp(ts)) < EVENTLOGS_LONG_RETENTION
 
 
 class EventBase(typing_extensions.TypedDict):
@@ -252,21 +223,6 @@ class EventQueuePauseDelete(EventBase):
     metadata: signals.EventQueuePauseDeleteMetadata
 
 
-def _get_repository_key(
-    owner_id: github_types.GitHubAccountIdType,
-    repo_id: github_types.GitHubRepositoryIdType,
-) -> str:
-    return f"eventlogs-repository/{owner_id}/{repo_id}"
-
-
-def _get_pull_request_key(
-    owner_id: github_types.GitHubAccountIdType,
-    repo_id: github_types.GitHubRepositoryIdType,
-    pull_request: github_types.GitHubPullRequestNumber,
-) -> str:
-    return f"eventlogs/{owner_id}/{repo_id}/{pull_request}"
-
-
 Event = (
     EventAssign
     | EventBackport
@@ -311,22 +267,11 @@ SUPPORTED_EVENT_NAMES = list(
     )
 )
 
-DEFAULT_VERSION = "1.0"
-
 
 class GenericEvent(EventBase):
     event: signals.EventName
     type: signals.EventName
     metadata: signals.EventMetadata
-
-
-class RedisGenericEvent(typing_extensions.TypedDict):
-    pull_request: int | None
-    timestamp: datetime.datetime
-    event: signals.EventName
-    repository: str
-    metadata: signals.EventMetadata
-    trigger: str
 
 
 @dataclasses.dataclass
@@ -344,61 +289,10 @@ class EventLogsSignal(signals.SignalBase):
         metadata: signals.EventMetadata,
         trigger: str,
     ) -> None:
+        from mergify_engine import events as evt_utils
+
         if event not in SUPPORTED_EVENT_NAMES:
             return
-
-        redis = repository.installation.redis.eventlogs
-
-        if repository.installation.subscription.has_feature(
-            subscription.Features.EVENTLOGS_LONG
-        ):
-            retention = EVENTLOGS_LONG_RETENTION
-        elif repository.installation.subscription.has_feature(
-            subscription.Features.EVENTLOGS_SHORT
-        ):
-            retention = EVENTLOGS_SHORT_RETENTION
-        else:
-            return
-
-        if settings.EVENTLOG_EVENTS_REDIS_INGESTION:
-            pipe = await redis.pipeline()
-            now = date.utcnow()
-            fields = {
-                b"version": DEFAULT_VERSION,
-                b"data": msgpack.packb(
-                    RedisGenericEvent(
-                        {
-                            "timestamp": now,
-                            "event": event,
-                            "repository": repository.repo["full_name"],
-                            "pull_request": pull_request,
-                            "metadata": metadata,
-                            "trigger": trigger,
-                        }
-                    ),
-                    datetime=True,
-                ),
-            }
-            minid = redis_utils.get_expiration_minid(retention)
-
-            repo_key = _get_repository_key(
-                repository.installation.owner_id, repository.repo["id"]
-            )
-            await pipe.xadd(repo_key, fields=fields, minid=minid)
-            await pipe.expire(repo_key, int(retention.total_seconds()))
-
-            if pull_request is not None:
-                pull_key = _get_pull_request_key(
-                    repository.installation.owner_id,
-                    repository.repo["id"],
-                    pull_request,
-                )
-                await pipe.xadd(pull_key, fields=fields, minid=minid)
-                await pipe.expire(pull_key, int(retention.total_seconds()))
-
-            await pipe.execute()
-
-        from mergify_engine import events as evt_utils
 
         if event in evt_utils.EVENT_NAME_TO_MODEL:
             await evt_utils.insert(
@@ -480,149 +374,3 @@ def cast_event_item(event: GenericEvent) -> Event:
             return typing.cast(EventQueuePauseDelete, event)
 
     raise UnsupportedEvent(event)
-
-
-REDIS_CURSOR_RE = re.compile(r"[+-](?:(\d+)-(\d+))?")
-
-
-async def get(
-    repository: "context.Repository",
-    page: pagination.CurrentPage,
-    pull_request: github_types.GitHubPullRequestNumber | None = None,
-    event_type: list[enumerations.EventType] | None = None,
-    received_from: datetime.datetime | None = None,
-    received_to: datetime.datetime | None = None,
-) -> pagination.Page[Event]:
-    redis = repository.installation.redis.eventlogs
-    if repository.installation.subscription.has_feature(
-        subscription.Features.EVENTLOGS_LONG
-    ):
-        retention = EVENTLOGS_LONG_RETENTION
-    elif repository.installation.subscription.has_feature(
-        subscription.Features.EVENTLOGS_SHORT
-    ):
-        retention = EVENTLOGS_SHORT_RETENTION
-    else:
-        return pagination.Page([], page)
-
-    if pull_request is None:
-        key = _get_repository_key(
-            repository.installation.owner_id, repository.repo["id"]
-        )
-    else:
-        key = _get_pull_request_key(
-            repository.installation.owner_id, repository.repo["id"], pull_request
-        )
-
-    older_event = date.utcnow() - retention
-    older_event_id = f"{int(older_event.timestamp())}"
-
-    pipe = await redis.pipeline()
-
-    if page.cursor and not REDIS_CURSOR_RE.fullmatch(page.cursor):
-        raise pagination.InvalidCursor(page.cursor)
-
-    if not page.cursor:
-        # first page
-        from_ = "+"
-        to_ = older_event_id
-        look_backward = False
-    elif page.cursor == "-":
-        # last page
-        from_ = "-"
-        to_ = "+"
-        look_backward = True
-    elif page.cursor.startswith("+"):
-        # next page
-        from_ = f"({page.cursor[1:]}"
-        to_ = older_event_id
-        look_backward = False
-    elif page.cursor.startswith("-"):
-        # prev page
-        from_ = f"({page.cursor[1:]}"
-        to_ = "+"
-        look_backward = True
-    else:
-        raise pagination.InvalidCursor(page.cursor)
-
-    items: list[tuple[bytes, GenericEvent]] = []
-    while len(items) < page.per_page:
-        await pipe.xlen(key)
-        if look_backward:
-            await pipe.xrange(key, min=from_, max=to_, count=page.per_page)
-        else:
-            await pipe.xrevrange(key, max=from_, min=to_, count=page.per_page)
-
-        total, partial_items = await pipe.execute()
-
-        for raw_id, raw_event in partial_items:
-            unpacked_event = msgpack.unpackb(raw_event[b"data"], timestamp=3)
-            # add event_type, received_from, received_to filtering from new API
-            if (
-                (
-                    event_type is not None
-                    and unpacked_event["event"] not in [e.value for e in event_type]
-                )
-                or (
-                    received_from is not None
-                    and unpacked_event["timestamp"] < received_from
-                )
-                or (
-                    received_to is not None
-                    and unpacked_event["timestamp"] > received_to
-                )
-            ):
-                continue
-
-            unpacked_event = msgpack.unpackb(raw_event[b"data"], timestamp=3)
-            # NOTE(lecrepont01): temporary field deduplication (MRGFY-2555)
-            unpacked_event["received_at"] = unpacked_event["timestamp"]
-            unpacked_event["type"] = unpacked_event["event"]
-            # make an id out of the stream id
-            unpacked_event["id"] = int(raw_id.decode().replace("-", ""))
-
-            event = typing.cast(GenericEvent, unpacked_event)
-
-            items.append((raw_id, event))
-
-        # no more data in Redis
-        if len(partial_items) < page.per_page:
-            break
-
-        from_ = f"({partial_items[-1][0].decode()}"
-
-    if look_backward:
-        items = list(reversed(items))
-
-    if page.cursor == "-":
-        # NOTE(sileht): On last page, as we look backward and the query doesn't
-        # use event ID, we may have more item that we need. So here, we remove
-        # those that shouldn't be there.
-        items = items[(total % page.per_page) :]
-
-    if page.cursor and items:
-        cursor_prev = f"-{items[0][0].decode()}"
-    else:
-        cursor_prev = None
-    if items:
-        cursor_next = f"+{items[-1][0].decode()}"
-    else:
-        cursor_next = None
-
-    events: list[Event] = []
-    for _, event in items:
-        try:
-            events.append(cast_event_item(event))
-        except UnsupportedEvent as err:
-            LOG.error(err.message, event=err.event)
-
-    # If filtering is done we can't compute the total so we return 0
-    compute_total = event_type is None and received_from is None and received_to is None
-
-    return pagination.Page(
-        items=events,
-        current=page,
-        total=total if compute_total else None,
-        cursor_prev=cursor_prev,
-        cursor_next=cursor_next,
-    )

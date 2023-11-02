@@ -215,5 +215,5 @@ Unknown pull request attribute: hello
             ],
             "per_page": 10,
             "size": 2,
-            "total": 2,
+            "total": None,
         }

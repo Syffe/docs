@@ -61,7 +61,7 @@ class TestEditAction(base.FunctionalTestBase):
             ],
             "per_page": 10,
             "size": 1,
-            "total": 1,
+            "total": None,
         }
 
     @pytest.mark.skipif(
@@ -112,7 +112,7 @@ class TestEditAction(base.FunctionalTestBase):
             ],
             "per_page": 10,
             "size": 1,
-            "total": 1,
+            "total": None,
         }
 
     @pytest.mark.skipif(
@@ -153,7 +153,7 @@ class TestEditAction(base.FunctionalTestBase):
             "events": [],
             "per_page": 10,
             "size": 0,
-            "total": 0,
+            "total": None,
         }
 
     @pytest.mark.skipif(
@@ -190,7 +190,7 @@ class TestEditAction(base.FunctionalTestBase):
             "events": [],
             "per_page": 10,
             "size": 0,
-            "total": 0,
+            "total": None,
         }
 
     @pytest.mark.skipif(
@@ -224,5 +224,5 @@ class TestEditAction(base.FunctionalTestBase):
             "events": [],
             "per_page": 10,
             "size": 0,
-            "total": 0,
+            "total": None,
         }

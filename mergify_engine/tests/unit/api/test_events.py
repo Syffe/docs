@@ -1,4 +1,3 @@
-from collections import abc
 import datetime
 import re
 import urllib.parse
@@ -12,7 +11,6 @@ from mergify_engine import date
 from mergify_engine import eventlogs
 from mergify_engine import events as evt_utils
 from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine.models import events as event_models
@@ -20,25 +18,7 @@ from mergify_engine.models.github import repository as github_repository
 from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
 from mergify_engine.tests import conftest as tests_conftest
-from mergify_engine.tests.tardis import time_travel
 from mergify_engine.tests.unit.api import conftest as tests_api_conftest
-
-
-INITIAL_TIMESTAMP = datetime.datetime(2023, 9, 5, 0, 0, tzinfo=date.UTC)
-DB_SWITCHED_TIMESTAMP = (
-    datetime.datetime(2023, 9, 5, 0, 0, tzinfo=date.UTC)
-    + eventlogs.EVENTLOGS_LONG_RETENTION
-    + datetime.timedelta(hours=1)
-)
-
-
-@pytest.fixture
-async def switched_to_pg(
-    monkeypatch: pytest.MonkeyPatch, redis_links: redis_utils.RedisLinks
-) -> abc.AsyncGenerator[None, None]:
-    await redis_links.cache.set(eventlogs.DB_SWITCH_KEY, INITIAL_TIMESTAMP.timestamp())
-    with time_travel(DB_SWITCHED_TIMESTAMP):
-        yield
 
 
 MAIN_TIMESTAMP = datetime.datetime.fromisoformat("2023-08-22T10:00:00+00:00")
@@ -96,7 +76,6 @@ async def insert_data(
 async def test_api_response(
     fake_repository: context.Repository,
     web_client: tests_conftest.CustomTestClient,
-    switched_to_pg: None,
     api_token: tests_api_conftest.TokenUserRepo,
     insert_data: None,
 ) -> None:
@@ -190,14 +169,14 @@ async def test_api_response(
                     "partition_name": "__default__",
                     "position": 3,
                     "queue_name": "default",
-                    "queued_at": "2023-09-12T01:00:00Z",
+                    "queued_at": anys.ANY_DATETIME_STR,
                     "speculative_check_pull_request": {
                         "number": 456,
                         "in_place": True,
                         "checks_timed_out": False,
                         "checks_conclusion": "pending",
-                        "checks_started_at": "2023-09-12T01:00:00Z",
-                        "checks_ended_at": "2023-09-12T01:00:00Z",
+                        "checks_started_at": anys.ANY_DATETIME_STR,
+                        "checks_ended_at": anys.ANY_DATETIME_STR,
                         "unsuccessful_checks": [
                             {
                                 "name": "ruff",
@@ -297,7 +276,6 @@ async def test_api_response(
 
 async def test_api_query_params(
     web_client: tests_conftest.CustomTestClient,
-    switched_to_pg: None,
     api_token: tests_api_conftest.TokenUserRepo,
     insert_data: None,
 ) -> None:
@@ -408,7 +386,6 @@ async def test_api_cursor_redis(
 async def test_api_cursor_pg(
     fake_repository: context.Repository,
     web_client: tests_conftest.CustomTestClient,
-    switched_to_pg: None,
     api_token: tests_api_conftest.TokenUserRepo,
 ) -> None:
     for _ in range(6):
@@ -491,7 +468,6 @@ async def test_api_links_with_query_params(
 
 async def test_api_cursor_invalid(
     web_client: tests_conftest.CustomTestClient,
-    switched_to_pg: None,
     api_token: tests_api_conftest.TokenUserRepo,
 ) -> None:
     response = await web_client.get(
@@ -526,112 +502,3 @@ async def test_api_cursor_invalid(
         headers={"Authorization": api_token.api_token},
     )
     assert response.status_code == 200
-
-
-async def test_api_cursor_invalid_redis(
-    web_client: tests_conftest.CustomTestClient,
-    api_token: tests_api_conftest.TokenUserRepo,
-) -> None:
-    response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/events?per_page=20&cursor=%2B1696596904953-0%27%29+UNION+ALL+SELECT+NULL%2CNULL%2CNULL--+gMmJ",
-        headers={"Authorization": api_token.api_token},
-    )
-    assert response.status_code == 422
-
-
-@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
-async def test_new_api_db_switch(
-    monkeypatch: pytest.MonkeyPatch,
-    redis_links: redis_utils.RedisLinks,
-    fake_repository: context.Repository,
-    web_client: tests_conftest.CustomTestClient,
-    api_token: tests_api_conftest.TokenUserRepo,
-) -> None:
-    timedelta = datetime.timedelta()
-    for i in range(6):
-        # add redis entries
-        with time_travel(INITIAL_TIMESTAMP + timedelta):
-            await signals.send(
-                repository=fake_repository,
-                pull_request=github_types.GitHubPullRequestNumber(1),
-                event="action.comment",
-                metadata=signals.EventCommentMetadata(message=""),
-                trigger=f"redis_evt_{i}",
-            )
-        timedelta += datetime.timedelta(hours=1)
-
-    # add a postgres entries
-    await evt_utils.insert(
-        event="action.comment",
-        repository=fake_repository.repo,
-        pull_request=github_types.GitHubPullRequestNumber(1),
-        metadata=signals.EventCommentMetadata(message=""),
-        trigger="pg_evt",
-    )
-
-    with time_travel(INITIAL_TIMESTAMP, tick=True):
-        # first
-        response = await web_client.get(
-            "/v1/repos/Mergifyio/engine/logs?per_page=2",
-            headers={"Authorization": api_token.api_token},
-        )
-        assert response is not None
-        assert {e["trigger"] for e in response.json()["events"]} == {
-            "redis_evt_5",
-            "redis_evt_4",
-        }
-        next_link = parse_links(response.headers["link"])["next"]
-
-        # next
-        response = await web_client.get(
-            next_link,
-            headers={"Authorization": api_token.api_token},
-        )
-        assert response is not None
-        assert {e["trigger"] for e in response.json()["events"]} == {
-            "redis_evt_3",
-            "redis_evt_2",
-        }
-        prev_link = parse_links(response.headers["link"])["prev"]
-
-        # prev
-        response = await web_client.get(
-            prev_link,
-            headers={"Authorization": api_token.api_token},
-        )
-        assert response is not None
-        assert {e["trigger"] for e in response.json()["events"]} == {
-            "redis_evt_5",
-            "redis_evt_4",
-        }
-
-        # event type filtering
-        response = await web_client.get(
-            "/v1/repos/Mergifyio/engine/logs?event_type=action.assign",
-            headers={"Authorization": api_token.api_token},
-        )
-        assert response is not None
-        assert len(response.json()["events"]) == 0
-
-        # received_at and received_from
-        rfrom = (INITIAL_TIMESTAMP + datetime.timedelta(hours=1, minutes=1)).timestamp()
-        rto = (INITIAL_TIMESTAMP + datetime.timedelta(hours=4, minutes=1)).timestamp()
-        response = await web_client.get(
-            f"/v1/repos/Mergifyio/engine/logs?received_from={rfrom}&received_to={rto}",
-            headers={"Authorization": api_token.api_token},
-        )
-        assert response is not None
-        assert len(response.json()["events"]) == 3
-
-    # switched to postgres
-    with time_travel(
-        INITIAL_TIMESTAMP
-        + eventlogs.EVENTLOGS_LONG_RETENTION
-        + datetime.timedelta(hours=1)
-    ):
-        response = await web_client.get(
-            "/v1/repos/Mergifyio/engine/logs",
-            headers={"Authorization": api_token.api_token},
-        )
-        assert response is not None
-        assert response.json()["events"][0]["trigger"] == "pg_evt"

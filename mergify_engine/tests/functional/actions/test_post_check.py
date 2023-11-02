@@ -107,7 +107,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
             ],
             "per_page": 10,
             "size": 1,
-            "total": 1,
+            "total": None,
         }
 
         r = await self.admin_app.get(
@@ -141,7 +141,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
             ],
             "per_page": 10,
             "size": 1,
-            "total": 1,
+            "total": None,
         }
 
         # Check it moves to failure and the event logs is filled accordingly
@@ -209,7 +209,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
             ],
             "per_page": 10,
             "size": 2,
-            "total": 2,
+            "total": None,
         }
 
     async def test_checks_default(self) -> None:
@@ -299,7 +299,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
             ],
             "per_page": 10,
             "size": 1,
-            "total": 1,
+            "total": None,
         }
 
     async def test_checks_custom(self) -> None:
