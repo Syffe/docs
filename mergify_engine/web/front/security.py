@@ -40,9 +40,23 @@ def mergify_admin_login_required(request: fastapi.Request, _: RequiredLogin) -> 
         raise fastapi.HTTPException(403)
 
 
-GitHubAccountId = typing.Annotated[
+_RawGitHubAccountId = typing.Annotated[
     github_types.GitHubAccountIdType,
     fastapi.Path(description="The GitHub account id"),
+]
+
+
+async def _get_validated_github_account_id(
+    github_account_id: _RawGitHubAccountId, logged_user: CurrentUser
+) -> github_types.GitHubAccountIdType:
+    # NOTE(sileht): We get the installation only to check the account still exists and Mergify is still installed
+    await github.get_installation_from_account_id(github_account_id)
+    return github_account_id
+
+
+GitHubAccountId = typing.Annotated[
+    github_types.GitHubAccountIdType,
+    fastapi.Depends(_get_validated_github_account_id),
 ]
 
 

@@ -27,6 +27,15 @@ async def test_applications_life_cycle(
     db.add(user)
     await db.commit()
 
+    get_installation_mock = respx_mock.get("/user/424242/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": user.as_github_dict(),
+            "suspended_at": None,
+        },
+    )
+
     await web_client.log_as(user.id)
 
     resp = await web_client.get("/front/github-account/424242/applications")
@@ -126,6 +135,38 @@ async def test_applications_life_cycle(
     list_data = resp.json()
     assert len(list_data["applications"]) == 0
 
+    # User uninstall Mergify or delete it's account
+    get_installation_mock.respond(404, json={})
+
+    # Check we can't use the application anymore
+    resp = await web_client.get(
+        "/v1/application",
+        headers={
+            "Authorization": f"bearer {create_data['api_access_key']}{create_data['api_secret_key']}"
+        },
+    )
+    assert resp.status_code == 403
+
+    # Check that even if the http session is valid, we can't manipulate applications
+    resp = await web_client.get("/front/github-account/424242/applications")
+    assert resp.status_code == 403
+
+    resp = await web_client.post(
+        "/front/github-account/424242/applications",
+        json={"name": "my second app"},
+    )
+    assert resp.status_code == 403
+
+    resp = await web_client.patch(
+        "/front/github-account/424242/applications/123",
+    )
+    assert resp.status_code == 403
+
+    resp = await web_client.delete(
+        "/front/github-account/424242/applications/123",
+    )
+    assert resp.status_code == 403
+
 
 async def assert_database_application_keys_count(
     github_account_id: int, expected: int
@@ -168,6 +209,15 @@ async def test_applications_limit(
     db.add(user)
     db.add(account)
     await db.commit()
+
+    respx_mock.get("/user/424242/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": user.as_github_dict(),
+            "suspended_at": None,
+        },
+    )
 
     api_access_key = f"mka_{secrets.token_urlsafe(21)}"
     api_secret_key = secrets.token_urlsafe(32)  # 256bytes encoded in base64
@@ -234,6 +284,18 @@ async def test_create_application_for_orgs(
     db.add(user)
     await db.commit()
 
+    respx_mock.get("/user/1234/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": {
+                "id": 1234,
+                "login": "theorg",
+            },
+            "suspended_at": None,
+        },
+    )
+
     await web_client.log_as(user.id)
 
     respx_mock.get("https://api.github.com/user/memberships/orgs/1234").respond(
@@ -277,6 +339,7 @@ async def test_create_application_for_orgs(
 async def test_applications_bad_body(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     web_client: conftest.CustomTestClient,
+    respx_mock: respx.MockRouter,
 ) -> None:
     gha = gh_models.GitHubAccount(
         id=424242,
@@ -291,6 +354,15 @@ async def test_applications_bad_body(
     db.add(gha)
     db.add(user)
     await db.commit()
+
+    respx_mock.get("/user/424242/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": user.as_github_dict(),
+            "suspended_at": None,
+        },
+    )
 
     await web_client.log_as(user.id)
 
@@ -408,6 +480,18 @@ async def test_applications_permissions_for_orgs(
     db.add(user)
     await db.commit()
 
+    respx_mock.get("/user/1234/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": {
+                "id": 1234,
+                "login": "theorg",
+            },
+            "suspended_at": None,
+        },
+    )
+
     request_mock = respx_mock.get("https://api.github.com/user/memberships/orgs/1234")
     if role is None:
         request_mock.respond(status_code=404)
@@ -432,6 +516,7 @@ async def test_application_tokens_via_env(
     monkeypatch: pytest.MonkeyPatch,
     redis_cache: redis_utils.RedisCache,
     web_client: conftest.CustomTestClient,
+    respx_mock: respx.MockRouter,
 ) -> None:
     api_access_key1 = "1" * 32
     api_secret_key1 = "1" * 32
@@ -442,6 +527,29 @@ async def test_application_tokens_via_env(
     api_secret_key2 = "2" * 32
     account_id2 = github_types.GitHubAccountIdType(67891)
     account_login2 = github_types.GitHubLogin("login2")
+
+    respx_mock.get("/user/67891/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": {
+                "id": 67891,
+                "login": "login2",
+            },
+            "suspended_at": None,
+        },
+    )
+    respx_mock.get("/user/12345/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": {
+                "id": 12345,
+                "login": "login1",
+            },
+            "suspended_at": None,
+        },
+    )
 
     resp = await web_client.get(
         "/v1/application",

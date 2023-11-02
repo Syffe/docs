@@ -6,6 +6,7 @@ import pydantic
 import typing_extensions
 
 from mergify_engine import github_types
+from mergify_engine.clients import github
 from mergify_engine.models import application_keys
 from mergify_engine.web import api
 from mergify_engine.web.api import security
@@ -59,6 +60,9 @@ async def application(
         fastapi.Security(security.get_application_without_scope_verification),
     ],
 ) -> ApplicationResponse:
+    # NOTE(sileht): We get the installation only to check the account still exists and Mergify is still installed
+    await github.get_installation_from_account_id(application.github_account.id)
+
     return ApplicationResponse(
         id=application.id,
         name=application.name,

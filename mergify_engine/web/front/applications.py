@@ -50,17 +50,17 @@ router = fastapi.APIRouter(
 
 
 @router.get(
-    "/github-account/{account_id}/applications",
+    "/github-account/{github_account_id}/applications",
     dependencies=[
         fastapi.Depends(security.github_admin_role_required),
     ],
 )
 async def list_applications(
-    account_id: int, session: database.Session
+    github_account_id: security.GitHubAccountId, session: database.Session
 ) -> ApplicationsList:
     result = await session.execute(
         sqlalchemy.select(application_keys.ApplicationKey).where(
-            application_keys.ApplicationKey.github_account_id == account_id
+            application_keys.ApplicationKey.github_account_id == github_account_id
         )
     )
     try:
@@ -84,13 +84,13 @@ async def list_applications(
 
 
 @router.post(
-    "/github-account/{account_id}/applications",
+    "/github-account/{github_account_id}/applications",
     dependencies=[
         fastapi.Depends(security.github_admin_role_required),
     ],
 )
 async def create_application(
-    account_id: security.GitHubAccountId,
+    github_account_id: security.GitHubAccountId,
     json: ApplicationBody,
     session: database.Session,
     current_user: security.CurrentUser,
@@ -108,20 +108,20 @@ async def create_application(
         account = await gh_models.GitHubAccount.get_or_create(
             session,
             github_types.GitHubAccount(
-                id=account_id,
+                id=github_account_id,
                 login=membership["organization"]["login"],
                 type="Organization",
-                avatar_url=gh_models.GitHubAccount.build_avatar_url(account_id),
+                avatar_url=gh_models.GitHubAccount.build_avatar_url(github_account_id),
             ),
         )
     else:
         account = await gh_models.GitHubAccount.get_or_create(
             session,
             github_types.GitHubAccount(
-                id=account_id,
+                id=github_account_id,
                 login=membership["user"]["login"],
                 type=membership["user"]["type"],
-                avatar_url=gh_models.GitHubAccount.build_avatar_url(account_id),
+                avatar_url=gh_models.GitHubAccount.build_avatar_url(github_account_id),
             ),
         )
 
@@ -131,7 +131,7 @@ async def create_application(
         setattr(application, attr, value)
     application.api_access_key = api_access_key
     application.api_secret_key = api_secret_key
-    application.github_account_id = account_id
+    application.github_account_id = github_account_id
     application.created_by_github_user_id = current_user.id
 
     session.add(account)
@@ -159,13 +159,13 @@ async def create_application(
 
 
 @router.patch(
-    "/github-account/{account_id}/applications/{application_id}",
+    "/github-account/{github_account_id}/applications/{application_id}",
     dependencies=[
         fastapi.Depends(security.github_admin_role_required),
     ],
 )
 async def update_application(
-    account_id: security.GitHubAccountId,
+    github_account_id: security.GitHubAccountId,
     application_id: int,
     json: ApplicationBody,
     session: database.Session,
@@ -174,7 +174,7 @@ async def update_application(
         sqlalchemy.select(application_keys.ApplicationKey)
         .join(application_keys.ApplicationKey.github_account)
         .where(application_keys.ApplicationKey.id == application_id)
-        .where(application_keys.ApplicationKey.github_account_id == account_id)
+        .where(application_keys.ApplicationKey.github_account_id == github_account_id)
     )
     try:
         application = result.unique().scalar_one()
@@ -198,20 +198,20 @@ async def update_application(
 
 
 @router.delete(
-    "/github-account/{account_id}/applications/{application_id}",
+    "/github-account/{github_account_id}/applications/{application_id}",
     dependencies=[
         fastapi.Depends(security.github_admin_role_required),
     ],
 )
 async def delete_application(
-    account_id: security.GitHubAccountId,
+    github_account_id: security.GitHubAccountId,
     application_id: int,
     session: database.Session,
 ) -> fastapi.responses.Response:
     result = await session.execute(
         sqlalchemy.select(application_keys.ApplicationKey)
         .where(application_keys.ApplicationKey.id == application_id)
-        .where(application_keys.ApplicationKey.github_account_id == account_id)
+        .where(application_keys.ApplicationKey.github_account_id == github_account_id)
     )
     try:
         application = result.unique().scalar_one()
