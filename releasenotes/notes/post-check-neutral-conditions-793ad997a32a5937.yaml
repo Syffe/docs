@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    The `post_check` action can now receive `neutral_conditions` to post
+    neutral checks — not only success or failure.

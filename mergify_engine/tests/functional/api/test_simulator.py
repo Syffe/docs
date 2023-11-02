@@ -70,7 +70,8 @@ class TestApiSimulator(base.FunctionalTestBase):
 **post_check action configuration:**
 ```
 always_show: false
-check_conditions: |-
+neutral_conditions: null
+success_conditions: |-
   - [ ] `author=foobar`
   - [ ] `label=whatever`
   - [X] `base={self.main_branch_name}`
@@ -283,7 +284,8 @@ pull_request_rules:
         actions = pull_request_rule["actions"]
         assert actions["post_check"] == {
             "always_show": False,
-            "check_conditions": anys.ANY_DICT,
+            "success_conditions": anys.ANY_DICT,
+            "neutral_conditions": None,
             "summary": anys.AnyFullmatch(r"Did you check .+\[bot\]\?"),
             "title": "'a lot of stuff' failed",
         }

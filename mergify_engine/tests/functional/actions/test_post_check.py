@@ -212,6 +212,59 @@ class TestPostCheckAction(base.FunctionalTestBase):
             "total": None,
         }
 
+    async def test_checks_with_neutral_conditions(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "be neutral",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                    ],
+                    "actions": {
+                        "post_check": {
+                            "neutral_conditions": [
+                                "label=be neutral",
+                            ]
+                        }
+                    },
+                }
+            ]
+        }
+        unrelated_branch = self.get_full_branch_name("unrelated")
+        await self.setup_repo(yaml.dump(rules), test_branches=[unrelated_branch])
+        match_pr = await self.create_pr()
+        unrelated_pr = await self.create_pr(base=unrelated_branch)
+
+        await self.run_engine()
+
+        # ensure no check is posted on unrelated branch
+        unrelated_ctxt = context.Context(self.repository_ctxt, unrelated_pr, [])
+        assert len(await unrelated_ctxt.pull_engine_check_runs) == 1
+
+        # ensure a failure check is posted on related branch
+        match_ctxt = context.Context(self.repository_ctxt, match_pr, [])
+        match_sorted_checks = sorted(
+            await match_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        )
+        assert len(match_sorted_checks) == 2
+        match_check = match_sorted_checks[0]
+        assert "failure" == match_check["conclusion"]
+        assert "'be neutral' failed" == match_check["output"]["title"]
+
+        # Now add the label
+        await self.add_label(match_pr["number"], "be neutral")
+
+        await self.run_engine()
+
+        # ensure a neutral check is posted on related branch
+        match_ctxt = context.Context(self.repository_ctxt, match_pr, [])
+        match_sorted_checks = sorted(
+            await match_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        )
+        assert len(match_sorted_checks) == 2
+        match_check = match_sorted_checks[0]
+        assert "neutral" == match_check["conclusion"]
+
     async def test_checks_default(self) -> None:
         rules = {
             "pull_request_rules": [

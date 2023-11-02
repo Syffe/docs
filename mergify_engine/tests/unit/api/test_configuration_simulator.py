@@ -232,16 +232,17 @@ pull_request_rules:
     actions = response.json()["pull_request_rules"][0]["actions"]
     assert actions["post_check"] == {
         "always_show": False,
-        "check_conditions": anys.ANY_DICT,
+        "success_conditions": anys.ANY_DICT,
+        "neutral_conditions": None,
         "summary": "Hello contributor",
         "title": "'automatic check' succeeded",
     }
-    top_check_condition = actions["post_check"]["check_conditions"]
-    assert top_check_condition == anys.AnyWithEntries(
+    top_success_condition = actions["post_check"]["success_conditions"]
+    assert top_success_condition == anys.AnyWithEntries(
         {"label": "all of", "match": True, "subconditions": anys.ANY_LIST}
     )
-    check_conditions = top_check_condition["subconditions"]
-    assert check_conditions == [
+    success_conditions = top_success_condition["subconditions"]
+    assert success_conditions == [
         anys.AnyWithEntries(
             {
                 "label": "base=main",
