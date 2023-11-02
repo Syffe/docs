@@ -192,7 +192,7 @@ Unknown pull request attribute: hello
                     "type": "action.review",
                     "metadata": {
                         "message": "WTF?",
-                        "type": "REQUEST_CHANGES",
+                        "review_type": "REQUEST_CHANGES",
                         "reviewer": "mergify-test4",
                     },
                     "trigger": "Rule: requested",
@@ -207,7 +207,7 @@ Unknown pull request attribute: hello
                     "type": "action.review",
                     "metadata": {
                         "message": None,
-                        "type": "APPROVE",
+                        "review_type": "APPROVE",
                         "reviewer": self.RECORD_CONFIG["app_user_login"],
                     },
                     "trigger": "Rule: approve",

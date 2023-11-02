@@ -753,7 +753,7 @@ class EventActionReview(Event):
             repository=repository_obj,
             pull_request=pull_request,
             trigger=trigger,
-            review_type=metadata["type"],
+            review_type=metadata["review_type"],
             reviewer=metadata["reviewer"],
             message=metadata["message"],
         )

@@ -560,7 +560,7 @@ async def test_event_action_review_consistency(
         "action.review",
         signals.EventReviewMetadata(
             {
-                "type": "APPROVE",
+                "review_type": "APPROVE",
                 "reviewer": "John Doe",
                 "message": "Looks good to me",
             }

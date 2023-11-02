@@ -253,6 +253,47 @@ async def test_api_response(
         ],
     }
 
+    await evt_utils.insert(
+        "action.review",
+        fake_repository.repo,
+        pull_request=None,
+        trigger="whatever",
+        metadata=signals.EventReviewMetadata(
+            {
+                "review_type": "APPROVE",
+                "reviewer": "John Doe",
+                "message": "Looks good to me",
+            }
+        ),
+    )
+
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs?per_page=1&event_type=action.review",
+        headers={"Authorization": api_token.api_token},
+    )
+    assert response.json() == {
+        "size": 1,
+        "per_page": 1,
+        "total": None,
+        "events": [
+            {
+                "id": 6,
+                "received_at": anys.ANY_DATETIME_STR,
+                "timestamp": anys.ANY_DATETIME_STR,
+                "trigger": "whatever",
+                "repository": "Mergifyio/mergify-engine",
+                "pull_request": None,
+                "event": "action.review",
+                "type": "action.review",
+                "metadata": {
+                    "review_type": "APPROVE",
+                    "reviewer": "John Doe",
+                    "message": "Looks good to me",
+                },
+            }
+        ],
+    }
+
 
 async def test_api_query_params(
     web_client: tests_conftest.CustomTestClient,
