@@ -27,6 +27,7 @@ async def test_client_installation_token_with_owner_id(
         json={
             "id": 12345,
             "target_type": "User",
+            "suspended_at": None,
             "permissions": {
                 "checks": "write",
                 "contents": "write",
@@ -68,6 +69,7 @@ async def test_client_user_token(respx_mock: respx.MockRouter) -> None:
         json={
             "id": 12345,
             "target_type": "User",
+            "suspended_at": None,
             "permissions": {
                 "checks": "write",
                 "contents": "write",
@@ -107,6 +109,7 @@ async def test_client_401_raise_ratelimit(respx_mock: respx.MockRouter) -> None:
         json={
             "id": 12345,
             "target_type": "User",
+            "suspended_at": None,
             "permissions": {
                 "checks": "write",
                 "contents": "write",
@@ -339,6 +342,7 @@ async def test_client_access_token_HTTP_500(respx_mock: respx.MockRouter) -> Non
         json={
             "id": 12345,
             "target_type": "User",
+            "suspended_at": None,
             "permissions": {
                 "checks": "write",
                 "contents": "write",
@@ -460,6 +464,7 @@ async def test_client_abuse_403_no_header(respx_mock: respx.MockRouter) -> None:
         json={
             "id": 12345,
             "target_type": "User",
+            "suspended_at": None,
             "permissions": {
                 "checks": "write",
                 "contents": "write",
@@ -502,6 +507,7 @@ async def test_to_curl(
         json={
             "id": 12345,
             "target_type": "User",
+            "suspended_at": None,
             "permissions": {
                 "checks": "write",
                 "contents": "write",

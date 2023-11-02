@@ -286,6 +286,7 @@ async def test_configuration_changed(
             },
             "target_type": GH_OWNER["type"],
             "account": GH_OWNER,
+            "suspended_at": None,
         },
     )
     github_server.get(f"{BASE_URL}/pulls/1").respond(
@@ -411,6 +412,7 @@ async def test_configuration_duplicated(
             },
             "target_type": GH_OWNER["type"],
             "account": GH_OWNER,
+            "suspended_at": None,
         },
     )
 
@@ -511,6 +513,7 @@ async def test_configuration_not_changed(
             },
             "target_type": GH_OWNER["type"],
             "account": GH_OWNER,
+            "suspended_at": None,
         },
     )
     github_server.get(f"{BASE_URL}/pulls/1").respond(
@@ -592,6 +595,7 @@ async def test_configuration_initial(
             },
             "target_type": GH_OWNER["type"],
             "account": GH_OWNER,
+            "suspended_at": None,
         },
     )
     github_server.get(f"{BASE_URL}/pulls/1").respond(
@@ -707,6 +711,7 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
             },
             "target_type": GH_OWNER["type"],
             "account": GH_OWNER,
+            "suspended_at": None,
         },
     )
     github_server.get(f"{BASE_URL}/pulls/1").respond(
@@ -779,6 +784,7 @@ async def test_configuration_check_not_needed_with_configuration_changed(
             },
             "target_type": GH_OWNER["type"],
             "account": GH_OWNER,
+            "suspended_at": None,
         },
     )
     github_server.get(
@@ -850,6 +856,7 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
             },
             "target_type": GH_OWNER["type"],
             "account": GH_OWNER,
+            "suspended_at": None,
         },
     )
     github_server.get(f"{BASE_URL}/pulls/1").respond(

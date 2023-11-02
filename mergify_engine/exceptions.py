@@ -24,6 +24,10 @@ class MergifyNotInstalled(Exception):
     pass
 
 
+class MergifySuspended(MergifyNotInstalled):
+    pass
+
+
 class MergifyDisabledByUs(Exception):
     pass
 

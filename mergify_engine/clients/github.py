@@ -217,65 +217,56 @@ class GitHubAppInstallationAuth(httpx.Auth):
         return self._cached_token.token
 
 
-async def get_installation_from_account_id(
-    account_id: github_types.GitHubAccountIdType,
+async def _get_installation(
+    endpoint: str, logging_extras: dict[str, typing.Any] | None = None
 ) -> github_types.GitHubInstallation:
+    if logging_extras is None:
+        logging_extras = {}
+
     async with AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
         try:
-            return typing.cast(
+            installation = typing.cast(
                 github_types.GitHubInstallation,
-                await client.item(
-                    f"{settings.GITHUB_REST_API_URL}/user/{account_id}/installation"
-                ),
+                await client.item(f"{settings.GITHUB_REST_API_URL}{endpoint}"),
             )
         except http.HTTPNotFound as e:
             LOG.debug(
                 "Mergify not installed",
-                gh_owner_id=account_id,
                 error_message=e.message,
+                **logging_extras,
             )
             raise exceptions.MergifyNotInstalled()
+
+    if installation["suspended_at"]:
+        raise exceptions.MergifySuspended()
+    return installation
+
+
+async def get_installation_from_account_id(
+    account_id: github_types.GitHubAccountIdType,
+) -> github_types.GitHubInstallation:
+    return await _get_installation(
+        f"/user/{account_id}/installation", {"gh_owner_id": account_id}
+    )
 
 
 async def get_installation_from_repository(
     login: github_types.GitHubLogin,
     repository: github_types.GitHubRepositoryName,
 ) -> github_types.GitHubInstallation:
-    async with AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
-        try:
-            return typing.cast(
-                github_types.GitHubInstallation,
-                await client.item(
-                    f"{settings.GITHUB_REST_API_URL}/repos/{login}/{repository}/installation"
-                ),
-            )
-        except http.HTTPNotFound as e:
-            LOG.debug(
-                "Mergify not installed",
-                gh_owner=login,
-                error_message=e.message,
-            )
-            raise exceptions.MergifyNotInstalled()
+    return await _get_installation(
+        f"/repos/{login}/{repository}/installation",
+        {"gh_owner": login, "gh_repo": repository},
+    )
 
 
 async def get_installation_from_login(
     login: github_types.GitHubLogin,
 ) -> github_types.GitHubInstallation:
-    async with AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
-        try:
-            return typing.cast(
-                github_types.GitHubInstallation,
-                await client.item(
-                    f"{settings.GITHUB_REST_API_URL}/users/{login}/installation"
-                ),
-            )
-        except http.HTTPNotFound as e:
-            LOG.debug(
-                "Mergify not installed",
-                gh_owner=login,
-                error_message=e.message,
-            )
-            raise exceptions.MergifyNotInstalled()
+    return await _get_installation(
+        f"/users/{login}/installation",
+        {"gh_owner": login},
+    )
 
 
 def _check_rate_limit(client: http.AsyncClient, response: httpx.Response) -> None:
