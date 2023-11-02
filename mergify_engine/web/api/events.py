@@ -43,6 +43,17 @@ class EventsResponse(pagination.PageResponse[evt_utils.Event]):
             "headers": pagination.LinkHeader,
         },
     },
+    # NOTE(lecrepont01): remove with old API deprecation and MRGFY-2849
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Successful Response.\n\n"
+                "**Important note**: response attributes `events[].timestamp` and "
+                "`events[].event` are deprecated and being replaced by `events[].received_at` and "
+                "`events[].type` respectively. Please use those instead."
+            }
+        }
+    },
 )
 async def get_repository_events(
     session: database.Session,
