@@ -2,14 +2,14 @@ extends: .github
 shared:
   IsPublicHolidays: &IsPublicHolidays
     or:
-      - current-datetime != XXXX-01-01T00:00/XXXX-01-01T23:59[Europe/Paris]
-      - current-datetime != XXXX-05-01T00:00/XXXX-05-01T23:59[Europe/Paris]
-      - current-datetime != XXXX-05-08T00:00/XXXX-05-08T23:59[Europe/Paris]
-      - current-datetime != XXXX-07-14T00:00/XXXX-07-14T23:59[Europe/Paris]
-      - current-datetime != XXXX-08-15T00:00/XXXX-08-15T23:59[Europe/Paris]
-      - current-datetime != XXXX-11-01T00:00/XXXX-11-01T23:59[Europe/Paris]
-      - current-datetime != XXXX-11-11T00:00/XXXX-11-11T23:59[Europe/Paris]
-      - current-datetime != XXXX-12-25T00:00/XXXX-12-25T23:59[Europe/Paris]
+      - current-datetime = XXXX-01-01T00:00/XXXX-01-01T23:59[Europe/Paris]
+      - current-datetime = XXXX-05-01T00:00/XXXX-05-01T23:59[Europe/Paris]
+      - current-datetime = XXXX-05-08T00:00/XXXX-05-08T23:59[Europe/Paris]
+      - current-datetime = XXXX-07-14T00:00/XXXX-07-14T23:59[Europe/Paris]
+      - current-datetime = XXXX-08-15T00:00/XXXX-08-15T23:59[Europe/Paris]
+      - current-datetime = XXXX-11-01T00:00/XXXX-11-01T23:59[Europe/Paris]
+      - current-datetime = XXXX-11-11T00:00/XXXX-11-11T23:59[Europe/Paris]
+      - current-datetime = XXXX-12-25T00:00/XXXX-12-25T23:59[Europe/Paris]
   DefaultQueueOptions: &DefaultQueueOptions
     commit_message_template: |
       {{ title }} (#{{ number }})
