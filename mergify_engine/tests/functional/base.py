@@ -197,6 +197,12 @@ class MissingEventTimeout(Exception):
         )
 
 
+class WaitForAllEvent(typing.TypedDict):
+    event_type: github_types.GitHubEventType
+    payload: typing.Any
+    test_id: typing.NotRequired[str | None]
+
+
 class EventReader:
     def __init__(
         self,
@@ -248,24 +254,32 @@ class EventReader:
     ) -> github_types.GitHubEvent:
         return (
             await self.wait_for_all(
-                [(event_type, expected_payload)], forward_to_engine, test_id
+                [
+                    {
+                        "event_type": event_type,
+                        "payload": expected_payload,
+                        "test_id": test_id,
+                    }
+                ],
+                forward_to_engine,
             )
         )[0][1]
 
     async def wait_for_all(
         self,
-        events: list[tuple[github_types.GitHubEventType, typing.Any]],
+        events: list[WaitForAllEvent],
         forward_to_engine: bool = True,
-        test_id: str | None = None,
     ) -> list[tuple[github_types.GitHubEventType, github_types.GitHubEvent]]:
-        for event_type, expected_payload in events:
+        test_ids = set()
+        for event_data in events:
             LOG.log(
                 42,
                 "WAITING FOR %s/%s: %s",
-                event_type,
-                expected_payload.get("action"),
-                expected_payload,
+                event_data["event_type"],
+                event_data["payload"].get("action"),
+                event_data["payload"],
             )
+            test_ids.add(event_data.get("test_id"))
 
         # NOTE(Kontrolix): Copy events to not alter the orignal list
         events = list(events)
@@ -278,28 +292,39 @@ class EventReader:
                 event = self._handled_events.get_nowait()
                 await self._process_event(event, forward_to_engine)
             except asyncio.QueueEmpty:
-                for event in await self._get_events(test_id=test_id):
-                    await self._handled_events.put(event)
-                else:
+                found_events = False
+                for test_id in test_ids:
+                    for event in await self._get_events(test_id=test_id):
+                        found_events = True
+                        await self._handled_events.put(event)
+
+                if found_events:
                     await asyncio.sleep(self.EVENTS_POLLING_INTERVAL_SECONDS)
                 continue
 
-            for event_type, expected_payload in events:
-                if event["type"] == event_type and self._match(
-                    event["payload"], expected_payload
+            for expected_event_data in events:
+                if event["type"] == expected_event_data["event_type"] and self._match(
+                    event["payload"], expected_event_data["payload"]
                 ):
-                    received_events.append((event_type, event["payload"]))
-                    events.remove((event_type, expected_payload))
+                    received_events.append((event["type"], event["payload"]))
+                    events.remove(expected_event_data)
                     # NOTE(Kontrolix): Restart timer every time we receive an
                     # expected event
                     started_at = time.monotonic()
+
+                    if events:
+                        # Reconstruct the set to not query useless test_ids
+                        test_ids = {d.get("test_id") for d in events}
                     break
 
             if not events:
                 break
 
         if events:
-            raise MissingEventTimeout(*events[0])
+            raise MissingEventTimeout(
+                event_type=events[0]["event_type"],
+                expected_payload=events[0]["payload"],
+            )
 
         return received_events
 

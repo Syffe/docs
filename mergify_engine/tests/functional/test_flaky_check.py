@@ -87,14 +87,17 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
 
         await self.wait_for_all(
             [
-                ("workflow_job", {"action": "completed"}),
-                (
-                    "check_run",
-                    {
+                {"event_type": "workflow_job", "payload": {"action": "completed"}},
+                {
+                    "event_type": "check_run",
+                    "payload": {
                         "action": "completed",
-                        "check_run": {"conclusion": "failure", "name": "unit-tests"},
+                        "check_run": {
+                            "conclusion": "failure",
+                            "name": "unit-tests",
+                        },
                     },
-                ),
+                },
             ]
         )
 
