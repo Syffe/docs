@@ -43,25 +43,40 @@ async def _get_user_by_login(
     return await _get_user(session, github_user.GitHubUser.login == login)
 
 
-async def select_user_from_login(
-    session: sqlalchemy.ext.asyncio.AsyncSession, login: github_types.GitHubLogin
+async def select_user(
+    session: sqlalchemy.ext.asyncio.AsyncSession,
+    login_or_id: str,
 ) -> github_user.GitHubUser:
-    account = await _get_user_by_login(session, login)
-
-    if account is not None:
-        return account
-
-    # Check if the login is an organization with billing system
-    async with shadow_office.AsyncShadowOfficeSaasClient() as client:
+    if login_or_id.startswith("id:"):
         try:
-            associated_users = await client.get_associated_users(login)
-        except shadow_office.NoAssociatedUsersFound as e:
-            raise fastapi.HTTPException(status_code=404, detail=str(e))
+            _id = github_types.GitHubOrganizationIdType(int(login_or_id[3:]))
+        except ValueError:
+            raise fastapi.HTTPException(
+                status_code=404,
+                detail="User ID invalid",
+            )
 
-        for associated_user in associated_users:
-            user = await _get_user_by_id(session, associated_user["id"])
-            if user is not None:
-                return user
+        account = await _get_user_by_id(session, _id)
+        if account is not None:
+            return account
+
+    else:
+        login = typing.cast(github_types.GitHubLogin, login_or_id)
+        account = await _get_user_by_login(session, login)
+        if account is not None:
+            return account
+
+        # Check if the login is an organization with billing system
+        async with shadow_office.AsyncShadowOfficeSaasClient() as client:
+            try:
+                associated_users = await client.get_associated_users(login)
+            except shadow_office.NoAssociatedUsersFound as e:
+                raise fastapi.HTTPException(status_code=404, detail=str(e))
+
+            for associated_user in associated_users:
+                user = await _get_user_by_id(session, associated_user["id"])
+                if user is not None:
+                    return user
 
     raise fastapi.HTTPException(
         status_code=404,
@@ -79,7 +94,7 @@ router = fastapi.APIRouter(tags=["front"])
     ],
 )
 async def sudo(
-    request: fastapi.Request, login: github_types.GitHubLogin, session: database.Session
+    request: fastapi.Request, login: str, session: database.Session
 ) -> fastapi.Response:
     from_user = imia.impersonation.get_original_user(request).login
 
@@ -89,7 +104,7 @@ async def sudo(
         imia.impersonation.exit_impersonation(request)
 
     LOG.info("sudo to %s requested for %s", login, from_user, gh_owner=from_user)
-    user = await select_user_from_login(session, login)
+    user = await select_user(session, login)
     LOG.info("sudo to %s granted for %s", login, from_user, gh_owner=from_user)
 
     if from_user != login:
