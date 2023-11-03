@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import dataclasses
+import typing
 
 import fastapi
 import pydantic
@@ -138,7 +139,11 @@ async def get_ci_issues(
     },
 )
 async def get_ci_issue(
-    session: database.Session, repository_ctxt: security.Repository, ci_issue_id: int
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    ci_issue_id: typing.Annotated[
+        int, fastapi.Path(description="The ID of the CI Issue")
+    ],
 ) -> CiIssueResponse:
     reponses = await query_issues(session, repository_ctxt.repo["id"], ci_issue_id)
     if len(reponses) == 0:
@@ -170,8 +175,10 @@ class CiIssueEventDetailResponse(CiIssueEvent):
 async def get_ci_issue_event_detail(
     session: database.Session,
     repository_ctxt: security.Repository,
-    ci_issue_id: int,
-    event_id: int,
+    ci_issue_id: typing.Annotated[
+        int, fastapi.Path(description="The ID of the CI Issue")
+    ],
+    event_id: typing.Annotated[int, fastapi.Path(description="The ID of the Event")],
 ) -> CiIssueEventDetailResponse:
     stmt = sqlalchemy.select(
         WorkflowJobEnhanced.id,

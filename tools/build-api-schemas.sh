@@ -15,4 +15,4 @@ else
 fi
 
 npx -y --package @stoplight/spectral-cli -c "spectral lint -F hint -f $FORMAT api-schemas/public.json"
-npx -y --package @stoplight/spectral-cli -c "spectral lint -F hint -f $FORMAT api-schemas/public-futue.json"
+npx -y --package @stoplight/spectral-cli -c "spectral lint -F hint -f $FORMAT api-schemas/public-future.json"
