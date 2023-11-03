@@ -8,11 +8,9 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
 from mergify_engine import date
-from mergify_engine import eventlogs
 from mergify_engine import events as evt_utils
 from mergify_engine import github_types
 from mergify_engine import signals
-from mergify_engine import subscription
 from mergify_engine.models import events as event_models
 from mergify_engine.models.github import repository as github_repository
 from mergify_engine.queue.merge_train import checks
@@ -316,71 +314,6 @@ def parse_links(links: str) -> dict[str, str]:
         assert match is not None
         links_dict.update({match.group(2): match.group(1)})
     return links_dict
-
-
-@pytest.mark.subscription(subscription.Features.EVENTLOGS_LONG)
-async def test_api_cursor_redis(
-    fake_repository: context.Repository,
-    web_client: tests_conftest.CustomTestClient,
-    api_token: tests_api_conftest.TokenUserRepo,
-) -> None:
-    signal = eventlogs.EventLogsSignal()
-    for i in range(6):
-        await signal(
-            event="action.assign",
-            repository=fake_repository,
-            pull_request=github_types.GitHubPullRequestNumber(1),
-            metadata=signals.EventAssignMetadata(
-                {
-                    "added": ["leo", "charly", "guillaume"],
-                    "removed": ["damien", "fabien"],
-                }
-            ),
-            trigger=f"Rule: {i}",
-        )
-        await signal(
-            event="action.label",
-            repository=fake_repository,
-            pull_request=github_types.GitHubPullRequestNumber(1),
-            metadata=signals.EventLabelMetadata(
-                {
-                    "added": ["leo", "charly", "guillaume"],
-                    "removed": ["damien", "fabien"],
-                }
-            ),
-            trigger=f"Rule: label {i}",
-        )
-
-    # first 2
-    response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/logs?per_page=2&event_type=action.assign",
-        headers={"Authorization": api_token.api_token},
-    )
-    assert response.status_code == 200
-    resp = response.json()
-    assert [r["id"] for r in resp["events"]] == [anys.ANY_INT, anys.ANY_INT]
-    assert [r["trigger"] for r in resp["events"]] == ["Rule: 5", "Rule: 4"]
-    links = parse_links(response.headers["link"])
-
-    # first 2 to 4
-    response = await web_client.get(
-        links["next"],
-        headers={"Authorization": api_token.api_token},
-    )
-    assert response.status_code == 200
-    resp = response.json()
-    assert [r["id"] for r in resp["events"]] == [anys.ANY_INT, anys.ANY_INT]
-    assert [r["trigger"] for r in resp["events"]] == ["Rule: 3", "Rule: 2"]
-
-    # last 2 with initial last cursor
-    response = await web_client.get(
-        links["last"],
-        headers={"Authorization": api_token.api_token},
-    )
-    assert response.status_code == 200
-    resp = response.json()
-    assert [r["id"] for r in resp["events"]] == [anys.ANY_INT, anys.ANY_INT]
-    assert [r["trigger"] for r in resp["events"]] == ["Rule: 1", "Rule: 0"]
 
 
 async def test_api_cursor_pg(
