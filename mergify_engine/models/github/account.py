@@ -42,7 +42,6 @@ class GitHubAccount(models.Base):
     )
     login: orm.Mapped[github_types.GitHubLogin] = orm.mapped_column(
         sqlalchemy.Text,
-        unique=True,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
     type: orm.Mapped[GitHubAccountType | None] = orm.mapped_column(
