@@ -1430,7 +1430,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
     async def send_checks_end_signal(
         self,
         user_pull_request_number: github_types.GitHubPullRequestNumber,
-        unqueue_reason: queue_utils.BaseUnqueueReason,
+        unqueue_reason: queue_utils.BaseUnqueueReason | None,
         abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"],
     ) -> None:
         if (
@@ -1446,7 +1446,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         ep = ep_with_car.embarked_pull
         abort_code: queue_utils.AbortCodeT | None
-        if isinstance(unqueue_reason, queue_utils.PrMerged):
+        if unqueue_reason is None or isinstance(unqueue_reason, queue_utils.PrMerged):
             aborted = False
             abort_reason_str = ""
             abort_code = None
@@ -2209,9 +2209,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 for ep in self.still_queued_embarked_pulls:
                     await self.send_checks_end_signal(
                         user_pull_request_number=ep.user_pull_request_number,
-                        unqueue_reason=queue_utils.PrMerged(
-                            ep.user_pull_request_number, github_types.SHAType("")
-                        ),
+                        unqueue_reason=None,
                         abort_status="DEFINITIVE",
                     )
             return
