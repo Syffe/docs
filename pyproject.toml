@@ -31,7 +31,7 @@ python-dotenv = "*"
 python-multipart = "*"
 pyyaml = "*"
 redis = ">=4.3.5,!=4.5.2,!=5.0.1"
-sentry-sdk = {extras = ["fastapi", "starlette"], version = ">=1.9.0,<1.34.0"}
+sentry-sdk = {extras = ["fastapi", "starlette"], version = ">=1.9.0,<1.35.0"}
 tenacity = ">=8.2.1"
 uvicorn = {extras = ["standard"], version = "*"}
 voluptuous = "*"
