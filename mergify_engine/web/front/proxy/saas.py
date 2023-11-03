@@ -85,63 +85,16 @@ async def clear_subscription_details_cache(
     await redis_cache.delete(get_subscription_detail_hkey(github_account_id))
 
 
-@router.get(
-    "/saas/github-account/{github_account_id}/subscription-details",
-)
-async def saas_subscription(
-    request: fastapi.Request,
-    github_account_id: github_types.GitHubAccountIdType,
-    current_user: security.CurrentUser,
-    redis_links: redis.RedisLinks,
-) -> fastapi.responses.Response:
-    if settings.SAAS_MODE:
-        response = await get_subscription_details_cache(
-            redis_links.cache, github_account_id, current_user.id
-        )
-
-        if response is None:
-            response = await saas_proxy(
-                request,
-                f"github-account/{github_account_id}/subscription-details",
-                current_user,
-            )
-            await set_subscription_details_cache(
-                redis_links.cache, github_account_id, current_user.id, response
-            )
-        return response
-
-    sub = await subscription.Subscription.get_subscription(
-        redis_links.cache, github_account_id
-    )
-
-    return fastapi.responses.JSONResponse(
-        {
-            "role": "member",
-            "billable_seats": [],
-            "billable_seats_count": 0,
-            "billing_manager": False,
-            "subscription": None,
-            "plan": {
-                "name": "OnPremise Premium",
-                "features": sub.to_dict()["features"],
-            },
-        }
-    )
-
-
-@router.api_route(
-    "/saas/{path:path}",
-    methods=["GET", "POST", "PATCH", "PUT", "DELETE"],
-)
 async def saas_proxy(
     request: fastapi.Request,
-    path: str,
     current_user: security.CurrentUser,
 ) -> fastapi.responses.Response:
     if not settings.SAAS_MODE:
         raise fastapi.HTTPException(
             510, "On-Premise installation must not use SaaS endpoints"
         )
+
+    path = request.url.path.removeprefix("/front/proxy/saas/")
 
     headers = utils.headers_to_forward(request)
     headers["Mergify-On-Behalf-Of"] = str(current_user.id)
@@ -201,3 +154,63 @@ async def saas_proxy(
                 ),
             ),
         )
+
+
+@router.get(
+    "/saas/github-account/{github_account_id}/subscription-details",
+)
+async def saas_subscription(
+    request: fastapi.Request,
+    github_account_id: security.GitHubAccountId,
+    current_user: security.CurrentUser,
+    redis_links: redis.RedisLinks,
+) -> fastapi.responses.Response:
+    if settings.SAAS_MODE:
+        response = await get_subscription_details_cache(
+            redis_links.cache, github_account_id, current_user.id
+        )
+
+        if response is None:
+            response = await saas_proxy(request, current_user)
+            await set_subscription_details_cache(
+                redis_links.cache, github_account_id, current_user.id, response
+            )
+        return response
+
+    sub = await subscription.Subscription.get_subscription(
+        redis_links.cache, github_account_id
+    )
+
+    return fastapi.responses.JSONResponse(
+        {
+            "role": "member",
+            "billable_seats": [],
+            "billable_seats_count": 0,
+            "billing_manager": False,
+            "subscription": None,
+            "plan": {
+                "name": "OnPremise Premium",
+                "features": sub.to_dict()["features"],
+            },
+        }
+    )
+
+
+@router.get("/saas/github-account/{github_account_id}/stripe-create")
+@router.get("/saas/github-account/{github_account_id}/stripe-customer-portal")
+async def saas_generic_with_github_account_id(
+    request: fastapi.Request,
+    github_account_id: security.GitHubAccountId,
+    current_user: security.CurrentUser,
+) -> fastapi.responses.Response:
+    # NOTE(sileht): We need to validate the github_account_id before processing
+    return await saas_proxy(request, current_user)
+
+
+@router.post("/saas/plain/bug-report")
+@router.get("/saas/intercom")
+async def saas_generic_without_github_account_id(
+    request: fastapi.Request,
+    current_user: security.CurrentUser,
+) -> fastapi.responses.Response:
+    return await saas_proxy(request, current_user)

@@ -30,6 +30,15 @@ async def test_saas_proxy_saas_mode_true(
     db.add(user)
     await db.commit()
 
+    get_installation_mock = respx_mock.get("/user/42/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": user.as_github_dict(),
+            "suspended_at": None,
+        },
+    )
+
     unwanted_headers = respx.patterns.M(headers={"dnt": "1"})
     assert unwanted_headers is not None
     respx_mock.route(
@@ -59,10 +68,17 @@ async def test_saas_proxy_saas_mode_true(
     resp = await web_client.get(url, headers={"dnt": "1"})
     assert resp.status_code == 401
 
+    # Relog and uninstall Mergify or delete it's account
+    await web_client.log_as(user.id)
+    get_installation_mock.respond(404, json={})
+    resp = await web_client.get(url, headers={"dnt": "1"})
+    assert resp.status_code == 403
+
 
 async def test_saas_proxy_saas_mode_false(
     monkeypatch: pytest.MonkeyPatch,
     db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
 ) -> None:
     monkeypatch.setattr(settings, "SAAS_MODE", False)
@@ -74,6 +90,15 @@ async def test_saas_proxy_saas_mode_false(
     )
     db.add(user)
     await db.commit()
+
+    get_installation_mock = respx_mock.get("/user/42/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": user.as_github_dict(),
+            "suspended_at": None,
+        },
+    )
 
     url = "/front/proxy/saas/github-account/42/stripe-create?plan=Essential"
 
@@ -88,6 +113,12 @@ async def test_saas_proxy_saas_mode_false(
     await web_client.logout()
     resp = await web_client.get(url, headers={"dnt": "1"})
     assert resp.status_code == 401
+
+    # Relog and uninstall Mergify or delete it's account
+    await web_client.log_as(user.id)
+    get_installation_mock.respond(404, json={})
+    resp = await web_client.get(url, headers={"dnt": "1"})
+    assert resp.status_code == 403
 
 
 async def test_saas_subscription_with_saas_mode_true(
@@ -107,9 +138,18 @@ async def test_saas_subscription_with_saas_mode_true(
     db.add(user)
     await db.commit()
 
+    respx_mock.get("/user/42/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": user.as_github_dict(),
+            "suspended_at": None,
+        },
+    )
+
     unwanted_headers = respx.patterns.M(headers={"dnt": "1"})
     assert unwanted_headers is not None
-    respx_mock.route(
+    mocked_sub_request = respx_mock.route(
         respx.patterns.M(
             method="get",
             url="http://localhost:5000/engine/saas/github-account/42/subscription-details",
@@ -134,14 +174,14 @@ async def test_saas_subscription_with_saas_mode_true(
     # From cache
     resp = await web_client.get(url, headers={"dnt": "1"})
     assert resp.json() == {"plan": {"name": "Essential"}}
-    assert len(respx_mock.calls) == 1
+    assert len(mocked_sub_request.calls) == 1
 
     # Cache entry has expired
     with monkeypatch.context() as m:
         m.setattr(saas, "SUBSCRIPTION_DETAILS_EXPIRATION", datetime.timedelta(0))
         resp = await web_client.get(url, headers={"dnt": "1"})
         assert resp.json() == {"plan": {"name": "Essential"}}
-        assert len(respx_mock.calls) == 2
+        assert len(mocked_sub_request.calls) == 2
 
     # After cleaning the cache
     await saas.clear_subscription_details_cache(
@@ -149,7 +189,7 @@ async def test_saas_subscription_with_saas_mode_true(
     )
     resp = await web_client.get(url, headers={"dnt": "1"})
     assert resp.json() == {"plan": {"name": "Essential"}}
-    assert len(respx_mock.calls) == 3
+    assert len(mocked_sub_request.calls) == 3
 
     await web_client.logout()
     resp = await web_client.get(url, headers={"dnt": "1"})
@@ -171,6 +211,15 @@ async def test_saas_subscription_with_saas_mode_false(
     )
     db.add(user)
     await db.commit()
+
+    respx_mock.get("/user/42/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": user.as_github_dict(),
+            "suspended_at": None,
+        },
+    )
 
     respx_mock.get("http://localhost:5000/engine/subscription/42").respond(
         200,
@@ -279,8 +328,8 @@ async def test_saas_intercom_with_saas_mode_true(
             "https://portal.stripe.com/",
         ),
         (
-            "/front/proxy/saas/github-account/42/something-else",
-            f"{settings.SUBSCRIPTION_URL}/engine/saas/github-account/42/something-else",
+            "/front/proxy/saas/github-account/42/stripe-create",
+            f"{settings.SUBSCRIPTION_URL}/engine/saas/github-account/42/stripe-create",
             f"{settings.SUBSCRIPTION_URL}/engine/saas/foo/bar",
             f"{settings.DASHBOARD_UI_FRONT_URL}/front/proxy/saas/foo/bar",
         ),
@@ -305,6 +354,15 @@ async def test_saas_proxy_redirect(
     )
     db.add(user)
     await db.commit()
+
+    respx_mock.get("/user/42/installation").respond(
+        200,
+        json={
+            "id": 1234,
+            "account": user.as_github_dict(),
+            "suspended_at": None,
+        },
+    )
 
     respx_mock.get(
         proxied_url,
