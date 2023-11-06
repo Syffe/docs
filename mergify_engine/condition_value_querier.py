@@ -546,14 +546,16 @@ class BasePullRequest:
             "dependabot-update-type",
         ):
             dependabot_attributes = await ctxt.dependabot_attributes
-            if dependabot_attributes is None:
-                return None
             if name == "dependabot-dependency-name":
-                return dependabot_attributes["dependency-name"]
+                return [da["dependency-name"] for da in dependabot_attributes]
             if name == "dependabot-dependency-type":
-                return dependabot_attributes["dependency-type"]
+                return [da["dependency-type"] for da in dependabot_attributes]
             if name == "dependabot-update-type":
-                return dependabot_attributes.get("update-type")
+                return [
+                    da["update-type"]
+                    for da in dependabot_attributes
+                    if "update-type" in da
+                ]
             raise PullRequestAttributeError(name)
 
         if name == "branch-protection-review-decision":

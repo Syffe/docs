@@ -1585,12 +1585,12 @@ class Context:
     @property
     async def dependabot_attributes(
         self,
-    ) -> dependabot_types.DependabotAttributes | None:
+    ) -> list[dependabot_types.DependabotAttributes]:
         if (
             not self.pull["user"]["login"]
             == constants.DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN
         ):
-            return None
+            return []
         commits = await self.commits
         return dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
             self.log, commits[0].commit_message

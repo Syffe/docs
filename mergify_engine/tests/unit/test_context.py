@@ -1245,11 +1245,13 @@ async def test_reviews_filtering(
 
             Signed-off-by: dependabot[bot] <support@github.com>
             """,
-            {
-                "dependency-name": "bootstrap",
-                "dependency-type": "direct:development",
-                "update-type": "version-update:semver-minor",
-            },
+            [
+                {
+                    "dependency-name": "bootstrap",
+                    "dependency-type": "direct:development",
+                    "update-type": "version-update:semver-minor",
+                }
+            ],
         ),
         (
             """
@@ -1268,15 +1270,106 @@ async def test_reviews_filtering(
 
             Signed-off-by: dependabot[bot] <support@github.com>
             """,
-            {
-                "dependency-name": "terser",
-                "dependency-type": "indirect",
-            },
+            [
+                {
+                    "dependency-name": "terser",
+                    "dependency-type": "indirect",
+                }
+            ],
+        ),
+        (
+            """
+            Bump the npm_and_yarn at /frontend security update group
+
+            Bumps the npm_and_yarn at /frontend security update group in /frontend with 4 updates: [@aws-amplify/cli](https://github.com/aws-amplify/amplify-cli/tree/HEAD/packages/amplify-cli), [react-scripts](https://github.com/facebook/create-react-app/tree/HEAD/packages/react-scripts), [semver](https://github.com/npm/node-semver) and [core-js-compat](https://github.com/zloirock/core-js/tree/HEAD/packages/core-js-compat).
+
+
+            Updates `@aws-amplify/cli` from 6.3.1 to 12.7.1
+            - [Release notes](https://github.com/aws-amplify/amplify-cli/releases)
+            - [Changelog](https://github.com/aws-amplify/amplify-cli/blob/dev/packages/amplify-cli/CHANGELOG.md)
+            - [Commits](https://github.com/aws-amplify/amplify-cli/commits/@aws-amplify/cli@12.7.1/packages/amplify-cli)
+
+            Updates `react-scripts` from 4.0.1 to 5.0.1
+            - [Release notes](https://github.com/facebook/create-react-app/releases)
+            - [Changelog](https://github.com/facebook/create-react-app/blob/main/CHANGELOG-4.x.md)
+            - [Commits](https://github.com/facebook/create-react-app/commits/react-scripts@5.0.1/packages/react-scripts)
+
+            Updates `semver` from 5.7.1 to 5.7.2
+            - [Release notes](https://github.com/npm/node-semver/releases)
+            - [Changelog](https://github.com/npm/node-semver/blob/v5.7.2/CHANGELOG.md)
+            - [Commits](https://github.com/npm/node-semver/compare/v5.7.1...v5.7.2)
+
+            Updates `core-js-compat` from 3.8.1 to 3.33.2
+            - [Release notes](https://github.com/zloirock/core-js/releases)
+            - [Changelog](https://github.com/zloirock/core-js/blob/master/CHANGELOG.md)
+            - [Commits](https://github.com/zloirock/core-js/commits/v3.33.2/packages/core-js-compat)
+
+            ---
+            updated-dependencies:
+            - dependency-name: "@aws-amplify/cli"
+              dependency-type: direct:production
+            - dependency-name: react-scripts
+              dependency-type: direct:production
+            - dependency-name: semver
+              dependency-type: indirect
+            - dependency-name: core-js-compat
+              dependency-type: indirect
+            ...
+
+            Signed-off-by: dependabot[bot] <support@github.com>
+            """,
+            [
+                {
+                    "dependency-name": "@aws-amplify/cli",
+                    "dependency-type": "direct:production",
+                },
+                {
+                    "dependency-name": "react-scripts",
+                    "dependency-type": "direct:production",
+                },
+                {
+                    "dependency-name": "semver",
+                    "dependency-type": "indirect",
+                },
+                {
+                    "dependency-name": "core-js-compat",
+                    "dependency-type": "indirect",
+                },
+            ],
+        ),
+        (
+            """chore(deps): bump terser from 5.10.0 to 5.10.2 in /installer
+
+        Bumps [terser](https://github.com/terser/terser) from 5.10.0 to 5.14.2.
+        - [Release notes](https://github.com/terser/terser/releases)
+        - [Changelog](https://github.com/terser/terser/blob/master/CHANGELOG.md)
+        - [Commits](https://github.com/terser/terser/commits)
+
+        ---
+        updated-dependencies:
+        - dependency-name: terser
+          dependency-type: indirect
+        - dependency-name: terser2
+          dependency-type: indirect
+        ...
+
+        Signed-off-by: dependabot[bot] <support@github.com>
+        """,
+            [
+                {
+                    "dependency-name": "terser",
+                    "dependency-type": "indirect",
+                },
+                {
+                    "dependency-name": "terser2",
+                    "dependency-type": "indirect",
+                },
+            ],
         ),
     ],
 )
 async def test_dependabot_attributes_parsing(
-    commit_msg: str, dependabot_properties: dependabot_types.DependabotAttributes
+    commit_msg: str, dependabot_properties: list[dependabot_types.DependabotAttributes]
 ) -> None:
     res = dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
         mock.Mock(), commit_msg
@@ -1313,23 +1406,6 @@ async def test_dependabot_attributes_parsing(
 
         ---
         updated-dependencies:
-        - dependency-name: terser
-          dependency-type: indirect
-        - dependency-name: terser2
-          dependency-type: indirect
-        ...
-
-        Signed-off-by: dependabot[bot] <support@github.com>
-        """,
-        """chore(deps): bump terser from 5.10.0 to 5.10.2 in /installer
-
-        Bumps [terser](https://github.com/terser/terser) from 5.10.0 to 5.14.2.
-        - [Release notes](https://github.com/terser/terser/releases)
-        - [Changelog](https://github.com/terser/terser/blob/master/CHANGELOG.md)
-        - [Commits](https://github.com/terser/terser/commits)
-
-        ---
-        updated-dependencies:
         - invalid-key: terser
           dependency-type: indirect
         ...
@@ -1341,7 +1417,7 @@ async def test_dependabot_attributes_parsing_ko(commit_msg: str) -> None:
     res = dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
         mock.Mock(), commit_msg
     )
-    assert res is None
+    assert res == []
 
 
 async def test_template_with_mandatory_variables(

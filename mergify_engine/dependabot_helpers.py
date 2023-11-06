@@ -1,6 +1,5 @@
 import logging
 
-import first
 import pydantic
 
 from mergify_engine import dependabot_types
@@ -10,7 +9,7 @@ from mergify_engine import yaml
 def get_dependabot_consolidated_data_from_commit_msg(
     log: "logging.LoggerAdapter[logging.Logger]",
     commit_msg: str,
-) -> dependabot_types.DependabotAttributes | None:
+) -> list[dependabot_types.DependabotAttributes]:
     """
     Returned dict example:
     {
@@ -27,7 +26,7 @@ def get_dependabot_consolidated_data_from_commit_msg(
             commit_message=commit_msg,
             exc_info=True,
         )
-        return None
+        return []
 
     try:
         data_from_yaml = yaml.safe_load(yaml_str)
@@ -37,7 +36,7 @@ def get_dependabot_consolidated_data_from_commit_msg(
             commit_message=commit_msg,
             exc_info=True,
         )
-        return None
+        return []
 
     try:
         dependabot_data = dependabot_types.DependabotYamlMessageSchema.model_validate(
@@ -49,6 +48,6 @@ def get_dependabot_consolidated_data_from_commit_msg(
             commit_message=commit_msg,
             exc_info=True,
         )
-        return None
+        return []
 
-    return first.first(dependabot_data.updated_dependencies)
+    return dependabot_data.updated_dependencies
