@@ -2220,15 +2220,16 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         assert len(expected_waiting_pulls_ordered_by_priority) == len(
             expected_waiting_pulls
         )
-        assert (
-            pulls_in_queue
-            == list(
+
+        expected_pulls_in_queue = (
+            list(
                 itertools.chain.from_iterable(
                     [p.user_pull_request_numbers for p in expected_cars]
                 )
             )
             + expected_waiting_pulls_ordered_by_priority
         )
+        assert pulls_in_queue == expected_pulls_in_queue
 
         assert len(q._cars) == len(expected_cars)
         for i, expected_car in enumerate(expected_cars):
