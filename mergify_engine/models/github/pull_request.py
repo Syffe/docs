@@ -222,6 +222,11 @@ class PullRequest(models.Base):
 
         user = data_for_obj.pop("user")
         data_for_obj["user_id"] = user["id"]
+        # Postgres Text fields do not allow nul bytes and if the body contains some, then
+        # GitHub sends them raw in the body. So we need to remove them.
+        if data_for_obj["body"] is not None:
+            data_for_obj["body"] = data_for_obj["body"].replace("\x00", "")
+
         await gh_account_model.GitHubAccount.create_or_update(session, user)
 
         assignees = data_for_obj.pop("assignees")
