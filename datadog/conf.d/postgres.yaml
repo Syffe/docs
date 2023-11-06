@@ -8,11 +8,6 @@ instances:
     dbname: <YOUR DBNAME>
     dbm: true
     ssl: allow
-    query_samples:
-      # FIXME(sileht): This is broken and spam logs:
-      # https://github.com/DataDog/integrations-core/issues/15833
-      # https://github.com/DataDog/integrations-core/issues/13840
-      explain_parameterized_queries: false
     custom_queries:
       - metric_prefix: engine.db
         query: "SELECT count(*) FROM \"github_user\""
