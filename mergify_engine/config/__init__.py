@@ -355,6 +355,12 @@ class HTTPSettings(pydantic_settings.BaseSettings):
         ["*"]
     )
     HTTP_TO_HTTPS_REDIRECT: bool = True
+    HTTP_CF_TO_MERGIFY_SECRET: pydantic.SecretStr | None = pydantic.Field(default=None)
+    HTTP_CF_TO_MERGIFY_HOSTS: types.StrListFromStrWithComma = (
+        types.StrListFromStrWithComma([])
+    )
+    HTTP_GITHUB_TO_MERGIFY_HOST: str = "github-webhook.mergify.com"
+    HTTP_SAAS_SECURITY_ENFORCE: bool = False
 
 
 class SubscriptionSetting(pydantic_settings.BaseSettings):

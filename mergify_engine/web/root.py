@@ -10,6 +10,7 @@ from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine.clients import github
 from mergify_engine.middlewares import content_length
+from mergify_engine.middlewares import saas_addons
 from mergify_engine.middlewares import security
 from mergify_engine.web import github_webhook
 from mergify_engine.web import healthcheck
@@ -49,10 +50,24 @@ def create_app(debug: bool = False) -> fastapi.FastAPI:
         lifespan=lifespan,
     )
 
+    # NOTE(sileht): Order matter a lot, requests goes through the middlewares in reverse order
+    # We:
+    # * Injects security headers in all future responses
+    # * Validate the Forwarded-For header
+    # * Validate the Host header
+    # * Validate downsteam servers origin
+    # * Redirect http to https
+    # * Read the body to check the content-length
+
     app.add_middleware(content_length.ContentLengthMiddleware)
 
     if settings.HTTP_TO_HTTPS_REDIRECT:
         app.add_middleware(httpsredirect.HTTPSRedirectMiddleware)
+
+    if settings.SAAS_MODE:
+        app.add_middleware(
+            saas_addons.SaasSecurityMiddleware,
+        )
 
     app.add_middleware(
         trustedhost.TrustedHostMiddleware,
