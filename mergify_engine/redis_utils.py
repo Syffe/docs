@@ -11,8 +11,8 @@ import uuid
 
 import daiquiri
 import ddtrace
-import redis.asyncio as redispy
 from redis.asyncio import retry
+import redis.asyncio as redispy
 
 from mergify_engine import service
 from mergify_engine import settings
