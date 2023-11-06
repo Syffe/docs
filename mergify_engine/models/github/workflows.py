@@ -192,6 +192,11 @@ class WorkflowJob(models.Base):
             "failed_step_number",
             postgresql_where="conclusion = 'FAILURE'::workflowjobconclusion AND failed_step_number IS NOT NULL AND log_status <> ALL (ARRAY['GONE'::workflowjoblogstatus, 'ERROR'::workflowjoblogstatus])",
         ),
+        sqlalchemy.schema.Index(
+            "idx_gha_workflow_job_same_job_name_in_repo",
+            "name_without_matrix",
+            "repository_id",
+        ),
         sqlalchemy.schema.CheckConstraint(
             """
             (
