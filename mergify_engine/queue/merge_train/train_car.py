@@ -1364,9 +1364,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def end_checking(
         self,
-        reason: queue_utils.BaseUnqueueReason | None,
+        reason: queue_utils.BaseQueueCancelReason | None,
         not_reembarked_pull_requests: dict[
-            github_types.GitHubPullRequestNumber, queue_utils.BaseUnqueueReason
+            github_types.GitHubPullRequestNumber, queue_utils.BaseQueueCancelReason
         ],
     ) -> None:
         if self.queue_pull_request_number is None:
@@ -1391,7 +1391,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def _set_final_draft_pr_summary(
         self,
-        reason: queue_utils.BaseUnqueueReason | None,
+        reason: queue_utils.BaseQueueCancelReason | None,
         reembarked_pulls: list[ep_import.EmbarkedPull],
     ) -> None:
         if (
@@ -1430,7 +1430,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
     async def send_checks_end_signal(
         self,
         user_pull_request_number: github_types.GitHubPullRequestNumber,
-        unqueue_reason: queue_utils.BaseUnqueueReason | None,
+        cancel_reason: queue_utils.BaseQueueCancelReason | None,
         abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"],
     ) -> None:
         if (
@@ -1446,16 +1446,14 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         ep = ep_with_car.embarked_pull
         abort_code: queue_utils.AbortCodeT | None
-        if unqueue_reason is None or isinstance(unqueue_reason, queue_utils.PrMerged):
+        if cancel_reason is None or isinstance(cancel_reason, queue_utils.PrMerged):
             aborted = False
             abort_reason_str = ""
             abort_code = None
         else:
             aborted = True
-            abort_reason_str = str(unqueue_reason)
-            abort_code = typing.cast(
-                queue_utils.AbortCodeT, unqueue_reason.unqueue_code
-            )
+            abort_reason_str = str(cancel_reason)
+            abort_code = typing.cast(queue_utils.AbortCodeT, cancel_reason.unqueue_code)
 
         raw_unsuccessful_checks = [
             check
@@ -2209,7 +2207,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 for ep in self.still_queued_embarked_pulls:
                     await self.send_checks_end_signal(
                         user_pull_request_number=ep.user_pull_request_number,
-                        unqueue_reason=None,
+                        cancel_reason=None,
                         abort_status="DEFINITIVE",
                     )
             return

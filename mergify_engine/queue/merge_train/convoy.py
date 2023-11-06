@@ -169,7 +169,7 @@ class Convoy:
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        unqueue_reason: queue_utils.BaseUnqueueReason,
+        queue_cancel_reason: queue_utils.BaseQueueCancelReason,
     ) -> None:
         await self.force_remove_pull(
             self.repository,
@@ -181,7 +181,7 @@ class Convoy:
             exclude_ref=self.ref,
         )
         for train in self._trains:
-            await train.remove_pull(pull_number, signal_trigger, unqueue_reason)
+            await train.remove_pull(pull_number, signal_trigger, queue_cancel_reason)
 
     @classmethod
     async def force_remove_pull(
@@ -191,7 +191,8 @@ class Convoy:
         partition_rules: partr_config.PartitionRules,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        unqueue_reason: queue_utils.BaseUnqueueReason,
+        # FIXME(jd): This should accept only BaseUnqueueReason
+        unqueue_reason: queue_utils.BaseQueueCancelReason,
         exclude_ref: github_types.GitHubRefType | None = None,
     ) -> None:
         async for convoy in cls.iter_convoys(repository, queue_rules, partition_rules):

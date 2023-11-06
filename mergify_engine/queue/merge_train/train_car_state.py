@@ -385,12 +385,6 @@ def unqueue_reason_from_train_car_state(
             change=train_car_state.outcome_message or "unexpected queue change"
         )
 
-    if (
-        train_car_state.outcome
-        == merge_train.TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE
-    ):
-        return queue_utils.ChecksStoppedBecauseMergeQueuePause()
-
     if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
         return queue_utils.ChecksFailed()
 

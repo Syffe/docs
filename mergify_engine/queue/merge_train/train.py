@@ -304,9 +304,9 @@ class Train:
     async def _slice_cars(
         self,
         new_queue_size: int,
-        reason: queue_utils.BaseUnqueueReason,
+        reason: queue_utils.BaseQueueCancelReason,
         drop_pull_requests: dict[
-            github_types.GitHubPullRequestNumber, queue_utils.BaseUnqueueReason
+            github_types.GitHubPullRequestNumber, queue_utils.BaseQueueCancelReason
         ]
         | None = None,
     ) -> None:
@@ -554,7 +554,8 @@ class Train:
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        unqueue_reason: queue_utils.BaseUnqueueReason,
+        # FIXME(jd): This should accept only BaseUnqueueReason
+        unqueue_reason: queue_utils.BaseQueueCancelReason,
     ) -> None:
         if not self.is_queued(pull_number):
             self.log.info(
@@ -643,13 +644,14 @@ class Train:
         self,
         pr_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        unqueue_reason: queue_utils.BaseUnqueueReason,
+        # FIXME(jd): This should accept only BaseUnqueueReason
+        unqueue_reason: queue_utils.BaseQueueCancelReason,
     ) -> None:
         position, embarked_pull_with_car = self.find_embarked_pull(pr_number)
         if position is None or embarked_pull_with_car is None:
             return
 
-        other_prs_reason: queue_utils.BaseUnqueueReason
+        other_prs_reason: queue_utils.BaseQueueCancelReason
         if isinstance(unqueue_reason, queue_utils.UnexpectedQueueChange):
             other_prs_reason = unqueue_reason
         else:
@@ -706,7 +708,8 @@ class Train:
         embarked_pull: ep_import.EmbarkedPull,
         car: train_car.TrainCar | None,
         signal_trigger: str,
-        unqueue_reason: queue_utils.BaseUnqueueReason,
+        # FIXME(jd): This should accept only BaseUnqueueReason
+        unqueue_reason: queue_utils.BaseQueueCancelReason,
     ) -> None:
         event_metadata = signals.EventQueueLeaveMetadata(
             {

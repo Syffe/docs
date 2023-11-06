@@ -35,7 +35,9 @@ UnqueueCodeT = typing.Literal["PR_MERGED"] | AbortCodeT
 
 
 @dataclasses.dataclass
-class BaseUnqueueReason:
+class BaseQueueCancelReason:
+    """Base class for a check cancel happening in the queue."""
+
     message: typing.ClassVar[str]
     unqueue_code: typing.ClassVar[UnqueueCodeT]
 
@@ -48,6 +50,10 @@ class BaseUnqueueReason:
         }
         values = {k: getattr(self, k) for k in fields}
         return self.message.format(**values)
+
+
+class BaseUnqueueReason(BaseQueueCancelReason):
+    """Base class for a check cancel followed by a PR removed from the queue."""
 
 
 @dataclasses.dataclass
@@ -67,7 +73,7 @@ class PrMerged(BaseUnqueueReason):
 
 
 @dataclasses.dataclass
-class PrAheadDequeued(BaseUnqueueReason):
+class PrAheadDequeued(BaseQueueCancelReason):
     message = "Pull request #{pr_number} which was ahead in the queue has been dequeued"
     unqueue_code: typing.ClassVar[
         typing.Literal["PR_AHEAD_DEQUEUED"]
@@ -76,7 +82,7 @@ class PrAheadDequeued(BaseUnqueueReason):
 
 
 @dataclasses.dataclass
-class PrAheadFailedToMerge(BaseUnqueueReason):
+class PrAheadFailedToMerge(BaseQueueCancelReason):
     message = "Pull requests combination ({_formated_pr_numbers}) which was ahead in the queue failed to get merged"
     unqueue_code: typing.ClassVar[
         typing.Literal["PR_AHEAD_FAILED_TO_MERGE"]
@@ -98,7 +104,7 @@ class PrUnexpectedlyFailedToMerge(BaseUnqueueReason):
 
 # FIXME(sileht): should be something like PRQueuePriorityChanged
 @dataclasses.dataclass
-class PrWithHigherPriorityQueued(BaseUnqueueReason):
+class PrWithHigherPriorityQueued(BaseQueueCancelReason):
     message = "Pull request #{pr_number} with higher priority has been queued"
     unqueue_code: typing.ClassVar[
         typing.Literal["PR_WITH_HIGHER_PRIORITY_QUEUED"]
@@ -107,7 +113,7 @@ class PrWithHigherPriorityQueued(BaseUnqueueReason):
 
 
 @dataclasses.dataclass
-class ChecksStoppedBecauseMergeQueuePause(BaseUnqueueReason):
+class ChecksStoppedBecauseMergeQueuePause(BaseQueueCancelReason):
     message = "The checks have been interrupted because the merge queue is paused on this repository"
     unqueue_code: typing.ClassVar[
         typing.Literal["PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE"]
@@ -115,7 +121,7 @@ class ChecksStoppedBecauseMergeQueuePause(BaseUnqueueReason):
 
 
 @dataclasses.dataclass
-class PrFrozenNoCascading(BaseUnqueueReason):
+class PrFrozenNoCascading(BaseQueueCancelReason):
     message = "The pull request was frozen by a freeze with cascading effect disabled"
     unqueue_code: typing.ClassVar[
         typing.Literal["PR_FROZEN_NO_CASCADING"]
@@ -123,13 +129,13 @@ class PrFrozenNoCascading(BaseUnqueueReason):
 
 
 @dataclasses.dataclass
-class PrQueuedTwice(BaseUnqueueReason):
+class PrQueuedTwice(BaseQueueCancelReason):
     message = "The pull request has been queued twice"
     unqueue_code: typing.ClassVar[typing.Literal["PR_QUEUED_TWICE"]] = "PR_QUEUED_TWICE"
 
 
 @dataclasses.dataclass
-class SpeculativeCheckNumberReduced(BaseUnqueueReason):
+class SpeculativeCheckNumberReduced(BaseQueueCancelReason):
     message = "The number of speculative checks has been reduced"
     unqueue_code: typing.ClassVar[
         typing.Literal["SPECULATIVE_CHECK_NUMBER_REDUCED"]
@@ -166,7 +172,7 @@ class TargetBranchMissing(BaseUnqueueReason):
 
 
 @dataclasses.dataclass
-class TargetBranchChanged(BaseUnqueueReason):
+class TargetBranchChanged(BaseQueueCancelReason):
     message = "The pull request target branch has changed"
     unqueue_code: typing.ClassVar[
         typing.Literal["TARGET_BRANCH_CHANGED"]
