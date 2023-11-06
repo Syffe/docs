@@ -1458,7 +1458,7 @@ queue_rules:
         )["queue_rules"]
     )
 
-    match = await qr_config.QueuesRulesEvaluator.create(
+    match = await qr_config.QueueRulesEvaluator.create(
         [queuerules["default"]],
         ctxt.repository,
         [condition_value_querier.PullRequest(ctxt)],

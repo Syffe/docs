@@ -31,7 +31,7 @@ QueueName = typing.NewType("QueueName", str)
 
 EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
 
-QueuesRulesEvaluator = generic_evaluator.GenericRulesEvaluator[
+QueueRulesEvaluator = generic_evaluator.GenericRulesEvaluator[
     "QueueRule", EvaluatedQueueRule
 ]
 
@@ -197,7 +197,7 @@ class QueueRule:
         queue_rule_with_extra_conditions = await self.get_queue_rule_for_evaluator(
             repository, ref, evaluated_pull_request_rule
         )
-        queue_rules_evaluator = await QueuesRulesEvaluator.create(
+        queue_rules_evaluator = await QueueRulesEvaluator.create(
             [queue_rule_with_extra_conditions],
             repository,
             pulls,
@@ -306,13 +306,40 @@ class QueueRules:
             for rule in self.rules
         ]
 
-        routing_rules_evaluator = await QueuesRulesEvaluator.create(
+        routing_rules_evaluator = await QueueRulesEvaluator.create(
             routing_rules,
             ctxt.repository,
             [condition_value_querier.PullRequest(ctxt)],
             True,
         )
         return routing_rules_evaluator.matching_rules
+
+    async def get_queue_rules_evaluator(
+        self, ctxt: context.Context
+    ) -> QueueRulesEvaluator:
+        runtime_rules = [
+            QueueRule(
+                name=rule.name,
+                merge_conditions=conditions_mod.QueueRuleMergeConditions(
+                    rule.merge_conditions.condition.copy().conditions
+                ),
+                queue_conditions=conditions_mod.QueueRuleMergeConditions(
+                    rule.queue_conditions.condition.copy().conditions
+                ),
+                config=rule.config,
+                priority_rules=rule.priority_rules,
+                require_branch_protection=rule.require_branch_protection,
+                branch_protection_injection_mode=rule.branch_protection_injection_mode,
+            )
+            for rule in self.rules
+        ]
+
+        return await QueueRulesEvaluator.create(
+            runtime_rules,
+            ctxt.repository,
+            [condition_value_querier.PullRequest(ctxt)],
+            True,
+        )
 
 
 def PositiveInterval(v: str) -> datetime.timedelta:
@@ -450,7 +477,8 @@ QueueRulesSchema = voluptuous.All(
                 voluptuous.Required(
                     "queue_branch_merge_method", default=None
                 ): voluptuous.Any(
-                    None, *QueueBranchMergeMethod.__args__[0].__args__  # type: ignore[attr-defined]
+                    None,
+                    *QueueBranchMergeMethod.__args__[0].__args__,  # type: ignore[attr-defined]
                 ),
                 voluptuous.Required(
                     "queue_branch_prefix",

@@ -80,6 +80,12 @@ pull_request_rules:
     actions:
       merge:
         method: squash
+queue_rules:
+  - name: hotfix
+    queue_conditions:
+      - base=main
+    merge_conditions:
+      - label=merge
 """
 
     respx_mock.get(
@@ -105,12 +111,21 @@ pull_request_rules:
                 "actions": {"merge": anys.ANY_DICT},
             }
         ],
+        "queue_rules": [
+            {
+                "name": "hotfix",
+                "queue_conditions": anys.ANY_DICT,
+                "merge_conditions": anys.ANY_DICT,
+            }
+        ],
     }
-    top_condition = response.json()["pull_request_rules"][0]["conditions"]
-    assert top_condition == anys.AnyWithEntries(
+
+    # Assertions on pull request rules
+    queue_conditions = response.json()["pull_request_rules"][0]["conditions"]
+    assert queue_conditions == anys.AnyWithEntries(
         {"label": "all of", "match": True, "subconditions": anys.ANY_LIST}
     )
-    conditions = top_condition["subconditions"]
+    conditions = queue_conditions["subconditions"]
     assert conditions == [
         anys.AnyWithEntries(
             {
@@ -148,6 +163,38 @@ pull_request_rules:
         "method": "squash",
     }
 
+    # Assertions on queue rules
+    queue_conditions = response.json()["queue_rules"][0]["queue_conditions"]
+    assert queue_conditions == anys.AnyWithEntries(
+        {
+            "label": "all of",
+            "match": True,
+            "subconditions": [
+                anys.AnyWithEntries(
+                    {
+                        "label": "base=main",
+                        "match": True,
+                    }
+                )
+            ],
+        }
+    )
+    merge_conditions = response.json()["queue_rules"][0]["merge_conditions"]
+    assert merge_conditions == anys.AnyWithEntries(
+        {
+            "label": "all of",
+            "match": False,
+            "subconditions": [
+                anys.AnyWithEntries(
+                    {
+                        "label": "label=merge",
+                        "match": False,
+                    }
+                )
+            ],
+        }
+    )
+
 
 async def test_pull_request_configuration_simulator_success_with_template(
     web_client: tests_conftest.CustomTestClient,
@@ -183,6 +230,7 @@ pull_request_rules:
                 "actions": {"comment": anys.ANY_DICT},
             }
         ],
+        "queue_rules": anys.ANY_LIST,
     }
     actions = response.json()["pull_request_rules"][0]["actions"]
     assert actions["comment"] == {
@@ -228,6 +276,7 @@ pull_request_rules:
                 "actions": {"post_check": anys.ANY_DICT},
             }
         ],
+        "queue_rules": anys.ANY_LIST,
     }
     actions = response.json()["pull_request_rules"][0]["actions"]
     assert actions["post_check"] == {

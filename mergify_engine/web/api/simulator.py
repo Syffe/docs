@@ -14,6 +14,7 @@ from mergify_engine.engine import actions_runner
 from mergify_engine.rules import conditions as rule_conditions
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import pull_request_rules as prr_mod
+from mergify_engine.rules.config import queue_rules as qr_mod
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
@@ -187,6 +188,17 @@ class PullRequestRule:
 
 
 @pydantic.dataclasses.dataclass
+class QueueRule:
+    name: str = dataclasses.field(metadata={"description": "The queue rule name"})
+    queue_conditions: (
+        rule_conditions.QueueConditionEvaluationJsonSerialized
+    ) = dataclasses.field(metadata={"description": "The queue conditions"})
+    merge_conditions: (
+        rule_conditions.QueueConditionEvaluationJsonSerialized
+    ) = dataclasses.field(metadata={"description": "The merge conditions"})
+
+
+@pydantic.dataclasses.dataclass
 class PullRequestConfigurationSimulatorResponse:
     message: str = dataclasses.field(
         metadata={"description": "The message of the Mergify check run simulation"},
@@ -194,19 +206,54 @@ class PullRequestConfigurationSimulatorResponse:
     pull_request_rules: list[PullRequestRule] = dataclasses.field(
         metadata={"description": "The evaluated pull request rules"}
     )
+    queue_rules: list[QueueRule] = dataclasses.field(
+        metadata={"description": "The evaluated queue rules"}
+    )
 
     @classmethod
-    def from_pull_request_rules_evaluator(
-        cls, message: str, evaluator: prr_mod.PullRequestRulesEvaluator
+    def from_configuration_evaluators(
+        cls,
+        message: str,
+        prr_evaluator: prr_mod.PullRequestRulesEvaluator,
+        qr_evaluator: qr_mod.QueueRulesEvaluator,
     ) -> "PullRequestConfigurationSimulatorResponse":
-        serialized_prr = []
+        serialized_prr = cls._serialize_pull_request_rules(prr_evaluator)
+        serialized_queue_rules = cls._serialize_queue_rules(qr_evaluator)
 
-        for rule in evaluator.evaluated_rules:
-            conditions = (
-                rule_conditions.ConditionEvaluationResult.from_rule_condition_node(
-                    rule.conditions.condition, filter_key=None
+        return cls(
+            message=message,
+            pull_request_rules=serialized_prr,
+            queue_rules=serialized_queue_rules,
+        )
+
+    @classmethod
+    def _serialize_queue_rules(
+        cls, qr_evaluator: qr_mod.QueueRulesEvaluator
+    ) -> list[QueueRule]:
+        serialized_qr = []
+
+        for rule in qr_evaluator.evaluated_rules:
+            queue_conditions = rule.queue_conditions.get_evaluation_result()
+            merge_conditions = rule.merge_conditions.get_evaluation_result()
+
+            serialized_qr.append(
+                QueueRule(
+                    name=rule.name,
+                    queue_conditions=queue_conditions.as_json_dict(),
+                    merge_conditions=merge_conditions.as_json_dict(),
                 )
             )
+
+        return serialized_qr
+
+    @classmethod
+    def _serialize_pull_request_rules(
+        cls, prr_evaluator: prr_mod.PullRequestRulesEvaluator
+    ) -> list[PullRequestRule]:
+        serialized_prr = []
+
+        for rule in prr_evaluator.evaluated_rules:
+            conditions = rule.conditions.get_evaluation_result()
 
             actions = {}
             for name, action in rule.actions.items():
@@ -225,7 +272,7 @@ class PullRequestConfigurationSimulatorResponse:
                 )
             )
 
-        return cls(message=message, pull_request_rules=serialized_prr)
+        return serialized_prr
 
     @staticmethod
     def _sanitize_action_config(
@@ -305,6 +352,10 @@ async def pull_request_configuration_simulator(
         ]
         raise fastapi.HTTPException(status_code=422, detail=detail)
 
-    return PullRequestConfigurationSimulatorResponse.from_pull_request_rules_evaluator(
-        message="The configuration is valid", evaluator=prr_evaluator
+    qr_evaluator = await config["queue_rules"].get_queue_rules_evaluator(ctxt)
+
+    return PullRequestConfigurationSimulatorResponse.from_configuration_evaluators(
+        message="The configuration is valid",
+        prr_evaluator=prr_evaluator,
+        qr_evaluator=qr_evaluator,
     )

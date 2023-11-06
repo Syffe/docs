@@ -262,6 +262,13 @@ pull_request_rules:
       assign:
         users:
           - mergify-test1
+queue_rules:
+  - name: hotfix
+    queue_conditions:
+      - base={self.main_branch_name}
+      - label=queue
+    merge_conditions:
+      - check-success=CI
 """
 
         r = await self.admin_app.post(
@@ -277,6 +284,7 @@ pull_request_rules:
         )
         assert r.status_code == 200, r.json()
         assert r.json()["message"] == "The configuration is valid"
+
         assert len(r.json()["pull_request_rules"]) == 1
         pull_request_rule = r.json()["pull_request_rules"][0]
         assert pull_request_rule["name"] == "a lot of stuff"
@@ -298,3 +306,9 @@ pull_request_rules:
             "users_to_add": ["mergify-test1"],
             "users_to_remove": [],
         }
+
+        assert len(r.json()["queue_rules"]) == 1
+        queue_rule = r.json()["queue_rules"][0]
+        assert queue_rule["name"] == "hotfix"
+        assert len(queue_rule["queue_conditions"]["subconditions"]) == 2
+        assert len(queue_rule["merge_conditions"]["subconditions"]) == 1
