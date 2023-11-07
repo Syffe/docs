@@ -132,9 +132,9 @@ def tenacity_retry_on_pk_integrity_error(
     )
 
 
-async def get_session() -> abc.AsyncGenerator[
-    sqlalchemy.ext.asyncio.AsyncSession, None
-]:
+async def get_session() -> (
+    abc.AsyncGenerator[sqlalchemy.ext.asyncio.AsyncSession, None]
+):
     async with create_session() as session:
         yield session
 

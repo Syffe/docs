@@ -147,7 +147,8 @@ async def test_api_repository_auth_cached(
     respx_mock.get(
         f"/repos/{recorder.config['organization_name']}/testbar/installation",
     ).respond(
-        200, json=installation_json  # type: ignore[arg-type]
+        200,
+        json=installation_json,  # type: ignore[arg-type]
     )
     respx_mock.get(
         f"/repos/{recorder.config['organization_name']}/testbar",

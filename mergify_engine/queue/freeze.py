@@ -102,7 +102,10 @@ class QueueFreeze:
     async def get_all(
         cls, repository: context.Repository, queue_rules: qr_config.QueueRules
     ) -> abc.AsyncGenerator[QueueFreeze, None]:
-        async for key, queue_freeze_raw in repository.installation.redis.queue.hscan_iter(
+        async for (
+            key,
+            queue_freeze_raw,
+        ) in repository.installation.redis.queue.hscan_iter(
             name=cls._get_redis_hash(repository),
             match=cls._get_redis_key_match(repository),
         ):

@@ -296,9 +296,7 @@ async def test_queue_condition_summary_display_override() -> None:
 - [X] `label=test`
 - [X] any of:
   - [X] `label=test`
-  - [ ] `label=test2`""" in c.get_summary(
-        display_evaluations=False
-    )
+  - [ ] `label=test2`""" in c.get_summary(display_evaluations=False)
 
 
 async def test_condition_summary_simple() -> None:
@@ -332,9 +330,7 @@ async def test_condition_summary_complex() -> None:
     )
     pr_conditions.condition.conditions[0].match = True
     pr_conditions.condition.conditions[1].description = "GitHub branch protection"
-    pr_conditions.condition.conditions[2].conditions[  # type:ignore [union-attr]
-        1
-    ].match = True
+    pr_conditions.condition.conditions[2].conditions[1].match = True  # type:ignore [union-attr]
 
     expected_summary = """\
 - [ ] all of:

@@ -346,12 +346,9 @@ did not find expected alphabetic or numeric character
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"]["title"] == "1 potential rule"
-        assert (
-            """### Rule: nothing (merge)
+        assert """### Rule: nothing (merge)
 - [ ] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]
-"""
-            in summary["output"]["summary"]
-        )
+""" in summary["output"]["summary"]
 
     async def test_allowed_change_mergify_yml(self) -> None:
         rules = {

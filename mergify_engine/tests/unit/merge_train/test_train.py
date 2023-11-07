@@ -300,8 +300,8 @@ async def test_train_multiple_queue(
         github_types.GitHubPullRequestNumber(2), "", UNQUEUE_REASON_DEQUEUED
     )
     await t.refresh()
-    assert [[1], [1, 5]] == mt_conftest.get_train_cars_content(
-        t
+    assert (
+        [[1], [1, 5]] == mt_conftest.get_train_cars_content(t)
     ), f"{mt_conftest.get_train_cars_content(t)} {mt_conftest.get_train_waiting_pulls_content(t)}"
     assert [3, 4, 6, 7, 8, 9] == mt_conftest.get_train_waiting_pulls_content(t)
 

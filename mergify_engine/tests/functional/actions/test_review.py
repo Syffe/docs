@@ -110,25 +110,19 @@ class TestReviewAction(base.FunctionalTestBase):
         check = await self._test_review_template_error(
             msg="Thank you {{",
         )
-        assert (
-            """Template syntax error @ pull_request_rules → item 0 → actions → review → message → line 1
+        assert """Template syntax error @ pull_request_rules → item 0 → actions → review → message → line 1
 ```
 unexpected 'end of template'
-```"""
-            == check["output"]["summary"]
-        )
+```""" == check["output"]["summary"]
 
     async def test_review_template_attribute_error(self) -> None:
         check = await self._test_review_template_error(
             msg="Thank you {{hello}}",
         )
-        assert (
-            """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → review → message
+        assert """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → review → message
 ```
 Unknown pull request attribute: hello
-```"""
-            == check["output"]["summary"]
-        )
+```""" == check["output"]["summary"]
 
     async def test_review_with_oauth_token(self) -> None:
         rules = {

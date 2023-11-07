@@ -520,9 +520,7 @@ async def test_length_optimisation(
 async def test_context_depends_on(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
-    a_pull_request[
-        "body"
-    ] = f"""header
+    a_pull_request["body"] = f"""header
 
 Depends-On: #123
 depends-on: {settings.GITHUB_URL}/foo/bar/pull/999
@@ -610,9 +608,7 @@ async def test_context_merge_after_valid(
     merge_after_str: str,
     expected_out: datetime.datetime,
 ) -> None:
-    a_pull_request[
-        "body"
-    ] = f"""header
+    a_pull_request["body"] = f"""header
 
 {merge_after_str}
 """
@@ -657,9 +653,7 @@ async def test_context_merge_after_invalid(
     a_pull_request: github_types.GitHubPullRequest,
     merge_after_str: str,
 ) -> None:
-    a_pull_request[
-        "body"
-    ] = f"""header
+    a_pull_request["body"] = f"""header
 
 {merge_after_str}
 """
@@ -685,9 +679,7 @@ async def test_context_body_html(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
     a_pull_request["title"] = "chore(deps-dev): update flake8 requirement from <4 to <5"
-    a_pull_request[
-        "body"
-    ] = """
+    a_pull_request["body"] = """
 Updates the requirements on [flake8](https://github.com/pycqa/flake8) to permit the latest version.
 <details>
 <summary>Commits</summary>
@@ -799,9 +791,7 @@ async def test_context_body_section(
     a_pull_request["head"]["ref"] = github_types.GitHubRefType(
         "daily_merge/beta/pv6.0.0"
     )
-    a_pull_request[
-        "body"
-    ] = """
+    a_pull_request["body"] = """
 ### Description
 
 My awesome section with a beautiful description
@@ -899,9 +889,7 @@ async def test_context_unexisting_section_with_templated_default(
 async def test_context_body_section_with_template(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
-    a_pull_request[
-        "body"
-    ] = """
+    a_pull_request["body"] = """
 
 Yo!
 
@@ -919,9 +907,7 @@ BODY OF #{{number}}
 async def test_context_body_section_with_bad_template(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
-    a_pull_request[
-        "body"
-    ] = """
+    a_pull_request["body"] = """
 Description
 ---
 
@@ -1436,9 +1422,7 @@ async def test_template_with_mandatory_variables(
 async def test_commit_details_from_attributes(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
-    a_pull_request[
-        "body"
-    ] = """
+    a_pull_request["body"] = """
 Yo!
 ### Commits:
 
@@ -1495,7 +1479,9 @@ Yo!
     ctxt = context.Context(mock.Mock(), a_pull_request)
     ctxt._caches.commits.set(commits)
 
-    template = await condition_value_querier.PullRequest(ctxt).render_template(a_pull_request["body"])  # type: ignore[arg-type]
+    template = await condition_value_querier.PullRequest(ctxt).render_template(
+        a_pull_request["body"]  # type: ignore[arg-type]
+    )
     assert (
         template
         == """
@@ -1530,9 +1516,7 @@ async def test_context_co_authors(
 ) -> None:
     a_pull_request["title"] = "feat(module): hello there"
     a_pull_request["number"] = github_types.GitHubPullRequestNumber(1234)
-    a_pull_request[
-        "body"
-    ] = """
+    a_pull_request["body"] = """
 ## Description
 
 - Hello there...
@@ -1635,9 +1619,8 @@ Pull request: #1234
 Co-Authored-By: General Grievous <general.grievous@confederacy.org>
 """
 
-    assert (
-        await condition_value_querier.PullRequest(ctxt).get_commit_message(
-            """{{ title }}
+    assert await condition_value_querier.PullRequest(ctxt).get_commit_message(
+        """{{ title }}
 
 {{ body | get_section("## Description", "") }}
 
@@ -1646,6 +1629,4 @@ Pull request: #{{ number }}
 Co-Authored-By: {{ co_author.name }} <{{ co_author.email }}>
 {% endfor %}
 """
-        )
-        == (expected_title, expected_body)
-    )
+    ) == (expected_title, expected_body)

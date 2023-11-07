@@ -281,8 +281,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
         comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "created")
 
-        assert (
-            """Waiting for conditions to match
+        assert """Waiting for conditions to match
 
 <details>
 
@@ -296,16 +295,13 @@ class TestQueueCommand(base.FunctionalTestBase):
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
 
 </details>
-"""
-            in comment_p1["comment"]["body"]
-        )
+""" in comment_p1["comment"]["body"]
 
         await self.create_comment_as_admin(p2["number"], "@mergifyio queue")
         await self.run_engine()
         comment_p2 = await self.wait_for_issue_comment(str(p2["number"]), "created")
 
-        assert (
-            """Waiting for conditions to match
+        assert """Waiting for conditions to match
 
 <details>
 
@@ -319,9 +315,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
 
 </details>
-"""
-            in comment_p2["comment"]["body"]
-        )
+""" in comment_p2["comment"]["body"]
 
         await self.create_status(p1)
         await self.run_engine()
@@ -453,8 +447,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         # Make sure the queue action is waiting for the branch protections
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
         assert "Waiting for conditions to match" in comment["comment"]["body"]
-        assert (
-            """<details>
+        assert """<details>
 
 - [ ] any of: [:twisted_rightwards_arrows: queue conditions]
   - [ ] all of: [:pushpin: queue conditions of queue `default`]
@@ -469,9 +462,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
 
 </details>
-"""
-            in comment["comment"]["body"]
-        )
+""" in comment["comment"]["body"]
 
     async def test_command_queue_non_matching_queue_conditions_and_specifying_queue_name(
         self,
@@ -502,8 +493,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
 
-        assert (
-            """#### 🟠 Waiting for conditions to match
+        assert """#### 🟠 Waiting for conditions to match
 
 <details>
 
@@ -513,9 +503,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
 
-</details>"""
-            in comment["comment"]["body"]
-        )
+</details>""" in comment["comment"]["body"]
         train = await self.get_train()
         assert len(train._cars) == 0
         assert len(train._waiting_pulls) == 0
@@ -681,8 +669,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
         comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "created")
 
-        assert (
-            """Waiting for conditions to match
+        assert """Waiting for conditions to match
 
 <details>
 
@@ -696,9 +683,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
 
 </details>
-"""
-            in comment_p1["comment"]["body"]
-        )
+""" in comment_p1["comment"]["body"]
 
         await self.create_status(p1, state="success")
         await self.run_engine()
@@ -777,8 +762,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         # Make sure the queue action is waiting for the branch protections
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
         assert "Waiting for conditions to match" in comment["comment"]["body"]
-        assert (
-            """<details>
+        assert """<details>
 
 - [ ] any of: [:twisted_rightwards_arrows: queue conditions]
   - [ ] all of: [:pushpin: queue conditions of queue `default`]
@@ -797,24 +781,19 @@ class TestQueueCommand(base.FunctionalTestBase):
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
 
 </details>
-"""
-            in comment["comment"]["body"]
-        )
+""" in comment["comment"]["body"]
 
         await self.create_status(pr)
         await self.run_engine()
 
         comment = await self.wait_for_issue_comment(str(pr["number"]), "edited")
-        assert (
-            """**Required conditions of queue** `specialq` **for merge:**
+        assert """**Required conditions of queue** `specialq` **for merge:**
 
 - [ ] any of: [🛡 GitHub branch protection]
   - [ ] `check-neutral=continuous-integration/fake-ci`
   - [ ] `check-skipped=continuous-integration/fake-ci`
   - [ ] `check-success=continuous-integration/fake-ci`
-"""
-            in comment["comment"]["body"]
-        )
+""" in comment["comment"]["body"]
 
     # NOTE(charly): we don't check log errors for missing TrainCarState. The
     # test volontarily mock GitHub to return an error, so the engine retries the

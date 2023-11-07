@@ -38,9 +38,7 @@ class TestDebugger(base.FunctionalTestBase):
         self.register_mock(m)
 
     async def create_main_branch_protection(self) -> None:
-        graphql_allowed_fields = (
-            await self.repository_ctxt.get_graphql_allowed_branch_protection_rules_fields()
-        )
+        graphql_allowed_fields = await self.repository_ctxt.get_graphql_allowed_branch_protection_rules_fields()
 
         base_protection = {
             "allowsDeletions": False,

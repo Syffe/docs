@@ -571,7 +571,8 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
 
         assert all(wf is not None for wf in workflow_job_events)
         dispatched_event = sorted(
-            workflow_job_events, key=lambda wf: wf["workflow_job"]["started_at"]  # type: ignore[index]
+            workflow_job_events,
+            key=lambda wf: wf["workflow_job"]["started_at"],  # type: ignore[index]
         )[-1]
 
         log = await self.client_integration.get(

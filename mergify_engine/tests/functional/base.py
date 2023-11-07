@@ -501,8 +501,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self.pr_counter: int = 0
         self.git_counter: int = 0
 
-        self.register_mock(mock.patch.object(branch_updater.gitter, "Gitter", self.get_gitter))  # type: ignore[attr-defined]
-        self.register_mock(mock.patch.object(duplicate_pull.gitter, "Gitter", self.get_gitter))  # type: ignore[attr-defined]
+        self.register_mock(
+            mock.patch.object(branch_updater.gitter, "Gitter", self.get_gitter)  # type: ignore[attr-defined]
+        )
+        self.register_mock(
+            mock.patch.object(duplicate_pull.gitter, "Gitter", self.get_gitter)  # type: ignore[attr-defined]
+        )
 
         self.main_branch_name = github_types.GitHubRefType(
             self.get_full_branch_name("main")
@@ -1170,12 +1174,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         ), "The list of `files` must be the same length as `commits_headline`"
 
         if commits_body is not None:
-            assert len(commits_body) == len(
-                commits_headline
+            assert (
+                len(commits_body) == len(commits_headline)
             ), "If `commits_body` is specified, it must have the same length as `commits_headline`"
         if commits_author is not None:
-            assert len(commits_author) == len(
-                commits_headline
+            assert (
+                len(commits_author) == len(commits_headline)
             ), "If `commits_author` is specified, it must have the same length as `commits_headline`"
 
         if self.git.repository is None:

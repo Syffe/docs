@@ -137,7 +137,8 @@ async def test_embed_logs_on_controlled_data(
         respx_mock.get(
             f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
         ).respond(
-            200, stream=GHA_CI_LOGS_ZIP  # type: ignore[arg-type]
+            200,
+            stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
         )
 
     await db.commit()
@@ -278,7 +279,8 @@ async def test_embed_logs_on_various_data(
             f"{settings.GITHUB_REST_API_URL}/repos/.+/.+/actions/runs/.+/attempts/.+/logs"
         )
     ).respond(
-        200, stream=GHA_CI_LOGS_ZIP  # type: ignore[arg-type]
+        200,
+        stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
     )
 
     # Update jobs name and failed step to match the zip archive mock

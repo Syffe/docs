@@ -636,9 +636,9 @@ class GitHubAppInfo:
     )
 
     @staticmethod
-    async def _get_random_installation_auths() -> abc.AsyncGenerator[
-        GitHubAppInstallationAuth, None
-    ]:
+    async def _get_random_installation_auths() -> (
+        abc.AsyncGenerator[GitHubAppInstallationAuth, None]
+    ):
         # NOTE(sileht): we can't query the /users endpoint with the
         # JWT, so just pick a random installation.
         async with AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:

@@ -552,6 +552,4 @@ class TestPartitionsApi(base.FunctionalTestBase):
                 rprojectB.json()["pull_requests"][0]["estimated_time_of_merge"]
             ) > datetime.datetime.fromisoformat(
                 rprojectA.json()["pull_requests"][0]["estimated_time_of_merge"]
-            ) + datetime.timedelta(
-                hours=1
-            )
+            ) + datetime.timedelta(hours=1)

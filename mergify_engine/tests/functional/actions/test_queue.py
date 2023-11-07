@@ -590,8 +590,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = await self.wait_for_check_run(name="Summary", conclusion="success")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
-        assert (
-            """- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+        assert """- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
   - [ ] all of: [:pushpin: queue conditions of queue `default`]
     - [ ] `label=tata`
     - [ ] `label=toto`
@@ -599,9 +598,7 @@ class TestQueueAction(base.FunctionalTestBase):
     - [ ] `label=hotfix`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] `label=queue`"""
-            in check["check_run"]["output"]["summary"]
-        )
+- [X] `label=queue`""" in check["check_run"]["output"]["summary"]
 
     async def test_queue_conditions_failure_with_pull_request_rules_and_fallback(
         self,
@@ -1010,17 +1007,14 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = await self.wait_for_check_run(name="Summary", conclusion="success")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
-        assert (
-            """- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+        assert """- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
   - [ ] all of: [:pushpin: queue conditions of queue `default`]
     - [ ] `label=will-not-be-set`
   - [ ] all of: [:pushpin: queue conditions of queue `pending-check-success`]
     - [ ] `check-success=some-pending-check-in-ci`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] `label=queue`"""
-            in check["check_run"]["output"]["summary"]
-        )
+- [X] `label=queue`""" in check["check_run"]["output"]["summary"]
 
         # run engine with check in success -> pull request is queued
         await self.update_check_run(
@@ -1385,17 +1379,16 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         summary = await self.wait_for_check_run(name="Summary")
-        assert (
-            """Rule: Merge default (queue)
+        assert """Rule: Merge default (queue)
 - [ ] any of: [:twisted_rightwards_arrows: queue conditions]
   - [ ] all of: [:pushpin: queue conditions of queue `default`]
     - [ ] any of: [🛡 GitHub branch protection]
       - [ ] `check-neutral=continuous-integration/fake-ci`
       - [ ] `check-skipped=continuous-integration/fake-ci`
       - [ ] `check-success=continuous-integration/fake-ci`
-    - [X] `#review-threads-unresolved=0` [🛡 GitHub branch protection]"""
-            in summary["check_run"]["output"]["summary"]
-        )
+    - [X] `#review-threads-unresolved=0` [🛡 GitHub branch protection]""" in summary[
+            "check_run"
+        ]["output"]["summary"]
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(
@@ -1408,16 +1401,15 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
-        assert (
-            """**Required conditions of queue** `default` **for merge:**
+        assert """**Required conditions of queue** `default` **for merge:**
 
 - [ ] `#review-threads-unresolved=0` [🛡 GitHub branch protection]
 - [ ] any of: [🛡 GitHub branch protection]
   - [ ] `check-neutral=continuous-integration/fake-ci`
   - [ ] `check-skipped=continuous-integration/fake-ci`
-  - [ ] `check-success=continuous-integration/fake-ci`"""
-            in check_run["check_run"]["output"]["summary"]
-        )
+  - [ ] `check-success=continuous-integration/fake-ci`""" in check_run["check_run"][
+            "output"
+        ]["summary"]
 
         p1_merged = await self.wait_for_pull_request("closed", p1["number"])
         check = first(
@@ -1471,16 +1463,15 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
-        assert (
-            """**Required conditions of queue** `default` **for merge:**
+        assert """**Required conditions of queue** `default` **for merge:**
 
 - [ ] `#review-threads-unresolved=0` [🛡 GitHub branch protection]
 - [ ] any of: [🛡 GitHub branch protection]
   - [ ] `check-neutral=continuous-integration/fake-ci`
   - [ ] `check-skipped=continuous-integration/fake-ci`
-  - [ ] `check-success=continuous-integration/fake-ci`"""
-            in check_run["check_run"]["output"]["summary"]
-        )
+  - [ ] `check-success=continuous-integration/fake-ci`""" in check_run["check_run"][
+            "output"
+        ]["summary"]
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(
@@ -1557,16 +1548,15 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
-        assert (
-            """**Required conditions of queue** `default` **for merge:**
+        assert """**Required conditions of queue** `default` **for merge:**
 
 - [ ] `#review-threads-unresolved=0` [🛡 GitHub branch protection]
 - [ ] any of: [🛡 GitHub branch protection]
   - [ ] `check-neutral=continuous-integration/fake-ci`
   - [ ] `check-skipped=continuous-integration/fake-ci`
-  - [ ] `check-success=continuous-integration/fake-ci`"""
-            not in check_run["check_run"]["output"]["summary"]
-        )
+  - [ ] `check-success=continuous-integration/fake-ci`""" not in check_run["check_run"][
+            "output"
+        ]["summary"]
 
         p1_merged = await self.wait_for_pull_request("closed", p1["number"])
         check = first(

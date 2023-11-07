@@ -614,9 +614,8 @@ async def event_classifier(
     if event_type == "workflow_job":
         event = typing.cast(github_types.GitHubEventWorkflowJob, event)
         event_data = event["workflow_job"]
-        if (
-            event_data is None
-            or job_registries.HTTPJobRegistry.is_workflow_job_ignored(event_data)
+        if event_data is None or job_registries.HTTPJobRegistry.is_workflow_job_ignored(
+            event_data
         ):
             return EventToIgnore(
                 event_type, event_id, event, reason="workflow_job ignored"

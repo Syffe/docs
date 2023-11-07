@@ -84,7 +84,6 @@ filelock = "^3.13.1"
 poethepoet = "^0.24.2"
 pytest-rerunfailures = "^12.0"
 ruff = "^0.1.4"
-black = "^23.10.1"
 click = "^8.1.7"
 pytest-flakefinder = "^1.1.0"
 
@@ -159,9 +158,6 @@ testpaths = ["mergify_engine/tests"]
 [tool.poe]
 include = ["poe.toml"]
 
-[tool.black]
-target-version = ['py311']
-
 [tool.mypy]
 strict = true
 warn_unreachable = true
@@ -192,6 +188,7 @@ ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 88
+indent-width = 4
 target-version = "py311"
 select = [
  "E", "W", "F", "I", "A", "B", "Q",
@@ -205,6 +202,8 @@ select = [
 ]
 
 ignore = [
+    # NOTE(sileht): not compatible with ruff-format
+    "ISC001",
     # NOTE(sileht): line-length is up to black
     "E501",
     # NOTE(sileht): we prefer using exc_info=True

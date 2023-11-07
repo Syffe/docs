@@ -180,7 +180,8 @@ async def mock_user_authorization_on_repo(
     respx_mock.get(
         f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}"
     ).respond(
-        200, json=repo  # type: ignore[arg-type]
+        200,
+        json=repo,  # type: ignore[arg-type]
     )
     respx_mock.get(
         f"http://localhost:5000/engine/subscription/{repo['owner']['id']}"

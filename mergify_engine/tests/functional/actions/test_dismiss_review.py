@@ -80,23 +80,17 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
 
     async def test_dismiss_reviews_custom_message_syntax_error(self) -> None:
         check = await self._test_dismiss_reviews_fail("{{Loser")
-        assert (
-            """Template syntax error @ pull_request_rules → item 0 → actions → dismiss_reviews → message → line 1
+        assert """Template syntax error @ pull_request_rules → item 0 → actions → dismiss_reviews → message → line 1
 ```
 unexpected end of template, expected 'end of print statement'.
-```"""
-            == check["output"]["summary"]
-        )
+```""" == check["output"]["summary"]
 
     async def test_dismiss_reviews_custom_message_attribute_error(self) -> None:
         check = await self._test_dismiss_reviews_fail("{{Loser}}")
-        assert (
-            """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → dismiss_reviews → message
+        assert """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → dismiss_reviews → message
 ```
 Unknown pull request attribute: Loser
-```"""
-            == check["output"]["summary"]
-        )
+```""" == check["output"]["summary"]
 
     async def _test_dismiss_reviews(
         self, message: None | str = None

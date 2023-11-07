@@ -83,22 +83,16 @@ class TestCloseAction(base.FunctionalTestBase):
         check = await self._test_close_template_error(
             msg="Thank you {{",
         )
-        assert (
-            """Template syntax error @ pull_request_rules → item 0 → actions → close → message → line 1
+        assert """Template syntax error @ pull_request_rules → item 0 → actions → close → message → line 1
 ```
 unexpected 'end of template'
-```"""
-            == check["output"]["summary"]
-        )
+```""" == check["output"]["summary"]
 
     async def test_close_template_attribute_error(self) -> None:
         check = await self._test_close_template_error(
             msg="Thank you {{hello}}",
         )
-        assert (
-            """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → close → message
+        assert """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → close → message
 ```
 Unknown pull request attribute: hello
-```"""
-            == check["output"]["summary"]
-        )
+```""" == check["output"]["summary"]

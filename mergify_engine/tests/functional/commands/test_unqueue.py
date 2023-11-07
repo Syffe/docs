@@ -397,8 +397,7 @@ class TestUnQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
 
         comment = await self.wait_for_issue_comment(str(p1["number"]), "created")
-        assert (
-            """#### 🟠 Waiting for conditions to match
+        assert """#### 🟠 Waiting for conditions to match
 
 <details>
 
@@ -410,9 +409,7 @@ class TestUnQueueCommand(base.FunctionalTestBase):
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
 
-</details>"""
-            in comment["comment"]["body"]
-        )
+</details>""" in comment["comment"]["body"]
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
         await self.run_engine()
@@ -438,8 +435,7 @@ class TestUnQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
 
         comment = await self.wait_for_issue_comment(str(p2["number"]), "created")
-        assert (
-            """#### 🟠 Waiting for conditions to match
+        assert """#### 🟠 Waiting for conditions to match
 
 <details>
 
@@ -449,9 +445,7 @@ class TestUnQueueCommand(base.FunctionalTestBase):
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
 
-</details>"""
-            in comment["comment"]["body"]
-        )
+</details>""" in comment["comment"]["body"]
 
         await self.create_comment_as_admin(p2["number"], "@mergifyio unqueue")
         await self.run_engine()

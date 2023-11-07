@@ -22,7 +22,9 @@ class DummyContext(context.Context):
 
 class DummyPullRequest(condition_value_querier.PullRequest):
     # This is only used to check Jinja2 syntax validity and must be sync
-    def __getattr__(self, name: str) -> condition_value_querier.PullRequestAttributeType:  # type: ignore[override]
+    def __getattr__(  # type: ignore[override]
+        self, name: str
+    ) -> condition_value_querier.PullRequestAttributeType:
         key = name.replace("_", "-")
         if key in condition_value_querier.PullRequest.STRING_ATTRIBUTES:
             return ""
@@ -40,7 +42,9 @@ class DummyPullRequest(condition_value_querier.PullRequest):
 
         raise condition_value_querier.PullRequestAttributeError(key)
 
-    def render_template(self, template: str, extra_variables: dict[str, str] | None = None) -> str:  # type: ignore[override]
+    def render_template(  # type: ignore[override]
+        self, template: str, extra_variables: dict[str, str] | None = None
+    ) -> str:
         """Render a template interpolating variables based on pull request attributes."""
         env = jinja2.sandbox.SandboxedEnvironment(
             undefined=jinja2.StrictUndefined,

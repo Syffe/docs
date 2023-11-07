@@ -257,12 +257,8 @@ class TrainCar:
     last_checks: list[merge_train_checks.QueueCheck] = dataclasses.field(
         default_factory=list
     )
-    last_merge_conditions_evaluation: conditions.QueueConditionEvaluationResult | None = (
-        None
-    )
-    last_queue_conditions_evaluation: conditions.QueueConditionEvaluationResult | None = (
-        None
-    )
+    last_merge_conditions_evaluation: conditions.QueueConditionEvaluationResult | None = None
+    last_queue_conditions_evaluation: conditions.QueueConditionEvaluationResult | None = None
     checks_ended_timestamp: datetime.datetime | None = None
     queue_branch_name: github_types.GitHubRefType | None = None
     delegating_train_cars_partition_names: list[

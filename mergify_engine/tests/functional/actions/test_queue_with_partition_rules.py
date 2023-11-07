@@ -432,9 +432,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         }
 
         await self.setup_repo(yaml.dump(rules))
-        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
-            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
-        )
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
         real_iter_trains_from_partition_names = (
             mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names
         )
@@ -709,9 +707,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         }
 
         await self.setup_repo(yaml.dump(rules))
-        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
-            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
-        )
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
         real_iter_trains_from_partition_names = (
             mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names
         )
@@ -788,9 +784,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         }
 
         await self.setup_repo(yaml.dump(rules))
-        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
-            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
-        )
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
         real_iter_trains_from_partition_names = (
             mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names
         )
@@ -865,9 +859,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         }
 
         await self.setup_repo(yaml.dump(rules))
-        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
-            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
-        )
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
         real_iter_trains_from_partition_names = (
             mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names
         )
@@ -948,9 +940,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         }
 
         await self.setup_repo(yaml.dump(rules))
-        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
-            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
-        )
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
         real_reset = mergify_engine.queue.merge_train.Train.reset
 
         with mock.patch(
@@ -1018,9 +1008,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         }
 
         await self.setup_repo(yaml.dump(rules))
-        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
-            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
-        )
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
         real_reset = mergify_engine.queue.merge_train.Train.reset
 
         with mock.patch(

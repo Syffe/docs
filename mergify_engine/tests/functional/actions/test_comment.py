@@ -108,25 +108,19 @@ class TestCommentAction(base.FunctionalTestBase):
         check = await self._test_comment_template_error(
             msg="Thank you {{",
         )
-        assert (
-            """Template syntax error @ pull_request_rules → item 0 → actions → comment → message → line 1
+        assert """Template syntax error @ pull_request_rules → item 0 → actions → comment → message → line 1
 ```
 unexpected 'end of template'
-```"""
-            == check["output"]["summary"]
-        )
+```""" == check["output"]["summary"]
 
     async def test_comment_template_attribute_error(self) -> None:
         check = await self._test_comment_template_error(
             msg="Thank you {{hello}}",
         )
-        assert (
-            """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → comment → message
+        assert """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → comment → message
 ```
 Unknown pull request attribute: hello
-```"""
-            == check["output"]["summary"]
-        )
+```""" == check["output"]["summary"]
 
     async def test_comment_with_bot_account(self) -> None:
         rules = {
