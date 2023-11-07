@@ -26,12 +26,15 @@ from mergify_engine import yaml
 from mergify_engine.actions import merge_base
 from mergify_engine.engine import actions_runner
 from mergify_engine.engine import commands_runner
+from mergify_engine.github_in_postgres import process_events as github_event_processing
 from mergify_engine.models import events as evt_models
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
+from mergify_engine.worker import manager
+from mergify_engine.worker import stream as stream_worker
 
 
 TEMPLATE_GITHUB_ACTION = """
@@ -2131,6 +2134,9 @@ class TestQueueAction(base.FunctionalTestBase):
                 f"/git/refs/heads/{self.main_branch_name}"
             ).respond(405, json={"message": "Base branch was modified"})
             respx_mock.route(host="api.github.com").pass_through()
+            respx_mock.route(
+                url__startswith=settings.TESTING_FORWARDER_ENDPOINT
+            ).pass_through()
 
             await self.run_engine()
 
@@ -3376,11 +3382,32 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p1["number"]
+
+        events = await self.wait_for_all(
+            [
+                {"event_type": "pull_request", "payload": {"action": "opened"}},
+                {
+                    "event_type": "issue_comment",
+                    "payload": {"action": "created"},
+                    "test_id": p1["number"],
+                },
+            ]
         )
-        await self.run_engine()
-        tmp_pull_2 = await self.wait_for_pull_request("opened")
+
+        for event in events:
+            if event.event_type == "pull_request":
+                tmp_pull_2 = typing.cast(
+                    github_types.GitHubPullRequest,
+                    typing.cast(github_types.GitHubEventPullRequest, event.event)[
+                        "pull_request"
+                    ],
+                )
+                break
+        else:
+            raise RuntimeError(
+                "Received events but did not find the correct event for tmp_pull_2"
+            )
+
         q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
@@ -3830,14 +3857,18 @@ previous_failed_batches:
         await self.create_status(tmp_pull_2["pull_request"], state="failure")
         await self.run_engine()
 
-        p_closed = [
-            await self.wait_for_pull_request("closed"),
-            await self.wait_for_pull_request("closed"),
-        ]
-        assert sorted([p["number"] for p in p_closed]) == [
-            tmp_pull["number"],
-            tmp_pull_2["number"],
-        ]
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": tmp_pull["number"]},
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": tmp_pull_2["number"]},
+                },
+            ]
+        )
 
         tmp_pull_3 = await self.wait_for_pull_request("opened")
 
@@ -3974,20 +4005,30 @@ previous_failed_batches:
         await self.create_status(tmp_pull_4["pull_request"])
         await self.run_engine()
 
-        p_closed = [
-            await self.wait_for_pull_request("closed"),
-            await self.wait_for_pull_request("closed"),
-            await self.wait_for_pull_request("closed"),
-            await self.wait_for_pull_request("closed"),
-            await self.wait_for_pull_request("closed"),
-        ]
-        assert sorted([p["number"] for p in p_closed]) == [
-            p1["number"],
-            p2["number"],
-            tmp_pull_1["number"],
-            tmp_pull_3["number"],
-            tmp_pull_4["number"],
-        ]
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": p1["number"]},
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": p2["number"]},
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": tmp_pull_1["number"]},
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": tmp_pull_3["number"]},
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": tmp_pull_4["number"]},
+                },
+            ]
+        )
 
         tmp_pull_6 = await self.wait_for_pull_request("opened")
 
@@ -4010,12 +4051,22 @@ previous_failed_batches:
         await self.create_status(tmp_pull_6["pull_request"])
         await self.run_engine()
 
-        await self.wait_for_pull_request("closed", tmp_pull_6["number"])
-        p_closed = [
-            await self.wait_for_pull_request("closed"),
-            await self.wait_for_pull_request("closed"),
-        ]
-        assert sorted([p["number"] for p in p_closed]) == [p4["number"], p5["number"]]
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": tmp_pull_6["number"]},
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": p4["number"]},
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": p5["number"]},
+                },
+            ]
+        )
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -5720,19 +5771,34 @@ previous_failed_batches:
         await self.create_status(tmp_mq_pr["pull_request"])
         await self.run_engine()
 
-        await self.wait_for_pull_request("closed", tmp_mq_pr["number"])
-        pulls = [
-            await self.wait_for_pull_request("closed"),
-            await self.wait_for_pull_request("closed"),
-        ]
-
-        assert sorted([p["number"] for p in pulls]) == [
-            p1["number"],
-            p3["number"],
-        ]
-        assert all(p["pull_request"]["merged"] for p in pulls)
-
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": {"action": "closed", "number": tmp_mq_pr["number"]},
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": {
+                        "action": "closed",
+                        "number": p1["number"],
+                        "pull_request": {"merged": True},
+                    },
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": {
+                        "action": "closed",
+                        "number": p3["number"],
+                        "pull_request": {"merged": True},
+                    },
+                },
+                {
+                    "event_type": "push",
+                    "payload": {"ref": f"refs/heads/{self.main_branch_name}"},
+                },
+            ]
+        )
 
         # Only p2 is remaining and not in train
         await self.assert_merge_queue_contents(q, None, [])
@@ -8351,9 +8417,23 @@ pull_request_rules:
         await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
         await self.run_engine()
 
-        await self.wait_for_issue_comment(str(p1["number"]), "created")
-        p1_closed = await self.wait_for_pull_request("closed", p1["number"])
-        assert p1_closed["pull_request"]["merged"]
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "issue_comment",
+                    "payload": {"action": "created"},
+                    "test_id": p1["number"],
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": {
+                        "action": "closed",
+                        "number": p1["number"],
+                        "pull_request": {"merged": True},
+                    },
+                },
+            ]
+        )
 
     async def test_unqueue_command_after_queue_action_and_command(self) -> None:
         rules = {
@@ -8387,22 +8467,53 @@ pull_request_rules:
         await self.run_engine()
 
         # queue command's comment
-        await self.wait_for_issue_comment(str(p1["number"]), "created")
-
-        comment_unqueue = await self.wait_for_issue_comment(
-            str(p1["number"]), "created"
+        events = await self.wait_for_all(
+            [
+                {
+                    "event_type": "issue_comment",
+                    "payload": {"action": "created"},
+                    "test_id": p1["number"],
+                },
+                {
+                    "event_type": "issue_comment",
+                    "payload": {"action": "created"},
+                    "test_id": p1["number"],
+                },
+                {
+                    "event_type": "check_run",
+                    "payload": {
+                        "check_run": {
+                            "name": "Queue: Embarked in merge queue",
+                            "status": "completed",
+                            "conclusion": "cancelled",
+                        }
+                    },
+                },
+            ]
         )
+
+        # The unqueue comment should always be the last of the two issue_comment events
+        if events[0].event_type == "check_run":
+            check_run = typing.cast(github_types.GitHubEventCheckRun, events[0].event)
+            comment_unqueue = typing.cast(
+                github_types.GitHubEventIssueComment, events[-1].event
+            )
+        elif events[1].event_type == "check_run":
+            check_run = typing.cast(github_types.GitHubEventCheckRun, events[1].event)
+            comment_unqueue = typing.cast(
+                github_types.GitHubEventIssueComment, events[-1].event
+            )
+        else:
+            check_run = typing.cast(github_types.GitHubEventCheckRun, events[2].event)
+            comment_unqueue = typing.cast(
+                github_types.GitHubEventIssueComment, events[1].event
+            )
 
         assert (
             "The pull request has been removed from the queue `default`"
             in comment_unqueue["comment"]["body"]
         )
 
-        check_run = await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue",
-            status="completed",
-            conclusion="cancelled",
-        )
         assert (
             check_run["check_run"]["output"]["title"]
             == "The pull request has been removed from the queue `default` by an `unqueue` command"
@@ -9112,3 +9223,28 @@ class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
             f"The [subscription]({settings.DASHBOARD_UI_FRONT_URL}/github/mergifyio-testing/subscription) needs to be updated to enable this feature"
             in comment_p1_rep["comment"]["body"]
         )
+
+
+class TestQueueActionWithPgEventsIngestion(TestQueueAction):
+    async def run_engine(
+        self, additional_services: manager.ServiceNamesT | None = None
+    ) -> None:
+        real_engine_run = stream_worker.run_engine
+
+        async def mocked_stream_run_engine(*args, **kwargs):  # type: ignore[no-untyped-def]
+            await self.receive_and_forward_all_events_to_engine()
+
+            # Also need to run github-in-postgres service after
+            # events were stored, otherwise we won't update anything in db
+            base.LOG.info("Running github-in-postgres")
+            while await self.redis_links.stream.xlen("github_in_postgres"):
+                await github_event_processing.store_redis_events_in_pg(self.redis_links)
+            base.LOG.info("github-in-postgres finished")
+            return await real_engine_run(*args, **kwargs)
+
+        with mock.patch.object(stream_worker, "run_engine", mocked_stream_run_engine):
+            if additional_services:
+                additional_services.add("github-in-postgres")
+            else:
+                additional_services = {"github-in-postgres"}
+            await super().run_engine(additional_services)

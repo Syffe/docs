@@ -10,6 +10,7 @@ from mergify_engine import constants
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import gitter
+from mergify_engine import pull_request_getter
 from mergify_engine import settings
 from mergify_engine.clients import http
 from mergify_engine.models.github import user as github_user
@@ -207,8 +208,14 @@ async def update_with_api(
         )
     except http.HTTPClientSideError as e:
         if e.status_code == 422:
-            refreshed_pull = await ctxt.client.item(
-                f"{ctxt.base_url}/pulls/{ctxt.pull['number']}"
+            # Do not use db here, because the pull request we have in db
+            # might not be updated yet.
+            refreshed_pull = await pull_request_getter.get_pull_request(
+                ctxt.client,
+                ctxt.pull["number"],
+                repo_owner=ctxt.repo_owner_login,
+                repo_name=ctxt.repo_name,
+                force_new=True,
             )
             if refreshed_pull["head"]["sha"] != ctxt.pull["head"]["sha"]:
                 ctxt.log.info(

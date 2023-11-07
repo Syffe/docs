@@ -336,6 +336,9 @@ class WorkerSettings(pydantic_settings.BaseSettings):
     CI_DOWNLOAD_BATCH_SIZE: int = 50
     GITHUB_IN_POSTGRES_EVENTS_INGESTION: bool = False
     GITHUB_IN_POSTGRES_PROCESSING_BATCH_SIZE: int = 1000
+    GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS: types.StrListFromStrWithComma = (
+        types.StrListFromStrWithComma([])
+    )
     EVENTLOG_EVENTS_REDIS_INGESTION: bool = True
 
 

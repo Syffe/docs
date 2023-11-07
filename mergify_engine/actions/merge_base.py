@@ -10,6 +10,7 @@ from mergify_engine import condition_value_querier
 from mergify_engine import constants
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import pull_request_getter
 from mergify_engine import queue
 from mergify_engine import redis_utils
 from mergify_engine import refresher
@@ -425,8 +426,14 @@ class MergeUtilsMixin:
                 # a 405 with branch protection issue, when the head branch was
                 # just updated. So we check if the head sha has changed in
                 # meantime to confirm
-                new_pull = await ctxt.client.item(
-                    f"{ctxt.base_url}/pulls/{ctxt.pull['number']}"
+                # Do not use db here, because the pull request we have in db
+                # might not be updated yet.
+                new_pull = await pull_request_getter.get_pull_request(
+                    ctxt.client,
+                    ctxt.pull["number"],
+                    repo_owner=ctxt.repo_owner_login,
+                    repo_name=ctxt.repo_name,
+                    force_new=True,
                 )
                 if new_pull["head"]["sha"] != ctxt.pull["head"]["sha"]:
                     return await self._refresh_for_retry(

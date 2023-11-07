@@ -14,6 +14,7 @@ from mergify_engine import condition_value_querier
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import pagination
+from mergify_engine import pull_request_getter
 from mergify_engine.clients import http
 from mergify_engine.rules import conditions as rule_conditions
 from mergify_engine.rules import conditions as rules_conditions
@@ -141,11 +142,11 @@ async def get_pull_requests(
             pull["merged_by"] = None
 
             if needs_full_data:
-                pull_with_all_data = typing.cast(
-                    github_types.GitHubPullRequest,
-                    await repository.installation.client.item(
-                        f"{repository.base_url}/pulls/{pull['number']}"
-                    ),
+                pull_with_all_data = await pull_request_getter.get_pull_request(
+                    repository.installation.client,
+                    pull["number"],
+                    repo_owner=repository.installation.owner_login,
+                    repo_name=repository.repo["name"],
                 )
                 pull_context = context.Context(repository, pull_with_all_data)
             else:

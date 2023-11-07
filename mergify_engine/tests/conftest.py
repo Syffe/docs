@@ -30,6 +30,7 @@ from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import google_cloud_storage
+from mergify_engine.config import types as config_types
 from mergify_engine.models import manage
 from mergify_engine.models.github import user as github_user
 from mergify_engine.tests import tardis
@@ -135,6 +136,9 @@ def enable_ci_dump_ingestion() -> None:
 
 @pytest.fixture(autouse=True, scope="session")
 def enable_github_in_postgres_event_ingestion() -> None:
+    settings.GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS = (
+        config_types.StrListFromStrWithComma([settings.TESTING_ORGANIZATION_NAME])
+    )
     settings.GITHUB_IN_POSTGRES_EVENTS_INGESTION = True
 
 

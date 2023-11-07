@@ -19,6 +19,7 @@ from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import github_types
 from mergify_engine import json
+from mergify_engine import pull_request_getter
 from mergify_engine import queue
 from mergify_engine import redis_utils
 from mergify_engine import refresher
@@ -1241,8 +1242,11 @@ class Train:
         # * We run it when a tmp PR is refreshed
         # * We run it on each push events
         # * We run it before merge
-        pull: github_types.GitHubPullRequest = await self.convoy.repository.installation.client.item(
-            f"{self.convoy.repository.base_url}/pulls/{self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number}"
+        pull = await pull_request_getter.get_pull_request(
+            self.convoy.repository.installation.client,
+            self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number,
+            repo_owner=self.convoy.repository.installation.owner_login,
+            repo_name=self.convoy.repository.repo["name"],
         )
         return pull["merged"] and base_sha == pull["merge_commit_sha"]
 

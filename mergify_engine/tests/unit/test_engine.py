@@ -273,7 +273,9 @@ BASE_URL = f"/repos/{GH_OWNER['login']}/{GH_REPO['name']}"
 
 
 async def test_configuration_changed(
-    github_server: respx.MockRouter, redis_links: redis_utils.RedisLinks
+    github_server: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+    setup_database: None,
 ) -> None:
     github_server.get("/user/12345/installation").respond(
         200,
@@ -399,7 +401,9 @@ async def test_configuration_changed(
 
 
 async def test_configuration_duplicated(
-    github_server: respx.MockRouter, redis_links: redis_utils.RedisLinks
+    github_server: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+    setup_database: None,
 ) -> None:
     github_server.get("/user/12345/installation").respond(
         200,
@@ -500,7 +504,9 @@ async def test_configuration_duplicated(
 
 
 async def test_configuration_not_changed(
-    github_server: respx.MockRouter, redis_links: redis_utils.RedisLinks
+    github_server: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+    setup_database: None,
 ) -> None:
     github_server.get("/user/12345/installation").respond(
         200,
@@ -582,7 +588,9 @@ async def test_configuration_not_changed(
 
 
 async def test_configuration_initial(
-    github_server: respx.MockRouter, redis_links: redis_utils.RedisLinks
+    github_server: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+    setup_database: None,
 ) -> None:
     github_server.get("/user/12345/installation").respond(
         200,
@@ -698,7 +706,9 @@ async def test_configuration_initial(
 
 
 async def test_configuration_check_not_needed_with_configuration_not_changed(
-    github_server: respx.MockRouter, redis_links: redis_utils.RedisLinks
+    github_server: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+    setup_database: None,
 ) -> None:
     github_server.get("/user/12345/installation").respond(
         200,
@@ -771,7 +781,9 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
 
 
 async def test_configuration_check_not_needed_with_configuration_changed(
-    github_server: respx.MockRouter, redis_links: redis_utils.RedisLinks
+    github_server: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+    setup_database: None,
 ) -> None:
     github_server.get("/user/12345/installation").respond(
         200,
@@ -843,7 +855,9 @@ async def test_configuration_check_not_needed_with_configuration_changed(
 
 
 async def test_configuration_check_not_needed_with_configuration_deleted(
-    github_server: respx.MockRouter, redis_links: redis_utils.RedisLinks
+    github_server: respx.MockRouter,
+    redis_links: redis_utils.RedisLinks,
+    setup_database: None,
 ) -> None:
     github_server.get("/user/12345/installation").respond(
         200,

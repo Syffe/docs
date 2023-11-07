@@ -10,6 +10,7 @@ from mergify_engine import check_api
 from mergify_engine import condition_value_querier
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import pull_request_getter
 from mergify_engine import signals
 from mergify_engine.clients import http
 from mergify_engine.rules import types
@@ -147,8 +148,11 @@ class DismissReviewsExecutor(
             self.config.get("approved") == FROM_REQUESTED_REVIEWERS
             and to_dismiss_user_from_requested_reviewers
         ):
-            updated_pull = await self.ctxt.client.item(
-                f"{self.ctxt.base_url}/pulls/{self.ctxt.pull['number']}"
+            updated_pull = await pull_request_getter.get_pull_request(
+                self.ctxt.client,
+                self.ctxt.pull["number"],
+                repo_owner=self.ctxt.repo_owner_login,
+                repo_name=self.ctxt.repo_name,
             )
             updated_requested_reviewers_login = {
                 rr["login"] for rr in updated_pull["requested_reviewers"]

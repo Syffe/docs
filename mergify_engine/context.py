@@ -30,6 +30,7 @@ from mergify_engine import exceptions
 from mergify_engine import flaky_check
 from mergify_engine import github_graphql_types
 from mergify_engine import github_types
+from mergify_engine import pull_request_getter
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import subscription as subscription_mod
@@ -142,7 +143,12 @@ class Installation:
                     force_new=force_new,
                 )
 
-        pull = await self.client.item(f"/repositories/{repo_id}/pulls/{pull_number}")
+        pull = await pull_request_getter.get_pull_request(
+            self.client,
+            pull_number,
+            repo_id=repo_id,
+            force_new=force_new,
+        )
         repository = self.get_repository_from_github_data(pull["base"]["repo"])
         return await repository.get_pull_request_context(
             pull_number,
@@ -577,8 +583,12 @@ class Repository:
     ) -> Context:
         if force_new or pull_number not in self.pull_contexts:
             if pull is None:
-                pull = await self.installation.client.item(
-                    f"{self.base_url}/pulls/{pull_number}"
+                pull = await pull_request_getter.get_pull_request(
+                    self.installation.client,
+                    pull_number,
+                    repo_owner=self.installation.owner_login,
+                    repo_name=self.repo["name"],
+                    force_new=force_new,
                 )
             elif pull["number"] != pull_number:
                 raise RuntimeError(
@@ -1243,6 +1253,14 @@ class Context:
         # TODO(sileht): remove me when context split if done
         return self.repository.base_url
 
+    @property
+    def repo_owner_login(self) -> github_types.GitHubLogin:
+        return self.repository.repo["owner"]["login"]
+
+    @property
+    def repo_name(self) -> github_types.GitHubRepositoryName:
+        return self.repository.repo["name"]
+
     async def retrieve_unverified_commits(self) -> list[str]:
         return [
             commit.commit_message
@@ -1825,8 +1843,11 @@ class Context:
     @tracer.wrap("ensure_complete")
     async def ensure_complete(self) -> None:
         if not self._is_data_complete():
-            self.pull = await self.client.item(
-                f"{self.base_url}/pulls/{self.pull['number']}"
+            self.pull = await pull_request_getter.get_pull_request(
+                self.client,
+                self.pull["number"],
+                repo_owner=self.repo_owner_login,
+                repo_name=self.repo_name,
             )
 
     def _is_data_complete(self) -> bool:
