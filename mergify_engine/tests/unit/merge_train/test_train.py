@@ -673,7 +673,7 @@ async def test_train_priority_change(
 def test_train_batch_split(
     convoy: merge_train.Convoy,
 ) -> None:
-    now = datetime.datetime.utcnow()
+    now = date.utcnow()
     t = merge_train.Train(convoy)
     p1_two = merge_train.EmbarkedPull(
         t,

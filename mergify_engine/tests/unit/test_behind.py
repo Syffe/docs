@@ -1,9 +1,9 @@
-from datetime import datetime
 import typing
 from unittest import mock
 
 import pytest
 
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.tests.unit import conftest
 
@@ -20,13 +20,13 @@ def create_commit(sha: github_types.SHAType) -> github_types.GitHubBranchCommit:
                     "email": "",
                     "name": "someone",
                     "username": "someone",
-                    "date": github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                    "date": github_types.ISODateTimeType(date.utcnow().isoformat()),
                 },
                 "committer": {
                     "email": "",
                     "name": "someone-else",
                     "username": "someone-else",
-                    "date": github_types.ISODateTimeType(datetime.utcnow().isoformat()),
+                    "date": github_types.ISODateTimeType(date.utcnow().isoformat()),
                 },
             },
             "committer": {

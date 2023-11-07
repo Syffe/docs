@@ -1,8 +1,8 @@
-from datetime import datetime
 import typing
 
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.models import github as gh_models
 from mergify_engine.tests.db_populator import DbPopulator
@@ -37,10 +37,8 @@ class WorkflowJob(DbPopulator):
                 run_id=1,
                 name="Flaky job",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
-                completed_at=github_types.ISODateTimeType(
-                    datetime.utcnow().isoformat()
-                ),
+                started_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
+                completed_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
@@ -51,10 +49,10 @@ class WorkflowJob(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            date.utcnow().isoformat()
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            date.utcnow().isoformat()
                         ),
                         status="completed",
                     )
@@ -72,10 +70,8 @@ class WorkflowJob(DbPopulator):
                 run_id=1,
                 name="Flaky job",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
-                completed_at=github_types.ISODateTimeType(
-                    datetime.utcnow().isoformat()
-                ),
+                started_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
+                completed_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
                 conclusion="success",
                 labels=[],
                 run_attempt=2,
@@ -86,10 +82,10 @@ class WorkflowJob(DbPopulator):
                         conclusion="success",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            date.utcnow().isoformat()
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            datetime.utcnow().isoformat()
+                            date.utcnow().isoformat()
                         ),
                         status="completed",
                     )
@@ -107,10 +103,8 @@ class WorkflowJob(DbPopulator):
                 run_id=2,
                 name="Failed job no step",
                 workflow_name="unit-test",
-                started_at=github_types.ISODateTimeType(datetime.utcnow().isoformat()),
-                completed_at=github_types.ISODateTimeType(
-                    datetime.utcnow().isoformat()
-                ),
+                started_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
+                completed_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,

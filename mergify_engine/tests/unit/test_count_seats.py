@@ -11,6 +11,7 @@ import pytest
 import respx
 
 from mergify_engine import count_seats
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
@@ -96,7 +97,7 @@ async def test_store_active_users(
     await count_seats.store_active_users(
         redis_links.active_users, event_type, "whatever", event
     )
-    one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=30)
+    one_month_ago = date.utcnow() - datetime.timedelta(days=30)
     if event_type == "push":
         assert await redis_links.active_users.zrangebyscore(
             "active-users~21031067~Codertocat~186853002~Hello-World",

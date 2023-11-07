@@ -14,6 +14,7 @@ import ddtrace
 from redis.asyncio import retry
 import redis.asyncio as redispy
 
+from mergify_engine import date
 from mergify_engine import service
 from mergify_engine import settings
 from mergify_engine.config import types as config_types
@@ -300,7 +301,7 @@ class RedisLinks:
 
 
 def get_expiration_minid(retention: datetime.timedelta) -> int:
-    return int((datetime.datetime.utcnow() - retention).timestamp() * 1000)
+    return int((date.utcnow() - retention).timestamp() * 1000)
 
 
 async def iter_stream(

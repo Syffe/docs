@@ -14,6 +14,7 @@ import sqlalchemy
 from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_events
 from mergify_engine import github_types
@@ -355,8 +356,8 @@ async def test_workflow_job_log_life_cycle(
         repository=repo,
         workflow_run_id=1,
         name_without_matrix="job_toto",
-        started_at=datetime.datetime.now(),
-        completed_at=datetime.datetime.now(),
+        started_at=date.utcnow(),
+        completed_at=date.utcnow(),
         conclusion=gh_models.WorkflowJobConclusion.FAILURE,
         labels=[],
         run_attempt=1,
@@ -369,8 +370,8 @@ async def test_workflow_job_log_life_cycle(
         repository=repo,
         workflow_run_id=2,
         name_without_matrix="job_toto",
-        started_at=datetime.datetime.now(),
-        completed_at=datetime.datetime.now(),
+        started_at=date.utcnow(),
+        completed_at=date.utcnow(),
         conclusion=gh_models.WorkflowJobConclusion.FAILURE,
         labels=[],
         run_attempt=1,
@@ -383,8 +384,8 @@ async def test_workflow_job_log_life_cycle(
         repository=repo,
         workflow_run_id=3,
         name_without_matrix="job_toto",
-        started_at=datetime.datetime.now(),
-        completed_at=datetime.datetime.now(),
+        started_at=date.utcnow(),
+        completed_at=date.utcnow(),
         conclusion=gh_models.WorkflowJobConclusion.FAILURE,
         labels=[],
         run_attempt=1,
@@ -558,8 +559,8 @@ async def test_workflow_job_from_real_life(
         repository=repo,
         workflow_run_id=1,
         name_without_matrix=job_name,
-        started_at=datetime.datetime.now(),
-        completed_at=datetime.datetime.now(),
+        started_at=date.utcnow(),
+        completed_at=date.utcnow(),
         conclusion=gh_models.WorkflowJobConclusion.FAILURE,
         labels=[],
         run_attempt=1,

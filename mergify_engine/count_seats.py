@@ -105,7 +105,7 @@ def _parse_user(user: str, seen_at: datetime.datetime) -> ActiveUser:
 async def get_active_users(
     redis: redis_utils.RedisActiveUsers, key: ActiveUserKeyT
 ) -> set[ActiveUser]:
-    one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=30)
+    one_month_ago = date.utcnow() - datetime.timedelta(days=30)
     # NOTE(sileht): if two users has the same id but different names (because to change his login)
     # we got two ActiveUser with the same id, so the set will only keep the first one
     # This is why we should add to the set the most recent first.

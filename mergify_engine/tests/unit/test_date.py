@@ -158,7 +158,7 @@ def test_relative_datetime_from_string(string: str, expected_value: str) -> None
 
 def test_relative_datetime_without_timezone() -> None:
     with pytest.raises(date.InvalidDate):
-        date.RelativeDatetime(datetime.datetime.utcnow())
+        date.RelativeDatetime(datetime.datetime.now())
 
 
 @pytest.mark.parametrize(

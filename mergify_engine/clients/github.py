@@ -190,7 +190,7 @@ class GitHubAppInstallationAuth(httpx.Auth):
         self._cached_token = CachedToken(
             self._installation["id"],
             data["token"],
-            datetime.datetime.fromisoformat(data["expires_at"][:-1]),  # Remove the Z
+            datetime.datetime.fromisoformat(data["expires_at"]),
         )
         LOG.debug(
             "New token acquired",
@@ -200,11 +200,10 @@ class GitHubAppInstallationAuth(httpx.Auth):
         return self._cached_token.token
 
     def get_access_token(self) -> str | None:
-        now = datetime.datetime.utcnow()
         if not self._cached_token:
             return None
 
-        if self._cached_token.expiration <= now:
+        if self._cached_token.expiration <= date.utcnow():
             LOG.debug(
                 "Token expired",
                 gh_owner=self._owner_login,

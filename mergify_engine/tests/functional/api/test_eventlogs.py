@@ -1,5 +1,4 @@
-from datetime import datetime
-from datetime import timedelta
+import datetime
 import typing
 from unittest import mock
 
@@ -9,6 +8,7 @@ import sqlalchemy
 from sqlalchemy import func
 
 from mergify_engine import database
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import signals
@@ -1188,7 +1188,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
 
-        with time_travel(datetime.now(), tick=True):
+        with time_travel(date.utcnow(), tick=True):
             pr = await self.create_pr()
 
             await self.add_label(pr["number"], "queue")
@@ -1205,7 +1205,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 pr, "continuous-integration/fake-ci_3", state="pending"
             )
 
-            with time_travel(datetime.now() + timedelta(minutes=15), tick=True):
+            with time_travel(date.utcnow() + datetime.timedelta(minutes=15), tick=True):
                 await self.run_full_engine()
 
                 r = await self.admin_app.get(

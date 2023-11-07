@@ -5,6 +5,7 @@ import pytest
 import respx
 import sqlalchemy
 
+from mergify_engine import date
 from mergify_engine.models import github as gh_models
 from mergify_engine.tests import conftest
 from mergify_engine.tests import utils as tests_utils
@@ -160,9 +161,7 @@ async def test_api_gha_failed_jobs_get_gha_failed_jobs(
     }
 
     # Change parameters
-    test_date = (datetime.datetime.utcnow() - datetime.timedelta(days=2)).strftime(
-        "%Y-%m-%d"
-    )
+    test_date = (date.utcnow() - datetime.timedelta(days=2)).strftime("%Y-%m-%d")
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/gha-failed-jobs?neighbour_cosine_similarity_threshold=1&start_at={test_date}",
         follow_redirects=False,
