@@ -118,6 +118,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
             await signals.send(
                 self.ctxt.repository,
                 self.ctxt.pull["number"],
+                self.ctxt.pull["base"]["ref"],
                 "action.squash",
                 signals.EventNoMetadata(),
                 self.rule.get_signal_trigger(),

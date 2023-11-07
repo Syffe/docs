@@ -1217,6 +1217,7 @@ class TrainCar:
             await signals.send(
                 self.repository,
                 ep.user_pull_request_number,
+                self.ref,
                 "action.queue.checks_start",
                 metadata=signals.EventQueueChecksStartMetadata(
                     {
@@ -1530,6 +1531,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             await signals.send(
                 self.repository,
                 ep.user_pull_request_number,
+                self.ref,
                 "action.queue.checks_end",
                 metadata,
                 "merge queue internal",

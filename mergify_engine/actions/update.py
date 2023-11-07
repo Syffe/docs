@@ -84,6 +84,7 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
             await signals.send(
                 self.ctxt.repository,
                 self.ctxt.pull["number"],
+                self.ctxt.pull["base"]["ref"],
                 "action.update",
                 signals.EventNoMetadata(),
                 self.rule.get_signal_trigger(),

@@ -26,6 +26,7 @@ class EventBase(typing_extensions.TypedDict):
     trigger: str
     repository: str
     pull_request: int | None
+    base_ref: github_types.GitHubRefType | None
 
 
 class EventMetadata(typing_extensions.TypedDict):
@@ -285,6 +286,7 @@ class EventLogsSignal(signals.SignalBase):
         self,
         repository: "context.Repository",
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         event: signals.EventName,
         metadata: signals.EventMetadata,
         trigger: str,
@@ -299,6 +301,7 @@ class EventLogsSignal(signals.SignalBase):
                 event=event,
                 repository=repository.repo,
                 pull_request=pull_request,
+                base_ref=base_ref,
                 metadata=metadata,
                 trigger=trigger,
             )

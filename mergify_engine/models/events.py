@@ -69,6 +69,11 @@ class Event(models.Base):
         lazy="joined"
     )
 
+    base_ref: orm.Mapped[str | None] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
+    )
+
     @classmethod
     async def create(
         cls,
@@ -76,6 +81,7 @@ class Event(models.Base):
         repository: github_types.GitHubRepository
         | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         trigger: str,
         metadata: signals.EventMetadata,
     ) -> Event:
@@ -86,6 +92,7 @@ class Event(models.Base):
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
+            base_ref=base_ref,
             trigger=trigger,
             **metadata,
         )
@@ -572,6 +579,7 @@ class EventActionQueueChecksStart(Event):
         repository: github_types.GitHubRepository
         | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         trigger: str,
         metadata: signals.EventMetadata,
     ) -> Event:
@@ -587,6 +595,7 @@ class EventActionQueueChecksStart(Event):
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
+            base_ref=base_ref,
             trigger=trigger,
             speculative_check_pull_request=speculative_check_pull_request,
             **metadata,
@@ -662,6 +671,7 @@ class EventActionQueueChecksEnd(Event):
         repository: github_types.GitHubRepository
         | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         trigger: str,
         metadata: signals.EventMetadata,
     ) -> Event:
@@ -677,6 +687,7 @@ class EventActionQueueChecksEnd(Event):
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
+            base_ref=base_ref,
             trigger=trigger,
             speculative_check_pull_request=speculative_check_pull_request,
             **metadata,
@@ -739,6 +750,7 @@ class EventActionReview(Event):
         repository: github_types.GitHubRepository
         | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         trigger: str,
         metadata: signals.EventMetadata,
     ) -> Event:
@@ -752,6 +764,7 @@ class EventActionReview(Event):
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
+            base_ref=base_ref,
             trigger=trigger,
             review_type=metadata["review_type"],
             reviewer=metadata["reviewer"],
@@ -794,6 +807,7 @@ class EventQueueFreezeCreate(Event):
         repository: github_types.GitHubRepository
         | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         trigger: str,
         metadata: signals.EventMetadata,
     ) -> Event:
@@ -810,6 +824,7 @@ class EventQueueFreezeCreate(Event):
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
+            base_ref=base_ref,
             trigger=trigger,
             created_by=actor,
             **metadata,
@@ -851,6 +866,7 @@ class EventQueueFreezeUpdate(Event):
         repository: github_types.GitHubRepository
         | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         trigger: str,
         metadata: signals.EventMetadata,
     ) -> Event:
@@ -867,6 +883,7 @@ class EventQueueFreezeUpdate(Event):
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
+            base_ref=base_ref,
             trigger=trigger,
             updated_by=actor,
             **metadata,
@@ -900,6 +917,7 @@ class EventQueueFreezeDelete(Event):
         repository: github_types.GitHubRepository
         | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         trigger: str,
         metadata: signals.EventMetadata,
     ) -> Event:
@@ -916,6 +934,7 @@ class EventQueueFreezeDelete(Event):
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
+            base_ref=base_ref,
             trigger=trigger,
             deleted_by=actor,
             **metadata,
@@ -950,6 +969,7 @@ class EventQueuePauseCreate(Event):
         repository: github_types.GitHubRepository
         | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         trigger: str,
         metadata: signals.EventMetadata,
     ) -> Event:
@@ -966,6 +986,7 @@ class EventQueuePauseCreate(Event):
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
+            base_ref=base_ref,
             trigger=trigger,
             created_by=actor,
             **metadata,
@@ -1000,6 +1021,7 @@ class EventQueuePauseUpdate(Event):
         repository: github_types.GitHubRepository
         | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         trigger: str,
         metadata: signals.EventMetadata,
     ) -> Event:
@@ -1016,6 +1038,7 @@ class EventQueuePauseUpdate(Event):
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
+            base_ref=base_ref,
             trigger=trigger,
             updated_by=actor,
             **metadata,
@@ -1046,6 +1069,7 @@ class EventQueuePauseDelete(Event):
         repository: github_types.GitHubRepository
         | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         trigger: str,
         metadata: signals.EventMetadata,
     ) -> Event:
@@ -1062,6 +1086,7 @@ class EventQueuePauseDelete(Event):
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
+            base_ref=base_ref,
             trigger=trigger,
             deleted_by=actor,
             **metadata,

@@ -129,6 +129,7 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
+            self.ctxt.pull["base"]["ref"],
             "action.edit",
             signals.EventEditMetadata({"draft": expected_state}),
             self.rule.get_signal_trigger(),

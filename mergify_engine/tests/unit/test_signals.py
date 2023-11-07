@@ -22,6 +22,7 @@ async def test_signals(
         await signals.send(
             ctxt.repository,
             ctxt.pull["number"],
+            ctxt.pull["base"]["ref"],
             "action.label",
             signals.EventLabelMetadata({"added": [], "removed": ["bar"]}),
             "Rule: awesome rule",
@@ -29,6 +30,7 @@ async def test_signals(
         signal_method.assert_called_once_with(
             ctxt.repository,
             ctxt.pull["number"],
+            ctxt.pull["base"]["ref"],
             "action.label",
             {"added": [], "removed": ["bar"]},
             "Rule: awesome rule",
@@ -49,6 +51,7 @@ async def test_copy_signal(
         await signals.send(
             ctxt.repository,
             ctxt.pull["number"],
+            ctxt.pull["base"]["ref"],
             "action.copy",
             signals.EventCopyMetadata(
                 {"to": "test_branch", "pull_request_number": 123, "conflicts": False}
@@ -58,6 +61,7 @@ async def test_copy_signal(
         signal_method.assert_called_once_with(
             ctxt.repository,
             ctxt.pull["number"],
+            ctxt.pull["base"]["ref"],
             "action.copy",
             {"to": "test_branch", "pull_request_number": 123, "conflicts": False},
             "Rule: awesome rule",
@@ -79,6 +83,7 @@ async def test_datadog(
         await signals.send(
             ctxt.repository,
             ctxt.pull["number"],
+            ctxt.pull["base"]["ref"],
             "action.label",
             {"added": [], "removed": ["bar"]},
             "Rule: awesome rule",
@@ -98,6 +103,7 @@ async def test_datadog(
         await signals.send(
             ctxt.repository,
             ctxt.pull["number"],
+            ctxt.pull["base"]["ref"],
             "action.label",
             {"added": [], "removed": ["bar"]},
             "Rule: awesome rule",

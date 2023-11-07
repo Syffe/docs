@@ -85,6 +85,7 @@ async def create_queue_pause(
         await signals.send(
             repository_ctxt,
             None,
+            None,
             "queue.pause.create",
             signals.EventQueuePauseCreateMetadata(
                 {
@@ -105,6 +106,7 @@ async def create_queue_pause(
     if has_been_updated:
         await signals.send(
             repository_ctxt,
+            None,
             None,
             "queue.pause.update",
             signals.EventQueuePauseUpdateMetadata(
@@ -162,6 +164,7 @@ async def delete_queue_pause(
 
     await signals.send(
         repository_ctxt,
+        None,
         None,
         "queue.pause.delete",
         signals.EventQueuePauseDeleteMetadata(

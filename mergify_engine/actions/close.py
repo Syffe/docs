@@ -71,6 +71,7 @@ class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
+            self.ctxt.pull["base"]["ref"],
             "action.close",
             signals.EventCloseMetadata(message=self.config["message"]),
             self.rule.get_signal_trigger(),

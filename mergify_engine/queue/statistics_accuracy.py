@@ -40,6 +40,7 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
         self,
         repository: "context.Repository",
         pull_request_number: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         event: signals.EventName,
         metadata: signals.EventMetadata,
         trigger: str,

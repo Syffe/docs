@@ -91,6 +91,7 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
             await signals.send(
                 self.ctxt.repository,
                 self.ctxt.pull["number"],
+                self.ctxt.pull["base"]["ref"],
                 "action.assign",
                 signals.EventAssignMetadata(
                     {"added": assignees_to_add, "removed": assignees_to_remove}

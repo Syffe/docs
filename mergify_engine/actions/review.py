@@ -178,6 +178,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
+            self.ctxt.pull["base"]["ref"],
             "action.review",
             signals.EventReviewMetadata(
                 {

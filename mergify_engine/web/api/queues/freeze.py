@@ -99,6 +99,7 @@ async def create_queue_freeze(
         await signals.send(
             repository_ctxt,
             None,
+            None,
             "queue.freeze.create",
             signals.EventQueueFreezeCreateMetadata(
                 {
@@ -125,6 +126,7 @@ async def create_queue_freeze(
     if has_been_updated:
         await signals.send(
             repository_ctxt,
+            None,
             None,
             "queue.freeze.update",
             signals.EventQueueFreezeUpdateMetadata(
@@ -187,6 +189,7 @@ async def delete_queue_freeze(
 
     await signals.send(
         repository_ctxt,
+        None,
         None,
         "queue.freeze.delete",
         signals.EventQueueFreezeDeleteMetadata(

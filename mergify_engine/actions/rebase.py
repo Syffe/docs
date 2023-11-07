@@ -101,6 +101,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
+            self.ctxt.pull["base"]["ref"],
             "action.rebase",
             signals.EventNoMetadata(),
             self.rule.get_signal_trigger(),

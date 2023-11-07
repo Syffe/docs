@@ -186,6 +186,7 @@ class DismissReviewsExecutor(
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
+            self.ctxt.pull["base"]["ref"],
             "action.dismiss_reviews",
             signals.EventDismissReviewsMetadata({"users": list(to_dismiss_users)}),
             self.rule.get_signal_trigger(),

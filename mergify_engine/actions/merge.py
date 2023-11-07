@@ -124,6 +124,7 @@ class MergeExecutor(
                 await signals.send(
                     self.ctxt.repository,
                     self.ctxt.pull["number"],
+                    self.ctxt.pull["base"]["ref"],
                     "action.merge",
                     signals.EventMergeMetadata(
                         {"branch": self.ctxt.pull["base"]["ref"]}

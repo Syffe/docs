@@ -35,6 +35,7 @@ async def insert_event(
         event=event,
         repository=fake_repository.repo,
         pull_request=pull_request,
+        base_ref=github_types.GitHubRefType("base_ref"),
         metadata=metadata,
         trigger="Rule: my rule",
     )
@@ -62,6 +63,7 @@ async def test_event_not_supported(fake_repository: context.Repository) -> None:
             event="event.not.supported",  # type: ignore [arg-type]
             repository=fake_repository.repo,
             pull_request=github_types.GitHubPullRequestNumber(random.randint(1, 100)),
+            base_ref=None,
             metadata={},
             trigger="Rule: my rule",
         )
@@ -765,6 +767,7 @@ async def test_event_as_dict(
             "type": enumerations.EventType.QueuePauseDelete,
             "received_at": mock.ANY,
             "pull_request": None,
+            "base_ref": "base_ref",
             "trigger": "Rule: my rule",
             "repository_id": 0,
             "deleted_by": {

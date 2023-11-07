@@ -276,6 +276,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
+            self.ctxt.pull["base"]["ref"],
             self.HOOK_EVENT_NAME,
             signals.EventCopyMetadata(
                 {

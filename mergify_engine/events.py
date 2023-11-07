@@ -39,6 +39,7 @@ async def insert(
     event: signals.EventName,
     repository: github_types.GitHubRepository | gh_models.GitHubRepositoryDict,
     pull_request: github_types.GitHubPullRequestNumber | None,
+    base_ref: github_types.GitHubRefType | None,
     trigger: str,
     metadata: signals.EventMetadata,
 ) -> None:
@@ -56,6 +57,7 @@ async def insert(
                     session,
                     repository=repository,
                     pull_request=pull_request,
+                    base_ref=base_ref,
                     trigger=trigger,
                     metadata=metadata,
                 )
@@ -74,6 +76,7 @@ def format_event_item_response(event: evt_models.Event) -> dict[str, typing.Any]
         "trigger": event.trigger,
         "pull_request": event.pull_request,
         "repository": event.repository.full_name,
+        "base_ref": event.base_ref,
     }
 
     inspector = sqlalchemy.inspect(event.__class__)

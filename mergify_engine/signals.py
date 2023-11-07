@@ -250,6 +250,7 @@ SignalT = collections.abc.Callable[
     [
         "context.Repository",
         github_types.GitHubPullRequestNumber | None,
+        github_types.GitHubRefType | None,
         EventName,
         EventMetadata | None,
         str,
@@ -264,6 +265,7 @@ class SignalBase(abc.ABC):
         self,
         repository: "context.Repository",
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         event: EventName,
         metadata: EventMetadata,
         trigger: str,
@@ -276,6 +278,7 @@ class NoopSignal(SignalBase):
         self,
         repository: "context.Repository",
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         event: EventName,
         metadata: EventMetadata,
         trigger: str,
@@ -307,6 +310,7 @@ def register() -> None:
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal[
         "action.squash",
         "action.rebase",
@@ -325,6 +329,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.merge"],
     metadata: EventMergeMetadata,
     trigger: str,
@@ -336,6 +341,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.delete_head_branch"],
     metadata: EventDeleteHeadBranchMetadata,
     trigger: str,
@@ -347,6 +353,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.close"],
     metadata: EventCloseMetadata,
     trigger: str,
@@ -358,6 +365,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.comment"],
     metadata: EventCommentMetadata,
     trigger: str,
@@ -369,6 +377,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.review"],
     metadata: EventReviewMetadata,
     trigger: str,
@@ -380,6 +389,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.assign"],
     metadata: EventAssignMetadata,
     trigger: str,
@@ -391,6 +401,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.edit"],
     metadata: EventEditMetadata,
     trigger: str,
@@ -402,6 +413,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.label"],
     metadata: EventLabelMetadata,
     trigger: str,
@@ -413,6 +425,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.post_check"],
     metadata: EventPostCheckMetadata,
     trigger: str,
@@ -424,6 +437,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.dismiss_reviews"],
     metadata: EventDismissReviewsMetadata,
     trigger: str,
@@ -435,6 +449,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.request_reviews"],
     metadata: EventRequestReviewsMetadata,
     trigger: str,
@@ -446,6 +461,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.backport", "action.copy"],
     metadata: EventCopyMetadata,
     trigger: str,
@@ -457,6 +473,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.github_actions"],
     metadata: EventGithubActionsMetadata,
     trigger: str,
@@ -468,6 +485,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.queue.enter"],
     metadata: EventQueueEnterMetadata,
     trigger: str,
@@ -479,6 +497,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.queue.leave"],
     metadata: EventQueueLeaveMetadata,
     trigger: str,
@@ -490,6 +509,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.queue.checks_end"],
     metadata: EventQueueChecksEndMetadata,
     trigger: str,
@@ -501,6 +521,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.queue.checks_start"],
     metadata: EventQueueChecksStartMetadata,
     trigger: str,
@@ -512,6 +533,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
+    base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.queue.merged"],
     metadata: EventQueueMergedMetadata,
     trigger: str,
@@ -523,6 +545,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: None,
+    base_ref: None,
     event: typing.Literal["queue.freeze.create"],
     metadata: EventQueueFreezeCreateMetadata,
     trigger: str,
@@ -534,6 +557,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: None,
+    base_ref: None,
     event: typing.Literal["queue.freeze.update"],
     metadata: EventQueueFreezeUpdateMetadata,
     trigger: str,
@@ -545,6 +569,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: None,
+    base_ref: None,
     event: typing.Literal["queue.freeze.delete"],
     metadata: EventQueueFreezeDeleteMetadata,
     trigger: str,
@@ -556,6 +581,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: None,
+    base_ref: None,
     event: typing.Literal["queue.pause.create"],
     metadata: EventQueuePauseCreateMetadata,
     trigger: str,
@@ -567,6 +593,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: None,
+    base_ref: None,
     event: typing.Literal["queue.pause.update"],
     metadata: EventQueuePauseUpdateMetadata,
     trigger: str,
@@ -578,6 +605,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: None,
+    base_ref: None,
     event: typing.Literal["queue.pause.delete"],
     metadata: EventQueuePauseDeleteMetadata,
     trigger: str,
@@ -588,6 +616,7 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber | None,
+    base_ref: github_types.GitHubRefType | None,
     event: EventName,
     metadata: EventMetadata,
     trigger: str,
@@ -597,7 +626,14 @@ async def send(
 
     for name, signal in SIGNALS.items():
         try:
-            await signal(repository, pull_request, event, metadata, trigger)
+            await signal(
+                repository,
+                pull_request,
+                base_ref,
+                event,
+                metadata,
+                trigger,
+            )
         except Exception as e:
             if exceptions.need_retry(e) is not None or exceptions.should_be_ignored(e):
                 level = logging.WARNING

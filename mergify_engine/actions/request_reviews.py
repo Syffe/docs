@@ -227,6 +227,7 @@ class RequestReviewsExecutor(
                 await signals.send(
                     self.ctxt.repository,
                     self.ctxt.pull["number"],
+                    self.ctxt.pull["base"]["ref"],
                     "action.request_reviews",
                     signals.EventRequestReviewsMetadata(
                         {

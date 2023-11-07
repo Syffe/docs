@@ -102,6 +102,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
+            self.ctxt.pull["base"]["ref"],
             "action.comment",
             signals.EventCommentMetadata(message=self.config["message"]),
             self.rule.get_signal_trigger(),

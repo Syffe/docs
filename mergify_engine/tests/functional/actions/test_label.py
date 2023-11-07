@@ -69,6 +69,7 @@ class TestLabelAction(base.FunctionalTestBase):
                         "full_name"
                     ],
                     "pull_request": p_updated["number"],
+                    "base_ref": self.main_branch_name,
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.label",
@@ -85,6 +86,7 @@ class TestLabelAction(base.FunctionalTestBase):
                         "full_name"
                     ],
                     "pull_request": p_updated["number"],
+                    "base_ref": self.main_branch_name,
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.label",
@@ -172,6 +174,7 @@ class TestLabelAction(base.FunctionalTestBase):
                         "full_name"
                     ],
                     "pull_request": p_updated["number"],
+                    "base_ref": self.main_branch_name,
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.label",
@@ -235,6 +238,7 @@ class TestLabelAction(base.FunctionalTestBase):
                         "full_name"
                     ],
                     "pull_request": p_updated["number"],
+                    "base_ref": self.main_branch_name,
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.label",
@@ -248,6 +252,7 @@ class TestLabelAction(base.FunctionalTestBase):
                         "full_name"
                     ],
                     "pull_request": p_updated["number"],
+                    "base_ref": self.main_branch_name,
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "event": "action.label",

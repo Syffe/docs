@@ -152,6 +152,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
             await signals.send(
                 self.ctxt.repository,
                 self.ctxt.pull["number"],
+                self.ctxt.pull["base"]["ref"],
                 "action.label",
                 signals.EventLabelMetadata(
                     {"added": sorted(labels_added), "removed": sorted(labels_removed)}
@@ -177,6 +178,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
             await signals.send(
                 self.ctxt.repository,
                 self.ctxt.pull["number"],
+                self.ctxt.pull["base"]["ref"],
                 "action.label",
                 signals.EventLabelMetadata(
                     {"added": [], "removed": sorted(labels_removed)}

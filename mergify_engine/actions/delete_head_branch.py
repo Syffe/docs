@@ -91,6 +91,7 @@ class DeleteHeadBranchExecutor(
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
+            self.ctxt.pull["base"]["ref"],
             "action.delete_head_branch",
             signals.EventDeleteHeadBranchMetadata(
                 {

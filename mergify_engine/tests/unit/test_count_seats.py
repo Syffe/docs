@@ -240,6 +240,7 @@ async def test_get_usage_last_seen(
     await signals.send(
         ctxt.repository,
         ctxt.pull["number"],
+        ctxt.pull["base"]["ref"],
         "action.refresh",
         signals.EventNoMetadata(),
         "Rule: testing",

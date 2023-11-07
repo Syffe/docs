@@ -35,6 +35,7 @@ async def insert_data(
         event_models.EventActionComment(
             repository=repo,
             pull_request=github_types.GitHubPullRequestNumber(1),
+            base_ref="main",
             received_at=MAIN_TIMESTAMP,
             trigger="Rule: some rule",
             message="hello world",
@@ -44,6 +45,7 @@ async def insert_data(
         event_models.EventActionQueueEnter(
             repository=repo,
             pull_request=github_types.GitHubPullRequestNumber(1),
+            base_ref="main",
             received_at=LATER_TIMESTAMP,
             trigger="Rule: some other rule",
             **signals.EventQueueEnterMetadata(
@@ -63,6 +65,7 @@ async def insert_data(
         event_models.EventActionMerge(
             repository=repo,
             pull_request=github_types.GitHubPullRequestNumber(2),
+            base_ref="main",
             received_at=MAIN_TIMESTAMP,
             trigger="Rule: some other rule",
             branch="merge_branch",
@@ -93,6 +96,7 @@ async def test_api_response(
                 "trigger": "Rule: some other rule",
                 "repository": "Mergifyio/mergify-engine",
                 "pull_request": 2,
+                "base_ref": "main",
                 "event": "action.merge",
                 "type": "action.merge",
                 "metadata": {"branch": "merge_branch"},
@@ -104,6 +108,7 @@ async def test_api_response(
         "action.queue.checks_end",
         fake_repository.repo,
         pull_request=None,
+        base_ref=github_types.GitHubRefType("feature_branch"),
         trigger="whatever",
         metadata=signals.EventQueueChecksEndMetadata(
             {
@@ -156,6 +161,7 @@ async def test_api_response(
                 "trigger": "whatever",
                 "repository": "Mergifyio/mergify-engine",
                 "pull_request": None,
+                "base_ref": "feature_branch",
                 "event": "action.queue.checks_end",
                 "type": "action.queue.checks_end",
                 "metadata": {
@@ -195,6 +201,7 @@ async def test_api_response(
         "queue.pause.create",
         fake_repository.repo,
         pull_request=None,
+        base_ref=github_types.GitHubRefType("main"),
         trigger="whatever",
         metadata=signals.EventQueuePauseCreateMetadata(
             {
@@ -220,6 +227,7 @@ async def test_api_response(
                 "trigger": "whatever",
                 "repository": "Mergifyio/mergify-engine",
                 "pull_request": None,
+                "base_ref": "main",
                 "event": "queue.pause.create",
                 "type": "queue.pause.create",
                 "metadata": {
@@ -234,6 +242,7 @@ async def test_api_response(
         "action.review",
         fake_repository.repo,
         pull_request=None,
+        base_ref=github_types.GitHubRefType("main"),
         trigger="whatever",
         metadata=signals.EventReviewMetadata(
             {
@@ -260,6 +269,7 @@ async def test_api_response(
                 "trigger": "whatever",
                 "repository": "Mergifyio/mergify-engine",
                 "pull_request": None,
+                "base_ref": "main",
                 "event": "action.review",
                 "type": "action.review",
                 "metadata": {
@@ -326,6 +336,7 @@ async def test_api_cursor_pg(
             event="action.assign",
             repository=fake_repository.repo,
             pull_request=github_types.GitHubPullRequestNumber(1),
+            base_ref=github_types.GitHubRefType("main"),
             metadata=signals.EventAssignMetadata(
                 {
                     "added": ["leo", "charly", "guillaume"],

@@ -38,6 +38,7 @@ class RefreshExecutor(actions.ActionExecutor["RefreshCommand", RefreshExecutorCo
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
+            self.ctxt.pull["base"]["ref"],
             "action.refresh",
             signals.EventNoMetadata(),
             self.rule.get_signal_trigger(),

@@ -533,6 +533,7 @@ class Train:
         await signals.send(
             ctxt.repository,
             ctxt.pull["number"],
+            ctxt.pull["base"]["ref"],
             "action.queue.enter",
             signals.EventQueueEnterMetadata(
                 {
@@ -635,6 +636,7 @@ class Train:
         await signals.send(
             self.convoy.repository,
             pr_number,
+            self.convoy.ref,
             "action.queue.leave",
             event_metadata,
             signal_trigger,
@@ -735,6 +737,7 @@ class Train:
         await signals.send(
             self.convoy.repository,
             embarked_pull.user_pull_request_number,
+            self.convoy.ref,
             "action.queue.leave",
             event_metadata,
             signal_trigger,

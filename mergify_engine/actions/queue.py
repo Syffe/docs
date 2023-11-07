@@ -1114,6 +1114,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         await signals.send(
             self.ctxt.repository,
             pull_request,
+            self.ctxt.pull["base"]["ref"],
             "action.queue.merged",
             signals.EventQueueMergedMetadata(
                 {

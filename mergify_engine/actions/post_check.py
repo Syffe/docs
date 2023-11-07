@@ -152,6 +152,7 @@ class PostCheckExecutor(
             await signals.send(
                 self.ctxt.repository,
                 self.ctxt.pull["number"],
+                self.ctxt.pull["base"]["ref"],
                 "action.post_check",
                 signals.EventPostCheckMetadata(
                     {

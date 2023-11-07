@@ -171,6 +171,7 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
+            self.ctxt.pull["base"]["ref"],
             "action.github_actions",
             signals.EventGithubActionsMetadata(
                 workflow=wf["workflow"], inputs=wf["inputs"]
