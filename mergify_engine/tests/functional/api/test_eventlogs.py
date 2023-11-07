@@ -591,6 +591,23 @@ class TestEventLogsAction(base.FunctionalTestBase):
             {
                 "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": None,
+                "base_ref": self.main_branch_name,
+                "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
+                "event": "action.queue.change",
+                "type": "action.queue.change",
+                "metadata": {
+                    "partition_name": "__default__",
+                    "running_checks": 1,
+                    "queue_name": "default",
+                    "size": 1,
+                },
+                "trigger": "merge queue internal",
+            },
+            {
+                "id": anys.ANY_INT,
+                "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
                 "base_ref": self.main_branch_name,
                 "timestamp": anys.ANY_AWARE_DATETIME_STR,
@@ -654,7 +671,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": repo_expected_events,
             "per_page": 10,
-            "size": 8,
+            "size": 9,
             "total": None,
         }
 

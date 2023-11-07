@@ -793,3 +793,28 @@ async def test_event_as_dict(
             },
         },
     )
+
+
+async def test_event_action_queue_change_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.queue.change",
+        signals.EventQueueChangeMetadata(
+            {
+                "queue_name": "default",
+                "partition_name": partition_rules.DEFAULT_PARTITION_NAME,
+                "size": 5,
+                "running_checks": 2,
+            }
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionQueueChange))
+    assert event is not None
+    assert event.queue_name == "default"
+    assert event.partition_name == partition_rules.DEFAULT_PARTITION_NAME
+    assert event.size == 5
+    assert event.running_checks == 2

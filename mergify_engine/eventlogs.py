@@ -121,6 +121,12 @@ class EventQueueLeave(EventBase):
     metadata: signals.EventQueueLeaveMetadata
 
 
+class EventQueueChange(EventBase):
+    event: typing.Literal["action.queue.change"]
+    type: typing.Literal["action.queue.change"]
+    metadata: signals.EventQueueChangeMetadata
+
+
 class EventQueueChecksStart(EventBase):
     event: typing.Literal["action.queue.checks_start"]
     type: typing.Literal["action.queue.checks_start"]
@@ -257,6 +263,7 @@ Event = (
     | EventQueuePauseCreate
     | EventQueuePauseUpdate
     | EventQueuePauseDelete
+    | EventQueueChange
 )
 
 SUPPORTED_EVENT_NAMES = list(
@@ -341,6 +348,8 @@ def cast_event_item(event: GenericEvent) -> Event:
             return typing.cast(EventQueueEnter, event)
         case "action.queue.leave":
             return typing.cast(EventQueueLeave, event)
+        case "action.queue.change":
+            return typing.cast(EventQueueChange, event)
         case "action.queue.merged":
             return typing.cast(EventQueueMerged, event)
         case "action.rebase":

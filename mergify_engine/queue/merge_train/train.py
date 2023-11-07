@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import collections
 from collections import abc
 import dataclasses
 import datetime
@@ -169,6 +170,9 @@ class Train:
         )
         await pipe.execute()
         return False
+
+    def get_queue_names(self) -> list[qr_config.QueueName]:
+        return [p.config["name"] for p, _ in self._iter_embarked_pulls()]
 
     def get_car(self, ctxt: context.Context) -> train_car.TrainCar | None:
         return first.first(
@@ -844,6 +848,8 @@ class Train:
         await self.refresh_pulls(source="batch got split")
 
     async def _split_failed_batches(self) -> None:
+        queue_names_before_change = self.get_queue_names()
+
         if (
             len(self._cars) == 1
             and self._cars[0].train_car_state.outcome
@@ -905,6 +911,8 @@ class Train:
                 # from the train soon. We don't need to create remaining cars now.
                 # When this car will be removed the remaining one will be created
                 return
+            else:
+                await self._send_queue_change_signal(queue_names_before_change)
 
     @utils.map_tenacity_try_again_to_real_cause
     @tenacity.retry(
@@ -987,6 +995,8 @@ class Train:
                     return
 
     async def _populate_cars(self) -> None:
+        queue_names_before_change = self.get_queue_names()
+
         # Circular import
         from mergify_engine.queue import freeze
         from mergify_engine.queue import pause
@@ -996,6 +1006,7 @@ class Train:
                 await self._slice_cars(
                     0, reason=queue_utils.ChecksStoppedBecauseMergeQueuePause()
                 )
+                await self._send_queue_change_signal(queue_names_before_change)
             return
 
         if self._cars and (
@@ -1072,6 +1083,7 @@ class Train:
                 new_queue_size,
                 reason=queue_utils.SpeculativeCheckNumberReduced(),
             )
+            await self._send_queue_change_signal(queue_names_before_change)
 
         elif missing_cars > 0 and self._waiting_pulls:
             # Not enough cars
@@ -1164,6 +1176,9 @@ class Train:
                     # from the train soon. We don't need to create remaining cars now.
                     # When this car will be removed the remaining one will be created
                     return
+
+            # Emit the signal once all missing cars are added
+            await self._send_queue_change_signal(queue_names_before_change)
 
     async def _start_checking_car(
         self,
@@ -1409,3 +1424,48 @@ class Train:
                 else worker_pusher.Priority.medium,
             )
         await pipe.execute()
+
+    async def _send_queue_change_signal(
+        self, queue_names_before_change: typing.Iterable[qr_config.QueueName] = ()
+    ) -> None:
+        @dataclasses.dataclass
+        class _QueueData:
+            pull_requests: set[
+                github_types.GitHubPullRequestNumber
+            ] = dataclasses.field(default_factory=set)
+            cars: list[train_car.TrainCar] = dataclasses.field(default_factory=list)
+
+        queues: dict[qr_config.QueueName, _QueueData] = collections.defaultdict(
+            _QueueData
+        )
+
+        # NOTE(charly): Initialize dict entries for queues that changed. Empty
+        # queues won't be created by the following loops, but we have to emit a
+        # change event for those queues.
+        for queue_name in queue_names_before_change:
+            queues[queue_name] = _QueueData()
+
+        for embarked_pull, _ in self._iter_embarked_pulls():
+            queue_name = embarked_pull.config["name"]
+            queues[queue_name].pull_requests.add(embarked_pull.user_pull_request_number)
+
+        for car in self._cars:
+            queues[car.get_queue_name()].cars.append(car)
+
+        for queue_name, data in queues.items():
+            event_metadata = signals.EventQueueChangeMetadata(
+                {
+                    "partition_name": self.partition_name,
+                    "queue_name": queue_name,
+                    "size": len(data.pull_requests),
+                    "running_checks": len(data.cars),
+                }
+            )
+            await signals.send(
+                self.convoy.repository,
+                None,
+                self.convoy.ref,
+                "action.queue.change",
+                event_metadata,
+                "merge queue internal",
+            )

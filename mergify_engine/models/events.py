@@ -464,6 +464,33 @@ class EventActionQueueLeave(Event):
     )
 
 
+class EventActionQueueChange(Event):
+    __tablename__ = "event_action_queue_change"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.queue.change",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
+    )
+    queue_name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    partition_name: orm.Mapped[
+        partition_rules.PartitionRuleName | None
+    ] = orm.mapped_column(
+        sqlalchemy.Text,
+        nullable=True,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
+    )
+    size: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.Integer, anonymizer_config=None
+    )
+    running_checks: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.Integer, anonymizer_config=None
+    )
+
+
 class EventActionSquash(Event):
     __tablename__ = "event_action_squash"
     __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]

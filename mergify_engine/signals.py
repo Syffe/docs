@@ -35,6 +35,7 @@ EventName = typing.Literal[
     "action.post_check",
     "action.github_actions",
     "action.queue.enter",
+    "action.queue.change",
     "action.queue.checks_start",
     "action.queue.checks_end",
     "action.queue.leave",
@@ -133,6 +134,13 @@ class EventQueueLeaveMetadata(EventMetadata, total=False):
     queued_at: datetime.datetime
     seconds_waiting_for_schedule: int
     seconds_waiting_for_freeze: int
+
+
+class EventQueueChangeMetadata(EventMetadata, total=False):
+    queue_name: str
+    partition_name: partr_config.PartitionRuleName
+    size: int
+    running_checks: int
 
 
 class EventDeleteHeadBranchMetadata(EventMetadata, total=False):
@@ -488,6 +496,18 @@ async def send(
     base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.queue.enter"],
     metadata: EventQueueEnterMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+@typing.overload
+async def send(
+    repository: "context.Repository",
+    pull_request: None,
+    base_ref: github_types.GitHubRefType,
+    event: typing.Literal["action.queue.change"],
+    metadata: EventQueueChangeMetadata,
     trigger: str,
 ) -> None:
     ...
