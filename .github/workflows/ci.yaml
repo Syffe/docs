@@ -86,11 +86,14 @@ jobs:
           pip install -r requirements-poetry.txt
           tools/poetry-ci-install.sh
           poetry update --lock
-          if [[ $(git diff --quiet) != "" ]]; then
+          if ! git diff --quiet; then
             cat <<EOF
           Your local poetry cache as some missing wheels. To fix it run:
           $ poetry cache clear PyPI --all
           $ poetry update --lock
+
+          git diff:
+          $(git diff)
           EOF
             exit 1
           fi
