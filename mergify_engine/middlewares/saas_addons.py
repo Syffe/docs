@@ -68,6 +68,9 @@ class SaasSecurityMiddleware:
         await self.app(scope, receive, send)
 
     def _check_source(self, request: requests.Request) -> None:
+        if "*" in settings.HTTP_CF_TO_MERGIFY_HOSTS:
+            return
+
         host = request.headers.get("host", "").split(":")[0]
         if host in settings.HTTP_CF_TO_MERGIFY_HOSTS:
             secret = request.headers.get("X-Mergify-CF-Secret")

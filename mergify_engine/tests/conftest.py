@@ -368,6 +368,7 @@ class CustomTestClient(httpx.AsyncClient):
 async def web_server(
     monkeypatch: pytest.MonkeyPatch,
 ) -> abc.AsyncGenerator[fastapi.FastAPI, None]:
+    monkeypatch.setattr(settings, "HTTP_CF_TO_MERGIFY_HOSTS", ["*"])
     monkeypatch.setattr(settings, "HTTP_TO_HTTPS_REDIRECT", False)
     app = web_root.create_app(debug=True)
 
