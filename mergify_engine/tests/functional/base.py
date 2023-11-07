@@ -2236,10 +2236,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             car = q._cars[i]
             self._assert_merge_queue_car(car, expected_car)
 
-        assert len(q._waiting_pulls) == len(expected_waiting_pulls)
-        for i, expected_waiting_pull in enumerate(expected_waiting_pulls):
-            wp = q._waiting_pulls[i]
-            assert wp.user_pull_request_number == expected_waiting_pull
+        waiting_pulls = [wp.user_pull_request_number for wp in q._waiting_pulls]
+        assert waiting_pulls == expected_waiting_pulls
 
     async def push_file(
         self,
