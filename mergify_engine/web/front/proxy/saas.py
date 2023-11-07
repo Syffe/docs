@@ -81,8 +81,14 @@ async def set_subscription_details_cache(
 async def clear_subscription_details_cache(
     redis_cache: redis_utils.RedisCache,
     github_account_id: github_types.GitHubAccountIdType,
+    user_github_account_id: github_types.GitHubAccountIdType | None = None,
 ) -> None:
-    await redis_cache.delete(get_subscription_detail_hkey(github_account_id))
+    if user_github_account_id is None:
+        await redis_cache.delete(get_subscription_detail_hkey(github_account_id))
+    else:
+        await redis_cache.hdel(
+            get_subscription_detail_hkey(github_account_id), str(user_github_account_id)
+        )
 
 
 async def saas_proxy(

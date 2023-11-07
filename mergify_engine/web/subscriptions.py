@@ -82,6 +82,24 @@ async def subscription_cache_delete(
     return responses.Response("Cache cleaned", status_code=200)
 
 
+@router.delete(
+    "/subscription-details-cache/{account_id}/{user_account_id}",
+    dependencies=[fastapi.Depends(auth.shadow_office)],
+)
+async def subscription_details_cache_delete(
+    account_id: github_types.GitHubAccountIdType,
+    user_account_id: github_types.GitHubAccountIdType,
+    redis_links: redis.RedisLinks,
+) -> responses.Response:
+    try:
+        await saas.clear_subscription_details_cache(
+            redis_links.cache, account_id, user_account_id
+        )
+    except NotImplementedError:
+        return responses.Response("Deleting subscription is disabled", status_code=400)
+    return responses.Response("Cache cleaned", status_code=200)
+
+
 @router.get(
     "/user-oauth-access-token/{github_account_id}",
     dependencies=[fastapi.Depends(auth.shadow_office)],
