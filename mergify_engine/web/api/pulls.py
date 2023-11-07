@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import dataclasses
+import re
 import typing
 
 import fastapi
@@ -7,12 +9,17 @@ import pydantic
 import typing_extensions
 import voluptuous
 
+from mergify_engine import actions as actions_mod
 from mergify_engine import condition_value_querier
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import pagination
+from mergify_engine.clients import http
+from mergify_engine.rules import conditions as rule_conditions
 from mergify_engine.rules import conditions as rules_conditions
 from mergify_engine.rules.config import conditions as config_conditions
+from mergify_engine.rules.config import pull_request_rules as prr_mod
+from mergify_engine.rules.config import queue_rules as qr_mod
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
@@ -169,3 +176,167 @@ async def get_pull_requests(
     )
 
     return MatchingPullRequests(page=response_page)  # type: ignore[call-arg]
+
+
+@pydantic.dataclasses.dataclass
+class PullRequestRule:
+    name: str = dataclasses.field(
+        metadata={"description": "The pull request rule name"}
+    )
+    conditions: (
+        rule_conditions.ConditionEvaluationResult.Serialized
+    ) = dataclasses.field(metadata={"description": "The pull request rule conditions"})
+    actions: dict[str, actions_mod.RawConfigT] = dataclasses.field(
+        metadata={"description": "The pull request rule actions"}
+    )
+
+
+@pydantic.dataclasses.dataclass
+class QueueRule:
+    name: str = dataclasses.field(metadata={"description": "The queue rule name"})
+    queue_conditions: (
+        rule_conditions.QueueConditionEvaluationJsonSerialized
+    ) = dataclasses.field(metadata={"description": "The queue conditions"})
+    merge_conditions: (
+        rule_conditions.QueueConditionEvaluationJsonSerialized
+    ) = dataclasses.field(metadata={"description": "The merge conditions"})
+
+
+class PullRequestSummarySerializerMixin:
+    @classmethod
+    def _serialize_queue_rules(
+        cls, qr_evaluator: qr_mod.QueueRulesEvaluator
+    ) -> list[QueueRule]:
+        serialized_qr = []
+
+        for rule in qr_evaluator.evaluated_rules:
+            queue_conditions = rule.queue_conditions.get_evaluation_result()
+            merge_conditions = rule.merge_conditions.get_evaluation_result()
+
+            serialized_qr.append(
+                QueueRule(
+                    name=rule.name,
+                    queue_conditions=queue_conditions.as_json_dict(),
+                    merge_conditions=merge_conditions.as_json_dict(),
+                )
+            )
+
+        return serialized_qr
+
+    @classmethod
+    def _serialize_pull_request_rules(
+        cls, prr_evaluator: prr_mod.PullRequestRulesEvaluator
+    ) -> list[PullRequestRule]:
+        serialized_prr = []
+
+        for rule in prr_evaluator.evaluated_rules:
+            if rule.hidden:
+                continue
+
+            conditions = rule.conditions.get_evaluation_result()
+
+            actions = {}
+            for name, action in rule.actions.items():
+                config = {
+                    key: cls._sanitize_action_config(key, value)
+                    for key, value in action.executor.config.items()
+                    if key not in action.executor.config_hidden_from_simulator
+                }
+                actions[name] = config
+
+            serialized_prr.append(
+                PullRequestRule(
+                    name=rule.name,
+                    conditions=conditions.serialized(),
+                    actions=actions,
+                )
+            )
+
+        return serialized_prr
+
+    @staticmethod
+    def _sanitize_action_config(
+        config_key: str, config_value: typing.Any
+    ) -> typing.Any:
+        if "bot_account" in config_key and isinstance(config_value, dict):
+            return config_value["login"]
+        if isinstance(config_value, rule_conditions.PullRequestRuleConditions):
+            return rule_conditions.ConditionEvaluationResult.from_rule_condition_node(
+                config_value.condition, filter_key=None
+            )
+        if isinstance(config_value, re.Pattern):
+            return config_value.pattern
+        return config_value
+
+
+@pydantic.dataclasses.dataclass
+class PullRequestSummaryResponse(PullRequestSummarySerializerMixin):
+    pull_request_rules: list[PullRequestRule] = dataclasses.field(
+        metadata={"description": "The evaluated pull request rules"}
+    )
+    queue_rules: list[QueueRule] = dataclasses.field(
+        metadata={"description": "The evaluated queue rules"}
+    )
+
+    @classmethod
+    def from_configuration_evaluators(
+        cls,
+        prr_evaluator: prr_mod.PullRequestRulesEvaluator,
+        qr_evaluator: qr_mod.QueueRulesEvaluator,
+    ) -> PullRequestSummaryResponse:
+        serialized_prr = cls._serialize_pull_request_rules(prr_evaluator)
+        serialized_queue_rules = cls._serialize_queue_rules(qr_evaluator)
+
+        return cls(
+            pull_request_rules=serialized_prr,
+            queue_rules=serialized_queue_rules,
+        )
+
+
+@router.get(
+    "/repos/{owner}/{repository}/pulls/{number}/summary",
+    summary="Mergify summary of a pull request",
+    description="Get the list of actions that Mergify will do on a pull request",
+    include_in_schema=False,
+    response_model=PullRequestSummaryResponse,
+    responses={
+        **api.default_responses,  # type: ignore
+    },
+)
+async def get_pull_request_summary(
+    number: typing.Annotated[
+        github_types.GitHubPullRequestNumber,
+        fastapi.Path(description="The pull request number"),
+    ],
+    repository: security.Repository,
+) -> PullRequestSummaryResponse:
+    config = await repository.get_mergify_config()
+
+    try:
+        ctxt = await repository.get_pull_request_context(
+            github_types.GitHubPullRequestNumber(number)
+        )
+    except http.HTTPClientSideError as e:
+        raise fastapi.HTTPException(status_code=e.status_code, detail=e.message)
+
+    try:
+        prr_evaluator = await config[
+            "pull_request_rules"
+        ].get_pull_request_rules_evaluator(ctxt)
+    except actions_mod.InvalidDynamicActionConfiguration as e:
+        detail = [
+            {
+                "loc": ("body", "mergify_yml"),
+                "msg": e.reason,
+                "details": e.details,
+                "type": "mergify_config_error",
+            }
+        ]
+        raise fastapi.HTTPException(status_code=422, detail=detail)
+
+    qr_evaluator = await config["queue_rules"].get_queue_rules_evaluator(ctxt)
+
+    return PullRequestSummaryResponse.from_configuration_evaluators(
+        prr_evaluator=prr_evaluator,
+        qr_evaluator=qr_evaluator,
+    )

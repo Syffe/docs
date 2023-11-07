@@ -1,5 +1,4 @@
 import dataclasses
-import re
 import typing
 
 import daiquiri
@@ -11,11 +10,11 @@ from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine.clients import http
 from mergify_engine.engine import actions_runner
-from mergify_engine.rules import conditions as rule_conditions
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import pull_request_rules as prr_mod
 from mergify_engine.rules.config import queue_rules as qr_mod
 from mergify_engine.web import api
+from mergify_engine.web.api import pulls
 from mergify_engine.web.api import security
 
 
@@ -175,38 +174,16 @@ async def repository_configuration_simulator(
 
 
 @pydantic.dataclasses.dataclass
-class PullRequestRule:
-    name: str = dataclasses.field(
-        metadata={"description": "The pull request rule name"}
-    )
-    conditions: (
-        rule_conditions.ConditionEvaluationResult.Serialized
-    ) = dataclasses.field(metadata={"description": "The pull request rule conditions"})
-    actions: dict[str, actions_mod.RawConfigT] = dataclasses.field(
-        metadata={"description": "The pull request rule actions"}
-    )
-
-
-@pydantic.dataclasses.dataclass
-class QueueRule:
-    name: str = dataclasses.field(metadata={"description": "The queue rule name"})
-    queue_conditions: (
-        rule_conditions.QueueConditionEvaluationJsonSerialized
-    ) = dataclasses.field(metadata={"description": "The queue conditions"})
-    merge_conditions: (
-        rule_conditions.QueueConditionEvaluationJsonSerialized
-    ) = dataclasses.field(metadata={"description": "The merge conditions"})
-
-
-@pydantic.dataclasses.dataclass
-class PullRequestConfigurationSimulatorResponse:
+class PullRequestConfigurationSimulatorResponse(
+    pulls.PullRequestSummarySerializerMixin
+):
     message: str = dataclasses.field(
         metadata={"description": "The message of the Mergify check run simulation"},
     )
-    pull_request_rules: list[PullRequestRule] = dataclasses.field(
+    pull_request_rules: list[pulls.PullRequestRule] = dataclasses.field(
         metadata={"description": "The evaluated pull request rules"}
     )
-    queue_rules: list[QueueRule] = dataclasses.field(
+    queue_rules: list[pulls.QueueRule] = dataclasses.field(
         metadata={"description": "The evaluated queue rules"}
     )
 
@@ -225,68 +202,6 @@ class PullRequestConfigurationSimulatorResponse:
             pull_request_rules=serialized_prr,
             queue_rules=serialized_queue_rules,
         )
-
-    @classmethod
-    def _serialize_queue_rules(
-        cls, qr_evaluator: qr_mod.QueueRulesEvaluator
-    ) -> list[QueueRule]:
-        serialized_qr = []
-
-        for rule in qr_evaluator.evaluated_rules:
-            queue_conditions = rule.queue_conditions.get_evaluation_result()
-            merge_conditions = rule.merge_conditions.get_evaluation_result()
-
-            serialized_qr.append(
-                QueueRule(
-                    name=rule.name,
-                    queue_conditions=queue_conditions.as_json_dict(),
-                    merge_conditions=merge_conditions.as_json_dict(),
-                )
-            )
-
-        return serialized_qr
-
-    @classmethod
-    def _serialize_pull_request_rules(
-        cls, prr_evaluator: prr_mod.PullRequestRulesEvaluator
-    ) -> list[PullRequestRule]:
-        serialized_prr = []
-
-        for rule in prr_evaluator.evaluated_rules:
-            conditions = rule.conditions.get_evaluation_result()
-
-            actions = {}
-            for name, action in rule.actions.items():
-                config = {
-                    key: cls._sanitize_action_config(key, value)
-                    for key, value in action.executor.config.items()
-                    if key not in action.executor.config_hidden_from_simulator
-                }
-                actions[name] = config
-
-            serialized_prr.append(
-                PullRequestRule(
-                    name=rule.name,
-                    conditions=conditions.serialized(),
-                    actions=actions,
-                )
-            )
-
-        return serialized_prr
-
-    @staticmethod
-    def _sanitize_action_config(
-        config_key: str, config_value: typing.Any
-    ) -> typing.Any:
-        if "bot_account" in config_key and isinstance(config_value, dict):
-            return config_value["login"]
-        if isinstance(config_value, rule_conditions.PullRequestRuleConditions):
-            return rule_conditions.ConditionEvaluationResult.from_rule_condition_node(
-                config_value.condition, filter_key=None
-            )
-        if isinstance(config_value, re.Pattern):
-            return config_value.pattern
-        return config_value
 
 
 @router.post(
