@@ -204,3 +204,5 @@ pull_request_rules:
               inputs:
                 head-repo: "{{ head_repo_full_name }}"
                 head-branch: "{{ head }}"
+      comment:
+        message: "@{{ author }}, the automatic conflict resolution has been dispatched."
