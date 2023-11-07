@@ -34,6 +34,10 @@ from mergify_engine.config import types
 from mergify_engine.models.github import user as github_user
 
 
+# This allows pytest to rewrite asserts in non-test modules
+pytest.register_assert_rewrite("mergify_engine.tests.functional.base")
+
+
 CASSETTE_LIBRARY_DIR_BASE = "zfixtures/cassettes"
 DEFAULT_SUBSCRIPTION_FEATURES = (subscription.Features.PUBLIC_REPOSITORY,)
 
