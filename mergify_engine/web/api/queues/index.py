@@ -82,6 +82,7 @@ class SpeculativeCheckPullRequest:
         if car.train_car_state.checks_type in (
             merge_train.TrainCarChecksType.DRAFT,
             merge_train.TrainCarChecksType.INPLACE,
+            merge_train.TrainCarChecksType.DRAFT_DELEGATED,
         ):
             if car.queue_pull_request_number is None:
                 raise RuntimeError(
