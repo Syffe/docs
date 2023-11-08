@@ -69,7 +69,13 @@ async def query_issues(
             gh_models.GitHubRepository,
             gh_models.GitHubRepository.id == CiIssue.repository_id,
         )
-        .join(WorkflowJobEnhanced, WorkflowJobEnhanced.ci_issue_id == CiIssue.id)
+        .join(
+            WorkflowJobEnhanced,
+            sqlalchemy.and_(
+                WorkflowJobEnhanced.ci_issue_id == CiIssue.id,
+                WorkflowJobEnhanced.repository_id == CiIssue.repository_id,
+            ),
+        )
         .where(CiIssue.repository_id == repository_id)
         .order_by(sqlalchemy.desc(WorkflowJobEnhanced.started_at))
     )

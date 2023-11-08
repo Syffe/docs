@@ -197,6 +197,11 @@ class WorkflowJob(models.Base):
             "name_without_matrix",
             "repository_id",
         ),
+        sqlalchemy.schema.Index(
+            "idx_gha_workflow_job_ci_issue_id_in_repo",
+            "repository_id",
+            "ci_issue_id",
+        ),
         sqlalchemy.schema.CheckConstraint(
             """
             (
@@ -322,8 +327,7 @@ class WorkflowJob(models.Base):
     )
 
     ci_issue_id: orm.Mapped[int | None] = orm.mapped_column(
-        sqlalchemy.ForeignKey("ci_issue.id"),
-        anonymizer_config=None,
+        sqlalchemy.ForeignKey("ci_issue.id"), anonymizer_config=None, index=True
     )
 
     ci_issue: orm.Mapped[CiIssue] = orm.relationship(lazy="raise_on_sql")
