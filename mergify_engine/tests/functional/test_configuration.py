@@ -91,6 +91,51 @@ class TestConfiguration(base.FunctionalTestBase):
             "* required key not provided @ pull_request_rules → item 0 → conditions"
         )
 
+    async def test_pull_request_with_invalid_team_name_in_new_configuration(
+        self,
+    ) -> None:
+        teams = await self.get_teams()
+
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "foobar",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {
+                        "request_reviews": {"teams": [teams[0]["slug"].upper()]}
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        rules["pull_request_rules"][0]["actions"]["request_reviews"]["teams"] = [  # type: ignore[index]
+            "@atchoum",
+            "atchoum",
+        ]
+
+        p = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
+
+        await self.run_engine()
+
+        ctxt = context.Context(self.repository_ctxt, p, [])
+        config_changed_check = await ctxt.get_engine_check_run(
+            constants.CONFIGURATION_CHANGED_CHECK_NAME
+        )
+        assert config_changed_check is not None
+        assert (
+            config_changed_check["output"]["title"]
+            == "The new Mergify configuration is invalid"
+        )
+        assert (
+            config_changed_check["output"]["summary"]
+            == """In the rule `foobar`, the action `request_reviews` configuration is invalid:
+Invalid requested teams
+Team `@atchoum` does not exist or has not access to this repository
+Team `atchoum` does not exist or has not access to this repository
+"""
+        )
+
     async def test_invalid_priority_rules_config(self) -> None:
         rules = {
             "queue_rules": [

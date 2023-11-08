@@ -4,6 +4,7 @@ import typing
 import daiquiri
 import first
 
+from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
@@ -139,10 +140,14 @@ async def _check_configuration_changes(
         return True
 
     try:
-        await mergify_conf.get_mergify_config_from_file(
+        mergify_config = await mergify_conf.get_mergify_config_from_file(
             ctxt.repository, context.content_file_to_config_file(config_content)
         )
-    except mergify_conf.InvalidRules as e:
+        # Evaluate rules to find dynamic errors in actions config
+        await mergify_config["pull_request_rules"].get_pull_request_rules_evaluator(
+            ctxt
+        )
+    except (mergify_conf.InvalidRules, actions.InvalidDynamicActionConfiguration) as e:
         # Not configured, post status check with the error message
         await check_api.set_check_run(
             ctxt,
@@ -150,8 +155,14 @@ async def _check_configuration_changes(
             check_api.Result(
                 check_api.Conclusion.FAILURE,
                 title="The new Mergify configuration is invalid",
-                summary=str(e),
-                annotations=e.get_annotations(e.filename),
+                # ##### separation for better readability
+                summary=str(e)
+                if isinstance(e, mergify_conf.InvalidRules)
+                else e.get_summary(),
+                # ##### separation for better readability
+                annotations=e.get_annotations(e.filename)
+                if isinstance(e, mergify_conf.InvalidRules)
+                else None,
             ),
         )
     else:
