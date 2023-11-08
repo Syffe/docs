@@ -141,7 +141,7 @@ class GeneralCleaningToolbox:
 
     @staticmethod
     def clean_number_inside_brackets(log_line: str) -> str:
-        # NOTE(Syffe): We sub group of caracters such as [657] or [1234]
+        # NOTE(Syffe): We clear group of caracters such as [657] or [1234]
         return re.sub(r"\[\d*]", " ", log_line)
 
     @staticmethod

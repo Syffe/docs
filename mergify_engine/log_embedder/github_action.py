@@ -174,13 +174,6 @@ async def get_tokenized_cleaned_log(
     truncated_log_ready = False
     truncated_log_tokens_length = 0
 
-    line_iterator = reversed(log_lines)
-
-    # start by removing useless ending lines
-    for line in line_iterator:
-        if not line:
-            continue
-
     cleaner.apply_log_tags("\n".join(log_lines))
 
     for line in reversed(log_lines):
