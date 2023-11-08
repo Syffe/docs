@@ -172,7 +172,7 @@ class TargetBranchMissing(BaseUnqueueReason):
 
 
 @dataclasses.dataclass
-class TargetBranchChanged(BaseQueueCancelReason):
+class TargetBranchChanged(BaseUnqueueReason):
     message = "The pull request target branch has changed"
     unqueue_code: typing.ClassVar[
         typing.Literal["TARGET_BRANCH_CHANGED"]
