@@ -1,0 +1,34 @@
+2023-10-20T07:53:28.6438082Z ##[group]Run actions/github-script@v6
+2023-10-20T07:53:28.6438753Z with:
+2023-10-20T07:53:28.6439150Z   result-encoding: string
+2023-10-20T07:53:28.6443489Z   script: console.log(github.event);
+var { data } = await github.rest.actions.listWorkflowRunArtifacts({
+   owner: context.repo.owner,
+   repo: context.repo.repo,
+   run_id: 6584937932,
+});
+var matchArtifact = data.artifacts.filter((artifact) => {
+  return artifact.name.startsWith("docs-pr-")
+})[0];
+var download = await github.rest.actions.downloadArtifact({
+   owner: context.repo.owner,
+   repo: context.repo.repo,
+   artifact_id: matchArtifact.id,
+   archive_format: 'zip',
+});
+var fs = require('fs');
+fs.writeFileSync('/home/runner/work/docs/docs/docs.zip', Buffer.from(download.data));
+return matchArtifact.name.split("-")[2]
+
+2023-10-20T07:53:28.6447964Z   github-token: ***
+2023-10-20T07:53:28.6448447Z   debug: false
+2023-10-20T07:53:28.6448987Z   user-agent: actions/github-script
+2023-10-20T07:53:28.6449508Z   retries: 0
+2023-10-20T07:53:28.6450015Z   retry-exempt-status-codes: 400,401,403,404,422
+2023-10-20T07:53:28.6450851Z ##[endgroup]
+2023-10-20T07:53:28.9093682Z undefined
+2023-10-20T07:53:29.1660501Z TypeError: Cannot read properties of undefined (reading 'id')
+2023-10-20T07:53:29.1734580Z ##[error]Unhandled error: TypeError: Cannot read properties of undefined (reading 'id')
+2023-10-20T07:53:29.1744490Z     at eval (eval at callAsyncFunction (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15143:16), <anonymous>:15:31)
+2023-10-20T07:53:29.1746021Z     at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2023-10-20T07:53:29.1747418Z     at async main (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15236:20)

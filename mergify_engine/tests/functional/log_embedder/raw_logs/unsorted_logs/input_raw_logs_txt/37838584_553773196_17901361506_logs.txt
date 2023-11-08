@@ -1,0 +1,41 @@
+2023-10-20T13:52:46.0343288Z ##[group]Run cypress-io/github-action@v6.5.0
+2023-10-20T13:52:46.0343838Z with:
+2023-10-20T13:52:46.0344133Z   runTests: false
+2023-10-20T13:52:46.0344458Z   build: npm run build
+2023-10-20T13:52:46.0344815Z   record: false
+2023-10-20T13:52:46.0345154Z   publish-summary: true
+2023-10-20T13:52:46.0345583Z   component: false
+2023-10-20T13:52:46.0345916Z ##[endgroup]
+2023-10-20T13:52:46.4728268Z [command]/opt/hostedtoolcache/node/20.8.1/x64/bin/npm ci
+2023-10-20T13:53:29.6872787Z 
+2023-10-20T13:53:29.6873949Z added 929 packages, and audited 930 packages in 43s
+2023-10-20T13:53:29.6874481Z 
+2023-10-20T13:53:29.6874703Z 222 packages are looking for funding
+2023-10-20T13:53:29.6875237Z   run `npm fund` for details
+2023-10-20T13:53:29.6896074Z 
+2023-10-20T13:53:29.6896902Z found 0 vulnerabilities
+2023-10-20T13:53:29.7281698Z [command]/opt/hostedtoolcache/node/20.8.1/x64/bin/npx cypress cache list
+2023-10-20T13:53:30.3633182Z ┌─────────┬────────────┐
+2023-10-20T13:53:30.3633797Z │ version │ last used  │
+2023-10-20T13:53:30.3634368Z ├─────────┼────────────┤
+2023-10-20T13:53:30.3634854Z │ 13.3.1  │ 4 days ago │
+2023-10-20T13:53:30.3635316Z └─────────┴────────────┘
+2023-10-20T13:53:30.3886298Z [command]/opt/hostedtoolcache/node/20.8.1/x64/bin/npx cypress verify
+2023-10-20T13:53:31.1041240Z 
+2023-10-20T13:53:31.1077405Z [STARTED] Task without title.
+2023-10-20T13:53:37.5894846Z [SUCCESS] Task without title.
+2023-10-20T13:53:37.6394557Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/dashboard-ui/dashboard-ui --files-from manifest.txt --use-compress-program zstdmt
+2023-10-20T13:53:41.2966049Z Cache Size: ~101 MB (105682459 B)
+2023-10-20T13:53:41.4651683Z Cache saved successfully
+2023-10-20T13:53:41.4989591Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/dashboard-ui/dashboard-ui --files-from manifest.txt --use-compress-program zstdmt
+2023-10-20T13:53:50.0994041Z Cache Size: ~157 MB (164789063 B)
+2023-10-20T13:53:50.3134898Z Cache saved successfully
+2023-10-20T13:53:50.3375125Z build app command "npm run build"
+2023-10-20T13:53:50.3376745Z current working directory "/home/runner/work/dashboard-ui/dashboard-ui"
+2023-10-20T13:53:50.3395558Z [command]/opt/hostedtoolcache/node/20.8.1/x64/bin/npm run build
+2023-10-20T13:53:50.6316414Z 
+2023-10-20T13:53:50.6317442Z > mergify-dashboard@0.1.0 build
+2023-10-20T13:53:50.6318103Z > bash ./build.sh
+2023-10-20T13:53:50.6318403Z 
+2023-10-20T13:54:03.6499710Z ##[error]src/dashboard/CIMonitoring/components/Issue/Main.tsx(124,22): error TS2740: Type '{ id: number; run_id: number; started_at: string; flaky: string; failed_run_count: number; }' is missing the following properties from type '{ name: string; error_description: string | null; id: number; run_id: number; steps: { name: string; status: "queued" | "in_progress" | "completed"; conclusion: "success" | "failure" | "neutral" | ... 4 more ... | null; number: number; started_at: string | null; completed_at: string | null; }[]; ... 5 more ...; fail...': name, error_description, steps, failed_step_number, and 3 more.
+2023-10-20T13:54:03.7213045Z ##[error]The process '/opt/hostedtoolcache/node/20.8.1/x64/bin/npm' failed with exit code 2

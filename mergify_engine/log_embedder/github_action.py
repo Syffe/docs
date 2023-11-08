@@ -181,6 +181,8 @@ async def get_tokenized_cleaned_log(
         if not line:
             continue
 
+    cleaner.apply_log_tags("\n".join(log_lines))
+
     for line in reversed(log_lines):
         if not line:
             continue

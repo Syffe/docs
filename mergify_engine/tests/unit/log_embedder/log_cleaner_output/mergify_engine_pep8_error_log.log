@@ -139,6 +139,10 @@ update-environment: true
 successfully set cpython (3.11.3)
 ##[endgroup]
 ##[group]run nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+pip install -r requirements-poetry.txt
+tools/poetry-ci-install.sh
+poetry run poe linters
 shell: /usr/bin/bash -e {0}
 env:
 pythonlocation: /opt/hostedtoolcache/python/3.11.3/x64

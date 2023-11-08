@@ -150,9 +150,9 @@ def test_clean_timestamps(raw_log: str, cleaned_log: str) -> None:
     "raw_log,cleaned_log",
     [
         # remove colors
-        ("tutu [32msuccess[0m toto", "tutu  toto"),
-        ("another tutu [31mfailed[0m toto", "another tutu  toto"),
-        ("[31mfailed [0m", ""),
+        ("tutu [32msuccess[0m toto", "tutu success toto"),
+        ("another tutu [31mfailed[0m toto", "another tutu failed toto"),
+        ("[31mfailed [0m", "failed "),
         (
             "2023-04-25T07:49:14.5441296Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/5770/merge",
             "2023-04-25T07:49:14.5441296Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/5770/merge",

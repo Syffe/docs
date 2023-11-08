@@ -1,0 +1,40 @@
+2023-10-20T13:52:45.6932179Z ##[group]Run npm ci
+2023-10-20T13:52:45.6932645Z [36;1mnpm ci[0m
+2023-10-20T13:52:45.6932997Z [36;1mnpm run eslint[0m
+2023-10-20T13:52:45.7007443Z shell: /usr/bin/bash -e {0}
+2023-10-20T13:52:45.7007844Z ##[endgroup]
+2023-10-20T13:53:40.0796358Z 
+2023-10-20T13:53:40.0809175Z added 929 packages, and audited 930 packages in 54s
+2023-10-20T13:53:40.0810187Z 
+2023-10-20T13:53:40.0812915Z 222 packages are looking for funding
+2023-10-20T13:53:40.0813848Z   run `npm fund` for details
+2023-10-20T13:53:40.0825334Z 
+2023-10-20T13:53:40.0825762Z found 0 vulnerabilities
+2023-10-20T13:53:40.5549298Z 
+2023-10-20T13:53:40.5550812Z > mergify-dashboard@0.1.0 eslint
+2023-10-20T13:53:40.5551780Z > eslint src cypress tests
+2023-10-20T13:53:40.5552228Z 
+2023-10-20T13:54:17.1191688Z 
+2023-10-20T13:54:17.1193890Z /home/runner/work/dashboard-ui/dashboard-ui/cypress/component/gha-failed-jobs/EmbeddedLog.cy.tsx
+2023-10-20T13:54:17.1263842Z ##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/namespace
+2023-10-20T13:54:17.1278174Z ##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/order
+2023-10-20T13:54:17.1283275Z ##[warning]  1:1   warning  Resolve error: unable to load resolver "alias"                                                                  import/no-duplicates
+2023-10-20T13:54:17.1286301Z ##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-unresolved
+2023-10-20T13:54:17.1288954Z ##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/default
+2023-10-20T13:54:17.1291570Z ##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/extensions
+2023-10-20T13:54:17.1294379Z ##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-extraneous-dependencies
+2023-10-20T13:54:17.1297302Z ##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-self-import
+2023-10-20T13:54:17.1300047Z ##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-cycle
+2023-10-20T13:54:17.1350845Z ##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-useless-path-segments
+2023-10-20T13:54:17.1353775Z ##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-relative-packages
+2023-10-20T13:54:17.1357572Z ##[warning]  1:1   warning  Resolve error: unable to load resolver "alias"                                                                  import/no-named-as-default
+2023-10-20T13:54:17.1361487Z ##[warning]  1:1   warning  Resolve error: unable to load resolver "alias"                                                                  import/no-named-as-default-member
+2023-10-20T13:54:17.1364640Z ##[error]  1:25  error    Unable to resolve path to module '../../../src/dashboard/FailedJobs/components/GHAFailedJobsError/EmbeddedLog'  import/no-unresolved
+2023-10-20T13:54:17.1368181Z ##[error]  1:25  error    Missing file extension for "../../../src/dashboard/FailedJobs/components/GHAFailedJobsError/EmbeddedLog"        import/extensions
+2023-10-20T13:54:17.1371440Z 
+2023-10-20T13:54:17.1372385Z /home/runner/work/dashboard-ui/dashboard-ui/cypress/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts
+2023-10-20T13:54:17.1374458Z ##[error]  11:6  error  Unexpected exclusive mocha test  mocha/no-exclusive-tests
+2023-10-20T13:54:17.1375720Z 
+2023-10-20T13:54:17.1376389Z ✖ 16 problems (13 errors, 3 warnings)
+2023-10-20T13:54:17.1377107Z 
+2023-10-20T13:54:17.3033705Z ##[error]Process completed with exit code 1.

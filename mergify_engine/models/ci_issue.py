@@ -14,7 +14,7 @@ from mergify_engine.models.github import WorkflowJob
 from mergify_engine.models.github import repository as gh_repository
 
 
-COSINE_SIMILARITY_THRESHOLD = 0.9
+COSINE_SIMILARITY_THRESHOLD = 0.97
 
 
 class CiIssueCounter(models.Base):

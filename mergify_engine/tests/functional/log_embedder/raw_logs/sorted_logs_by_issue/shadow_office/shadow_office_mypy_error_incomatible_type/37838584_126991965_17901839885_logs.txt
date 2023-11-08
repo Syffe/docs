@@ -1,0 +1,307 @@
+2023-10-20T14:06:12.0973886Z ##[group]Run # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+2023-10-20T14:06:12.0975392Z [36;1m# nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip[0m
+2023-10-20T14:06:12.0976414Z [36;1mpip install -r requirements-poetry.txt[0m
+2023-10-20T14:06:12.0977038Z [36;1mtools/poetry-ci-install.sh[0m
+2023-10-20T14:06:12.0977584Z [36;1mpoetry run poe linters[0m
+2023-10-20T14:06:12.1059060Z shell: /usr/bin/bash -e {0}
+2023-10-20T14:06:12.1059538Z env:
+2023-10-20T14:06:12.1060005Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.5/x64
+2023-10-20T14:06:12.1060814Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.5/x64/lib/pkgconfig
+2023-10-20T14:06:12.1061633Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.5/x64
+2023-10-20T14:06:12.1062361Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.5/x64
+2023-10-20T14:06:12.1063476Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.5/x64
+2023-10-20T14:06:12.1064225Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.5/x64/lib
+2023-10-20T14:06:12.1064895Z ##[endgroup]
+2023-10-20T14:06:13.0387089Z Collecting poetry==1.6.1 (from -r requirements-poetry.txt (line 1))
+2023-10-20T14:06:13.1696942Z   Downloading poetry-1.6.1-py3-none-any.whl.metadata (6.8 kB)
+2023-10-20T14:06:13.2412193Z Collecting build<0.11.0,>=0.10.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:13.2578419Z   Downloading build-0.10.0-py3-none-any.whl (17 kB)
+2023-10-20T14:06:13.3143333Z Collecting cachecontrol<0.14.0,>=0.13.0 (from cachecontrol[filecache]<0.14.0,>=0.13.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:13.3256939Z   Downloading cachecontrol-0.13.1-py3-none-any.whl.metadata (3.0 kB)
+2023-10-20T14:06:13.3777769Z Collecting cleo<3.0.0,>=2.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:13.3885708Z   Downloading cleo-2.0.1-py3-none-any.whl (77 kB)
+2023-10-20T14:06:13.4121482Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 77.3/77.3 kB 4.1 MB/s eta 0:00:00
+2023-10-20T14:06:13.4442231Z Collecting crashtest<0.5.0,>=0.4.1 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:13.4550392Z   Downloading crashtest-0.4.1-py3-none-any.whl (7.6 kB)
+2023-10-20T14:06:13.6395132Z Collecting dulwich<0.22.0,>=0.21.2 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:13.6509260Z   Downloading dulwich-0.21.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.3 kB)
+2023-10-20T14:06:13.6903424Z Collecting installer<0.8.0,>=0.7.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:13.7014897Z   Downloading installer-0.7.0-py3-none-any.whl (453 kB)
+2023-10-20T14:06:13.7538159Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 453.8/453.8 kB 9.2 MB/s eta 0:00:00
+2023-10-20T14:06:13.8211776Z Collecting jsonschema<4.18.0,>=4.10.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:13.8319913Z   Downloading jsonschema-4.17.3-py3-none-any.whl (90 kB)
+2023-10-20T14:06:13.8445169Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.4/90.4 kB 8.8 MB/s eta 0:00:00
+2023-10-20T14:06:13.9261276Z Collecting keyring<25.0.0,>=24.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:13.9370143Z   Downloading keyring-24.2.0-py3-none-any.whl.metadata (20 kB)
+2023-10-20T14:06:13.9903049Z Collecting packaging>=20.4 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.0013774Z   Downloading packaging-23.2-py3-none-any.whl.metadata (3.2 kB)
+2023-10-20T14:06:14.0367076Z Collecting pexpect<5.0.0,>=4.7.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.0474151Z   Downloading pexpect-4.8.0-py2.py3-none-any.whl (59 kB)
+2023-10-20T14:06:14.0563555Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 59.0/59.0 kB 8.1 MB/s eta 0:00:00
+2023-10-20T14:06:14.0972829Z Collecting pkginfo<2.0.0,>=1.9.4 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.1082504Z   Downloading pkginfo-1.9.6-py3-none-any.whl (30 kB)
+2023-10-20T14:06:14.1608697Z Collecting platformdirs<4.0.0,>=3.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.1718559Z   Downloading platformdirs-3.11.0-py3-none-any.whl.metadata (11 kB)
+2023-10-20T14:06:14.2303692Z Collecting poetry-core==1.7.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.2406774Z   Downloading poetry_core-1.7.0-py3-none-any.whl.metadata (3.4 kB)
+2023-10-20T14:06:14.2831228Z Collecting poetry-plugin-export<2.0.0,>=1.5.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.2938668Z   Downloading poetry_plugin_export-1.5.0-py3-none-any.whl.metadata (2.7 kB)
+2023-10-20T14:06:14.3241002Z Collecting pyproject-hooks<2.0.0,>=1.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.3351342Z   Downloading pyproject_hooks-1.0.0-py3-none-any.whl (9.3 kB)
+2023-10-20T14:06:14.4068473Z Collecting requests<3.0,>=2.26 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.4180900Z   Downloading requests-2.31.0-py3-none-any.whl.metadata (4.6 kB)
+2023-10-20T14:06:14.4532670Z Collecting requests-toolbelt<2,>=0.9.1 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.4636716Z   Downloading requests_toolbelt-1.0.0-py2.py3-none-any.whl (54 kB)
+2023-10-20T14:06:14.4716394Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 54.5/54.5 kB 10.6 MB/s eta 0:00:00
+2023-10-20T14:06:14.5154569Z Collecting shellingham<2.0,>=1.5 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.5256592Z   Downloading shellingham-1.5.3-py2.py3-none-any.whl.metadata (3.4 kB)
+2023-10-20T14:06:14.5860147Z Collecting tomlkit<1.0.0,>=0.11.4 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.5971057Z   Downloading tomlkit-0.12.1-py3-none-any.whl.metadata (2.7 kB)
+2023-10-20T14:06:14.6475013Z Collecting trove-classifiers>=2022.5.19 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.6582904Z   Downloading trove_classifiers-2023.10.18-py3-none-any.whl.metadata (2.2 kB)
+2023-10-20T14:06:14.7974028Z Collecting virtualenv<21.0.0,>=20.22.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:14.8081412Z   Downloading virtualenv-20.24.5-py3-none-any.whl.metadata (4.5 kB)
+2023-10-20T14:06:14.9988462Z Collecting msgpack>=0.5.2 (from cachecontrol<0.14.0,>=0.13.0->cachecontrol[filecache]<0.14.0,>=0.13.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:15.0096381Z   Downloading msgpack-1.0.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.1 kB)
+2023-10-20T14:06:15.0777124Z Collecting filelock>=3.8.0 (from cachecontrol[filecache]<0.14.0,>=0.13.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:15.0880373Z   Downloading filelock-3.12.4-py3-none-any.whl.metadata (2.8 kB)
+2023-10-20T14:06:15.7951732Z Collecting rapidfuzz<3.0.0,>=2.2.0 (from cleo<3.0.0,>=2.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:15.8072334Z   Downloading rapidfuzz-2.15.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.0 kB)
+2023-10-20T14:06:15.8927297Z Collecting urllib3>=1.25 (from dulwich<0.22.0,>=0.21.2->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:15.9027698Z   Downloading urllib3-2.0.7-py3-none-any.whl.metadata (6.6 kB)
+2023-10-20T14:06:15.9780598Z Collecting attrs>=17.4.0 (from jsonschema<4.18.0,>=4.10.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:15.9885123Z   Downloading attrs-23.1.0-py3-none-any.whl (61 kB)
+2023-10-20T14:06:15.9970688Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.2/61.2 kB 9.6 MB/s eta 0:00:00
+2023-10-20T14:06:16.0553517Z Collecting pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,>=0.14.0 (from jsonschema<4.18.0,>=4.10.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:16.0655285Z   Downloading pyrsistent-0.19.3-py3-none-any.whl (57 kB)
+2023-10-20T14:06:16.0775540Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.5/57.5 kB 6.8 MB/s eta 0:00:00
+2023-10-20T14:06:16.1936722Z Collecting jaraco.classes (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:16.2039565Z   Downloading jaraco.classes-3.3.0-py3-none-any.whl.metadata (2.9 kB)
+2023-10-20T14:06:16.2942543Z Collecting importlib-metadata>=4.11.4 (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:16.3051001Z   Downloading importlib_metadata-6.8.0-py3-none-any.whl.metadata (5.1 kB)
+2023-10-20T14:06:16.3406064Z Collecting SecretStorage>=3.2 (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:16.3524679Z   Downloading SecretStorage-3.3.3-py3-none-any.whl (15 kB)
+2023-10-20T14:06:16.3877389Z Collecting jeepney>=0.4.2 (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:16.3982354Z   Downloading jeepney-0.8.0-py3-none-any.whl (48 kB)
+2023-10-20T14:06:16.4058406Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 48.4/48.4 kB 8.8 MB/s eta 0:00:00
+2023-10-20T14:06:16.4546125Z Collecting ptyprocess>=0.5 (from pexpect<5.0.0,>=4.7.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:16.4649939Z   Downloading ptyprocess-0.7.0-py2.py3-none-any.whl (13 kB)
+2023-10-20T14:06:16.6273974Z Collecting charset-normalizer<4,>=2 (from requests<3.0,>=2.26->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:16.6419363Z   Downloading charset_normalizer-3.3.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (32 kB)
+2023-10-20T14:06:16.6832398Z Collecting idna<4,>=2.5 (from requests<3.0,>=2.26->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:16.6940114Z   Downloading idna-3.4-py3-none-any.whl (61 kB)
+2023-10-20T14:06:16.7018183Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.5/61.5 kB 10.4 MB/s eta 0:00:00
+2023-10-20T14:06:16.7537773Z Collecting certifi>=2017.4.17 (from requests<3.0,>=2.26->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:16.7642388Z   Downloading certifi-2023.7.22-py3-none-any.whl.metadata (2.2 kB)
+2023-10-20T14:06:16.8733582Z Collecting distlib<1,>=0.3.7 (from virtualenv<21.0.0,>=20.22.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:16.8831156Z   Downloading distlib-0.3.7-py2.py3-none-any.whl.metadata (5.1 kB)
+2023-10-20T14:06:17.0549402Z Collecting zipp>=0.5 (from importlib-metadata>=4.11.4->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:17.0650521Z   Downloading zipp-3.17.0-py3-none-any.whl.metadata (3.7 kB)
+2023-10-20T14:06:17.3679425Z Collecting cryptography>=2.0 (from SecretStorage>=3.2->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:17.3788905Z   Downloading cryptography-41.0.4-cp37-abi3-manylinux_2_28_x86_64.whl.metadata (5.2 kB)
+2023-10-20T14:06:17.4718638Z Collecting more-itertools (from jaraco.classes->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:17.4825531Z   Downloading more_itertools-10.1.0-py3-none-any.whl.metadata (33 kB)
+2023-10-20T14:06:17.6742760Z Collecting cffi>=1.12 (from cryptography>=2.0->SecretStorage>=3.2->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:17.6846548Z   Downloading cffi-1.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.5 kB)
+2023-10-20T14:06:17.8339720Z Collecting pycparser (from cffi>=1.12->cryptography>=2.0->SecretStorage>=3.2->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-20T14:06:17.8445007Z   Downloading pycparser-2.21-py2.py3-none-any.whl (118 kB)
+2023-10-20T14:06:17.8606734Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 118.7/118.7 kB 10.6 MB/s eta 0:00:00
+2023-10-20T14:06:17.8971522Z Downloading poetry-1.6.1-py3-none-any.whl (232 kB)
+2023-10-20T14:06:17.9200076Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 232.8/232.8 kB 11.3 MB/s eta 0:00:00
+2023-10-20T14:06:17.9310081Z Downloading poetry_core-1.7.0-py3-none-any.whl (426 kB)
+2023-10-20T14:06:17.9671667Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 426.4/426.4 kB 12.9 MB/s eta 0:00:00
+2023-10-20T14:06:17.9773053Z Downloading cachecontrol-0.13.1-py3-none-any.whl (22 kB)
+2023-10-20T14:06:17.9933700Z Downloading dulwich-0.21.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (513 kB)
+2023-10-20T14:06:18.0260762Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 513.8/513.8 kB 17.0 MB/s eta 0:00:00
+2023-10-20T14:06:18.0362228Z Downloading keyring-24.2.0-py3-none-any.whl (37 kB)
+2023-10-20T14:06:18.0543389Z Downloading packaging-23.2-py3-none-any.whl (53 kB)
+2023-10-20T14:06:18.0631630Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 53.0/53.0 kB 9.7 MB/s eta 0:00:00
+2023-10-20T14:06:18.0739067Z Downloading platformdirs-3.11.0-py3-none-any.whl (17 kB)
+2023-10-20T14:06:18.0881345Z Downloading poetry_plugin_export-1.5.0-py3-none-any.whl (10 kB)
+2023-10-20T14:06:18.1030839Z Downloading requests-2.31.0-py3-none-any.whl (62 kB)
+2023-10-20T14:06:18.1105550Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.6/62.6 kB 12.5 MB/s eta 0:00:00
+2023-10-20T14:06:18.1218839Z Downloading shellingham-1.5.3-py2.py3-none-any.whl (9.7 kB)
+2023-10-20T14:06:18.1356564Z Downloading tomlkit-0.12.1-py3-none-any.whl (37 kB)
+2023-10-20T14:06:18.1511486Z Downloading trove_classifiers-2023.10.18-py3-none-any.whl (13 kB)
+2023-10-20T14:06:18.1656985Z Downloading virtualenv-20.24.5-py3-none-any.whl (3.7 MB)
+2023-10-20T14:06:18.3060096Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.7/3.7 MB 27.2 MB/s eta 0:00:00
+2023-10-20T14:06:18.3169785Z Downloading certifi-2023.7.22-py3-none-any.whl (158 kB)
+2023-10-20T14:06:18.3248645Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 158.3/158.3 kB 29.3 MB/s eta 0:00:00
+2023-10-20T14:06:18.3369310Z Downloading charset_normalizer-3.3.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (137 kB)
+2023-10-20T14:06:18.3450195Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 137.1/137.1 kB 23.6 MB/s eta 0:00:00
+2023-10-20T14:06:18.3557715Z Downloading distlib-0.3.7-py2.py3-none-any.whl (468 kB)
+2023-10-20T14:06:18.3717909Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 468.9/468.9 kB 34.6 MB/s eta 0:00:00
+2023-10-20T14:06:18.3832344Z Downloading filelock-3.12.4-py3-none-any.whl (11 kB)
+2023-10-20T14:06:18.3988220Z Downloading importlib_metadata-6.8.0-py3-none-any.whl (22 kB)
+2023-10-20T14:06:18.4159676Z Downloading msgpack-1.0.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (557 kB)
+2023-10-20T14:06:18.4341060Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 558.0/558.0 kB 37.2 MB/s eta 0:00:00
+2023-10-20T14:06:18.4489281Z Downloading rapidfuzz-2.15.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.0 MB)
+2023-10-20T14:06:18.5206810Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.0/3.0 MB 44.4 MB/s eta 0:00:00
+2023-10-20T14:06:18.5320184Z Downloading urllib3-2.0.7-py3-none-any.whl (124 kB)
+2023-10-20T14:06:18.5393507Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 124.2/124.2 kB 25.7 MB/s eta 0:00:00
+2023-10-20T14:06:18.5495112Z Downloading jaraco.classes-3.3.0-py3-none-any.whl (5.9 kB)
+2023-10-20T14:06:18.5668190Z Downloading cryptography-41.0.4-cp37-abi3-manylinux_2_28_x86_64.whl (4.4 MB)
+2023-10-20T14:06:18.6374991Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.4/4.4 MB 64.6 MB/s eta 0:00:00
+2023-10-20T14:06:18.6480881Z Downloading zipp-3.17.0-py3-none-any.whl (7.4 kB)
+2023-10-20T14:06:18.6619499Z Downloading more_itertools-10.1.0-py3-none-any.whl (55 kB)
+2023-10-20T14:06:18.6690569Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 55.8/55.8 kB 12.2 MB/s eta 0:00:00
+2023-10-20T14:06:18.6810300Z Downloading cffi-1.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (464 kB)
+2023-10-20T14:06:18.6938659Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 464.8/464.8 kB 45.3 MB/s eta 0:00:00
+2023-10-20T14:06:19.2536244Z Installing collected packages: trove-classifiers, ptyprocess, distlib, zipp, urllib3, tomlkit, shellingham, rapidfuzz, pyrsistent, pyproject-hooks, pycparser, poetry-core, platformdirs, pkginfo, pexpect, packaging, msgpack, more-itertools, jeepney, installer, idna, filelock, crashtest, charset-normalizer, certifi, attrs, virtualenv, requests, jsonschema, jaraco.classes, importlib-metadata, dulwich, cleo, cffi, build, requests-toolbelt, cryptography, cachecontrol, SecretStorage, keyring, poetry-plugin-export, poetry
+2023-10-20T14:06:23.1242766Z Successfully installed SecretStorage-3.3.3 attrs-23.1.0 build-0.10.0 cachecontrol-0.13.1 certifi-2023.7.22 cffi-1.16.0 charset-normalizer-3.3.0 cleo-2.0.1 crashtest-0.4.1 cryptography-41.0.4 distlib-0.3.7 dulwich-0.21.6 filelock-3.12.4 idna-3.4 importlib-metadata-6.8.0 installer-0.7.0 jaraco.classes-3.3.0 jeepney-0.8.0 jsonschema-4.17.3 keyring-24.2.0 more-itertools-10.1.0 msgpack-1.0.7 packaging-23.2 pexpect-4.8.0 pkginfo-1.9.6 platformdirs-3.11.0 poetry-1.6.1 poetry-core-1.7.0 poetry-plugin-export-1.5.0 ptyprocess-0.7.0 pycparser-2.21 pyproject-hooks-1.0.0 pyrsistent-0.19.3 rapidfuzz-2.15.2 requests-2.31.0 requests-toolbelt-1.0.0 shellingham-1.5.3 tomlkit-0.12.1 trove-classifiers-2023.10.18 urllib3-2.0.7 virtualenv-20.24.5 zipp-3.17.0
+2023-10-20T14:06:24.1907689Z Creating virtualenv mergify-shadow-office-Hbv-ms5r-py3.11 in /home/runner/.cache/pypoetry/virtualenvs
+2023-10-20T14:06:26.6352927Z Collecting setuptools==68.2.2
+2023-10-20T14:06:26.6357320Z   Obtaining dependency information for setuptools==68.2.2 from https://files.pythonhosted.org/packages/bb/26/7945080113158354380a12ce26873dd6c1ebd88d47f5bc24e2c5bb38c16a/setuptools-68.2.2-py3-none-any.whl.metadata
+2023-10-20T14:06:26.7602460Z   Downloading setuptools-68.2.2-py3-none-any.whl.metadata (6.3 kB)
+2023-10-20T14:06:26.8337404Z Downloading setuptools-68.2.2-py3-none-any.whl (807 kB)
+2023-10-20T14:06:26.9665628Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 807.9/807.9 kB 6.5 MB/s eta 0:00:00
+2023-10-20T14:06:27.1015209Z Installing collected packages: setuptools
+2023-10-20T14:06:27.1017192Z   Attempting uninstall: setuptools
+2023-10-20T14:06:27.1055350Z     Found existing installation: setuptools 68.2.0
+2023-10-20T14:06:27.1350325Z     Uninstalling setuptools-68.2.0:
+2023-10-20T14:06:27.1457909Z       Successfully uninstalled setuptools-68.2.0
+2023-10-20T14:06:27.8207656Z Successfully installed setuptools-68.2.2
+2023-10-20T14:06:28.0940882Z 
+2023-10-20T14:06:28.0943071Z [notice] A new release of pip is available: 23.2.1 -> 23.3
+2023-10-20T14:06:28.0944573Z [notice] To update, run: pip install --upgrade pip
+2023-10-20T14:06:28.8966980Z Installing dependencies from lock file
+2023-10-20T14:06:29.5843057Z 
+2023-10-20T14:06:29.5844390Z Package operations: 116 installs, 0 updates, 0 removals
+2023-10-20T14:06:29.5845052Z 
+2023-10-20T14:06:29.5857495Z   • Installing attrs (23.1.0)
+2023-10-20T14:06:29.5888354Z   • Installing idna (2.10)
+2023-10-20T14:06:29.5911982Z   • Installing pycparser (2.21)
+2023-10-20T14:06:29.5921025Z   • Installing rpds-py (0.10.6)
+2023-10-20T14:06:29.5991048Z   • Installing sniffio (1.3.0)
+2023-10-20T14:06:29.6003824Z   • Installing typing-extensions (4.8.0)
+2023-10-20T14:06:31.7108724Z   • Installing annotated-types (0.6.0)
+2023-10-20T14:06:31.7123276Z   • Installing anyio (3.7.1)
+2023-10-20T14:06:31.7141086Z   • Installing boltons (21.0.0)
+2023-10-20T14:06:31.7172129Z   • Installing certifi (2023.7.22)
+2023-10-20T14:06:31.7178095Z   • Installing cffi (1.16.0)
+2023-10-20T14:06:31.7192814Z   • Installing h11 (0.14.0)
+2023-10-20T14:06:31.8081842Z   • Installing mdurl (0.1.2)
+2023-10-20T14:06:31.8547572Z   • Installing pydantic-core (2.10.1)
+2023-10-20T14:06:31.8902804Z   • Installing referencing (0.30.2)
+2023-10-20T14:06:31.8991866Z   • Installing wrapt (1.15.0)
+2023-10-20T14:06:31.9467115Z   • Installing zipp (3.17.0)
+2023-10-20T14:06:32.1593684Z   • Installing bracex (2.4)
+2023-10-20T14:06:32.1606016Z   • Installing charset-normalizer (3.3.0)
+2023-10-20T14:06:32.1607378Z   • Installing click (8.1.7)
+2023-10-20T14:06:32.1628204Z   • Installing cryptography (41.0.4)
+2023-10-20T14:06:32.1629242Z   • Installing deprecated (1.2.14)
+2023-10-20T14:06:32.1637076Z   • Installing face (22.0.0)
+2023-10-20T14:06:32.2302232Z   • Installing hpack (4.0.0)
+2023-10-20T14:06:32.2978478Z   • Installing httpcore (0.18.0)
+2023-10-20T14:06:32.3157341Z   • Installing hyperframe (6.0.1)
+2023-10-20T14:06:32.3491398Z   • Installing importlib-metadata (6.8.0)
+2023-10-20T14:06:32.3835172Z   • Installing iniconfig (2.0.0)
+2023-10-20T14:06:32.3972992Z   • Installing jsonschema-specifications (2023.7.1)
+2023-10-20T14:06:32.4197230Z   • Installing markdown-it-py (3.0.0)
+2023-10-20T14:06:32.4443618Z   • Installing packaging (23.2)
+2023-10-20T14:06:32.4882958Z   • Installing pluggy (1.3.0)
+2023-10-20T14:06:32.5054003Z   • Installing protobuf (4.24.4)
+2023-10-20T14:06:32.5104237Z   • Installing pydantic (2.4.2)
+2023-10-20T14:06:32.6294952Z   • Installing pygments (2.16.1)
+2023-10-20T14:06:32.6456274Z   • Installing ruamel-yaml-clib (0.2.8)
+2023-10-20T14:06:32.7215693Z   • Installing six (1.16.0)
+2023-10-20T14:06:32.8247827Z   • Installing sqlalchemy (2.0.22)
+2023-10-20T14:06:32.8380816Z   • Installing starlette (0.27.0)
+2023-10-20T14:06:32.9172317Z   • Installing ujson (5.8.0)
+2023-10-20T14:06:33.0032720Z   • Installing urllib3 (1.26.18)
+2023-10-20T14:06:33.5093767Z   • Installing bytecode (0.15.1)
+2023-10-20T14:06:33.5118433Z   • Installing cattrs (23.1.2)
+2023-10-20T14:06:33.5128732Z   • Installing click-option-group (0.5.6)
+2023-10-20T14:06:33.5140016Z   • Installing ddsketch (2.0.4)
+2023-10-20T14:06:33.5157708Z   • Installing colorama (0.4.6)
+2023-10-20T14:06:33.5173657Z   • Installing defusedxml (0.7.1)
+2023-10-20T14:06:33.5906547Z   • Installing envier (0.4.0)
+2023-10-20T14:06:33.6154567Z   • Installing fastapi (0.104.0)
+2023-10-20T14:06:33.6190858Z   • Installing glom (22.1.0)
+2023-10-20T14:06:33.6482562Z   • Installing greenlet (3.0.0)
+2023-10-20T14:06:33.6832648Z   • Installing h2 (4.1.0)
+2023-10-20T14:06:33.7005747Z   • Installing httptools (0.6.1)
+2023-10-20T14:06:33.7292983Z   • Installing httpx (0.25.0)
+2023-10-20T14:06:33.8129029Z   • Installing itsdangerous (2.1.2)
+2023-10-20T14:06:33.8219108Z   • Installing jsonschema (4.19.1)
+2023-10-20T14:06:33.8865900Z   • Installing mypy-extensions (1.0.0)
+2023-10-20T14:06:33.9048782Z   • Installing opentelemetry-api (1.20.0)
+2023-10-20T14:06:33.9315435Z   • Installing passlib (1.7.4)
+2023-10-20T14:06:33.9509141Z   • Installing pastel (0.2.1)
+2023-10-20T14:06:33.9796700Z   • Installing pathspec (0.11.2)
+2023-10-20T14:06:34.0305815Z   • Installing peewee (3.17.0)
+2023-10-20T14:06:34.0616804Z   • Installing platformdirs (3.11.0)
+2023-10-20T14:06:34.0656902Z   • Installing psycopg (3.1.12)
+2023-10-20T14:06:34.0817176Z   • Installing psycopg-binary (3.1.12)
+2023-10-20T14:06:34.1808330Z   • Installing psycopg2-binary (2.9.9)
+2023-10-20T14:06:34.2159141Z   • Installing pytest (7.4.2)
+2023-10-20T14:06:34.3894891Z   • Installing python-dotenv (1.0.0)
+2023-10-20T14:06:34.4073444Z   • Installing python-json-logger (2.0.7)
+2023-10-20T14:06:34.5035961Z   • Installing python-lsp-jsonrpc (1.0.0)
+2023-10-20T14:06:34.5499160Z   • Installing pyyaml (6.0.1)
+2023-10-20T14:06:34.5695717Z   • Installing requests (2.31.0)
+2023-10-20T14:06:34.6102849Z   • Installing rich (13.6.0)
+2023-10-20T14:06:34.6859241Z   • Installing ruamel-yaml (0.17.39)
+2023-10-20T14:06:34.8122096Z   • Installing schemainspect (3.1.1663587362)
+2023-10-20T14:06:34.9533878Z   • Installing setproctitle (1.3.3)
+2023-10-20T14:06:34.9620657Z   • Installing sqlbag (0.1.1617247075)
+2023-10-20T14:06:34.9655508Z   • Installing tomli (2.0.1)
+2023-10-20T14:06:35.0307681Z   • Installing types-pyopenssl (23.2.0.2)
+2023-10-20T14:06:35.0913495Z   • Installing uvloop (0.18.0)
+2023-10-20T14:06:35.1194672Z   • Installing watchfiles (0.21.0)
+2023-10-20T14:06:35.1342521Z   • Installing wcmatch (8.5)
+2023-10-20T14:06:35.2190771Z   • Installing websockets (11.0.3)
+2023-10-20T14:06:35.2544191Z   • Installing xmltodict (0.13.0)
+2023-10-20T14:06:48.8423798Z   • Installing asgi-ratelimit (0.10.0)
+2023-10-20T14:06:48.8437772Z   • Installing asgiref (3.7.2)
+2023-10-20T14:06:48.8459513Z   • Installing authlib (1.2.1)
+2023-10-20T14:06:48.8467320Z   • Installing black (23.10.0)
+2023-10-20T14:06:48.8477919Z   • Installing blinker (1.6.3)
+2023-10-20T14:06:48.8503867Z   • Installing daiquiri (3.2.3)
+2023-10-20T14:06:48.9509576Z   • Installing datadog (0.47.0)
+2023-10-20T14:06:48.9604478Z   • Installing ddtrace (1.20.2)
+2023-10-20T14:06:48.9815817Z   • Installing gunicorn (21.2.0)
+2023-10-20T14:06:49.0074819Z   • Installing hiredis (2.2.3)
+2023-10-20T14:06:49.1821129Z   • Installing imia (0.5.3)
+2023-10-20T14:06:49.1983532Z   • Installing migra (3.0.1663481299)
+2023-10-20T14:06:49.2696008Z   • Installing mypy (1.6.1)
+2023-10-20T14:06:49.3040982Z   • Installing poethepoet (0.24.1)
+2023-10-20T14:06:49.3061564Z   • Installing pycountry (22.3.5)
+2023-10-20T14:06:49.4398764Z   • Installing pyjwt (2.8.0)
+2023-10-20T14:06:49.5391070Z   • Installing pytest-asyncio (0.21.1)
+2023-10-20T14:06:49.5794141Z   • Installing python-multipart (0.0.6)
+2023-10-20T14:06:49.6370521Z   • Installing redis (5.0.1)
+2023-10-20T14:06:49.7065643Z   • Installing respx (0.20.2)
+2023-10-20T14:06:49.7629173Z   • Installing ruff (0.1.1)
+2023-10-20T14:06:49.8198238Z   • Installing semgrep (1.45.0)
+2023-10-20T14:06:50.0701472Z   • Installing sentry-sdk (1.32.0)
+2023-10-20T14:06:50.4406376Z   • Installing sqlalchemy-utils (0.41.1)
+2023-10-20T14:06:50.6392813Z   • Installing starsessions (2.1.3)
+2023-10-20T14:06:50.7528687Z   • Installing stripe (7.0.0)
+2023-10-20T14:06:51.2646797Z   • Installing tenacity (8.2.3)
+2023-10-20T14:06:51.3604987Z   • Installing types-pyyaml (6.0.12.12)
+2023-10-20T14:06:51.4572776Z   • Installing types-redis (4.6.0.7)
+2023-10-20T14:06:51.6463817Z   • Installing types-urllib3 (1.26.25.14)
+2023-10-20T14:06:51.7638518Z   • Installing uvicorn (0.23.2)
+2023-10-20T14:06:51.8963679Z   • Installing yamllint (1.32.0)
+2023-10-20T14:06:58.5546784Z 
+2023-10-20T14:06:58.5548318Z Installing the current project: mergify_shadow_office (0.0.1)
+2023-10-20T14:06:59.3567232Z Poe => ./tools/poetry-ci-install.sh
+2023-10-20T14:07:00.6928561Z Requirement already satisfied: setuptools==68.2.2 in /home/runner/.cache/pypoetry/virtualenvs/mergify-shadow-office-Hbv-ms5r-py3.11/lib/python3.11/site-packages (68.2.2)
+2023-10-20T14:07:02.1386110Z 
+2023-10-20T14:07:02.1387873Z [notice] A new release of pip is available: 23.2.1 -> 23.3
+2023-10-20T14:07:02.1389561Z [notice] To update, run: pip install --upgrade pip
+2023-10-20T14:07:03.2065843Z Installing dependencies from lock file
+2023-10-20T14:07:03.9224589Z 
+2023-10-20T14:07:03.9226297Z No dependencies to install or update
+2023-10-20T14:07:03.9345473Z 
+2023-10-20T14:07:03.9350049Z Installing the current project: mergify_shadow_office (0.0.1)
+2023-10-20T14:07:04.0358641Z Poe => ruff check .
+2023-10-20T14:07:04.6616266Z Poe => black --check .
+2023-10-20T14:07:06.9887764Z All done! ✨ 🍰 ✨
+2023-10-20T14:07:06.9889757Z 89 files would be left unchanged.
+2023-10-20T14:07:07.0206995Z Poe => mypy
+2023-10-20T14:07:48.5167032Z mergify_shadow_office/clients/loops.py:187: error: Argument 1 to "to_isoformat" has incompatible type "datetime | None"; expected "date | datetime"  [arg-type]
+2023-10-20T14:07:50.8983077Z Found 1 error in 1 file (checked 85 source files)
+2023-10-20T14:07:50.9250536Z Error: Sequence aborted after failed subtask 'mypy' 
+2023-10-20T14:07:50.9398446Z ##[error]Process completed with exit code 1.

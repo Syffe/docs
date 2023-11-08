@@ -1,0 +1,15 @@
+2023-10-20T07:37:33.5593745Z ##[group]Run heroku git:remote --app mergify-test-events-forwarder
+2023-10-20T07:37:33.5595230Z [36;1mheroku git:remote --app mergify-test-events-forwarder[0m
+2023-10-20T07:37:33.5596326Z [36;1mheroku config:set POETRY_VERSION=$(awk -F'==' '{print $2}' requirements-poetry.txt)[0m
+2023-10-20T07:37:33.5597349Z [36;1mheroku config:set DISABLE_POETRY_CREATE_RUNTIME_FILE=1[0m
+2023-10-20T07:37:33.5598021Z [36;1mgit push heroku main[0m
+2023-10-20T07:37:33.5711380Z shell: /usr/bin/bash -e {0}
+2023-10-20T07:37:33.5711910Z ##[endgroup]
+2023-10-20T07:37:42.8326790Z  ›   Warning: Our terms of service have changed: 
+2023-10-20T07:37:42.8329030Z  ›   https://dashboard.heroku.com/terms-of-service
+2023-10-20T07:37:43.4397790Z set git remote heroku to https://git.heroku.com/mergify-test-events-forwarder.git
+2023-10-20T07:37:46.4911911Z Setting POETRY_VERSION and restarting mergify-test-events-forwarder... !
+2023-10-20T07:37:46.4928193Z  ▸    You do not have permission to manage config vars on
+2023-10-20T07:37:46.4931897Z  ▸    mergify-test-events-forwarder. You need to have the deploy or operate
+2023-10-20T07:37:46.4932741Z  ▸    permission on this app.
+2023-10-20T07:37:46.5043456Z ##[error]Process completed with exit code 1.
