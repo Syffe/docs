@@ -26,6 +26,7 @@ def CheckRunJinja2(v: typing.Any) -> str | None:
         v,
         {
             "check_rule_name": "Rule name example",
+            "check_status": "success",
             "check_succeed": True,
             "check_succeeded": True,
             "check_conditions": "the expected condition conditions",
@@ -89,17 +90,24 @@ class PostCheckExecutor(
                 )
                 await neutral_conditions([pull_attrs])
 
-        success = False if success_conditions is None else success_conditions.match
+        if success_conditions is not None and success_conditions.match:
+            status = "success"
+        elif neutral_conditions is not None and neutral_conditions.match:
+            status = "neutral"
+        else:
+            status = "failure"
+
         success_conditions_summary = (
             "" if success_conditions is None else success_conditions.get_summary()
         )
 
         extra_variables: dict[str, str | bool] = {
             "check_rule_name": rule.name,
-            "check_succeeded": success,
+            "check_status": status,
+            "check_succeeded": status == "success",
             "check_conditions": success_conditions_summary,
             # Backward compat
-            "check_succeed": success,
+            "check_succeed": status == "success",
         }
         try:
             title = await pull_attrs.render_template(
@@ -194,7 +202,7 @@ class PostCheckAction(actions.Action):
     validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required(
             "title",
-            default="'{{ check_rule_name }}' {% if check_succeeded %}succeeded{% else %}failed{% endif %}",
+            default="'{{ check_rule_name }}'{% if check_status == 'success' %} succeeded{% elif check_status == 'failure' %} failed{% endif %}",
         ): CheckRunJinja2,
         voluptuous.Required(
             "summary", default="{{ check_conditions }}"
