@@ -2114,5 +2114,23 @@
     "Title": "potential use-after-free in gaih_inet()",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-09-12T22:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-5678",
+    "PkgName": "libssl1.1",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-5678",
+    "Title": "Generating excessively long X9.42 DH keys or checking excessively long X9.42 DH keys or parameters may be very slow",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-11-06T16:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-5678",
+    "PkgName": "openssl",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-5678",
+    "Title": "Generating excessively long X9.42 DH keys or checking excessively long X9.42 DH keys or parameters may be very slow",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-11-06T16:15:00Z"
   }
 ]
