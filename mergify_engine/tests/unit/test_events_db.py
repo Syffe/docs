@@ -6,6 +6,7 @@ import anys
 import pytest
 import sqlalchemy
 from sqlalchemy import func
+import sqlalchemy.exc
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
@@ -818,3 +819,23 @@ async def test_event_action_queue_change_consistency(
     assert event.partition_name == partition_rules.DEFAULT_PARTITION_NAME
     assert event.size == 5
     assert event.running_checks == 2
+
+
+async def test_event_cascading_delete(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.assign",
+        signals.EventAssignMetadata(
+            {"added": ["leo", "charly", "guillaume"], "removed": ["damien", "fabien"]}
+        ),
+    )
+    event = await db.scalar(sqlalchemy.select(evt_model.Event))
+    assert event
+
+    await db.execute(
+        sqlalchemy.delete(evt_model.Event).where(evt_model.Event.id == event.id)
+    )
+    with pytest.raises(sqlalchemy.exc.NoResultFound):
+        await db.get_one(evt_model.EventActionAssign, {"id": event.id})
