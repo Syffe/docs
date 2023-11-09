@@ -24,7 +24,7 @@ shared:
         - and:
             - check-success=docker-saas
             - check-success=docker-onpremise
-    - check-success=semantic-pull-request
+    - "check-success=Rule: Conventional Commit (post_check)"
     - check-success=import-checks
     - check-success=pep8
     - check-success=semgrep
@@ -47,7 +47,7 @@ queue_rules:
   - name: hotfix
     <<: *DefaultQueueOptions
     queue_conditions:
-      - check-success=semantic-pull-request
+      - "check-success=Rule: Conventional Commit (post_check)"
       - "check-success=Rule: testing requirements (post_check)"
       - or:
           # Author is engineering manager, we allow with one review
@@ -123,7 +123,7 @@ pull_request_rules:
     conditions:
       - base=main
       - label!=manual merge
-      - check-success=semantic-pull-request
+      - "check-success=Rule: Conventional Commit (post_check)"
     actions:
       queue:
 

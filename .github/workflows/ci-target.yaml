@@ -15,17 +15,6 @@ on:
       - synchronize
 
 jobs:
-  semantic-pull-request:
-    timeout-minutes: 5
-    runs-on: ubuntu-latest
-    steps:
-      # yamllint disable-line rule:line-length
-      # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-      - uses: amannn/action-semantic-pull-request@v5
-        if: ${{ !startsWith(github.head_ref, 'mergify/merge-queue/') }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   github-requests-report:
     permissions:
       contents: write
