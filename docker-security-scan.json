@@ -1415,7 +1415,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3534",
-    "Title": "use-after-free in btf_dump_name_dups in tools/lib/bpf/btf_dump.c",
+    "Title": "Kernel: use-after-free in btf_dump_name_dups in tools/lib/bpf/btf_dump.c",
     "Severity": "HIGH",
     "PublishedDate": "2022-10-17T09:15:00Z"
   },
@@ -1435,7 +1435,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3606",
-    "Title": "NULL pointer dereference in find_prog_by_sec_insn",
+    "Title": "kernel: libbpf: NULL pointer dereference in find_prog_by_sec_insn",
     "Severity": "MEDIUM",
     "PublishedDate": "2022-10-19T09:15:00Z"
   },
@@ -2005,7 +2005,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
-    "Title": "-fstack-protector fails to guard dynamic stack allocations on ARM64",
+    "Title": "gcc: -fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-09-13T09:15:00Z"
   },
@@ -2015,7 +2015,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
-    "Title": "-fstack-protector fails to guard dynamic stack allocations on ARM64",
+    "Title": "gcc: -fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-09-13T09:15:00Z"
   },
@@ -2025,7 +2025,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
-    "Title": "-fstack-protector fails to guard dynamic stack allocations on ARM64",
+    "Title": "gcc: -fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-09-13T09:15:00Z"
   },
@@ -2035,7 +2035,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
-    "Title": "-fstack-protector fails to guard dynamic stack allocations on ARM64",
+    "Title": "gcc: -fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-09-13T09:15:00Z"
   },
@@ -2045,7 +2045,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-44487",
-    "Title": "Multiple HTTP/2 enabled web servers are vulnerable to a DDoS attack (Rapid Reset Attack)",
+    "Title": "HTTP/2: Multiple HTTP/2 enabled web servers are vulnerable to a DDoS attack (Rapid Reset Attack)",
     "Severity": "HIGH",
     "PublishedDate": "2023-10-10T14:15:00Z"
   },
@@ -2055,7 +2055,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-45853",
-    "Title": "integer overflow and resultant heap-based buffer overflow in zipOpenNewFileInZip4_6",
+    "Title": "zlib: integer overflow and resultant heap-based buffer overflow in zipOpenNewFileInZip4_6",
     "Severity": "CRITICAL",
     "PublishedDate": "2023-10-14T02:15:00Z"
   },
@@ -2120,7 +2120,7 @@
     "PkgName": "libssl1.1",
     "Status": "affected",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-5678",
-    "Title": "Generating excessively long X9.42 DH keys or checking excessively long X9.42 DH keys or parameters may be very slow",
+    "Title": "openssl: Generating excessively long X9.42 DH keys or checking excessively long X9.42 DH keys or parameters may be very slow",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-11-06T16:15:00Z"
   },
@@ -2129,7 +2129,7 @@
     "PkgName": "openssl",
     "Status": "affected",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-5678",
-    "Title": "Generating excessively long X9.42 DH keys or checking excessively long X9.42 DH keys or parameters may be very slow",
+    "Title": "openssl: Generating excessively long X9.42 DH keys or checking excessively long X9.42 DH keys or parameters may be very slow",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-11-06T16:15:00Z"
   }
