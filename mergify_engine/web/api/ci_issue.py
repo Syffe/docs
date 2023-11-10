@@ -35,7 +35,6 @@ class CiIssueResponse:
     name: str
     job_name: str
     events: list[CiIssueEvent] = dataclasses.field(
-        default_factory=list,
         metadata={"description": "Event link to this CiIssue"},
     )
 
@@ -43,7 +42,6 @@ class CiIssueResponse:
 @pydantic.dataclasses.dataclass
 class CiIssuesResponse:
     issues: list[CiIssueResponse] = dataclasses.field(
-        default_factory=list,
         metadata={"description": "List of CiIssue"},
     )
 
@@ -95,6 +93,7 @@ async def query_issues(
                 short_id=result.short_id,
                 name=result.name or f"Failure of {result.job_name}",
                 job_name=result.job_name,
+                events=[],
             )
             reponses[result.id] = reponse
 
