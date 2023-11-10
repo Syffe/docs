@@ -725,23 +725,17 @@ async def test_event_queue_pause_delete_consistency(
 
 
 def test_all_known_events_supported() -> None:
-    known_evt_models = set(evt_utils.EVENT_NAME_TO_MODEL)
     known_evt_names = set(eventlogs.SUPPORTED_EVENT_NAMES)
-    # NOTE(lecrepont01): equality will be achieved after MRGFY-2461
-    # assert known_evt_names == known_evt_models
-    assert known_evt_names - known_evt_models == {
-        "action.request_reviewers",
-    }
+
+    known_evt_models = set(evt_utils.EVENT_NAME_TO_MODEL)
+    assert known_evt_names == known_evt_models
 
     known_evt_enum_types = {
         e.value for e in enumerations.EventType.__members__.values()
     }
-    # NOTE(lecrepont01): equality will be achieved after MRGFY-2461
-    # assert known_evt_names == known_evt_enum_types,
-    # "Type values inserted should be kept in sync with the known event names"
-    assert known_evt_names - known_evt_enum_types == {
-        "action.request_reviewers",
-    }
+    assert (
+        known_evt_names == known_evt_enum_types
+    ), "Type values inserted should be kept in sync with the known event names"
 
 
 async def test_event_as_dict(

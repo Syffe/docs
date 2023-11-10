@@ -160,13 +160,6 @@ class EventRequeue(EventBaseNoMetadata):
     type: typing.Literal["action.requeue"]
 
 
-class EventRequestReviewers(EventBase):
-    # FIXME(lecrepont01): remove according to MRGFY-2461
-    event: typing.Literal["action.request_reviewers"]
-    type: typing.Literal["action.request_reviewers"]
-    metadata: signals.EventRequestReviewsMetadata
-
-
 class EventRequestReviews(EventBase):
     event: typing.Literal["action.request_reviews"]
     type: typing.Literal["action.request_reviews"]
@@ -250,7 +243,6 @@ Event = (
     | EventQueueMerged
     | EventRebase
     | EventRefresh
-    | EventRequestReviewers
     | EventRequestReviews
     | EventRequeue
     | EventReview
@@ -356,8 +348,6 @@ def cast_event_item(event: GenericEvent) -> Event:
             return typing.cast(EventRebase, event)
         case "action.refresh":
             return typing.cast(EventRefresh, event)
-        case "action.request_reviewers":  # MRGFY-2461
-            return typing.cast(EventRequestReviewers, event)
         case "action.request_reviews":
             return typing.cast(EventRequestReviews, event)
         case "action.requeue":

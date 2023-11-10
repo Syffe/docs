@@ -42,7 +42,6 @@ EventName = typing.Literal[
     "action.queue.merged",
     "action.rebase",
     "action.refresh",
-    "action.request_reviewers",  # MRGFY-2461
     "action.request_reviews",
     "action.requeue",
     "action.review",
