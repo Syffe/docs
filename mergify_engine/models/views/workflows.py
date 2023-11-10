@@ -1,10 +1,10 @@
 import enum
-import typing
 
 import sqlalchemy
 import sqlalchemy.orm as orm
 
-from mergify_engine.models import github as gh_models
+from mergify_engine import models
+from mergify_engine.models.github import workflows as wf
 
 
 class FlakyStatus(enum.Enum):
@@ -12,23 +12,23 @@ class FlakyStatus(enum.Enum):
     UNKNOWN = "unknown"
 
 
-class WorkflowJobEnhanced(gh_models.WorkflowJob):
+class WorkflowJobEnhanced(models.Base, wf.WorkflowJobColumnMixin):
     cte_run_info = (
         sqlalchemy.select(
-            gh_models.WorkflowJob.workflow_run_id,
-            gh_models.WorkflowJob.name_without_matrix,
-            gh_models.WorkflowJob.matrix,
-            gh_models.WorkflowJob.repository_id,
+            wf.WorkflowJob.workflow_run_id,
+            wf.WorkflowJob.name_without_matrix,
+            wf.WorkflowJob.matrix,
+            wf.WorkflowJob.repository_id,
             sqlalchemy.case(
                 (
                     sqlalchemy.and_(
                         sqlalchemy.func.bool_or(
-                            gh_models.WorkflowJob.conclusion
-                            == gh_models.WorkflowJobConclusion.SUCCESS
+                            wf.WorkflowJob.conclusion
+                            == wf.WorkflowJobConclusion.SUCCESS
                         ),
                         sqlalchemy.func.bool_or(
-                            gh_models.WorkflowJob.conclusion
-                            == gh_models.WorkflowJobConclusion.FAILURE
+                            wf.WorkflowJob.conclusion
+                            == wf.WorkflowJobConclusion.FAILURE
                         ),
                     ),
                     FlakyStatus.FLAKY.value,
@@ -38,8 +38,7 @@ class WorkflowJobEnhanced(gh_models.WorkflowJob):
             sqlalchemy.func.sum(
                 sqlalchemy.case(
                     (
-                        gh_models.WorkflowJob.conclusion
-                        == gh_models.WorkflowJobConclusion.FAILURE,
+                        wf.WorkflowJob.conclusion == wf.WorkflowJobConclusion.FAILURE,
                         1,
                     ),
                     else_=0,
@@ -47,16 +46,16 @@ class WorkflowJobEnhanced(gh_models.WorkflowJob):
             ).label("failed_run_count"),
         )
         .group_by(
-            gh_models.WorkflowJob.workflow_run_id,
-            gh_models.WorkflowJob.name_without_matrix,
-            gh_models.WorkflowJob.matrix,
-            gh_models.WorkflowJob.repository_id,
+            wf.WorkflowJob.workflow_run_id,
+            wf.WorkflowJob.name_without_matrix,
+            wf.WorkflowJob.matrix,
+            wf.WorkflowJob.repository_id,
         )
         .cte("job_run_info_aggregate")
     )
 
     __table__ = (
-        sqlalchemy.select(gh_models.WorkflowJob)
+        sqlalchemy.select(wf.WorkflowJob)
         .add_columns(
             cte_run_info.c.flaky,
             cte_run_info.c.failed_run_count,
@@ -64,25 +63,21 @@ class WorkflowJobEnhanced(gh_models.WorkflowJob):
         .outerjoin(
             cte_run_info,
             sqlalchemy.and_(
-                cte_run_info.c.workflow_run_id == gh_models.WorkflowJob.workflow_run_id,
+                cte_run_info.c.workflow_run_id == wf.WorkflowJob.workflow_run_id,
                 cte_run_info.c.name_without_matrix
-                == gh_models.WorkflowJob.name_without_matrix,
-                cte_run_info.c.repository_id == gh_models.WorkflowJob.repository_id,
+                == wf.WorkflowJob.name_without_matrix,
+                cte_run_info.c.repository_id == wf.WorkflowJob.repository_id,
                 sqlalchemy.or_(
                     sqlalchemy.and_(
                         cte_run_info.c.matrix.is_(None),
-                        gh_models.WorkflowJob.matrix.is_(None),
+                        wf.WorkflowJob.matrix.is_(None),
                     ),
-                    cte_run_info.c.matrix == gh_models.WorkflowJob.matrix,
+                    cte_run_info.c.matrix == wf.WorkflowJob.matrix,
                 ),
             ),
         )
         .cte("workflow_job_enhanced")
     )
-
-    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore
-        "inherit_condition": gh_models.WorkflowJob.id == __table__.c.id
-    }
 
     flaky: orm.Mapped[FlakyStatus]
     failed_run_count: orm.Mapped[int]
