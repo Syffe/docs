@@ -724,12 +724,6 @@ class EventActionQueueChecksEnd(Event):
         sqlalchemy.Enum(enumerations.QueueChecksAbortStatus),
         anonymizer_config="anon.random_in_enum(abort_status)",
     )
-    unqueue_code: orm.Mapped[
-        enumerations.QueueChecksUnqueueCode | None
-    ] = orm.mapped_column(
-        sqlalchemy.Enum(enumerations.QueueChecksUnqueueCode),
-        anonymizer_config="anon.random_in_enum(unqueue_code)",
-    )
 
     speculative_check_pull_request_id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.ForeignKey("speculative_check_pull_request.id"),

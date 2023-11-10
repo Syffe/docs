@@ -121,7 +121,6 @@ async def test_api_response(
                 "abort_code": "PR_DEQUEUED",
                 "abort_reason": "Pull request has been dequeued.",
                 "abort_status": "DEFINITIVE",
-                "unqueue_code": None,
                 "speculative_check_pull_request": {
                     "number": 456,
                     "in_place": True,
@@ -191,7 +190,6 @@ async def test_api_response(
                             }
                         ],
                     },
-                    "unqueue_code": None,
                 },
             }
         ],

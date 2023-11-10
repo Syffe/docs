@@ -196,7 +196,6 @@ class EventQueueChecksEndMetadata(EventMetadata, total=False):
     queue_name: str
     queued_at: datetime.datetime
     speculative_check_pull_request: SpeculativeCheckPullRequest
-    unqueue_code: queue_utils.UnqueueCodeT | enumerations.QueueChecksUnqueueCode | None
 
 
 class EventQueueChecksStartMetadata(EventMetadata, total=False):

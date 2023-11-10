@@ -497,7 +497,6 @@ async def test_event_action_queue_checks_end_consistency(
                 "abort_code": "PR_DEQUEUED",
                 "abort_reason": "Pull request has been dequeued.",
                 "abort_status": "DEFINITIVE",
-                "unqueue_code": None,
                 "speculative_check_pull_request": {
                     "number": 456,
                     "in_place": True,
@@ -522,7 +521,6 @@ async def test_event_action_queue_checks_end_consistency(
     assert event.abort_code == "PR_DEQUEUED"
     assert event.abort_reason == "Pull request has been dequeued."
     assert event.abort_status == "DEFINITIVE"
-    assert event.unqueue_code is None
     spec_check_pr = event.speculative_check_pull_request
     assert spec_check_pr is not None
     assert spec_check_pr.number == 456

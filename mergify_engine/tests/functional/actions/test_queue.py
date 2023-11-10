@@ -2334,7 +2334,6 @@ class TestQueueAction(base.FunctionalTestBase):
                     "type": "action.queue.checks_end",
                     "metadata": {
                         "abort_code": "PR_DEQUEUED",
-                        "unqueue_code": None,
                         "abort_reason": f"Pull request #{p1['number']} has been "
                         "dequeued. Pull request automatically "
                         "merged by a `merge` action",
@@ -2971,7 +2970,6 @@ class TestQueueAction(base.FunctionalTestBase):
                         "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
-                        "unqueue_code": None,
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
                         "speculative_check_pull_request": {
                             "checks_conclusion": "success",
@@ -3291,7 +3289,6 @@ class TestQueueAction(base.FunctionalTestBase):
                         "abort_code": queue_utils.PrDequeued.unqueue_code,
                         "abort_status": "DEFINITIVE",
                         "aborted": True,
-                        "unqueue_code": None,
                         "branch": self.main_branch_name,
                         "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
