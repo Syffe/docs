@@ -90,6 +90,15 @@ async def compute_estimation(
     ):
         return None
 
+    if (
+        (car is None or car.train_car_state.ci_started_at is None)
+        and previous_eta is not None
+        and previous_eta < date.utcnow()
+    ):
+        # It means we haven't started the CI yet on this car and the ETA has been passed already,
+        # so we adjust the new eta accordingly
+        return date.utcnow() + datetime.timedelta(seconds=checks_duration)
+
     # `embarked_pull_position` starts at 0
     if previous_eta is not None and queue_utils.is_same_batch(
         embarked_pull_position,

@@ -107,6 +107,8 @@ async def repository_partitions(
 
         for train in convoy.iter_trains():
             previous_eta = None
+            previous_queue = None
+            previous_queue_idx = 0
             for position, (embarked_pull, car) in enumerate(
                 train._iter_embarked_pulls()
             ):
@@ -116,6 +118,18 @@ async def repository_partitions(
                     # This car is going to be deleted so skip it
                     continue
 
+                if previous_queue is None:
+                    previous_queue = embarked_pull.config["name"]
+
+                # We need this to get a position per queue in order for
+                # the ETA calculation to be correct, otherwise we might get
+                # two PRs in different queues with the same ETA, while the
+                # lower priority queue one doesn't have any checks started yet.
+                if embarked_pull.config["name"] != previous_queue:
+                    # not `- position - 1` in order to get 0,
+                    # since embarked_pull index starts at 0
+                    previous_queue_idx = position
+
                 previous_eta = (
                     estimated_time_of_merge
                 ) = await estimated_time_to_merge.get_estimation(
@@ -123,10 +137,12 @@ async def repository_partitions(
                     partition_rules,
                     train,
                     embarked_pull,
-                    position,
+                    position - previous_queue_idx,
                     car,
                     previous_eta,
                 )
+
+                previous_queue = embarked_pull.config["name"]
 
                 branch_partitions.partitions[train.partition_name].append(
                     PullRequestQueued(

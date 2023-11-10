@@ -2,6 +2,7 @@ import datetime
 
 import anys
 
+from mergify_engine import date
 from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -553,3 +554,200 @@ class TestPartitionsApi(base.FunctionalTestBase):
             ) > datetime.datetime.fromisoformat(
                 rprojectA.json()["pull_requests"][0]["estimated_time_of_merge"]
             ) + datetime.timedelta(hours=1)
+
+    async def test_estimated_time_of_merge_without_partitions_and_pr_in_multiple_queues(
+        self
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "speculative_checks": 1,
+                    "batch_size": 2,
+                    "allow_inplace_checks": False,
+                },
+                {
+                    "name": "lowprio",
+                    "merge_conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "speculative_checks": 1,
+                    "batch_size": 3,
+                    "allow_inplace_checks": False,
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queuedefault",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queuedefault",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+                {
+                    "name": "queuelowprio",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queuelowprio",
+                    ],
+                    "actions": {"queue": {"name": "lowprio"}},
+                },
+            ],
+        }
+
+        start_date = datetime.datetime(2023, 11, 10, tzinfo=datetime.UTC)
+        with time_travel(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            p1 = await self.create_pr()
+            p2 = await self.create_pr()
+
+            p3 = await self.create_pr()
+            await self.merge_pull_as_admin(p3["number"])
+
+            await self.add_label(p1["number"], "queuedefault")
+            await self.add_label(p2["number"], "queuedefault")
+            await self.run_engine()
+
+            tmp_pr_queue_default = await self.wait_for_pull_request("opened")
+
+        with time_travel(start_date + datetime.timedelta(hours=1), tick=True):
+            # Create an ETA of ~1hour for queue default
+            await self.create_status(tmp_pr_queue_default["pull_request"])
+            await self.run_engine()
+
+            await self.wait_for_pull_request("closed", tmp_pr_queue_default["number"])
+            await self.wait_for_all(
+                [
+                    {
+                        "event_type": "pull_request",
+                        "payload": {
+                            "number": p1["number"],
+                            "pull_request": {"merged": True},
+                        },
+                    },
+                    {
+                        "event_type": "pull_request",
+                        "payload": {
+                            "number": p2["number"],
+                            "pull_request": {"merged": True},
+                        },
+                    },
+                ]
+            )
+
+        with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
+            p1_low = await self.create_pr()
+            p2_low = await self.create_pr()
+            p3_low = await self.create_pr()
+            await self.add_label(p1_low["number"], "queuelowprio")
+            await self.add_label(p2_low["number"], "queuelowprio")
+            await self.add_label(p3_low["number"], "queuelowprio")
+            await self.run_engine()
+
+            tmp_pr_queue_lowprio = await self.wait_for_pull_request("opened")
+
+        with time_travel(start_date + datetime.timedelta(hours=3), tick=True):
+            # Create an ETA of ~1hour for queue lowprio
+            await self.create_status(tmp_pr_queue_lowprio["pull_request"])
+            await self.run_engine()
+
+            await self.wait_for_pull_request("closed", tmp_pr_queue_lowprio["number"])
+            await self.wait_for_all(
+                [
+                    {
+                        "event_type": "pull_request",
+                        "payload": {
+                            "number": p1_low["number"],
+                            "pull_request": {"merged": True},
+                        },
+                    },
+                    {
+                        "event_type": "pull_request",
+                        "payload": {
+                            "number": p2_low["number"],
+                            "pull_request": {"merged": True},
+                        },
+                    },
+                    {
+                        "event_type": "pull_request",
+                        "payload": {
+                            "number": p3_low["number"],
+                            "pull_request": {"merged": True},
+                        },
+                    },
+                ]
+            )
+
+            p4 = await self.create_pr()
+            p5 = await self.create_pr()
+            p6 = await self.create_pr()
+            p7 = await self.create_pr()
+            p8 = await self.create_pr()
+
+            await self.add_label(p4["number"], "queuedefault")
+            await self.add_label(p5["number"], "queuedefault")
+            await self.add_label(p6["number"], "queuelowprio")
+            await self.add_label(p7["number"], "queuelowprio")
+            await self.add_label(p8["number"], "queuelowprio")
+            await self.run_engine()
+
+            tmp_pr_queue_default = await self.wait_for_pull_request("opened")
+
+        with time_travel(start_date + datetime.timedelta(hours=5), tick=True):
+            # ETA should be 1 hour late
+            r = await self.admin_app.get(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/partitions",
+            )
+            assert r.status_code == 200
+            assert partr_config.DEFAULT_PARTITION_NAME in r.json()[0]["partitions"]
+            assert (
+                len(r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME]) == 5
+            )
+
+            assert (
+                start_date + datetime.timedelta(hours=4)
+                < datetime.datetime.fromisoformat(
+                    r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME][0][
+                        "estimated_time_of_merge"
+                    ]
+                )
+                < start_date + datetime.timedelta(hours=4, minutes=10)
+            )
+
+            assert (
+                start_date + datetime.timedelta(hours=4)
+                < datetime.datetime.fromisoformat(
+                    r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME][1][
+                        "estimated_time_of_merge"
+                    ]
+                )
+                < start_date + datetime.timedelta(hours=4, minutes=10)
+            )
+
+            eta_p6 = r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME][2][
+                "estimated_time_of_merge"
+            ]
+            eta_p7 = r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME][3][
+                "estimated_time_of_merge"
+            ]
+            eta_p8 = r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME][4][
+                "estimated_time_of_merge"
+            ]
+            assert eta_p6 is not None
+            assert eta_p7 is not None
+            assert eta_p8 is not None
+            assert eta_p6 == eta_p7 == eta_p8
+
+            # ETA is around ~1h
+            assert (
+                date.utcnow() + datetime.timedelta(minutes=55)
+                < datetime.datetime.fromisoformat(eta_p6)
+                <= date.utcnow() + datetime.timedelta(hours=1, minutes=5)
+            )
