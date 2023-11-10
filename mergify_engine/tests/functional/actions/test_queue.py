@@ -854,6 +854,75 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"] == "The pull request has been merged automatically"
         )
 
+    async def test_queue_reporting_when_queue_action_cancelled(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "hotfix",
+                    "queue_conditions": ["label=hotfix"],
+                },
+                {
+                    "name": "default",
+                    "queue_conditions": [
+                        "check-success=check",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        # p1 is rebased and merged after p2
+        p1 = await self.create_pr(files={"test/first.txt": "1"})
+        await self.add_label(p1["number"], "queue")
+        await self.create_check_run(
+            p1,
+            name="check",
+            conclusion="success",
+        )
+
+        # p2 gets queued and merged first in hotfix
+        p2 = await self.create_pr(files={"test/second.txt": "2"})
+        await self.add_label(p2["number"], "queue")
+        await self.add_label(p2["number"], "hotfix")
+
+        await self.run_engine()
+
+        # p2 merged and p1 rebased
+        p2_merged = await self.wait_for_pull_request("closed", p2["number"], True)
+        p1_rebased = await self.get_pull(p1["number"])
+        assert (
+            p1_rebased["base"]["sha"] == p2_merged["pull_request"]["merge_commit_sha"]
+        )
+
+        # check back after rebase
+        await self.create_check_run(
+            p1_rebased,
+            name="check",
+            conclusion="failure",
+            external_id=check_api.USER_CREATED_CHECKS,
+        )
+
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(
+            conclusion="cancelled", name="Rule: Queue (queue)"
+        )
+        assert check_run is not None
+        assert check_run["check_run"]["head_sha"] == p1_rebased["head"]["sha"]
+        assert (
+            check_run["check_run"]["output"]["title"]
+            == "The pull request has been removed from the queue `default`"
+        )
+
     async def test_queue_conditions_checks_still_queued_after_rebase(self) -> None:
         rules = {
             "queue_rules": [

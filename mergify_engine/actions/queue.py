@@ -766,13 +766,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
             unqueue_msg = f"The pull request has been removed from the queue `{self.config['name']}`"
 
-            if str(self.config["name"]) == "None":
-                self.ctxt.log.error(
-                    "queue name is unexpectedly `None`",
-                    is_string=isinstance(self.config["name"], str),
-                    logged_from="actions.queue.cancel",
-                )
-
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
                 unqueue_msg,
@@ -866,6 +859,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     self.queue_rule = self.queue_rules[
                         qr_config.QueueName(still_embarked_pull.config["name"])
                     ]
+                    self.config["name"] = still_embarked_pull.config["name"]
                     return None
             return check_api.Result(
                 check_api.Conclusion.CANCELLED,
