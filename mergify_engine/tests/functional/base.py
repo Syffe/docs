@@ -555,6 +555,20 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self.addCleanup(mock_obj.stop)
 
     async def asyncSetUp(self) -> None:
+        parent_class = type(self).mro()[1]
+        if parent_class.__name__ != FunctionalTestBase.__name__:
+            # It means that the current test class has inherited from
+            # another test class.
+            # So in order to not have the same _testMethodName twice when
+            # recording in parallel, we just add the uppercase letters
+            # of the current class name to the _testMethodName.
+            # We only add uppercase letters, because, to construct the branch name
+            # we only keep 50 letters, so adding the whole class name
+            # might lead to other issues with method names.
+            self._testMethodName = (
+                re.sub(r"[a-z]", "", type(self).__name__) + self._testMethodName
+            )
+
         super().setUp()
 
         # NOTE(sileht): don't preempted bucket consumption
