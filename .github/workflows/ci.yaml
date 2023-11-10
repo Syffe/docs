@@ -85,15 +85,12 @@ jobs:
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
           tools/poetry-ci-install.sh
-          poetry update --lock
-          if ! git diff --quiet; then
+          if ! poetry check --lock ; then
             cat <<EOF
           Your local poetry cache as some missing wheels. To fix it run:
           $ poetry cache clear PyPI --all
           $ poetry update --lock
-
-          git diff:
-          $(git diff)
+          $ poetry check --lock
           EOF
             exit 1
           fi
