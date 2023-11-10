@@ -556,7 +556,7 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
         workflow_job_events = [
             typing.cast(github_types.GitHubEventWorkflowJob, wf[-1])
             for wf in await self.wait_for_all(
-                events=[
+                expected_events=[
                     {
                         "event_type": "workflow_job",
                         "payload": {"action": "completed"},

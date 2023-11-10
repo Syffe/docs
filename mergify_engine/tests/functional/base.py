@@ -275,11 +275,11 @@ class EventReader:
 
     async def wait_for_all(
         self,
-        events: list[WaitForAllEvent],
+        expected_events: list[WaitForAllEvent],
         forward_to_engine: bool = True,
     ) -> list[EventReceived]:
         test_ids: set[str | None] = set()
-        for event_data in events:
+        for event_data in expected_events:
             LOG.log(
                 42,
                 "WAITING FOR %s/%s: %s",
@@ -290,13 +290,13 @@ class EventReader:
             test_ids.add(event_data.get("test_id"))
 
         # NOTE(Kontrolix): Copy events to not alter the orignal list
-        events = list(events)
+        expected_events = list(expected_events)
 
         received_events = []
 
         max_idx_stop = -1
         for idx, event in enumerate(self._events_already_received):
-            for expected_event_data in events:
+            for expected_event_data in expected_events:
                 if event["type"] == expected_event_data["event_type"] and self._match(
                     event["payload"], expected_event_data["payload"]
                 ):
@@ -312,7 +312,7 @@ class EventReader:
                     received_events.append(
                         EventReceived(event_type=event["type"], event=event["payload"])
                     )
-                    events.remove(expected_event_data)
+                    expected_events.remove(expected_event_data)
 
                     # Remove the event we found to not be able to reuse it
                     max_idx_stop = idx
@@ -331,7 +331,7 @@ class EventReader:
 
         started_at = time.monotonic()
         while time.monotonic() - started_at < self.EVENTS_WAITING_TIME_SECONDS:
-            if not events:
+            if not expected_events:
                 break
 
             try:
@@ -349,28 +349,28 @@ class EventReader:
 
                 continue
 
-            for expected_event_data in events:
+            for expected_event_data in expected_events:
                 if event["type"] == expected_event_data["event_type"] and self._match(
                     event["payload"], expected_event_data["payload"]
                 ):
                     received_events.append(
                         EventReceived(event_type=event["type"], event=event["payload"])
                     )
-                    events.remove(expected_event_data)
+                    expected_events.remove(expected_event_data)
                     # NOTE(Kontrolix): Restart timer every time we receive an
                     # expected event
                     started_at = time.monotonic()
 
-                    if events:
+                    if expected_events:
                         # Reconstruct the set to not query useless test_ids
-                        test_ids = {d.get("test_id") for d in events}
+                        test_ids = {d.get("test_id") for d in expected_events}
 
                     break
 
-        if events:
+        if expected_events:
             raise MissingEventTimeout(
-                event_type=events[0]["event_type"],
-                expected_payload=events[0]["payload"],
+                event_type=expected_events[0]["event_type"],
+                expected_payload=expected_events[0]["payload"],
             )
 
         return received_events
