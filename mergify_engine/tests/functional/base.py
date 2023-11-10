@@ -344,7 +344,7 @@ class EventReader:
                         found_events = True
                         await self._handled_events.put(event)
 
-                if found_events:
+                if not found_events:
                     await asyncio.sleep(self.EVENTS_POLLING_INTERVAL_SECONDS)
 
                 continue
