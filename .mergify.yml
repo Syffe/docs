@@ -24,7 +24,6 @@ shared:
         - and:
             - check-success=docker-saas
             - check-success=docker-onpremise
-    - "check-success=Rule: Conventional Commit (post_check)"
     - check-success=import-checks
     - check-success=pep8
     - check-success=semgrep
@@ -73,6 +72,7 @@ queue_rules:
     <<: *DefaultQueueOptions
     queue_conditions:
       - and: *CheckRuns
+      - "check-success=Rule: Conventional Commit (post_check)"
       - "check-success=Rule: feature requirements (post_check)"
       - "check-success=Rule: testing requirements (post_check)"
       - "check-success=Rule: changelog requirements (post_check)"
@@ -90,6 +90,7 @@ queue_rules:
     <<: *DefaultQueueOptions
     queue_conditions:
       - and: *CheckRuns
+      - "check-success=Rule: Conventional Commit (post_check)"
       - "#commits=1"
       - or:
           - and:
