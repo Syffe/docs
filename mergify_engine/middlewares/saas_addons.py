@@ -63,7 +63,14 @@ class SaasSecurityMiddleware:
                 )
                 await response(scope, receive, send)
                 return
-            LOG.warning("Unexpected downstream servers", request=request)
+            secret = request.headers.get("X-Mergify-CF-Secret", "")
+            LOG.warning(
+                "Unexpected downstream servers",
+                host=request.headers.get("host", ""),
+                secret=secret
+                if secret != settings.HTTP_CF_TO_MERGIFY_SECRET
+                else "<valid-secret>",
+            )
 
         await self.app(scope, receive, send)
 
