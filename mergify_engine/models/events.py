@@ -105,6 +105,7 @@ class Event(models.Base):
         backward: bool,
         repository_ctxt: context.Repository,
         pull_request: github_types.GitHubPullRequestNumber | None,
+        base_ref: github_types.GitHubRefType | None,
         event_type: list[enumerations.EventType] | None,
         received_from: datetime.datetime | None,
         received_to: datetime.datetime | None,
@@ -114,6 +115,7 @@ class Event(models.Base):
             "pull_request": cls.pull_request == pull_request
             if pull_request is not None
             else None,
+            "base_ref": cls.base_ref == base_ref if base_ref is not None else None,
             "event_type": cls.type.in_(event_type) if event_type is not None else None,
             "received_from": cls.received_at >= received_from
             if received_from is not None

@@ -45,7 +45,7 @@ async def insert_data(
         event_models.EventActionQueueEnter(
             repository=repo,
             pull_request=github_types.GitHubPullRequestNumber(1),
-            base_ref="main",
+            base_ref="stable",
             received_at=LATER_TIMESTAMP,
             trigger="Rule: some other rule",
             **signals.EventQueueEnterMetadata(
@@ -65,7 +65,7 @@ async def insert_data(
         event_models.EventActionMerge(
             repository=repo,
             pull_request=github_types.GitHubPullRequestNumber(2),
-            base_ref="main",
+            base_ref="stable",
             received_at=MAIN_TIMESTAMP,
             trigger="Rule: some other rule",
             branch="merge_branch",
@@ -96,7 +96,7 @@ async def test_api_response(
                 "trigger": "Rule: some other rule",
                 "repository": "Mergifyio/mergify-engine",
                 "pull_request": 2,
-                "base_ref": "main",
+                "base_ref": "stable",
                 "event": "action.merge",
                 "type": "action.merge",
                 "metadata": {"branch": "merge_branch"},
@@ -294,6 +294,16 @@ async def test_api_query_params(
     assert r["total"] is None
     assert r["size"] == 2
     assert {e["type"] for e in r["events"]} == {"action.comment", "action.queue.enter"}
+
+    # base_ref qp
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs?base_ref=stable",
+        headers={"Authorization": api_token.api_token},
+    )
+    r = response.json()
+    assert r["total"] is None
+    assert r["size"] == 2
+    assert {e["type"] for e in r["events"]} == {"action.queue.enter", "action.merge"}
 
     # event_type qp
     response = await web_client.get(

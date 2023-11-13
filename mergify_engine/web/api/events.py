@@ -62,6 +62,10 @@ async def get_repository_events(
         github_types.GitHubPullRequestNumber | None,
         fastapi.Query(description="Get the events for the specified pull request"),
     ] = None,
+    base_ref: typing.Annotated[
+        github_types.GitHubRefType | None,
+        fastapi.Query(description="Get events for PRs to the given base ref"),
+    ] = None,
     event_type: typing.Annotated[
         list[enumerations.EventType] | None,
         fastapi.Query(description="The specific types of events to select"),
@@ -80,6 +84,7 @@ async def get_repository_events(
         page,
         repository,
         pull_request,
+        base_ref,
         event_type,
         received_from,
         received_to,
