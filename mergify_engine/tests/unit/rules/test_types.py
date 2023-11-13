@@ -75,6 +75,12 @@ def test_jinja2_custom_attr() -> None:
     assert types.Jinja2WithNone(s, {"role_status": "passed"}) == s
 
 
+def test_jinja2_invalid_format_string() -> None:
+    with pytest.raises(voluptuous.Invalid) as x:
+        types.Jinja2('foo  {{ "{foo}".format(0) }}')
+    assert str(x.value) == "Template syntax error"
+
+
 @pytest.mark.parametrize(
     "login",
     ("foobar", "foobaz", "foo-baz", "f123", "123foo", "foouser_barorgname"),

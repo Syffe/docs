@@ -745,6 +745,12 @@ class PullRequest(BasePullRequest):
     def _template_exceptions_mapping() -> abc.Iterator[None]:
         try:
             yield
+        except KeyError:
+            # NOTE(sileht): it's far from being ideal, but I don't find a better place
+            # to catch issue with str.format(), Jinja2 has a customer "safe" version of this
+            # but KeyError from this formatter are not converted into a TemplateError
+            # NOTE(sileht): we cannot use the KeyError message to avoid code/html injection
+            raise RenderTemplateFailure("invalid arguments passed to format()")
         except jinja2.exceptions.TemplateSyntaxError as tse:
             raise RenderTemplateFailure(tse.message or "", tse.lineno)
         except jinja2.exceptions.TemplateError as te:
