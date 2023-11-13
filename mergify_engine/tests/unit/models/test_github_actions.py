@@ -67,7 +67,7 @@ async def test_get_job_name_and_matrix(
         ),
     ],
 )
-@pytest.mark.populated_db_datasets("TestApiGhaFailedJobsDataset")
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueDataset")
 async def test_is_rerun_needed(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     job_ref: str,

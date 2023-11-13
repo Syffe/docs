@@ -352,6 +352,7 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
         )
         async with openai_api.OpenAIClient() as openai_client:
             job_ids_to_compute_cosine_similarity = []
+            refresh_ready_job_ids = []
             for job in jobs:
                 with log_exception_and_maybe_retry(job):
                     if job.log_embedding is None:
@@ -363,11 +364,9 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                     ):
                         await CiIssue.link_job_to_ci_issue(session, job)
 
-                    if (
-                        job.ci_issue is not None
-                        and job.embedded_log is not None
-                        and job.ci_issue.name is None
-                    ):
+                        refresh_ready_job_ids.append(job.id)
+
+                    if job.ci_issue is not None and job.ci_issue.name is None:
                         await set_ci_issue_name(openai_client, job)
 
                 if job.log_embedding is not None and job.neighbours_computed_at is None:
@@ -379,8 +378,6 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
         )
         await session.commit()
 
-        await flaky_check.send_pull_refresh_for_jobs(
-            redis_links, job_ids_to_compute_cosine_similarity
-        )
+        await flaky_check.send_pull_refresh_for_jobs(redis_links, refresh_ready_job_ids)
 
         return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0

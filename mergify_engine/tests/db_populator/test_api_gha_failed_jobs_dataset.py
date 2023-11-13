@@ -7,6 +7,7 @@ import sqlalchemy.ext.asyncio
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.models import github as gh_models
+from mergify_engine.models.ci_issue import CiIssue
 from mergify_engine.tests.db_populator import DbPopulator
 
 
@@ -336,3 +337,24 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         uncomputed_job.log_status = gh_models.WorkflowJobLogStatus.UNKNOWN
 
         cls.internal_ref["OneAccount/OneRepo/failed_job_uncomputed"] = uncomputed_job.id
+
+
+class TestGhaFailedJobsLinkToCissueDataset(DbPopulator):
+    @classmethod
+    async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
+        await cls.load(session, {"TestApiGhaFailedJobsDataset"})
+        for ref in [
+            "OneAccount/OneRepo/flaky_failed_job_attempt_2",
+            "OneAccount/OneRepo/failed_job_with_flaky_nghb",
+            "OneAccount/OneRepo/failed_job_with_no_flaky_nghb",
+            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb",
+        ]:
+            job = (
+                await session.execute(
+                    sqlalchemy.select(gh_models.WorkflowJob).where(
+                        gh_models.WorkflowJob.id == DbPopulator.internal_ref[ref]
+                    )
+                )
+            ).scalar_one()
+
+            await CiIssue.link_job_to_ci_issue(session, job)
