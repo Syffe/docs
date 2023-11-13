@@ -197,6 +197,7 @@ pull_request_rules:
     conditions:
       - conflict
       - files=poetry.lock
+      - -author=dependabot[bot]
     actions:
       github_actions:
         workflow:
