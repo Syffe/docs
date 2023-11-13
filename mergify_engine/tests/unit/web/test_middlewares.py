@@ -3,6 +3,7 @@ import logging
 import asgi_lifespan
 import fastapi
 import fastapi.testclient
+import pydantic
 import pytest
 import starlette
 import starlette.middleware.sessions
@@ -256,7 +257,9 @@ async def test_content_length_middleware() -> None:
 
 
 async def test_saas_addons_middleware(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(settings, "HTTP_CF_TO_MERGIFY_SECRET", "so-secret")
+    monkeypatch.setattr(
+        settings, "HTTP_CF_TO_MERGIFY_SECRET", pydantic.SecretStr("so-secret")
+    )
     monkeypatch.setattr(settings, "HTTP_CF_TO_MERGIFY_HOSTS", ["allowed.example.com"])
     monkeypatch.setattr(settings, "HTTP_GITHUB_TO_MERGIFY_HOST", "github.example.com")
 

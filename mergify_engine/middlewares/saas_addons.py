@@ -68,7 +68,8 @@ class SaasSecurityMiddleware:
                 "Unexpected downstream servers",
                 host=request.headers.get("host", ""),
                 secret=secret
-                if secret != settings.HTTP_CF_TO_MERGIFY_SECRET
+                if settings.HTTP_CF_TO_MERGIFY_SECRET is None
+                or secret != settings.HTTP_CF_TO_MERGIFY_SECRET.get_secret_value()
                 else "<valid-secret>",
             )
 
@@ -81,7 +82,10 @@ class SaasSecurityMiddleware:
         host = request.headers.get("host", "").split(":")[0]
         if host in settings.HTTP_CF_TO_MERGIFY_HOSTS:
             secret = request.headers.get("X-Mergify-CF-Secret")
-            if secret == settings.HTTP_CF_TO_MERGIFY_SECRET:
+            if (
+                settings.HTTP_CF_TO_MERGIFY_SECRET is not None
+                and secret == settings.HTTP_CF_TO_MERGIFY_SECRET.get_secret_value()
+            ):
                 return
 
         elif host == settings.HTTP_GITHUB_TO_MERGIFY_HOST:
