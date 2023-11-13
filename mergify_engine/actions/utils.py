@@ -226,21 +226,21 @@ def get_invalid_credentials_report(
     )
 
 
-async def get_unqueue_reason_from_outcome(
+async def get_dequeue_reason_from_outcome(
     ctxt: context.Context, error_if_unknown: bool = True
-) -> queue_utils.BaseUnqueueReason:
+) -> queue_utils.BaseDequeueReason:
     from mergify_engine.queue.merge_train import train_car_state as tcs
 
     check = await ctxt.get_merge_queue_check_run()
     if check is None:
         raise MissingMergeQueueCheckRun(
-            "get_unqueue_reason_from_outcome() called but check is not there"
+            "get_dequeue_reason_from_outcome() called but check is not there"
         )
 
     if check["conclusion"] == "cancelled":
-        # NOTE(sileht): should not be possible as unqueue command already
+        # NOTE(sileht): should not be possible as dequeue command already
         # remove the pull request from the queue
-        return queue_utils.PrDequeued(ctxt.pull["number"], " by an `unqueue` command")
+        return queue_utils.PrDequeued(ctxt.pull["number"], " by a `dequeue` command")
 
     train_car_state = tcs.TrainCarStateForSummary.deserialize_from_summary(check)
     if (
@@ -262,4 +262,4 @@ async def get_unqueue_reason_from_outcome(
             ctxt.pull["number"], " due to failing checks or checks timeout"
         )
 
-    return tcs.unqueue_reason_from_train_car_state(train_car_state)
+    return tcs.dequeue_reason_from_train_car_state(train_car_state)

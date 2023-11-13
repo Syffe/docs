@@ -1450,7 +1450,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         else:
             aborted = True
             abort_reason_str = str(cancel_reason)
-            abort_code = typing.cast(queue_utils.AbortCodeT, cancel_reason.unqueue_code)
+            abort_code = typing.cast(queue_utils.AbortCodeT, cancel_reason.dequeue_code)
 
         raw_unsuccessful_checks = [
             check

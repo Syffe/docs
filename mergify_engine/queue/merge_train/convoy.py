@@ -191,15 +191,15 @@ class Convoy:
         partition_rules: partr_config.PartitionRules,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        # FIXME(jd): This should accept only BaseUnqueueReason
-        unqueue_reason: queue_utils.BaseQueueCancelReason,
+        # FIXME(jd): This should accept only BaseDequeueReason
+        dequeue_reason: queue_utils.BaseQueueCancelReason,
         exclude_ref: github_types.GitHubRefType | None = None,
     ) -> None:
         async for convoy in cls.iter_convoys(repository, queue_rules, partition_rules):
             if exclude_ref is not None and exclude_ref == convoy.ref:
                 continue
             for train in convoy.iter_trains():
-                await train.remove_pull(pull_number, signal_trigger, unqueue_reason)
+                await train.remove_pull(pull_number, signal_trigger, dequeue_reason)
 
     async def add_pull(
         self,

@@ -141,7 +141,7 @@ class QueueExecutor(
     queue_rules: qr_config.QueueRules
     partition_rules: partr_config.PartitionRules
 
-    UNQUEUE_DOCUMENTATION = f"""
+    DEQUEUE_DOCUMENTATION = f"""
 You can take a look at `{constants.MERGE_QUEUE_SUMMARY_NAME}` check runs for more details.
 
 In case of a failure due to a flaky test, you should first retrigger the CI.
@@ -521,7 +521,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     original_pull_request_number=self.ctxt.pull["number"],
                 )
 
-        unqueue_msg = (
+        dequeue_msg = (
             f"The pull request has been removed from the queue `{self.config['name']}`"
         )
 
@@ -533,7 +533,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
         # NOTE(sileht): the pull request gets checked and then changed
-        # by user, we should unqueue and requeue it as the conditions still match.
+        # by user, we should dequeue and requeue it as the conditions still match.
         if await self.ctxt.synchronized_by_user_at():
             unexpected_changes = queue_utils.UnexpectedQueueChange(
                 str(
@@ -563,20 +563,20 @@ Then, re-embark the pull request into the merge queue by posting the comment
             if isinstance(self.rule, prr_config.CommandRule):
                 return check_api.Result(
                     check_api.Conclusion.CANCELLED,
-                    unqueue_msg,
-                    f"{unexpected_changes!s}.\n{self.UNQUEUE_DOCUMENTATION}",
+                    dequeue_msg,
+                    f"{unexpected_changes!s}.\n{self.DEQUEUE_DOCUMENTATION}",
                 )
 
         if not await self._should_be_queued(self.ctxt):
-            unqueue_reason = await action_utils.get_unqueue_reason_from_outcome(
+            dequeue_reason = await action_utils.get_dequeue_reason_from_outcome(
                 self.ctxt
             )
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
-                unqueue_msg,
-                f"{unqueue_reason!s}.\n{self.UNQUEUE_DOCUMENTATION}",
+                dequeue_msg,
+                f"{dequeue_reason!s}.\n{self.DEQUEUE_DOCUMENTATION}",
             )
-            await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
+            await self._dequeue_pull_request(convoy, cars, dequeue_reason, result)
             return result
 
         pull_queue_config = queue.PullQueueConfig(
@@ -628,8 +628,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             raise
 
         if result.conclusion is not check_api.Conclusion.PENDING:
-            unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
-            await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
+            dequeue_reason = await self.get_dequeue_reason_from_action_result(result)
+            await self._dequeue_pull_request(convoy, cars, dequeue_reason, result)
         else:
             # Reset MERGE_QUEUE_SUMMARY_NAME check_run to neutral only if it exists already
             merge_queue_check_run = await self.ctxt.get_merge_queue_check_run()
@@ -662,11 +662,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         return result
 
-    async def _unqueue_pull_request(
+    async def _dequeue_pull_request(
         self,
         convoy: merge_train.Convoy,
         cars: list[merge_train.TrainCar],
-        unqueue_reason: queue_utils.BaseUnqueueReason,
+        dequeue_reason: queue_utils.BaseDequeueReason,
         result: check_api.Result,
     ) -> None:
         pull_request_rule_has_unmatched = (
@@ -709,7 +709,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
         await convoy.remove_pull(
-            self.ctxt.pull["number"], self.rule.get_signal_trigger(), unqueue_reason
+            self.ctxt.pull["number"], self.rule.get_signal_trigger(), dequeue_reason
         )
 
     async def cancel(self) -> check_api.Result:
@@ -756,22 +756,22 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "The pull request rule doesn't match anymore",
                 cancel_query_result.summary,
             )
-            unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
-            await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
+            dequeue_reason = await self.get_dequeue_reason_from_action_result(result)
+            await self._dequeue_pull_request(convoy, cars, dequeue_reason, result)
             return result
 
         if not await self._should_be_queued(self.ctxt):
-            unqueue_reason = await action_utils.get_unqueue_reason_from_outcome(
+            dequeue_reason = await action_utils.get_dequeue_reason_from_outcome(
                 self.ctxt
             )
-            unqueue_msg = f"The pull request has been removed from the queue `{self.config['name']}`"
+            dequeue_msg = f"The pull request has been removed from the queue `{self.config['name']}`"
 
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
-                unqueue_msg,
-                f"{unqueue_reason!s}.\n{self.UNQUEUE_DOCUMENTATION}",
+                dequeue_msg,
+                f"{dequeue_reason!s}.\n{self.DEQUEUE_DOCUMENTATION}",
             )
-            await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
+            await self._dequeue_pull_request(convoy, cars, dequeue_reason, result)
             return result
 
         queue_freeze = await convoy.get_current_queue_freeze(self.config["name"])
@@ -781,8 +781,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
         )
 
         if result.conclusion is not check_api.Conclusion.PENDING:
-            unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
-            await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
+            dequeue_reason = await self.get_dequeue_reason_from_action_result(result)
+            await self._dequeue_pull_request(convoy, cars, dequeue_reason, result)
         return result
 
     async def _render_bot_accounts(self) -> None:
@@ -927,19 +927,19 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         if result is not None:
             if result.conclusion is not check_api.Conclusion.PENDING:
-                unqueue_reason = await self.get_unqueue_reason_from_action_result(
+                dequeue_reason = await self.get_dequeue_reason_from_action_result(
                     result
                 )
-                await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
+                await self._dequeue_pull_request(convoy, cars, dequeue_reason, result)
 
         return result
 
-    async def get_unqueue_reason_from_action_result(
+    async def get_dequeue_reason_from_action_result(
         self, result: check_api.Result
-    ) -> queue_utils.BaseUnqueueReason:
+    ) -> queue_utils.BaseDequeueReason:
         if result.conclusion is check_api.Conclusion.PENDING:
             raise RuntimeError(
-                "get_unqueue_reason_from_action_result() on PENDING result"
+                "get_dequeue_reason_from_action_result() on PENDING result"
             )
         if result.conclusion is check_api.Conclusion.SUCCESS:
             if self.ctxt.pull["merge_commit_sha"] is None:
@@ -1034,7 +1034,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 )
                 # NOTE(sileht): if the pull request rules are pending we wait their
                 # match before checking queue rules states, in case of one
-                # condition suddently unqueue the pull request.
+                # condition suddently dequeue the pull request.
                 # TODO(sileht): we may want to make this behavior configurable as
                 # people having slow/long CI running only on pull request rules, we
                 # may want to merge it before it finishes.

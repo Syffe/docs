@@ -5,7 +5,7 @@ from mergify_engine.actions import utils
 from mergify_engine.tests.unit import conftest
 
 
-async def test_get_unqueue_reason_from_outcome_outdated_check_run(
+async def test_get_dequeue_reason_from_outcome_outdated_check_run(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     async def fake_merge_queue_check_run_getter() -> dict[str, typing.Any]:
@@ -33,4 +33,4 @@ async def test_get_unqueue_reason_from_outcome_outdated_check_run(
     with mock.patch.object(
         context, "get_merge_queue_check_run", fake_merge_queue_check_run_getter
     ):
-        await utils.get_unqueue_reason_from_outcome(context)
+        await utils.get_dequeue_reason_from_outcome(context)

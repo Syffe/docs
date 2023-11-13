@@ -261,9 +261,9 @@ async def fake_train_car_check_mergeability(
 
 async def fake_train_car_end_checking(
     inner_self: merge_train.TrainCar,
-    reason: queue_utils.BaseUnqueueReason,
+    reason: queue_utils.BaseDequeueReason,
     not_reembarked_pull_requests: dict[
-        github_types.GitHubPullRequestNumber, queue_utils.BaseUnqueueReason
+        github_types.GitHubPullRequestNumber, queue_utils.BaseDequeueReason
     ],
 ) -> None:
     pass

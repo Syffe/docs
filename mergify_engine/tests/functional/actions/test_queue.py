@@ -3355,7 +3355,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                 )
                             ),
                         ),
-                        "abort_code": queue_utils.PrDequeued.unqueue_code,
+                        "abort_code": queue_utils.PrDequeued.dequeue_code,
                         "abort_status": "DEFINITIVE",
                         "aborted": True,
                         "branch": self.main_branch_name,
@@ -3446,7 +3446,7 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
         )
 
-        await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio dequeue")
         await self.run_engine()
 
         events = await self.wait_for_all(
@@ -3499,7 +3499,7 @@ class TestQueueAction(base.FunctionalTestBase):
             "The pull request has been removed from the queue"
         )
         assert check["output"]["summary"].startswith(
-            f"Pull request #{p1['number']} has been dequeued by an `unqueue` command.\n"
+            f"Pull request #{p1['number']} has been dequeued by a `dequeue` command.\n"
         )
 
         check = first(
@@ -8529,7 +8529,7 @@ pull_request_rules:
 
         await self.add_label(p1["number"], "queue")
         await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
-        await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio dequeue")
         await self.run_engine()
 
         # queue command's comment
@@ -8582,7 +8582,7 @@ pull_request_rules:
 
         assert (
             check_run["check_run"]["output"]["title"]
-            == "The pull request has been removed from the queue `default` by an `unqueue` command"
+            == "The pull request has been removed from the queue `default` by a `dequeue` command"
         )
 
     async def test_unqueue_then_requeue_not_in_first_place_check_run(self) -> None:
@@ -9280,11 +9280,11 @@ class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
             in comment_p1_rep["comment"]["body"]
         )
 
-        await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio dequeue")
         await self.run_engine()
 
         comment_p1_rep = await self.wait_for_issue_comment(str(p1["number"]), "created")
-        assert "Cannot use the command `unqueue`" in comment_p1_rep["comment"]["body"]
+        assert "Cannot use the command `dequeue`" in comment_p1_rep["comment"]["body"]
         assert (
             f"The [subscription]({settings.DASHBOARD_UI_FRONT_URL}/github/mergifyio-testing/subscription) needs to be updated to enable this feature"
             in comment_p1_rep["comment"]["body"]

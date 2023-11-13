@@ -290,7 +290,7 @@ class TrainCarState:
         add_missing_end_date: bool,
     ) -> int:
         if len(start_dates) - 1 == len(end_dates):
-            # In this case, that means a PR has been unexpectedly unqueued
+            # In this case, that means a PR has been unexpectedly dequeued
             # and the train car did not have time to receive an `update_state`.
             if add_missing_end_date:
                 end_dates.append(date.utcnow())
@@ -369,9 +369,9 @@ def extract_encoded_train_car_state_data_from_summary(
     return None
 
 
-def unqueue_reason_from_train_car_state(
+def dequeue_reason_from_train_car_state(
     train_car_state: TrainCarState | TrainCarStateForSummary,
-) -> queue_utils.BaseUnqueueReason:
+) -> queue_utils.BaseDequeueReason:
     if train_car_state.outcome in (
         merge_train.TrainCarOutcome.DRAFT_PR_CHANGE,
         merge_train.TrainCarOutcome.BASE_BRANCH_CHANGE,

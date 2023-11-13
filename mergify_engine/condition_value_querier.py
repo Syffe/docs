@@ -228,11 +228,11 @@ class BasePullRequest:
             try:
                 return (
                     (
-                        await action_utils.get_unqueue_reason_from_outcome(
+                        await action_utils.get_dequeue_reason_from_outcome(
                             ctxt, error_if_unknown=False
                         )
                     )
-                    .unqueue_code.lower()
+                    .dequeue_code.lower()
                     .replace("_", "-")
                 )
             except (action_utils.MissingMergeQueueCheckRun, tcs.UnexpectedOutcome):

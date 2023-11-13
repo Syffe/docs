@@ -21,13 +21,13 @@ if typing.TYPE_CHECKING:
     from mergify_engine import context
 
 
-class UnqueueExecutorConfig(typing.TypedDict):
+class DequeueExecutorConfig(typing.TypedDict):
     pass
 
 
 @dataclasses.dataclass
-class UnqueueExecutor(
-    actions.ActionExecutor["UnqueueCommand", "UnqueueExecutorConfig"]
+class DequeueExecutor(
+    actions.ActionExecutor["DequeueCommand", "DequeueExecutorConfig"]
 ):
     queue_rules: qr_config.QueueRules
     partition_rules: partr_config.PartitionRules
@@ -35,14 +35,14 @@ class UnqueueExecutor(
     @classmethod
     async def create(
         cls,
-        action: UnqueueCommand,
+        action: DequeueCommand,
         ctxt: context.Context,
         rule: prr_config.EvaluatedPullRequestRule,
-    ) -> UnqueueExecutor:
+    ) -> DequeueExecutor:
         return cls(
             ctxt,
             rule,
-            UnqueueExecutorConfig(),
+            DequeueExecutorConfig(),
             action.queue_rules,
             action.partition_rules,
         )
@@ -75,7 +75,7 @@ class UnqueueExecutor(
                     command=command,
                     result=check_api.Result(
                         conclusion=check_api.Conclusion.CANCELLED,
-                        title="This `queue` command has been cancelled by an `unqueue` command",
+                        title="This `queue` command has been cancelled by a `dequeue` command",
                         summary="",
                     ),
                     action_is_running=True,
@@ -108,7 +108,7 @@ class UnqueueExecutor(
             await self.ctxt.get_merge_queue_check_run_name(),
             check_api.Result(
                 check_api.Conclusion.CANCELLED,
-                title=f"The pull request has been removed from the queue `{queue_name}` by an `unqueue` command",
+                title=f"The pull request has been removed from the queue `{queue_name}` by a `dequeue` command",
                 summary="",
             ),
             details_url=await dashboard.get_queues_url_from_context(self.ctxt, convoy),
@@ -126,7 +126,7 @@ class UnqueueExecutor(
             self.ctxt.pull["number"],
             self.rule.get_signal_trigger(),
             queue_utils.PrDequeued(
-                self.ctxt.pull["number"], " by an `unqueue` command."
+                self.ctxt.pull["number"], " by a `dequeue` command."
             ),
         )
         return check_api.Result(
@@ -139,11 +139,11 @@ class UnqueueExecutor(
         return actions.CANCELLED_CHECK_REPORT
 
 
-class UnqueueCommand(actions.Action):
+class DequeueCommand(actions.Action):
     flags = actions.ActionFlag.NONE
 
     validator: typing.ClassVar[dict[typing.Any, typing.Any]] = {}
-    executor_class = UnqueueExecutor
+    executor_class = DequeueExecutor
 
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
         "sender-permission>=write"

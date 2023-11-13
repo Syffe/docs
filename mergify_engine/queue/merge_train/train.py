@@ -560,8 +560,8 @@ class Train:
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        # FIXME(jd): This should accept only BaseUnqueueReason
-        unqueue_reason: queue_utils.BaseQueueCancelReason,
+        # FIXME(jd): This should accept only BaseDequeueReason
+        dequeue_reason: queue_utils.BaseQueueCancelReason,
     ) -> None:
         if not self.is_queued(pull_number):
             self.log.info(
@@ -572,18 +572,18 @@ class Train:
             )
             return
 
-        if isinstance(unqueue_reason, queue_utils.PrMerged):
+        if isinstance(dequeue_reason, queue_utils.PrMerged):
             await self._remove_merged_head_of_train(
-                pull_number, signal_trigger, unqueue_reason
+                pull_number, signal_trigger, dequeue_reason
             )
         else:
-            await self._remove_pull(pull_number, signal_trigger, unqueue_reason)
+            await self._remove_pull(pull_number, signal_trigger, dequeue_reason)
 
     async def _remove_merged_head_of_train(
         self,
         pr_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        unqueue_reason: queue_utils.PrMerged,
+        dequeue_reason: queue_utils.PrMerged,
     ) -> None:
         embarked_pull = self._cars[0].still_queued_embarked_pulls[0]
         if embarked_pull.user_pull_request_number != pr_number:
@@ -598,7 +598,7 @@ class Train:
                 "position": 0,
                 "queued_at": embarked_pull.queued_at,
                 "queue_name": embarked_pull.config["name"],
-                "reason": str(unqueue_reason),
+                "reason": str(dequeue_reason),
                 "seconds_waiting_for_schedule": self._cars[
                     0
                 ].train_car_state.seconds_waiting_for_schedule,
@@ -612,7 +612,7 @@ class Train:
         # other running cars
         await self._cars[0].send_checks_end_signal(
             self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number,
-            unqueue_reason,
+            dequeue_reason,
             "DEFINITIVE",
         )
         del self._cars[0].still_queued_embarked_pulls[0]
@@ -621,7 +621,7 @@ class Train:
             await deleted_car.end_checking(reason=None, not_reembarked_pull_requests={})
             self._cars = self._cars[1:]
 
-        self._current_base_sha = unqueue_reason.sha
+        self._current_base_sha = dequeue_reason.sha
 
         await self.save()
         self.log.info(
@@ -651,23 +651,23 @@ class Train:
         self,
         pr_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        # FIXME(jd): This should accept only BaseUnqueueReason
-        unqueue_reason: queue_utils.BaseQueueCancelReason,
+        # FIXME(jd): This should accept only BaseDequeueReason
+        dequeue_reason: queue_utils.BaseQueueCancelReason,
     ) -> None:
         position, embarked_pull_with_car = self.find_embarked_pull(pr_number)
         if position is None or embarked_pull_with_car is None:
             return
 
         other_prs_reason: queue_utils.BaseQueueCancelReason
-        if isinstance(unqueue_reason, queue_utils.UnexpectedQueueChange):
-            other_prs_reason = unqueue_reason
+        if isinstance(dequeue_reason, queue_utils.UnexpectedQueueChange):
+            other_prs_reason = dequeue_reason
         else:
             other_prs_reason = queue_utils.PrAheadDequeued(pr_number=pr_number)
 
         await self._slice_cars(
             position,
             reason=other_prs_reason,
-            drop_pull_requests={pr_number: unqueue_reason},
+            drop_pull_requests={pr_number: dequeue_reason},
         )
         await self.save()
         await self._send_queue_leave_signal(
@@ -675,7 +675,7 @@ class Train:
             embarked_pull_with_car.embarked_pull,
             embarked_pull_with_car.car,
             signal_trigger,
-            unqueue_reason,
+            dequeue_reason,
         )
         await self.refresh_pulls(
             source=f"pull {pr_number} removed from queue",
@@ -683,7 +683,7 @@ class Train:
         )
 
     async def remove_failed_car(self, car: train_car.TrainCar) -> None:
-        unqueue_reason = tcs_import.unqueue_reason_from_train_car_state(
+        dequeue_reason = tcs_import.dequeue_reason_from_train_car_state(
             car.train_car_state
         )
         other_prs_reason = queue_utils.PrAheadDequeued(
@@ -696,11 +696,11 @@ class Train:
         await self._slice_cars(
             position,
             reason=other_prs_reason,
-            drop_pull_requests={pr: unqueue_reason for pr in drop_pull_requests},
+            drop_pull_requests={pr: dequeue_reason for pr in drop_pull_requests},
         )
         for i, ep in enumerate(car.still_queued_embarked_pulls):
             await self._send_queue_leave_signal(
-                position + i, ep, car, "merge queue internal", unqueue_reason
+                position + i, ep, car, "merge queue internal", dequeue_reason
             )
 
         await self.save()
@@ -715,8 +715,8 @@ class Train:
         embarked_pull: ep_import.EmbarkedPull,
         car: train_car.TrainCar | None,
         signal_trigger: str,
-        # FIXME(jd): This should accept only BaseUnqueueReason
-        unqueue_reason: queue_utils.BaseQueueCancelReason,
+        # FIXME(jd): This should accept only BaseDequeueReason
+        dequeue_reason: queue_utils.BaseQueueCancelReason,
     ) -> None:
         event_metadata = signals.EventQueueLeaveMetadata(
             {
@@ -726,7 +726,7 @@ class Train:
                 "position": position,
                 "queued_at": embarked_pull.queued_at,
                 "queue_name": embarked_pull.config["name"],
-                "reason": str(unqueue_reason),
+                "reason": str(dequeue_reason),
                 "seconds_waiting_for_schedule": 0,
                 "seconds_waiting_for_freeze": 0,
             }
@@ -753,7 +753,7 @@ class Train:
             gh_pull=embarked_pull.user_pull_request_number,
             queue_name=embarked_pull.config["name"],
             gh_branch=self.convoy.ref,
-            reason=str(unqueue_reason),
+            reason=str(dequeue_reason),
             **self.log_queue_extras,
         )
 

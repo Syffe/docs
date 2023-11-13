@@ -407,7 +407,7 @@ async def pre_commands_run(
             # Otherwise the conditions would still match and the `cancel` might not do anything.
             # eg: if we do `queue foo` and then `queue bar`, the requirements of the
             # queue `bar` will be passed to the `cancel` of the queue action which will
-            # result in the PR being unqueued.
+            # result in the PR being dequeued.
             command,
             loaded_command_state,
             force_run=True,

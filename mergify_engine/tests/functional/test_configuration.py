@@ -785,7 +785,7 @@ did not find expected alphabetic or numeric character
         assert len(config["queue_rules"].rules) == 2
         # One from default config, one from extends, one from this repo
         assert len(config["pull_request_rules"].rules) == 3
-        assert len(config["commands_restrictions"]) == 9
+        assert len(config["commands_restrictions"]) == 10
 
         rule = config["pull_request_rules"].rules[0].conditions.condition.conditions[0]
         assert isinstance(rule, rules.conditions.RuleCondition)

@@ -504,8 +504,8 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             )
 
             assert r.status_code == 200
-            assert r.json()[queue_utils.PrDequeued.unqueue_code] == 2
-            assert r.json()[queue_utils.PrAheadDequeued.unqueue_code] == 3
+            assert r.json()[queue_utils.PrDequeued.dequeue_code] == 2
+            assert r.json()[queue_utils.PrAheadDequeued.dequeue_code] == 3
             assert r.json()["SUCCESS"] == 1
 
             r = await self.admin_app.get(

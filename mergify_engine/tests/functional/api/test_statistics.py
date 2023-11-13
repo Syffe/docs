@@ -407,8 +407,8 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         )
 
         assert r.status_code == 200
-        assert r.json()[queue_utils.PrDequeued.unqueue_code] == 1
-        assert r.json()[queue_utils.PrAheadDequeued.unqueue_code] == 2
+        assert r.json()[queue_utils.PrDequeued.dequeue_code] == 1
+        assert r.json()[queue_utils.PrAheadDequeued.dequeue_code] == 2
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={timestamp}",
@@ -611,8 +611,8 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
 
             assert r.status_code == 200
-            assert r.json()[queue_utils.PrDequeued.unqueue_code] == 2
-            assert r.json()[queue_utils.PrAheadDequeued.unqueue_code] == 3
+            assert r.json()[queue_utils.PrDequeued.dequeue_code] == 2
+            assert r.json()[queue_utils.PrAheadDequeued.dequeue_code] == 3
             assert r.json()["SUCCESS"] == 1
 
             r = await self.admin_app.get(
@@ -626,13 +626,13 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             assert r.json()[0]["queues"][0]["queue_name"] == "default"
             assert (
                 r.json()[0]["queues"][0]["queue_checks_outcome"][
-                    queue_utils.PrDequeued.unqueue_code
+                    queue_utils.PrDequeued.dequeue_code
                 ]
                 == 2
             )
             assert (
                 r.json()[0]["queues"][0]["queue_checks_outcome"][
-                    queue_utils.PrAheadDequeued.unqueue_code
+                    queue_utils.PrAheadDequeued.dequeue_code
                 ]
                 == 3
             )

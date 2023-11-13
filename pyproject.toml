@@ -134,7 +134,8 @@ pytest-flakefinder = "^1.1.0"
   refresh = "mergify_engine.actions.refresh:RefreshCommand"
   requeue = "mergify_engine.actions.requeue:RequeueCommand"
   squash = "mergify_engine.actions.squash:SquashAction"
-  unqueue = "mergify_engine.actions.unqueue:UnqueueCommand"
+  unqueue = "mergify_engine.actions.dequeue:DequeueCommand"
+  dequeue = "mergify_engine.actions.dequeue:DequeueCommand"
   update = "mergify_engine.actions.update:UpdateAction"
 
 
