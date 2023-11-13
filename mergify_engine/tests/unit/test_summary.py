@@ -24,14 +24,14 @@ async def test_queue_rules_order_0_depth() -> None:
             {
                 "number": 1,
                 "base": "main",
-                "label": [],  # type: ignore
+                "label": [],
             }
         ),
         conftest.FakePullRequest(
             {
                 "number": 2,
                 "base": "main",
-                "label": [],  # type: ignore
+                "label": [],
             }
         ),
     ]
@@ -84,7 +84,7 @@ async def test_queue_rules_order_operator_and() -> None:
                 "author": "anybody",
                 "number": 1,
                 "base": "main",
-                "label": [],  # type: ignore
+                "label": [],
             }
         ),
         conftest.FakePullRequest(
@@ -92,7 +92,7 @@ async def test_queue_rules_order_operator_and() -> None:
                 "author": "anybody",
                 "number": 2,
                 "base": "main",
-                "label": [],  # type: ignore
+                "label": [],
             }
         ),
     ]
@@ -178,7 +178,7 @@ async def test_queue_rules_order_operator_or() -> None:
                 "author": "anybody",
                 "number": 1,
                 "base": "main",
-                "label": [],  # type: ignore
+                "label": [],
             }
         ),
         conftest.FakePullRequest(
@@ -186,7 +186,7 @@ async def test_queue_rules_order_operator_or() -> None:
                 "author": "anybody",
                 "number": 2,
                 "base": "main",
-                "label": [],  # type: ignore
+                "label": [],
             }
         ),
     ]

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import asyncio
 import calendar
+from collections import abc
 import copyreg
 import dataclasses
 import datetime
@@ -916,13 +917,9 @@ class _time_travel:
 
 
 AcceptableTimesT = (
-    None
-    | str
-    | datetime.date
-    | datetime.datetime
-    | datetime.timedelta
-    | types.FunctionType
-    | types.GeneratorType
+    ParsableTimeT
+    | typing.Callable[[], ParsableTimeT]
+    | abc.Generator[ParsableTimeT, None, None]
 )
 
 
@@ -933,7 +930,7 @@ def time_travel(
     as_arg: bool = False,
     as_kwarg: str = "",
 ) -> _time_travel:
-    if isinstance(time_to_travel_to, types.FunctionType):
+    if callable(time_to_travel_to):
         return time_travel(
             time_to_travel_to(),
             ignore,
@@ -942,7 +939,7 @@ def time_travel(
             as_kwarg,
         )
 
-    if isinstance(time_to_travel_to, types.GeneratorType):
+    if isinstance(time_to_travel_to, abc.Generator):
         return time_travel(
             next(time_to_travel_to),
             ignore,

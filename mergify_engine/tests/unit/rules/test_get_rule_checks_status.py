@@ -29,10 +29,10 @@ async def test_rules_conditions_update() -> None:
                 "head": "feature-1",
                 "label": ["foo", "bar"],
                 "check-success": ["tests"],
-                "check-pending": [],  # type: ignore
+                "check-pending": [],
                 "check-failure": ["jenkins/fake-tests"],
-                "check-skipped": [],  # type: ignore
-                "check-stale": [],  # type: ignore
+                "check-skipped": [],
+                "check-stale": [],
             }
         ),
     ]
@@ -185,13 +185,13 @@ async def test_rules_checks_with_and_or() -> None:
             "author": "me",
             "base": "main",
             "head": "feature-1",
-            "label": [],  # type: ignore
-            "check-success": [],  # type: ignore
-            "check-failure": [],  # type: ignore
-            "check-pending": [],  # type: ignore
-            "check-neutral": [],  # type: ignore
-            "check-skipped": [],  # type: ignore
-            "check-stale": [],  # type: ignore
+            "label": [],
+            "check-success": [],
+            "check-failure": [],
+            "check-pending": [],
+            "check-neutral": [],
+            "check-skipped": [],
+            "check-stale": [],
         }
     )
     conds = [
@@ -619,14 +619,14 @@ async def test_rules_checks_status_depop() -> None:
             "author": "me",
             "base": "main",
             "head": "feature-1",
-            "check-success": [],  # type: ignore
-            "check-failure": [],  # type: ignore
-            "check-pending": [],  # type: ignore
-            "check-neutral": [],  # type: ignore
-            "check-skipped": [],  # type: ignore
-            "check-stale": [],  # type: ignore
+            "check-success": [],
+            "check-failure": [],
+            "check-pending": [],
+            "check-neutral": [],
+            "check-skipped": [],
+            "check-stale": [],
             "approved-reviews-by": ["me"],
-            "changes-requested-reviews-by": [],  # type: ignore
+            "changes-requested-reviews-by": [],
             "label": ["mergeit"],
         }
     )
@@ -723,12 +723,12 @@ async def test_rules_checks_status_ceph() -> None:
             "author": "me",
             "base": "devel",
             "head": "feature-1",
-            "check-failure": [],  # type: ignore
-            "check-neutral": [],  # type: ignore
-            "check-skipped": [],  # type: ignore
-            "check-stale": [],  # type: ignore
+            "check-failure": [],
+            "check-neutral": [],
+            "check-skipped": [],
+            "check-stale": [],
             "approved-reviews-by": ["me", "other"],
-            "changes-requested-reviews-by": [],  # type: ignore
+            "changes-requested-reviews-by": [],
             "label": ["mergeit"],
             "check-success": ["Summary", "DCO", "build"],
             "check-success-or-neutral": ["Summary", "DCO", "build"],

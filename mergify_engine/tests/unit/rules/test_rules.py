@@ -2508,9 +2508,9 @@ Attribute only allowed in commands_restrictions section
             conditions.RuleCondition.from_string("check-success=ci-3"),
             conftest.FakePullRequest(
                 {
-                    "check-success": [],  # type: ignore[dict-item]
-                    "check-failure": [],  # type: ignore[dict-item]
-                    "check": [],  # type: ignore[dict-item]
+                    "check-success": [],
+                    "check-failure": [],
+                    "check": [],
                 }
             ),
             False,
