@@ -331,7 +331,6 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                 ),
                 sqlalchemy.or_(
                     wjob.log_embedding.is_(None),
-                    wjob.neighbours_computed_at.is_(None),
                     wjob.ci_issue_id.is_(None),
                     wjob.ci_issue.has(CiIssue.name.is_(None)),
                 ),
@@ -351,7 +350,6 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
             )
         )
         async with openai_api.OpenAIClient() as openai_client:
-            job_ids_to_compute_cosine_similarity = []
             refresh_ready_job_ids = []
             for job in jobs:
                 with log_exception_and_maybe_retry(job):
@@ -369,13 +367,8 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                     if job.ci_issue is not None and job.ci_issue.name is None:
                         await set_ci_issue_name(openai_client, job)
 
-                if job.log_embedding is not None and job.neighbours_computed_at is None:
-                    job_ids_to_compute_cosine_similarity.append(job.id)
                 await session.commit()
 
-        await gh_models.WorkflowJob.compute_logs_embedding_cosine_similarity(
-            session, job_ids_to_compute_cosine_similarity
-        )
         await session.commit()
 
         await flaky_check.send_pull_refresh_for_jobs(redis_links, refresh_ready_job_ids)

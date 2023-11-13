@@ -18,8 +18,7 @@ instances:
         query: >
           SELECT
             SUM(CASE WHEN log_embedding IS NULL THEN 1 ELSE 0 END) AS log_embedding_need_update,
-            SUM(CASE WHEN embedded_log IS NULL THEN 1 ELSE 0 END) AS embedded_log_need_update,
-            SUM(CASE WHEN neighbours_computed_at IS NULL THEN 1 ELSE 0 END) AS neighbours_need_update
+            SUM(CASE WHEN embedded_log IS NULL THEN 1 ELSE 0 END) AS embedded_log_need_update
           FROM gha_workflow_job
             JOIN github_repository
               ON gha_workflow_job.repository_id = github_repository.id
@@ -35,6 +34,4 @@ instances:
           - name: workflow-job.log-embedding-need-update
             type: gauge
           - name: workflow-job.embedded-log-need-update
-            type: gauge
-          - name: workflow-job.neighbour-need-update
             type: gauge

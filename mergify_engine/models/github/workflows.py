@@ -11,7 +11,6 @@ import numpy.typing as npt
 from pgvector.sqlalchemy import Vector  # type: ignore
 import sqlalchemy
 from sqlalchemy import orm
-from sqlalchemy.dialects import postgresql
 import sqlalchemy.exc
 import sqlalchemy.ext.asyncio
 import sqlalchemy.ext.hybrid
@@ -212,10 +211,6 @@ class WorkflowJobColumnMixin:
     def repository(self) -> orm.Mapped[gh_repository.GitHubRepository]:
         return orm.relationship(lazy="joined")
 
-    neighbours_computed_at: orm.Mapped[datetime.datetime | None] = orm.mapped_column(
-        nullable=True, anonymizer_config=None
-    )
-
     run_attempt: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.BigInteger, anonymizer_config=None
     )
@@ -369,7 +364,6 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
                 "log_status": self.log_status,
                 "log_embedding_attempts": self.log_embedding_attempts,
                 "log_embedding_retry_after": self.log_embedding_retry_after,
-                "neighbours_computed_at": self.neighbours_computed_at,
             },
         }
 
@@ -444,228 +438,6 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
         return None
 
     @classmethod
-    async def compute_logs_embedding_cosine_similarity(
-        cls,
-        session: sqlalchemy.ext.asyncio.AsyncSession,
-        job_ids: list[int],
-    ) -> None:
-        if not job_ids:
-            return
-
-        job = orm.aliased(cls, name="job")
-        other_job = orm.aliased(cls, name="other_job")
-
-        select_statement = (
-            sqlalchemy.select(
-                job.id.label("job_id"),
-                other_job.id.label("neighbour_job_id"),
-                1
-                - (job.log_embedding.cosine_distance(other_job.log_embedding)).label(
-                    "cosine_similarity"
-                ),
-            )
-            .select_from(job)
-            .join(
-                other_job,
-                sqlalchemy.and_(
-                    other_job.id != job.id,
-                    other_job.name_without_matrix == job.name_without_matrix,
-                    other_job.log_embedding.isnot(None),
-                    other_job.repository_id == job.repository_id,
-                ),
-            )
-            .where(job.id.in_(job_ids))
-        )
-
-        insert_statement = postgresql.insert(WorkflowJobLogNeighbours).from_select(
-            [
-                WorkflowJobLogNeighbours.job_id,
-                WorkflowJobLogNeighbours.neighbour_job_id,
-                WorkflowJobLogNeighbours.cosine_similarity,
-            ],
-            select_statement,
-        )
-
-        upsert_statement = insert_statement.on_conflict_do_update(
-            index_elements=[
-                WorkflowJobLogNeighbours.job_id,
-                WorkflowJobLogNeighbours.neighbour_job_id,
-            ],
-            set_={"cosine_similarity": insert_statement.excluded.cosine_similarity},
-            where=WorkflowJobLogNeighbours.cosine_similarity
-            != insert_statement.excluded.cosine_similarity,
-        )
-
-        await session.execute(upsert_statement)
-
-        await session.execute(
-            sqlalchemy.update(cls)
-            .where(cls.id.in_(job_ids))
-            .values(neighbours_computed_at=sqlalchemy.func.now())
-        )
-
-    @classmethod
-    async def get_failed_jobs(
-        cls,
-        session: sqlalchemy.ext.asyncio.AsyncSession,
-        repository_id: github_types.GitHubRepositoryIdType,
-        start_at: datetime.date | None,
-        neighbour_cosine_similarity_threshold: float,
-    ) -> sqlalchemy.Result[typing.Any]:
-        tj_job = orm.aliased(WorkflowJobLogNeighbours, name="tj_job")
-        job = orm.aliased(cls, name="job")
-        job_rerun_success = orm.aliased(cls, name="job_rerun_success")
-        job_rerun_failure = orm.aliased(cls, name="job_rerun_failure")
-
-        stmt = (
-            sqlalchemy.select(
-                job.id,
-                sqlalchemy.func.array_agg(
-                    sqlalchemy.func.distinct(
-                        sqlalchemy.case(
-                            (job.id == tj_job.job_id, tj_job.neighbour_job_id),
-                            else_=tj_job.job_id,
-                        )
-                    ),
-                ).label("neighbour_job_ids"),
-                job.name_without_matrix,
-                job.workflow_run_id,
-                job.steps,
-                job.failed_step_number,
-                job.started_at,
-                job.completed_at,
-                job.run_attempt,
-                sqlalchemy.func.bool_and(job_rerun_success.id.is_not(None)).label(
-                    "flaky"
-                ),
-                sqlalchemy.func.max(job_rerun_failure.run_attempt).label(
-                    "max_job_rerun_failure_attempt"
-                ),
-            )
-            .join(
-                job_rerun_success,
-                sqlalchemy.and_(
-                    job_rerun_success.repository_id == job.repository_id,
-                    job_rerun_success.name_without_matrix == job.name_without_matrix,
-                    job_rerun_success.workflow_run_id == job.workflow_run_id,
-                    job_rerun_success.run_attempt > job.run_attempt,
-                    job_rerun_success.conclusion == WorkflowJobConclusion.SUCCESS,
-                ),
-                isouter=True,
-            )
-            .join(
-                job_rerun_failure,
-                sqlalchemy.and_(
-                    job_rerun_failure.repository_id == job.repository_id,
-                    job_rerun_failure.name_without_matrix == job.name_without_matrix,
-                    job_rerun_failure.workflow_run_id == job.workflow_run_id,
-                    job_rerun_failure.conclusion == WorkflowJobConclusion.FAILURE,
-                ),
-                isouter=True,
-            )
-            .join(
-                tj_job,
-                sqlalchemy.and_(
-                    job.id.in_((tj_job.job_id, tj_job.neighbour_job_id)),
-                    tj_job.cosine_similarity >= neighbour_cosine_similarity_threshold,
-                ),
-                isouter=True,
-            )
-            .where(
-                job.conclusion == WorkflowJobConclusion.FAILURE,
-                job.repository_id == repository_id,
-                job.log_status == WorkflowJobLogStatus.EMBEDDED,
-            )
-            .group_by(job.id)
-        )
-
-        if start_at:
-            stmt = stmt.where(job.started_at >= start_at)
-
-        return await session.execute(stmt)
-
-    @classmethod
-    async def get_failed_job(
-        cls,
-        session: sqlalchemy.ext.asyncio.AsyncSession,
-        repository_id: github_types.GitHubRepositoryIdType,
-        job_id: int,
-        neighbour_cosine_similarity_threshold: float,
-    ) -> sqlalchemy.Result[typing.Any]:
-        # NOTE(Kontrolix): This method is mostly a duplicate of get_failed_jobs
-        # but the sql query is going to be drastically different in both of these
-        # methods in the future, so no need to mutualise the code for now
-
-        tj_job = orm.aliased(WorkflowJobLogNeighbours, name="tj_job")
-        job = orm.aliased(cls, name="job")
-        job_rerun_success = orm.aliased(cls, name="job_rerun_success")
-        job_rerun_failure = orm.aliased(cls, name="job_rerun_failure")
-
-        stmt = (
-            sqlalchemy.select(
-                job.id,
-                sqlalchemy.func.array_agg(
-                    sqlalchemy.func.distinct(
-                        sqlalchemy.case(
-                            (job.id == tj_job.job_id, tj_job.neighbour_job_id),
-                            else_=tj_job.job_id,
-                        )
-                    ),
-                ).label("neighbour_job_ids"),
-                job.name_without_matrix,
-                job.workflow_run_id,
-                job.steps,
-                job.failed_step_number,
-                job.started_at,
-                job.completed_at,
-                job.run_attempt,
-                sqlalchemy.func.bool_and(job_rerun_success.id.is_not(None)).label(
-                    "flaky"
-                ),
-                job.embedded_log,
-                sqlalchemy.func.max(job_rerun_failure.run_attempt).label(
-                    "max_job_rerun_failure_attempt"
-                ),
-            )
-            .join(
-                job_rerun_success,
-                sqlalchemy.and_(
-                    job_rerun_success.repository_id == job.repository_id,
-                    job_rerun_success.name_without_matrix == job.name_without_matrix,
-                    job_rerun_success.workflow_run_id == job.workflow_run_id,
-                    job_rerun_success.run_attempt > job.run_attempt,
-                    job_rerun_success.conclusion == WorkflowJobConclusion.SUCCESS,
-                ),
-                isouter=True,
-            )
-            .join(
-                job_rerun_failure,
-                sqlalchemy.and_(
-                    job_rerun_failure.repository_id == job.repository_id,
-                    job_rerun_failure.name_without_matrix == job.name_without_matrix,
-                    job_rerun_failure.workflow_run_id == job.workflow_run_id,
-                    job_rerun_failure.conclusion == WorkflowJobConclusion.FAILURE,
-                ),
-                isouter=True,
-            )
-            .join(
-                tj_job,
-                sqlalchemy.and_(
-                    job.id.in_((tj_job.job_id, tj_job.neighbour_job_id)),
-                    tj_job.cosine_similarity >= neighbour_cosine_similarity_threshold,
-                ),
-                isouter=True,
-            )
-            .where(
-                job.id == job_id,
-                job.repository_id == repository_id,
-            )
-            .group_by(job.id)
-        )
-
-        return await session.execute(stmt)
-
-    @classmethod
     async def is_rerun_needed(
         cls, session: sqlalchemy.ext.asyncio.AsyncSession, job_id: int, max_rerun: int
     ) -> NeedRerunStatus:
@@ -721,26 +493,3 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
 
     def as_github_dict(self) -> GitHubWorkflowJobDict:
         return typing.cast(GitHubWorkflowJobDict, super().as_github_dict())
-
-
-class WorkflowJobLogNeighbours(models.Base):
-    __tablename__ = "gha_workflow_job_log_neighbours"
-    __repr_attributes__: typing.ClassVar[tuple[str, ...]] = (
-        "job_id",
-        "neighbour_job_id)",
-    )
-
-    job_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("gha_workflow_job.id"),
-        primary_key=True,
-        anonymizer_config=None,
-        index=True,
-    )
-    neighbour_job_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("gha_workflow_job.id"),
-        primary_key=True,
-        anonymizer_config=None,
-        index=True,
-    )
-
-    cosine_similarity: orm.Mapped[float] = orm.mapped_column(anonymizer_config=None)

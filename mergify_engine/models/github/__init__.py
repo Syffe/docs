@@ -7,7 +7,6 @@ from mergify_engine.models.github.user import GitHubUser
 from mergify_engine.models.github.workflows import WorkflowJob
 from mergify_engine.models.github.workflows import WorkflowJobConclusion
 from mergify_engine.models.github.workflows import WorkflowJobFailedStep
-from mergify_engine.models.github.workflows import WorkflowJobLogNeighbours
 from mergify_engine.models.github.workflows import WorkflowJobLogStatus
 from mergify_engine.models.github.workflows import WorkflowRun
 from mergify_engine.models.github.workflows import WorkflowRunTriggerEvent
@@ -26,5 +25,4 @@ __all__ = [
     "WorkflowJobLogStatus",
     "WorkflowJobFailedStep",
     "WorkflowJob",
-    "WorkflowJobLogNeighbours",
 ]

@@ -15,7 +15,6 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
 from mergify_engine import database
-from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import subscription
@@ -109,51 +108,6 @@ def test_console_scripts(
         return result
     finally:
         database.APP_STATE = saved_state
-
-
-async def get_cosine_similarity_for_job(
-    session: sqlalchemy.ext.asyncio.AsyncSession,
-    job: gh_models.WorkflowJob,
-) -> typing.Sequence[gh_models.WorkflowJobLogNeighbours]:
-    return (
-        await session.scalars(
-            sqlalchemy.select(gh_models.WorkflowJobLogNeighbours)
-            .where(gh_models.WorkflowJobLogNeighbours.job_id == job.id)
-            .order_by(gh_models.WorkflowJobLogNeighbours.neighbour_job_id)
-        )
-    ).all()
-
-
-def add_workflow_job(
-    session: sqlalchemy.ext.asyncio.AsyncSession,
-    job_data: dict[str, typing.Any],
-) -> gh_models.WorkflowJob:
-    job = gh_models.WorkflowJob(
-        id=job_data["id"],
-        repository=job_data["repository"],
-        log_embedding=job_data.get("log_embedding"),
-        log_status=job_data.get("log_status"),
-        embedded_log=job_data.get("embedded_log"),
-        workflow_run_id=job_data.get("workflow_run_id", 1),
-        name_without_matrix=job_data.get("name_without_matrix", "job_name"),
-        started_at=job_data.get(
-            "started_at",
-            github_types.ISODateTimeType(date.utcnow().isoformat()),
-        ),
-        completed_at=job_data.get(
-            "completed_at",
-            github_types.ISODateTimeType(date.utcnow().isoformat()),
-        ),
-        conclusion=job_data.get("conclusion", gh_models.WorkflowJobConclusion.SUCCESS),
-        labels=job_data.get("labels", []),
-        run_attempt=job_data.get("run_attempt", 1),
-        failed_step_name=job_data.get("failed_step_name"),
-        failed_step_number=job_data.get("failed_step_number"),
-        steps=job_data.get("steps"),
-        head_sha=job_data.get("head_sha", ""),
-    )
-    session.add(job)
-    return job
 
 
 async def mock_user_authorization_on_repo(

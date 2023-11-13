@@ -24,7 +24,6 @@ from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github as gh_models
 from mergify_engine.models.ci_issue import CiIssue
-from mergify_engine.tests import utils as tests_utils
 from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATASET
 from mergify_engine.tests.openai_embedding_dataset import (
     OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT,
@@ -124,17 +123,22 @@ async def test_embed_logs_on_controlled_data(
 
     # Create 3 jobs (LOG_EMBEDDER_JOBS_BATCH_SIZE + 1)
     for i in range(3):
-        job = tests_utils.add_workflow_job(
-            db,
-            {
-                "id": i,
-                "repository": repo,
-                "conclusion": gh_models.WorkflowJobConclusion.FAILURE,
-                "name_without_matrix": "job_toto",
-                "failed_step_name": "toto",
-                "failed_step_number": 1,
-            },
+        job = gh_models.WorkflowJob(
+            id=i,
+            repository=repo,
+            workflow_run_id=1,
+            name_without_matrix="job_toto",
+            started_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
+            completed_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
+            conclusion=gh_models.WorkflowJobConclusion.FAILURE,
+            labels=[],
+            run_attempt=1,
+            failed_step_name="toto",
+            failed_step_number=1,
+            head_sha="",
         )
+        db.add(job)
+
         respx_mock.get(
             f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
         ).respond(
@@ -172,7 +176,6 @@ async def test_embed_logs_on_controlled_data(
         )
         for job in jobs
     )
-    assert all(job.neighbours_computed_at is not None for job in jobs)
 
     # NOTE(Kontolix): Validate that if embedding has been computed for a job but neighbours
     # have not been computed, if we call the service, only neighbours are computed for that job.
@@ -180,7 +183,6 @@ async def test_embed_logs_on_controlled_data(
     embedding_control_value = np.array([np.float32(-1)] * 1536)
     # Change embedding value to be sure that it is not compute again
     jobs[0].log_embedding = embedding_control_value
-    jobs[0].neighbours_computed_at = None
     await db.commit()
 
     pending_work = await github_action.embed_logs(redis_links)
@@ -201,7 +203,6 @@ async def test_embed_logs_on_controlled_data(
         typing.cast(npt.NDArray[np.float32], a_job.log_embedding),
         embedding_control_value,
     )
-    assert a_job.neighbours_computed_at is not None
     assert a_job.ci_issue_id is not None
     assert a_job.ci_issue.name == "Toto title"
     assert len(a_job.ci_issue.jobs) == 3
