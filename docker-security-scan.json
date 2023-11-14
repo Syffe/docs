@@ -1535,7 +1535,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4899",
-    "Title": "buffer overrun in util.c",
+    "Title": "zstd: mysql: buffer overrun in util.c",
     "Severity": "HIGH",
     "PublishedDate": "2023-03-31T20:15:00Z"
   },
