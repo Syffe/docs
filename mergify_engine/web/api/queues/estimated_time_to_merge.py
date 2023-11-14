@@ -20,6 +20,7 @@ async def get_estimation_from_stats(
     checks_duration_stats: web_stat_utils.QueueChecksDurationsPerPartitionQueueBranchT,
     car: merge_train.TrainCar | None,
     previous_eta: datetime.datetime | None = None,
+    previous_car: merge_train.TrainCar | None = None,
 ) -> datetime.datetime | None:
     queue_name = embarked_pull.config["name"]
     if await train.convoy.is_queue_frozen(queue_name):
@@ -41,6 +42,7 @@ async def get_estimation_from_stats(
         median,
         car,
         previous_eta,
+        previous_car,
     )
 
 
@@ -52,6 +54,7 @@ async def get_estimation(
     embarked_pull_position: int,
     car: merge_train.TrainCar | None,
     previous_eta: datetime.datetime | None = None,
+    previous_car: merge_train.TrainCar | None = None,
 ) -> datetime.datetime | None:
     queue_name = embarked_pull.config["name"]
     if await train.convoy.is_queue_frozen(queue_name):
@@ -72,6 +75,7 @@ async def get_estimation(
         queue_checks_duration_stats["median"],
         car,
         previous_eta,
+        previous_car,
     )
 
 
@@ -83,6 +87,8 @@ async def compute_estimation(
     car: merge_train.TrainCar | None,
     # previous_eta must be the eta of the pr in position `embarked_pull_position - 1`
     previous_eta: datetime.datetime | None = None,
+    # previous_car must be the TrainCar of the PR in position `embarked_pull_position - 1`
+    previous_car: merge_train.TrainCar | None = None,
 ) -> datetime.datetime | None:
     if checks_duration is None or (
         (car is None or car.last_merge_conditions_evaluation is None)
@@ -99,11 +105,20 @@ async def compute_estimation(
         # so we adjust the new eta accordingly
         return date.utcnow() + datetime.timedelta(seconds=checks_duration)
 
-    # `embarked_pull_position` starts at 0
-    if previous_eta is not None and queue_utils.is_same_batch(
-        embarked_pull_position,
-        embarked_pull_position + 1,
-        queue_rule_config["batch_size"],
+    if previous_eta is not None and (
+        (
+            previous_car is None
+            # `embarked_pull_position` starts at 0
+            and queue_utils.is_same_batch(
+                embarked_pull_position,
+                embarked_pull_position + 1,
+                queue_rule_config["batch_size"],
+            )
+        )
+        or (
+            previous_car is not None
+            and embarked_pull in previous_car.initial_embarked_pulls
+        )
     ):
         # The PR is in the same batch as the PR the `previous_eta` is from
         return previous_eta

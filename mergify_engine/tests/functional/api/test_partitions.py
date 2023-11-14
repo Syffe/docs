@@ -751,3 +751,129 @@ class TestPartitionsApi(base.FunctionalTestBase):
                 < datetime.datetime.fromisoformat(eta_p6)
                 <= date.utcnow() + datetime.timedelta(hours=1, minutes=5)
             )
+
+    async def test_estimated_time_of_merge_with_1_speculative_check_and_multiple_batch(
+        self
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "speculative_checks": 1,
+                    "batch_size": 3,
+                    "allow_inplace_checks": False,
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queuedefault",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queuedefault",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        start_date = datetime.datetime(2023, 11, 10, tzinfo=datetime.UTC)
+        with time_travel(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            p1 = await self.create_pr()
+            p2 = await self.create_pr()
+            p3 = await self.create_pr()
+
+            p4 = await self.create_pr()
+            await self.merge_pull_as_admin(p4["number"])
+
+            await self.add_label(p1["number"], "queuedefault")
+            await self.add_label(p2["number"], "queuedefault")
+            await self.add_label(p3["number"], "queuedefault")
+            await self.run_engine()
+
+            tmp_pr_queue_default = await self.wait_for_pull_request("opened")
+
+        with time_travel(start_date + datetime.timedelta(hours=1), tick=True):
+            # Create an ETA of ~1hour for queue default
+            await self.create_status(tmp_pr_queue_default["pull_request"])
+            await self.run_engine()
+
+            await self.wait_for_pull_request("closed", tmp_pr_queue_default["number"])
+            await self.wait_for_all(
+                [
+                    {
+                        "event_type": "pull_request",
+                        "payload": {
+                            "number": p1["number"],
+                            "pull_request": {"merged": True},
+                        },
+                    },
+                    {
+                        "event_type": "pull_request",
+                        "payload": {
+                            "number": p2["number"],
+                            "pull_request": {"merged": True},
+                        },
+                    },
+                    {
+                        "event_type": "pull_request",
+                        "payload": {
+                            "number": p3["number"],
+                            "pull_request": {"merged": True},
+                        },
+                    },
+                ]
+            )
+
+            p5 = await self.create_pr()
+            p6 = await self.create_pr()
+            p7 = await self.create_pr()
+
+            await self.add_label(p5["number"], "queuedefault")
+            await self.add_label(p6["number"], "queuedefault")
+            await self.run_full_engine()
+
+        with time_travel(
+            start_date + datetime.timedelta(hours=1, minutes=10), tick=True
+        ):
+            # Travel a few minutes after the run_engine so the batch max wait time is elapsed and
+            # the draft PR is created with only 2 PR out of the 3 possible in the batch
+            await self.run_full_engine()
+            tmp_pr_queue_default = await self.wait_for_pull_request("opened")
+
+            await self.add_label(p7["number"], "queuedefault")
+            await self.run_engine()
+
+            r = await self.admin_app.get(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/partitions",
+            )
+            assert r.status_code == 200
+            assert partr_config.DEFAULT_PARTITION_NAME in r.json()[0]["partitions"]
+            assert (
+                len(r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME]) == 3
+            )
+
+            eta_p5 = r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME][0][
+                "estimated_time_of_merge"
+            ]
+            eta_p6 = r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME][1][
+                "estimated_time_of_merge"
+            ]
+            eta_p7 = r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME][2][
+                "estimated_time_of_merge"
+            ]
+
+            assert eta_p5 == eta_p6
+            assert eta_p7 != eta_p5
+            # ETA of p5 and p6 is in ~1 hour, so eta of p7 should be in ~2hours
+            assert (
+                datetime.datetime.fromisoformat(eta_p7)
+                > datetime.datetime.fromisoformat(eta_p5)
+                + datetime.timedelta(minutes=55)
+                > date.utcnow() + datetime.timedelta(minutes=55)
+            )

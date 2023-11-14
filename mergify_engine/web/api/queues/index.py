@@ -334,6 +334,7 @@ async def repository_queues(
         for train in convoy.iter_trains():
             queue = Queue(Branch(train.convoy.ref))
             previous_eta = None
+            previous_car = None
             for position, (embarked_pull, car) in enumerate(
                 train._iter_embarked_pulls()
             ):
@@ -356,7 +357,9 @@ async def repository_queues(
                     stats,
                     car,
                     previous_eta,
+                    previous_car,
                 )
+                previous_car = car
 
                 queue.pull_requests.append(
                     PullRequestQueued(

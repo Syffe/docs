@@ -107,6 +107,7 @@ async def repository_partitions(
 
         for train in convoy.iter_trains():
             previous_eta = None
+            previous_car = None
             previous_queue = None
             previous_queue_idx = 0
             for position, (embarked_pull, car) in enumerate(
@@ -140,7 +141,9 @@ async def repository_partitions(
                     position - previous_queue_idx,
                     car,
                     previous_eta,
+                    previous_car,
                 )
+                previous_car = car
 
                 previous_queue = embarked_pull.config["name"]
 
@@ -267,6 +270,7 @@ async def repository_partition_branch(
             continue
 
         previous_eta = None
+        previous_car = None
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
             try:
                 queue_rule = queue_rules[embarked_pull.config["name"]]
@@ -284,7 +288,11 @@ async def repository_partition_branch(
                 position,
                 car,
                 previous_eta,
+                previous_car,
             )
+
+            previous_car = car
+
             partition.pull_requests.append(
                 PullRequestQueued(
                     number=embarked_pull.user_pull_request_number,
