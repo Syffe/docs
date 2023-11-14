@@ -157,7 +157,7 @@ def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
     mocks = []
     for name, db_number in config.REDIS_AUTO_DB_SHARDING_MAPPING.items():
         new_db_number = db_number + (
-            len(config.REDIS_AUTO_DB_SHARDING_MAPPING) * worker_id_int
+            max(config.REDIS_AUTO_DB_SHARDING_MAPPING.values()) * worker_id_int
         )
         url = settings._build_redis_url(new_db_number)
         mocks.append(mock.patch.object(settings, f"ENV_{name}", url))
