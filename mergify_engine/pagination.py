@@ -80,7 +80,7 @@ Link: <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/events?cursor=d
 }
 
 
-class PageResponse(typing.Generic[T], pydantic.BaseModel):
+class PageResponse(pydantic.BaseModel, typing.Generic[T]):
     # The attribute name under which all the items of the page will be stored
     items_key: typing.ClassVar[str]
 

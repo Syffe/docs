@@ -390,7 +390,7 @@ async def test_applications_bad_body(
             "ctx": {"min_length": 1},
             "input": "",
             "loc": ["body", "name"],
-            "msg": "String should have at least 1 characters",
+            "msg": "String should have at least 1 character",
             "type": "string_too_short",
         }
     ]
@@ -434,7 +434,7 @@ async def test_applications_bad_body(
             "ctx": {"min_length": 1},
             "input": "",
             "loc": ["body", "name"],
-            "msg": "String should have at least 1 characters",
+            "msg": "String should have at least 1 character",
             "type": "string_too_short",
         }
     ]
