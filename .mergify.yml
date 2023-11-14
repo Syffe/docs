@@ -76,7 +76,12 @@ queue_rules:
       - "check-success=Rule: feature requirements (post_check)"
       - "check-success=Rule: testing requirements (post_check)"
       - "check-success=Rule: changelog requirements (post_check)"
-      - "#approved-reviews-by>=2"
+      - or:
+          - "#approved-reviews-by>=2"
+          - and:
+              - author=mergify-ci-bot
+              - head=trivy/daily-report
+              - "approved-reviews-by=@eng-mgr"
       - "#changes-requested-reviews-by=0"
       - "#review-threads-unresolved=0"
       - "#review-requested=0"
