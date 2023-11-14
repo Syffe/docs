@@ -22,8 +22,6 @@ from mergify_engine.tests.tardis import time_travel
 
 @pytest.mark.subscription(
     subscription.Features.QUEUE_ACTION,
-    subscription.Features.EVENTLOGS_SHORT,
-    subscription.Features.EVENTLOGS_LONG,
     subscription.Features.QUEUE_FREEZE,
     subscription.Features.MERGE_QUEUE,
     subscription.Features.WORKFLOW_AUTOMATION,

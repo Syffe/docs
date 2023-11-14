@@ -46,7 +46,6 @@ class EventLogsResponse(pagination.PageResponse[Event]):
     summary="Get the events log of a pull request",
     description="Get the events log of the requested pull request",
     deprecated=True,
-    dependencies=[fastapi.Depends(security.check_subscription_feature_eventlogs)],
     responses={
         **api.default_responses,  # type: ignore
         200: {
@@ -84,7 +83,6 @@ async def get_pull_request_eventlogs(
     summary="Get the events log of a repository",
     description="Get the events log of the requested repository",
     deprecated=True,
-    dependencies=[fastapi.Depends(security.check_subscription_feature_eventlogs)],
     responses={
         **api.default_responses,  # type: ignore
         200: {

@@ -36,7 +36,6 @@ RedisTeamPermissionsCache = typing.NewType(
     "RedisTeamPermissionsCache", "redispy.Redis[bytes]"
 )
 RedisTeamMembersCache = typing.NewType("RedisTeamMembersCache", "redispy.Redis[bytes]")
-RedisEventLogs = typing.NewType("RedisEventLogs", "redispy.Redis[bytes]")
 RedisStats = typing.NewType("RedisStats", "redispy.Redis[bytes]")
 
 ScriptIdT = typing.NewType("ScriptIdT", uuid.UUID)
@@ -131,7 +130,6 @@ class RedisLinks:
     cache_max_connections: int | None = None
     stream_max_connections: int | None = None
     queue_max_connections: int | None = None
-    eventlogs_max_connections: int | None = None
     stats_max_connections: int | None = None
     authentication_max_connections: int | None = None
     active_users_max_connections: int | None = None
@@ -181,15 +179,6 @@ class RedisLinks:
             max_connections=self.cache_max_connections,
         )
         return RedisUserPermissionsCache(client)
-
-    @functools.cached_property
-    def eventlogs(self) -> RedisEventLogs:
-        client = self.redis_from_url(
-            "eventlogs",
-            settings.EVENTLOGS_URL,
-            max_connections=self.eventlogs_max_connections,
-        )
-        return RedisEventLogs(client)
 
     @functools.cached_property
     def stats(self) -> RedisStats:
@@ -280,7 +269,6 @@ class RedisLinks:
             "team_permissions_cache",
             "user_permissions_cache",
             "active_users",
-            "eventlogs",
             "stats",
             "authentication",
         ):
@@ -295,7 +283,6 @@ class RedisLinks:
         await self.team_permissions_cache.flushdb()
         await self.user_permissions_cache.flushdb()
         await self.active_users.flushdb()
-        await self.eventlogs.flushdb()
         await self.stats.flushdb()
         await self.authentication.flushdb()
 

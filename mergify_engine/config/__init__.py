@@ -60,7 +60,6 @@ REDIS_AUTO_DB_SHARDING_MAPPING = {
     "TEAM_MEMBERS_CACHE_URL": 5,
     "TEAM_PERMISSIONS_CACHE_URL": 6,
     "USER_PERMISSIONS_CACHE_URL": 7,
-    "EVENTLOGS_URL": 8,
     "ACTIVE_USERS_URL": 9,
     "STATISTICS_URL": 10,
     "AUTHENTICATION_URL": 11,
@@ -90,10 +89,6 @@ class RedisSettings(pydantic_settings.BaseSettings):
     ENV_STREAM_URL: types.RedisDSN | None = pydantic.Field(
         default=None,
         validation_alias=pydantic.AliasChoices("ENV_STREAM_URL", "STREAM_URL"),
-    )
-    ENV_EVENTLOGS_URL: types.RedisDSN | None = pydantic.Field(
-        default=None,
-        validation_alias=pydantic.AliasChoices("ENV_EVENTLOGS_URL", "EVENTLOGS_URL"),
     )
     ENV_QUEUE_URL: types.RedisDSN | None = pydantic.Field(
         default=None,
@@ -186,10 +181,6 @@ class RedisSettings(pydantic_settings.BaseSettings):
     @property
     def STREAM_URL(self) -> types.RedisDSN:
         return self._get_redis_url("STREAM_URL")
-
-    @property
-    def EVENTLOGS_URL(self) -> types.RedisDSN:
-        return self._get_redis_url("EVENTLOGS_URL")
 
     @property
     def QUEUE_URL(self) -> types.RedisDSN:
@@ -339,7 +330,6 @@ class WorkerSettings(pydantic_settings.BaseSettings):
     GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS: types.StrListFromStrWithComma = (
         types.StrListFromStrWithComma([])
     )
-    EVENTLOG_EVENTS_REDIS_INGESTION: bool = True
 
 
 class APISettings(pydantic_settings.BaseSettings):
@@ -347,7 +337,6 @@ class APISettings(pydantic_settings.BaseSettings):
     REDIS_STREAM_WEB_MAX_CONNECTIONS: int = 50
     REDIS_CACHE_WEB_MAX_CONNECTIONS: int = 50
     REDIS_QUEUE_WEB_MAX_CONNECTIONS: int = 50
-    REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: int = 50
     REDIS_STATS_WEB_MAX_CONNECTIONS: int = 50
     REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS: int = 50
     REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: int = 50

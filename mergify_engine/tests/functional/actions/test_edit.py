@@ -8,8 +8,6 @@ from mergify_engine.tests.functional import base
 
 
 @pytest.mark.subscription(
-    subscription.Features.EVENTLOGS_SHORT,
-    subscription.Features.EVENTLOGS_LONG,
     subscription.Features.WORKFLOW_AUTOMATION,
 )
 class TestEditAction(base.FunctionalTestBase):
@@ -120,10 +118,6 @@ class TestEditAction(base.FunctionalTestBase):
     @pytest.mark.skipif(
         not settings.GITHUB_URL.startswith("https://github.com"),
         reason="requires GHES 3.2",
-    )
-    @pytest.mark.subscription(
-        subscription.Features.EVENTLOGS_SHORT,
-        subscription.Features.EVENTLOGS_LONG,
     )
     async def test_draft_already_converted(self) -> None:
         rules = {

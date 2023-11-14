@@ -93,8 +93,6 @@ queue_rules:
                 "dedicated_worker",
                 "advanced_monitoring",
                 "queue_freeze",
-                "eventlogs_short",
-                "eventlogs_long",
                 "merge_queue_stats",
             ],
         },

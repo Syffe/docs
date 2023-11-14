@@ -39,8 +39,6 @@ class Features(enum.Enum):
     ADVANCED_MONITORING = "advanced_monitoring"
     QUEUE_FREEZE = "queue_freeze"
     QUEUE_PAUSE = "queue_pause"
-    EVENTLOGS_SHORT = "eventlogs_short"
-    EVENTLOGS_LONG = "eventlogs_long"
     MERGE_QUEUE_STATS = "merge_queue_stats"
     MERGE_QUEUE = "merge_queue"
     WORKFLOW_AUTOMATION = "workflow_automation"
@@ -57,8 +55,6 @@ FeaturesLiteralT = typing.Literal[
     "advanced_monitoring",
     "queue_freeze",
     "queue_pause",
-    "eventlogs_short",
-    "eventlogs_long",
     "merge_queue_stats",
     "merge_queue",
     "workflow_automation",

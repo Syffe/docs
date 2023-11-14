@@ -53,9 +53,6 @@ async def test_healthcheck(
         "redis_user_permissions_cache": {
             "status": "ok",
         },
-        "redis_eventlogs": {
-            "status": "ok",
-        },
         "redis_stats": {
             "status": "ok",
         },
@@ -96,9 +93,6 @@ async def test_healthcheck(
                 "status": "failure",
             },
             "redis_user_permissions_cache": {
-                "status": "failure",
-            },
-            "redis_eventlogs": {
                 "status": "failure",
             },
             "redis_stats": {

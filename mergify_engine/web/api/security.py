@@ -424,20 +424,6 @@ async def check_subscription_feature_queue_freeze(repository_ctxt: Repository) -
         )
 
 
-async def check_subscription_feature_eventlogs(repository_ctxt: Repository) -> None:
-    if repository_ctxt.installation.subscription.has_feature(
-        subscription.Features.EVENTLOGS_LONG
-    ) or repository_ctxt.installation.subscription.has_feature(
-        subscription.Features.EVENTLOGS_SHORT
-    ):
-        return
-
-    raise fastapi.HTTPException(
-        status_code=402,
-        detail="⚠ The subscription needs to be upgraded to enable the `eventlogs` feature.",
-    )
-
-
 async def check_subscription_feature_merge_queue_stats(
     repository_ctxt: Repository,
 ) -> None:

@@ -21,7 +21,6 @@ async def startup() -> None:
         cache_max_connections=settings.REDIS_CACHE_WEB_MAX_CONNECTIONS,
         stream_max_connections=settings.REDIS_STREAM_WEB_MAX_CONNECTIONS,
         queue_max_connections=settings.REDIS_QUEUE_WEB_MAX_CONNECTIONS,
-        eventlogs_max_connections=settings.REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS,
         stats_max_connections=settings.REDIS_STATS_WEB_MAX_CONNECTIONS,
         authentication_max_connections=settings.REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS,
         active_users_max_connections=settings.REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS,

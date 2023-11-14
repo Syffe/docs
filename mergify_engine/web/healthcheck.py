@@ -63,9 +63,6 @@ class HealthCheckResult:
     redis_user_permissions_cache: ServiceStatus = dataclasses.field(
         default_factory=default_service_status
     )
-    redis_eventlogs: ServiceStatus = dataclasses.field(
-        default_factory=default_service_status
-    )
     redis_stats: ServiceStatus = dataclasses.field(
         default_factory=default_service_status
     )
@@ -136,7 +133,6 @@ async def get_healthcheck(
         redis_links.user_permissions_cache.ping(),
         redis_excs,
     )
-    healthcheck("redis_eventlogs", redis_links.eventlogs.ping(), redis_excs)
     healthcheck("redis_stats", redis_links.stats.ping(), redis_excs)
     healthcheck("redis_active_users", redis_links.active_users.ping(), redis_excs)
     healthcheck("redis_authentication", redis_links.authentication.ping(), redis_excs)

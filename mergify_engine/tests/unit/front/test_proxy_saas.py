@@ -256,8 +256,6 @@ async def test_saas_subscription_with_saas_mode_false(
                 "advanced_monitoring",
                 "queue_freeze",
                 "queue_pause",
-                "eventlogs_short",
-                "eventlogs_long",
                 "merge_queue_stats",
                 "merge_queue",
                 "workflow_automation",

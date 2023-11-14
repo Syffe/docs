@@ -13,16 +13,12 @@ from mergify_engine.tests.functional import base
 )
 class TestDismissReviewsAction(base.FunctionalTestBase):
     @pytest.mark.subscription(
-        subscription.Features.EVENTLOGS_SHORT,
-        subscription.Features.EVENTLOGS_LONG,
         subscription.Features.WORKFLOW_AUTOMATION,
     )
     async def test_dismiss_reviews(self) -> None:
         await self._test_dismiss_reviews()
 
     @pytest.mark.subscription(
-        subscription.Features.EVENTLOGS_SHORT,
-        subscription.Features.EVENTLOGS_LONG,
         subscription.Features.WORKFLOW_AUTOMATION,
     )
     async def test_dismiss_reviews_custom_message(self) -> None:
