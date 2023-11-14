@@ -447,6 +447,10 @@ async def run(
                 break
 
         if is_queued:
+            # NOTE(sileht): The condition to get in that state is a bit obscure
+            # because, in theory, the second opened PR with the same sha should be
+            # the one blocked, not the one queued.
+            # Since it blocks the merge queue, we had to unblock it.
             await merge_train.Convoy.force_remove_pull(
                 conflicting_ctxt.repository,
                 mergify_config["queue_rules"],
