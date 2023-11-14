@@ -22,6 +22,7 @@ from mergify_engine.clients import http
 from mergify_engine.engine import actions_runner
 from mergify_engine.engine import commands_runner
 from mergify_engine.engine import queue_runner
+from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import mergify as mergify_conf
 
@@ -434,6 +435,29 @@ async def run(
     conflicting_ctxt = await get_context_with_sha_collision(ctxt, summary)
     if conflicting_ctxt is not None:
         await report_sha_collision(ctxt, conflicting_ctxt)
+
+        is_queued = False
+        for check in await ctxt.pull_engine_check_runs:
+            if (
+                check["name"].endswith(" (queue)")
+                and check_api.Conclusion(check["conclusion"])
+                == check_api.Conclusion.PENDING
+            ):
+                is_queued = True
+                break
+
+        if is_queued:
+            await merge_train.Convoy.force_remove_pull(
+                conflicting_ctxt.repository,
+                mergify_config["queue_rules"],
+                mergify_config["partition_rules"],
+                ctxt.pull["number"],
+                "merge queue internal",
+                queue_utils.PrDequeued(
+                    ctxt.pull["number"],
+                    f", due sha collision with #{conflicting_ctxt.pull['number']}",
+                ),
+            )
         return None
 
     await _ensure_summary_on_head_sha(ctxt)
