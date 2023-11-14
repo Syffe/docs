@@ -1169,3 +1169,45 @@ def test_relativedelta(
     assert date.relativedelta(
         date.fromisoformat(current_date), months=months, years=years
     ) == date.fromisoformat(expected_date)
+
+
+@pytest.mark.parametrize(
+    "to_parse,target",
+    (
+        (
+            "XXXX-XX-12T12:12:12",
+            date.UncertainDate(
+                date.UncertainDatePart(),
+                date.UncertainDatePart(),
+                12,
+                12,
+                12,
+            ),
+        ),
+        (
+            "XXXX-11-12T12:12:12",
+            date.UncertainDate(
+                date.UncertainDatePart(),
+                11,
+                12,
+                12,
+                12,
+            ),
+        ),
+        (
+            "2023-11-XXT12:12:12",
+            date.UncertainDate(
+                2023,
+                11,
+                date.UncertainDatePart(),
+                12,
+                12,
+            ),
+        ),
+    ),
+)
+def test_uncertaindate(
+    to_parse: str,
+    target: datetime.datetime,
+) -> None:
+    assert date.UncertainDate.fromisoformat(to_parse, date.UTC) == target
