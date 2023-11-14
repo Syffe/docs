@@ -677,7 +677,7 @@ class PullRequest(BasePullRequest):
             mandatory_template_variables = {}
 
         """Render a template interpolating variables based on pull request attributes."""
-        env = jinja2.sandbox.SandboxedEnvironment(
+        env = jinja2.sandbox.ImmutableSandboxedEnvironment(
             undefined=jinja2.StrictUndefined, enable_async=True
         )
         env.filters["markdownify"] = self._markdownify
