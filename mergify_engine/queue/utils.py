@@ -21,8 +21,8 @@ AbortCodeT = typing.Literal[
     "QUEUE_RULE_MISSING",
     "UNEXPECTED_QUEUE_CHANGE",
     "PR_FROZEN_NO_CASCADING",
-    "TARGET_BRANCH_MISSING",
-    "TARGET_BRANCH_CHANGED",
+    "BASE_BRANCH_MISSING",
+    "BASE_BRANCH_CHANGED",
     "PR_UNEXPECTEDLY_FAILED_TO_MERGE",
     "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS",
     "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE",
@@ -163,20 +163,20 @@ class QueueRuleMissing(BaseDequeueReason):
 
 
 @dataclasses.dataclass
-class TargetBranchMissing(BaseDequeueReason):
-    message = "The target branch does not exist anymore `{ref}`"
+class BaseBranchMissing(BaseDequeueReason):
+    message = "The base branch does not exist anymore `{ref}`"
     dequeue_code: typing.ClassVar[
-        typing.Literal["TARGET_BRANCH_MISSING"]
-    ] = "TARGET_BRANCH_MISSING"
+        typing.Literal["BASE_BRANCH_MISSING"]
+    ] = "BASE_BRANCH_MISSING"
     ref: str
 
 
 @dataclasses.dataclass
-class TargetBranchChanged(BaseDequeueReason):
-    message = "The pull request target branch has changed"
+class BaseBranchChanged(BaseDequeueReason):
+    message = "The pull request base branch has changed"
     dequeue_code: typing.ClassVar[
-        typing.Literal["TARGET_BRANCH_CHANGED"]
-    ] = "TARGET_BRANCH_CHANGED"
+        typing.Literal["BASE_BRANCH_CHANGED"]
+    ] = "BASE_BRANCH_CHANGED"
 
 
 @dataclasses.dataclass

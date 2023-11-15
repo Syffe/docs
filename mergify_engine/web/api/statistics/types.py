@@ -76,11 +76,21 @@ class QueueChecksOutcome:
     PR_DEQUEUED: int = dataclasses.field(
         metadata={"description": "Pull request has been dequeued"},
     )
+    BASE_BRANCH_CHANGED: int = dataclasses.field(
+        metadata={"description": "The pull request base branch has changed"},
+    )
+    BASE_BRANCH_MISSING: int = dataclasses.field(
+        metadata={"description": "The base branch does not exist anymore"},
+    )
     TARGET_BRANCH_CHANGED: int = dataclasses.field(
-        metadata={"description": "The pull request target branch has changed"},
+        metadata={
+            "description": "The pull request target branch has changed (This value is deprecated use BASE_BRANCH_CHANGED instead)",
+        },
     )
     TARGET_BRANCH_MISSING: int = dataclasses.field(
-        metadata={"description": "The target branch does not exist anymore"},
+        metadata={
+            "description": "The target branch does not exist anymore (This value is deprecated use BASE_BRANCH_MISSING instead)",
+        },
     )
     PR_UNEXPECTEDLY_FAILED_TO_MERGE: int = dataclasses.field(
         metadata={"description": "Pull request unexpectedly failed to get merged"},

@@ -184,7 +184,7 @@ class Convoy:
             self.partition_rules,
             pull_number,
             signal_trigger,
-            queue_utils.TargetBranchChanged(),
+            queue_utils.BaseBranchChanged(),
             exclude_ref=self.ref,
         )
         for train in self._trains:
@@ -223,7 +223,7 @@ class Convoy:
             self.partition_rules,
             ctxt.pull["number"],
             signal_trigger,
-            queue_utils.TargetBranchChanged(),
+            queue_utils.BaseBranchChanged(),
             exclude_ref=ctxt.pull["base"]["ref"],
         )
 

@@ -953,7 +953,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.wait_for_pull_request("edited", pr2["number"])
 
         # Change the headsha on pr1
-        await self.push_file(target_branch=pr1["head"]["ref"])
+        await self.push_file(destination_branch=pr1["head"]["ref"])
         pr1 = (await self.wait_for_pull_request("synchronize", pr1["number"]))[
             "pull_request"
         ]

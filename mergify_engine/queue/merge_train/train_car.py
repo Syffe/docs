@@ -86,7 +86,7 @@ class TrainCarOutcome(enum.Enum):
     MERGEABLE = "mergeable"
     CHECKS_TIMEOUT = "checks_timeout"
     CHECKS_FAILED = "checks_failed"
-    BASE_BRANCH_CHANGE = "base_branch_change"
+    BASE_BRANCH_PUSHED = "base_branch_pushed"
     DRAFT_PR_CHANGE = "draft_pr_change"
     UPDATED_PR_CHANGE = "updated_pr_change"
     UNKNOWN = "unknown"
@@ -124,7 +124,7 @@ class UnexpectedBaseBranchChange(UnexpectedChanges):
     base_sha: github_types.SHAType
 
     def __str__(self) -> str:
-        return f"an external action moved the target branch head to {self.base_sha}"
+        return f"an external action moved the base branch head to {self.base_sha}"
 
 
 @dataclasses.dataclass
@@ -135,7 +135,7 @@ class MergifySupportReset(UnexpectedChanges):
 
 UNEXPECTED_CHANGES_COMPATIBILITY = {
     UnexpectedDraftPullRequestChange: TrainCarOutcome.DRAFT_PR_CHANGE,
-    UnexpectedBaseBranchChange: TrainCarOutcome.BASE_BRANCH_CHANGE,
+    UnexpectedBaseBranchChange: TrainCarOutcome.BASE_BRANCH_PUSHED,
     UnexpectedUpdatedPullRequestChange: TrainCarOutcome.UPDATED_PR_CHANGE,
 }
 
@@ -444,7 +444,7 @@ class TrainCar:
         return self.train_car_state.outcome in (
             TrainCarOutcome.DRAFT_PR_CHANGE,
             TrainCarOutcome.UPDATED_PR_CHANGE,
-            TrainCarOutcome.BASE_BRANCH_CHANGE,
+            TrainCarOutcome.BASE_BRANCH_PUSHED,
         )
 
     async def add_delegating_partition(
@@ -470,7 +470,7 @@ class TrainCar:
 
         if self.train_car_state.outcome in (
             TrainCarOutcome.UNKNOWN,
-            TrainCarOutcome.BASE_BRANCH_CHANGE,
+            TrainCarOutcome.BASE_BRANCH_PUSHED,
             TrainCarOutcome.UPDATED_PR_CHANGE,
             TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE,
         ):
@@ -1741,7 +1741,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             current_base_sha = await self.train.get_base_sha()
         except train_utils.BaseBranchVanished:
             checked_ctxt.log.warning(
-                "target branch vanished, the merge queue will be deleted soon",
+                "base branch vanished, the merge queue will be deleted soon",
             )
             return None
 
@@ -1813,7 +1813,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 pull_context = await self.repository.get_pull_request_context(
                     pull["number"],
                 )
-                return await self.train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition(
+                return await self.train.get_unexpected_base_branch_pushed_after_manually_merged_pr_with_fallback_partition(
                     pull_context,
                     current_base_sha,
                     fallback_partition_name,
@@ -2443,7 +2443,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             return "The pull request has been removed from the queue"
 
         if self.train_car_state.outcome in (
-            TrainCarOutcome.BASE_BRANCH_CHANGE,
+            TrainCarOutcome.BASE_BRANCH_PUSHED,
             TrainCarOutcome.UPDATED_PR_CHANGE,
         ):
             return "The pull request is going to be re-embarked soon"

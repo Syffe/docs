@@ -204,12 +204,12 @@ class Train:
         try:
             await self._populate_cars()
         except train_utils.BaseBranchVanished:
-            self.log.warning("target branch vanished, deleting merge queue.")
+            self.log.warning("base branch vanished, deleting merge queue.")
             for embarked_pull, _ in list(self._iter_embarked_pulls()):
                 await self._remove_pull(
                     embarked_pull.user_pull_request_number,
                     "merge queue internal",
-                    queue_utils.TargetBranchMissing(self.convoy.ref),
+                    queue_utils.BaseBranchMissing(self.convoy.ref),
                 )
 
         await self.save()
@@ -258,7 +258,7 @@ class Train:
         await self.save()
         self.log.info("train cars reset")
 
-    async def get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition(
+    async def get_unexpected_base_branch_pushed_after_manually_merged_pr_with_fallback_partition(
         self,
         ctxt: context.Context,
         merge_commit_sha: github_types.SHAType,

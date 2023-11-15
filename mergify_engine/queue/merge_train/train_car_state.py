@@ -388,7 +388,7 @@ def dequeue_reason_from_train_car_state(
 ) -> queue_utils.BaseDequeueReason:
     if train_car_state.outcome in (
         merge_train.TrainCarOutcome.DRAFT_PR_CHANGE,
-        merge_train.TrainCarOutcome.BASE_BRANCH_CHANGE,
+        merge_train.TrainCarOutcome.BASE_BRANCH_PUSHED,
         merge_train.TrainCarOutcome.UPDATED_PR_CHANGE,
     ):
         if train_car_state.outcome_message is None:

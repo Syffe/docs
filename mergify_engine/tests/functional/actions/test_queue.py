@@ -3544,7 +3544,7 @@ class TestQueueAction(base.FunctionalTestBase):
             == "The pull request is the 2nd in the queue to be merged"
         )
 
-    async def test_train_reset_after_unexpected_base_branch_change_while_merging_batch(
+    async def test_train_reset_after_unexpected_base_branch_pushed_while_merging_batch(
         self,
     ) -> None:
         rules = {
@@ -4303,7 +4303,7 @@ previous_failed_batches:
         car = q._cars[0]
 
         # we push changes to the draft PR's branch
-        await self.push_file(target_branch=p1["head"]["ref"])
+        await self.push_file(destination_branch=p1["head"]["ref"])
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
 
@@ -4366,7 +4366,7 @@ previous_failed_batches:
         )
 
         # we push changes to the draft PR's branch
-        await self.push_file(target_branch=p1["head"]["ref"])
+        await self.push_file(destination_branch=p1["head"]["ref"])
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
 
@@ -4508,7 +4508,7 @@ previous_failed_batches:
             "The pull request has been removed from the queue",
         )
 
-    async def test_frozen_train_reset_after_unexpected_base_branch_changes(
+    async def test_frozen_train_reset_after_unexpected_base_branch_pushed(
         self,
     ) -> None:
         rules_config = {
@@ -4591,7 +4591,7 @@ previous_failed_batches:
 
         await self.assert_api_checks_start_reason(
             p1["number"],
-            "Unexpected queue change: an external action moved the target branch head to",
+            "Unexpected queue change: an external action moved the base branch head to",
         )
 
         # when detecting base branch changes, the engine should reset the train
@@ -4607,7 +4607,7 @@ previous_failed_batches:
             == "The pull request is the 1st in the queue to be merged"
         )
 
-    async def test_draft_pr_train_reset_after_unexpected_base_branch_changes(
+    async def test_draft_pr_train_reset_after_unexpected_base_branch_pushed(
         self,
     ) -> None:
         rules_config = {
@@ -4673,7 +4673,7 @@ previous_failed_batches:
 
         await self.assert_api_checks_end_reason(
             p1["number"],
-            "Unexpected queue change: an external action moved the target branch head to",
+            "Unexpected queue change: an external action moved the base branch head to",
         )
 
         # when detecting base branch changes, the engine should reset the train
@@ -8092,7 +8092,7 @@ pull_request_rules:
             in check["output"]["summary"]
         )
 
-    async def test_target_branch_vanished(self) -> None:
+    async def test_base_branch_vanished(self) -> None:
         featureA = self.get_full_branch_name("featureA")
         rules = {
             "queue_rules": [

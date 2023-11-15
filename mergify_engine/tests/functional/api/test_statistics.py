@@ -557,10 +557,16 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             assert r.json()[0]["partition_name"] == partr_config.DEFAULT_PARTITION_NAME
             assert len(r.json()[0]["queues"]) == 1
             assert r.json()[0]["queues"][0]["queue_name"] == "default"
-            assert (
-                r.json()[0]["queues"][0]["queue_checks_outcome"]
-                == queue_checks_outcome.BASE_QUEUE_CHECKS_OUTCOME_T_DICT
-            )
+
+            # NOTE(Kontrolix): TARGET_BRANCH_CHANGED and TARGET_BRANCH_MISSING are
+            # manually added for retrocompatibility. They are copy of
+            # BASE_BRANCH_CHANGED and BASE_BRANCH_MISSING
+            assert r.json()[0]["queues"][0][
+                "queue_checks_outcome"
+            ] == queue_checks_outcome.BASE_QUEUE_CHECKS_OUTCOME_T_DICT | {
+                "TARGET_BRANCH_CHANGED": 0,
+                "TARGET_BRANCH_MISSING": 0,
+            }
             # #####
             # Create FailureByReason
             p1 = await self.create_pr()

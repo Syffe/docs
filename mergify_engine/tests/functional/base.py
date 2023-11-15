@@ -2430,12 +2430,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self,
         filename: str = "random_file.txt",
         content: str = "",
-        target_branch: str | None = None,
+        destination_branch: str | None = None,
     ) -> github_types.SHAType:
-        if target_branch is None:
-            target_branch = self.main_branch_name
-        await self.git("fetch", "origin", target_branch)
-        await self.git("checkout", "-b", "random", f"origin/{target_branch}")
+        if destination_branch is None:
+            destination_branch = self.main_branch_name
+        await self.git("fetch", "origin", destination_branch)
+        await self.git("checkout", "-b", "random", f"origin/{destination_branch}")
         with open(self.git.repository + f"/{filename}", "w") as f:
             f.write(content)
         await self.git("add", filename)
@@ -2443,8 +2443,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         head_sha = github_types.SHAType(
             (await self.git("log", "-1", "--format=%H")).strip(),
         )
-        await self.git("push", "--quiet", "origin", f"random:{target_branch}")
-        await self.wait_for("push", {"ref": f"refs/heads/{target_branch}"})
+        await self.git("push", "--quiet", "origin", f"random:{destination_branch}")
+        await self.wait_for("push", {"ref": f"refs/heads/{destination_branch}"})
         return head_sha
 
     @staticmethod

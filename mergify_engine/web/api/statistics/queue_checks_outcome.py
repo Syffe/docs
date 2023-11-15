@@ -34,8 +34,8 @@ class QueueChecksOutcomeT(typing.TypedDict):
     QUEUE_RULE_MISSING: int
     UNEXPECTED_QUEUE_CHANGE: int
     PR_FROZEN_NO_CASCADING: int
-    TARGET_BRANCH_CHANGED: int
-    TARGET_BRANCH_MISSING: int
+    BASE_BRANCH_CHANGED: int
+    BASE_BRANCH_MISSING: int
     PR_UNEXPECTEDLY_FAILED_TO_MERGE: int
     BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS: int
     PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE: int
@@ -59,8 +59,8 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
         "UNEXPECTED_QUEUE_CHANGE": 0,
         "PR_FROZEN_NO_CASCADING": 0,
         "SUCCESS": 0,
-        "TARGET_BRANCH_CHANGED": 0,
-        "TARGET_BRANCH_MISSING": 0,
+        "BASE_BRANCH_CHANGED": 0,
+        "BASE_BRANCH_MISSING": 0,
         "PR_UNEXPECTEDLY_FAILED_TO_MERGE": 0,
         "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS": 0,
         "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE": 0,
@@ -130,7 +130,11 @@ async def get_queue_checks_outcome(
             stats["SUCCESS"] += 1
         else:
             stats[event.abort_code.value] += 1
-    return web_stat_types.QueueChecksOutcome(**stats)
+    return web_stat_types.QueueChecksOutcome(
+        **stats,
+        TARGET_BRANCH_CHANGED=stats["BASE_BRANCH_CHANGED"],
+        TARGET_BRANCH_MISSING=stats["BASE_BRANCH_MISSING"],
+    )
 
 
 @pydantic.dataclasses.dataclass
@@ -227,7 +231,11 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
                 queues=[
                     QueueChecksOutcomePerQueue(
                         queue_name=queue_name,
-                        queue_checks_outcome=web_stat_types.QueueChecksOutcome(**stats),
+                        queue_checks_outcome=web_stat_types.QueueChecksOutcome(
+                            **stats,
+                            TARGET_BRANCH_CHANGED=stats["BASE_BRANCH_CHANGED"],
+                            TARGET_BRANCH_MISSING=stats["BASE_BRANCH_MISSING"],
+                        ),
                     )
                     for queue_name, stats in queues_data.items()
                 ],
