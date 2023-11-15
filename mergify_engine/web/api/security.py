@@ -371,7 +371,9 @@ async def get_repository_context(
                 except http.HTTPForbidden:
                     raise fastapi.HTTPException(status_code=403)
 
-                if permission == github_types.GitHubRepositoryPermission.NONE:
+                # NOTE(sileht): as we can't known if the user with read permissions are collaborator or not
+                # we require WRITE for public repository
+                if permission < github_types.GitHubRepositoryPermission.WRITE:
                     raise fastapi.HTTPException(status_code=403)
             elif application is not None:
                 if application.github_account_id != repo["owner"]["id"]:
