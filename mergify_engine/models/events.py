@@ -667,7 +667,7 @@ class EventActionQueueChecksStart(Event):
             **metadata.pop("speculative_check_pull_request")
         )
 
-        return cls(
+        event = cls(
             repository=repository_obj,
             pull_request=pull_request,
             base_ref=base_ref,
@@ -675,6 +675,14 @@ class EventActionQueueChecksStart(Event):
             speculative_check_pull_request=speculative_check_pull_request,
             **metadata,
         )
+
+        # FIXME(charly/leo): remove me once data has been migrated
+        session.add(event)
+        await session.flush()
+        await session.refresh(event)
+        speculative_check_pull_request.event_id = event.id
+
+        return event
 
 
 class EventActionQueueChecksEnd(Event):
@@ -755,7 +763,7 @@ class EventActionQueueChecksEnd(Event):
             **metadata.pop("speculative_check_pull_request")
         )
 
-        return cls(
+        event = cls(
             repository=repository_obj,
             pull_request=pull_request,
             base_ref=base_ref,
@@ -763,6 +771,14 @@ class EventActionQueueChecksEnd(Event):
             speculative_check_pull_request=speculative_check_pull_request,
             **metadata,
         )
+
+        # FIXME(charly/leo): remove me once data has been migrated
+        session.add(event)
+        await session.flush()
+        await session.refresh(event)
+        speculative_check_pull_request.event_id = event.id
+
+        return event
 
 
 class EventActionRequestReviews(Event):

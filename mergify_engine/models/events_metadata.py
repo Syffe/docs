@@ -60,6 +60,11 @@ class SpeculativeCheckPullRequest(models.Base):
             "''url'', ''avatar_url''])"
         ),
     )
+    # FIXME(charly/leo): set not nullable FK once data has been migrated
+    event_id: orm.Mapped[int | None] = orm.mapped_column(
+        sqlalchemy.Integer,
+        anonymizer_config=None,
+    )
 
 
 class GithubAuthenticatedActor(models.Base):

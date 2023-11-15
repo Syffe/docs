@@ -458,6 +458,7 @@ async def test_event_action_queue_checks_start_consistency(
     assert event.queue_name == "default"
     assert event.queued_at == anys.ANY_AWARE_DATETIME
     assert event.start_reason == "first time checking"
+    assert event.speculative_check_pull_request_id == 1
     spec_check_pr = event.speculative_check_pull_request
     assert spec_check_pr is not None
     assert spec_check_pr.number == 123
@@ -467,6 +468,7 @@ async def test_event_action_queue_checks_start_consistency(
     assert spec_check_pr.checks_started_at == anys.ANY_AWARE_DATETIME
     assert spec_check_pr.checks_ended_at == anys.ANY_AWARE_DATETIME
     assert spec_check_pr.unsuccessful_checks == [unsuccessful_check]
+    assert spec_check_pr.event_id == 1
 
 
 @time_travel("2023-07-17T14:00:00Z")
@@ -521,6 +523,7 @@ async def test_event_action_queue_checks_end_consistency(
     assert event.abort_code == "PR_DEQUEUED"
     assert event.abort_reason == "Pull request has been dequeued."
     assert event.abort_status == "DEFINITIVE"
+    assert event.speculative_check_pull_request_id == 1
     spec_check_pr = event.speculative_check_pull_request
     assert spec_check_pr is not None
     assert spec_check_pr.number == 456
@@ -530,6 +533,7 @@ async def test_event_action_queue_checks_end_consistency(
     assert spec_check_pr.checks_started_at == anys.ANY_AWARE_DATETIME
     assert spec_check_pr.checks_ended_at == anys.ANY_AWARE_DATETIME
     assert spec_check_pr.unsuccessful_checks == [unsuccessful_check]
+    assert spec_check_pr.event_id == 1
 
 
 async def test_event_action_request_reviews_consistency(
