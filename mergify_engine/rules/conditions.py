@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc as abstract
 from collections import abc
 import dataclasses
-import datetime
+import datetime  # noqa: TCH003
 import functools
 import html
 import textwrap

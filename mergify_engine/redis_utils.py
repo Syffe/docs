@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from collections import abc
 import dataclasses
-import datetime
 import functools
 import hashlib
-import types
 import typing
 import uuid
 
@@ -17,7 +14,14 @@ import redis.asyncio as redispy
 from mergify_engine import date
 from mergify_engine import service
 from mergify_engine import settings
-from mergify_engine.config import types as config_types
+
+
+if typing.TYPE_CHECKING:
+    from collections import abc
+    import datetime
+    import types
+
+    from mergify_engine.config import types as config_types
 
 
 LOG = daiquiri.getLogger(__name__)

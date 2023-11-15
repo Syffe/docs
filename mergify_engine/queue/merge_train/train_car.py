@@ -31,7 +31,6 @@ from mergify_engine import yaml
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.models.github import user as github_user
 from mergify_engine.queue import pause
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import checks as merge_train_checks
@@ -45,6 +44,7 @@ from mergify_engine.rules.config import partition_rules as partr_config
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.models.github import user as github_user
     from mergify_engine.queue.merge_train.train import Train
     from mergify_engine.queue.merge_train.train_car_state import TrainCarState
     from mergify_engine.rules.config import pull_request_rules as prr_config

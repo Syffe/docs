@@ -5,7 +5,6 @@ import copy
 import datetime
 import itertools
 import json
-import logging
 import os
 import re
 import shutil
@@ -58,6 +57,10 @@ from mergify_engine.worker import shared_workers_spawner_service
 from mergify_engine.worker import stream
 from mergify_engine.worker import stream_lua
 from mergify_engine.worker import task
+
+
+if typing.TYPE_CHECKING:
+    import logging
 
 
 LOG = daiquiri.getLogger(__name__)

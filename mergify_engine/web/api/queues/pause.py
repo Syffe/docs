@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
-import datetime
+import datetime  # noqa: TCH003
 import typing
 
 import fastapi

@@ -14,11 +14,11 @@ from mergify_engine import pull_request_getter
 from mergify_engine import signals
 from mergify_engine.clients import http
 from mergify_engine.rules import types
-from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.rules.config import pull_request_rules as prr_config
 
 DismissReviewWhenT = typing.Literal["synchronize", "always"]
 WHEN_SYNCHRONIZE: DismissReviewWhenT = "synchronize"

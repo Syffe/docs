@@ -6,7 +6,6 @@ import sqlalchemy
 from sqlalchemy import orm
 import sqlalchemy.event
 import sqlalchemy.ext.asyncio
-from sqlalchemy.orm import Mapped
 import sqlalchemy.sql.expression
 import sqlalchemy_utils
 from sqlalchemy_utils.types.encrypted import encrypted_type
@@ -63,20 +62,20 @@ class GitHubUser(models.Base):
     __tablename__ = "github_user"
     __repr_attributes__ = ("id", "login")
 
-    id: Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
+    id: orm.Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
         sqlalchemy.Integer,
         primary_key=True,
         autoincrement=False,
         anonymizer_config=None,
     )
 
-    login: Mapped[github_types.GitHubLogin] = orm.mapped_column(
+    login: orm.Mapped[github_types.GitHubLogin] = orm.mapped_column(
         sqlalchemy.String(255),
         nullable=False,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
 
-    oauth_access_token: Mapped[github_types.GitHubOAuthToken] = orm.mapped_column(
+    oauth_access_token: orm.Mapped[github_types.GitHubOAuthToken] = orm.mapped_column(
         OAuthTokenEncryptedType(), anonymizer_config="''CONFIDENTIAL''"
     )
 

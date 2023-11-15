@@ -18,11 +18,11 @@ from mergify_engine import worker_pusher
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.models.github import user as github_user
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.models.github import user as github_user
 
 RECENTLY_MERGED_TRACKER_EXPIRATION = datetime.timedelta(hours=1)
 REQUIRED_STATUS_RE = re.compile(r'Required status check "([^"]*)" is expected.')

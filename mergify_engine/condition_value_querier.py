@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import abc
 import contextlib
 import dataclasses
 import datetime
@@ -21,11 +20,13 @@ from mergify_engine import constants
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.clients import http
-from mergify_engine.rules.config import partition_rules
 
 
 if typing.TYPE_CHECKING:
+    from collections import abc
+
     from mergify_engine import context as context_mod
+    from mergify_engine.rules.config import partition_rules as partr_config
 
 MARKDOWN_TITLE_RE = re.compile(r"^#+ ", re.I)
 MARKDOWN_COMMIT_MESSAGE_RE = re.compile(r"^#+ Commit Message ?:?\s*$", re.I)
@@ -55,7 +56,8 @@ PullRequestAttributeType = (
     | list[github_types.GitHubLogin]
     | list[github_types.GitHubBranchCommit]
     | list[github_types.CachedGitHubBranchCommit]
-    | list[partition_rules.PartitionRuleName]
+    # Quotes because of circular import
+    | list["partr_config.PartitionRuleName"]
     | github_types.GitHubRepositoryPermission
     | set[CommitAuthor]
 )

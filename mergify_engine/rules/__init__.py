@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import abc
 import typing
 
 import daiquiri
@@ -12,6 +11,10 @@ from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.rules import types
 from mergify_engine.rules.config import defaults as defaults_config
+
+
+if typing.TYPE_CHECKING:
+    from collections import abc
 
 
 LOG = daiquiri.getLogger(__name__)

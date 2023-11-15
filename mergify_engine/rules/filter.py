@@ -9,9 +9,11 @@ import operator
 import re
 import typing
 
-import jinja2
-
 from mergify_engine import date
+
+
+if typing.TYPE_CHECKING:
+    import jinja2
 
 
 _T = typing.TypeVar("_T")

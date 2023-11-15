@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from collections import abc
 import dataclasses
 import functools
-import logging
 import typing
 import uuid
 
@@ -16,6 +14,11 @@ import sentry_sdk
 from mergify_engine import github_types
 from mergify_engine import logs
 from mergify_engine.worker import task
+
+
+if typing.TYPE_CHECKING:
+    from collections import abc
+    import logging
 
 
 LOG = daiquiri.getLogger(__name__)

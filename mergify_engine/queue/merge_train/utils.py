@@ -3,11 +3,10 @@ from __future__ import annotations
 import dataclasses
 import typing
 
-from mergify_engine import github_types
-
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine import github_types
 
 
 def build_pr_link(

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import base64
 import dataclasses
-import datetime
 import typing
 
 import daiquiri
@@ -21,6 +20,8 @@ from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
+    import datetime
+
     from mergify_engine import context
 
 LOG = daiquiri.getLogger(__name__)

@@ -3,7 +3,6 @@ Managing the new eventlog system which is stored in a PostgreSQL database
 """
 from __future__ import annotations
 
-import datetime
 import typing
 
 import daiquiri
@@ -20,6 +19,9 @@ from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_models
 from mergify_engine.models import github as gh_models
 
+
+if typing.TYPE_CHECKING:
+    import datetime
 
 LOG = daiquiri.getLogger(__name__)
 

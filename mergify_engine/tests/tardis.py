@@ -14,10 +14,13 @@ import functools
 import inspect
 import sys
 import time
-import types
 import typing
 import unittest
 import warnings
+
+
+if typing.TYPE_CHECKING:
+    import types
 
 
 DEFAULT_IGNORE_LIST = [

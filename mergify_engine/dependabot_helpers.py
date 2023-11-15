@@ -7,7 +7,7 @@ from mergify_engine import yaml
 
 
 def get_dependabot_consolidated_data_from_commit_msg(
-    log: "logging.LoggerAdapter[logging.Logger]",
+    log: logging.LoggerAdapter[logging.Logger],
     commit_msg: str,
 ) -> list[dependabot_types.DependabotAttributes]:
     """

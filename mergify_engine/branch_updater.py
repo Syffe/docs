@@ -13,11 +13,11 @@ from mergify_engine import gitter
 from mergify_engine import pull_request_getter
 from mergify_engine import settings
 from mergify_engine.clients import http
-from mergify_engine.models.github import user as github_user
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.models.github import user as github_user
 
 
 @dataclasses.dataclass

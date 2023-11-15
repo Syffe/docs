@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import abc
 import dataclasses
 import functools
 import operator
@@ -17,6 +16,8 @@ from mergify_engine.clients import http
 
 
 if typing.TYPE_CHECKING:
+    from collections import abc
+
     from mergify_engine import context
     from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config

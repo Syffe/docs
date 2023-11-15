@@ -11,14 +11,14 @@ from mergify_engine import subscription
 from mergify_engine.engine import commands_runner
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
-from mergify_engine.rules.config import mergify as mergify_conf
-from mergify_engine.rules.config import partition_rules as partr_config
-from mergify_engine.rules.config import pull_request_rules as prr_config
-from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.rules.config import mergify as mergify_conf
+    from mergify_engine.rules.config import partition_rules as partr_config
+    from mergify_engine.rules.config import pull_request_rules as prr_config
+    from mergify_engine.rules.config import queue_rules as qr_config
 
 
 class DequeueExecutorConfig(typing.TypedDict):

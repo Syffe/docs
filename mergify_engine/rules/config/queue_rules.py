@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import abc
 import dataclasses
 import datetime
 import html
@@ -24,6 +23,8 @@ from mergify_engine.rules.config import pull_request_rules as pull_request_rules
 
 
 if typing.TYPE_CHECKING:
+    from collections import abc
+
     from mergify_engine import context
 
 QueueBranchMergeMethod = typing.Literal["fast-forward"] | None

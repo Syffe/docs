@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from collections import abc
 import dataclasses
-import datetime
+import datetime  # noqa: TCH003
 import typing
 
 import daiquiri
@@ -16,6 +15,8 @@ from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
+    from collections import abc
+
     from mergify_engine import context
 
 LOG = daiquiri.getLogger(__name__)

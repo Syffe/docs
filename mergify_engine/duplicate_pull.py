@@ -1,6 +1,5 @@
 import dataclasses
 import functools
-import logging
 import typing
 
 import tenacity
@@ -16,6 +15,10 @@ from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.models.github import user as github_user
+
+
+if typing.TYPE_CHECKING:
+    import logging
 
 
 @dataclasses.dataclass

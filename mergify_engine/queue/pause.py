@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-import datetime
 import typing
 
 import daiquiri
@@ -10,12 +9,14 @@ import msgpack
 from mergify_engine import date
 from mergify_engine import worker_pusher
 from mergify_engine.queue import merge_train
-from mergify_engine.rules.config import partition_rules as partr_config
-from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
+    import datetime
+
     from mergify_engine import context
+    from mergify_engine.rules.config import partition_rules as partr_config
+    from mergify_engine.rules.config import queue_rules as qr_config
 
 LOG = daiquiri.getLogger(__name__)
 

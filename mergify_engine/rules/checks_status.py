@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging
+import typing
 
 from mergify_engine import check_api
 from mergify_engine import condition_value_querier
@@ -8,6 +8,10 @@ from mergify_engine import context
 from mergify_engine.rules import conditions as rules_conditions
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
+
+
+if typing.TYPE_CHECKING:
+    import logging
 
 
 def get_conditions_with_ignored_attributes(

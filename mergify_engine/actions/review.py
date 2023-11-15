@@ -13,11 +13,11 @@ from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.rules import types
-from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.rules.config import pull_request_rules as prr_config
 
 EVENT_STATE_MAP = {
     "APPROVE": "APPROVED",

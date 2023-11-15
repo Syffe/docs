@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+import datetime  # noqa: TCH003
 import re
 import typing
 
@@ -18,7 +18,7 @@ from mergify_engine import signals
 from mergify_engine.models import enumerations
 from mergify_engine.models import events_metadata
 from mergify_engine.models.github import repository as github_repository
-from mergify_engine.rules.config import partition_rules
+from mergify_engine.rules.config import partition_rules  # noqa: TCH001
 
 
 if typing.TYPE_CHECKING:

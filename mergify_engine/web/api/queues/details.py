@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
-import datetime
+import datetime  # noqa: TCH003
 import typing
 
 import fastapi
@@ -12,7 +12,7 @@ from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.queue import merge_train
-from mergify_engine.rules import conditions as rules_conditions
+from mergify_engine.rules import conditions as rules_conditions  # noqa: TCH001
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security

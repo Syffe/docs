@@ -2,15 +2,19 @@ from __future__ import annotations
 
 import datetime
 import statistics
+import typing
 
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions as rules_conditions
-from mergify_engine.rules.config import partition_rules as partr_config
-from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api.statistics import utils as web_stat_utils
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine.rules.config import partition_rules as partr_config
+    from mergify_engine.rules.config import queue_rules as qr_config
 
 
 async def get_estimation_from_stats(

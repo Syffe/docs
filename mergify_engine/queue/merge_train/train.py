@@ -3,7 +3,6 @@ from __future__ import annotations
 import collections
 from collections import abc
 import dataclasses
-import datetime
 import functools
 import itertools
 import typing
@@ -39,6 +38,8 @@ from mergify_engine.rules.config import partition_rules as partr_config
 
 
 if typing.TYPE_CHECKING:
+    import datetime
+
     from mergify_engine import context
     from mergify_engine.queue.merge_train.convoy import Convoy
     from mergify_engine.rules.config import pull_request_rules as prr_config

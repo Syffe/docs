@@ -6,7 +6,6 @@ import dataclasses
 import datetime
 import functools
 import json
-import logging
 import random
 import re
 import typing
@@ -41,6 +40,8 @@ from mergify_engine.clients import http
 
 
 if typing.TYPE_CHECKING:
+    import logging
+
     from mergify_engine.models import github as gh_models
     from mergify_engine.rules.config import mergify as mergify_conf
 

@@ -10,13 +10,13 @@ import voluptuous
 
 from mergify_engine import check_api
 from mergify_engine import subscription
-from mergify_engine.rules import conditions
-from mergify_engine.rules.config import mergify as mergify_conf
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
     from mergify_engine.engine import commands_runner
+    from mergify_engine.rules import conditions
+    from mergify_engine.rules.config import mergify as mergify_conf
     from mergify_engine.rules.config import pull_request_rules as prr_config
 
 

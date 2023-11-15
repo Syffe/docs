@@ -4,7 +4,6 @@
 # mypy: disable-error-code=unreachable
 from __future__ import annotations
 
-from collections import abc
 import dataclasses
 import datetime
 import functools
@@ -47,6 +46,8 @@ from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
+    from collections import abc
+
     from mergify_engine import context
 
 BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (

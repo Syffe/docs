@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import abc
 import dataclasses
 import typing
 
@@ -13,6 +12,8 @@ from mergify_engine.rules.config import conditions as cond_config
 
 
 if typing.TYPE_CHECKING:
+    from collections import abc
+
     from mergify_engine import context
 
 PartitionRuleName = typing.NewType("PartitionRuleName", str)

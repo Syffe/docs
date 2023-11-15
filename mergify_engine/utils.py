@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import abc
 import enum
 import functools
 import hashlib
@@ -19,6 +18,8 @@ from mergify_engine import github_types
 
 
 if typing.TYPE_CHECKING:
+    from collections import abc
+
     from mergify_engine.models.github import repository as github_repository
 
 

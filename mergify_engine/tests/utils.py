@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import os
-import pathlib
 import subprocess
 import threading
 import typing
 from unittest import mock
 
 import click.testing
-import respx
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
@@ -18,11 +16,18 @@ from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import subscription
-from mergify_engine.config import types
 from mergify_engine.models import github as gh_models
 from mergify_engine.rules.config import mergify as mergify_conf
-from mergify_engine.tests import conftest
 from mergify_engine.tests.db_populator import DbPopulator
+
+
+if typing.TYPE_CHECKING:
+    import pathlib
+
+    import respx
+
+    from mergify_engine.config import types
+    from mergify_engine.tests import conftest
 
 
 async def load_mergify_config(content: str) -> mergify_conf.MergifyConfig:

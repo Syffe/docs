@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import datetime
+import datetime  # noqa: TCH003
 import enum
 import re
 import typing
 
 import daiquiri
-import numpy as np
-import numpy.typing as npt
+import numpy as np  # noqa: TCH002
+import numpy.typing as npt  # noqa: TCH002
 from pgvector.sqlalchemy import Vector  # type: ignore
 import sqlalchemy
 from sqlalchemy import orm

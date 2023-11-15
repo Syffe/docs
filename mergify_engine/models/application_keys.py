@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-import datetime
+import datetime  # noqa: TCH003
 import typing
 
 from alembic_utils import pg_function
 from alembic_utils import pg_trigger
 import sqlalchemy
 from sqlalchemy import orm
-from sqlalchemy.orm import Mapped
 import sqlalchemy_utils
 
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import models
-from mergify_engine.models import github as gh_models
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine.models import github as gh_models
 
 
 APPLICATIONS_LIMIT = 200
@@ -29,7 +31,7 @@ class ApplicationKey(models.Base):
     __tablename__ = "application"
     __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ("id", "name")
 
-    id: Mapped[int] = orm.mapped_column(
+    id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.Integer,
         primary_key=True,
         nullable=False,
@@ -37,33 +39,33 @@ class ApplicationKey(models.Base):
         anonymizer_config=None,
     )
 
-    name: Mapped[str] = orm.mapped_column(
+    name: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.String(255),
         nullable=False,
         anonymizer_config="anon.lorem_ipsum( words := 7 )",
     )
-    api_access_key: Mapped[str] = orm.mapped_column(
+    api_access_key: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.String(255),
         nullable=False,
         index=True,
         anonymizer_config="''CONFIDENTIAL''",
     )
 
-    api_secret_key: Mapped[str] = orm.mapped_column(
+    api_secret_key: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy_utils.PasswordType(
             schemes=["pbkdf2_sha512"],
         ),
         nullable=False,
         anonymizer_config="''CONFIDENTIAL''",
     )
-    github_account_id: Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
+    github_account_id: orm.Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
         sqlalchemy.BigInteger,
         sqlalchemy.ForeignKey("github_account.id"),
         index=True,
         nullable=False,
         anonymizer_config=None,
     )
-    created_by_github_user_id: Mapped[
+    created_by_github_user_id: orm.Mapped[
         github_types.GitHubAccountIdType | None
     ] = orm.mapped_column(
         sqlalchemy.Integer,
@@ -71,20 +73,20 @@ class ApplicationKey(models.Base):
         anonymizer_config=None,
     )
 
-    github_account: Mapped[gh_models.GitHubAccount] = orm.relationship(
+    github_account: orm.Mapped[gh_models.GitHubAccount] = orm.relationship(
         "GitHubAccount",
         foreign_keys=[github_account_id],
         lazy="immediate",
     )
 
-    created_by: Mapped[gh_models.GitHubUser | None] = orm.relationship(
+    created_by: orm.Mapped[gh_models.GitHubUser | None] = orm.relationship(
         "GitHubUser",
         uselist=False,
         foreign_keys=[created_by_github_user_id],
         lazy="immediate",
     )
 
-    created_at: Mapped[datetime.datetime] = orm.mapped_column(
+    created_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime,
         server_default=sqlalchemy.func.now(),
         nullable=False,

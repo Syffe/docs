@@ -5,7 +5,7 @@ import typing
 
 import pydantic
 
-from mergify_engine.rules.config import queue_rules as qr_config
+from mergify_engine.rules.config import queue_rules as qr_config  # noqa: TCH001
 
 
 @pydantic.dataclasses.dataclass

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import datetime
+import datetime  # noqa: TCH003
+import typing
 
 import sqlalchemy
 from sqlalchemy import orm
@@ -11,7 +12,10 @@ from mergify_engine import models
 from mergify_engine import signals
 from mergify_engine.models import enumerations
 from mergify_engine.models.enumerations import GithubAuthenticatedActorType
-from mergify_engine.queue.merge_train import checks
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine.queue.merge_train import checks
 
 
 class SpeculativeCheckPullRequest(models.Base):

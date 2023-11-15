@@ -3,7 +3,10 @@ from __future__ import annotations
 import typing
 
 import sqlalchemy.ext.asyncio
-import sqlalchemy.orm
+
+
+if typing.TYPE_CHECKING:
+    import sqlalchemy.orm
 
 
 class DbPopulator:

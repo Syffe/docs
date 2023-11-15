@@ -7,12 +7,12 @@ import typing
 
 from mergify_engine import github_types
 from mergify_engine.clients import http
-from mergify_engine.rules import conditions as conditions_mod
-from mergify_engine.rules import filter
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.rules import conditions as conditions_mod
+    from mergify_engine.rules import filter
 
 
 @dataclasses.dataclass
