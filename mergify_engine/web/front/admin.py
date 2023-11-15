@@ -26,7 +26,12 @@ async def _get_user(
     _filter: sqlalchemy.sql.ColumnElement[typing.Any],
 ) -> github_user.GitHubUser | None:
     result = await session.execute(
-        sqlalchemy.select(github_user.GitHubUser).where(_filter)
+        sqlalchemy.select(github_user.GitHubUser)
+        .where(_filter)
+        # NOTE(sileht): In case an user has been deleted and a new user reused the same login
+        # we pick the second one only
+        .order_by(github_user.GitHubUser.id.desc())
+        .limit(1)
     )
     return result.unique().scalar_one_or_none()
 

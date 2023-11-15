@@ -34,6 +34,11 @@ async def test_sudo_user(
         login=github_types.GitHubLogin("impersonated_other_user"),
         oauth_access_token=github_types.GitHubOAuthToken("foobar"),
     )
+    deleted_github_user = github_user.GitHubUser(
+        id=github_types.GitHubAccountIdType(1),
+        login=impersonated_user.login,
+        oauth_access_token=github_types.GitHubOAuthToken("foobar"),
+    )
 
     db.add(admin_account)
     await db.commit()
@@ -58,6 +63,7 @@ async def test_sudo_user(
 
     db.add(impersonated_user)
     db.add(impersonated_other_user)
+    db.add(deleted_github_user)
     await db.commit()
 
     r = await web_client.get(f"/front/sudo/{impersonated_user.login}")
