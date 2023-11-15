@@ -75,6 +75,110 @@ class TestMergeAction(base.FunctionalTestBase):
             == f"The pull request has been merged automatically at *{p['merge_commit_sha']}*"
         )
 
+    async def test_report_error_bot_account_wrong_permissions(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "queue_conditions": [
+                        "status-success=continuous-integration/fake-ci-queue",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci-merge",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge default",
+                    "conditions": [f"base={self.main_branch_name}", "label=queue"],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "merge_bot_account": "anakin",
+                        },
+                    },
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr()
+        await self.create_status(p, "continuous-integration/fake-ci-queue")
+        await self.create_status(p, "continuous-integration/fake-ci-merge")
+        await self.add_label(p["number"], "queue")
+        await self.run_engine()
+        await self.wait_for_check_run(
+            name="Rule: Merge default (queue)",
+            conclusion="cancelled",
+        )
+
+        p = await self.get_pull(p["number"])
+        assert not p["merged"]
+
+        ctxt = context.Context(self.repository_ctxt, p, [])
+        check = await ctxt.get_engine_check_run("Rule: Merge default (queue)")
+
+        assert check is not None
+        assert check["conclusion"] == "cancelled"
+        assert (
+            check["output"]["title"]
+            == "`anakin` account used as `bot_account` must have `write`, `maintain` or `admin` permission, not `read`"
+        )
+
+    async def test_report_error_bot_account_is_a_bot(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "queue_conditions": [
+                        "status-success=continuous-integration/fake-ci-queue",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci-merge",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge default",
+                    "conditions": [f"base={self.main_branch_name}", "label=queue"],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "merge_bot_account": "mergify-test4 [bot]",
+                        },
+                    },
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr()
+        await self.create_status(p, "continuous-integration/fake-ci-queue")
+        await self.create_status(p, "continuous-integration/fake-ci-merge")
+        await self.add_label(p["number"], "queue")
+        await self.run_engine()
+        await self.wait_for_check_run(
+            name="Rule: Merge default (queue)",
+            conclusion="cancelled",
+        )
+
+        p = await self.get_pull(p["number"])
+        assert not p["merged"]
+
+        ctxt = context.Context(self.repository_ctxt, p, [])
+        check = await ctxt.get_engine_check_run("Rule: Merge default (queue)")
+        assert check is not None
+        assert check["conclusion"] == "cancelled"
+        assert (
+            check["output"]["title"]
+            == "Unable to merge queued pull request: GitHub App bot `mergify-test4 [bot]` can't be impersonated."
+        )
+        assert check["output"]["summary"] == ""
+
     @pytest.mark.skipif(
         not settings.GITHUB_URL.startswith("https://github.com"),
         reason="required_conversation_resolution requires GHES 3.2",

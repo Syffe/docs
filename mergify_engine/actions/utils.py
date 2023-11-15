@@ -158,7 +158,7 @@ async def get_github_user_from_bot_account(
     if login.endswith("[bot]"):
         raise BotAccountNotFound(
             check_api.Conclusion.FAILURE,
-            f"Unable to {purpose}: GitHub App bot `{login}` can't be impersonated. ",
+            f"Unable to {purpose}: GitHub App bot `{login}` can't be impersonated.",
             "",
         )
 
@@ -174,7 +174,7 @@ async def get_github_user_from_bot_account(
             )
 
         if permission not in required_permissions:
-            quoted_required_permissions = [f"`{p}`" for p in required_permissions]
+            quoted_required_permissions = [f"`{p.value}`" for p in required_permissions]
             if len(quoted_required_permissions) == 1:
                 fancy_perm = quoted_required_permissions[0]
             else:
@@ -187,7 +187,7 @@ async def get_github_user_from_bot_account(
                 (
                     f"`{login}` account used as "
                     f"`bot_account` must have {fancy_perm} permission, "
-                    f"not `{permission}`"
+                    f"not `{permission.value}`"
                 ),
                 "",
             )
