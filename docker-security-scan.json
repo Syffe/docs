@@ -380,16 +380,6 @@
     "PublishedDate": "2021-09-15T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2016-2781",
-    "PkgName": "coreutils",
-    "Status": "will_not_fix",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-2781",
-    "Title": "coreutils: Non-privileged session can escape to the parent session in chroot",
-    "Severity": "LOW",
-    "PublishedDate": "2017-02-07T15:59:00Z"
-  },
-  {
     "VulnerabilityID": "CVE-2017-11164",
     "PkgName": "libpcre3",
     "Status": "affected",
@@ -1460,66 +1450,6 @@
     "PublishedDate": "2023-07-18T14:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2022-42916",
-    "PkgName": "curl",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
-    "Title": "HSTS bypass via IDN",
-    "Severity": "HIGH",
-    "PublishedDate": "2022-10-29T02:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-42916",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
-    "Title": "HSTS bypass via IDN",
-    "Severity": "HIGH",
-    "PublishedDate": "2022-10-29T02:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-42916",
-    "PkgName": "libcurl4",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
-    "Title": "HSTS bypass via IDN",
-    "Severity": "HIGH",
-    "PublishedDate": "2022-10-29T02:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-43551",
-    "PkgName": "curl",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
-    "Title": "HSTS bypass via IDN",
-    "Severity": "HIGH",
-    "PublishedDate": "2022-12-23T15:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-43551",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
-    "Title": "HSTS bypass via IDN",
-    "Severity": "HIGH",
-    "PublishedDate": "2022-12-23T15:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-43551",
-    "PkgName": "libcurl4",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
-    "Title": "HSTS bypass via IDN",
-    "Severity": "HIGH",
-    "PublishedDate": "2022-12-23T15:15:00Z"
-  },
-  {
     "VulnerabilityID": "CVE-2022-48303",
     "PkgName": "tar",
     "Status": "affected",
@@ -1538,66 +1468,6 @@
     "Title": "zstd: mysql: buffer overrun in util.c",
     "Severity": "HIGH",
     "PublishedDate": "2023-03-31T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-23914",
-    "PkgName": "curl",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23914",
-    "Title": "HSTS ignored on multiple requests",
-    "Severity": "CRITICAL",
-    "PublishedDate": "2023-02-23T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-23914",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23914",
-    "Title": "HSTS ignored on multiple requests",
-    "Severity": "CRITICAL",
-    "PublishedDate": "2023-02-23T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-23914",
-    "PkgName": "libcurl4",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23914",
-    "Title": "HSTS ignored on multiple requests",
-    "Severity": "CRITICAL",
-    "PublishedDate": "2023-02-23T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-23915",
-    "PkgName": "curl",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23915",
-    "Title": "HSTS amnesia with --parallel",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-02-23T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-23915",
-    "PkgName": "libcurl3-gnutls",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23915",
-    "Title": "HSTS amnesia with --parallel",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-02-23T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-23915",
-    "PkgName": "libcurl4",
-    "Status": "will_not_fix",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23915",
-    "Title": "HSTS amnesia with --parallel",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-02-23T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-25652",
