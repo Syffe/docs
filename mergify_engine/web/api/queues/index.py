@@ -180,7 +180,6 @@ class Queue:
     )
 
     pull_requests: list[PullRequestQueued] = dataclasses.field(
-        default_factory=list,
         metadata={"description": "The pull requests in this queue"},
     )
 
@@ -188,7 +187,6 @@ class Queue:
 @pydantic.dataclasses.dataclass
 class Queues:
     queues: list[Queue] = dataclasses.field(
-        default_factory=list,
         metadata={"description": "The queues of the repository"},
     )
 
@@ -333,14 +331,14 @@ async def repository_queues(
         queue_names,
     )
 
-    queues = Queues()
+    queues = Queues(queues=[])
     async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt,
         queue_rules,
         partition_rules,
     ):
         for train in convoy.iter_trains():
-            queue = Queue(Branch(train.convoy.ref))
+            queue = Queue(Branch(train.convoy.ref), pull_requests=[])
             previous_eta = None
             previous_car = None
             for position, (embarked_pull, car) in enumerate(

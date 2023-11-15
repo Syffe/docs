@@ -52,7 +52,6 @@ class PullRequestQueued:
 @pydantic.dataclasses.dataclass
 class Partition:
     pull_requests: list[PullRequestQueued] = dataclasses.field(
-        default_factory=list,
         metadata={"description": "The pull requests queued in this partition"},
     )
 
@@ -67,7 +66,6 @@ class BranchPartitions:
         partr_config.PartitionRuleName,
         list[PullRequestQueued],
     ] = dataclasses.field(
-        default_factory=dict,
         metadata={
             "description": (
                 "A dictionary containing partition names as keys and, as a value of those key, the list of pull requests queued in the partition."
@@ -99,7 +97,7 @@ async def repository_partitions(
         queue_rules,
         partition_rules,
     ):
-        branch_partitions = BranchPartitions(branch_name=convoy.ref)
+        branch_partitions = BranchPartitions(branch_name=convoy.ref, partitions={})
 
         for rule in partition_rules:
             branch_partitions.partitions.setdefault(rule.name, [])
@@ -188,7 +186,7 @@ async def repository_partitions_branch(
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
 ) -> BranchPartitions:
-    branch_partitions = BranchPartitions(branch_name=branch_name)
+    branch_partitions = BranchPartitions(branch_name=branch_name, partitions={})
 
     convoy = merge_train.Convoy(
         repository_ctxt,
@@ -268,7 +266,7 @@ async def repository_partition_branch(
             detail=f"Partition `{partition_name}` does not exist",
         )
 
-    partition = Partition()
+    partition = Partition(pull_requests=[])
     convoy = merge_train.Convoy(
         repository_ctxt,
         queue_rules,

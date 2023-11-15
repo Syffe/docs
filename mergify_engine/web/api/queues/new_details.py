@@ -189,24 +189,26 @@ class EnhancedPullRequestQueued:
                 "The first pull request in the queue is at position 0"
             ),
         },
-        default_factory=dict,
     )
 
     mergeability_checks: dict[
         partr_config.PartitionRuleName | None,
         MergeabilityCheck | None,
-    ] = dataclasses.field(default_factory=dict)
+    ] = dataclasses.field(
+        metadata={"description": "The current state of the mergeability checks"},
+    )
 
     summary: dict[
         partr_config.PartitionRuleName | None,
         PullRequestSummary | None,
-    ] = dataclasses.field(default_factory=dict)
+    ] = dataclasses.field(
+        metadata={"description": "The pull request summary"},
+    )
 
     partition_names: list[partr_config.PartitionRuleName] = dataclasses.field(
         metadata={
             "description": "The names of the partitions in which the pull request is queued in the specified queue",
         },
-        default_factory=list,
     )
 
 
@@ -383,6 +385,10 @@ async def repository_queue_pull_request(
                     ),
                     priority=embarked_pull.config["priority"],
                     effective_priority=embarked_pull.config["effective_priority"],
+                    positions={},
+                    mergeability_checks={},
+                    summary={},
+                    partition_names=[],
                 )
 
             summary = None

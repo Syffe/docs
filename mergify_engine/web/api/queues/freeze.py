@@ -25,16 +25,11 @@ router = fastapi.APIRouter(
 
 @pydantic.dataclasses.dataclass
 class QueueFreeze:
-    name: str = dataclasses.field(
-        default_factory=str,
-        metadata={"description": "Queue name"},
-    )
+    name: str = dataclasses.field(metadata={"description": "Queue name"})
     reason: str = dataclasses.field(
-        default_factory=str,
         metadata={"description": "The reason of the queue freeze"},
     )
     freeze_date: datetime.datetime = dataclasses.field(
-        default_factory=date.utcnow,
         metadata={"description": "The date and time of the freeze"},
     )
     cascading: bool = dataclasses.field(
@@ -46,7 +41,6 @@ class QueueFreeze:
 @pydantic.dataclasses.dataclass
 class QueueFreezeResponse:
     queue_freezes: list[QueueFreeze] = dataclasses.field(
-        default_factory=list,
         metadata={"description": "The frozen queues of the repository"},
     )
 

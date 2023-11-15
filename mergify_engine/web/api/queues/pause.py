@@ -26,11 +26,9 @@ router = fastapi.APIRouter(
 @pydantic.dataclasses.dataclass
 class QueuePause:
     reason: str = dataclasses.field(
-        default_factory=str,
         metadata={"description": "The reason of the queue pause"},
     )
     pause_date: datetime.datetime = dataclasses.field(
-        default_factory=date.utcnow,
         metadata={"description": "The date and time of the freeze"},
     )
 
@@ -38,7 +36,6 @@ class QueuePause:
 @pydantic.dataclasses.dataclass
 class QueuePauseResponse:
     queue_pause: list[QueuePause] = dataclasses.field(
-        default_factory=list,
         metadata={"description": "The pause of the repository"},
     )
 

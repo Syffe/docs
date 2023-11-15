@@ -22,7 +22,6 @@ router = fastapi.APIRouter(
 @pydantic.dataclasses.dataclass
 class QueuesConfig:
     configuration: list[types.QueueRule] = dataclasses.field(
-        default_factory=list,
         metadata={"description": "The queues configuration of the repository"},
     )
 
