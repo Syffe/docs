@@ -1,5 +1,6 @@
 import datetime
 
+from mergify_engine import date
 from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.queue import utils as queue_utils
@@ -50,7 +51,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             ],
         }
 
-        start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=datetime.UTC)
+        start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=date.UTC)
 
         with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
@@ -356,7 +357,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
                 },
             ],
         }
-        start_date = datetime.datetime(2022, 8, 18, 10)
+        start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=date.UTC)
         with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
@@ -450,7 +451,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
                 },
             ],
         }
-        start_date = datetime.datetime(2022, 8, 18, 10)
+        start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=date.UTC)
         with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 

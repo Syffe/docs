@@ -89,7 +89,7 @@ def wrap_coroutine(api: typing.Any, coroutine: _CallableT) -> _CallableT:
 _TIME_NS_PRESENT = hasattr(time, "time_ns")
 _MONOTONIC_NS_PRESENT = hasattr(time, "monotonic_ns")
 _PERF_COUNTER_NS_PRESENT = hasattr(time, "perf_counter_ns")
-_EPOCH = datetime.datetime(1970, 1, 1)
+_EPOCH = datetime.datetime(1970, 1, 1)  # noqa: DTZ001
 _EPOCHTZ = datetime.datetime(1970, 1, 1, tzinfo=datetime.UTC)
 
 real_time = time.time

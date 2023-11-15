@@ -158,7 +158,7 @@ def test_relative_datetime_from_string(string: str, expected_value: str) -> None
 
 def test_relative_datetime_without_timezone() -> None:
     with pytest.raises(date.InvalidDate):
-        date.RelativeDatetime(datetime.datetime.now())
+        date.RelativeDatetime(datetime.datetime.now())  # noqa: DTZ005
 
 
 @pytest.mark.parametrize(
@@ -276,10 +276,42 @@ def test_interval_from_string(
 @pytest.mark.parametrize(
     "time_to_check,begin_hour,begin_minute,end_hour,end_minute,strict,result",
     (
-        (datetime.datetime(2022, 1, 1, 20, 10, 1), 20, 10, 21, 0, False, True),
-        (datetime.datetime(2022, 1, 1, 20, 10, 0), 20, 10, 21, 0, False, True),
-        (datetime.datetime(2022, 1, 1, 20, 10, 0), 20, 10, 21, 0, True, False),
-        (datetime.datetime(2022, 1, 1, 20, 10, 1), 20, 10, 21, 0, True, True),
+        (
+            datetime.datetime(2022, 1, 1, 20, 10, 1, tzinfo=date.UTC),
+            20,
+            10,
+            21,
+            0,
+            False,
+            True,
+        ),
+        (
+            datetime.datetime(2022, 1, 1, 20, 10, 0, tzinfo=date.UTC),
+            20,
+            10,
+            21,
+            0,
+            False,
+            True,
+        ),
+        (
+            datetime.datetime(2022, 1, 1, 20, 10, 0, tzinfo=date.UTC),
+            20,
+            10,
+            21,
+            0,
+            True,
+            False,
+        ),
+        (
+            datetime.datetime(2022, 1, 1, 20, 10, 1, tzinfo=date.UTC),
+            20,
+            10,
+            21,
+            0,
+            True,
+            True,
+        ),
         (
             datetime.datetime(
                 2022, 1, 1, 20, 10, 1, tzinfo=zoneinfo.ZoneInfo("Pacific/Auckland")

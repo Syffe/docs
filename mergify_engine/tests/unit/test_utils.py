@@ -427,7 +427,7 @@ def test_clean_qp() -> None:
 
     error_qp_dict = {
         "valid": 1,
-        "not_valid": datetime.date.today(),
+        "not_valid": {"1"},
     }
-    with pytest.raises(ValueError, match="Unsupported type <class 'datetime.date'>"):
+    with pytest.raises(ValueError, match="Unsupported type <class 'set'>"):
         web_utils.serialize_query_parameters(error_qp_dict)

@@ -22,7 +22,7 @@ payload_decoded = {
     "conditions": [],
     "actions": {"merge": {"strict": Color.BLUE}},
     "timedelta": datetime.timedelta(hours=2, minutes=5, seconds=5),
-    "datetime_naive": datetime.datetime(2021, 5, 15, 8, 35, 36, 442306),
+    "datetime_naive": datetime.datetime(2021, 5, 15, 8, 35, 36, 442306),  # noqa: DTZ001
     "datetime_aware": datetime.datetime(
         2021, 5, 15, 8, 41, 36, 796485, tzinfo=datetime.UTC
     ),

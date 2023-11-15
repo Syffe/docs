@@ -1837,8 +1837,8 @@ class Context:
         check_run: github_types.CachedGitHubCheckRun,
     ) -> datetime.datetime:
         if check_run["completed_at"] is None:
-            return datetime.datetime.max
-        return datetime.datetime.fromisoformat(check_run["completed_at"][:-1])
+            return datetime.datetime.max.replace(tzinfo=date.UTC)
+        return datetime.datetime.fromisoformat(check_run["completed_at"])
 
     @tracer.wrap("ensure_complete")
     async def ensure_complete(self) -> None:

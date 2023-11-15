@@ -1,4 +1,3 @@
-import datetime
 import typing
 from unittest import mock
 
@@ -6,6 +5,7 @@ import pytest
 
 from mergify_engine import condition_value_querier
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import flaky_check
 from mergify_engine import github_types
 from mergify_engine import rules
@@ -106,9 +106,7 @@ async def test_flaky_check_get_consolidate_data(
             "annotations_url": "",
         },
         conclusion="failure",
-        completed_at=github_types.ISODateTimeType(
-            datetime.datetime.today().isoformat()
-        ),
+        completed_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
         html_url="",
     )
     unit_test_check = github_types.CachedGitHubCheckRun(
@@ -130,9 +128,7 @@ async def test_flaky_check_get_consolidate_data(
             "annotations_url": "",
         },
         conclusion="failure",
-        completed_at=github_types.ISODateTimeType(
-            datetime.datetime.today().isoformat()
-        ),
+        completed_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
         html_url="",
     )
 

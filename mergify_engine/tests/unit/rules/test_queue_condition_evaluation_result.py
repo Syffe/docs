@@ -175,7 +175,9 @@ async def test_condition_dict_serialization() -> None:
                         match=False,
                         evaluation_error="Some error",
                         related_checks=[],
-                        next_evaluation_at=datetime.datetime(2023, 1, 10, 14, 30),
+                        next_evaluation_at=datetime.datetime(
+                            2023, 1, 10, 14, 30, tzinfo=date.UTC
+                        ),
                     )
                 ],
             ),
@@ -235,7 +237,9 @@ async def test_condition_dict_serialization() -> None:
                         "match": False,
                         "evaluation_error": "Some error",
                         "related_checks": [],
-                        "next_evaluation_at": datetime.datetime(2023, 1, 10, 14, 30),
+                        "next_evaluation_at": datetime.datetime(
+                            2023, 1, 10, 14, 30, tzinfo=date.UTC
+                        ),
                     }
                 ],
             },
@@ -364,7 +368,9 @@ async def test_condition_json_serialization() -> None:
                         match=False,
                         evaluation_error="Some error",
                         related_checks=["ci"],
-                        next_evaluation_at=datetime.datetime(2023, 1, 10, 14, 30),
+                        next_evaluation_at=datetime.datetime(
+                            2023, 1, 10, 14, 30, tzinfo=date.UTC
+                        ),
                     )
                 ],
             )
@@ -400,7 +406,9 @@ async def test_condition_json_serialization() -> None:
                         match=False,
                         evaluation_error="Some error",
                         related_checks=["ci"],
-                        next_evaluation_at=datetime.datetime(2023, 1, 10, 14, 30),
+                        next_evaluation_at=datetime.datetime(
+                            2023, 1, 10, 14, 30, tzinfo=date.UTC
+                        ),
                     )
                 ],
             )

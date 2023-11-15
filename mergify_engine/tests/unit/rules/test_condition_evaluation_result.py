@@ -5,6 +5,7 @@ import pytest
 import voluptuous
 
 from mergify_engine import condition_value_querier
+from mergify_engine import date
 from mergify_engine import rules
 from mergify_engine.rules import conditions as rule_conditions
 from mergify_engine.rules.config import pull_request_rules
@@ -119,7 +120,9 @@ async def test_condition_dict_serialization() -> None:
                 description="Some description",
                 evaluation_error="Some error",
                 related_checks=["ci"],
-                next_evaluation_at=datetime.datetime(2022, 1, 10, 14, 30),
+                next_evaluation_at=datetime.datetime(
+                    2022, 1, 10, 14, 30, tzinfo=date.UTC
+                ),
             )
         ],
     )
@@ -140,7 +143,9 @@ async def test_condition_dict_serialization() -> None:
                 "description": "Some description",
                 "evaluation_error": "Some error",
                 "related_checks": ["ci"],
-                "next_evaluation_at": datetime.datetime(2022, 1, 10, 14, 30),
+                "next_evaluation_at": datetime.datetime(
+                    2022, 1, 10, 14, 30, tzinfo=date.UTC
+                ),
                 "subconditions": [],
             }
         ],

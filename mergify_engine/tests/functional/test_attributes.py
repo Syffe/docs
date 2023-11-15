@@ -2,13 +2,13 @@ import datetime
 import logging
 import operator
 from unittest import mock
-import zoneinfo
 
 import pytest
 
 from mergify_engine import condition_value_querier
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import yaml
@@ -1249,7 +1249,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             ]
         }
         # 12:00 18th April 2023
-        start_date = datetime.datetime(2023, 4, 18, 12)
+        start_date = datetime.datetime(2023, 4, 18, 12, tzinfo=date.UTC)
         with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
@@ -1260,7 +1260,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
             ctxt = context.Context(self.repository_ctxt, pr_labeled["pull_request"])
             assert ctxt.get_merge_after() == datetime.datetime(
-                2023, 4, 19, tzinfo=zoneinfo.ZoneInfo("UTC")
+                2023, 4, 19, tzinfo=date.UTC
             )
 
             summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
