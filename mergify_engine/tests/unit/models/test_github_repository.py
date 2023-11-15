@@ -12,7 +12,7 @@ async def test_get_by_name(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
             "login": github_types.GitHubLogin("account1"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
     account1_repo1 = github_types.GitHubRepository(
         {
@@ -25,7 +25,7 @@ async def test_get_by_name(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
             "url": "",
             "html_url": "",
             "default_branch": github_types.GitHubRefType("main"),
-        }
+        },
     )
     expected_repo = await gh_models.GitHubRepository.get_or_create(db, account1_repo1)
     db.add(expected_repo)
@@ -37,7 +37,7 @@ async def test_get_by_name(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
             "login": github_types.GitHubLogin("account2"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
     account2_repo1 = github_types.GitHubRepository(
         {
@@ -50,7 +50,7 @@ async def test_get_by_name(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
             "url": "",
             "html_url": "",
             "default_branch": github_types.GitHubRefType("main"),
-        }
+        },
     )
     another_repo = await gh_models.GitHubRepository.get_or_create(db, account2_repo1)
     db.add(another_repo)
@@ -72,7 +72,7 @@ async def test_as_dict(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
             "id": github_types.GitHubAccountIdType(0),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
     gh_repo = github_types.GitHubRepository(
         {
@@ -85,7 +85,7 @@ async def test_as_dict(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
             "url": "",
             "html_url": "",
             "default_branch": github_types.GitHubRefType("main"),
-        }
+        },
     )
     repo = await gh_models.GitHubRepository.get_or_create(db, gh_repo)
     db.add(repo)

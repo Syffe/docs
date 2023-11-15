@@ -17,10 +17,10 @@ depends_on = None
 
 def upgrade() -> None:
     alembic.op.execute(
-        "ALTER TYPE queuechecksabortcode ADD VALUE 'BRANCH_UPDATE_FAILED';"
+        "ALTER TYPE queuechecksabortcode ADD VALUE 'BRANCH_UPDATE_FAILED';",
     )
     alembic.op.execute(
-        "ALTER TYPE queuechecksunqueuecode ADD VALUE 'BRANCH_UPDATE_FAILED';"
+        "ALTER TYPE queuechecksunqueuecode ADD VALUE 'BRANCH_UPDATE_FAILED';",
     )
 
 

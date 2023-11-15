@@ -16,8 +16,8 @@ class TestApiSimulator(base.FunctionalTestBase):
                     "name": "simulator",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -122,8 +122,8 @@ users_to_remove: []
                     "loc": ["body", "mergify_yml"],
                     "msg": "expected str @ pull_request_rules → item 0 → actions → label → remove → item 0",
                     "type": "mergify_config_error",
-                }
-            ]
+                },
+            ],
         }
 
         mergify_yaml = """pull_request_rules:
@@ -153,7 +153,7 @@ users_to_remove: []
                     "msg": "extra keys not allowed @ pull_request_rules → item 0 → conditions → item 0 → -conflict",
                     "type": "mergify_config_error",
                 },
-            ]
+            ],
         }
 
     async def test_simulator_with_wrong_pull_request_url(self) -> None:
@@ -163,8 +163,8 @@ users_to_remove: []
                     "name": "simulator",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -190,8 +190,8 @@ users_to_remove: []
                     "name": "simulator",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
@@ -213,7 +213,7 @@ did not find expected alphabetic or numeric character
   in "<unicode string>", line 2, column 2
 ```""",
                     "type": "mergify_config_error",
-                }
+                },
             ],
         }
 

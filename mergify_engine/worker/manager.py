@@ -85,7 +85,7 @@ AVAILABLE_WORKER_SERVICES = set(ServiceNameT.__dict__["__args__"])
 for service_name in AVAILABLE_WORKER_SERVICES:
     # nosemgrep: python.lang.security.audit.non-literal-import.non-literal-import
     importlib.import_module(
-        f"mergify_engine.worker.{service_name.replace('-','_')}_service"
+        f"mergify_engine.worker.{service_name.replace('-','_')}_service",
     )
 
 
@@ -98,10 +98,10 @@ def asyncio_event_set_by_default() -> asyncio.Event:
 @dataclasses.dataclass
 class ServiceManager:
     enabled_services: ServiceNamesT = dataclasses.field(
-        default_factory=lambda: AVAILABLE_WORKER_SERVICES.copy()
+        default_factory=lambda: AVAILABLE_WORKER_SERVICES.copy(),
     )
     _mandatory_services: typing.ClassVar[ServiceNamesT] = {
-        "dedicated-workers-cache-syncer"
+        "dedicated-workers-cache-syncer",
     }
 
     # DedicatedWorkersCacheSyncerService
@@ -145,12 +145,14 @@ class ServiceManager:
     event_forwarder_idle_time: float = 5
 
     _redis_links: redis_utils.RedisLinks = dataclasses.field(
-        init=False, default_factory=lambda: redis_utils.RedisLinks(name="worker")
+        init=False,
+        default_factory=lambda: redis_utils.RedisLinks(name="worker"),
     )
     _services: list[ServiceProtocol] = dataclasses.field(default_factory=list)
 
     _stopped: asyncio.Event = dataclasses.field(
-        init=False, default_factory=asyncio_event_set_by_default
+        init=False,
+        default_factory=asyncio_event_set_by_default,
     )
     _stop_task: asyncio.Task[None] | None = dataclasses.field(init=False, default=None)
 

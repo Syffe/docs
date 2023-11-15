@@ -196,10 +196,12 @@ class GeneralCleaningToolbox:
 @dataclasses.dataclass
 class LogCleaner:
     regex_toolbox: RegexToolbox = dataclasses.field(
-        default_factory=RegexToolbox, repr=False
+        default_factory=RegexToolbox,
+        repr=False,
     )
     general_cleaning_toolbox: GeneralCleaningToolbox = dataclasses.field(
-        default_factory=GeneralCleaningToolbox, repr=False
+        default_factory=GeneralCleaningToolbox,
+        repr=False,
     )
     log_tags: list[LogTags] = dataclasses.field(default_factory=list)
 
@@ -214,7 +216,9 @@ class LogCleaner:
             return line
         # GENERAL CLEANING
         return self.general_cleaning_toolbox.apply_general_cleaning(
-            line, self.log_tags, clean_non_alphanumeric
+            line,
+            self.log_tags,
+            clean_non_alphanumeric,
         )
 
     def apply_log_tags(self, raw_log: str) -> None:

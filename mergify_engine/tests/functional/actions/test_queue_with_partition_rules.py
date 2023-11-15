@@ -62,13 +62,13 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                             "or": [
                                 "queue-partition-name!=projA",
                                 "status-success=continuous-integration/fake-ci-A",
-                            ]
+                            ],
                         },
                         {
                             "or": [
                                 "queue-partition-name!=projB",
                                 "status-success=continuous-integration/fake-ci-B",
-                            ]
+                            ],
                         },
                     ],
                     "merge_conditions": [
@@ -83,7 +83,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         p1 = await self.create_pr(
             files={
                 "projB/test.txt": "testB",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
@@ -100,7 +100,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            name="Rule: Automatic merge (queue)"
+            name="Rule: Automatic merge (queue)",
         )
 
         assert (
@@ -110,7 +110,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
 
         convoy = await self.get_convoy()
         cars = convoy.get_train_cars_by_pull(
-            await self.repository_ctxt.get_pull_request_context(p1["number"])
+            await self.repository_ctxt.get_pull_request_context(p1["number"]),
         )
 
         assert cars is not None
@@ -171,13 +171,13 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                             "or": [
                                 "queue-partition-name!=projA",
                                 "status-success=continuous-integration/fake-ci-A",
-                            ]
+                            ],
                         },
                         {
                             "or": [
                                 "queue-partition-name!=projB",
                                 "status-success=continuous-integration/fake-ci-B",
-                            ]
+                            ],
                         },
                     ],
                     "merge_conditions": [
@@ -193,7 +193,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             files={
                 "projA/test.txt": "testA",
                 "projB/test.txt": "testB",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
@@ -211,7 +211,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            name="Rule: Automatic merge (queue)"
+            name="Rule: Automatic merge (queue)",
         )
 
         assert (
@@ -221,7 +221,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
 
         convoy = await self.get_convoy()
         cars = convoy.get_train_cars_by_pull(
-            await self.repository_ctxt.get_pull_request_context(p1["number"])
+            await self.repository_ctxt.get_pull_request_context(p1["number"]),
         )
 
         assert cars is not None
@@ -270,7 +270,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
         }
 
@@ -278,14 +278,15 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         p1 = await self.create_pr(
             files={
                 "projA/test.txt": "test",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["output"]["title"]
@@ -345,7 +346,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
         }
 
@@ -354,14 +355,15 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             files={
                 "projA/test.txt": "testA",
                 "projB/test.txt": "testB",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["output"]["title"]
@@ -427,7 +429,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -507,7 +509,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -528,13 +530,20 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
 
             await self.git("fetch", "origin", self.main_branch_name)
             await self.git(
-                "checkout", "-b", "random", f"origin/{self.main_branch_name}"
+                "checkout",
+                "-b",
+                "random",
+                f"origin/{self.main_branch_name}",
             )
             open(self.git.repository + "/random_file.txt", "wb").close()
             await self.git("add", "random_file.txt")
             await self.git("commit", "--no-edit", "-m", "random update")
             await self.git(
-                "push", "-f", "--quiet", "origin", f"random:{self.main_branch_name}"
+                "push",
+                "-f",
+                "--quiet",
+                "origin",
+                f"random:{self.main_branch_name}",
             )
             await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
             await self.run_engine()
@@ -575,7 +584,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -594,13 +603,20 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
 
             await self.git("fetch", "origin", self.main_branch_name)
             await self.git(
-                "checkout", "-b", "random", f"origin/{self.main_branch_name}"
+                "checkout",
+                "-b",
+                "random",
+                f"origin/{self.main_branch_name}",
             )
             open(self.git.repository + "/random_file.txt", "wb").close()
             await self.git("add", "random_file.txt")
             await self.git("commit", "--no-edit", "-m", "random update")
             await self.git(
-                "push", "-f", "--quiet", "origin", f"random:{self.main_branch_name}"
+                "push",
+                "-f",
+                "--quiet",
+                "origin",
+                f"random:{self.main_branch_name}",
             )
             await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
             await self.run_engine()
@@ -642,7 +658,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -702,7 +718,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -779,7 +795,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -854,7 +870,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -882,7 +898,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                 files={
                     "projA/test.txt": "testA",
                     "projB/test.txt": "testB",
-                }
+                },
             )
             p2 = await self.create_pr(files={"projA/toto.txt": "toto"})
             p3 = await self.create_pr(files={"projB/toto.txt": "toto"})
@@ -935,7 +951,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -1003,7 +1019,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -1075,7 +1091,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
         }
 
@@ -1083,14 +1099,15 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         p1 = await self.create_pr(
             files={
                 "test.txt": "test",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["output"]["title"]
@@ -1142,7 +1159,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -1150,14 +1167,15 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         p1 = await self.create_pr(
             files={
                 "test.txt": "test",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["output"]["title"]
@@ -1205,7 +1223,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -1217,7 +1235,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["output"]["title"]
@@ -1265,7 +1284,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
         }
 
@@ -1275,14 +1294,15 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             files={
                 "projA/test.txt": "testA",
                 "projB/test.txt": "testB",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["output"]["title"]
@@ -1328,7 +1348,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -1338,14 +1358,15 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             files={
                 "projA/test.txt": "testA",
                 "projB/test.txt": "testB",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["output"]["title"]
@@ -1398,7 +1419,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -1407,20 +1428,21 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         p1 = await self.create_pr(
             files={
                 "projA/test.txt": "testA",
-            }
+            },
         )
 
         p2 = await self.create_pr(
             files={
                 "projB/test.txt": "testB",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["output"]["title"]
@@ -1432,7 +1454,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run_p2 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p2["check_run"]["output"]["title"]
@@ -1489,7 +1512,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
         }
 
@@ -1498,13 +1521,13 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         p1 = await self.create_pr(
             files={
                 "projA/test.txt": "testA",
-            }
+            },
         )
 
         p2 = await self.create_pr(
             files={
                 "projB/test.txt": "testB",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
@@ -1561,7 +1584,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -1571,14 +1594,15 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             files={
                 "projA/test.txt": "testA",
                 "projB/test.txt": "testB",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["output"]["title"]
@@ -1627,17 +1651,17 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                             "or": [
                                 "queue-partition-name!=projA",
                                 "status-success=continuous-integration/fake-ci-A",
-                            ]
+                            ],
                         },
                         {
                             "or": [
                                 "queue-partition-name!=projB",
                                 "status-success=continuous-integration/fake-ci-B",
-                            ]
+                            ],
                         },
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -1647,20 +1671,21 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             files={
                 "projA/test.txt": "testA",
                 "projB/test2.txt": "testB2",
-            }
+            },
         )
 
         p2 = await self.create_pr(
             files={
                 "projB/test.txt": "testB",
-            }
+            },
         )
 
         # Make sure p2 is queued before p1
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
         check_run_p2 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p2["check_run"]["output"]["title"]
@@ -1676,7 +1701,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run_p1 = await self.wait_for_check_run(
-            action="created", name="Rule: Automatic merge (queue)"
+            action="created",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["output"]["title"]
@@ -1690,7 +1716,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
 
         draft_pr_p1_projA = await self.wait_for_pull_request("opened")
         await self.create_status(
-            draft_pr_p1_projA["pull_request"], "continuous-integration/fake-ci-A"
+            draft_pr_p1_projA["pull_request"],
+            "continuous-integration/fake-ci-A",
         )
         await self.run_engine()
 
@@ -1700,7 +1727,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         # create draft pr for p1 in projB then merge it
 
         await self.create_status(
-            draft_pr_p2["pull_request"], "continuous-integration/fake-ci-B"
+            draft_pr_p2["pull_request"],
+            "continuous-integration/fake-ci-B",
         )
         await self.run_engine()
 
@@ -1710,7 +1738,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
 
         draft_pr_p1_projB = await self.wait_for_pull_request("opened")
         await self.create_status(
-            draft_pr_p1_projB["pull_request"], "continuous-integration/fake-ci-B"
+            draft_pr_p1_projB["pull_request"],
+            "continuous-integration/fake-ci-B",
         )
         await self.run_engine()
 
@@ -1719,7 +1748,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         assert p1_closed["pull_request"]["merged"]
 
         check_run_p1 = await self.wait_for_check_run(
-            action="completed", name="Rule: Automatic merge (queue)"
+            action="completed",
+            name="Rule: Automatic merge (queue)",
         )
         assert (
             check_run_p1["check_run"]["details_url"]
@@ -1754,7 +1784,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                     ],
                     "allow_inplace_checks": False,
                     "queue_branch_merge_method": "fast-forward",
-                }
+                },
             ],
         }
 
@@ -1799,7 +1829,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -1828,7 +1858,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                         ],
                     },
                 ],
-            }
+            },
         )
 
         p2 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})

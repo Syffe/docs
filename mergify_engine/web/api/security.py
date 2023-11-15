@@ -52,7 +52,9 @@ RepositoryOwnerLogin = typing.Annotated[
 ]
 
 _RepositoryNamePathConfig = fastapi.Path(
-    description="The name of the repository", pattern=r"^[\w\-\.]+$", min_length=1
+    description="The name of the repository",
+    pattern=r"^[\w\-\.]+$",
+    min_length=1,
 )
 
 RepositoryName = typing.Annotated[
@@ -108,7 +110,9 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
         api_secret_key = credentials.credentials[types.API_ACCESS_KEY_LEN :]
 
         app = await application_keys.ApplicationKey.get_by_key(
-            session, api_access_key, api_secret_key
+            session,
+            api_access_key,
+            api_secret_key,
         )
         if app is None:
             data = settings.APPLICATION_APIKEYS.get(api_access_key)
@@ -119,13 +123,13 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
                     api_access_key=api_access_key,
                     api_secret_key=api_secret_key,
                     github_account_id=github_types.GitHubAccountIdType(
-                        data["account_id"]
+                        data["account_id"],
                     ),
                     github_account=gh_models.GitHubAccount(
                         id=github_types.GitHubAccountIdType(data["account_id"]),
                         login=github_types.GitHubLogin(data["account_login"]),
                         avatar_url=gh_models.GitHubAccount.build_avatar_url(
-                            data["account_id"]
+                            data["account_id"],
                         ),
                     ),
                     created_at=date.utcnow(),
@@ -140,7 +144,7 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
             scope: github_types.GitHubLogin | None = request.path_params.get("owner")
             if scope is None:
                 raise RuntimeError(
-                    "verify_scope is true, but url doesn't have owner variable"
+                    "verify_scope is true, but url doesn't have owner variable",
                 )
             # Seatbelt
             if app.github_account.login.lower() != scope.lower():
@@ -156,7 +160,8 @@ get_application_without_scope_verification = ApplicationAuth(verify_scope=False)
 get_optional_application = ApplicationAuth(auto_error=False)
 
 LoggedApplication = typing.Annotated[
-    application_keys.ApplicationKey | None, fastapi.Security(get_optional_application)
+    application_keys.ApplicationKey | None,
+    fastapi.Security(get_optional_application),
 ]
 
 
@@ -184,7 +189,8 @@ async def get_logged_user(request: fastapi.Request) -> gh_models.GitHubUser | No
 
 
 LoggedUser = typing.Annotated[
-    gh_models.GitHubUser | None, fastapi.Security(get_logged_user)
+    gh_models.GitHubUser | None,
+    fastapi.Security(get_logged_user),
 ]
 
 
@@ -201,7 +207,8 @@ async def _get_authenticated_actor(
             installation_json = await github.get_installation_from_login(owner)
         else:
             installation_json = await github.get_installation_from_repository(
-                owner, repository
+                owner,
+                repository,
             )
 
         if application is not None:
@@ -229,7 +236,8 @@ async def _get_authenticated_actor(
 
 
 AuthenticatedActor = typing.Annotated[
-    _AuthenticationActor, fastapi.Depends(_get_authenticated_actor)
+    _AuthenticationActor,
+    fastapi.Depends(_get_authenticated_actor),
 ]
 
 
@@ -257,10 +265,11 @@ async def _application_actor_with_cache(
     client: github.AsyncGitHubInstallationClient,
 ) -> github_types.GitHubRepository:
     repo_access_redis_key = get_redis_key_for_repo_access_check(
-        installation["account"]["login"]
+        installation["account"]["login"],
     )
     raw_redis_value = await redis_links.cache.hget(
-        repo_access_redis_key, f"{owner}/{repository}"
+        repo_access_redis_key,
+        f"{owner}/{repository}",
     )
     if raw_redis_value is not None:
         redis_value: _ApplicationAuthCache = json.loads(raw_redis_value)
@@ -293,7 +302,7 @@ async def _application_actor_with_cache(
                 {
                     "status_code": exc.status_code,
                     "data": exc.response.text,
-                }
+                },
             ),
         )
         raise fastapi.HTTPException(status_code=404)
@@ -325,21 +334,30 @@ async def get_repository_context(
                 raise fastapi.HTTPException(status_code=404)
         elif authenticated_actor.actor["type"] == "application":
             repo = await _application_actor_with_cache(
-                owner, repository, authenticated_actor.installation, redis_links, client
+                owner,
+                repository,
+                authenticated_actor.installation,
+                redis_links,
+                client,
             )
         else:
             raise RuntimeError(
-                "Unknown actor type %s", authenticated_actor.actor["type"]
+                "Unknown actor type %s",
+                authenticated_actor.actor["type"],
             )
 
         sub = await subscription.Subscription.get_subscription(
-            redis_links.cache, repo["owner"]["id"]
+            redis_links.cache,
+            repo["owner"]["id"],
         )
         if sub.has_feature(subscription.Features.PRIVATE_REPOSITORY):
             client.enable_extra_metrics()
 
         installation = context.Installation(
-            authenticated_actor.installation, sub, client, redis_links
+            authenticated_actor.installation,
+            sub,
+            client,
+            redis_links,
         )
 
         repository_ctxt = installation.get_repository_from_github_data(repo)
@@ -348,7 +366,7 @@ async def get_repository_context(
             if logged_user is not None:
                 try:
                     permission = await repository_ctxt.get_user_permission(
-                        logged_user.to_github_account()
+                        logged_user.to_github_account(),
                     )
                 except http.HTTPForbidden:
                     raise fastapi.HTTPException(status_code=403)
@@ -377,7 +395,8 @@ async def get_repository_context(
 require_authentication = get_repository_context
 
 Repository = typing.Annotated[
-    context.Repository, fastapi.Depends(get_repository_context)
+    context.Repository,
+    fastapi.Depends(get_repository_context),
 ]
 
 
@@ -395,7 +414,7 @@ async def check_logged_user_has_write_access(
 
     try:
         permission = await repository_ctxt.get_user_permission(
-            logged_user.to_github_account()
+            logged_user.to_github_account(),
         )
     except http.HTTPForbidden:
         raise fastapi.HTTPException(status_code=403)
@@ -406,7 +425,7 @@ async def check_logged_user_has_write_access(
 
 async def check_subscription_feature_queue_pause(repository_ctxt: Repository) -> None:
     if not repository_ctxt.installation.subscription.has_feature(
-        subscription.Features.QUEUE_PAUSE
+        subscription.Features.QUEUE_PAUSE,
     ):
         raise fastapi.HTTPException(
             status_code=402,
@@ -416,7 +435,7 @@ async def check_subscription_feature_queue_pause(repository_ctxt: Repository) ->
 
 async def check_subscription_feature_queue_freeze(repository_ctxt: Repository) -> None:
     if not repository_ctxt.installation.subscription.has_feature(
-        subscription.Features.QUEUE_FREEZE
+        subscription.Features.QUEUE_FREEZE,
     ):
         raise fastapi.HTTPException(
             status_code=402,
@@ -428,7 +447,7 @@ async def check_subscription_feature_merge_queue_stats(
     repository_ctxt: Repository,
 ) -> None:
     if repository_ctxt.installation.subscription.has_feature(
-        subscription.Features.MERGE_QUEUE_STATS
+        subscription.Features.MERGE_QUEUE_STATS,
     ):
         return
 
@@ -459,7 +478,8 @@ _QueueNameFromPathPartiallyValidated = typing.Annotated[
 
 
 async def get_queue_rule_by_name_from_path(
-    queue_rules: QueueRules, queue_name: _QueueNameFromPathPartiallyValidated
+    queue_rules: QueueRules,
+    queue_name: _QueueNameFromPathPartiallyValidated,
 ) -> qr_config.QueueRule:
     try:
         return queue_rules[queue_name]
@@ -471,7 +491,8 @@ async def get_queue_rule_by_name_from_path(
 
 
 QueueRuleByNameFromPath = typing.Annotated[
-    qr_config.QueueRule, fastapi.Depends(get_queue_rule_by_name_from_path)
+    qr_config.QueueRule,
+    fastapi.Depends(get_queue_rule_by_name_from_path),
 ]
 
 
@@ -482,7 +503,8 @@ async def get_queue_rule_name(
 
 
 QueueNameFromPath = typing.Annotated[
-    qr_config.QueueName, fastapi.Depends(get_queue_rule_name)
+    qr_config.QueueName,
+    fastapi.Depends(get_queue_rule_name),
 ]
 
 
@@ -501,7 +523,7 @@ OptionalBranchFromQuery = typing.Annotated[
 
 async def get_partition_rules(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        get_repository_context
+        get_repository_context,
     ),
 ) -> partr_config.PartitionRules:
     try:
@@ -515,7 +537,8 @@ async def get_partition_rules(
 
 
 PartitionRules = typing.Annotated[
-    partr_config.PartitionRules, fastapi.Depends(get_partition_rules)
+    partr_config.PartitionRules,
+    fastapi.Depends(get_partition_rules),
 ]
 
 
@@ -527,7 +550,8 @@ _PartitionName = typing.Annotated[
 
 
 async def get_validated_partition_name(
-    partition_rules: PartitionRules, partition_name: _PartitionName
+    partition_rules: PartitionRules,
+    partition_name: _PartitionName,
 ) -> partr_config.PartitionRuleName:
     if (
         partition_name != partr_config.DEFAULT_PARTITION_NAME
@@ -541,5 +565,6 @@ async def get_validated_partition_name(
 
 
 PartitionNameFromPath = typing.Annotated[
-    partr_config.PartitionRuleName, fastapi.Depends(get_validated_partition_name)
+    partr_config.PartitionRuleName,
+    fastapi.Depends(get_validated_partition_name),
 ]

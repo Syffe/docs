@@ -73,7 +73,7 @@ async def render_bot_account(
     else:
         try:
             bot_account = await condition_value_querier.PullRequest(
-                ctxt
+                ctxt,
             ).render_template(bot_account_template)
         except condition_value_querier.RenderTemplateFailure as rmf:
             raise RenderBotAccountFailure(
@@ -95,7 +95,9 @@ async def render_bot_account(
             bot_account = GitHubLoginSchema(bot_account)
         except voluptuous.Invalid as e:
             raise RenderBotAccountFailure(
-                check_api.Conclusion.FAILURE, f"Invalid {option_name} value", str(e)
+                check_api.Conclusion.FAILURE,
+                f"Invalid {option_name} value",
+                str(e),
             )
 
     return typing.cast(github_types.GitHubLogin, bot_account)
@@ -227,14 +229,15 @@ def get_invalid_credentials_report(
 
 
 async def get_dequeue_reason_from_outcome(
-    ctxt: context.Context, error_if_unknown: bool = True
+    ctxt: context.Context,
+    error_if_unknown: bool = True,
 ) -> queue_utils.BaseDequeueReason:
     from mergify_engine.queue.merge_train import train_car_state as tcs
 
     check = await ctxt.get_merge_queue_check_run()
     if check is None:
         raise MissingMergeQueueCheckRun(
-            "get_dequeue_reason_from_outcome() called but check is not there"
+            "get_dequeue_reason_from_outcome() called but check is not there",
         )
 
     if check["conclusion"] == "cancelled":
@@ -248,7 +251,7 @@ async def get_dequeue_reason_from_outcome(
         or train_car_state.outcome == train_car.TrainCarOutcome.UNKNOWN
     ):
         is_check_outdated = check["completed_at"] and date.fromisoformat(
-            check["completed_at"]
+            check["completed_at"],
         ) < date.utcnow() - datetime.timedelta(days=7)
 
         # NOTE(charly): We just log details to not stuck a PR and handle it later
@@ -259,7 +262,8 @@ async def get_dequeue_reason_from_outcome(
                 train_car_state=train_car_state,
             )
         return queue_utils.PrDequeued(
-            ctxt.pull["number"], " due to failing checks or checks timeout"
+            ctxt.pull["number"],
+            " due to failing checks or checks timeout",
         )
 
     return tcs.dequeue_reason_from_train_car_state(train_car_state)

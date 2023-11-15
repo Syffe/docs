@@ -28,14 +28,15 @@ class AsyncShadowOfficeSaasClient(http.AsyncClient):
         super().__init__(
             base_url=settings.SUBSCRIPTION_URL,
             headers={
-                "Authorization": f"Bearer {settings.ENGINE_TO_SHADOW_OFFICE_API_KEY.get_secret_value()}"
+                "Authorization": f"Bearer {settings.ENGINE_TO_SHADOW_OFFICE_API_KEY.get_secret_value()}",
             },
             retry_stop_after_attempt=2,
             retry_exponential_multiplier=0.1,
         )
 
     async def get_associated_users(
-        self, login: github_types.GitHubLogin
+        self,
+        login: github_types.GitHubLogin,
     ) -> list[AssociatedUser]:
         # Check if the login is an organization with billing system
         try:
@@ -61,6 +62,6 @@ class AsyncShadowOfficeOnPremiseClient(http.AsyncClient):
         super().__init__(
             base_url=settings.SUBSCRIPTION_URL,
             headers={
-                "Authorization": f"token {settings.SUBSCRIPTION_TOKEN.get_secret_value()}"
+                "Authorization": f"token {settings.SUBSCRIPTION_TOKEN.get_secret_value()}",
             },
         )

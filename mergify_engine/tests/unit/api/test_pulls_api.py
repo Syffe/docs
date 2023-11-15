@@ -118,7 +118,7 @@ async def test_pulls_api_filters(
 
     assert resp.status_code == 400
     assert resp.json() == {
-        "detail": "Invalid condition 'invalidcondition=darkvader'. Invalid attribute"
+        "detail": "Invalid condition 'invalidcondition=darkvader'. Invalid attribute",
     }
 
 

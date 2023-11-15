@@ -61,7 +61,7 @@ async def test_applications_life_cycle(
     resp = await web_client.get(
         "/v1/application",
         headers={
-            "Authorization": f"bearer {create_data['api_access_key']}{create_data['api_secret_key']}"
+            "Authorization": f"bearer {create_data['api_access_key']}{create_data['api_secret_key']}",
         },
     )
     assert resp.status_code == 200
@@ -142,7 +142,7 @@ async def test_applications_life_cycle(
     resp = await web_client.get(
         "/v1/application",
         headers={
-            "Authorization": f"bearer {create_data['api_access_key']}{create_data['api_secret_key']}"
+            "Authorization": f"bearer {create_data['api_access_key']}{create_data['api_secret_key']}",
         },
     )
     assert resp.status_code == 403
@@ -169,23 +169,24 @@ async def test_applications_life_cycle(
 
 
 async def assert_database_application_keys_count(
-    github_account_id: int, expected: int
+    github_account_id: int,
+    expected: int,
 ) -> None:
     async with database.create_session() as session:
         updated_user = await session.scalar(
             sqlalchemy.select(gh_models.GitHubAccount).where(
-                gh_models.GitHubAccount.id == github_account_id
-            )
+                gh_models.GitHubAccount.id == github_account_id,
+            ),
         )
         assert updated_user is not None
         assert updated_user.application_keys_count == expected
 
         application_keys_count = await session.scalar(
             sqlalchemy.select(
-                sqlalchemy.func.count(application_keys.ApplicationKey.id)
+                sqlalchemy.func.count(application_keys.ApplicationKey.id),
             ).where(
-                application_keys.ApplicationKey.github_account_id == github_account_id
-            )
+                application_keys.ApplicationKey.github_account_id == github_account_id,
+            ),
         )
         assert application_keys_count == expected
 
@@ -325,7 +326,7 @@ async def test_create_application_for_orgs(
     resp = await web_client.get(
         "/v1/application",
         headers={
-            "Authorization": f"bearer {create_data['api_access_key']}{create_data['api_secret_key']}"
+            "Authorization": f"bearer {create_data['api_access_key']}{create_data['api_secret_key']}",
         },
     )
     assert resp.status_code == 200
@@ -378,11 +379,12 @@ async def test_applications_bad_body(
             "loc": ["body", "name"],
             "msg": "String should have at most 255 characters",
             "type": "string_too_long",
-        }
+        },
     ]
 
     resp = await web_client.post(
-        "/front/github-account/424242/applications", json={"name": ""}
+        "/front/github-account/424242/applications",
+        json={"name": ""},
     )
     assert resp.status_code == 422
     assert resp.json()["detail"] == [
@@ -392,7 +394,7 @@ async def test_applications_bad_body(
             "loc": ["body", "name"],
             "msg": "String should have at least 1 character",
             "type": "string_too_short",
-        }
+        },
     ]
 
     resp = await web_client.post(
@@ -406,7 +408,7 @@ async def test_applications_bad_body(
             "loc": ["body", "name"],
             "msg": "Field required",
             "type": "missing",
-        }
+        },
     ]
 
     resp = await web_client.patch(
@@ -421,7 +423,7 @@ async def test_applications_bad_body(
             "loc": ["body", "name"],
             "msg": "String should have at most 255 characters",
             "type": "string_too_long",
-        }
+        },
     ]
 
     resp = await web_client.patch(
@@ -436,7 +438,7 @@ async def test_applications_bad_body(
             "loc": ["body", "name"],
             "msg": "String should have at least 1 character",
             "type": "string_too_short",
-        }
+        },
     ]
 
     # TODO(sileht): it would be better to raise a 422 instead of ignoring the attribute.
@@ -566,7 +568,7 @@ async def test_application_tokens_via_env(
         settings,
         "APPLICATION_APIKEYS",
         types.ApplicationAPIKeys(
-            f"{api_access_key1}{api_secret_key1}:{account_id1}:{account_login1},{api_access_key2}{api_secret_key2}:{account_id2}:{account_login2}"
+            f"{api_access_key1}{api_secret_key1}:{account_id1}:{account_login1},{api_access_key2}{api_secret_key2}:{account_id2}:{account_login2}",
         ),
     )
 

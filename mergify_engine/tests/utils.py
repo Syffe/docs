@@ -93,7 +93,8 @@ def dump_schema(dbname: str, filepath: pathlib.Path) -> None:
 
 
 def test_console_scripts(
-    *args: typing.Any, **kwargs: typing.Any
+    *args: typing.Any,
+    **kwargs: typing.Any,
 ) -> click.testing.Result:
     saved_state = database.APP_STATE
     database.APP_STATE = None
@@ -134,16 +135,16 @@ async def mock_user_authorization_on_repo(
         await db.commit()
 
     respx_mock.get(
-        f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}/installation"
+        f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}/installation",
     ).respond(200, json={"account": repo["owner"], "suspended_at": None})
     respx_mock.get(
-        f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}"
+        f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}",
     ).respond(
         200,
         json=repo,  # type: ignore[arg-type]
     )
     respx_mock.get(
-        f"http://localhost:5000/engine/subscription/{repo['owner']['id']}"
+        f"http://localhost:5000/engine/subscription/{repo['owner']['id']}",
     ).respond(
         200,
         json={
@@ -154,14 +155,14 @@ async def mock_user_authorization_on_repo(
     )
 
     respx_mock.get(
-        f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}/collaborators/{user.login}/permission"
+        f"https://api.github.com/repos/{repo['owner']['login']}/{repo['name']}/collaborators/{user.login}/permission",
     ).respond(
         200,
         json=github_types.GitHubRepositoryCollaboratorPermission(  # type: ignore[arg-type]
             {
                 "user": repo["owner"],
                 "permission": permission.value,
-            }
+            },
         ),
     )
 
@@ -181,7 +182,7 @@ async def configure_web_client_to_work_with_a_repo(
                 await session.execute(
                     sqlalchemy.select(gh_models.GitHubRepository)
                     .where(gh_models.GitHubRepository.full_name == repo_full_name)
-                    .limit(1)
+                    .limit(1),
                 )
             ).scalar_one()
         ).as_github_dict(),

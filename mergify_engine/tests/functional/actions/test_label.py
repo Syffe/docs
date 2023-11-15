@@ -22,10 +22,10 @@ class TestLabelAction(base.FunctionalTestBase):
                         "label": {
                             "add": ["unstable", "foobar", "vector"],
                             "remove": ["stable", "what", "remove-me"],
-                        }
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -111,10 +111,10 @@ class TestLabelAction(base.FunctionalTestBase):
                         "label": {
                             "add": [],
                             "remove": [],
-                        }
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -147,8 +147,8 @@ class TestLabelAction(base.FunctionalTestBase):
                     "name": "delete all labels",
                     "conditions": [f"base={self.main_branch_name}", "label=stable"],
                     "actions": {"label": {"remove_all": True}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -179,7 +179,7 @@ class TestLabelAction(base.FunctionalTestBase):
                     "type": "action.label",
                     "metadata": {"added": [], "removed": ["stable"]},
                     "trigger": "Rule: delete all labels",
-                }
+                },
             ],
             "per_page": 10,
             "size": 1,
@@ -199,11 +199,11 @@ class TestLabelAction(base.FunctionalTestBase):
                         "label": {
                             "toggle": [
                                 "CI:fail",
-                            ]
-                        }
+                            ],
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -273,10 +273,10 @@ class TestLabelAction(base.FunctionalTestBase):
                     "actions": {
                         "label": {
                             "add": ["branch:{{base}}"],
-                        }
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -291,7 +291,8 @@ class TestLabelAction(base.FunctionalTestBase):
         )
 
     async def _test_label_invalid_template(
-        self, label: str
+        self,
+        label: str,
     ) -> github_types.GitHubCheckRun:
         rules = {
             "pull_request_rules": [
@@ -301,10 +302,10 @@ class TestLabelAction(base.FunctionalTestBase):
                     "actions": {
                         "label": {
                             "add": [label],
-                        }
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -313,7 +314,9 @@ class TestLabelAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            action="completed", status="completed", conclusion="action_required"
+            action="completed",
+            status="completed",
+            conclusion="action_required",
         )
         assert (
             "The current Mergify configuration is invalid"

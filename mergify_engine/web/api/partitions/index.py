@@ -26,26 +26,26 @@ router = fastapi.APIRouter(
 @pydantic.dataclasses.dataclass
 class PullRequestQueued:
     number: github_types.GitHubPullRequestNumber = pydantic.Field(
-        description="The number of the pull request"
+        description="The number of the pull request",
     )
     position: int = pydantic.Field(
-        description="The position of the pull request in the queue. The first pull request in the queue is at position 0"
+        description="The position of the pull request in the queue. The first pull request in the queue is at position 0",
     )
     priority: int = pydantic.Field(description="The priority of this pull request")
     effective_priority: int = pydantic.Field(
-        description="The effective priority of this pull request"
+        description="The effective priority of this pull request",
     )
     queue_rule: queue_types.QueueRule = pydantic.Field(
-        description="The queue rule associated to this pull request"
+        description="The queue rule associated to this pull request",
     )
     queued_at: datetime.datetime = pydantic.Field(
-        description="The timestamp when the pull requested has entered in the queue"
+        description="The timestamp when the pull requested has entered in the queue",
     )
     mergeability_check: BriefMergeabilityCheck | None = pydantic.Field(
-        description="Information about the mergeability check currently processed"
+        description="Information about the mergeability check currently processed",
     )
     estimated_time_of_merge: datetime.datetime | None = pydantic.Field(
-        description="The estimated timestamp when this pull request will be merged"
+        description="The estimated timestamp when this pull request will be merged",
     )
 
 
@@ -60,18 +60,19 @@ class Partition:
 @pydantic.dataclasses.dataclass
 class BranchPartitions:
     branch_name: github_types.GitHubRefType = dataclasses.field(
-        metadata={"description": ""}
+        metadata={"description": ""},
     )
 
     partitions: dict[
-        partr_config.PartitionRuleName, list[PullRequestQueued]
+        partr_config.PartitionRuleName,
+        list[PullRequestQueued],
     ] = dataclasses.field(
         default_factory=dict,
         metadata={
             "description": (
                 "A dictionary containing partition names as keys and, as a value of those key, the list of pull requests queued in the partition."
                 f" If partition are not used in this repository, the default partition name used will be `{partr_config.DEFAULT_PARTITION_NAME}`."
-            )
+            ),
         },
     )
 
@@ -94,7 +95,9 @@ async def repository_partitions(
     partition_list = []
 
     async for convoy in merge_train.Convoy.iter_convoys(
-        repository_ctxt, queue_rules, partition_rules
+        repository_ctxt,
+        queue_rules,
+        partition_rules,
     ):
         branch_partitions = BranchPartitions(branch_name=convoy.ref)
 
@@ -102,7 +105,8 @@ async def repository_partitions(
             branch_partitions.partitions.setdefault(rule.name, [])
         if not partition_rules:
             branch_partitions.partitions.setdefault(
-                partr_config.DEFAULT_PARTITION_NAME, []
+                partr_config.DEFAULT_PARTITION_NAME,
+                [],
             )
 
         for train in convoy.iter_trains():
@@ -111,7 +115,7 @@ async def repository_partitions(
             previous_queue = None
             previous_queue_idx = 0
             for position, (embarked_pull, car) in enumerate(
-                train._iter_embarked_pulls()
+                train._iter_embarked_pulls(),
             ):
                 try:
                     queue_rule = queue_rules[embarked_pull.config["name"]]
@@ -154,12 +158,13 @@ async def repository_partitions(
                         priority=embarked_pull.config["priority"],
                         effective_priority=embarked_pull.config["effective_priority"],
                         queue_rule=queue_types.QueueRule(
-                            name=embarked_pull.config["name"], config=queue_rule.config
+                            name=embarked_pull.config["name"],
+                            config=queue_rule.config,
                         ),
                         queued_at=embarked_pull.queued_at,
                         mergeability_check=BriefMergeabilityCheck.from_train_car(car),
                         estimated_time_of_merge=estimated_time_of_merge,
-                    )
+                    ),
                 )
 
         partition_list.append(branch_partitions)
@@ -186,7 +191,10 @@ async def repository_partitions_branch(
     branch_partitions = BranchPartitions(branch_name=branch_name)
 
     convoy = merge_train.Convoy(
-        repository_ctxt, queue_rules, partition_rules, branch_name
+        repository_ctxt,
+        queue_rules,
+        partition_rules,
+        branch_name,
     )
     await convoy.load_from_redis()
 
@@ -222,12 +230,13 @@ async def repository_partitions_branch(
                     priority=embarked_pull.config["priority"],
                     effective_priority=embarked_pull.config["effective_priority"],
                     queue_rule=queue_types.QueueRule(
-                        name=embarked_pull.config["name"], config=queue_rule.config
+                        name=embarked_pull.config["name"],
+                        config=queue_rule.config,
                     ),
                     queued_at=embarked_pull.queued_at,
                     mergeability_check=BriefMergeabilityCheck.from_train_car(car),
                     estimated_time_of_merge=estimated_time_of_merge,
-                )
+                ),
             )
 
     return branch_partitions
@@ -261,7 +270,10 @@ async def repository_partition_branch(
 
     partition = Partition()
     convoy = merge_train.Convoy(
-        repository_ctxt, queue_rules, partition_rules, branch_name
+        repository_ctxt,
+        queue_rules,
+        partition_rules,
+        branch_name,
     )
     await convoy.load_from_redis()
 
@@ -300,12 +312,13 @@ async def repository_partition_branch(
                     priority=embarked_pull.config["priority"],
                     effective_priority=embarked_pull.config["effective_priority"],
                     queue_rule=queue_types.QueueRule(
-                        name=embarked_pull.config["name"], config=queue_rule.config
+                        name=embarked_pull.config["name"],
+                        config=queue_rule.config,
                     ),
                     queued_at=embarked_pull.queued_at,
                     mergeability_check=BriefMergeabilityCheck.from_train_car(car),
                     estimated_time_of_merge=estimated_time_of_merge,
-                )
+                ),
             )
 
     return partition

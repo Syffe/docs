@@ -63,7 +63,7 @@ def content_file_to_config_file(
         sha=content["sha"],
         encoding=content["encoding"],
         decoded_content=base64.b64decode(
-            bytearray(content["content"], "utf-8")
+            bytearray(content["content"], "utf-8"),
         ).decode(),
     )
 
@@ -88,7 +88,8 @@ class T_PayloadEventSource(typing.TypedDict):
 @dataclasses.dataclass
 class InstallationCaches:
     team_members: cache.Cache[
-        github_types.GitHubTeamSlug, list[github_types.GitHubLogin]
+        github_types.GitHubTeamSlug,
+        list[github_types.GitHubLogin],
     ] = dataclasses.field(default_factory=cache.Cache)
 
 
@@ -100,10 +101,12 @@ class Installation:
     redis: redis_utils.RedisLinks = dataclasses.field(repr=False)
 
     repositories: dict[
-        github_types.GitHubRepositoryName, Repository
+        github_types.GitHubRepositoryName,
+        Repository,
     ] = dataclasses.field(default_factory=dict, repr=False)
     _caches: InstallationCaches = dataclasses.field(
-        default_factory=InstallationCaches, repr=False
+        default_factory=InstallationCaches,
+        repr=False,
     )
 
     @property
@@ -117,17 +120,21 @@ class Installation:
     USER_ID_MAPPING_CACHE_KEY = "user-id-mapping"
 
     async def get_user(
-        self, login: github_types.GitHubLogin
+        self,
+        login: github_types.GitHubLogin,
     ) -> github_types.GitHubAccount:
         data = await self.redis.cache.hget(self.USER_ID_MAPPING_CACHE_KEY, login)
         if data is not None:
             return typing.cast(github_types.GitHubAccount, json.loads(data))
 
         user = typing.cast(
-            github_types.GitHubAccount, await self.client.item(f"/users/{login}")
+            github_types.GitHubAccount,
+            await self.client.item(f"/users/{login}"),
         )
         await self.redis.cache.hset(
-            self.USER_ID_MAPPING_CACHE_KEY, login, json.dumps(user)
+            self.USER_ID_MAPPING_CACHE_KEY,
+            login,
+            json.dumps(user),
         )
         return user
 
@@ -178,7 +185,9 @@ class Installation:
 
         async with database.create_session() as session:
             db_repo = await gh_models.GitHubRepository.get_by_name(
-                session, self.owner_id, name
+                session,
+                self.owner_id,
+                name,
             )
 
         repo_data: github_types.GitHubRepository | gh_models.GitHubRepositoryDict
@@ -198,24 +207,26 @@ class Installation:
         from mergify_engine.models import github as gh_models
 
         async for attempt in database.tenacity_retry_on_pk_integrity_error(
-            (gh_models.GitHubRepository, gh_models.GitHubAccount)
+            (gh_models.GitHubRepository, gh_models.GitHubAccount),
         ):
             with attempt:
                 async with database.create_session() as session:
                     db_repo = await gh_models.GitHubRepository.get_or_create(
-                        session, repo_data
+                        session,
+                        repo_data,
                     )
                     session.add(db_repo)
                     await session.commit()
 
     async def get_repository_by_id(
-        self, _id: github_types.GitHubRepositoryIdType
+        self,
+        _id: github_types.GitHubRepositoryIdType,
     ) -> Repository:
         for repository in self.repositories.values():
             if repository.repo["id"] == _id:
                 return repository
         repo_data: github_types.GitHubRepository = await self.client.item(
-            f"/repositories/{_id}"
+            f"/repositories/{_id}",
         )
         return self.get_repository_from_github_data(repo_data)
 
@@ -247,12 +258,15 @@ class Installation:
 
     @classmethod
     async def clear_team_members_cache_for_org(
-        cls, redis: redis_utils.RedisTeamMembersCache, user: github_types.GitHubAccount
+        cls,
+        redis: redis_utils.RedisTeamMembersCache,
+        user: github_types.GitHubAccount,
     ) -> None:
         await redis.delete(cls._team_members_cache_key_for_repo(user["id"]))
 
     async def get_team_members(
-        self, team_slug: github_types.GitHubTeamSlug
+        self,
+        team_slug: github_types.GitHubTeamSlug,
     ) -> list[github_types.GitHubLogin]:
         members = self._caches.team_members.get(team_slug)
         if members is cache.Unset:
@@ -273,7 +287,8 @@ class Installation:
                 await pipe.execute()
             else:
                 members = typing.cast(
-                    list[github_types.GitHubLogin], msgpack.unpackb(members_raw)
+                    list[github_types.GitHubLogin],
+                    msgpack.unpackb(members_raw),
                 )
             self._caches.team_members.set(team_slug, members)
         return members
@@ -288,22 +303,27 @@ class RepositoryCaches:
         mergify_conf.MergifyConfig | Exception
     ] = dataclasses.field(default_factory=cache.SingleCache)
     branches: cache.Cache[
-        github_types.GitHubRefType, github_types.GitHubBranch
+        github_types.GitHubRefType,
+        github_types.GitHubBranch,
     ] = dataclasses.field(default_factory=cache.Cache)
     labels: cache.SingleCache[list[github_types.GitHubLabel]] = dataclasses.field(
-        default_factory=cache.SingleCache
+        default_factory=cache.SingleCache,
     )
     branch_protections: cache.Cache[
-        github_types.GitHubRefType, github_types.GitHubBranchProtection | None
+        github_types.GitHubRefType,
+        github_types.GitHubBranchProtection | None,
     ] = dataclasses.field(default_factory=cache.Cache)
     commits: cache.Cache[
-        github_types.GitHubRefType, list[github_types.GitHubBranchCommit]
+        github_types.GitHubRefType,
+        list[github_types.GitHubBranchCommit],
     ] = dataclasses.field(default_factory=cache.Cache)
     user_permissions: cache.Cache[
-        github_types.GitHubAccountIdType, github_types.GitHubRepositoryPermission
+        github_types.GitHubAccountIdType,
+        github_types.GitHubRepositoryPermission,
     ] = dataclasses.field(default_factory=cache.Cache)
     team_has_read_permission: cache.Cache[
-        github_types.GitHubTeamSlug, bool
+        github_types.GitHubTeamSlug,
+        bool,
     ] = dataclasses.field(default_factory=cache.Cache)
 
 
@@ -317,14 +337,17 @@ class Repository:
     installation: Installation
     repo: github_types.GitHubRepository | gh_models.GitHubRepositoryDict
     pull_contexts: dict[
-        github_types.GitHubPullRequestNumber, Context
+        github_types.GitHubPullRequestNumber,
+        Context,
     ] = dataclasses.field(default_factory=dict, repr=False)
 
     _caches: RepositoryCaches = dataclasses.field(
-        default_factory=RepositoryCaches, repr=False
+        default_factory=RepositoryCaches,
+        repr=False,
     )
     log: logging.LoggerAdapter[logging.Logger] = dataclasses.field(
-        init=False, repr=False
+        init=False,
+        repr=False,
     )
 
     def __post_init__(self) -> None:
@@ -430,7 +453,9 @@ class Repository:
         # BRANCH CONFIGURATION CHECKING
         try:
             mergify_config = await mergify_conf.get_mergify_config_from_file(
-                self, config_file, allow_extend=allow_extend
+                self,
+                config_file,
+                allow_extend=allow_extend,
             )
         except Exception as e:
             self._caches.mergify_config.set(e)
@@ -438,10 +463,10 @@ class Repository:
 
         # Add global and mandatory rules
         builtin_mergify_config = await mergify_conf.get_mergify_builtin_config(
-            self.installation.redis.cache
+            self.installation.redis.cache,
         )
         mergify_config["pull_request_rules"].rules.extend(
-            builtin_mergify_config["pull_request_rules"].rules
+            builtin_mergify_config["pull_request_rules"].rules,
         )
         self._caches.mergify_config.set(mergify_config)
         return mergify_config
@@ -470,8 +495,8 @@ class Repository:
                             "path": config_file["path"],
                             "sha": config_file["sha"],
                             "encoding": config_file["encoding"],
-                        }
-                    )
+                        },
+                    ),
                 ),
                 ex=60 * 60 * 24 * 31,
             )
@@ -491,7 +516,8 @@ class Repository:
             return None
 
         content = typing.cast(
-            github_types.GitHubContentFile, json.loads(config_file_raw)
+            github_types.GitHubContentFile,
+            json.loads(config_file_raw),
         )
         # Backward compatibility add in 7.8.0
         content.setdefault("encoding", "base64")
@@ -529,7 +555,7 @@ class Repository:
             branch = typing.cast(
                 github_types.GitHubBranch,
                 await self.installation.client.item(
-                    f"{self.base_url}/branches/{escaped_branch_name}"
+                    f"{self.base_url}/branches/{escaped_branch_name}",
                 ),
             )
             self._caches.branches.set(branch_name, branch)
@@ -539,7 +565,7 @@ class Repository:
         escaped_branch_name = parse.quote(branch_name, safe="")
         try:
             await self.installation.client.delete(
-                f"{self.base_url}/git/refs/heads/{escaped_branch_name}"
+                f"{self.base_url}/git/refs/heads/{escaped_branch_name}",
             )
         except http.HTTPClientSideError as exc:
             if exc.status_code == 404 or (
@@ -555,7 +581,10 @@ class Repository:
         state: typing.Literal["open", "closed", "all"] = "open",
         base: str | None = None,
         sort: typing.Literal[
-            "created", "updated", "popularity", "long-running"
+            "created",
+            "updated",
+            "popularity",
+            "long-running",
         ] = "created",
         sort_direction: typing.Literal["asc", "desc"] = "asc",
         per_page: int = 30,
@@ -572,7 +601,8 @@ class Repository:
             params["base"] = base
 
         resp = await self.installation.client.get(
-            f"{self.base_url}/pulls", params=params
+            f"{self.base_url}/pulls",
+            params=params,
         )
         return [typing.cast(github_types.GitHubPullRequest, p) for p in resp.json()]
 
@@ -593,7 +623,7 @@ class Repository:
                 )
             elif pull["number"] != pull_number:
                 raise RuntimeError(
-                    'get_pull_request_context() needs pull["number"] == pull_number'
+                    'get_pull_request_context() needs pull["number"] == pull_number',
                 )
             self.pull_contexts[pull_number] = Context(self, pull)
 
@@ -616,7 +646,8 @@ class Repository:
         )
 
     async def get_pull_request_title(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> str:
         """The returned data has good chance to be obsolete, the only intent is for
         caching the title for later reporting"""
@@ -627,7 +658,10 @@ class Repository:
             ctxt = await self.get_pull_request_context(pull_number)
             title = ctxt.pull["title"]
             await self.cache_pull_request_title(
-                self.installation.redis.cache, self.repo["id"], pull_number, title
+                self.installation.redis.cache,
+                self.repo["id"],
+                pull_number,
+                title,
             )
         else:
             title = title_raw.decode()
@@ -689,11 +723,11 @@ class Repository:
             return typing.cast(MergifyInstalled, json.loads(cache_value))
 
         async with github.AsyncGitHubClient(
-            auth=github_app.GitHubBearerAuth()
+            auth=github_app.GitHubBearerAuth(),
         ) as client:
             try:
                 await client.get(
-                    f"/repos/{self.repo['owner']['login']}/{self.repo['name']}/installation"
+                    f"/repos/{self.repo['owner']['login']}/{self.repo['name']}/installation",
                 )
             except http.HTTPNotFound as e:
                 ret = MergifyInstalled(
@@ -734,7 +768,8 @@ class Repository:
     @property
     def _users_permission_cache_key(self) -> str:
         return self._users_permission_cache_key_for_repo(
-            self.installation.owner_id, self.repo["id"]
+            self.installation.owner_id,
+            self.repo["id"],
         )
 
     @classmethod
@@ -758,7 +793,7 @@ class Repository:
         repo: github_types.GitHubRepository,
     ) -> None:
         await redis.delete(
-            cls._users_permission_cache_key_for_repo(owner["id"], repo["id"])
+            cls._users_permission_cache_key_for_repo(owner["id"], repo["id"]),
         )
 
     @classmethod
@@ -784,7 +819,8 @@ class Repository:
             key = self._users_permission_cache_key
             cached_permission_raw = (
                 await self.installation.redis.user_permissions_cache.hget(
-                    key, str(user["id"])
+                    key,
+                    str(user["id"]),
                 )
             )
             if cached_permission_raw is None:
@@ -792,16 +828,17 @@ class Repository:
                 await self._set_permission_cache(user, permission)
             else:
                 permission = github_types.GitHubRepositoryPermission(
-                    cached_permission_raw.decode()
+                    cached_permission_raw.decode(),
                 )
             self._caches.user_permissions.set(user["id"], permission)
         return permission
 
     async def _get_user_permission_from_github(
-        self, user: github_types.GitHubAccount
+        self,
+        user: github_types.GitHubAccount,
     ) -> github_types.GitHubRepositoryPermission:
         permission_response = await self.installation.client.item(
-            f"{self.base_url}/collaborators/{user['login']}/permission"
+            f"{self.base_url}/collaborators/{user['login']}/permission",
         )
         permission_str = permission_response["permission"]
 
@@ -822,17 +859,20 @@ class Repository:
     ) -> None:
         pipe = await self.installation.redis.user_permissions_cache.pipeline()
         await pipe.hset(
-            self._users_permission_cache_key, str(user["id"]), permission.value
+            self._users_permission_cache_key,
+            str(user["id"]),
+            permission.value,
         )
         await pipe.expire(
-            self._users_permission_cache_key, self.USERS_PERMISSION_EXPIRATION
+            self._users_permission_cache_key,
+            self.USERS_PERMISSION_EXPIRATION,
         )
         await pipe.execute()
 
     async def has_write_permission(self, user: github_types.GitHubAccount) -> bool:
         permission = await self.get_user_permission(user)
         return permission in github_types.GitHubRepositoryPermission.permissions_above(
-            github_types.GitHubRepositoryPermission.WRITE
+            github_types.GitHubRepositoryPermission.WRITE,
         )
 
     TEAMS_PERMISSION_CACHE_KEY_PREFIX = "teams_permission"
@@ -854,7 +894,8 @@ class Repository:
     @property
     def _teams_permission_cache_key(self) -> str:
         return self._teams_permission_cache_key_for_repo(
-            self.installation.owner_id, self.repo["id"]
+            self.installation.owner_id,
+            self.repo["id"],
         )
 
     @classmethod
@@ -880,7 +921,7 @@ class Repository:
         repo: github_types.GitHubRepository,
     ) -> None:
         await redis.delete(
-            cls._teams_permission_cache_key_for_repo(owner["id"], repo["id"])
+            cls._teams_permission_cache_key_for_repo(owner["id"], repo["id"]),
         )
 
     @classmethod
@@ -939,7 +980,7 @@ class Repository:
                     "required_status_checks": branch["protection"][
                         "required_status_checks"
                     ],
-                }
+                },
             )
         return None
 
@@ -975,7 +1016,7 @@ class Repository:
             "requiresDeployments",  # GHES 3.9
         ]
         maybe_missing_fields_query = "\n".join(
-            [f for f in maybe_missing_fields if f in field_names]
+            [f for f in maybe_missing_fields if f in field_names],
         )
 
         query = f"""
@@ -1054,7 +1095,7 @@ class Repository:
                     branch_protection = None
                 elif "Resource not accessible by integration" in e.message:
                     branch_protection = await self._get_branch_protection_from_branch(
-                        branch_name
+                        branch_name,
                     )
                 else:
                     raise
@@ -1112,7 +1153,7 @@ class Repository:
             data = typing.cast(
                 github_types.GitHubCompareCommits,
                 await self.installation.client.item(
-                    f"{self.base_url}/compare/{parse.quote(base_ref, safe='')}...{parse.quote(head_ref, safe='')}"
+                    f"{self.base_url}/compare/{parse.quote(base_ref, safe='')}...{parse.quote(head_ref, safe='')}",
                 ),
             )
         except http.HTTPClientSideError as e:
@@ -1148,25 +1189,25 @@ class ContextCaches:
         list[github_types.GitHubStatus]
     ] = dataclasses.field(default_factory=cache.SingleCache)
     reviews: cache.SingleCache[list[github_types.GitHubReview]] = dataclasses.field(
-        default_factory=cache.SingleCache
+        default_factory=cache.SingleCache,
     )
     is_behind: cache.SingleCache[bool] = dataclasses.field(
-        default_factory=cache.SingleCache
+        default_factory=cache.SingleCache,
     )
     review_decision: cache.SingleCache[
         github_graphql_types.GitHubPullRequestReviewDecision
     ] = dataclasses.field(default_factory=cache.SingleCache)
     is_conflicting: cache.SingleCache[bool] = dataclasses.field(
-        default_factory=cache.SingleCache
+        default_factory=cache.SingleCache,
     )
     files: cache.SingleCache[list[github_types.CachedGitHubFile]] = dataclasses.field(
-        default_factory=cache.SingleCache
+        default_factory=cache.SingleCache,
     )
     commits: cache.SingleCache[
         list[github_types.CachedGitHubBranchCommit]
     ] = dataclasses.field(default_factory=cache.SingleCache)
     commits_behind_count: cache.SingleCache[int] = dataclasses.field(
-        default_factory=cache.SingleCache
+        default_factory=cache.SingleCache,
     )
 
 
@@ -1177,17 +1218,20 @@ class Context:
     sources: list[T_PayloadEventSource] = dataclasses.field(default_factory=list)
     configuration_changed: bool = False
     github_has_pending_background_jobs: bool = dataclasses.field(
-        init=False, default=False
+        init=False,
+        default=False,
     )
     log: logging.LoggerAdapter[logging.Logger] = dataclasses.field(
-        init=False, repr=False
+        init=False,
+        repr=False,
     )
     flaky_checks_to_rerun: list[flaky_check.CheckToRerunResult] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
 
     _caches: ContextCaches = dataclasses.field(
-        default_factory=ContextCaches, repr=False
+        default_factory=ContextCaches,
+        repr=False,
     )
 
     def __post_init__(self) -> None:
@@ -1336,8 +1380,8 @@ class Context:
                                     "first_comment": thread["node"]["comments"][
                                         "edges"
                                     ][0]["node"]["body"],
-                                }
-                            )
+                                },
+                            ),
                         )
             self._caches.review_threads.set(review_threads)
         return review_threads
@@ -1375,7 +1419,9 @@ class Context:
         queue_rules = mergify_config["queue_rules"]
         partition_rules = mergify_config["partition_rules"]
         convoy = await merge_train.Convoy.from_context(
-            self, queue_rules, partition_rules
+            self,
+            queue_rules,
+            partition_rules,
         )
 
         list_dependent_pr = await convoy.find_embarked_pull(dependent_pr_number)
@@ -1421,7 +1467,8 @@ class Context:
             if previous_sha:
                 # Restore previous sha in redis
                 await self._save_cached_last_summary_head_sha(
-                    previous_sha, self.pull["head"]["sha"]
+                    previous_sha,
+                    self.pull["head"]["sha"],
                 )
             raise
 
@@ -1442,7 +1489,7 @@ class Context:
                 self.repository.installation.owner_id,
                 self.repository.repo["id"],
                 merge_commit_sha,
-            )
+            ),
         )
         return stored_merge_commit_sha is not None
 
@@ -1480,8 +1527,8 @@ class Context:
     async def get_warned_about_sha_collision(self) -> bool:
         return bool(
             await self.redis.cache.exists(
-                self.redis_warned_about_sha_collision_key(self.pull)
-            )
+                self.redis_warned_about_sha_collision_key(self.pull),
+            ),
         )
 
     @classmethod
@@ -1505,8 +1552,12 @@ class Context:
     ) -> bool:
         sha_exists = bool(
             await redis_cache.exists(
-                cls.redis_last_summary_pulls_key(owner_id, repo_id, pull["head"]["sha"])
-            )
+                cls.redis_last_summary_pulls_key(
+                    owner_id,
+                    repo_id,
+                    pull["head"]["sha"],
+                ),
+            ),
         )
         if sha_exists:
             return True
@@ -1612,7 +1663,8 @@ class Context:
             return []
         commits = await self.commits
         return dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
-            self.log, commits[0].commit_message
+            self.log,
+            commits[0].commit_message,
         )
 
     async def get_merge_queue_check_run_name(self) -> str:
@@ -1627,7 +1679,7 @@ class Context:
         check = await self.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         if check is None:
             check = await self.get_engine_check_run(
-                constants.MERGE_QUEUE_OLD_SUMMARY_NAME
+                constants.MERGE_QUEUE_OLD_SUMMARY_NAME,
             )
         return check
 
@@ -1658,7 +1710,7 @@ class Context:
                 self.github_has_pending_background_jobs = True
 
                 cached_is_conflicting: bytes | None = await self.redis.cache.get(
-                    self._conflict_cache_key
+                    self._conflict_cache_key,
                 )
                 # NOTE(sileht): Here we fallback to the last known value or False
                 if cached_is_conflicting is None:
@@ -1695,7 +1747,7 @@ class Context:
                     owner == self.pull["base"]["user"]["login"]
                     and repo == self.pull["base"]["repo"]["name"]
                 )
-            }
+            },
         )
 
     # merge-after: YEAR-MONTH-DAY HOUR:MINUTES
@@ -1715,7 +1767,8 @@ class Context:
             return None
 
     async def update_cached_check_runs(
-        self, check: github_types.CachedGitHubCheckRun
+        self,
+        check: github_types.CachedGitHubCheckRun,
     ) -> None:
         if self._caches.pull_check_runs.get() is cache.Unset:
             return
@@ -1749,10 +1802,12 @@ class Context:
         ]
 
     async def get_engine_check_run(
-        self, name: str
+        self,
+        name: str,
     ) -> github_types.CachedGitHubCheckRun | None:
         return first.first(
-            await self.pull_engine_check_runs, key=lambda c: c["name"] == name
+            await self.pull_engine_check_runs,
+            key=lambda c: c["name"] == name,
         )
 
     @property
@@ -1793,7 +1848,7 @@ class Context:
         # First put all branch protections checks as pending and then override with
         # the real status
         protection = await self.repository.get_branch_protection(
-            self.pull["base"]["ref"]
+            self.pull["base"]["ref"],
         )
         if (
             protection
@@ -1804,13 +1859,14 @@ class Context:
                 {
                     context: "pending"
                     for context in protection["required_status_checks"]["contexts"]
-                }
+                },
             )
 
         pull_check_runs = await self.pull_check_runs
 
         self.flaky_checks_to_rerun = await flaky_check.get_checks_to_rerun(
-            self.repository, pull_check_runs
+            self.repository,
+            pull_check_runs,
         )
 
         # NOTE(sileht): conclusion can be one of success, failure, neutral,
@@ -1819,7 +1875,7 @@ class Context:
             {
                 c["name"]: c["conclusion"]
                 for c in sorted(pull_check_runs, key=self._check_runs_sorter)
-            }
+            },
         )
         # NOTE(sileht): state can be one of error, failure, pending,
         # or success.
@@ -1828,7 +1884,7 @@ class Context:
         # NOTE(Kontrolix): Makeup results to pending for checks that need reruns
         # or those that we don't know yet
         checks.update(
-            {check["check_name"]: None for check in self.flaky_checks_to_rerun}
+            {check["check_name"]: None for check in self.flaky_checks_to_rerun},
         )
 
         return checks
@@ -1868,7 +1924,9 @@ class Context:
         return True
 
     async def update(
-        self, wait_merged: bool = False, wait_merge_commit_sha: bool = False
+        self,
+        wait_merged: bool = False,
+        wait_merge_commit_sha: bool = False,
     ) -> None:
         # Don't use it, because consolidated data are not updated after that.
         # Only used by merge/queue action for posting an update report after rebase.
@@ -1884,7 +1942,7 @@ class Context:
                             and not response.json()["merge_commit_sha"]
                         )
                     )
-                )
+                ),
             },
         )
         self._caches.pull_check_runs.delete()
@@ -1914,7 +1972,8 @@ class Context:
                 commits_behind_count = 0
             else:
                 commits_diff_count = await self.repository.get_commits_diff_count(
-                    self.pull["base"]["label"], self.pull["head"]["sha"]
+                    self.pull["base"]["label"],
+                    self.pull["head"]["sha"],
                 )
                 if commits_diff_count is None:
                     commits_behind_count = 1000000
@@ -1940,7 +1999,8 @@ class Context:
                 # FIXME(sileht): check if we can leverage compare API here like
                 # commits_behind_count by comparing branch label with head sha
                 branch = await self.repository.get_branch(
-                    self.pull["base"]["ref"], bypass_cache=True
+                    self.pull["base"]["ref"],
+                    bypass_cache=True,
                 )
                 commit_heads = await self._get_heads_from_commit()
                 external_parents_sha = await self._get_external_parents()
@@ -1965,12 +2025,12 @@ class Context:
                 event = typing.cast(github_types.GitHubEventPullRequest, source["data"])
                 if event["action"] == "synchronize":
                     mergify_bot = await github.GitHubAppInfo.get_bot(
-                        self.repository.installation.redis.cache
+                        self.repository.installation.redis.cache,
                     )
                     is_mergify = event["sender"]["id"] == mergify_bot[
                         "id"
                     ] or await self.redis.cache.get(
-                        f"branch-update-{self.pull['head']['sha']}"
+                        f"branch-update-{self.pull['head']['sha']}",
                     )
                     if not is_mergify:
                         return date.fromisoformat(event["received_at"])
@@ -2076,7 +2136,7 @@ class Context:
                             "status": file["status"],
                             "sha": file["sha"],
                             "previous_filename": file.get("previous_filename"),
-                        }
+                        },
                     )
                     async for file in typing.cast(
                         abc.AsyncIterable[github_types.GitHubFile],
@@ -2093,7 +2153,7 @@ class Context:
                     and "Sorry, this diff is taking too long to generate" in e.message
                 ):
                     raise exceptions.UnprocessablePullRequest(
-                        "GitHub cannot generate the file list because the diff is taking too long"
+                        "GitHub cannot generate the file list because the diff is taking too long",
                     )
                 raise
             self._caches.files.set(files)
@@ -2114,13 +2174,13 @@ class Context:
 
     def can_change_github_workflow(self) -> bool:
         workflows_perm = self.repository.installation.installation["permissions"].get(
-            "workflows"
+            "workflows",
         )
         return workflows_perm == "write"
 
     def github_actions_controllable(self) -> bool:
         workflows_perm = self.repository.installation.installation["permissions"].get(
-            "actions"
+            "actions",
         )
         return workflows_perm == "write"
 
@@ -2184,7 +2244,9 @@ class Context:
         return typing.cast(github_types.GitHubComment, resp.json())
 
     async def edit_comment(
-        self, comment_id: github_types.GitHubCommentIdType, message: str
+        self,
+        comment_id: github_types.GitHubCommentIdType,
+        message: str,
     ) -> None:
         await self.client.post(
             f"{self.base_url}/issues/comments/{comment_id}",
@@ -2193,7 +2255,7 @@ class Context:
 
     async def is_branch_protection_linear_history_enabled(self) -> bool:
         protection = await self.repository.get_branch_protection(
-            self.pull["base"]["ref"]
+            self.pull["base"]["ref"],
         )
         return (
             protection is not None

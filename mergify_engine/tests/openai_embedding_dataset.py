@@ -1550,5 +1550,5 @@ OPENAI_EMBEDDING_DATASET = {
 OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT = {}
 for input_string, embedding in OPENAI_EMBEDDING_DATASET.items():
     OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT[input_string] = np.array(
-        list(map(np.float32, embedding))
+        list(map(np.float32, embedding)),
     )

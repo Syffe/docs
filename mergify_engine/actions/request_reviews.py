@@ -35,7 +35,7 @@ class RequestReviewsExecutorConfig(typing.TypedDict):
 
 
 class RequestReviewsExecutor(
-    actions.ActionExecutor["RequestReviewsAction", RequestReviewsExecutorConfig]
+    actions.ActionExecutor["RequestReviewsAction", RequestReviewsExecutorConfig],
 ):
     # This is the maximum number of review you can request on a PR.
     # It's not documented in the API, but it is shown in GitHub UI.
@@ -57,7 +57,10 @@ class RequestReviewsExecutor(
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, e.title, e.reason
+                rule,
+                action,
+                e.title,
+                e.reason,
             )
 
         team_errors = set()
@@ -78,14 +81,17 @@ class RequestReviewsExecutor(
                     {
                         user: weight
                         for user in await ctxt.repository.installation.get_team_members(
-                            team.team
+                            team.team,
                         )
-                    }
+                    },
                 )
 
         if team_errors:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, "Invalid requested teams", "\n".join(team_errors)
+                rule,
+                action,
+                "Invalid requested teams",
+                "\n".join(team_errors),
             )
 
         return cls(
@@ -98,16 +104,20 @@ class RequestReviewsExecutor(
                     "teams": {
                         team.team: weight
                         for team, weight in typing.cast(
-                            dict[types._GitHubTeam, int], action.config["teams"]
+                            dict[types._GitHubTeam, int],
+                            action.config["teams"],
                         ).items()
                     },
                     "random_count": action.config["random_count"],
-                }
+                },
             ),
         )
 
     def _get_random_reviewers(
-        self, random_count: int, random_number: int, pr_author: str
+        self,
+        random_count: int,
+        random_number: int,
+        pr_author: str,
     ) -> set[str]:
         choices = {
             **{user.lower(): weight for user, weight in self.config["users"].items()},
@@ -131,7 +141,10 @@ class RequestReviewsExecutor(
         )
 
     def _get_reviewers(
-        self, pr_id: int, existing_reviews: set[str], pr_author: str
+        self,
+        pr_id: int,
+        existing_reviews: set[str],
+        pr_author: str,
     ) -> tuple[set[str], set[str]]:
         if self.config["random_count"] is None:
             user_reviews_to_request = {
@@ -143,7 +156,9 @@ class RequestReviewsExecutor(
             user_reviews_to_request = set()
 
             for reviewer in self._get_random_reviewers(
-                self.config["random_count"], pr_id, pr_author
+                self.config["random_count"],
+                pr_id,
+                pr_author,
             ):
                 if reviewer.startswith("@"):
                     team_reviews_to_request.add(reviewer[1:].lower())
@@ -183,7 +198,7 @@ class RequestReviewsExecutor(
 
         if user_reviews_to_request or team_reviews_to_request:
             requested_reviews_nb = len(
-                typing.cast(list[str], await pull_attrs.review_requested)
+                typing.cast(list[str], await pull_attrs.review_requested),
             )
 
             already_at_max = requested_reviews_nb == self.GITHUB_MAXIMUM_REVIEW_REQUEST
@@ -233,7 +248,7 @@ class RequestReviewsExecutor(
                         {
                             "reviewers": list(user_reviews_to_request),
                             "team_reviewers": list(team_reviews_to_request),
-                        }
+                        },
                     ),
                     self.rule.get_signal_trigger(),
                 )
@@ -247,11 +262,15 @@ class RequestReviewsExecutor(
                 )
 
             return check_api.Result(
-                check_api.Conclusion.SUCCESS, "New reviews requested", ""
+                check_api.Conclusion.SUCCESS,
+                "New reviews requested",
+                "",
             )
 
         return check_api.Result(
-            check_api.Conclusion.SUCCESS, "No new reviewers to request", ""
+            check_api.Conclusion.SUCCESS,
+            "No new reviewers to request",
+            "",
         )
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover
@@ -262,7 +281,8 @@ class RequestReviewsAction(actions.Action):
     flags = actions.ActionFlag.ALWAYS_RUN
 
     _random_weight = voluptuous.Required(
-        voluptuous.All(int, voluptuous.Range(min=1, max=65535)), default=1
+        voluptuous.All(int, voluptuous.Range(min=1, max=65535)),
+        default=1,
     )
 
     validator: typing.ClassVar[actions.ValidatorT] = {
@@ -297,7 +317,8 @@ class RequestReviewsAction(actions.Action):
             voluptuous.All(
                 int,
                 voluptuous.Range(
-                    1, RequestReviewsExecutor.GITHUB_MAXIMUM_REVIEW_REQUEST
+                    1,
+                    RequestReviewsExecutor.GITHUB_MAXIMUM_REVIEW_REQUEST,
                 ),
             ),
             None,

@@ -22,10 +22,13 @@ def upgrade() -> None:
         sqlalchemy.Column("id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column("branch", sqlalchemy.Text(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_merge_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_merge_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_merge_pkey")
+            "id",
+            name=alembic.op.f("event_action_merge_pkey"),
         ),
     )
     # ### end Alembic commands ###

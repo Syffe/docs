@@ -43,11 +43,12 @@ async def test_client_installation_token_with_owner_id(
     )
 
     respx_mock.get(
-        "/", headers__contains={"Authorization": "token <installation-token>"}
+        "/",
+        headers__contains={"Authorization": "token <installation-token>"},
     ).respond(200, json={"work": True})
 
     installation_json = await github.get_installation_from_account_id(
-        github_types.GitHubAccountIdType(12345)
+        github_types.GitHubAccountIdType(12345),
     )
     async with github.AsyncGitHubInstallationClient(
         github.GitHubAppInstallationAuth(installation_json),
@@ -80,14 +81,15 @@ async def test_client_user_token(respx_mock: respx.MockRouter) -> None:
     )
 
     respx_mock.get(
-        "/", headers__contains={"Authorization": "token <user-token>"}
+        "/",
+        headers__contains={"Authorization": "token <user-token>"},
     ).respond(200, json={"work": True})
 
     installation_json = await github.get_installation_from_account_id(
-        github_types.GitHubAccountIdType(12345)
+        github_types.GitHubAccountIdType(12345),
     )
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         client.retry_exponential_multiplier = 0
         ret = await client.get(
@@ -143,7 +145,8 @@ async def test_client_401_raise_ratelimit(respx_mock: respx.MockRouter) -> None:
 
 async def test_client_HTTP_400(respx_mock: respx.MockRouter) -> None:
     respx_mock.get("https://foobar/").respond(
-        400, json={"message": "This is a 4XX error"}
+        400,
+        json={"message": "This is a 4XX error"},
     )
 
     async with http.AsyncClient() as client:
@@ -159,7 +162,8 @@ async def test_client_HTTP_400(respx_mock: respx.MockRouter) -> None:
 
 async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> None:
     respx_mock.get("https://foobar/").respond(
-        400, json={"message": "This is a 4XX error", "documentation_url": "fake_url"}
+        400,
+        json={"message": "This is a 4XX error", "documentation_url": "fake_url"},
     )
     async with http.AsyncClient() as client:
         client.retry_exponential_multiplier = 0
@@ -208,7 +212,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
                     "code": "test",
                     "field": "test",
                     "message": "This is a 4XX error",
-                }
+                },
             ],
             "documentation_url": "fake_url",
         },
@@ -225,7 +229,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         json={
             "error": {
                 "message": "OpenAI error message",
-            }
+            },
         },
     )
     async with http.AsyncClient() as client:
@@ -272,7 +276,7 @@ async def test_client_temporary_HTTP_500(respx_mock: respx.MockRouter) -> None:
             httpx.Response(500, text="This is a 5XX error"),
             httpx.Response(500, text="This is a 5XX error"),
             httpx.Response(200, text="It works now !"),
-        ]
+        ],
     )
 
     async with http.AsyncClient() as client:
@@ -290,7 +294,8 @@ async def test_client_connection_error(respx_mock: respx.MockRouter) -> None:
 
 @pytest.mark.respx(base_url="https://foobar/")
 async def _do_test_client_retry_429(
-    respx_mock: respx.MockRouter, retry_after: str
+    respx_mock: respx.MockRouter,
+    retry_after: str,
 ) -> datetime.datetime:
     records: list[datetime.datetime] = []
 
@@ -358,14 +363,14 @@ async def test_client_access_token_HTTP_500(respx_mock: respx.MockRouter) -> Non
         return httpx.Response(500, text="This is a 5XX error")
 
     respx_mock.post("/app/installations/12345/access_tokens").mock(
-        side_effect=error_500_tracker
+        side_effect=error_500_tracker,
     )
 
     installation_json = await github.get_installation_from_account_id(
-        github_types.GitHubAccountIdType(12345)
+        github_types.GitHubAccountIdType(12345),
     )
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPServerSideError) as exc_info:
@@ -390,7 +395,7 @@ async def test_client_installation_HTTP_500(respx_mock: respx.MockRouter) -> Non
             httpx.Response(500, text="This is a 5XX error"),
             httpx.Response(500, text="This is a 5XX error"),
             httpx.Response(500, text="This is a 5XX error"),
-        ]
+        ],
     )
 
     real_init = github.AsyncGitHubClient.__init__
@@ -409,7 +414,7 @@ async def test_client_installation_HTTP_500(respx_mock: respx.MockRouter) -> Non
     with mock.patch.object(github.AsyncGitHubClient, "__init__", mocked_init):
         with pytest.raises(http.HTTPServerSideError) as exc_info:
             await github.get_installation_from_account_id(
-                github_types.GitHubAccountIdType(12345)
+                github_types.GitHubAccountIdType(12345),
             )
 
     assert exc_info.value.message == "This is a 5XX error"
@@ -425,12 +430,13 @@ async def test_client_installation_HTTP_500(respx_mock: respx.MockRouter) -> Non
 @pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_client_installation_HTTP_404(respx_mock: respx.MockRouter) -> None:
     respx_mock.get("/user/12345/installation").respond(
-        404, json={"message": "Repository not found"}
+        404,
+        json={"message": "Repository not found"},
     )
 
     with pytest.raises(exceptions.MergifyNotInstalled):
         await github.get_installation_from_account_id(
-            github_types.GitHubAccountIdType(12345)
+            github_types.GitHubAccountIdType(12345),
         )
 
 
@@ -444,11 +450,12 @@ async def test_client_installation_HTTP_301(respx_mock: respx.MockRouter) -> Non
     )
 
     respx_mock.get("/repositories/12345/installation").respond(
-        404, json={"message": "Repository not found"}
+        404,
+        json={"message": "Repository not found"},
     )
     with pytest.raises(exceptions.MergifyNotInstalled):
         await github.get_installation_from_account_id(
-            github_types.GitHubAccountIdType(12345)
+            github_types.GitHubAccountIdType(12345),
         )
 
 
@@ -474,7 +481,8 @@ async def test_client_abuse_403_no_header(respx_mock: respx.MockRouter) -> None:
         },
     )
     respx_mock.post("/app/installations/12345/access_tokens").respond(
-        200, json={"token": "<token>", "expires_at": "2100-12-31T23:59:59Z"}
+        200,
+        json={"token": "<token>", "expires_at": "2100-12-31T23:59:59Z"},
     )
     respx_mock.get("/").respond(
         403,
@@ -482,10 +490,10 @@ async def test_client_abuse_403_no_header(respx_mock: respx.MockRouter) -> None:
     )
 
     installation_json = await github.get_installation_from_account_id(
-        github_types.GitHubAccountIdType(12345)
+        github_types.GitHubAccountIdType(12345),
     )
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
@@ -528,10 +536,10 @@ async def test_to_curl(
     ).respond(200, json={"work": True})
 
     installation_json = await github.get_installation_from_account_id(
-        github_types.GitHubAccountIdType(12345)
+        github_types.GitHubAccountIdType(12345),
     )
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         client.retry_exponential_multiplier = 0
         await client.post("/", headers={"Foo": "Bar"}, json={"ask": "What?"})

@@ -28,7 +28,8 @@ STOP_REFRESH_PULL_REQUEST_CLOSED_WITH_TIME_CONDITIONS_SINCE = datetime.timedelta
 
 
 def _redis_key(
-    repository: context.Repository, pull_number: github_types.GitHubPullRequestNumber
+    repository: context.Repository,
+    pull_number: github_types.GitHubPullRequestNumber,
 ) -> str:
     return f"{repository.installation.owner_id}~{repository.installation.owner_login}~{repository.repo['id']}~{repository.repo['name']}~{pull_number}"
 
@@ -38,7 +39,8 @@ async def _get_current_refresh_datetime(
     pull_number: github_types.GitHubPullRequestNumber,
 ) -> datetime.datetime | None:
     score = await repository.installation.redis.cache.zscore(
-        DELAYED_REFRESH_KEY, _redis_key(repository, pull_number)
+        DELAYED_REFRESH_KEY,
+        _redis_key(repository, pull_number),
     )
     if score is not None:
         return date.fromtimestamp(float(score))
@@ -65,7 +67,8 @@ async def plan_next_refresh(
     only_if_earlier: bool = False,
 ) -> None:
     plan_refresh_at = await _get_current_refresh_datetime(
-        ctxt.repository, ctxt.pull["number"]
+        ctxt.repository,
+        ctxt.pull["number"],
     )
     if plan_refresh_at is not None and plan_refresh_at < date.utcnow():
         plan_refresh_at = None
@@ -79,14 +82,14 @@ async def plan_next_refresh(
     conditions = []
     for rule in _rules:
         conditions.extend(
-            rule.get_conditions_used_by_evaluator().condition.copy().conditions
+            rule.get_conditions_used_by_evaluator().condition.copy().conditions,
         )
 
         if isinstance(rule, prr_config.PullRequestRule):
             for action in rule.actions.values():
                 if action.config.get("success_conditions"):
                     conditions.extend(
-                        action.config["success_conditions"].condition.copy().conditions
+                        action.config["success_conditions"].condition.copy().conditions,
                     )
 
     rule_conditions = conditions_mod.BaseRuleConditions(conditions)
@@ -118,13 +121,16 @@ async def plan_next_refresh(
     else:
         if only_if_earlier:
             current = await _get_current_refresh_datetime(
-                ctxt.repository, ctxt.pull["number"]
+                ctxt.repository,
+                ctxt.pull["number"],
             )
             if current is not None and plan_refresh_at >= current:
                 return
 
         await _set_current_refresh_datetime(
-            ctxt.repository, ctxt.pull["number"], plan_refresh_at
+            ctxt.repository,
+            ctxt.pull["number"],
+            plan_refresh_at,
         )
         ctxt.log.info(
             "plan to refresh pull request",
@@ -176,7 +182,7 @@ async def send(redis_links: redis_utils.RedisLinks) -> None:
         owner_id = github_types.GitHubAccountIdType(int(owner_id_str))
         repository_id = github_types.GitHubRepositoryIdType(int(repository_id_str))
         pull_request_number = github_types.GitHubPullRequestNumber(
-            int(pull_request_number_str)
+            int(pull_request_number_str),
         )
         repository_name = github_types.GitHubRepositoryName(repository_name_str)
         owner_login = github_types.GitHubLogin(owner_login_str)

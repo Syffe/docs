@@ -30,5 +30,5 @@ async def test_fixture_shadow_office(
     assert shadow_office.subscription.features == frozenset(
         {
             subscription.Features.PUBLIC_REPOSITORY,
-        }
+        },
     )

@@ -13,8 +13,8 @@ class TestActionSquash(base.FunctionalTestBase):
                     "name": "assign",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"squash": {}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -22,7 +22,11 @@ class TestActionSquash(base.FunctionalTestBase):
         branch_name = self.get_full_branch_name("pr_squash_test")
 
         await self.git(
-            "checkout", "--quiet", f"origin/{self.main_branch_name}", "-b", branch_name
+            "checkout",
+            "--quiet",
+            f"origin/{self.main_branch_name}",
+            "-b",
+            branch_name,
         )
 
         for i in range(3):
@@ -69,8 +73,8 @@ Awesome body
                     "conditions": [f"base={self.main_branch_name}"],
                     # NOTE(sileht): wrong case matter to ensure bot_account is case-insensitive
                     "actions": {"squash": {"bot_account": "MERGIFY-TEST1"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -78,7 +82,11 @@ Awesome body
         branch_name = self.get_full_branch_name("pr_squash_test")
 
         await self.git(
-            "checkout", "--quiet", f"origin/{self.main_branch_name}", "-b", branch_name
+            "checkout",
+            "--quiet",
+            f"origin/{self.main_branch_name}",
+            "-b",
+            branch_name,
         )
 
         for i in range(3):

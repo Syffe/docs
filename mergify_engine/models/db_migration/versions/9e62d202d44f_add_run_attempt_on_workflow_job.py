@@ -44,7 +44,7 @@ def upgrade() -> None:
             compute_run_attempt
         WHERE
             compute_run_attempt.id=gha_workflow_job.id
-        """
+        """,
     )
 
     alembic.op.alter_column("gha_workflow_job", "run_attempt", nullable=False)

@@ -34,20 +34,23 @@ def get_cleaned_log(input_file: typing.TextIO) -> str:
 def record_log_cleaner_output() -> None:
     for log_filename in os.listdir(LOG_INPUT_LIBRARY_PATH):
         with open(
-            f"{LOG_INPUT_LIBRARY_PATH}/{log_filename}", encoding="utf-8"
+            f"{LOG_INPUT_LIBRARY_PATH}/{log_filename}",
+            encoding="utf-8",
         ) as input_file, open(
-            f"{LOG_OUTPUT_LIBRARY_PATH}/{log_filename}", "w"
+            f"{LOG_OUTPUT_LIBRARY_PATH}/{log_filename}",
+            "w",
         ) as output_file:
             log_output = get_cleaned_log(input_file)
             output_file.write(log_output)
 
 
 @pytest.mark.parametrize(
-    "input_log_filepath, output_log_filepath", list(TEST_LOGS_FILEPATH_DICT.values())
+    "input_log_filepath, output_log_filepath",
+    list(TEST_LOGS_FILEPATH_DICT.values()),
 )
 def test_log_cleaner_output(input_log_filepath: str, output_log_filepath: str) -> None:
     with open(input_log_filepath, encoding="utf-8") as log_input_file, open(
-        output_log_filepath
+        output_log_filepath,
     ) as log_output_file:
         expected_log_output = log_output_file.read()
         log_output = get_cleaned_log(log_input_file)

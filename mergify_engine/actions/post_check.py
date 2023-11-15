@@ -44,7 +44,7 @@ class PostCheckExecutorConfig(typing.TypedDict):
 
 @dataclasses.dataclass
 class PostCheckExecutor(
-    actions.ActionExecutor["PostCheckAction", PostCheckExecutorConfig]
+    actions.ActionExecutor["PostCheckAction", PostCheckExecutorConfig],
 ):
     config: PostCheckExecutorConfig
 
@@ -61,7 +61,7 @@ class PostCheckExecutor(
                 action,
                 "Custom checks are disabled",
                 ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
+                    ctxt.pull["base"]["repo"]["owner"]["login"],
                 ),
             )
 
@@ -86,7 +86,8 @@ class PostCheckExecutor(
             if neutral_conditions is not None:
                 neutral_conditions = neutral_conditions.copy()
                 live_resolvers.apply_configure_filter(
-                    ctxt.repository, neutral_conditions
+                    ctxt.repository,
+                    neutral_conditions,
                 )
                 await neutral_conditions([pull_attrs])
 
@@ -116,16 +117,23 @@ class PostCheckExecutor(
             )
         except condition_value_querier.RenderTemplateFailure as rmf:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, "Invalid title template", str(rmf)
+                rule,
+                action,
+                "Invalid title template",
+                str(rmf),
             )
 
         try:
             summary = await pull_attrs.render_template(
-                action.config["summary"], extra_variables
+                action.config["summary"],
+                extra_variables,
             )
         except condition_value_querier.RenderTemplateFailure as rmf:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, "Invalid summary template", str(rmf)
+                rule,
+                action,
+                "Invalid summary template",
+                str(rmf),
             )
         return cls(
             ctxt,
@@ -138,7 +146,7 @@ class PostCheckExecutor(
                     "neutral_conditions": neutral_conditions,
                     "always_show": action.config["success_conditions"] is None
                     and action.config["neutral_conditions"] is None,
-                }
+                },
             ),
         )
 
@@ -154,7 +162,7 @@ class PostCheckExecutor(
             conclusion = check_api.Conclusion.FAILURE
 
         check = await self.ctxt.get_engine_check_run(
-            self.rule.get_check_name("post_check")
+            self.rule.get_check_name("post_check"),
         )
         if not check or check["conclusion"] != conclusion.value:
             await signals.send(
@@ -167,7 +175,7 @@ class PostCheckExecutor(
                         "conclusion": conclusion.value,
                         "title": self.config["title"],
                         "summary": self.config["summary"],
-                    }
+                    },
                 ),
                 self.rule.get_signal_trigger(),
             )
@@ -205,7 +213,8 @@ class PostCheckAction(actions.Action):
             default="'{{ check_rule_name }}'{% if check_status == 'success' %} succeeded{% elif check_status == 'failure' %} failed{% endif %}",
         ): CheckRunJinja2,
         voluptuous.Required(
-            "summary", default="{{ check_conditions }}"
+            "summary",
+            default="{{ check_conditions }}",
         ): CheckRunJinja2,
         voluptuous.Required("success_conditions", default=None): voluptuous.Any(
             None,

@@ -150,7 +150,7 @@ async def compute_estimation(
             seconds=car.train_car_state.seconds_waiting_for_schedule_pure
             + car.train_car_state.seconds_waiting_for_freeze_pure
             + car.train_car_state.seconds_spent_outside_schedule_pure
-            + checks_duration
+            + checks_duration,
         )
     )
     # Evaluate schedule conditions relative to the current time
@@ -192,7 +192,7 @@ async def compute_estimation(
             checks_duration = max(0, checks_duration)
 
         return farthest_datetime_from_conditions + datetime.timedelta(
-            seconds=checks_duration
+            seconds=checks_duration,
         )
 
     # No currently non-matching schedule conditions needs to be taken into account

@@ -25,5 +25,5 @@ async def configuration(redis_links: redis.RedisLinks) -> ConfigJSON:
             "github_application_name": app["slug"],
             "github_server_url": settings.GITHUB_URL,
             "ui_features": sorted(settings.DASHBOARD_UI_FEATURES),
-        }
+        },
     )

@@ -9,7 +9,9 @@ async def test_site_configuration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        settings, "DASHBOARD_UI_DATADOG_CLIENT_TOKEN", "a-not-so-secret-token"
+        settings,
+        "DASHBOARD_UI_DATADOG_CLIENT_TOKEN",
+        "a-not-so-secret-token",
     )
     monkeypatch.setattr(
         settings,

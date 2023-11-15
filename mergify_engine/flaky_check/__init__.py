@@ -57,7 +57,7 @@ async def get_checks_to_rerun(
                     check_name=check["name"],
                     check_app_slug=check["app_slug"],
                     status=need_rerun_status,
-                )
+                ),
             )
 
     return checks_to_rerun
@@ -70,7 +70,11 @@ async def is_gha_job_rerun_needed(
 ) -> NeedRerunStatus:
     async with database.create_session() as session:
         need_rerun = NeedRerunStatus(
-            await gh_models.WorkflowJob.is_rerun_needed(session, check["id"], max_rerun)
+            await gh_models.WorkflowJob.is_rerun_needed(
+                session,
+                check["id"],
+                max_rerun,
+            ),
         )
 
     if need_rerun == NeedRerunStatus.UNKONWN:
@@ -83,14 +87,15 @@ async def is_gha_job_rerun_needed(
         )
     else:
         await redis_cache.delete(
-            f"{FLAKY_CHECK_NEED_REFRESH_CACHE_PREFIX}_{check['id']}"
+            f"{FLAKY_CHECK_NEED_REFRESH_CACHE_PREFIX}_{check['id']}",
         )
 
     return need_rerun
 
 
 async def send_pull_refresh_for_jobs(
-    redis_links: redis_utils.RedisLinks, job_ids: list[int]
+    redis_links: redis_utils.RedisLinks,
+    job_ids: list[int],
 ) -> None:
     need_refresh_job_ids = await filter_jobs_id_that_need_refresh(redis_links, job_ids)
 
@@ -100,15 +105,15 @@ async def send_pull_refresh_for_jobs(
     async with database.create_session() as session:
         jobs = await session.scalars(
             sqlalchemy.select(gh_models.WorkflowJob).where(
-                gh_models.WorkflowJob.id.in_(need_refresh_job_ids)
-            )
+                gh_models.WorkflowJob.id.in_(need_refresh_job_ids),
+            ),
         )
 
         for job in jobs:
             pg_pull_registry = pull_registries.PostgresPullRequestRegistry(
                 session,
                 pull_registries.HTTPPullRequestRegistry(
-                    login=job.repository.owner.login
+                    login=job.repository.owner.login,
                 ),
             )
             pulls = await pg_pull_registry.get_from_commit(
@@ -122,10 +127,11 @@ async def send_pull_refresh_for_jobs(
                     await refresher.send_pull_refresh(
                         redis_links.stream,
                         typing.cast(
-                            github_types.GitHubRepository, job.repository._as_dict()
+                            github_types.GitHubRepository,
+                            job.repository._as_dict(),
                         ),
                         pull_request_number=github_types.GitHubPullRequestNumber(
-                            pr.number
+                            pr.number,
                         ),
                         action="internal",
                         source="WorkflowJob neighbours computed",
@@ -133,7 +139,8 @@ async def send_pull_refresh_for_jobs(
 
 
 async def filter_jobs_id_that_need_refresh(
-    redis_links: redis_utils.RedisLinks, job_ids: list[int]
+    redis_links: redis_utils.RedisLinks,
+    job_ids: list[int],
 ) -> list[int]:
     keys = [f"{FLAKY_CHECK_NEED_REFRESH_CACHE_PREFIX}_{job_id}" for job_id in job_ids]
     return [
@@ -153,17 +160,20 @@ async def rerun_flaky_checks(ctxt: context.Context) -> None:
 
 
 async def rerun_flaky_gha_job(
-    ctxt: context.Context, check_rerun: CheckToRerunResult
+    ctxt: context.Context,
+    check_rerun: CheckToRerunResult,
 ) -> None:
     already_rerun_key = f"{ALREADY_RERUN_CACHE_PREFIX}_{check_rerun['check_id']}"
     if await ctxt.repository.installation.redis.cache.exists(already_rerun_key):
         return
 
     await ctxt.client.post(
-        f"{ctxt.base_url}/actions/jobs/{check_rerun['check_id']}/rerun"
+        f"{ctxt.base_url}/actions/jobs/{check_rerun['check_id']}/rerun",
     )
     ctxt.log.info("Rerun job: %s", check_rerun["check_id"])
 
     await ctxt.repository.installation.redis.cache.set(
-        already_rerun_key, "", ex=ALREADY_RERUN_CACHE_EXPIRE
+        already_rerun_key,
+        "",
+        ex=ALREADY_RERUN_CACHE_EXPIRE,
     )

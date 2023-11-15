@@ -20,11 +20,14 @@ async def test_gitter_service_lifecycle(
 ) -> None:
     logs.setup_logging()
     service = gitter_service.GitterService(
-        redis_links, gitter_concurrent_jobs=1, idle_time=0, gitter_worker_idle_time=0.01
+        redis_links,
+        gitter_concurrent_jobs=1,
+        idle_time=0,
+        gitter_worker_idle_time=0.01,
     )
     assert gitter_service.GitterService._instance is not None
     request.addfinalizer(
-        lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks))
+        lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks)),
     )
     method = mock.AsyncMock(return_value="result")
     callback = mock.AsyncMock()
@@ -54,11 +57,14 @@ async def test_gitter_service_exception(
 ) -> None:
     logs.setup_logging()
     service = gitter_service.GitterService(
-        redis_links, gitter_concurrent_jobs=1, idle_time=0, gitter_worker_idle_time=0.01
+        redis_links,
+        gitter_concurrent_jobs=1,
+        idle_time=0,
+        gitter_worker_idle_time=0.01,
     )
     assert gitter_service.GitterService._instance is not None
     request.addfinalizer(
-        lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks))
+        lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks)),
     )
     method = mock.AsyncMock(side_effect=Exception("boom"))
     callback = mock.AsyncMock()
@@ -90,10 +96,13 @@ async def test_gitter_service_concurrency(
 ) -> None:
     logs.setup_logging()
     service = gitter_service.GitterService(
-        redis_links, gitter_concurrent_jobs=4, gitter_worker_idle_time=0.01, idle_time=0
+        redis_links,
+        gitter_concurrent_jobs=4,
+        gitter_worker_idle_time=0.01,
+        idle_time=0,
     )
     request.addfinalizer(
-        lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks))
+        lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks)),
     )
     waiter_started = asyncio.Event()
     job_1_start = asyncio.Event()

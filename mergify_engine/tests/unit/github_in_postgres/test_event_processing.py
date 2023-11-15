@@ -32,7 +32,10 @@ async def test_event_with_missing_data(
     )
 
     await worker_pusher.push_github_in_pg_event(
-        redis_links.stream, "pull_request", "12345", invalid_event
+        redis_links.stream,
+        "pull_request",
+        "12345",
+        invalid_event,
     )
 
     await process_events.store_redis_events_in_pg(redis_links)
@@ -51,7 +54,10 @@ async def test_event_with_nul_bytes_in_body(
     pull = ctxt.pull
     pull["body"] = "Test with nul \x00 bytes"
     await worker_pusher.push_github_in_pg_event(
-        redis_links.stream, "pull_request", "12345", pull
+        redis_links.stream,
+        "pull_request",
+        "12345",
+        pull,
     )
 
     await process_events.store_redis_events_in_pg(redis_links)

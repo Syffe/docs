@@ -50,7 +50,8 @@ class GitHubRepository(models.Base):
     )
 
     owner: orm.Mapped[github_account.GitHubAccount] = orm.relationship(
-        lazy="joined", foreign_keys=[owner_id]
+        lazy="joined",
+        foreign_keys=[owner_id],
     )
 
     name: orm.Mapped[str] = orm.mapped_column(
@@ -60,7 +61,9 @@ class GitHubRepository(models.Base):
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
     private: orm.Mapped[bool | None] = orm.mapped_column(
-        sqlalchemy.Boolean, nullable=True, anonymizer_config=None
+        sqlalchemy.Boolean,
+        nullable=True,
+        anonymizer_config=None,
     )
     default_branch: orm.Mapped[github_types.GitHubRefType | None] = orm.mapped_column(
         sqlalchemy.Text,
@@ -68,7 +71,9 @@ class GitHubRepository(models.Base):
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
     archived: orm.Mapped[bool | None] = orm.mapped_column(
-        sqlalchemy.Boolean, nullable=True, anonymizer_config=None
+        sqlalchemy.Boolean,
+        nullable=True,
+        anonymizer_config=None,
     )
 
     @sqlalchemy.ext.hybrid.hybrid_property
@@ -99,7 +104,7 @@ class GitHubRepository(models.Base):
         name: github_types.GitHubRepositoryName,
     ) -> GitHubRepository | None:
         result = await session.execute(
-            sqlalchemy.select(cls).where(cls.owner_id == owner_id, cls.name == name)
+            sqlalchemy.select(cls).where(cls.owner_id == owner_id, cls.name == name),
         )
         return result.scalar_one_or_none()
 
@@ -110,11 +115,12 @@ class GitHubRepository(models.Base):
         repository: github_types.GitHubRepository | GitHubRepositoryDict,
     ) -> GitHubRepository:
         owner = await github_account.GitHubAccount.get_or_create(
-            session, repository["owner"]
+            session,
+            repository["owner"],
         )
 
         result = await session.execute(
-            sqlalchemy.select(cls).where(cls.id == repository["id"])
+            sqlalchemy.select(cls).where(cls.id == repository["id"]),
         )
         if (repository_obj := result.scalar_one_or_none()) is not None:
             # NOTE(lecrepont01): update attributes

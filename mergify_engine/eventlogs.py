@@ -263,8 +263,8 @@ SUPPORTED_EVENT_NAMES = list(
         *[
             evt.__annotations__["event"].__args__
             for evt in Event.__args__  # type: ignore[attr-defined]
-        ]
-    )
+        ],
+    ),
 )
 
 

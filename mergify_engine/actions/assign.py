@@ -38,7 +38,8 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
             if not user.endswith("[bot]")
         }
         users_to_remove_parsed = await actions_utils.render_users_template(
-            ctxt, action.config["remove_users"]
+            ctxt,
+            action.config["remove_users"],
         )
         return cls(
             ctxt,
@@ -47,14 +48,14 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
                 {
                     "users_to_add": users_to_add_parsed,
                     "users_to_remove": users_to_remove_parsed,
-                }
+                },
             ),
         )
 
     async def run(self) -> check_api.Result:
         assignees_to_add = list(
             self.config["users_to_add"]
-            - {a["login"] for a in self.ctxt.pull["assignees"]}
+            - {a["login"] for a in self.ctxt.pull["assignees"]},
         )
         if assignees_to_add:
             try:
@@ -71,7 +72,7 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
 
         assignees_to_remove = list(
             self.config["users_to_remove"]
-            & {a["login"] for a in self.ctxt.pull["assignees"]}
+            & {a["login"] for a in self.ctxt.pull["assignees"]},
         )
         if assignees_to_remove:
             try:
@@ -94,7 +95,7 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
                 self.ctxt.pull["base"]["ref"],
                 "action.assign",
                 signals.EventAssignMetadata(
-                    {"added": assignees_to_add, "removed": assignees_to_remove}
+                    {"added": assignees_to_add, "removed": assignees_to_remove},
                 ),
                 self.rule.get_signal_trigger(),
             )

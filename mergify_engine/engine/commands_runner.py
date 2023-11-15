@@ -119,7 +119,7 @@ def prepare_message(
             "command": command,
             "conclusion": result.conclusion.value,
             "action_is_running": action_is_running,
-        }
+        },
     )
     if followup_of_command is not None:
         payload["followup_of_command"] = followup_of_command
@@ -150,7 +150,7 @@ def load_command(
 
     if not match:
         raise NotACommand(
-            "Comment contains '@Mergify/io' tag but is not aimed to be executed as a command"
+            "Comment contains '@Mergify/io' tag but is not aimed to be executed as a command",
         )
 
     action_name = prr_config.PullRequestRuleName(match[1])
@@ -294,7 +294,7 @@ async def get_pending_commands_to_run_from_comments(
     ctxt: context.Context,
 ) -> LastUpdatedOrderedDict:
     mergify_bot = await github.GitHubAppInfo.get_bot(
-        ctxt.repository.installation.redis.cache
+        ctxt.repository.installation.redis.cache,
     )
     pendings = LastUpdatedOrderedDict()
     finished_commands = LastUpdatedOrderedDict()
@@ -433,7 +433,8 @@ async def pre_commands_run(
 
 
 async def run_commands_tasks(
-    ctxt: context.Context, mergify_config: mergify_conf.MergifyConfig
+    ctxt: context.Context,
+    mergify_config: mergify_conf.MergifyConfig,
 ) -> None:
     pendings = await get_pending_commands_to_run_from_comments(ctxt)
 
@@ -444,7 +445,9 @@ async def run_commands_tasks(
             if state.github_comment_result is None:
                 command_execution_state = CommandExecutionState(
                     result=check_api.Result(
-                        check_api.Conclusion.FAILURE, command.message, ""
+                        check_api.Conclusion.FAILURE,
+                        command.message,
+                        "",
                     ),
                     action_is_running=False,
                 )
@@ -464,7 +467,7 @@ async def run_commands_tasks(
                     exc=str(command),
                 )
         elif not ctxt.subscription.has_feature(
-            command.action.required_feature_for_command
+            command.action.required_feature_for_command,
         ):
             await post_result(
                 ctxt,
@@ -475,7 +478,7 @@ async def run_commands_tasks(
                         check_api.Conclusion.ACTION_REQUIRED,
                         f"Cannot use the command `{command.get_command()}`",
                         ctxt.subscription.missing_feature_reason(
-                            ctxt.pull["base"]["repo"]["owner"]["login"]
+                            ctxt.pull["base"]["repo"]["owner"]["login"],
                         ),
                     ),
                     action_is_running=False,
@@ -505,7 +508,8 @@ async def run_commands_tasks(
             followup_command: Command | CommandInvalid | NotACommand
             try:
                 followup_command = load_command(
-                    mergify_config, f"@Mergifyio {followup_command_str}"
+                    mergify_config,
+                    f"@Mergifyio {followup_command_str}",
                 )
             except CommandInvalid as e:
                 followup_command = e
@@ -613,7 +617,7 @@ async def run_command(
         )
 
     conds = conditions_mod.PullRequestRuleConditions(
-        await command.action.get_conditions_requirements(ctxt)
+        await command.action.get_conditions_requirements(ctxt),
     )
     await conds([condition_value_querier.PullRequest(ctxt)])
     if conds.match or force_run:
@@ -628,7 +632,7 @@ async def run_command(
                         {},
                         False,
                         state.github_comment_source["user"],
-                    )
+                    ),
                 ),
             )
         except actions.InvalidDynamicActionConfiguration as e:
@@ -670,7 +674,7 @@ async def run_command(
                         {},
                         False,
                         state.github_comment_source["user"],
-                    )
+                    ),
                 ),
             )
         except actions.InvalidDynamicActionConfiguration as e:
@@ -740,7 +744,9 @@ async def check_command_restrictions(
         live_resolvers.apply_configure_filter(ctxt.repository, restriction_conditions)
         user_permission = await ctxt.repository.get_user_permission(user)
         command_pull_request = condition_value_querier.CommandPullRequest(
-            ctxt, user["login"], user_permission
+            ctxt,
+            user["login"],
+            user_permission,
         )
         await restriction_conditions([command_pull_request])
 

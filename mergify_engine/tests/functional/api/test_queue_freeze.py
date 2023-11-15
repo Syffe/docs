@@ -64,7 +64,9 @@ class TestQueueFreeze(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         r = await self._create_queue_freeze(
-            queue_name="default", freeze_payload=None, expected_status_code=422
+            queue_name="default",
+            freeze_payload=None,
+            expected_status_code=422,
         )
         assert r.json() == {
             "detail": [
@@ -73,8 +75,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "loc": ["body"],
                     "msg": "Field required",
                     "type": "missing",
-                }
-            ]
+                },
+            ],
         }
 
         r = await self._create_queue_freeze(
@@ -89,8 +91,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "loc": ["body", "reason"],
                     "msg": "Field required",
                     "type": "missing",
-                }
-            ]
+                },
+            ],
         }
 
         r = await self._create_queue_freeze(
@@ -106,8 +108,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "msg": "String should have at most 255 characters",
                     "type": "string_too_long",
                     "ctx": {"max_length": 255},
-                }
-            ]
+                },
+            ],
         }
 
         r = await self._create_queue_freeze(
@@ -183,12 +185,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("default")
+            self.repository_ctxt,
+            await self.get_queue_rule("default"),
         )
         assert queue_freeze_data_default is not None
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -359,12 +362,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("default")
+            self.repository_ctxt,
+            await self.get_queue_rule("default"),
         )
 
         assert queue_freeze_data_default is not None
@@ -381,7 +385,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
@@ -397,13 +401,14 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": queue_name,
                     "reason": "new test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
         freeze_payload = {"reason": ""}
         r = await self._create_queue_freeze(
-            queue_name=queue_name, freeze_payload=freeze_payload
+            queue_name=queue_name,
+            freeze_payload=freeze_payload,
         )
         assert r.json() == {
             "queue_freezes": [
@@ -412,7 +417,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": queue_name,
                     "reason": "No freeze reason was specified.",
                     "cascading": True,
-                }
+                },
             ],
         }
 
@@ -470,16 +475,18 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_name = "false_queue_name"
         r = await self._delete_queue_freeze(
-            queue_name=queue_name, expected_status_code=404
+            queue_name=queue_name,
+            expected_status_code=404,
         )
         assert r.json() == {"detail": f"The queue `{queue_name}` does not exist."}
 
         queue_name = "default"
         r = await self._delete_queue_freeze(
-            queue_name=queue_name, expected_status_code=404
+            queue_name=queue_name,
+            expected_status_code=404,
         )
         assert r.json() == {
-            "detail": f'The queue "{queue_name}" is not currently frozen.'
+            "detail": f'The queue "{queue_name}" is not currently frozen.',
         }
 
     async def test_delete_queue_freeze(self) -> None:
@@ -536,7 +543,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_name = "default"
         r = await self._create_queue_freeze(
-            queue_name=queue_name, freeze_payload={"reason": "test freeze reason"}
+            queue_name=queue_name,
+            freeze_payload={"reason": "test freeze reason"},
         )
         assert r.json() == {
             "queue_freezes": [
@@ -545,12 +553,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule(queue_name)
+            self.repository_ctxt,
+            await self.get_queue_rule(queue_name),
         )
         assert queue_freeze_data_default
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -580,11 +589,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
 
         r = await self._delete_queue_freeze(
-            queue_name=queue_name, expected_status_code=204
+            queue_name=queue_name,
+            expected_status_code=204,
         )
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule(queue_name)
+            self.repository_ctxt,
+            await self.get_queue_rule(queue_name),
         )
         assert queue_freeze_data_default is None
 
@@ -663,7 +674,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
         r = await self._get_queue_freeze(
-            queue_name="false_queue_name", expected_status_code=404
+            queue_name="false_queue_name",
+            expected_status_code=404,
         )
         assert r.json() == {"detail": "The queue `false_queue_name` does not exist."}
 
@@ -733,12 +745,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("default")
+            self.repository_ctxt,
+            await self.get_queue_rule("default"),
         )
         assert queue_freeze_data_default
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -751,7 +764,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
@@ -809,7 +822,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         freeze_payload = {"reason": "test freeze reason"}
         r = await self._create_queue_freeze(
-            queue_name="default", freeze_payload=freeze_payload
+            queue_name="default",
+            freeze_payload=freeze_payload,
         )
         assert r.json() == {
             "queue_freezes": [
@@ -818,12 +832,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
         r = await self._create_queue_freeze(
-            queue_name="low-priority", freeze_payload=freeze_payload
+            queue_name="low-priority",
+            freeze_payload=freeze_payload,
         )
         assert r.json() == {
             "queue_freezes": [
@@ -832,7 +847,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "low-priority",
                     "reason": "test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
@@ -859,7 +874,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
         }
 
         await self._delete_queue_freeze(
-            queue_name="low-priority", expected_status_code=204
+            queue_name="low-priority",
+            expected_status_code=204,
         )
         r = await self._get_all_queue_freeze()
         assert r.json() == {
@@ -1100,12 +1116,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": False,
-                }
+                },
             ],
         }
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("default")
+            self.repository_ctxt,
+            await self.get_queue_rule("default"),
         )
         assert queue_freeze_data_default is not None
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -1211,18 +1228,21 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         # wait for p3 to be rebased
         p3_waiting = await self.wait_for_pull_request(
-            "synchronize", pr_number=p3["number"]
+            "synchronize",
+            pr_number=p3["number"],
         )
         await self.run_engine()
 
         # merge p3
         await self.create_status(
-            p3_waiting["pull_request"], context="continuous-integration/slow-ci"
+            p3_waiting["pull_request"],
+            context="continuous-integration/slow-ci",
         )
         await self.run_engine()
 
         p3_closed = await self.wait_for_pull_request(
-            "closed", pr_number=p3_waiting["pull_request"]["number"]
+            "closed",
+            pr_number=p3_waiting["pull_request"]["number"],
         )
         assert p3_closed["pull_request"]["merged"]
 
@@ -1324,12 +1344,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": False,
-                }
+                },
             ],
         }
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("default")
+            self.repository_ctxt,
+            await self.get_queue_rule("default"),
         )
 
         assert queue_freeze_data_default is not None
@@ -1350,7 +1371,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": queue_name,
                     "reason": "new test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
@@ -1426,12 +1447,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": False,
-                }
+                },
             ],
         }
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("default")
+            self.repository_ctxt,
+            await self.get_queue_rule("default"),
         )
         assert queue_freeze_data_default is not None
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -1450,12 +1472,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "urgent",
                     "reason": "urgent test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
         queue_freeze_data_urgent = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("urgent")
+            self.repository_ctxt,
+            await self.get_queue_rule("urgent"),
         )
         assert queue_freeze_data_urgent is not None
         assert queue_freeze_data_urgent.reason == "urgent test freeze reason"
@@ -1504,7 +1527,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
         await self._delete_queue_freeze(queue_name="urgent", expected_status_code=204)
 
         queue_freeze_data_urgent = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("urgent")
+            self.repository_ctxt,
+            await self.get_queue_rule("urgent"),
         )
         assert queue_freeze_data_urgent is None
 
@@ -1659,12 +1683,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("default")
+            self.repository_ctxt,
+            await self.get_queue_rule("default"),
         )
         assert queue_freeze_data_default is not None
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -1683,12 +1708,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "name": "urgent",
                     "reason": "urgent test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
         queue_freeze_data_urgent = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("urgent")
+            self.repository_ctxt,
+            await self.get_queue_rule("urgent"),
         )
         assert queue_freeze_data_urgent is not None
         assert queue_freeze_data_urgent.reason == "urgent test freeze reason"
@@ -1720,7 +1746,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
         await self._delete_queue_freeze(queue_name="default", expected_status_code=204)
 
         queue_freeze_data_urgent = await freeze.QueueFreeze.get(
-            self.repository_ctxt, await self.get_queue_rule("default")
+            self.repository_ctxt,
+            await self.get_queue_rule("default"),
         )
         assert queue_freeze_data_urgent is None
 

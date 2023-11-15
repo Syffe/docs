@@ -116,13 +116,15 @@ def test_all_sets(
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_FORWARD_EVENT_TYPES", "foo,bar,yo")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET_PRE_ROTATION", "secret3")
     monkeypatch.setenv(
-        "MERGIFYENGINE_GITHUB_WEBHOOK_FORWARD_URL", "https://sub.example.com/events"
+        "MERGIFYENGINE_GITHUB_WEBHOOK_FORWARD_URL",
+        "https://sub.example.com/events",
     )
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_POOL_SIZES", "web:2,worker:3,foobar:6")
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT", "secret2")
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_OLD", "secret3")
     monkeypatch.setenv(
-        "MERGIFYENGINE_DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", "1234,5432"
+        "MERGIFYENGINE_DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO",
+        "1234,5432",
     )
     monkeypatch.setenv("MERGIFYENGINE_DASHBOARD_UI_STATIC_FILES_DIRECTORY", str(tmpdir))
     monkeypatch.setenv("MERGIFYENGINE_DASHBOARD_UI_DATADOG_CLIENT_TOKEN", "no-secret")
@@ -149,17 +151,20 @@ def test_all_sets(
     monkeypatch.setenv("MERGIFYENGINE_MAX_GITTER_CONCURRENT_JOBS", "40")
 
     monkeypatch.setenv(
-        "MERGIFYENGINE_ENGINE_TO_SHADOW_OFFICE_API_KEY", "api-secret-key"
+        "MERGIFYENGINE_ENGINE_TO_SHADOW_OFFICE_API_KEY",
+        "api-secret-key",
     )
     monkeypatch.setenv(
-        "MERGIFYENGINE_SHADOW_OFFICE_TO_ENGINE_API_KEY", "webhook-secret"
+        "MERGIFYENGINE_SHADOW_OFFICE_TO_ENGINE_API_KEY",
+        "webhook-secret",
     )
     monkeypatch.setenv(
         "MERGIFYENGINE_SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION",
         "webhook-secret-bis",
     )
     monkeypatch.setenv(
-        "MERGIFYENGINE_SUBSCRIPTION_URL", "https://subscription.example.com"
+        "MERGIFYENGINE_SUBSCRIPTION_URL",
+        "https://subscription.example.com",
     )
     monkeypatch.setenv("MERGIFYENGINE_SUBSCRIPTION_TOKEN", "onprem-token")
     monkeypatch.setenv(
@@ -169,7 +174,7 @@ def test_all_sets(
                 "peeph4iephaivohx4jeewociex3ruliiShai1Auyiekekeij4OeGh0OoGuph5zei:12345:login",
                 "tha0naCiWooj1yieV3AeChuDiaY9ieweiquahch3rib3quae3eP7sae7gohQuohB:54321:bot",
                 "Ub5kiekohyuoqua5oori7Moowuom8yiefiequie3yohmo6Eidieb9eihiepi5aiP:424242:other-bot",
-            )
+            ),
         ),
     )
     monkeypatch.setenv(
@@ -178,7 +183,7 @@ def test_all_sets(
             (
                 "123:login1:token1",
                 "456:login2:token2",
-            )
+            ),
         ),
     )
     monkeypatch.setenv("MERGIFYENGINE_REDIS_CRYPTO_SECRET_CURRENT", "crypto-secret")
@@ -303,7 +308,8 @@ def test_legacy_env_sets(
     monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_SECRET_PRE_ROTATION", "secret5")
     monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_FORWARD_EVENT_TYPES", "foo,bar,yo")
     monkeypatch.setenv(
-        "MERGIFYENGINE_WEBHOOK_APP_FORWARD_URL", "https://sub.example.com/events"
+        "MERGIFYENGINE_WEBHOOK_APP_FORWARD_URL",
+        "https://sub.example.com/events",
     )
     monkeypatch.setenv("MERGIFYENGINE_INTEGRATION_ID", "12345")
     monkeypatch.setenv("MERGIFYENGINE_PRIVATE_KEY", "aGVsbG8gd29ybGQ=")
@@ -311,7 +317,8 @@ def test_legacy_env_sets(
     monkeypatch.setenv("MERGIFYENGINE_OAUTH_CLIENT_SECRET", "secret")
 
     monkeypatch.setenv(
-        "MERGIFYENGINE_SUBSCRIPTION_BASE_URL", "https://subscription.example.com"
+        "MERGIFYENGINE_SUBSCRIPTION_BASE_URL",
+        "https://subscription.example.com",
     )
     monkeypatch.setenv("MERGIFYENGINE_SUBSCRIPTION_TOKEN", "onprem-token")
     monkeypatch.setenv("MERGIFYENGINE_CACHE_TOKEN_SECRET", "crypto-secret")
@@ -320,7 +327,8 @@ def test_legacy_env_sets(
     monkeypatch.setenv("MERGIFYENGINE_ENGINE_TO_DASHBOARD_API_KEY", "api-secret-key")
     monkeypatch.setenv("MERGIFYENGINE_DASHBOARD_TO_ENGINE_API_KEY", "webhook-secret")
     monkeypatch.setenv(
-        "MERGIFYENGINE_DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION", "webhook-secret-bis"
+        "MERGIFYENGINE_DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION",
+        "webhook-secret-bis",
     )
 
     conf = config.EngineSettings()
@@ -350,7 +358,8 @@ def test_legacy_env_sets(
 
 
 @pytest.mark.parametrize(
-    "env_var", ("MERGIFYENGINE_BASE_URL", "MERGIFYENGINE_DASHBOARD_UI_FRONT_BASE_URL")
+    "env_var",
+    ("MERGIFYENGINE_BASE_URL", "MERGIFYENGINE_DASHBOARD_UI_FRONT_BASE_URL"),
 )
 def test_legacy_dashboard_urls(
     unset_testing_env: None,
@@ -415,7 +424,8 @@ def test_type_log_level(
 
 
 @pytest.mark.parametrize(
-    "path", ("/", "/foobar", "/foobar/", "?foobar=1", "/foobar/?foobar=1")
+    "path",
+    ("/", "/foobar", "/foobar/", "?foobar=1", "/foobar/?foobar=1"),
 )
 def test_github_url_normalization(monkeypatch: pytest.MonkeyPatch, path: str) -> None:
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_URL", f"https://my-ghes.example.com{path}")
@@ -432,7 +442,8 @@ def test_github_url_normalization(monkeypatch: pytest.MonkeyPatch, path: str) ->
 
 def test_database_url_replace(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
-        "MERGIFYENGINE_DATABASE_URL", "postgres://user:password@example.com:1234/db"
+        "MERGIFYENGINE_DATABASE_URL",
+        "postgres://user:password@example.com:1234/db",
     )
     conf = config.EngineSettings()
     assert str(conf.DATABASE_URL) == "postgresql+psycopg://***@example.com:1234/db"
@@ -475,7 +486,9 @@ def test_database_url_replace(monkeypatch: pytest.MonkeyPatch) -> None:
     ),
 )
 async def test_database_url_format(
-    env: str, expected: str, monkeypatch: pytest.MonkeyPatch
+    env: str,
+    expected: str,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_URL", env)
     conf = config.EngineSettings()
@@ -490,7 +503,7 @@ def test_error_message(monkeypatch: pytest.MonkeyPatch) -> None:
     assert str(exc_info.value).startswith(
         """1 validation error for EngineSettings
 DATABASE_URL
-  Value error, scheme `https` is invalid, must be postgres,postgresql,postgresql+psycopg [type=value_error, input_value='https://localhost', input_type=str]"""
+  Value error, scheme `https` is invalid, must be postgres,postgresql,postgresql+psycopg [type=value_error, input_value='https://localhost', input_type=str]""",
     )
 
 
@@ -516,7 +529,8 @@ def test_redis_onpremise_legacy(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_redis_saas_current(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
-        "MERGIFYENGINE_DEFAULT_REDIS_URL", "rediss://redis.example.com:1234"
+        "MERGIFYENGINE_DEFAULT_REDIS_URL",
+        "rediss://redis.example.com:1234",
     )
     monkeypatch.setenv(
         "MERGIFYENGINE_STORAGE_URL",
@@ -527,7 +541,8 @@ def test_redis_saas_current(monkeypatch: pytest.MonkeyPatch) -> None:
         "rediss://redis-stream.example.com:1234?db=3",
     )
     monkeypatch.setenv(
-        "MERGIFYENGINE_QUEUE_URL", "rediss://redis-queue.example.com:1234?db=4"
+        "MERGIFYENGINE_QUEUE_URL",
+        "rediss://redis-queue.example.com:1234?db=4",
     )
     conf = config.EngineSettings()
     assert conf.DEFAULT_REDIS_URL.geturl() == "rediss://redis.example.com:1234"
@@ -551,7 +566,8 @@ def test_redis_saas_current(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_redis_default(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
-        "MERGIFYENGINE_DEFAULT_REDIS_URL", "rediss://redis.example.com:1234"
+        "MERGIFYENGINE_DEFAULT_REDIS_URL",
+        "rediss://redis.example.com:1234",
     )
     conf = config.EngineSettings()
     assert conf.CACHE_URL.geturl() == "rediss://redis.example.com:1234?db=2"
@@ -584,7 +600,8 @@ def test_redis_all_set(monkeypatch: pytest.MonkeyPatch) -> None:
         "rediss://redis-stream.example.com:1234",
     )
     monkeypatch.setenv(
-        "MERGIFYENGINE_QUEUE_URL", "rediss://redis-queue.example.com:1234"
+        "MERGIFYENGINE_QUEUE_URL",
+        "rediss://redis-queue.example.com:1234",
     )
     monkeypatch.setenv(
         "MERGIFYENGINE_TEAM_MEMBERS_CACHE_URL",

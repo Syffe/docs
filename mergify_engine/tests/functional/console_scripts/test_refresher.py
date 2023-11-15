@@ -13,7 +13,8 @@ def test_refresher(
 ) -> None:
     repo = f"https://github.com/{recorder.config['organization_name']}/{recorder.config['repository_name']}/branch/main"
     result = utils.test_console_scripts(
-        admin_cli.admin_cli, ["refresh", "--action=admin", repo]
+        admin_cli.admin_cli,
+        ["refresh", "--action=admin", repo],
     )
     assert result.exit_code == 0, result.output
     assert (

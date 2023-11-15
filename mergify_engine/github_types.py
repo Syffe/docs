@@ -52,7 +52,8 @@ GitHubInstallationPermissionsV = typing.Literal[
 ]
 
 GitHubInstallationPermissions = dict[
-    GitHubInstallationPermissionsK, GitHubInstallationPermissionsV
+    GitHubInstallationPermissionsK,
+    GitHubInstallationPermissionsV,
 ]
 
 
@@ -95,7 +96,11 @@ class GitHubRepositoryList(typing_extensions.TypedDict):
 
 
 GitHubRepositoryPermissionLiteral = typing.Literal[
-    "none", "read", "write", "maintain", "admin"
+    "none",
+    "read",
+    "write",
+    "maintain",
+    "admin",
 ]
 
 
@@ -128,7 +133,8 @@ class GitHubRepositoryPermission(enum.Enum):
 
     @classmethod
     def permissions_above(
-        cls, permission: "GitHubRepositoryPermission"
+        cls,
+        permission: "GitHubRepositoryPermission",
     ) -> list["GitHubRepositoryPermission"]:
         """Return all permissions including the permission and above it"""
         return [p for p in cls.__members__.values() if p >= permission]
@@ -297,7 +303,8 @@ class GitHubComment(typing_extensions.TypedDict):
 
 
 GitHubCommentChangesBody = typing_extensions.TypedDict(
-    "GitHubCommentChangesBody", {"from": str}
+    "GitHubCommentChangesBody",
+    {"from": str},
 )
 
 
@@ -314,7 +321,13 @@ class GitHubContentFile(typing_extensions.TypedDict):
 
 
 GitHubFileStatus = typing.Literal[
-    "added", "removed", "modified", "renamed", "copied", "changed", "unchanged"
+    "added",
+    "removed",
+    "modified",
+    "renamed",
+    "copied",
+    "changed",
+    "unchanged",
 ]
 
 
@@ -583,10 +596,16 @@ GitHubEventPullRequestReviewActionType = typing.Literal[
 
 GitHubReviewIdType = typing.NewType("GitHubReviewIdType", int)
 GitHubReviewStateType = typing.Literal[
-    "APPROVED", "COMMENTED", "DISMISSED", "CHANGES_REQUESTED"
+    "APPROVED",
+    "COMMENTED",
+    "DISMISSED",
+    "CHANGES_REQUESTED",
 ]
 GitHubEventReviewStateType = typing.Literal[
-    "approved", "commented", "dismissed", "changes_requested"
+    "approved",
+    "commented",
+    "dismissed",
+    "changes_requested",
 ]
 GitHubReviewStateChangeType = typing.Literal["APPROVE", "REQUEST_CHANGES", "COMMENT"]
 
@@ -860,7 +879,11 @@ class GitHubRequestedReviewers(typing_extensions.TypedDict):
 
 
 GitHubApiVersion = typing.Literal[
-    "squirrel-girl", "lydian", "groot", "antiope", "luke-cage"
+    "squirrel-girl",
+    "lydian",
+    "groot",
+    "antiope",
+    "luke-cage",
 ]
 GitHubOAuthToken = typing.NewType("GitHubOAuthToken", str)
 
@@ -912,7 +935,11 @@ class GitHubMembership(typing_extensions.TypedDict):
 
 
 GitHubWorkflowRunConclusionType = typing.Literal[
-    "success", "failure", "skipped", "cancelled", None
+    "success",
+    "failure",
+    "skipped",
+    "cancelled",
+    None,
 ]
 
 

@@ -24,10 +24,13 @@ def upgrade() -> None:
         sqlalchemy.Column("pull_request_number", sqlalchemy.Integer(), nullable=False),
         sqlalchemy.Column("conflicts", sqlalchemy.Boolean(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_copy_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_copy_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_copy_pkey")
+            "id",
+            name=alembic.op.f("event_action_copy_pkey"),
         ),
     )
     # ### end Alembic commands ###

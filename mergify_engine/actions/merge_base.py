@@ -112,8 +112,9 @@ class MergeUtilsMixin:
     ) -> bool:
         recently_merged = await redis.get(
             cls._get_redis_recently_merged_tracker_key(
-                repository_id, pull_request_number
-            )
+                repository_id,
+                pull_request_number,
+            ),
         )
         return recently_merged is not None
 
@@ -126,7 +127,8 @@ class MergeUtilsMixin:
     ) -> None:
         await redis.set(
             cls._get_redis_recently_merged_tracker_key(
-                repository_id, pull_request_number
+                repository_id,
+                pull_request_number,
             ),
             date.utcnow().isoformat(),
             ex=RECENTLY_MERGED_TRACKER_EXPIRATION,
@@ -149,7 +151,7 @@ class MergeUtilsMixin:
             if branch_protection_injection_mode == "none":
                 required_permissions = (
                     github_types.GitHubRepositoryPermission.permissions_above(
-                        github_types.GitHubRepositoryPermission.WRITE
+                        github_types.GitHubRepositoryPermission.WRITE,
                     )
                 )
             else:
@@ -181,7 +183,9 @@ class MergeUtilsMixin:
                     ctxt.log.info("merged in the meantime")
                 else:
                     return await self._handle_merge_error(
-                        e, ctxt, pending_result_builder
+                        e,
+                        ctxt,
+                        pending_result_builder,
                     )
             else:
                 ctxt.log.info("merged")
@@ -224,7 +228,9 @@ class MergeUtilsMixin:
         try:
             if merge_method is None:
                 merge_method = await self._request_merge_without_method(
-                    ctxt, pull_merge_payload, on_behalf
+                    ctxt,
+                    pull_merge_payload,
+                    on_behalf,
                 )
             else:
                 pull_merge_payload["merge_method"] = merge_method
@@ -329,7 +335,9 @@ class MergeUtilsMixin:
         return None
 
     async def _store_merge_method(
-        self, ctxt: context.Context, method: MergeMethodT
+        self,
+        ctxt: context.Context,
+        method: MergeMethodT,
     ) -> None:
         await ctxt.redis.cache.set(
             self._merge_method_redis_key(
@@ -367,7 +375,9 @@ class MergeUtilsMixin:
     ) -> check_api.Result:
         if (
             result := await self._handle_merge_error_conditions(
-                e, ctxt, pending_result_builder
+                e,
+                ctxt,
+                pending_result_builder,
             )
         ) is not None:
             return result
@@ -534,7 +544,7 @@ class MergeUtilsMixin:
     ) -> check_api.Result | None:
         if ctxt.pull["merged"]:
             mergify_bot = await github.GitHubAppInfo.get_bot(
-                ctxt.repository.installation.redis.cache
+                ctxt.repository.installation.redis.cache,
             )
             if ctxt.pull["merged_by"] is None:
                 mode = "somehow"

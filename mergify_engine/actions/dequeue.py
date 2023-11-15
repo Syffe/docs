@@ -27,7 +27,7 @@ class DequeueExecutorConfig(typing.TypedDict):
 
 @dataclasses.dataclass
 class DequeueExecutor(
-    actions.ActionExecutor["DequeueCommand", "DequeueExecutorConfig"]
+    actions.ActionExecutor["DequeueCommand", "DequeueExecutorConfig"],
 ):
     queue_rules: qr_config.QueueRules
     partition_rules: partr_config.PartitionRules
@@ -49,10 +49,12 @@ class DequeueExecutor(
 
     async def run(self) -> check_api.Result:
         convoy = await merge_train.Convoy.from_context(
-            self.ctxt, self.queue_rules, self.partition_rules
+            self.ctxt,
+            self.queue_rules,
+            self.partition_rules,
         )
         queue_name = await convoy.get_queue_name_from_pull_request_number(
-            self.ctxt.pull["number"]
+            self.ctxt.pull["number"],
         )
         if queue_name is None:
             # Try to find any queue command in waiting state (waiting for queue conditions to be valid).
@@ -61,7 +63,7 @@ class DequeueExecutor(
             # to cancel this waiting state.
             # This will prevent the PR from being queued if the queue conditions matches later on.
             pendings = await commands_runner.get_pending_commands_to_run_from_comments(
-                self.ctxt
+                self.ctxt,
             )
             has_pending_queue = False
             for command, state in pendings.items():
@@ -86,7 +88,8 @@ class DequeueExecutor(
                     await self.ctxt.post_comment(message)
                 else:
                     await self.ctxt.edit_comment(
-                        state.github_comment_result["id"], message
+                        state.github_comment_result["id"],
+                        message,
                     )
 
             if not has_pending_queue:
@@ -126,7 +129,8 @@ class DequeueExecutor(
             self.ctxt.pull["number"],
             self.rule.get_signal_trigger(),
             queue_utils.PrDequeued(
-                self.ctxt.pull["number"], " by a `dequeue` command."
+                self.ctxt.pull["number"],
+                " by a `dequeue` command.",
             ),
         )
         return check_api.Result(
@@ -146,14 +150,15 @@ class DequeueCommand(actions.Action):
     executor_class = DequeueExecutor
 
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
-        "sender-permission>=write"
+        "sender-permission>=write",
     ]
 
     required_feature_for_command = subscription.Features.MERGE_QUEUE
 
     queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
     partition_rules: partr_config.PartitionRules = dataclasses.field(
-        init=False, repr=False
+        init=False,
+        repr=False,
     )
 
     def validate_config(self, mergify_config: mergify_conf.MergifyConfig) -> None:

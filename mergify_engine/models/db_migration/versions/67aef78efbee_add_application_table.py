@@ -20,11 +20,16 @@ def upgrade() -> None:
     alembic.op.create_table(
         "application",
         sqlalchemy.Column(
-            "id", sqlalchemy.Integer(), autoincrement=True, nullable=False
+            "id",
+            sqlalchemy.Integer(),
+            autoincrement=True,
+            nullable=False,
         ),
         sqlalchemy.Column("name", sqlalchemy.String(length=255), nullable=False),
         sqlalchemy.Column(
-            "api_access_key", sqlalchemy.String(length=255), nullable=False
+            "api_access_key",
+            sqlalchemy.String(length=255),
+            nullable=False,
         ),
         sqlalchemy.Column(
             "api_secret_key",
@@ -33,7 +38,9 @@ def upgrade() -> None:
         ),
         sqlalchemy.Column("github_account_id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column(
-            "created_by_github_user_id", sqlalchemy.Integer(), nullable=True
+            "created_by_github_user_id",
+            sqlalchemy.Integer(),
+            nullable=True,
         ),
         sqlalchemy.Column(
             "created_at",

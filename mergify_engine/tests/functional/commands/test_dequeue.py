@@ -20,7 +20,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -63,7 +63,9 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p1["number"], "@mergifyio requeue")
         await self.run_engine()
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p1["number"]
+            "issue_comment",
+            {"action": "created"},
+            test_id=p1["number"],
         )
 
         comments = await self.get_issue_comments(p1["number"])
@@ -91,7 +93,9 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p1["number"], "@mergifyio dequeue")
         await self.run_engine()
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p1["number"]
+            "issue_comment",
+            {"action": "created"},
+            test_id=p1["number"],
         )
 
         await self.assert_merge_queue_contents(q, None, [])
@@ -103,10 +107,10 @@ class TestDequeueCommand(base.FunctionalTestBase):
         assert check is not None
         assert check["conclusion"] == "cancelled"
         assert check["output"]["title"].startswith(
-            "The pull request has been removed from the queue"
+            "The pull request has been removed from the queue",
         )
         assert check["output"]["summary"].startswith(
-            f"Pull request #{p1['number']} has been dequeued by a `dequeue` command"
+            f"Pull request #{p1['number']} has been dequeued by a `dequeue` command",
         )
 
         check = first(
@@ -123,7 +127,9 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p1["number"], "@mergifyio requeue")
         await self.run_engine()
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p1["number"]
+            "issue_comment",
+            {"action": "created"},
+            test_id=p1["number"],
         )
 
         check = first(
@@ -182,7 +188,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -191,7 +197,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
         p1 = await self.create_pr(
             files={
                 "projA/test.txt": "testA",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
@@ -202,7 +208,9 @@ class TestDequeueCommand(base.FunctionalTestBase):
 
         await self.run_engine()
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p1["number"]
+            "issue_comment",
+            {"action": "created"},
+            test_id=p1["number"],
         )
 
         await self.wait_for_pull_request("closed", draft_pr_p1["number"])
@@ -244,7 +252,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -254,12 +262,12 @@ class TestDequeueCommand(base.FunctionalTestBase):
             files={
                 "projA/test.txt": "testA",
                 "projB/test.txt": "testB",
-            }
+            },
         )
         p2 = await self.create_pr(
             files={
                 "projB/test2.txt": "testB2",
-            }
+            },
         )
 
         await self.add_label(p2["number"], "queue")
@@ -274,7 +282,9 @@ class TestDequeueCommand(base.FunctionalTestBase):
 
         await self.run_engine()
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p1["number"]
+            "issue_comment",
+            {"action": "created"},
+            test_id=p1["number"],
         )
 
         await self.wait_for_pull_request("closed", draft_pr_p1_projA["number"])
@@ -320,7 +330,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
 
@@ -329,13 +339,13 @@ class TestDequeueCommand(base.FunctionalTestBase):
         p1 = await self.create_pr(
             files={
                 "projA/test1.txt": "testA",
-            }
+            },
         )
         p2 = await self.create_pr(
             files={
                 "projA/test2.txt": "testA",
                 "projB/test2.txt": "testB",
-            }
+            },
         )
 
         await self.add_label(p1["number"], "queue")
@@ -422,7 +432,8 @@ class TestDequeueCommand(base.FunctionalTestBase):
         assert '"conclusion": "cancelled"' in edited_comment["comment"]["body"]
 
         unqueue_comment = await self.wait_for_issue_comment(
-            str(p1["number"]), "created"
+            str(p1["number"]),
+            "created",
         )
         assert (
             "#### ✅ The pull request is not waiting to be queued anymore."
@@ -458,7 +469,8 @@ class TestDequeueCommand(base.FunctionalTestBase):
         assert '"conclusion": "cancelled"' in edited_comment["comment"]["body"]
 
         unqueue_comment = await self.wait_for_issue_comment(
-            str(p2["number"]), "created"
+            str(p2["number"]),
+            "created",
         )
         assert (
             "#### ✅ The pull request is not waiting to be queued anymore."

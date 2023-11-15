@@ -37,11 +37,11 @@ DASHBOARD_DEFAULT_URL = "http://localhost:3000"
 
 class DatabaseSettings(pydantic_settings.BaseSettings):
     DATABASE_URL: types.PostgresDSN = pydantic.Field(
-        default=types.PostgresDSN.parse("postgres://localhost:5432")
+        default=types.PostgresDSN.parse("postgres://localhost:5432"),
     )
 
     DATABASE_POOL_SIZES: types.StrIntDictFromStr = pydantic.Field(
-        default=types.StrIntDictFromStr.from_dict({"worker": 15, "web": 55})
+        default=types.StrIntDictFromStr.from_dict({"worker": 15, "web": 55}),
     )
     DATABASE_OAUTH_TOKEN_SECRET_CURRENT: pydantic.SecretStr
     DATABASE_OAUTH_TOKEN_SECRET_OLD: pydantic.SecretStr | None = None
@@ -70,13 +70,15 @@ class RedisSettings(pydantic_settings.BaseSettings):
     REDIS_SSL_VERIFY_MODE_CERT_NONE: bool = False
     REDIS_CRYPTO_SECRET_CURRENT: pydantic.SecretStr = pydantic.Field(
         validation_alias=pydantic.AliasChoices(
-            "REDIS_CRYPTO_SECRET_CURRENT", "CACHE_TOKEN_SECRET"
+            "REDIS_CRYPTO_SECRET_CURRENT",
+            "CACHE_TOKEN_SECRET",
         ),
     )
     REDIS_CRYPTO_SECRET_OLD: pydantic.SecretStr | None = pydantic.Field(
         default=None,
         validation_alias=pydantic.AliasChoices(
-            "REDIS_CRYPTO_SECRET_OLD", "CACHE_TOKEN_SECRET_OLD"
+            "REDIS_CRYPTO_SECRET_OLD",
+            "CACHE_TOKEN_SECRET_OLD",
         ),
     )
 
@@ -105,25 +107,29 @@ class RedisSettings(pydantic_settings.BaseSettings):
     ENV_TEAM_PERMISSIONS_CACHE_URL: types.RedisDSN | None = pydantic.Field(
         default=None,
         validation_alias=pydantic.AliasChoices(
-            "ENV_TEAM_PERMISSIONS_CACHE_URL", "TEAM_PERMISSIONS_CACHE_URL"
+            "ENV_TEAM_PERMISSIONS_CACHE_URL",
+            "TEAM_PERMISSIONS_CACHE_URL",
         ),
     )
     ENV_TEAM_MEMBERS_CACHE_URL: types.RedisDSN | None = pydantic.Field(
         default=None,
         validation_alias=pydantic.AliasChoices(
-            "ENV_TEAM_MEMBERS_CACHE_URL", "TEAM_MEMBERS_CACHE_URL"
+            "ENV_TEAM_MEMBERS_CACHE_URL",
+            "TEAM_MEMBERS_CACHE_URL",
         ),
     )
     ENV_USER_PERMISSIONS_CACHE_URL: types.RedisDSN | None = pydantic.Field(
         default=None,
         validation_alias=pydantic.AliasChoices(
-            "ENV_USER_PERMISSIONS_CACHE_URL", "USER_PERMISSIONS_CACHE_URL"
+            "ENV_USER_PERMISSIONS_CACHE_URL",
+            "USER_PERMISSIONS_CACHE_URL",
         ),
     )
     ENV_ACTIVE_USERS_URL: types.RedisDSN | None = pydantic.Field(
         default=None,
         validation_alias=pydantic.AliasChoices(
-            "ENV_ACTIVE_USERS_URL", "ACTIVE_USERS_URL"
+            "ENV_ACTIVE_USERS_URL",
+            "ACTIVE_USERS_URL",
         ),
     )
     ENV_STATISTICS_URL: types.RedisDSN | None = pydantic.Field(
@@ -133,7 +139,8 @@ class RedisSettings(pydantic_settings.BaseSettings):
     ENV_AUTHENTICATION_URL: types.RedisDSN | None = pydantic.Field(
         default=None,
         validation_alias=pydantic.AliasChoices(
-            "ENV_AUTHENTICATION_URL", "AUTHENTICATION_URL"
+            "ENV_AUTHENTICATION_URL",
+            "AUTHENTICATION_URL",
         ),
     )
 
@@ -158,10 +165,10 @@ class RedisSettings(pydantic_settings.BaseSettings):
 
     def _build_redis_url(self, db: int) -> types.RedisDSN:
         if self.DEFAULT_REDIS_URL.query and "db" in parse.parse_qs(
-            self.DEFAULT_REDIS_URL.query
+            self.DEFAULT_REDIS_URL.query,
         ):
             print(
-                "DEFAULT_REDIS_URL must not contain any db parameter. Mergify can't start."
+                "DEFAULT_REDIS_URL must not contain any db parameter. Mergify can't start.",
             )
             sys.exit(1)
 
@@ -230,45 +237,52 @@ class LogsSettings(pydantic_settings.BaseSettings):
 
 class GitHubSettings(pydantic_settings.BaseSettings):
     GITHUB_URL: types.NormalizedUrl = pydantic.Field(  # type: ignore[assignment]
-        default="https://github.com", validate_default=True
+        default="https://github.com",
+        validate_default=True,
     )
     GITHUB_APP_ID: int = pydantic.Field(
-        validation_alias=pydantic.AliasChoices("GITHUB_APP_ID", "INTEGRATION_ID")
+        validation_alias=pydantic.AliasChoices("GITHUB_APP_ID", "INTEGRATION_ID"),
     )
     GITHUB_PRIVATE_KEY: types.SecretStrFromBase64 = pydantic.Field(
-        validation_alias=pydantic.AliasChoices("GITHUB_PRIVATE_KEY", "PRIVATE_KEY")
+        validation_alias=pydantic.AliasChoices("GITHUB_PRIVATE_KEY", "PRIVATE_KEY"),
     )
     GITHUB_OAUTH_CLIENT_ID: str = pydantic.Field(
         validation_alias=pydantic.AliasChoices(
-            "GITHUB_OAUTH_CLIENT_ID", "OAUTH_CLIENT_ID"
-        )
+            "GITHUB_OAUTH_CLIENT_ID",
+            "OAUTH_CLIENT_ID",
+        ),
     )
     GITHUB_OAUTH_CLIENT_SECRET: pydantic.SecretStr = pydantic.Field(
         validation_alias=pydantic.AliasChoices(
-            "GITHUB_OAUTH_CLIENT_SECRET", "OAUTH_CLIENT_SECRET"
+            "GITHUB_OAUTH_CLIENT_SECRET",
+            "OAUTH_CLIENT_SECRET",
         ),
     )
     GITHUB_WEBHOOK_SECRET: pydantic.SecretStr = pydantic.Field(
         validation_alias=pydantic.AliasChoices(
-            "GITHUB_WEBHOOK_SECRET", "WEBHOOK_SECRET"
+            "GITHUB_WEBHOOK_SECRET",
+            "WEBHOOK_SECRET",
         ),
     )
     GITHUB_WEBHOOK_SECRET_PRE_ROTATION: pydantic.SecretStr | None = pydantic.Field(
         default=None,
         validation_alias=pydantic.AliasChoices(
-            "GITHUB_WEBHOOK_SECRET_PRE_ROTATION", "WEBHOOK_SECRET_PRE_ROTATION"
+            "GITHUB_WEBHOOK_SECRET_PRE_ROTATION",
+            "WEBHOOK_SECRET_PRE_ROTATION",
         ),
     )
     GITHUB_WEBHOOK_FORWARD_URL: str | None = pydantic.Field(
         default=None,
         validation_alias=pydantic.AliasChoices(
-            "GITHUB_WEBHOOK_FORWARD_URL", "WEBHOOK_APP_FORWARD_URL"
+            "GITHUB_WEBHOOK_FORWARD_URL",
+            "WEBHOOK_APP_FORWARD_URL",
         ),
     )
     GITHUB_WEBHOOK_FORWARD_EVENT_TYPES: types.StrListFromStrWithComma = pydantic.Field(
         default=types.StrListFromStrWithComma([]),
         validation_alias=pydantic.AliasChoices(
-            "GITHUB_WEBHOOK_FORWARD_EVENT_TYPES", "WEBHOOK_FORWARD_EVENT_TYPES"
+            "GITHUB_WEBHOOK_FORWARD_EVENT_TYPES",
+            "WEBHOOK_FORWARD_EVENT_TYPES",
         ),
     )
 
@@ -301,7 +315,9 @@ class DashboardUISettings(pydantic_settings.BaseSettings):
         default=DASHBOARD_DEFAULT_URL,
         validate_default=True,
         validation_alias=pydantic.AliasChoices(
-            "DASHBOARD_UI_FRONT_URL", "DASHBOARD_UI_FRONT_BASE_URL", "BASE_URL"
+            "DASHBOARD_UI_FRONT_URL",
+            "DASHBOARD_UI_FRONT_BASE_URL",
+            "BASE_URL",
         ),
     )
     DASHBOARD_UI_SESSION_EXPIRATION_HOURS: int = 24
@@ -344,7 +360,7 @@ class APISettings(pydantic_settings.BaseSettings):
 
 class HTTPSettings(pydantic_settings.BaseSettings):
     HTTP_TRUSTED_HOSTS: types.StrListFromStrWithComma = types.StrListFromStrWithComma(
-        ["*"]
+        ["*"],
     )
     HTTP_TO_HTTPS_REDIRECT: bool = True
     HTTP_CF_TO_MERGIFY_SECRET: pydantic.SecretStr | None = pydantic.Field(default=None)
@@ -360,7 +376,8 @@ class SubscriptionSetting(pydantic_settings.BaseSettings):
     SUBSCRIPTION_URL: str = pydantic.Field(
         default="https://subscription.mergify.com",
         validation_alias=pydantic.AliasChoices(
-            "SUBSCRIPTION_URL", "SUBSCRIPTION_BASE_URL"
+            "SUBSCRIPTION_URL",
+            "SUBSCRIPTION_BASE_URL",
         ),
     )
     ENGINE_TO_SHADOW_OFFICE_API_KEY: pydantic.SecretStr = pydantic.Field(
@@ -394,7 +411,7 @@ class SubscriptionSetting(pydantic_settings.BaseSettings):
         validate_default=True,
     )
     APPLICATION_APIKEYS: dict[str, types.ApplicationAPIKey] = pydantic.Field(
-        default_factory=dict
+        default_factory=dict,
     )
 
 
@@ -407,7 +424,7 @@ class TestingSettings(pydantic_settings.BaseSettings):
         github_types.GitHubAccountIdType(40527191)
     )
     TESTING_ORGANIZATION_NAME: github_types.GitHubLogin = github_types.GitHubLogin(
-        "mergifyio-testing"
+        "mergifyio-testing",
     )
     TESTING_REPOSITORY_ID: github_types.GitHubRepositoryIdType = (
         github_types.GitHubRepositoryIdType(258840104)
@@ -422,14 +439,16 @@ class TestingSettings(pydantic_settings.BaseSettings):
     TESTING_ORG_ADMIN_PERSONAL_TOKEN: github_types.GitHubOAuthToken = pydantic.Field(
         default=github_types.GitHubOAuthToken(""),
         validation_alias=pydantic.AliasChoices(
-            "TESTING_ORG_ADMIN_PERSONAL_TOKEN", "ORG_ADMIN_PERSONAL_TOKEN"
+            "TESTING_ORG_ADMIN_PERSONAL_TOKEN",
+            "ORG_ADMIN_PERSONAL_TOKEN",
         ),
     )
     TESTING_EXTERNAL_USER_PERSONAL_TOKEN: github_types.GitHubOAuthToken = (
         pydantic.Field(
             default=github_types.GitHubOAuthToken(""),
             validation_alias=pydantic.AliasChoices(
-                "TESTING_EXTERNAL_USER_PERSONAL_TOKEN", "EXTERNAL_USER_PERSONAL_TOKEN"
+                "TESTING_EXTERNAL_USER_PERSONAL_TOKEN",
+                "EXTERNAL_USER_PERSONAL_TOKEN",
             ),
         )
     )
@@ -440,7 +459,8 @@ class TestingSettings(pydantic_settings.BaseSettings):
     TESTING_ORG_USER_PERSONAL_TOKEN: github_types.GitHubOAuthToken = pydantic.Field(
         default=github_types.GitHubOAuthToken(""),
         validation_alias=pydantic.AliasChoices(
-            "TESTING_ORG_USER_PERSONAL_TOKEN", "ORG_USER_PERSONAL_TOKEN"
+            "TESTING_ORG_USER_PERSONAL_TOKEN",
+            "ORG_USER_PERSONAL_TOKEN",
         ),
     )
     TESTING_MERGIFY_TEST_1_ID: github_types.GitHubAccountIdType = (
@@ -472,21 +492,22 @@ wEb0Bg==
     TESTING_DEV_PERSONAL_TOKEN: pydantic.SecretStr | None = pydantic.Field(
         default=None,
         validation_alias=pydantic.AliasChoices(
-            "TESTING_DEV_PERSONAL_TOKEN", "DEV_PERSONAL_TOKEN"
+            "TESTING_DEV_PERSONAL_TOKEN",
+            "DEV_PERSONAL_TOKEN",
         ),
     )
 
 
 class LogEmbedderSettings(pydantic_settings.BaseSettings):
     OPENAI_API_TOKEN: pydantic.SecretStr = pydantic.Field(
-        default=pydantic.SecretStr("")
+        default=pydantic.SecretStr(""),
     )
     LOG_EMBEDDER_ENABLED_ORGS: types.GitHubLoginListFromStrWithComma = (
         types.GitHubLoginListFromStrWithComma([])
     )
     LOG_EMBEDDER_GCS_BUCKET: str = pydantic.Field(default="mergify-ci-monitoring-logs")
     LOG_EMBEDDER_GCS_CREDENTIALS: types.SecretStrFromBase64 | None = pydantic.Field(
-        default=None
+        default=None,
     )
 
 
@@ -531,18 +552,19 @@ def _extract_field_info(
                             alias,
                             self._apply_case_sensitive(self.env_prefix + alias),
                             True if len(alias) > 1 else False,
-                        )
+                        ),
                     )
                 elif isinstance(alias, list):  # AliasChoices
                     first_arg = typing.cast(
-                        str, alias[0]
+                        str,
+                        alias[0],
                     )  # first item of an AliasChoices must be a str
                     field_info.append(
                         (
                             first_arg,
                             self._apply_case_sensitive(self.env_prefix + first_arg),
                             True if len(alias) > 1 else False,
-                        )
+                        ),
                     )
         else:  # string validation alias
             field_info.append(
@@ -550,7 +572,7 @@ def _extract_field_info(
                     v_alias,
                     self._apply_case_sensitive(self.env_prefix + v_alias),
                     False,
-                )
+                ),
             )
     else:
         field_info.append(
@@ -558,7 +580,7 @@ def _extract_field_info(
                 field_name,
                 self._apply_case_sensitive(self.env_prefix + field_name),
                 False,
-            )
+            ),
         )
 
     return field_info

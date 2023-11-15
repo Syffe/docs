@@ -57,7 +57,8 @@ async def test_unassign_assignees(
     client = mock.MagicMock()
     client.get = mock.AsyncMock(return_value={})
     ctxt = await context_getter(
-        github_types.GitHubPullRequestNumber(1), assignees=[{"login": "me"}]
+        github_types.GitHubPullRequestNumber(1),
+        assignees=[{"login": "me"}],
     )
     ctxt.repository.installation.client = client
     await action.load_context(ctxt, mock.Mock())

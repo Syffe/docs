@@ -28,7 +28,8 @@ class SpeculativeCheckPullRequest(models.Base):
         anonymizer_config=None,
     )
     number: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0, 50)"
+        sqlalchemy.Integer,
+        anonymizer_config="anon.random_int_between(0, 50)",
     )
     in_place: orm.Mapped[bool] = orm.mapped_column(
         sqlalchemy.Boolean,
@@ -85,7 +86,8 @@ class GithubAuthenticatedActor(models.Base):
         anonymizer_config="anon.random_in_enum(type)",
     )
     name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7 )"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
 
     @classmethod
@@ -95,7 +97,7 @@ class GithubAuthenticatedActor(models.Base):
         data: signals.Actor,
     ) -> GithubAuthenticatedActor:
         result = await session.execute(
-            sqlalchemy.select(cls).where(cls.id == data["id"])
+            sqlalchemy.select(cls).where(cls.id == data["id"]),
         )
         if (instance := result.scalar_one_or_none()) is not None:
             instance.name = data["name"]

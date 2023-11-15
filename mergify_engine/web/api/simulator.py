@@ -42,7 +42,8 @@ class SimulatorPayload(pydantic.BaseModel):
     mergify_yml: MergifyConfigYaml
 
     async def get_config(
-        self, repository_ctxt: context.Repository
+        self,
+        repository_ctxt: context.Repository,
     ) -> mergify_conf.MergifyConfig:
         try:
             return await mergify_conf.get_mergify_config_from_file(
@@ -55,7 +56,7 @@ class SimulatorPayload(pydantic.BaseModel):
                         "path": github_types.GitHubFilePath(".mergify.yml"),
                         "decoded_content": self.mergify_yml,
                         "encoding": "base64",
-                    }
+                    },
                 ),
             )
         except mergify_conf.InvalidRules as exc:
@@ -97,14 +98,14 @@ async def simulator_pull(
     config = await body.get_config(repository_ctxt)
     try:
         ctxt = await repository_ctxt.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(number)
+            github_types.GitHubPullRequestNumber(number),
         )
     except http.HTTPClientSideError as e:
         raise fastapi.HTTPException(status_code=e.status_code, detail=e.message)
     ctxt.sources = [{"event_type": "mergify-simulator", "data": [], "timestamp": ""}]  # type: ignore[typeddict-item]
     try:
         match = await config["pull_request_rules"].get_pull_request_rules_evaluator(
-            ctxt
+            ctxt,
         )
     except actions_mod.InvalidDynamicActionConfiguration as e:
         title = "The current Mergify configuration is invalid"
@@ -131,7 +132,8 @@ async def simulator_pull(
     },
 )
 async def simulator_repo(
-    body: SimulatorPayload, repository_ctxt: security.Repository
+    body: SimulatorPayload,
+    repository_ctxt: security.Repository,
 ) -> SimulatorResponse:
     await body.get_config(repository_ctxt)
     return SimulatorResponse(
@@ -158,33 +160,34 @@ class RepositoryConfigurationSimulatorResponse:
         200: {
             "content": {
                 "application/json": {
-                    "example": {"message": "The configuration is valid"}
-                }
-            }
+                    "example": {"message": "The configuration is valid"},
+                },
+            },
         },
     },
 )
 async def repository_configuration_simulator(
-    body: SimulatorPayload, repository_ctxt: security.Repository
+    body: SimulatorPayload,
+    repository_ctxt: security.Repository,
 ) -> RepositoryConfigurationSimulatorResponse:
     await body.get_config(repository_ctxt)
     return RepositoryConfigurationSimulatorResponse(
-        message="The configuration is valid"
+        message="The configuration is valid",
     )
 
 
 @pydantic.dataclasses.dataclass
 class PullRequestConfigurationSimulatorResponse(
-    pulls.PullRequestSummarySerializerMixin
+    pulls.PullRequestSummarySerializerMixin,
 ):
     message: str = dataclasses.field(
         metadata={"description": "The message of the Mergify check run simulation"},
     )
     pull_request_rules: list[pulls.PullRequestRule] = dataclasses.field(
-        metadata={"description": "The evaluated pull request rules"}
+        metadata={"description": "The evaluated pull request rules"},
     )
     queue_rules: list[pulls.QueueRule] = dataclasses.field(
-        metadata={"description": "The evaluated queue rules"}
+        metadata={"description": "The evaluated queue rules"},
     )
 
     @classmethod
@@ -226,11 +229,11 @@ class PullRequestConfigurationSimulatorResponse(
                                     "subconditions": [],
                                 },
                                 "actions": {"some_action": {}},
-                            }
+                            },
                         ],
-                    }
-                }
-            }
+                    },
+                },
+            },
         },
     },
 )
@@ -246,7 +249,7 @@ async def pull_request_configuration_simulator(
 
     try:
         ctxt = await repository_ctxt.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(number)
+            github_types.GitHubPullRequestNumber(number),
         )
     except http.HTTPClientSideError as e:
         raise fastapi.HTTPException(status_code=e.status_code, detail=e.message)
@@ -263,7 +266,7 @@ async def pull_request_configuration_simulator(
                 "msg": e.reason,
                 "details": e.details,
                 "type": "mergify_config_error",
-            }
+            },
         ]
         raise fastapi.HTTPException(status_code=422, detail=detail)
 

@@ -59,12 +59,13 @@ def test_migration(setup_database: None, tmp_path: pathlib.Path) -> None:
 
     if os.getenv("MIGRATED_DATA_DUMP") is None:
         url_migrate, url_migrate_without_db_name = utils.create_database_url(
-            "test_migration_migrate"
+            "test_migration_migrate",
         )
         loop.run_until_complete(
             utils.create_database(
-                url_migrate_without_db_name.geturl(), "test_migration_migrate"
-            )
+                url_migrate_without_db_name.geturl(),
+                "test_migration_migrate",
+            ),
         )
         _run_migration_scripts(url_migrate)
         schema_dump_migration_path = tmp_path / "test_migration_migrate.sql"
@@ -87,7 +88,9 @@ def test_migration(setup_database: None, tmp_path: pathlib.Path) -> None:
         )
 
     assert filecmp.cmp(
-        schema_dump_creation_path, schema_dump_migration_path, shallow=False
+        schema_dump_creation_path,
+        schema_dump_migration_path,
+        shallow=False,
     ), filediff(schema_dump_creation_path, schema_dump_migration_path)
 
     loop.close()
@@ -120,12 +123,14 @@ def test_model_as_dict() -> None:
 
     obj = TestSimpleModel(id=0)
     assert obj.as_github_dict() == typing.cast(
-        models.ORMObjectAsDict, {"id": 0, "name": None}
+        models.ORMObjectAsDict,
+        {"id": 0, "name": None},
     )
 
     obj = TestSimpleModel(id=0, name="hello")
     assert obj.as_github_dict() == typing.cast(
-        models.ORMObjectAsDict, {"id": 0, "name": "hello"}
+        models.ORMObjectAsDict,
+        {"id": 0, "name": "hello"},
     )
 
 
@@ -147,19 +152,24 @@ def test_relational_model_as_dict() -> None:
         id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
         name: orm.Mapped[str]
         user_id: orm.Mapped[int] = orm.mapped_column(
-            sqlalchemy.ForeignKey("test_relational_user_table.id")
+            sqlalchemy.ForeignKey("test_relational_user_table.id"),
         )
         user: orm.Mapped[TestRelationalUserModel] = orm.relationship(
-            lazy="joined", foreign_keys=[user_id]
+            lazy="joined",
+            foreign_keys=[user_id],
         )
 
     obj = TestRelationalModel(id=0)
     assert obj.as_github_dict() == typing.cast(
-        models.ORMObjectAsDict, {"id": 0, "name": None, "user": None}
+        models.ORMObjectAsDict,
+        {"id": 0, "name": None, "user": None},
     )
 
     obj = TestRelationalModel(
-        id=0, name="hello", user_id=0, user=TestRelationalUserModel(id=0, name="me")
+        id=0,
+        name="hello",
+        user_id=0,
+        user=TestRelationalUserModel(id=0, name="me"),
     )
     assert obj.as_github_dict() == typing.cast(
         models.ORMObjectAsDict,
@@ -178,7 +188,7 @@ async def test_get_or_create_on_conflict(setup_database: None) -> None:
             "login": github_types.GitHubLogin("account"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
     repo1 = github_types.GitHubRepository(
         {
@@ -191,7 +201,7 @@ async def test_get_or_create_on_conflict(setup_database: None) -> None:
             "url": "",
             "html_url": "",
             "default_branch": github_types.GitHubRefType("main"),
-        }
+        },
     )
     repo2 = github_types.GitHubRepository(
         {
@@ -204,7 +214,7 @@ async def test_get_or_create_on_conflict(setup_database: None) -> None:
             "url": "",
             "html_url": "",
             "default_branch": github_types.GitHubRefType("main"),
-        }
+        },
     )
 
     nb_try = 0
@@ -214,13 +224,13 @@ async def test_get_or_create_on_conflict(setup_database: None) -> None:
         session1.add(await gh_models.GitHubRepository.get_or_create(session1, repo1))
 
         async for attempt in database.tenacity_retry_on_pk_integrity_error(
-            (gh_models.GitHubAccount, gh_models.GitHubRepository)
+            (gh_models.GitHubAccount, gh_models.GitHubRepository),
         ):
             with attempt:
                 async with database.create_session() as session2:
                     nb_try += 1
                     session2.add(
-                        await gh_models.GitHubRepository.get_or_create(session2, repo2)
+                        await gh_models.GitHubRepository.get_or_create(session2, repo2),
                     )
                     await session1.commit()
                     await session2.commit()
@@ -232,8 +242,8 @@ async def test_get_or_create_on_conflict(setup_database: None) -> None:
         repos = (
             await session.scalars(
                 sqlalchemy.select(gh_models.GitHubRepository).order_by(
-                    gh_models.GitHubRepository.id
-                )
+                    gh_models.GitHubRepository.id,
+                ),
             )
         ).all()
 

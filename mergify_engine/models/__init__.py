@@ -32,7 +32,7 @@ class Base(orm.DeclarativeBase):
             "ix": "%(table_name)s_%(column_0_N_name)s_idx",
             "uq": "%(table_name)s_%(column_0_N_name)s_key",
             "ck": "%(table_name)s_%(constraint_name)s_check",
-        }
+        },
     )
 
     def _as_dict(
@@ -73,7 +73,7 @@ class Base(orm.DeclarativeBase):
     async def total(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> int:
         return (
             await session.scalar(
-                sqlalchemy.select(sqlalchemy.func.count()).select_from(cls)
+                sqlalchemy.select(sqlalchemy.func.count()).select_from(cls),
             )
         ) or 0
 
@@ -82,7 +82,7 @@ class Base(orm.DeclarativeBase):
         postgres_entities: list[replaceable_entity.ReplaceableEntity] = []
         for mapper in cls.registry.mappers:
             postgres_entities.extend(
-                getattr(mapper.class_, "__postgres_entities__", ())
+                getattr(mapper.class_, "__postgres_entities__", ()),
             )
         return postgres_entities
 

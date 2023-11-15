@@ -20,7 +20,10 @@ def upgrade() -> None:
     alembic.op.add_column(
         "gha_workflow_job",
         sqlalchemy.Column(
-            "matrix", sqlalchemy.String(), nullable=True, anonymizer_config=None
+            "matrix",
+            sqlalchemy.String(),
+            nullable=True,
+            anonymizer_config=None,
         ),
     )
     # ### end Alembic commands ###

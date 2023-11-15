@@ -23,7 +23,7 @@ source_config = {
                     "}}\n",
                     "method": "squash",
                     "name": "hotfix",
-                }
+                },
             },
             "conditions": [
                 "base=main",
@@ -53,7 +53,7 @@ source_config = {
                     "}}\n",
                     "method": "squash",
                     "name": "default",
-                }
+                },
             },
             "conditions": [
                 "base=main",
@@ -65,7 +65,7 @@ source_config = {
                         "check-success=pep8",
                         "check-success=test",
                         "check-success=docs",
-                    ]
+                    ],
                 },
                 "check-success=Rule: feature requirements (post_check)",
                 "check-success=Rule: testing requirements (post_check)",
@@ -92,7 +92,7 @@ source_config = {
                     "}}\n",
                     "method": "rebase",
                     "name": "lowprio",
-                }
+                },
             },
             "conditions": [
                 {
@@ -102,7 +102,7 @@ source_config = {
                         "check-success=pep8",
                         "check-success=test",
                         "check-success=docs",
-                    ]
+                    ],
                 },
                 "check-success=semantic-pull-request",
                 "author=mergify-ci-bot",
@@ -120,7 +120,7 @@ source_config = {
                     "commit_message_template": None,
                     "method": "rebase",
                     "name": "lowprio",
-                }
+                },
             },
             "conditions": [
                 {
@@ -130,7 +130,7 @@ source_config = {
                         "check-success=pep8",
                         "check-success=test",
                         "check-success=docs",
-                    ]
+                    ],
                 },
                 "check-success=semantic-pull-request",
                 "author=dependabot[bot]",
@@ -165,7 +165,7 @@ source_config = {
                         "check-success=pep8",
                         "check-success=test",
                         "check-success=docs",
-                    ]
+                    ],
                 },
                 "check-success=Rule: feature requirements (post_check)",
                 "check-success=Rule: testing requirements (post_check)",
@@ -180,7 +180,7 @@ source_config = {
                     "message": "@{{author}} this "
                     "pull request is "
                     "now in conflict "
-                    "😩"
+                    "😩",
                 },
                 "label": {"add": ["conflict"]},
             },
@@ -204,7 +204,7 @@ source_config = {
         },
         {
             "actions": {
-                "comment": {"message": "Your hotfix is failing CI @{{author}} 🥺"}
+                "comment": {"message": "Your hotfix is failing CI @{{author}} 🥺"},
             },
             "conditions": ["label=hotfix", "#check-failure>0"],
             "name": "warn on CI failure for hotfix",
@@ -222,8 +222,8 @@ source_config = {
                     "Feature "
                     "requirements are "
                     "missing.\n"
-                    "{% endif %}\n"
-                }
+                    "{% endif %}\n",
+                },
             },
             "conditions": [
                 {
@@ -235,19 +235,19 @@ source_config = {
                                     "or": [
                                         "label=Skip release note",
                                         "files~=^releasenotes/notes",
-                                    ]
+                                    ],
                                 },
                                 {
                                     "or": [
                                         "label=Skip documentation",
                                         "files~=^docs/source",
-                                    ]
+                                    ],
                                 },
                                 "body~=MRGFY-",
-                            ]
+                            ],
                         },
-                    ]
-                }
+                    ],
+                },
             ],
             "name": "feature requirements",
         },
@@ -264,8 +264,8 @@ source_config = {
                     "Testing "
                     "requirements are "
                     "missing.\n"
-                    "{% endif %}\n"
-                }
+                    "{% endif %}\n",
+                },
             },
             "conditions": [
                 {
@@ -273,8 +273,8 @@ source_config = {
                         "label=skip tests",
                         "-title~=^(feat|fix)",
                         "files~=mergify_engine/tests",
-                    ]
-                }
+                    ],
+                },
             ],
             "name": "testing requirements",
         },
@@ -290,8 +290,8 @@ source_config = {
                         "check-success=pep8",
                         "check-success=test",
                         "check-success=docs",
-                    ]
-                }
+                    ],
+                },
             ],
             "name": "hotfix",
             "speculative_checks": 5,
@@ -306,7 +306,7 @@ source_config = {
                         "check-success=pep8",
                         "check-success=test",
                         "check-success=docs",
-                    ]
+                    ],
                 },
                 "schedule=Mon-Fri 09:00-17:30[Europe/Paris]",
             ],
@@ -325,7 +325,7 @@ source_config = {
                         "check-success=pep8",
                         "check-success=test",
                         "check-success=docs",
-                    ]
+                    ],
                 },
                 "schedule=Mon-Fri 09:30-17:00[Europe/Paris]",
             ],
@@ -349,14 +349,14 @@ def test_merge_raw_configs() -> None:
                 "actions": {"merge": {}},
                 "conditions": ["base=override_permission"],
                 "name": "automatic merge",
-            }
+            },
         ],
         "queue_rules": [
             {
                 "allow_inplace_checks": False,
                 "conditions": ["schedule: MON-FRI 06:06-06:06"],
                 "name": "hotfix",
-            }
+            },
         ],
     }
 
@@ -384,7 +384,7 @@ def test_merge_raw_configs() -> None:
                         "}}\n",
                         "method": "squash",
                         "name": "hotfix",
-                    }
+                    },
                 },
                 "conditions": [
                     "base=main",
@@ -414,7 +414,7 @@ def test_merge_raw_configs() -> None:
                         "}}\n",
                         "method": "rebase",
                         "name": "lowprio",
-                    }
+                    },
                 },
                 "conditions": [
                     {
@@ -424,7 +424,7 @@ def test_merge_raw_configs() -> None:
                             "check-success=pep8",
                             "check-success=test",
                             "check-success=docs",
-                        ]
+                        ],
                     },
                     "check-success=semantic-pull-request",
                     "author=mergify-ci-bot",
@@ -442,7 +442,7 @@ def test_merge_raw_configs() -> None:
                         "commit_message_template": None,
                         "method": "rebase",
                         "name": "lowprio",
-                    }
+                    },
                 },
                 "conditions": [
                     {
@@ -452,7 +452,7 @@ def test_merge_raw_configs() -> None:
                             "check-success=pep8",
                             "check-success=test",
                             "check-success=docs",
-                        ]
+                        ],
                     },
                     "check-success=semantic-pull-request",
                     "author=dependabot[bot]",
@@ -487,7 +487,7 @@ def test_merge_raw_configs() -> None:
                             "check-success=pep8",
                             "check-success=test",
                             "check-success=docs",
-                        ]
+                        ],
                     },
                     "check-success=Rule: feature requirements (post_check)",
                     "check-success=Rule: testing requirements (post_check)",
@@ -502,7 +502,7 @@ def test_merge_raw_configs() -> None:
                         "message": "@{{author}} this "
                         "pull request is "
                         "now in conflict "
-                        "😩"
+                        "😩",
                     },
                     "label": {"add": ["conflict"]},
                 },
@@ -526,7 +526,7 @@ def test_merge_raw_configs() -> None:
             },
             {
                 "actions": {
-                    "comment": {"message": "Your hotfix is failing CI @{{author}} 🥺"}
+                    "comment": {"message": "Your hotfix is failing CI @{{author}} 🥺"},
                 },
                 "conditions": ["label=hotfix", "#check-failure>0"],
                 "name": "warn on CI failure for hotfix",
@@ -544,8 +544,8 @@ def test_merge_raw_configs() -> None:
                         "Feature "
                         "requirements are "
                         "missing.\n"
-                        "{% endif %}\n"
-                    }
+                        "{% endif %}\n",
+                    },
                 },
                 "conditions": [
                     {
@@ -557,19 +557,19 @@ def test_merge_raw_configs() -> None:
                                         "or": [
                                             "label=Skip release note",
                                             "files~=^releasenotes/notes",
-                                        ]
+                                        ],
                                     },
                                     {
                                         "or": [
                                             "label=Skip documentation",
                                             "files~=^docs/source",
-                                        ]
+                                        ],
                                     },
                                     "body~=MRGFY-",
-                                ]
+                                ],
                             },
-                        ]
-                    }
+                        ],
+                    },
                 ],
                 "name": "feature requirements",
             },
@@ -586,8 +586,8 @@ def test_merge_raw_configs() -> None:
                         "Testing "
                         "requirements are "
                         "missing.\n"
-                        "{% endif %}\n"
-                    }
+                        "{% endif %}\n",
+                    },
                 },
                 "conditions": [
                     {
@@ -595,8 +595,8 @@ def test_merge_raw_configs() -> None:
                             "label=skip tests",
                             "-title~=^(feat|fix)",
                             "files~=mergify_engine/tests",
-                        ]
-                    }
+                        ],
+                    },
                 ],
                 "name": "testing requirements",
             },
@@ -617,7 +617,7 @@ def test_merge_raw_configs() -> None:
                             "check-success=pep8",
                             "check-success=test",
                             "check-success=docs",
-                        ]
+                        ],
                     },
                     "schedule=Mon-Fri 09:00-17:30[Europe/Paris]",
                 ],
@@ -636,7 +636,7 @@ def test_merge_raw_configs() -> None:
                             "check-success=pep8",
                             "check-success=test",
                             "check-success=docs",
-                        ]
+                        ],
                     },
                     "schedule=Mon-Fri 09:30-17:00[Europe/Paris]",
                 ],
@@ -668,8 +668,8 @@ def test_merge_raw_configs_src_empty() -> None:
                 "allow_inplace_checks": False,
                 "conditions": ["schedule: MON-FRI 06:06-06:06"],
                 "name": "hotfix",
-            }
-        ]
+            },
+        ],
     }
     mergify_conf.merge_raw_configs({}, config)
     assert config == {
@@ -680,7 +680,7 @@ def test_merge_raw_configs_src_empty() -> None:
                 "allow_inplace_checks": False,
                 "conditions": ["schedule: MON-FRI 06:06-06:06"],
                 "name": "hotfix",
-            }
+            },
         ],
     }
 
@@ -694,8 +694,8 @@ def test_merge_raw_configs_dest_empty() -> None:
                     "allow_inplace_checks": False,
                     "conditions": ["schedule: MON-FRI 06:06-06:06"],
                     "name": "hotfix",
-                }
-            ]
+                },
+            ],
         },
         config,
     )
@@ -707,7 +707,7 @@ def test_merge_raw_configs_dest_empty() -> None:
                 "allow_inplace_checks": False,
                 "conditions": ["schedule: MON-FRI 06:06-06:06"],
                 "name": "hotfix",
-            }
+            },
         ],
     }
 
@@ -725,7 +725,7 @@ def test_merge_raw_override_and_new_rules() -> None:
                 "conditions": ["schedule: MON-FRI 06:06-06:06"],
                 "name": "new_rule",
             },
-        ]
+        ],
     }
     mergify_conf.merge_raw_configs(
         {
@@ -740,7 +740,7 @@ def test_merge_raw_override_and_new_rules() -> None:
                     "conditions": ["schedule: MON-FRI 00:00-00:00"],
                     "name": "hotfix",
                 },
-            ]
+            ],
         },
         config,
     )
@@ -775,8 +775,8 @@ def test_merge_raw_override_and_new_rules() -> None:
             {"actions": {"copy": {"bot_account": "my_super_bot"}}},
             {
                 "actions": {
-                    "copy": {"labels": ["copied"], "bot_account": "my_super_bot"}
-                }
+                    "copy": {"labels": ["copied"], "bot_account": "my_super_bot"},
+                },
             },
         ),
         (
@@ -794,20 +794,20 @@ def test_merge_raw_override_and_new_rules() -> None:
                 "actions": {
                     "copy": {"labels": ["copied"], "bot_account": "Autobot"},
                     "merge": {"labels": ["merged"]},
-                }
+                },
             },
             {
                 "actions": {
                     "copy": {"bot_account": "my_super_bot"},
                     "backport": {"branches": ["crashme"]},
-                }
+                },
             },
             {
                 "actions": {
                     "copy": {"labels": ["copied"], "bot_account": "my_super_bot"},
                     "backport": {"branches": ["crashme"]},
                     "merge": {"labels": ["merged"]},
-                }
+                },
             },
         ),
         (
@@ -835,20 +835,20 @@ async def test_merge_rules_and_defaults() -> None:
                 "name": "new_rule",
                 "conditions": ["label=comment"],
                 "actions": {"copy": {"branches": ["dev"]}},
-            }
+            },
         ],
     }
 
     config_to_extend = {
         "defaults": {
-            "actions": {"copy": {"labels": ["copied"], "bot_account": "Autobot"}}
+            "actions": {"copy": {"labels": ["copied"], "bot_account": "Autobot"}},
         },
         "pull_request_rules": [
             {
                 "name": "extended_rule",
                 "conditions": ["label=comment"],
                 "actions": {"copy": {"branches": ["dev"]}},
-            }
+            },
         ],
     }
 
@@ -865,7 +865,7 @@ async def test_merge_rules_and_defaults() -> None:
                         "branches": ["dev"],
                         "labels": ["copied"],
                         "bot_account": "my_super_bot",
-                    }
+                    },
                 },
             },
             {
@@ -876,7 +876,7 @@ async def test_merge_rules_and_defaults() -> None:
                         "branches": ["dev"],
                         "labels": ["copied"],
                         "bot_account": "my_super_bot",
-                    }
+                    },
                 },
             },
         ],
@@ -892,6 +892,9 @@ async def test_merge_rules_and_defaults() -> None:
         },
     ):
         merged_config = await mergify_conf.get_mergify_config_from_dict(
-            mocked_ctxt, config, "", allow_extend=True
+            mocked_ctxt,
+            config,
+            "",
+            allow_extend=True,
         )
     assert merged_config["raw_config"] == expected_result

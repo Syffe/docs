@@ -21,7 +21,7 @@ class DeleteHeadBranchExecutorConfig(typing.TypedDict):
 
 
 class DeleteHeadBranchExecutor(
-    actions.ActionExecutor["DeleteHeadBranchAction", DeleteHeadBranchExecutorConfig]
+    actions.ActionExecutor["DeleteHeadBranchAction", DeleteHeadBranchExecutorConfig],
 ):
     @classmethod
     async def create(
@@ -31,13 +31,17 @@ class DeleteHeadBranchExecutor(
         rule: prr_config.EvaluatedPullRequestRule,
     ) -> DeleteHeadBranchExecutor:
         return cls(
-            ctxt, rule, DeleteHeadBranchExecutorConfig(force=action.config["force"])
+            ctxt,
+            rule,
+            DeleteHeadBranchExecutorConfig(force=action.config["force"]),
         )
 
     async def run(self) -> check_api.Result:
         if self.ctxt.pull_from_fork:
             return check_api.Result(
-                check_api.Conclusion.SUCCESS, "Pull request come from fork", ""
+                check_api.Conclusion.SUCCESS,
+                "Pull request come from fork",
+                "",
             )
 
         if not self.config["force"]:
@@ -72,7 +76,7 @@ class DeleteHeadBranchExecutor(
 
         try:
             existed = await self.ctxt.repository.delete_branch_if_exists(
-                self.ctxt.pull["head"]["ref"]
+                self.ctxt.pull["head"]["ref"],
             )
         except http.HTTPClientSideError as e:
             return check_api.Result(
@@ -96,7 +100,7 @@ class DeleteHeadBranchExecutor(
             signals.EventDeleteHeadBranchMetadata(
                 {
                     "branch": self.ctxt.pull["head"]["ref"],
-                }
+                },
             ),
             self.rule.get_signal_trigger(),
         )
@@ -117,16 +121,17 @@ class DeleteHeadBranchExecutor(
 class DeleteHeadBranchAction(actions.Action):
     flags = actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     validator: typing.ClassVar[actions.ValidatorT] = {
-        voluptuous.Required("force", default=False): bool
+        voluptuous.Required("force", default=False): bool,
     }
     executor_class = DeleteHeadBranchExecutor
 
     async def get_conditions_requirements(
-        self, ctxt: context.Context
+        self,
+        ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
         return [
             conditions.RuleCondition.from_tree(
                 {"=": ("closed", True)},
                 description=":pushpin: delete_head_branch requirement",
-            )
+            ),
         ]

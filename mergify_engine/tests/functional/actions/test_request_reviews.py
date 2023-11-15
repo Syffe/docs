@@ -20,8 +20,8 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}"],
                     # The random case matter
                     "actions": {"request_reviews": {"users": ["MeRgiFy-teSt1"]}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -51,8 +51,8 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}"],
                     # The wrong team case matter
                     "actions": {"request_reviews": {"teams": [team["slug"].upper()]}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -77,12 +77,12 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
                     "actions": {
                         "request_reviews": {
                             "teams": [
-                                f"{settings.TESTING_ORGANIZATION_NAME}/{team['slug'].upper()}"
-                            ]
-                        }
+                                f"{settings.TESTING_ORGANIZATION_NAME}/{team['slug'].upper()}",
+                            ],
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -102,15 +102,16 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
                     "name": "request_reviews",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"request_reviews": {"users": ["octocat"]}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         await self.create_pr()
         await self.run_engine()
 
         failed_check_run = await self.wait_for_check_run(
-            conclusion="failure", name="Rule: request_reviews (request_reviews)"
+            conclusion="failure",
+            name="Rule: request_reviews (request_reviews)",
         )
         assert (
             failed_check_run["check_run"]["output"]["title"]
@@ -124,7 +125,9 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         )
 
     @mock.patch.object(
-        request_reviews.RequestReviewsExecutor, "GITHUB_MAXIMUM_REVIEW_REQUEST", new=1
+        request_reviews.RequestReviewsExecutor,
+        "GITHUB_MAXIMUM_REVIEW_REQUEST",
+        new=1,
     )
     async def test_request_reviews_already_max(self) -> None:
         rules = {
@@ -138,10 +141,10 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
                     "name": "request_reviews",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
-                        "request_reviews": {"users": ["mergify-test1", "mergify-test"]}
+                        "request_reviews": {"users": ["mergify-test1", "mergify-test"]},
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -174,7 +177,9 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
             pytest.fail("Unable to find request review check run")
 
     @mock.patch.object(
-        request_reviews.RequestReviewsExecutor, "GITHUB_MAXIMUM_REVIEW_REQUEST", new=2
+        request_reviews.RequestReviewsExecutor,
+        "GITHUB_MAXIMUM_REVIEW_REQUEST",
+        new=2,
     )
     async def test_request_reviews_going_above_max(self) -> None:
         rules = {
@@ -189,10 +194,10 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
                         "request_reviews": {
                             "users": ["mergify-test1", "mergify-test4"],
                             "teams": ["mergifyio-testing/testing"],
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -241,10 +246,10 @@ class TestRequestReviewsSubAction(base.FunctionalTestBase):
                         "request_reviews": {
                             "users_from_teams": ["testing", "bot"],
                             "random_count": 2,
-                        }
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

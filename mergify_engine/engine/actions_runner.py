@@ -54,14 +54,15 @@ REQUIRE_BRANCH_PROTECTION_DEPRECATION_SAAS = """
 
 
 async def get_already_merged_summary(
-    ctxt: context.Context, match: prr_config.PullRequestRulesEvaluator
+    ctxt: context.Context,
+    match: prr_config.PullRequestRulesEvaluator,
 ) -> str:
     has_user_defined_rules = any(not r.hidden for r in match.rules)
     if not ctxt.pull["merged"] or not has_user_defined_rules:
         return ""
 
     mergify_bot = await github.GitHubAppInfo.get_bot(
-        ctxt.repository.installation.redis.cache
+        ctxt.repository.installation.redis.cache,
     )
     if (
         ctxt.pull["merged_by"] is not None
@@ -182,7 +183,9 @@ async def gen_summary(
 
     summary += await gen_summary_rules(ctxt, match.faulty_rules, display_action_configs)
     summary += await gen_summary_rules(
-        ctxt, matching_rules_to_display, display_action_configs
+        ctxt,
+        matching_rules_to_display,
+        display_action_configs,
     )
     if ctxt.subscription.has_feature(subscription.Features.SHOW_SPONSOR):
         summary += constants.MERGIFY_OPENSOURCE_SPONSOR_DOC
@@ -192,7 +195,7 @@ async def gen_summary(
     ignored_rules = list(filter(lambda x: not x.hidden, match.ignored_rules))
     ignored_rules_count = len(ignored_rules)
     not_applicable_base_changeable_attributes_rules_to_display_count = len(
-        not_applicable_base_changeable_attributes_rules_to_display
+        not_applicable_base_changeable_attributes_rules_to_display,
     )
     not_applicable_count = (
         ignored_rules_count
@@ -211,7 +214,9 @@ async def gen_summary(
 
         if ignored_rules_count > 0:
             summary += await gen_summary_rules(
-                ctxt, ignored_rules, display_action_configs
+                ctxt,
+                ignored_rules,
+                display_action_configs,
             )
 
         if not_applicable_base_changeable_attributes_rules_to_display_count > 0:
@@ -224,7 +229,7 @@ async def gen_summary(
         summary += "</details>\n"
 
     completed_rules = len(
-        list(filter(lambda rule: rule.conditions.match, match.matching_rules))
+        list(filter(lambda rule: rule.conditions.match, match.matching_rules)),
     )
     potential_rules = len(matching_rules_to_display) - completed_rules
     faulty_rules = len(match.faulty_rules)
@@ -290,7 +295,9 @@ async def get_summary_check_result(
         )
 
         return check_api.Result(
-            check_api.Conclusion.SUCCESS, title=summary_title, summary=summary
+            check_api.Conclusion.SUCCESS,
+            title=summary_title,
+            summary=summary,
         )
 
     ctxt.log.info(
@@ -331,7 +338,10 @@ async def exec_action(
         # NOTE(sileht): the action fails, this is a bug!!!, so just set the
         # result as pending and retry in 5 minutes...
         executor.ctxt.log.error(
-            "action failed", action=action, rule=executor.rule, exc_info=True
+            "action failed",
+            action=action,
+            rule=executor.rule,
+            exc_info=True,
         )
         await delayed_refresh.plan_refresh_at_least_at(
             executor.ctxt.repository,
@@ -372,7 +382,7 @@ def load_conclusions(
         return {
             name: check_api.Conclusion(conclusion)
             for name, conclusion in yaml.safe_load(
-                base64.b64decode(utils.strip_comment_tags(line).encode()).decode()
+                base64.b64decode(utils.strip_comment_tags(line).encode()).decode(),
             ).items()
         }
 
@@ -389,8 +399,8 @@ def serialize_conclusions(conclusions: dict[str, check_api.Conclusion]) -> str:
         "<!-- "
         + base64.b64encode(
             yaml.safe_dump(
-                {name: conclusion.value for name, conclusion in conclusions.items()}
-            ).encode()
+                {name: conclusion.value for name, conclusion in conclusions.items()},
+            ).encode(),
         ).decode()
         + " -->"
     )
@@ -437,7 +447,8 @@ async def run_actions(
     # to remove the PR from the queue and then add it back with the new config and not the
     # reverse
     matching_rules = sorted(
-        match.matching_rules, key=lambda rule: rule.conditions.match
+        match.matching_rules,
+        key=lambda rule: rule.conditions.match,
     )
 
     method_name: typing.Literal["run", "cancel"]
@@ -466,7 +477,9 @@ async def run_actions(
                 actions_ran.add(action)
 
             previous_conclusion = get_previous_conclusion(
-                previous_conclusions, check_name, checks
+                previous_conclusions,
+                check_name,
+                checks,
             )
 
             conclusion_is_final = (
@@ -493,7 +506,9 @@ async def run_actions(
 
             if not need_to_be_run:
                 report = check_api.Result(
-                    previous_conclusion, "Already in expected state", ""
+                    previous_conclusion,
+                    "Already in expected state",
+                    "",
                 )
                 message = "ignored, already in expected state"
 
@@ -509,7 +524,8 @@ async def run_actions(
 
             else:
                 with ddtrace.tracer.trace(
-                    f"action.{action}", resource=str(ctxt)
+                    f"action.{action}",
+                    resource=str(ctxt),
                 ) as span:
                     # NOTE(sileht): check state change so we have to run "run" or "cancel"
                     report = await exec_action(
@@ -549,13 +565,17 @@ async def run_actions(
                 except Exception as e:
                     if exceptions.should_be_ignored(e):
                         ctxt.log.debug(
-                            "Fail to post check `%s`", check_name, exc_info=True
+                            "Fail to post check `%s`",
+                            check_name,
+                            exc_info=True,
                         )
                     elif exceptions.need_retry(e):
                         raise
                     else:
                         ctxt.log.error(
-                            "Fail to post check `%s`", check_name, exc_info=True
+                            "Fail to post check `%s`",
+                            check_name,
+                            exc_info=True,
                         )
 
             ctxt.log.info(
@@ -634,13 +654,13 @@ async def handle(
     partition_rules: partr_config.PartitionRules,
 ) -> check_api.Result | None:
     if pull_request_rules.has_user_rules() and not ctxt.subscription.has_feature(
-        subscription.Features.WORKFLOW_AUTOMATION
+        subscription.Features.WORKFLOW_AUTOMATION,
     ):
         return check_api.Result(
             check_api.Conclusion.ACTION_REQUIRED,
             "Cannot use the pull request workflow automation",
             ctxt.subscription.missing_feature_reason(
-                ctxt.pull["base"]["repo"]["owner"]["login"]
+                ctxt.pull["base"]["repo"]["owner"]["login"],
             ),
         )
 
@@ -684,7 +704,11 @@ async def handle(
     checks = {c["name"]: c for c in await ctxt.pull_engine_check_runs}
     conclusions = await run_actions(ctxt, match, checks, previous_conclusions)
     await cleanup_pending_actions_with_no_associated_rules(
-        ctxt, queue_rules, partition_rules, conclusions, previous_conclusions
+        ctxt,
+        queue_rules,
+        partition_rules,
+        conclusions,
+        previous_conclusions,
     )
 
     return await get_summary_check_result(

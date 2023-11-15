@@ -20,7 +20,10 @@ def upgrade() -> None:
     alembic.op.create_table(
         "github_repository",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), autoincrement=False, nullable=False
+            "id",
+            sqlalchemy.BigInteger(),
+            autoincrement=False,
+            nullable=False,
         ),
         sqlalchemy.Column("owner_id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column("last_dump_at", sqlalchemy.DateTime(), nullable=True),
@@ -30,7 +33,8 @@ def upgrade() -> None:
             name=alembic.op.f("github_repository_owner_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("github_repository_pkey")
+            "id",
+            name=alembic.op.f("github_repository_pkey"),
         ),
     )
     # ### end Alembic commands ###

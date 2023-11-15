@@ -44,15 +44,15 @@ async def test_sudo_user(
     await db.commit()
 
     respx_mock.get(
-        "http://localhost:5000/engine/associated-users/impersonated_user"
+        "http://localhost:5000/engine/associated-users/impersonated_user",
     ).respond(404)
 
     respx_mock.get("http://localhost:5000/engine/associated-users/anotheruser").respond(
-        404
+        404,
     )
 
     respx_mock.get(
-        "http://localhost:5000/engine/associated-users/impersonated_other_user"
+        "http://localhost:5000/engine/associated-users/impersonated_other_user",
     ).respond(404)
 
     await web_client.log_as(admin_account.id)

@@ -27,7 +27,7 @@ class GhaActionTestBase(base.FunctionalTestBase):
                 "workflow_dispatch": {
                     "inputs": {
                         "some_boolean": {"required": True, "type": "boolean"},
-                    }
+                    },
                 },
             },
             "jobs": {
@@ -37,9 +37,9 @@ class GhaActionTestBase(base.FunctionalTestBase):
                         {
                             "name": "Test dispatched workflow inputs",
                             "run": "echo some_boolean=${{ inputs.some_boolean }}",
-                        }
+                        },
                     ],
-                }
+                },
             },
         }
 
@@ -51,7 +51,7 @@ class GhaActionTestBase(base.FunctionalTestBase):
                     "inputs": {
                         "some_string": {"required": True, "type": "string"},
                         "some_number": {"required": True, "type": "number"},
-                    }
+                    },
                 },
             },
             "jobs": {
@@ -61,9 +61,9 @@ class GhaActionTestBase(base.FunctionalTestBase):
                         {
                             "name": "Test dispatched workflow inputs",
                             "run": "echo some_string=${{ inputs.some_string }}, some_number=${{ inputs.some_number }}",
-                        }
+                        },
                     ],
-                }
+                },
             },
         }
 
@@ -91,12 +91,12 @@ class GhaActionTestBase(base.FunctionalTestBase):
                                             "some_number": "11",
                                         },
                                     },
-                                ]
-                            }
-                        }
+                                ],
+                            },
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(
@@ -145,12 +145,12 @@ class GhaActionTestBase(base.FunctionalTestBase):
                                     {
                                         "workflow": "unknown.yaml",
                                     },
-                                ]
-                            }
-                        }
+                                ],
+                            },
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -186,12 +186,12 @@ class GhaActionTestBase(base.FunctionalTestBase):
                                     {
                                         "workflow": "no_dispatch_workflow.yaml",
                                     },
-                                ]
-                            }
-                        }
+                                ],
+                            },
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         no_dispatch = {
@@ -206,9 +206,9 @@ class GhaActionTestBase(base.FunctionalTestBase):
                         {
                             "name": "Workflow missing dispatch trigger",
                             "run": "echo yolo",
-                        }
+                        },
                     ],
-                }
+                },
             },
         }
 
@@ -223,7 +223,8 @@ class GhaActionTestBase(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            name="Rule: Dispatch GHA (github_actions)", conclusion="failure"
+            name="Rule: Dispatch GHA (github_actions)",
+            conclusion="failure",
         )
         assert (
             check_run["check_run"]["output"]["title"]
@@ -247,12 +248,12 @@ class GhaActionTestBase(base.FunctionalTestBase):
                             "workflow": {
                                 "dispatch": [
                                     {"workflow": "inputs_required.yaml", "inputs": {}},
-                                ]
-                            }
-                        }
+                                ],
+                            },
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         inputs_required = {
@@ -262,7 +263,7 @@ class GhaActionTestBase(base.FunctionalTestBase):
                 "workflow_dispatch": {
                     "inputs": {
                         "some_string": {"required": True, "type": "string"},
-                    }
+                    },
                 },
             },
             "jobs": {
@@ -272,9 +273,9 @@ class GhaActionTestBase(base.FunctionalTestBase):
                         {
                             "name": "Workflow missing dispatch trigger",
                             "run": "echo yolo",
-                        }
+                        },
                     ],
-                }
+                },
             },
         }
 
@@ -289,7 +290,8 @@ class GhaActionTestBase(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            name="Rule: Dispatch GHA (github_actions)", conclusion="failure"
+            name="Rule: Dispatch GHA (github_actions)",
+            conclusion="failure",
         )
         assert (
             check_run["check_run"]["output"]["title"]
@@ -314,9 +316,9 @@ class GhaActionTestBase(base.FunctionalTestBase):
                         {
                             "name": "Test dispatched workflow inputs",
                             "run": "echo tintin&milou",
-                        }
+                        },
                     ],
-                }
+                },
             },
         }
 
@@ -327,7 +329,7 @@ class GhaActionTestBase(base.FunctionalTestBase):
                 "workflow_dispatch": {
                     "inputs": {
                         "some_string": {"required": True, "type": "string"},
-                    }
+                    },
                 },
             },
             "jobs": {
@@ -337,9 +339,9 @@ class GhaActionTestBase(base.FunctionalTestBase):
                         {
                             "name": "Test dispatched workflow inputs",
                             "run": "echo fails anyway",
-                        }
+                        },
                     ],
-                }
+                },
             },
         }
 
@@ -363,22 +365,22 @@ class GhaActionTestBase(base.FunctionalTestBase):
                                             "some_string": 666,
                                         },
                                     },
-                                ]
-                            }
-                        }
+                                ],
+                            },
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(
             yaml.dump(rules),
             files={
                 ".github/workflows/multiple_workflows_success.yaml": yaml.dump(
-                    success_workflow
+                    success_workflow,
                 ),
                 ".github/workflows/multiple_workflows_error.yaml": yaml.dump(
-                    error_workflow
+                    error_workflow,
                 ),
             },
         )
@@ -388,7 +390,8 @@ class GhaActionTestBase(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            name="Rule: Dispatch GHA (github_actions)", conclusion="failure"
+            name="Rule: Dispatch GHA (github_actions)",
+            conclusion="failure",
         )
         assert (
             check_run["check_run"]["output"]["title"] == "Some workflow dispatch failed"
@@ -424,9 +427,9 @@ Workflow successfully dispatched:
                         {
                             "name": "Test dispatched workflow inputs",
                             "run": "echo fails anyway",
-                        }
+                        },
                     ],
-                }
+                },
             },
         }
 
@@ -444,19 +447,19 @@ Workflow successfully dispatched:
                                     {
                                         "workflow": "workflow_dispatch_forbidden.yaml",
                                     },
-                                ]
-                            }
-                        }
+                                ],
+                            },
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(
             yaml.dump(rules),
             files={
                 ".github/workflows/workflow_dispatch_forbidden.yaml": yaml.dump(
-                    forbidden_workflow
+                    forbidden_workflow,
                 ),
             },
         )
@@ -466,20 +469,22 @@ Workflow successfully dispatched:
 
         # NOTE(lecrepont01): mock a user who did not grant appropriate permissions
         with respx.mock(
-            base_url=settings.GITHUB_REST_API_URL, assert_all_called=False
+            base_url=settings.GITHUB_REST_API_URL,
+            assert_all_called=False,
         ) as respx_mock, mock.patch(
             "mergify_engine.context.Context.github_actions_controllable",
             return_value=False,
         ):
             respx_mock.post(
                 url__regex=f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
-                rf"/actions/workflows/workflow_dispatch_forbidden.yaml/dispatches"
+                rf"/actions/workflows/workflow_dispatch_forbidden.yaml/dispatches",
             ).respond(403)
             respx_mock.route(host=settings.GITHUB_REST_API_HOST).pass_through()
             await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            name="Rule: Dispatch GHA (github_actions)", conclusion="failure"
+            name="Rule: Dispatch GHA (github_actions)",
+            conclusion="failure",
         )
         assert (
             check_run["check_run"]["output"]["title"]
@@ -499,7 +504,7 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
                 "workflow_dispatch": {
                     "inputs": {
                         "author": {"required": True, "type": "string"},
-                    }
+                    },
                 },
             },
             "jobs": {
@@ -509,9 +514,9 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
                         {
                             "name": "Show author",
                             "run": "echo author=${{ inputs.author }}",
-                        }
+                        },
                     ],
-                }
+                },
             },
         }
 
@@ -532,12 +537,12 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
                                             "author": "{{author}}",
                                         },
                                     },
-                                ]
-                            }
-                        }
+                                ],
+                            },
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(
@@ -565,7 +570,7 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
                         "event_type": "workflow_job",
                         "payload": {"action": "completed"},
                     },
-                ]
+                ],
             )
         ]
 
@@ -576,7 +581,7 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
         )[-1]
 
         log = await self.client_integration.get(
-            f"{self.url_origin}/actions/runs/{dispatched_event['workflow_job']['run_id']}/logs"  # type: ignore[index]
+            f"{self.url_origin}/actions/runs/{dispatched_event['workflow_job']['run_id']}/logs",  # type: ignore[index]
         )
 
         with io.BytesIO(log.content) as stream:
@@ -602,9 +607,9 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
                         {
                             "name": "Hello world",
                             "run": "echo hello world",
-                        }
+                        },
                     ],
-                }
+                },
             },
         }
 
@@ -623,19 +628,19 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
                                         "workflow": "workflow_with_ref.yaml",
                                         "ref": "branch-does-not-exist",
                                     },
-                                ]
-                            }
-                        }
+                                ],
+                            },
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(
             yaml.dump(rules),
             files={
                 ".github/workflows/workflow_with_ref.yaml": yaml.dump(
-                    workflow_with_ref
+                    workflow_with_ref,
                 ),
             },
         )

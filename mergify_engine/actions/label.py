@@ -73,7 +73,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
                     "remove": remove_labels,
                     "remove_all": action.config["remove_all"],
                     "toggle": toggle_labels,
-                }
+                },
             ),
         )
 
@@ -90,7 +90,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
                 _l["name"].lower(): _l for _l in await self.ctxt.repository.get_labels()
             }
             self.ctxt.pull["labels"].extend(
-                [labels_by_name[label_name] for label_name in missing_labels]
+                [labels_by_name[label_name] for label_name in missing_labels],
             )
             return {labels_by_name[label_name]["name"] for label_name in missing_labels}
         return set()
@@ -102,7 +102,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
                 label_escaped = parse.quote(label, safe="")
                 try:
                     await self.ctxt.client.delete(
-                        f"{self.ctxt.base_url}/issues/{self.ctxt.pull['number']}/labels/{label_escaped}"
+                        f"{self.ctxt.base_url}/issues/{self.ctxt.pull['number']}/labels/{label_escaped}",
                     )
                 except http.HTTPClientSideError as e:
                     self.ctxt.log.warning(
@@ -140,7 +140,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
         if self.config["remove_all"]:
             if self.ctxt.pull["labels"]:
                 await self.ctxt.client.delete(
-                    f"{self.ctxt.base_url}/issues/{self.ctxt.pull['number']}/labels"
+                    f"{self.ctxt.base_url}/issues/{self.ctxt.pull['number']}/labels",
                 )
                 labels_removed = self.ctxt.pull_labels_names
                 self.ctxt.pull["labels"] = []
@@ -155,17 +155,21 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
                 self.ctxt.pull["base"]["ref"],
                 "action.label",
                 signals.EventLabelMetadata(
-                    {"added": sorted(labels_added), "removed": sorted(labels_removed)}
+                    {"added": sorted(labels_added), "removed": sorted(labels_removed)},
                 ),
                 self.rule.get_signal_trigger(),
             )
 
             return check_api.Result(
-                check_api.Conclusion.SUCCESS, "Labels added/removed", ""
+                check_api.Conclusion.SUCCESS,
+                "Labels added/removed",
+                "",
             )
 
         return check_api.Result(
-            check_api.Conclusion.SUCCESS, "No label to add or remove", ""
+            check_api.Conclusion.SUCCESS,
+            "No label to add or remove",
+            "",
         )
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover
@@ -181,7 +185,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
                 self.ctxt.pull["base"]["ref"],
                 "action.label",
                 signals.EventLabelMetadata(
-                    {"added": [], "removed": sorted(labels_removed)}
+                    {"added": [], "removed": sorted(labels_removed)},
                 ),
                 self.rule.get_signal_trigger(),
             )

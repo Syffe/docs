@@ -21,15 +21,22 @@ def upgrade() -> None:
     alembic.op.create_table(
         "gha_workflow_job",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), autoincrement=False, nullable=False
+            "id",
+            sqlalchemy.BigInteger(),
+            autoincrement=False,
+            nullable=False,
         ),
         sqlalchemy.Column("workflow_run_id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column("name", sqlalchemy.String(), nullable=False),
         sqlalchemy.Column(
-            "started_at", sqlalchemy.DateTime(timezone=True), nullable=False
+            "started_at",
+            sqlalchemy.DateTime(timezone=True),
+            nullable=False,
         ),
         sqlalchemy.Column(
-            "completed_at", sqlalchemy.DateTime(timezone=True), nullable=False
+            "completed_at",
+            sqlalchemy.DateTime(timezone=True),
+            nullable=False,
         ),
         sqlalchemy.Column(
             "conclusion",
@@ -44,16 +51,22 @@ def upgrade() -> None:
             nullable=False,
         ),
         sqlalchemy.Column(
-            "labels", sqlalchemy.ARRAY(sqlalchemy.TEXT, dimensions=1), nullable=False
+            "labels",
+            sqlalchemy.ARRAY(sqlalchemy.TEXT, dimensions=1),
+            nullable=False,
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("gha_workflow_job_pkey")
+            "id",
+            name=alembic.op.f("gha_workflow_job_pkey"),
         ),
     )
     alembic.op.create_table(
         "gha_workflow_run",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), autoincrement=False, nullable=False
+            "id",
+            sqlalchemy.BigInteger(),
+            autoincrement=False,
+            nullable=False,
         ),
         sqlalchemy.Column("workflow_id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column("owner_id", sqlalchemy.BigInteger(), nullable=False),
@@ -71,7 +84,9 @@ def upgrade() -> None:
             nullable=False,
         ),
         sqlalchemy.Column(
-            "triggering_actor_id", sqlalchemy.BigInteger(), nullable=False
+            "triggering_actor_id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
         ),
         sqlalchemy.Column("run_attempt", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
@@ -85,7 +100,8 @@ def upgrade() -> None:
             name=alembic.op.f("gha_workflow_run_triggering_actor_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("gha_workflow_run_pkey")
+            "id",
+            name=alembic.op.f("gha_workflow_run_pkey"),
         ),
     )
     alembic.op.create_index(

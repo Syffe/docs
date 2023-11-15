@@ -26,10 +26,12 @@ router = fastapi.APIRouter(
 @pydantic.dataclasses.dataclass
 class QueueFreeze:
     name: str = dataclasses.field(
-        default_factory=str, metadata={"description": "Queue name"}
+        default_factory=str,
+        metadata={"description": "Queue name"},
     )
     reason: str = dataclasses.field(
-        default_factory=str, metadata={"description": "The reason of the queue freeze"}
+        default_factory=str,
+        metadata={"description": "The reason of the queue freeze"},
     )
     freeze_date: datetime.datetime = dataclasses.field(
         default_factory=date.utcnow,
@@ -53,10 +55,12 @@ class QueueFreezeResponse:
 # https://github.com/tiangolo/fastapi/issues/4679 is fixed
 class QueueFreezePayload(pydantic.BaseModel):
     reason: str = pydantic.Field(
-        max_length=255, description="The reason of the queue freeze"
+        max_length=255,
+        description="The reason of the queue freeze",
     )
     cascading: bool = pydantic.Field(
-        default=True, description="The active status of the cascading effect"
+        default=True,
+        description="The active status of the cascading effect",
     )
 
 
@@ -107,9 +111,10 @@ async def create_queue_freeze(
                     "reason": queue_freeze.reason,
                     "cascading": queue_freeze.cascading,
                     "created_by": typing.cast(
-                        signals.Actor, authentication_actor.actor
+                        signals.Actor,
+                        authentication_actor.actor,
                     ),
-                }
+                },
             ),
             "Create queue freeze",
         )
@@ -135,9 +140,10 @@ async def create_queue_freeze(
                     "reason": queue_freeze.reason,
                     "cascading": queue_freeze.cascading,
                     "updated_by": typing.cast(
-                        signals.Actor, authentication_actor.actor
+                        signals.Actor,
+                        authentication_actor.actor,
                     ),
-                }
+                },
             ),
             "Update queue freeze",
         )
@@ -150,7 +156,7 @@ async def create_queue_freeze(
                 reason=queue_freeze.reason,
                 freeze_date=queue_freeze.freeze_date,
                 cascading=queue_freeze.cascading,
-            )
+            ),
         ],
     )
 
@@ -196,7 +202,7 @@ async def delete_queue_freeze(
             {
                 "queue_name": queue_rule.name,
                 "deleted_by": typing.cast(signals.Actor, authentication_actor.actor),
-            }
+            },
         ),
         "Delete queue freeze",
     )
@@ -233,7 +239,7 @@ async def get_queue_freeze(
                 reason=queue_freeze.reason,
                 freeze_date=queue_freeze.freeze_date,
                 cascading=queue_freeze.cascading,
-            )
+            ),
         ],
     )
 
@@ -249,7 +255,8 @@ async def get_queue_freeze(
     },
 )
 async def get_list_queue_freeze(
-    repository_ctxt: security.Repository, queue_rules: security.QueueRules
+    repository_ctxt: security.Repository,
+    queue_rules: security.QueueRules,
 ) -> QueueFreezeResponse:
     return QueueFreezeResponse(
         queue_freezes=[
@@ -260,7 +267,8 @@ async def get_list_queue_freeze(
                 cascading=queue_freeze.cascading,
             )
             async for queue_freeze in freeze.QueueFreeze.get_all(
-                repository_ctxt, queue_rules
+                repository_ctxt,
+                queue_rules,
             )
-        ]
+        ],
     )

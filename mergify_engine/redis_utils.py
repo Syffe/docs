@@ -34,10 +34,12 @@ PipelineStream = typing.NewType("PipelineStream", "redispy.client.Pipeline[bytes
 RedisQueue = typing.NewType("RedisQueue", "redispy.Redis[bytes]")
 RedisActiveUsers = typing.NewType("RedisActiveUsers", "redispy.Redis[bytes]")
 RedisUserPermissionsCache = typing.NewType(
-    "RedisUserPermissionsCache", "redispy.Redis[bytes]"
+    "RedisUserPermissionsCache",
+    "redispy.Redis[bytes]",
 )
 RedisTeamPermissionsCache = typing.NewType(
-    "RedisTeamPermissionsCache", "redispy.Redis[bytes]"
+    "RedisTeamPermissionsCache",
+    "redispy.Redis[bytes]",
 )
 RedisTeamMembersCache = typing.NewType("RedisTeamMembersCache", "redispy.Redis[bytes]")
 RedisStats = typing.NewType("RedisStats", "redispy.Redis[bytes]")
@@ -55,7 +57,7 @@ def register_script(script: str) -> ScriptIdT:
     SCRIPTS[script_id] = (
         # NOTE(sileht): SHA1 is imposed by Redis itself
         hashlib.sha1(  # nosemgrep contrib.dlint.dlint-equivalent.insecure-hashlib-use, python.lang.security.insecure-hash-algorithms.insecure-hash-algorithm-sha1
-            script.encode("utf8")
+            script.encode("utf8"),
         )
         .hexdigest()
         .encode(),
@@ -68,7 +70,8 @@ def register_script(script: str) -> ScriptIdT:
 # it works but if a script is loaded into two redis, this won't works as expected
 # as the app will think it's already loaded while it's not...
 async def load_script(
-    connection: redispy.connection.Connection, script_id: ScriptIdT
+    connection: redispy.connection.Connection,
+    script_id: ScriptIdT,
 ) -> None:
     global SCRIPTS
     sha, script = SCRIPTS[script_id]
@@ -126,7 +129,7 @@ class RedisLinks:
         redispy.connection.ConnectionPool
     ] = redispy.connection.ConnectionPool
     connection_pool_kwargs: dict[str, typing.Any] = dataclasses.field(
-        default_factory=dict
+        default_factory=dict,
     )
 
     # NOTE(sileht): This is used, only to limit connection on webserver side.
@@ -296,12 +299,16 @@ def get_expiration_minid(retention: datetime.timedelta) -> int:
 
 
 async def iter_stream(
-    stream: RedisStream, stream_key: str, batch_size: int
+    stream: RedisStream,
+    stream_key: str,
+    batch_size: int,
 ) -> abc.AsyncGenerator[tuple[bytes, dict[bytes, bytes]], None]:
     min_stream_event_id = "-"
 
     while stream_entry := await stream.xrange(
-        stream_key, min=min_stream_event_id, count=batch_size
+        stream_key,
+        min=min_stream_event_id,
+        count=batch_size,
     ):
         for entry_id, entry_data in stream_entry:
             yield entry_id, entry_data

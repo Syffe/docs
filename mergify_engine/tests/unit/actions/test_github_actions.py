@@ -34,12 +34,12 @@ async def test_github_actions_get_config() -> None:
                                             "input2": "value2",
                                         },
                                     },
-                                ]
-                            }
-                        }
+                                ],
+                            },
+                        },
                     },
                 },
-            ]
+            ],
         },
         "",
     )
@@ -63,12 +63,12 @@ async def test_github_actions_template_inputs() -> None:
                                             "input1": "{{ head }}",
                                         },
                                     },
-                                ]
-                            }
-                        }
+                                ],
+                            },
+                        },
                     },
                 },
-            ]
+            ],
         },
         "",
     )
@@ -83,9 +83,9 @@ async def test_github_actions_get_schema_error() -> None:
                     "dispatch": [
                         {"workflow": f"workflow{i}.yaml"}
                         for i in range(github_actions.MAX_DISPATCHED_EVENTS + 1)
-                    ]
-                }
-            }
+                    ],
+                },
+            },
         )
     assert (
         str(e.value)
@@ -102,10 +102,10 @@ async def test_github_actions_get_schema_error() -> None:
                         {
                             "workflow": "workflow.yaml",
                             "inputs": {f"input{i}": f"value{i}" for i in range(11)},
-                        }
-                    ]
-                }
-            }
+                        },
+                    ],
+                },
+            },
         )
     assert (
         str(e.value)

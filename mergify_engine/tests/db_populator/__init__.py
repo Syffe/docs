@@ -18,7 +18,7 @@ class DbPopulator:
     def __init_subclass__(cls, *args: typing.Any, **kwargs: typing.Any) -> None:
         if cls.__name__ in cls.dataset_registry:
             raise ValueError(
-                f"A dataset named '{cls.__name__}' has already been registered."
+                f"A dataset named '{cls.__name__}' has already been registered.",
             )
         cls.dataset_registry[cls.__name__] = cls
         super().__init_subclass__(*args, **kwargs)
@@ -40,7 +40,9 @@ class DbPopulator:
 
     @classmethod
     async def load(
-        cls, session: sqlalchemy.ext.asyncio.AsyncSession, datasets: set[str]
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        datasets: set[str],
     ) -> None:
         if not datasets:
             raise RuntimeError("DbPopulator used without datasets")

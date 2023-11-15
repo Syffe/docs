@@ -55,11 +55,13 @@ class GitterService(task.SimpleService):
     gitter_worker_idle_time: float
 
     _pools: list[task.TaskRetriedForever] = dataclasses.field(
-        init=False, default_factory=list
+        init=False,
+        default_factory=list,
     )
     _queue: asyncio.Queue[GitterJob[typing.Any]] = dataclasses.field(init=False)
     _jobs: dict[GitterJobId, GitterJob[typing.Any]] = dataclasses.field(
-        init=False, default_factory=dict
+        init=False,
+        default_factory=dict,
     )
 
     _instance: typing.ClassVar[GitterService | None] = None
@@ -111,7 +113,9 @@ class GitterService(task.SimpleService):
             return
 
         with tracer.trace(
-            "gitter_worker", span_type="worker", resource=job.owner_login_for_tracing
+            "gitter_worker",
+            span_type="worker",
+            resource=job.owner_login_for_tracing,
         ) as span:
             span.set_tag("gh_owner", job.owner_login_for_tracing)
             with sentry_sdk.Hub(sentry_sdk.Hub.current) as hub:
@@ -132,7 +136,9 @@ class GitterService(task.SimpleService):
             await job.task
         except Exception:
             job.logger.debug(
-                "gitter worker job func failed", job_id=job.id, exc_info=True
+                "gitter worker job func failed",
+                job_id=job.id,
+                exc_info=True,
             )
             # NOTE(sileht): we ignore exception on purpose, the job caller must
             # reawait the Coroutine to get the result
@@ -146,7 +152,9 @@ class GitterService(task.SimpleService):
                 await job.callback()
             except Exception:
                 job.logger.error(
-                    "gitter worker job callback failed", job_id=job.id, exc_info=True
+                    "gitter worker job callback failed",
+                    job_id=job.id,
+                    exc_info=True,
                 )
             else:
                 job.logger.debug("gitter worker finished job callback", job_id=job.id)

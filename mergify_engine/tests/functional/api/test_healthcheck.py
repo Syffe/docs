@@ -18,7 +18,9 @@ async def test_healthcheck(
     assert r.status_code == 404
 
     monkeypatch.setattr(
-        settings, "HEALTHCHECK_SHARED_TOKEN", pydantic.SecretStr("secret")
+        settings,
+        "HEALTHCHECK_SHARED_TOKEN",
+        pydantic.SecretStr("secret"),
     )
     r = await web_client.get(
         "/healthcheck",

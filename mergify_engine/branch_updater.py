@@ -116,10 +116,16 @@ async def _do_rebase(
         await git.configure(ctxt.repository.installation.redis.cache, committer)
 
         await git.setup_remote(
-            "origin", ctxt.pull["head"]["repo"], user.oauth_access_token, ""
+            "origin",
+            ctxt.pull["head"]["repo"],
+            user.oauth_access_token,
+            "",
         )
         await git.setup_remote(
-            "upstream", ctxt.pull["base"]["repo"], user.oauth_access_token, ""
+            "upstream",
+            ctxt.pull["base"]["repo"],
+            user.oauth_access_token,
+            "",
         )
 
         await git.fetch("origin", head_branch)
@@ -148,29 +154,31 @@ async def _do_rebase(
         ctxt.log.log(level, "pull request rebased", new_head_sha=expected_sha)
         # NOTE(sileht): We store this for Context.has_been_synchronized_by_user()
         await ctxt.redis.cache.setex(
-            f"branch-update-{expected_sha}", 60 * 60, expected_sha
+            f"branch-update-{expected_sha}",
+            60 * 60,
+            expected_sha,
         )
     except gitter.GitMergifyNamespaceConflict as e:
         raise BranchUpdateFailure(
             "`Mergify uses `mergify/...` namespace for creating temporary branches. "
             "A branch of your repository is conflicting with this namespace\n"
-            f"```\n{e.output}\n```\n"
+            f"```\n{e.output}\n```\n",
         )
     except gitter.GitAuthenticationFailure:
         raise
     except gitter.GitErrorRetriable as e:
         raise BranchUpdateNeedRetry(
-            f"Git reported the following error:\n```\n{e.output}\n```\n"
+            f"Git reported the following error:\n```\n{e.output}\n```\n",
         )
     except gitter.GitFatalError as e:
         raise BranchUpdateFailure(
-            f"Git reported the following error:\n```\n{e.output}\n```\n"
+            f"Git reported the following error:\n```\n{e.output}\n```\n",
         )
     except gitter.GitError as e:
         for message, out_exception in GIT_MESSAGE_TO_EXCEPTION.items():
             if message in e.output:
                 raise out_exception(
-                    f"Git reported the following error:\n```\n{e.output}\n```\n"
+                    f"Git reported the following error:\n```\n{e.output}\n```\n",
                 )
 
         ctxt.log.error(
@@ -261,7 +269,9 @@ async def rebase_with_git(
         await _do_rebase(ctxt, on_behalf, on_behalf, autosquash)
     except gitter.GitAuthenticationFailure:
         ctxt.log.info(
-            "git authentification failure", login=on_behalf.login, exc_info=True
+            "git authentification failure",
+            login=on_behalf.login,
+            exc_info=True,
         )
 
         message = f"`{on_behalf.login}` token is invalid, make sure `{on_behalf.login}` can still log in on the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL})."
@@ -271,7 +281,7 @@ async def rebase_with_git(
                 message = "Rebasing a branch for a forked private repository is not supported by GitHub."
             else:
                 permission = await ctxt.repository.get_user_permission(
-                    on_behalf.to_github_account()
+                    on_behalf.to_github_account(),
                 )
                 if permission < github_types.GitHubRepositoryPermission.WRITE:
                     message = f"`{on_behalf.login}` does not have write access to the forked repository."

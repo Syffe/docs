@@ -26,7 +26,7 @@ class TestMergeAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -48,7 +48,7 @@ class TestMergeAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {"merge_bot_account": "{{ body }}"}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -86,8 +86,8 @@ class TestMergeAction(base.FunctionalTestBase):
                     "name": "merge",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -104,7 +104,7 @@ class TestMergeAction(base.FunctionalTestBase):
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         p1 = await self.create_pr(
-            files={"my_testing_file": "foo", "super_original_testfile": "42\ntest\n"}
+            files={"my_testing_file": "foo", "super_original_testfile": "42\ntest\n"},
         )
 
         await self.create_review_thread(
@@ -156,8 +156,8 @@ class TestMergeAction(base.FunctionalTestBase):
                     "name": "merge",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {"method": "merge"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -197,8 +197,8 @@ class TestMergeAction(base.FunctionalTestBase):
                     "name": "merge",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -216,7 +216,9 @@ class TestMergeAction(base.FunctionalTestBase):
         p1 = await self.create_pr()
         await self.run_engine()
         await self.wait_for_pull_request(
-            action="closed", pr_number=p1["number"], merged=True
+            action="closed",
+            pr_number=p1["number"],
+            merged=True,
         )
 
     async def test_merge_template_with_empty_body(self) -> None:
@@ -231,10 +233,10 @@ class TestMergeAction(base.FunctionalTestBase):
 
 {{body}}
 """,
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -263,10 +265,10 @@ class TestMergeAction(base.FunctionalTestBase):
 {{body}}
 superRP!
 """,
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -315,10 +317,10 @@ Pull request: #{{ number }}
 Co-Authored-By: {{ co_author.name }} <{{ co_author.email }}>
 {% endfor %}
 """,
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -328,7 +330,9 @@ Co-Authored-By: {{ co_author.name }} <{{ co_author.email }}>
         )
         await self.run_engine()
         merged_pull = await self.wait_for_pull_request(
-            "closed", p["number"], merged=True
+            "closed",
+            p["number"],
+            merged=True,
         )
 
         merge_commit_sha = merged_pull["pull_request"]["merge_commit_sha"]
@@ -352,8 +356,8 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
                     "name": "merge",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -389,7 +393,9 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         await self.create_comment_as_admin(p2["number"], "@mergifyio update")
         await self.run_engine()
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p2["number"]
+            "issue_comment",
+            {"action": "created"},
+            test_id=p2["number"],
         )
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
@@ -414,10 +420,10 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
                     "actions": {
                         "merge": {
                             "method": "fast-forward",
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -433,7 +439,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         branch = typing.cast(
             github_types.GitHubBranch,
             await self.client_integration.item(
-                f"{self.url_origin}/branches/{self.main_branch_name}"
+                f"{self.url_origin}/branches/{self.main_branch_name}",
             ),
         )
         assert p["head"]["sha"] == branch["commit"]["sha"]
@@ -467,10 +473,10 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
                         "merge": {
                             "method": "fast-forward",
                             "merge_bot_account": "{{ body }}",
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -486,7 +492,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         branch = typing.cast(
             github_types.GitHubBranch,
             await self.client_integration.item(
-                f"{self.url_origin}/branches/{self.main_branch_name}"
+                f"{self.url_origin}/branches/{self.main_branch_name}",
             ),
         )
         assert p["head"]["sha"] == branch["commit"]["sha"]
@@ -505,7 +511,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
                     "conditions": [f"base={self.main_branch_name}", "label=merge"],
                     "actions": {"merge": {}},
                 },
-            ]
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -530,7 +536,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
             owner_id = self.RECORD_CONFIG["organization_id"]
             repository_id = self.RECORD_CONFIG["repository_id"]
             cached_method = await self.redis_links.cache.get(
-                f"merge-method/{owner_id}/{repository_id}"
+                f"merge-method/{owner_id}/{repository_id}",
             )
             assert cached_method == expected_method
 
@@ -541,7 +547,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -549,33 +555,45 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         # Allow merge
         pull = await self.create_pr()
         async with self.allow_merge_methods(
-            self.url_origin, pull["number"], ("merge",)
+            self.url_origin,
+            pull["number"],
+            ("merge",),
         ):
             await self.run_engine()
         await self.wait_for_pull_request(
-            action="closed", pr_number=pull["number"], merged=True
+            action="closed",
+            pr_number=pull["number"],
+            merged=True,
         )
         await assert_cached_merge_method(b"merge")
 
         # Allow squash
         pull = await self.create_pr()
         async with self.allow_merge_methods(
-            self.url_origin, pull["number"], ("squash",)
+            self.url_origin,
+            pull["number"],
+            ("squash",),
         ):
             await self.run_engine()
         await self.wait_for_pull_request(
-            action="closed", pr_number=pull["number"], merged=True
+            action="closed",
+            pr_number=pull["number"],
+            merged=True,
         )
         await assert_cached_merge_method(b"squash")
 
         # Allow rebase
         pull = await self.create_pr()
         async with self.allow_merge_methods(
-            self.url_origin, pull["number"], ("rebase",)
+            self.url_origin,
+            pull["number"],
+            ("rebase",),
         ):
             await self.run_engine()
         await self.wait_for_pull_request(
-            action="closed", pr_number=pull["number"], merged=True
+            action="closed",
+            pr_number=pull["number"],
+            merged=True,
         )
         await assert_cached_merge_method(b"rebase")
 
@@ -584,7 +602,8 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         async with self.allow_merge_methods(self.url_origin, pull["number"]):
             await self.run_engine()
         check_run = await self.wait_for_check_run(
-            conclusion="cancelled", name="Rule: merge on main (merge)"
+            conclusion="cancelled",
+            name="Rule: merge on main (merge)",
         )
         assert check_run["check_run"]["output"]["title"] in (
             merge_base.FORBIDDEN_MERGE_COMMITS_MSG,

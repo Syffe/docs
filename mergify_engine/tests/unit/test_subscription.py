@@ -53,7 +53,8 @@ async def test_dict(redis_cache: redis_utils.RedisCache) -> None:
     ),
 )
 async def test_save_sub(
-    features: set[subscription.Features], redis_cache: redis_utils.RedisCache
+    features: set[subscription.Features],
+    redis_cache: redis_utils.RedisCache,
 ) -> None:
     owner_id = github_types.GitHubAccountIdType(1234)
     sub = subscription.Subscription(
@@ -66,7 +67,8 @@ async def test_save_sub(
 
     await sub._save_subscription_to_cache()
     rsub = await subscription.Subscription._retrieve_subscription_from_cache(
-        redis_cache, owner_id
+        redis_cache,
+        owner_id,
     )
     assert rsub == sub
 
@@ -91,13 +93,13 @@ async def test_save_sub_with_unhandled_feature(
     )
 
     assert sorted(sub._all_features) == sorted(
-        ["public_repository", "private_repository", "new_feature"]
+        ["public_repository", "private_repository", "new_feature"],
     )
     assert sub.features == frozenset(
         [
             subscription.Features.PRIVATE_REPOSITORY,
             subscription.Features.PUBLIC_REPOSITORY,
-        ]
+        ],
     )
 
     await sub._save_subscription_to_cache()
@@ -110,18 +112,19 @@ async def test_save_sub_with_unhandled_feature(
 
     with mock.patch.object(subscription, "Features", FeaturesMock):
         rsub = await subscription.Subscription._retrieve_subscription_from_cache(
-            redis_cache, owner_id
+            redis_cache,
+            owner_id,
         )
         assert rsub is not None
         assert sorted(rsub._all_features) == sorted(
-            ["public_repository", "private_repository", "new_feature"]
+            ["public_repository", "private_repository", "new_feature"],
         )
         assert rsub.features == frozenset(
             [
                 FeaturesMock.PRIVATE_REPOSITORY,
                 FeaturesMock.PUBLIC_REPOSITORY,
                 FeaturesMock.NEW_FEATURE,
-            ]
+            ],
         )
 
 
@@ -143,7 +146,9 @@ async def test_subscription_db_unavailable(
 
         # no cache, no db -> reraise
         retrieve_subscription_from_db_mock.side_effect = http.HTTPServiceUnavailable(
-            "boom!", response=mock.Mock(), request=mock.Mock()
+            "boom!",
+            response=mock.Mock(),
+            request=mock.Mock(),
         )
         with pytest.raises(http.HTTPServiceUnavailable):
             await subscription.Subscription.get_subscription(redis_cache, owner_id)
@@ -165,7 +170,9 @@ async def test_subscription_db_unavailable(
         # cache expired and not db -> got cached sub and expiration is updated
         retrieve_subscription_from_db_mock.reset_mock()
         retrieve_subscription_from_db_mock.side_effect = http.HTTPServiceUnavailable(
-            "boom!", response=mock.Mock(), request=mock.Mock()
+            "boom!",
+            response=mock.Mock(),
+            request=mock.Mock(),
         )
         frozen_time.move_to("2023-08-25 13:01")
         await redis_cache.expire(f"subscription-cache-owner-{owner_id}", 7200)
@@ -187,7 +194,8 @@ async def test_subscription_db_unavailable(
 
 async def test_unknown_sub(redis_cache: redis_utils.RedisCache) -> None:
     sub = await subscription.Subscription._retrieve_subscription_from_cache(
-        redis_cache, github_types.GitHubAccountIdType(98732189)
+        redis_cache,
+        github_types.GitHubAccountIdType(98732189),
     )
     assert sub is None
 
@@ -250,7 +258,7 @@ async def test_subscription_on_premise_valid(
     monkeypatch.setattr(settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something"))
 
     route = respx_mock.get(
-        f"{settings.SUBSCRIPTION_URL}/on-premise/subscription/1234"
+        f"{settings.SUBSCRIPTION_URL}/on-premise/subscription/1234",
     ).respond(
         200,
         json={
@@ -269,14 +277,15 @@ async def test_subscription_on_premise_valid(
     )
 
     await subscription.SubscriptionShadowOfficeOnPremise.get_subscription(
-        redis_cache, github_types.GitHubAccountIdType(1234)
+        redis_cache,
+        github_types.GitHubAccountIdType(1234),
     )
 
     assert route.call_count == 1
 
 
 @pytest.mark.ignored_logging_errors(
-    "The SUBSCRIPTION_TOKEN is invalid, the subscription can't be checked"
+    "The SUBSCRIPTION_TOKEN is invalid, the subscription can't be checked",
 )
 async def test_subscription_on_premise_wrong_token(
     redis_cache: redis_utils.RedisCache,
@@ -285,19 +294,20 @@ async def test_subscription_on_premise_wrong_token(
 ) -> None:
     monkeypatch.setattr(settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something"))
     route = respx_mock.get(
-        f"{settings.SUBSCRIPTION_URL}/on-premise/subscription/1234"
+        f"{settings.SUBSCRIPTION_URL}/on-premise/subscription/1234",
     ).respond(401, json={"message": "error"})
 
     with pytest.raises(exceptions.MergifyNotInstalled):
         await subscription.SubscriptionShadowOfficeOnPremise.get_subscription(
-            redis_cache, github_types.GitHubAccountIdType(1234)
+            redis_cache,
+            github_types.GitHubAccountIdType(1234),
         )
 
     assert route.call_count == 1
 
 
 @pytest.mark.ignored_logging_errors(
-    "The subscription attached to SUBSCRIPTION_TOKEN is not valid"
+    "The subscription attached to SUBSCRIPTION_TOKEN is not valid",
 )
 async def test_subscription_on_premise_invalid_sub(
     redis_cache: redis_utils.RedisCache,
@@ -306,14 +316,15 @@ async def test_subscription_on_premise_invalid_sub(
 ) -> None:
     monkeypatch.setattr(settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something"))
     route = respx_mock.get(
-        f"{settings.SUBSCRIPTION_URL}/on-premise/subscription/1234"
+        f"{settings.SUBSCRIPTION_URL}/on-premise/subscription/1234",
     ).respond(
         403,
         json={"message": "error"},
     )
     with pytest.raises(exceptions.MergifyNotInstalled):
         await subscription.SubscriptionShadowOfficeOnPremise.get_subscription(
-            redis_cache, github_types.GitHubAccountIdType(1234)
+            redis_cache,
+            github_types.GitHubAccountIdType(1234),
         )
 
     assert route.call_count == 1

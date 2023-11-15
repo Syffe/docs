@@ -15,7 +15,9 @@ def safe_dump(  # type: ignore[no-redef]
     default_flow_style: bool | None = None,
 ) -> typing.Any:
     return yaml.dump(
-        data, Dumper=yaml.CSafeDumper, default_flow_style=default_flow_style
+        data,
+        Dumper=yaml.CSafeDumper,
+        default_flow_style=default_flow_style,
     )
 
 
@@ -28,7 +30,10 @@ def dump(data: typing.Any) -> typing.Any:  # type: ignore[no-redef]
 # https://stackoverflow.com/questions/25108581/python-yaml-dump-bad-indentation
 class DumperWithIndentedList(yaml.SafeDumper):
     def increase_indent(
-        self, flow: bool = False, *args: typing.Any, **kwargs: typing.Any
+        self,
+        flow: bool = False,
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> typing.Any:
         return super().increase_indent(flow=flow, indentless=False)
 

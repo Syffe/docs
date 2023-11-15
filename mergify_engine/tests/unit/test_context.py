@@ -21,7 +21,7 @@ from mergify_engine.clients import http
 
 
 @pytest.mark.ignored_logging_errors(
-    "Received unknown 'loser' permission from GitHub. Keeps processing with none permission."
+    "Received unknown 'loser' permission from GitHub. Keeps processing with none permission.",
 )
 async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> None:
     class FakeClient(github.AsyncGitHubInstallationClient):
@@ -34,7 +34,10 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             self.called = 0
 
         async def item(
-            self, url: str, *args: typing.Any, **kwargs: typing.Any
+            self,
+            url: str,
+            *args: typing.Any,
+            **kwargs: typing.Any,
         ) -> dict[str, str] | None:
             self.called += 1
             if self.repo == "test":
@@ -65,7 +68,7 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "login": github_types.GitHubLogin("jd"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
 
     gh_repo = github_types.GitHubRepository(
@@ -79,7 +82,7 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "default_branch": github_types.GitHubRefType(""),
             "name": github_types.GitHubRepositoryName("test"),
             "private": False,
-        }
+        },
     )
 
     user_1 = github_types.GitHubAccount(
@@ -88,7 +91,7 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "login": github_types.GitHubLogin("foo"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
     user_2 = github_types.GitHubAccount(
         {
@@ -96,7 +99,7 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "login": github_types.GitHubLogin("bar"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
     user_3 = github_types.GitHubAccount(
         {
@@ -104,7 +107,7 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "login": github_types.GitHubLogin("baz"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
     installation_json = github_types.GitHubInstallation(
         {
@@ -113,7 +116,7 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "permissions": {},
             "account": gh_owner,
             "suspended_at": None,
-        }
+        },
     )
 
     sub = subscription.Subscription(
@@ -154,7 +157,7 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "default_branch": github_types.GitHubRefType(""),
             "name": github_types.GitHubRepositoryName("test2"),
             "private": False,
-        }
+        },
     )
 
     client = FakeClient(gh_owner["login"], gh_repo["name"])
@@ -174,7 +177,9 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
     assert not await repository.has_write_permission(user_1)
     assert client.called == 2
     await context.Repository.clear_user_permission_cache_for_repo(
-        redis_links.user_permissions_cache, gh_owner, gh_repo
+        redis_links.user_permissions_cache,
+        gh_owner,
+        gh_repo,
     )
     repository._caches.user_permissions.clear()
     assert not await repository.has_write_permission(user_1)
@@ -182,7 +187,8 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
     assert not await repository.has_write_permission(user_3)
     assert client.called == 4
     await context.Repository.clear_user_permission_cache_for_org(
-        redis_links.user_permissions_cache, gh_owner
+        redis_links.user_permissions_cache,
+        gh_owner,
     )
     repository._caches.user_permissions.clear()
     assert not await repository.has_write_permission(user_3)
@@ -197,7 +203,10 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
     assert await repository.has_write_permission(user_2)
     assert client.called == 6
     await context.Repository.clear_user_permission_cache_for_user(
-        redis_links.user_permissions_cache, gh_owner, gh_repo, user_2
+        redis_links.user_permissions_cache,
+        gh_owner,
+        gh_repo,
+        user_2,
     )
     repository._caches.user_permissions.clear()
     assert await repository.has_write_permission(user_2)
@@ -215,7 +224,10 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
             self.called = 0
 
         async def items(
-            self, url: str, *args: typing.Any, **kwargs: typing.Any
+            self,
+            url: str,
+            *args: typing.Any,
+            **kwargs: typing.Any,
         ) -> abc.AsyncGenerator[dict[str, str], None] | None:
             self.called += 1
             if url == f"/orgs/{self.owner}/teams/team1/members":
@@ -235,7 +247,7 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
             "login": github_types.GitHubLogin("jd"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
     gh_repo = github_types.GitHubRepository(
         {
@@ -248,7 +260,7 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
             "default_branch": github_types.GitHubRefType(""),
             "name": github_types.GitHubRepositoryName("test"),
             "private": False,
-        }
+        },
     )
     installation_json = github_types.GitHubInstallation(
         {
@@ -257,7 +269,7 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
             "permissions": {},
             "account": gh_owner,
             "suspended_at": None,
-        }
+        },
     )
 
     team_slug1 = github_types.GitHubTeamSlug("team1")
@@ -316,7 +328,8 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
     assert client.called == 4
 
     await installation.clear_team_members_cache_for_org(
-        redis_links.team_members_cache, gh_owner
+        redis_links.team_members_cache,
+        gh_owner,
     )
     installation._caches.team_members.clear()
 
@@ -361,7 +374,10 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             self.called = 0
 
         async def get(  # type: ignore[override]
-            self, url: str, *args: typing.Any, **kwargs: typing.Any
+            self,
+            url: str,
+            *args: typing.Any,
+            **kwargs: typing.Any,
         ) -> dict[typing.Any, typing.Any] | None:
             self.called += 1
             if (
@@ -375,7 +391,9 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
                 == f"/orgs/{self.owner}/teams/team-nok/repos/{self.owner}/{self.repo}"
             ):
                 raise http.HTTPNotFound(
-                    message="Not found", request=mock.ANY, response=mock.ANY
+                    message="Not found",
+                    request=mock.ANY,
+                    response=mock.ANY,
                 )
 
             if (
@@ -383,7 +401,9 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
                 == f"/orgs/{self.owner}/teams/team-also-nok/repos/{self.owner}/{self.repo}"
             ):
                 raise http.HTTPNotFound(
-                    message="Not found", request=mock.ANY, response=mock.ANY
+                    message="Not found",
+                    request=mock.ANY,
+                    response=mock.ANY,
                 )
 
             raise ValueError(f"Unknown test URL `{url}`")
@@ -394,7 +414,7 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "login": github_types.GitHubLogin("jd"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
 
     gh_repo = github_types.GitHubRepository(
@@ -408,7 +428,7 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "default_branch": github_types.GitHubRefType(""),
             "name": github_types.GitHubRepositoryName("test"),
             "private": False,
-        }
+        },
     )
     installation_json = github_types.GitHubInstallation(
         {
@@ -417,7 +437,7 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "permissions": {},
             "account": gh_owner,
             "suspended_at": None,
-        }
+        },
     )
 
     team_slug1 = github_types.GitHubTeamSlug("team-ok")
@@ -457,7 +477,7 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "default_branch": github_types.GitHubRefType(""),
             "name": github_types.GitHubRepositoryName("test2"),
             "private": False,
-        }
+        },
     )
 
     client = FakeClient(gh_owner["login"], gh_repo["name"])
@@ -476,7 +496,9 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
     assert await repository.team_has_read_permission(team_slug1)
     assert client.called == 2
     await context.Repository.clear_team_permission_cache_for_repo(
-        redis_links.team_permissions_cache, gh_owner, gh_repo
+        redis_links.team_permissions_cache,
+        gh_owner,
+        gh_repo,
     )
     repository._caches.team_has_read_permission.clear()
     assert await repository.team_has_read_permission(team_slug1)
@@ -484,7 +506,8 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
     assert not await repository.team_has_read_permission(team_slug3)
     assert client.called == 4
     await context.Repository.clear_team_permission_cache_for_org(
-        redis_links.team_permissions_cache, gh_owner
+        redis_links.team_permissions_cache,
+        gh_owner,
     )
     repository._caches.team_has_read_permission.clear()
     assert not await repository.team_has_read_permission(team_slug3)
@@ -500,7 +523,9 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
     assert client.called == 6
     repository._caches.team_has_read_permission.clear()
     await context.Repository.clear_team_permission_cache_for_team(
-        redis_links.team_permissions_cache, gh_owner, team_slug2
+        redis_links.team_permissions_cache,
+        gh_owner,
+        team_slug2,
     )
     repository._caches.team_has_read_permission.clear()
     assert not await repository.team_has_read_permission(team_slug2)
@@ -565,7 +590,10 @@ footer
         (
             "Merge-After: 2023-01-18[Australia/Sydney]",
             datetime.datetime(
-                2023, 1, 18, tzinfo=zoneinfo.ZoneInfo("Australia/Sydney")
+                2023,
+                1,
+                18,
+                tzinfo=zoneinfo.ZoneInfo("Australia/Sydney"),
             ),
         ),
         (
@@ -575,19 +603,34 @@ footer
         (
             "Merge-After: 2023-01-18 08:10[Europe/Paris]",
             datetime.datetime(
-                2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                1,
+                18,
+                8,
+                10,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
         ),
         (
             "Merge-After: 2023-01-18 08:10[Africa/Porto-Novo]",
             datetime.datetime(
-                2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Africa/Porto-Novo")
+                2023,
+                1,
+                18,
+                8,
+                10,
+                tzinfo=zoneinfo.ZoneInfo("Africa/Porto-Novo"),
             ),
         ),
         (
             "Merge-After: 2023-01-18 08:10[Africa/Sao_Tome]",
             datetime.datetime(
-                2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Africa/Sao_Tome")
+                2023,
+                1,
+                18,
+                8,
+                10,
+                tzinfo=zoneinfo.ZoneInfo("Africa/Sao_Tome"),
             ),
         ),
         (
@@ -669,7 +712,8 @@ async def test_context_body_null(
     ctxt = context.Context(mock.Mock(), a_pull_request)
     assert (
         await condition_value_querier.PullRequest(ctxt)._get_consolidated_data(
-            ctxt, "body"
+            ctxt,
+            "body",
         )
         == ""
     )
@@ -778,7 +822,7 @@ You can trigger Dependabot actions by commenting on this PR:
 """  # noqa
     ctxt = context.Context(mock.Mock(), a_pull_request)
     assert await condition_value_querier.PullRequest(ctxt).get_commit_message(
-        "{{ title }} (#{{ number }})\n\n{{ body | markdownify }}"
+        "{{ title }} (#{{ number }})\n\n{{ body | markdownify }}",
     ) == (expected_title, expected_body)
 
 
@@ -789,7 +833,7 @@ async def test_context_body_section(
         "title"
     ] = "chore(deps-dev): update flake8 requirement <-- noway we commit this-->from <4 to <5"
     a_pull_request["head"]["ref"] = github_types.GitHubRefType(
-        "daily_merge/beta/pv6.0.0"
+        "daily_merge/beta/pv6.0.0",
     )
     a_pull_request["body"] = """
 ### Description
@@ -857,7 +901,7 @@ commits:
                 date_committer=github_types.ISODateTimeType(""),
                 gh_author_login=github_types.GitHubLogin("someone"),
             ),
-        ]
+        ],
     )
     assert await condition_value_querier.PullRequest(ctxt).get_commit_message(
         "{{ title | striptags }} (#{{ number }})\n\n{{ body | get_section('### Description') }}\n\n"
@@ -931,7 +975,7 @@ async def test_check_runs_ordering(
     repo = mock.Mock()
     repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
     repo.get_mergify_config = mock.AsyncMock(
-        return_value=rules.UserConfigurationSchema({})
+        return_value=rules.UserConfigurationSchema({}),
     )
     repo.installation.client.items = mock.MagicMock(__aiter__=[])
     ctxt = context.Context(repo, a_pull_request)
@@ -1111,9 +1155,9 @@ async def test_reviews_filtering(
                 "state": "APPROVED",
                 "author_association": "COLLABORATOR",
                 "submitted_at": github_types.ISODateTimeType(
-                    "2022-07-26T04:49:04.750767+00:00"
+                    "2022-07-26T04:49:04.750767+00:00",
                 ),
-            }
+            },
         ),
         github_types.GitHubReview(
             {
@@ -1125,9 +1169,9 @@ async def test_reviews_filtering(
                 "state": "CHANGES_REQUESTED",
                 "author_association": "COLLABORATOR",
                 "submitted_at": github_types.ISODateTimeType(
-                    "2022-07-26T14:14:14.000000+00:00"
+                    "2022-07-26T14:14:14.000000+00:00",
                 ),
-            }
+            },
         ),
         github_types.GitHubReview(
             {
@@ -1139,9 +1183,9 @@ async def test_reviews_filtering(
                 "state": "APPROVED",
                 "author_association": "COLLABORATOR",
                 "submitted_at": github_types.ISODateTimeType(
-                    "2022-07-26T22:42:24.000001+00:00"
+                    "2022-07-26T22:42:24.000001+00:00",
                 ),
-            }
+            },
         ),
     ]
 
@@ -1175,7 +1219,7 @@ async def test_reviews_filtering(
                 "data": github_types.GitHubEventRefresh(
                     {
                         "received_at": github_types.ISODateTimeType(
-                            "2022-07-26T14:14:14.000000+00:00"
+                            "2022-07-26T14:14:14.000000+00:00",
                         ),
                         "organization": a_pull_request["base"]["repo"]["owner"],
                         "installation": {
@@ -1193,13 +1237,13 @@ async def test_reviews_filtering(
                         "source": "internal",
                         "flag": None,
                         "attempts": None,
-                    }
+                    },
                 ),
                 "timestamp": github_types.ISODateTimeType(
-                    "2022-07-26T14:14:14.000000+00:00"
+                    "2022-07-26T14:14:14.000000+00:00",
                 ),
                 "initial_score": 0,
-            }
+            },
         ),
     ]
     # Drop review done after the refresh event.
@@ -1236,7 +1280,7 @@ async def test_reviews_filtering(
                     "dependency-name": "bootstrap",
                     "dependency-type": "direct:development",
                     "update-type": "version-update:semver-minor",
-                }
+                },
             ],
         ),
         (
@@ -1260,7 +1304,7 @@ async def test_reviews_filtering(
                 {
                     "dependency-name": "terser",
                     "dependency-type": "indirect",
-                }
+                },
             ],
         ),
         (
@@ -1355,10 +1399,12 @@ async def test_reviews_filtering(
     ],
 )
 async def test_dependabot_attributes_parsing(
-    commit_msg: str, dependabot_properties: list[dependabot_types.DependabotAttributes]
+    commit_msg: str,
+    dependabot_properties: list[dependabot_types.DependabotAttributes],
 ) -> None:
     res = dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
-        mock.Mock(), commit_msg
+        mock.Mock(),
+        commit_msg,
     )
     assert res == dependabot_properties
 
@@ -1401,7 +1447,8 @@ async def test_dependabot_attributes_parsing(
 )
 async def test_dependabot_attributes_parsing_ko(commit_msg: str) -> None:
     res = dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
-        mock.Mock(), commit_msg
+        mock.Mock(),
+        commit_msg,
     )
     assert res == []
 
@@ -1480,7 +1527,7 @@ Yo!
     ctxt._caches.commits.set(commits)
 
     template = await condition_value_querier.PullRequest(ctxt).render_template(
-        a_pull_request["body"]  # type: ignore[arg-type]
+        a_pull_request["body"],  # type: ignore[arg-type]
     )
     assert (
         template
@@ -1607,7 +1654,7 @@ async def test_context_co_authors(
                 date_committer=github_types.ISODateTimeType(""),
                 gh_author_login=github_types.GitHubLogin("General Grievous"),
             ),
-        ]
+        ],
     )
 
     expected_title = "feat(module): hello there"
@@ -1628,5 +1675,5 @@ Pull request: #{{ number }}
 {% for co_author in co_authors %}
 Co-Authored-By: {{ co_author.name }} <{{ co_author.email }}>
 {% endfor %}
-"""
+""",
     ) == (expected_title, expected_body)

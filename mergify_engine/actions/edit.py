@@ -40,14 +40,17 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, e.title, e.reason
+                rule,
+                action,
+                e.title,
+                e.reason,
             )
 
         return cls(
             ctxt,
             rule,
             EditExecutorConfig(
-                {"draft": action.config["draft"], "bot_account": bot_account}
+                {"draft": action.config["draft"], "bot_account": bot_account},
             ),
         )
 

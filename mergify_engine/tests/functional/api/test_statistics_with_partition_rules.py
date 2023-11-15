@@ -37,7 +37,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -174,7 +174,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -257,7 +257,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -344,7 +344,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -438,7 +438,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
                     "batch_size": 3,
                     "batch_max_wait_time": "0 s",
                     "speculative_checks": 1,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -459,7 +459,8 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             # Create FailureByReason
             p1 = await self.create_pr(files={"projA/test1.txt": "test"})
             p2 = await self.create_pr(
-                two_commits=True, files={"projA/test2.txt": "test"}
+                two_commits=True,
+                files={"projA/test2.txt": "test"},
             )
             p3 = await self.create_pr(files={"projA/test3.txt": "test"})
 

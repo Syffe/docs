@@ -14,7 +14,7 @@ class TestRequeueCommand(base.FunctionalTestBase):
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
         }
         await self.setup_repo(yaml.dump(rules))
@@ -24,7 +24,8 @@ class TestRequeueCommand(base.FunctionalTestBase):
         await self.create_comment(p["number"], "@mergifyio queue default", as_="admin")
         await self.run_engine()
         queue_comment = await self.wait_for_issue_comment(
-            action="created", test_id=str(p["number"])
+            action="created",
+            test_id=str(p["number"]),
         )
         assert (
             "🟠 The pull request is the 1st in the queue to be merged"
@@ -45,11 +46,14 @@ class TestRequeueCommand(base.FunctionalTestBase):
 
         # Requeue PR
         await self.create_comment(
-            p["number"], "@mergifyio requeue default", as_="admin"
+            p["number"],
+            "@mergifyio requeue default",
+            as_="admin",
         )
         await self.run_engine()
         requeue_comment = await self.wait_for_issue_comment(
-            action="created", test_id=str(p["number"])
+            action="created",
+            test_id=str(p["number"]),
         )
         assert (
             "✅ This pull request will be re-embarked automatically"
@@ -61,7 +65,8 @@ class TestRequeueCommand(base.FunctionalTestBase):
         )
 
         queue_comment_2 = await self.wait_for_issue_comment(
-            action="created", test_id=str(p["number"])
+            action="created",
+            test_id=str(p["number"]),
         )
         assert (
             "🟠 The pull request is the 1st in the queue to be merged"

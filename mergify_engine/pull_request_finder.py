@@ -31,7 +31,8 @@ class PullRequestFinder:
         dict[github_types.GitHubRefType, set[github_types.GitHubPullRequestNumber]],
     ] = dataclasses.field(default_factory=lambda: collections.defaultdict(dict))
     sha_to_pull_numbers: dict[
-        github_types.SHAType, set[github_types.GitHubPullRequestNumber]
+        github_types.SHAType,
+        set[github_types.GitHubPullRequestNumber],
     ] = dataclasses.field(default_factory=dict)
 
     @staticmethod
@@ -130,7 +131,7 @@ class PullRequestFinder:
                         number=pull_request["number"],
                         base_ref=pull_request["base"]["ref"],
                         head_sha=pull_request["head"]["sha"],
-                    )
+                    ),
                 ),
             )
             await pipe.expire(cache_key, OPENED_PULL_REQUEST_CACHE_EXPIRATION)
@@ -170,6 +171,7 @@ class PullRequestFinder:
 
         for p in cached_pulls:
             self.opened_pulls_by_repo_and_branch[repo_id].setdefault(
-                p["base_ref"], set()
+                p["base_ref"],
+                set(),
             ).add(p["number"])
             self.sha_to_pull_numbers.setdefault(p["head_sha"], set()).add(p["number"])

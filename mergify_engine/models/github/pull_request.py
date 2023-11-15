@@ -237,7 +237,9 @@ class PullRequest(models.Base):
         for assignee in assignees:
             await gh_account_model.GitHubAccount.create_or_update(session, assignee)
             await PullRequestAssigneesGitHubAccountAssociationTable.insert(
-                session, validated_data["id"], assignee["id"]
+                session,
+                validated_data["id"],
+                assignee["id"],
             )
 
         assignees_ids = [assignee["id"] for assignee in assignees]
@@ -247,17 +249,20 @@ class PullRequest(models.Base):
                 PullRequestAssigneesGitHubAccountAssociationTable.pull_request_id
                 == data_for_obj["id"],
                 PullRequestAssigneesGitHubAccountAssociationTable.github_account_id.notin_(
-                    assignees_ids
+                    assignees_ids,
                 ),
-            )
+            ),
         )
 
         for requested_reviewer in requested_reviewers:
             await gh_account_model.GitHubAccount.create_or_update(
-                session, requested_reviewer
+                session,
+                requested_reviewer,
             )
             await PullRequestRequestedReviewersGitHubAccountAssociationTable.insert(
-                session, validated_data["id"], requested_reviewer["id"]
+                session,
+                validated_data["id"],
+                requested_reviewer["id"],
             )
 
         requested_reviewers_ids = [
@@ -266,14 +271,14 @@ class PullRequest(models.Base):
         # Delete github account requested reviewers not in the list anymore
         await session.execute(
             sqlalchemy.delete(
-                PullRequestRequestedReviewersGitHubAccountAssociationTable
+                PullRequestRequestedReviewersGitHubAccountAssociationTable,
             ).where(
                 PullRequestRequestedReviewersGitHubAccountAssociationTable.pull_request_id
                 == data_for_obj["id"],
                 PullRequestRequestedReviewersGitHubAccountAssociationTable.github_account_id.notin_(
-                    requested_reviewers_ids
+                    requested_reviewers_ids,
                 ),
-            )
+            ),
         )
 
     def as_github_dict(self) -> github_types.GitHubPullRequest:
@@ -307,10 +312,11 @@ class PullRequestAssigneesGitHubAccountAssociationTable(models.Base):
         sql = (
             postgresql.insert(cls)
             .values(
-                pull_request_id=pull_request_id, github_account_id=github_account_id
+                pull_request_id=pull_request_id,
+                github_account_id=github_account_id,
             )
             .on_conflict_do_nothing(
-                index_elements=["pull_request_id", "github_account_id"]
+                index_elements=["pull_request_id", "github_account_id"],
             )
         )
         await session.execute(sql)
@@ -343,10 +349,11 @@ class PullRequestRequestedReviewersGitHubAccountAssociationTable(models.Base):
         sql = (
             postgresql.insert(cls)
             .values(
-                pull_request_id=pull_request_id, github_account_id=github_account_id
+                pull_request_id=pull_request_id,
+                github_account_id=github_account_id,
             )
             .on_conflict_do_nothing(
-                index_elements=["pull_request_id", "github_account_id"]
+                index_elements=["pull_request_id", "github_account_id"],
             )
         )
         await session.execute(sql)

@@ -23,7 +23,8 @@ LOG = daiquiri.getLogger(__name__)
 PullRequestRuleName = typing.NewType("PullRequestRuleName", str)
 EvaluatedPullRequestRule = typing.NewType("EvaluatedPullRequestRule", "PullRequestRule")
 PullRequestRulesEvaluator = generic_evaluator.GenericRulesEvaluator[
-    "PullRequestRule", EvaluatedPullRequestRule
+    "PullRequestRule",
+    EvaluatedPullRequestRule,
 ]
 
 
@@ -64,7 +65,8 @@ class PullRequestRule:
         return self.conditions
 
     async def evaluate(
-        self, pulls: list[condition_value_querier.BasePullRequest]
+        self,
+        pulls: list[condition_value_querier.BasePullRequest],
     ) -> EvaluatedPullRequestRule:
         evaluated_rule = typing.cast(EvaluatedPullRequestRule, self)
         await evaluated_rule.conditions(pulls)
@@ -93,7 +95,7 @@ class PullRequestRules:
         for rule in self.rules:
             if rule.name in names:
                 raise voluptuous.error.Invalid(
-                    f"pull_request_rules names must be unique, found `{rule.name}` twice"
+                    f"pull_request_rules names must be unique, found `{rule.name}` twice",
                 )
             names.add(rule.name)
 
@@ -113,14 +115,15 @@ class PullRequestRules:
             name=rule.name,
             disabled=rule.disabled,
             conditions=conditions_mod.PullRequestRuleConditions(
-                rule.conditions.condition.copy().conditions + extra_conditions
+                rule.conditions.condition.copy().conditions + extra_conditions,
             ),
             actions=new_actions,
             hidden=rule.hidden,
         )
 
     async def get_pull_request_rules_evaluator(
-        self, ctxt: "context.Context"
+        self,
+        ctxt: "context.Context",
     ) -> PullRequestRulesEvaluator:
         runtime_rules = []
         for rule in self.rules:
@@ -133,14 +136,14 @@ class PullRequestRules:
                 conditions = await action.get_conditions_requirements(ctxt)
                 if conditions:
                     runtime_rules.append(
-                        self._gen_rule_from(rule, {name: action}, conditions)
+                        self._gen_rule_from(rule, {name: action}, conditions),
                     )
                 else:
                     actions_without_special_rules[name] = action
 
             if actions_without_special_rules:
                 runtime_rules.append(
-                    self._gen_rule_from(rule, actions_without_special_rules, [])
+                    self._gen_rule_from(rule, actions_without_special_rules, []),
                 )
 
         return await PullRequestRulesEvaluator.create(
@@ -156,17 +159,19 @@ def CommandsRestrictionsSchema(
 ) -> voluptuous.Schema:
     return {
         voluptuous.Required(
-            "conditions", default=command.default_restrictions
+            "conditions",
+            default=command.default_restrictions,
         ): voluptuous.All(
             [
                 voluptuous.Coerce(
                     lambda v: cond_config.RuleConditionSchema(
-                        v, allow_command_attributes=True
-                    )
-                )
+                        v,
+                        allow_command_attributes=True,
+                    ),
+                ),
             ],
             voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
-        )
+        ),
     }
 
 
@@ -181,7 +186,8 @@ def get_pull_request_rules_schema() -> voluptuous.All:
                 {
                     voluptuous.Required("name"): str,
                     voluptuous.Required("disabled", default=None): voluptuous.Any(
-                        None, {voluptuous.Required("reason"): str}
+                        None,
+                        {voluptuous.Required("reason"): str},
                     ),
                     voluptuous.Required("hidden", default=False): bool,
                     voluptuous.Required("conditions"): voluptuous.All(

@@ -97,14 +97,17 @@ class WorkflowRun(models.Base):
         anonymizer_config=None,
     )
     run_attempt: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger, anonymizer_config=None
+        sqlalchemy.BigInteger,
+        anonymizer_config=None,
     )
 
     owner: orm.Mapped[gh_account.GitHubAccount] = orm.relationship(
-        lazy="joined", foreign_keys=[owner_id]
+        lazy="joined",
+        foreign_keys=[owner_id],
     )
     triggering_actor: orm.Mapped[gh_account.GitHubAccount] = orm.relationship(
-        lazy="joined", foreign_keys=[triggering_actor_id]
+        lazy="joined",
+        foreign_keys=[triggering_actor_id],
     )
 
     repository_id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
@@ -113,7 +116,7 @@ class WorkflowRun(models.Base):
     )
 
     repository: orm.Mapped[gh_repository.GitHubRepository] = orm.relationship(
-        lazy="joined"
+        lazy="joined",
     )
 
     @classmethod
@@ -124,19 +127,21 @@ class WorkflowRun(models.Base):
         repository: github_types.GitHubRepository,
     ) -> None:
         result = await session.execute(
-            sqlalchemy.select(cls).where(cls.id == workflow_run_data["id"])
+            sqlalchemy.select(cls).where(cls.id == workflow_run_data["id"]),
         )
         if result.scalar_one_or_none() is None:
             if "triggering_actor" in workflow_run_data:
                 triggering_actor = await gh_account.GitHubAccount.get_or_create(
-                    session, workflow_run_data["triggering_actor"]
+                    session,
+                    workflow_run_data["triggering_actor"],
                 )
                 session.add(triggering_actor)
             else:
                 triggering_actor = None  # type: ignore[unreachable]
 
             repo = await gh_repository.GitHubRepository.get_or_create(
-                session, repository
+                session,
+                repository,
             )
 
             session.add(
@@ -148,7 +153,7 @@ class WorkflowRun(models.Base):
                     event=WorkflowRunTriggerEvent(workflow_run_data["event"]),
                     triggering_actor=triggering_actor,
                     run_attempt=workflow_run_data["run_attempt"],
-                )
+                ),
             )
 
 
@@ -212,7 +217,8 @@ class WorkflowJobColumnMixin:
         return orm.relationship(lazy="joined")
 
     run_attempt: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger, anonymizer_config=None
+        sqlalchemy.BigInteger,
+        anonymizer_config=None,
     )
 
     steps: orm.Mapped[
@@ -220,10 +226,12 @@ class WorkflowJobColumnMixin:
     ] = orm.mapped_column(sqlalchemy.JSON, anonymizer_config=None, nullable=True)
 
     failed_step_number: orm.Mapped[int | None] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config=None
+        sqlalchemy.Integer,
+        anonymizer_config=None,
     )
     failed_step_name: orm.Mapped[str | None] = orm.mapped_column(
-        sqlalchemy.String, anonymizer_config=None
+        sqlalchemy.String,
+        anonymizer_config=None,
     )
 
     embedded_log: orm.Mapped[str | None] = orm.mapped_column(
@@ -237,19 +245,24 @@ class WorkflowJobColumnMixin:
         anonymizer_config=None,
     )
     log_embedding_attempts: orm.Mapped[int] = orm.mapped_column(
-        server_default="0", anonymizer_config=None
+        server_default="0",
+        anonymizer_config=None,
     )
     log_embedding_retry_after: orm.Mapped[datetime.datetime | None] = orm.mapped_column(
-        nullable=True, anonymizer_config=None
+        nullable=True,
+        anonymizer_config=None,
     )
     matrix: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
 
     head_sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
-        sqlalchemy.String, anonymizer_config=None
+        sqlalchemy.String,
+        anonymizer_config=None,
     )
 
     ci_issue_id: orm.Mapped[int | None] = orm.mapped_column(
-        sqlalchemy.ForeignKey("ci_issue.id"), anonymizer_config=None, index=True
+        sqlalchemy.ForeignKey("ci_issue.id"),
+        anonymizer_config=None,
+        index=True,
     )
 
     @orm.declared_attr
@@ -375,17 +388,18 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
         repository: github_types.GitHubRepository,
     ) -> WorkflowJob:
         result = await session.execute(
-            sqlalchemy.select(cls).where(cls.id == workflow_job_data["id"])
+            sqlalchemy.select(cls).where(cls.id == workflow_job_data["id"]),
         )
         job = result.scalar_one_or_none()
         if job is None:
             failed_step = cls.get_failed_step(workflow_job_data)
 
             name_without_matrix, matrix = cls.get_job_name_and_matrix(
-                workflow_job_data["name"]
+                workflow_job_data["name"],
             )
             repo = await gh_repository.GitHubRepository.get_or_create(
-                session, repository
+                session,
+                repository,
             )
             job = cls(
                 id=workflow_job_data["id"],
@@ -439,7 +453,10 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
 
     @classmethod
     async def is_rerun_needed(
-        cls, session: sqlalchemy.ext.asyncio.AsyncSession, job_id: int, max_rerun: int
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        job_id: int,
+        max_rerun: int,
     ) -> NeedRerunStatus:
         # Avoid circular import
         from mergify_engine.models.views.workflows import FlakyStatus
@@ -457,7 +474,7 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
                     WorkflowJobEnhanced.repository_id == cls.repository_id,
                     WorkflowJobEnhanced.flaky == FlakyStatus.FLAKY.value,
                 )
-                .scalar_subquery()
+                .scalar_subquery(),
             ).label("flaky_neighb"),
         ).where(cls.id == job_id)
 

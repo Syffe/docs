@@ -38,7 +38,8 @@ class TrainCarStateForSummary:
 
     @classmethod
     def from_train_car_state(
-        cls, train_car_state: TrainCarState
+        cls,
+        train_car_state: TrainCarState,
     ) -> TrainCarStateForSummary:
         return cls(train_car_state.outcome, train_car_state.outcome_message)
 
@@ -56,7 +57,8 @@ class TrainCarStateForSummary:
 
     @classmethod
     def deserialize(
-        cls, data: TrainCarStateForSummary.Serialized
+        cls,
+        data: TrainCarStateForSummary.Serialized,
     ) -> TrainCarStateForSummary:
         return cls(
             outcome=data["outcome"],
@@ -65,14 +67,15 @@ class TrainCarStateForSummary:
 
     @classmethod
     def deserialize_from_summary(
-        cls, summary_check: github_types.CachedGitHubCheckRun | None
+        cls,
+        summary_check: github_types.CachedGitHubCheckRun | None,
     ) -> TrainCarStateForSummary | None:
         line = extract_encoded_train_car_state_data_from_summary(summary_check)
         if line is not None:
             serialized = typing.cast(
                 TrainCarStateForSummary.Serialized,
                 json.loads(
-                    base64.b64decode(utils.strip_comment_tags(line).encode()).decode()
+                    base64.b64decode(utils.strip_comment_tags(line).encode()).decode(),
                 ),
             )
             return cls.deserialize(serialized)
@@ -96,16 +99,16 @@ class TrainCarState:
     # in the `action.queue.leave` event and then used in statistics to calculate the
     # time to merge of a PR, minus those 2 times.
     waiting_for_freeze_start_dates: list[datetime.datetime] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
     waiting_for_freeze_end_dates: list[datetime.datetime] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
     waiting_for_schedule_start_dates: list[datetime.datetime] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
     waiting_for_schedule_end_dates: list[datetime.datetime] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
     # NOTE(Greesb): Those 2 variables are used to compute the time spent outside a schedule
     # condition that would make the CI fail if all the others non-schedule condition were True.
@@ -114,7 +117,7 @@ class TrainCarState:
         datetime.datetime
     ] = dataclasses.field(default_factory=list)
     time_spent_outside_schedule_end_dates: list[datetime.datetime] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
 
     class Serialized(typing.TypedDict):
@@ -171,22 +174,28 @@ class TrainCarState:
         # Backward compat, introduced in 7.6.0
         kwargs = {
             "waiting_for_freeze_start_dates": data.get(
-                "waiting_for_freeze_start_dates", []
+                "waiting_for_freeze_start_dates",
+                [],
             ),
             "waiting_for_freeze_end_dates": data.get(
-                "waiting_for_freeze_end_dates", []
+                "waiting_for_freeze_end_dates",
+                [],
             ),
             "waiting_for_schedule_start_dates": data.get(
-                "waiting_for_schedule_start_dates", []
+                "waiting_for_schedule_start_dates",
+                [],
             ),
             "waiting_for_schedule_end_dates": data.get(
-                "waiting_for_schedule_end_dates", []
+                "waiting_for_schedule_end_dates",
+                [],
             ),
             "time_spent_outside_schedule_start_dates": data.get(
-                "time_spent_outside_schedule_start_dates", []
+                "time_spent_outside_schedule_start_dates",
+                [],
             ),
             "time_spent_outside_schedule_end_dates": data.get(
-                "time_spent_outside_schedule_end_dates", []
+                "time_spent_outside_schedule_end_dates",
+                [],
             ),
         }
 
@@ -202,7 +211,9 @@ class TrainCarState:
                 pass
             else:
                 frozen_by = freeze.QueueFreeze.deserialize(
-                    repository, queue_rule, frozen_by_raw
+                    repository,
+                    queue_rule,
+                    frozen_by_raw,
                 )
 
         # backward compatibility following the implementation of "paused_by" attribute, introduced in 7.6.0
@@ -232,37 +243,37 @@ class TrainCarState:
 
     def add_waiting_for_schedule_start_date(self) -> None:
         if len(self.waiting_for_schedule_start_dates) == 0 or len(
-            self.waiting_for_schedule_start_dates
+            self.waiting_for_schedule_start_dates,
         ) <= len(self.waiting_for_schedule_end_dates):
             self.waiting_for_schedule_start_dates.append(date.utcnow())
 
     def add_waiting_for_schedule_end_date(self) -> None:
         if len(self.waiting_for_schedule_start_dates) > len(
-            self.waiting_for_schedule_end_dates
+            self.waiting_for_schedule_end_dates,
         ):
             self.waiting_for_schedule_end_dates.append(date.utcnow())
 
     def add_waiting_for_freeze_start_date(self) -> None:
         if len(self.waiting_for_freeze_start_dates) == 0 or len(
-            self.waiting_for_freeze_start_dates
+            self.waiting_for_freeze_start_dates,
         ) <= len(self.waiting_for_freeze_end_dates):
             self.waiting_for_freeze_start_dates.append(date.utcnow())
 
     def add_waiting_for_freeze_end_date(self) -> None:
         if len(self.waiting_for_freeze_start_dates) > len(
-            self.waiting_for_freeze_end_dates
+            self.waiting_for_freeze_end_dates,
         ):
             self.waiting_for_freeze_end_dates.append(date.utcnow())
 
     def add_time_spent_outside_schedule_start_date(self) -> None:
         if len(self.time_spent_outside_schedule_start_dates) == 0 or len(
-            self.time_spent_outside_schedule_start_dates
+            self.time_spent_outside_schedule_start_dates,
         ) <= len(self.time_spent_outside_schedule_end_dates):
             self.time_spent_outside_schedule_start_dates.append(date.utcnow())
 
     def add_time_spent_outside_schedule_end_date(self) -> None:
         if len(self.time_spent_outside_schedule_start_dates) > len(
-            self.time_spent_outside_schedule_end_dates
+            self.time_spent_outside_schedule_end_dates,
         ):
             self.time_spent_outside_schedule_end_dates.append(date.utcnow())
 
@@ -275,7 +286,7 @@ class TrainCarState:
             raise RuntimeError(
                 "Got different sized date list "
                 f"(start={len(start_dates_list)} / end={len(end_dates_list)}) "
-                "to compute in TrainCarState"
+                "to compute in TrainCarState",
             )
 
         seconds = 0
@@ -341,7 +352,9 @@ class TrainCarState:
     @property
     def seconds_waiting_for_freeze(self) -> int:
         return self._compute_time_arrays_in_seconds(
-            self.waiting_for_freeze_start_dates, self.waiting_for_freeze_end_dates, True
+            self.waiting_for_freeze_start_dates,
+            self.waiting_for_freeze_end_dates,
+            True,
         )
 
     @property
@@ -380,10 +393,11 @@ def dequeue_reason_from_train_car_state(
     ):
         if train_car_state.outcome_message is None:
             LOG.error(
-                "outcome_message is not set", outcome=train_car_state.outcome.value
+                "outcome_message is not set",
+                outcome=train_car_state.outcome.value,
             )
         return queue_utils.UnexpectedQueueChange(
-            change=train_car_state.outcome_message or "unexpected queue change"
+            change=train_car_state.outcome_message or "unexpected queue change",
         )
 
     if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
@@ -408,5 +422,5 @@ def dequeue_reason_from_train_car_state(
         return queue_utils.BranchUpdateFailed()
 
     raise UnexpectedOutcome(
-        f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"
+        f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason",
     )

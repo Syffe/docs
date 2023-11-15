@@ -358,7 +358,9 @@ def test_filter_dict_recursively() -> None:
 
 async def test_map_tenacity_try_again_to_real_cause() -> None:
     @tenacity.retry(
-        retry=tenacity.retry_never, stop=tenacity.stop_after_attempt(2), reraise=True
+        retry=tenacity.retry_never,
+        stop=tenacity.stop_after_attempt(2),
+        reraise=True,
     )
     async def buggy_code() -> None:
         try:
@@ -375,7 +377,9 @@ async def test_map_tenacity_try_again_to_real_cause() -> None:
 
 async def test_map_tenacity_try_again_to_real_cause_without_from() -> None:
     @tenacity.retry(
-        retry=tenacity.retry_never, stop=tenacity.stop_after_attempt(2), reraise=True
+        retry=tenacity.retry_never,
+        stop=tenacity.stop_after_attempt(2),
+        reraise=True,
     )
     async def buggy_code() -> None:
         try:
@@ -392,7 +396,9 @@ async def test_map_tenacity_try_again_to_real_cause_without_from() -> None:
 
 async def test_map_tenacity_try_again_to_real_cause_without_except() -> None:
     @tenacity.retry(
-        retry=tenacity.retry_never, stop=tenacity.stop_after_attempt(2), reraise=True
+        retry=tenacity.retry_never,
+        stop=tenacity.stop_after_attempt(2),
+        reraise=True,
     )
     async def buggy_code() -> None:
         # No except

@@ -25,8 +25,8 @@ HTTPX_VERSION = httpx.__version__
 
 DEFAULT_HEADERS = httpx.Headers(
     {
-        "User-Agent": f"mergify-engine/{service.VERSION} python/{PYTHON_VERSION} httpx/{HTTPX_VERSION}"
-    }
+        "User-Agent": f"mergify-engine/{service.VERSION} python/{PYTHON_VERSION} httpx/{HTTPX_VERSION}",
+    },
 )
 
 DEFAULT_TIMEOUT = httpx.Timeout(5.0, read=10.0)
@@ -225,7 +225,7 @@ async def retry_async_httpx_send(
         async for attempt in tenacity.AsyncRetrying(
             reraise=True,
             retry=tenacity.retry_if_exception_type(
-                (RequestError, TryAgainOnCertainHTTPError)
+                (RequestError, TryAgainOnCertainHTTPError),
             ),
             wait=tenacity.wait_combine(
                 TryAgainOnCertainHTTPError.wait_from_headers(),

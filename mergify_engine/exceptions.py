@@ -51,7 +51,7 @@ class SecondaryRateLimited(RateLimited):
 class EngineNeedRetry(Exception):
     message: str
     retry_in: datetime.timedelta = dataclasses.field(
-        default=datetime.timedelta(minutes=1)
+        default=datetime.timedelta(minutes=1),
     )
 
 
@@ -64,7 +64,7 @@ IGNORED_HTTP_ERROR_MESSAGES: dict[int, list[str | re.Pattern[str]]] = {
         "Resource not accessible by integration",  # missing permission
         "Repository was archived so is read-only",
         re.compile(
-            r"Although you appear to have the correct authorization credentials, the `.*` organization has an IP allow list enabled, and .* is not permitted to access this resource\."
+            r"Although you appear to have the correct authorization credentials, the `.*` organization has an IP allow list enabled, and .* is not permitted to access this resource\.",
         ),
     ],
     422: [
@@ -92,12 +92,12 @@ def should_be_ignored(exception: Exception) -> bool:
                     return True
             else:
                 raise RuntimeError(
-                    f"Unexpected IGNORED_HTTP_ERROR_MESSAGES datatype: {type(error)}"
+                    f"Unexpected IGNORED_HTTP_ERROR_MESSAGES datatype: {type(error)}",
                 )
 
         # NOTE(sileht): a repository return 404 for /pulls..., so can't do much
         if exception.status_code == 404 and exception.request.url.path.endswith(
-            "/pulls"
+            "/pulls",
         ):
             return True
 
@@ -109,7 +109,8 @@ def should_be_ignored(exception: Exception) -> bool:
 
 
 def need_retry(
-    exception: Exception, base_retry_in: int = 1
+    exception: Exception,
+    base_retry_in: int = 1,
 ) -> datetime.timedelta | None:  # pragma: no cover
     # circular import
     from mergify_engine.clients import github

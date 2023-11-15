@@ -60,7 +60,8 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
 
     @app.exception_handler(engine_exceptions.RateLimited)
     async def rate_limited_handler(
-        request: requests.Request, exc: engine_exceptions.RateLimited
+        request: requests.Request,
+        exc: engine_exceptions.RateLimited,
     ) -> responses.JSONResponse:
         return responses.JSONResponse(
             status_code=403,
@@ -69,18 +70,20 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
 
     @app.exception_handler(engine_exceptions.MergifyNotInstalled)
     async def mergify_not_installed_handler(
-        request: requests.Request, exc: engine_exceptions.MergifyNotInstalled
+        request: requests.Request,
+        exc: engine_exceptions.MergifyNotInstalled,
     ) -> responses.JSONResponse:
         return responses.JSONResponse(
             status_code=403,
             content={
-                "message": "Mergify is not installed or suspended on this organization or repository"
+                "message": "Mergify is not installed or suspended on this organization or repository",
             },
         )
 
     @app.exception_handler(pagination.InvalidCursor)
     async def pagination_handler(
-        request: requests.Request, exc: pagination.InvalidCursor
+        request: requests.Request,
+        exc: pagination.InvalidCursor,
     ) -> responses.JSONResponse:
         return responses.JSONResponse(
             status_code=422,

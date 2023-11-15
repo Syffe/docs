@@ -30,19 +30,20 @@ async def test_github_proxy(
             url="https://api.github.com/repos",
             headers={"Authorization": "token user-token"},
         )
-        & ~unwanted_headers
+        & ~unwanted_headers,
     ).respond(
         200,
         json={"data": 42},
         headers={
-            "link": '<https://api.github.com/repos?page=2>; rel="next", <https://api.github.com/repos?page=7>; rel="last"'
+            "link": '<https://api.github.com/repos?page=2>; rel="next", <https://api.github.com/repos?page=7>; rel="last"',
         },
     )
 
     await web_client.log_as(user.id)
     resp = await web_client.get("/")
     resp = await web_client.get(
-        "/front/proxy/github/repos?per_page=100", headers={"dnt": "1"}
+        "/front/proxy/github/repos?per_page=100",
+        headers={"dnt": "1"},
     )
 
     assert resp.json() == {"data": 42}

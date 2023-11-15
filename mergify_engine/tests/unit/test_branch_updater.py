@@ -26,5 +26,5 @@ async def test_update_with_api_permission_error(
     assert e.value.message.startswith(
         "For security reasons, Mergify can't update this pull request. "
         "Try updating locally.\n"
-        "GitHub response: wow stop"
+        "GitHub response: wow stop",
     )

@@ -226,14 +226,14 @@ def upgrade() -> None:
             ["github_account_id"],
             ["github_account.id"],
             name=alembic.op.f(
-                "at_pull_request_assignees_github_account_github_account_id_fkey"
+                "at_pull_request_assignees_github_account_github_account_id_fkey",
             ),
         ),
         sqlalchemy.ForeignKeyConstraint(
             ["pull_request_id"],
             ["pull_request.id"],
             name=alembic.op.f(
-                "at_pull_request_assignees_github_account_pull_request_id_fkey"
+                "at_pull_request_assignees_github_account_pull_request_id_fkey",
             ),
         ),
         sqlalchemy.PrimaryKeyConstraint(
@@ -260,21 +260,21 @@ def upgrade() -> None:
             ["github_account_id"],
             ["github_account.id"],
             name=alembic.op.f(
-                "at_pull_request_requested_reviewers_github_account_github_account_id_fkey"
+                "at_pull_request_requested_reviewers_github_account_github_account_id_fkey",
             ),
         ),
         sqlalchemy.ForeignKeyConstraint(
             ["pull_request_id"],
             ["pull_request.id"],
             name=alembic.op.f(
-                "at_pull_request_requested_reviewers_github_account_pull_request_id_fkey"
+                "at_pull_request_requested_reviewers_github_account_pull_request_id_fkey",
             ),
         ),
         sqlalchemy.PrimaryKeyConstraint(
             "pull_request_id",
             "github_account_id",
             name=alembic.op.f(
-                "at_pull_request_requested_reviewers_github_account_pkey"
+                "at_pull_request_requested_reviewers_github_account_pkey",
             ),
         ),
     )

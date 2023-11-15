@@ -15,8 +15,8 @@ class TestCloseAction(base.FunctionalTestBase):
                     "name": "close",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"close": {"message": "WTF?"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -36,8 +36,8 @@ class TestCloseAction(base.FunctionalTestBase):
                     "name": "close",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"close": {"message": "Thank you {{author}}"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -60,8 +60,8 @@ class TestCloseAction(base.FunctionalTestBase):
                     "name": "close",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"close": {"message": msg}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -70,7 +70,9 @@ class TestCloseAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            action="completed", status="completed", conclusion="failure"
+            action="completed",
+            status="completed",
+            conclusion="failure",
         )
 
         assert (

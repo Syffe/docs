@@ -24,8 +24,8 @@ class TestEditAction(base.FunctionalTestBase):
                     "actions": {
                         "edit": {"draft": True},
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -76,8 +76,8 @@ class TestEditAction(base.FunctionalTestBase):
                     "actions": {
                         "edit": {"draft": False},
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -128,8 +128,8 @@ class TestEditAction(base.FunctionalTestBase):
                     "actions": {
                         "edit": {"draft": True},
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -165,8 +165,8 @@ class TestEditAction(base.FunctionalTestBase):
                     "actions": {
                         "edit": {"draft": False},
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -202,8 +202,8 @@ class TestEditAction(base.FunctionalTestBase):
                     "actions": {
                         "edit": {"draft": True},
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

@@ -24,7 +24,7 @@ async def _do_test_event_to_pull(
         data = json.loads(
             f.read()
             .replace("https://github.com", settings.GITHUB_URL)
-            .replace("https://api.github.com", settings.GITHUB_REST_API_URL)
+            .replace("https://api.github.com", settings.GITHUB_REST_API_URL),
         )
 
     gh_owner = github_types.GitHubAccount(
@@ -33,7 +33,7 @@ async def _do_test_event_to_pull(
             "id": github_types.GitHubAccountIdType(12345),
             "login": github_types.GitHubLogin("CytopiaTeam"),
             "avatar_url": "",
-        }
+        },
     )
     installation_json = github_types.GitHubInstallation(
         {
@@ -42,14 +42,17 @@ async def _do_test_event_to_pull(
             "permissions": {},
             "account": gh_owner,
             "suspended_at": None,
-        }
+        },
     )
     client = mock.Mock()
     items_mock = mock.MagicMock()
     items_mock.__aiter__.return_value = iter(mocked_pulls or [])
     client.items.return_value = items_mock
     installation = context.Installation(
-        installation_json, mock.Mock(), client, redis_links
+        installation_json,
+        mock.Mock(),
+        client,
+        redis_links,
     )
     pulls_finder = pull_request_finder.PullRequestFinder(installation)
     pulls = await pulls_finder.extract_pull_numbers_from_event(
@@ -85,13 +88,14 @@ async def test_event_to_pull_check_run_same_repo(
 
 
 async def test_event_status(
-    redis_links: redis_utils.RedisLinks, context_getter: conftest.ContextGetterFixture
+    redis_links: redis_utils.RedisLinks,
+    context_getter: conftest.ContextGetterFixture,
 ) -> None:
     await _do_test_event_to_pull(redis_links, "status", "status.json", set())
 
     ctxt = await context_getter(409)
     ctxt.pull["head"]["sha"] = github_types.SHAType(
-        "dcdb7375b887ab3094eb6c1555f26c7090809c89"
+        "dcdb7375b887ab3094eb6c1555f26c7090809c89",
     )
 
     ctxt.pull["base"]["repo"]["id"] = github_types.GitHubRepositoryIdType(
@@ -108,7 +112,8 @@ async def test_event_status(
 
 
 async def test_fetch_open_pull_requests_fallback(
-    redis_links: redis_utils.RedisLinks, context_getter: conftest.ContextGetterFixture
+    redis_links: redis_utils.RedisLinks,
+    context_getter: conftest.ContextGetterFixture,
 ) -> None:
     await _do_test_event_to_pull(
         redis_links,
@@ -120,6 +125,6 @@ async def test_fetch_open_pull_requests_fallback(
                 "number": 409,
                 "head": {"sha": "dcdb7375b887ab3094eb6c1555f26c7090809c89"},
                 "base": {"ref": "some-ref"},
-            }
+            },
         ],
     )

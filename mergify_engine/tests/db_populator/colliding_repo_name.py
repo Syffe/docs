@@ -17,7 +17,7 @@ class CollidingRepoName(DbPopulator):
 
         colliding_repo_1 = gh_models.GitHubRepository(
             id=github_types.GitHubRepositoryIdType(
-                cls.next_id(gh_models.GitHubRepository)
+                cls.next_id(gh_models.GitHubRepository),
             ),
             name=github_types.GitHubRepositoryName("colliding_repo_name"),
             owner=colliding_account_1,
@@ -37,7 +37,7 @@ class CollidingRepoName(DbPopulator):
 
         colliding_repo_2 = gh_models.GitHubRepository(
             id=github_types.GitHubRepositoryIdType(
-                cls.next_id(gh_models.GitHubRepository)
+                cls.next_id(gh_models.GitHubRepository),
             ),
             name=github_types.GitHubRepositoryName("colliding_repo_name"),
             owner=colliding_account_2,

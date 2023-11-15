@@ -43,7 +43,7 @@ class CiIssueCounter(models.Base):
                 sqlalchemy.update(cls)
                 .values(current_value=cls.current_value + 1)
                 .where(cls.repository_id == repository_id)
-                .returning(cls.current_value)
+                .returning(cls.current_value),
             )
         ).scalar_one_or_none()
 
@@ -82,11 +82,13 @@ class CiIssue(models.Base):
     )
 
     repository: orm.Mapped[gh_repository.GitHubRepository] = orm.relationship(
-        lazy="joined"
+        lazy="joined",
     )
 
     jobs: orm.Mapped[list[WorkflowJob]] = orm.relationship(
-        "WorkflowJob", back_populates="ci_issue", lazy="raise_on_sql"
+        "WorkflowJob",
+        back_populates="ci_issue",
+        lazy="raise_on_sql",
     )
 
     @classmethod
@@ -98,7 +100,8 @@ class CiIssue(models.Base):
         issue = cls(
             repository_id=repository_id,
             repository=await session.get_one(
-                gh_repository.GitHubRepository, repository_id
+                gh_repository.GitHubRepository,
+                repository_id,
             ),  # NOTE(Kntrolix): we get the repository during insert to mimic the lazy join that whould have been done on select
             short_id_suffix=await CiIssueCounter.get_next_val(session, repository_id),
         )
@@ -151,14 +154,16 @@ class CiIssue(models.Base):
 
     @classmethod
     async def link_job_to_ci_issue(
-        cls, session: sqlalchemy.ext.asyncio.AsyncSession, job: WorkflowJob
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        job: WorkflowJob,
     ) -> None:
         if job.log_embedding is None:
             raise RuntimeError("link_job_to_ci_issue called with a pending job")
 
         if job.ci_issue_id is not None:
             raise RuntimeError(
-                "link_job_to_ci_issue called with a job already linked to an issue"
+                "link_job_to_ci_issue called with a job already linked to an issue",
             )
 
         stmt = (
@@ -174,7 +179,7 @@ class CiIssue(models.Base):
             .order_by(
                 (
                     1 - (WorkflowJob.log_embedding.cosine_distance(job.log_embedding))
-                ).desc()
+                ).desc(),
             )
             .limit(1)
         )

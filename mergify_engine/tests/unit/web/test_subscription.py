@@ -13,7 +13,7 @@ from mergify_engine.tests import conftest
 async def test_subscription_details_cache_delete(web_client: httpx.AsyncClient) -> None:
     owner_id = 123
     headers = {
-        "Authorization": f"Bearer {settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()}"
+        "Authorization": f"Bearer {settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()}",
     }
     reply = await web_client.delete(
         f"/subscriptions/subscription-details-cache/{owner_id}/{owner_id}",
@@ -26,10 +26,11 @@ async def test_subscription_details_cache_delete(web_client: httpx.AsyncClient) 
 async def test_subscription_cache_delete(web_client: httpx.AsyncClient) -> None:
     owner_id = 123
     headers = {
-        "Authorization": f"Bearer {settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()}"
+        "Authorization": f"Bearer {settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()}",
     }
     reply = await web_client.delete(
-        f"/subscriptions/subscription-cache/{owner_id}", headers=headers
+        f"/subscriptions/subscription-cache/{owner_id}",
+        headers=headers,
     )
     assert reply.status_code == 200
     assert reply.content == b"Cache cleaned"
@@ -45,15 +46,17 @@ async def test_subscription_cache_update(web_client: httpx.AsyncClient) -> None:
                 "subscription_reason": "Customer",
                 "features": [],
                 "expire_at": None,
-            }
-        )
+            },
+        ),
     ).encode(charset)
     headers = {
         "Authorization": f"Bearer {settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()}",
         "Content-Type": f"application/json; charset={charset}",
     }
     reply = await web_client.put(
-        f"/subscriptions/subscription-cache/{owner_id}", content=data, headers=headers
+        f"/subscriptions/subscription-cache/{owner_id}",
+        content=data,
+        headers=headers,
     )
     assert reply.status_code == 200
     assert reply.content == b"Cache updated"

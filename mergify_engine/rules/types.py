@@ -65,13 +65,16 @@ def Jinja2(
         else:
             path = [LineColumnPath(rtf.lineno, None)]
         raise voluptuous.Invalid(
-            "Template syntax error", error_message=str(rtf), path=path
+            "Template syntax error",
+            error_message=str(rtf),
+            path=path,
         )
     return value
 
 
 def Jinja2WithNone(
-    value: str | None, extra_variables: dict[str, typing.Any] | None = None
+    value: str | None,
+    extra_variables: dict[str, typing.Any] | None = None,
 ) -> str | None:
     if value is None:
         return None
@@ -153,12 +156,12 @@ class _GitHubTeam:
         expected_organization = ctxt.pull["base"]["repo"]["owner"]["login"]
         if self.organization is not None and self.organization != expected_organization:
             raise InvalidTeam(
-                f"Team `{self.raw}` is not part of the organization `{expected_organization}`"
+                f"Team `{self.raw}` is not part of the organization `{expected_organization}`",
             )
 
         if not await ctxt.repository.team_has_read_permission(self.team):
             raise InvalidTeam(
-                f"Team `{self.raw}` does not exist or has not access to this repository"
+                f"Team `{self.raw}` does not exist or has not access to this repository",
             )
 
 

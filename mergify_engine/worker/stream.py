@@ -121,7 +121,7 @@ class PullRequestBucket:
 
 
 def order_messages_without_pull_numbers(
-    data: tuple[bytes, context.T_PayloadEventSource, str]
+    data: tuple[bytes, context.T_PayloadEventSource, str],
 ) -> str:
     # NOTE(sileht): put push event first to make PullRequestFinder more efficient.
     if data[1]["event_type"] == "push":
@@ -167,7 +167,8 @@ async def run_engine(
                 in e.message
             ):
                 logger.warning(
-                    "This pull request cannot be evaluated by Mergify", exc_info=True
+                    "This pull request cannot be evaluated by Mergify",
+                    exc_info=True,
                 )
                 return
 
@@ -183,7 +184,8 @@ async def run_engine(
             result = await engine.run(ctxt, sources)
         except exceptions.UnprocessablePullRequest as e:
             logger.warning(
-                "This pull request cannot be evaluated by Mergify", exc_info=True
+                "This pull request cannot be evaluated by Mergify",
+                exc_info=True,
             )
             result = check_api.Result(
                 check_api.Conclusion.FAILURE,
@@ -227,7 +229,8 @@ class OwnerLoginsCache:
     # and github_types.GitHubAccountIdType 32 bytes
     # and 10% dict overhead
     _mapping: dict[
-        github_types.GitHubAccountIdType, github_types.GitHubLogin
+        github_types.GitHubAccountIdType,
+        github_types.GitHubLogin,
     ] = dataclasses.field(default_factory=dict, repr=False)
 
     def set(
@@ -238,10 +241,12 @@ class OwnerLoginsCache:
         self._mapping[owner_id] = owner_login
 
     def get(
-        self, owner_id: github_types.GitHubAccountIdType
+        self,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> github_types.GitHubLoginForTracing:
         return self._mapping.get(
-            owner_id, github_types.GitHubLoginUnknown(f"<unknown {owner_id}>")
+            owner_id,
+            github_types.GitHubLoginUnknown(f"<unknown {owner_id}>"),
         )
 
 
@@ -279,7 +284,8 @@ class Processor:
                     raise RuntimeError("bucket_sources_key must be set at this point")
 
                 attempts = await self.redis_links.stream.hincrby(
-                    ATTEMPTS_KEY, bucket_sources_key
+                    ATTEMPTS_KEY,
+                    bucket_sources_key,
                 )
                 if attempts < MAX_RETRIES:
                     raise PullRetry(attempts) from e
@@ -311,7 +317,8 @@ class Processor:
                 raise
 
             attempts = await self.redis_links.stream.hincrby(
-                ATTEMPTS_KEY, bucket_org_key
+                ATTEMPTS_KEY,
+                bucket_org_key,
             )
             retry_in = 2 ** min(attempts, 3) * backoff
             retry_at = date.utcnow() + retry_in
@@ -329,7 +336,8 @@ class Processor:
         try:
             async with self._translate_exception_to_retries(bucket_org_key):
                 sub = await subscription.Subscription.get_subscription(
-                    self.redis_links.cache, owner_id
+                    self.redis_links.cache,
+                    owner_id,
                 )
 
                 if not sub.features:
@@ -350,7 +358,8 @@ class Processor:
                             owner_login=owner_login_for_tracing,
                         )
                         await self.redis_links.stream.sadd(
-                            DEDICATED_WORKERS_KEY, owner_id
+                            DEDICATED_WORKERS_KEY,
+                            owner_id,
                         )
                         return
                 else:
@@ -362,17 +371,18 @@ class Processor:
                             owner_login=owner_login_for_tracing,
                         )
                         await self.redis_links.stream.srem(
-                            DEDICATED_WORKERS_KEY, owner_id
+                            DEDICATED_WORKERS_KEY,
+                            owner_id,
                         )
                         return
 
                 installation_raw = await github.get_installation_from_account_id(
-                    owner_id
+                    owner_id,
                 )
                 async with github.aget_client(
                     installation_raw,
                     extra_metrics=sub.has_feature(
-                        subscription.Features.PRIVATE_REPOSITORY
+                        subscription.Features.PRIVATE_REPOSITORY,
                     ),
                 ) as client:
                     installation = context.Installation(
@@ -396,7 +406,8 @@ class Processor:
                     sentry_sdk.set_user({"username": owner_login_for_tracing})
 
                     pulls_processed = await self._consume_buckets(
-                        bucket_org_key, installation
+                        bucket_org_key,
+                        installation,
                     )
 
                     # NOTE(sileht): we don't need to refresh convoys if nothing changed
@@ -444,13 +455,18 @@ class Processor:
             # so we catch the error and print all events that can't be processed
             if not self.retry_unhandled_exception_forever:
                 buckets = await self.redis_links.stream.zrangebyscore(
-                    bucket_org_key, min=0, max="+inf", start=0, num=1
+                    bucket_org_key,
+                    min=0,
+                    max="+inf",
+                    start=0,
+                    num=1,
                 )
                 for bucket in buckets:
                     messages = await self.redis_links.stream.xrange(bucket)
                     for _, message in messages:
                         LOG.info(
-                            "event dropped", source=msgpack.unpackb(message[b"source"])
+                            "event dropped",
+                            source=msgpack.unpackb(message[b"source"]),
                         )
                     await self.redis_links.stream.delete(bucket)
                     await self.redis_links.stream.delete(ATTEMPTS_KEY)
@@ -474,7 +490,9 @@ class Processor:
             logs_extra = {}
 
         LOG.debug(
-            "cleanup org bucket start", bucket_org_key=bucket_org_key, **logs_extra
+            "cleanup org bucket start",
+            bucket_org_key=bucket_org_key,
+            **logs_extra,
         )
         try:
             await stream_lua.clean_org_bucket(
@@ -539,14 +557,17 @@ class Processor:
                 continue
 
             bucket_sources_key = stream_lua.BucketSourcesKeyType(
-                _bucket_sources_key.decode()
+                _bucket_sources_key.decode(),
             )
             (
                 repo_id,
                 pull_number,
             ) = self._extract_infos_from_bucket_sources_key(bucket_sources_key)
             return PullRequestBucket(
-                bucket_sources_key, _bucket_score, repo_id, pull_number
+                bucket_sources_key,
+                _bucket_score,
+                repo_id,
+                pull_number,
             )
         return None
 
@@ -593,7 +614,7 @@ class Processor:
                 tracing_repo_name: github_types.GitHubRepositoryNameForTracing
                 if tracing_repo_name_bin is None:
                     tracing_repo_name = github_types.GitHubRepositoryNameUnknown(
-                        f"<unknown {bucket.repo_id}>"
+                        f"<unknown {bucket.repo_id}>",
                     )
                 else:
                     tracing_repo_name = typing.cast(
@@ -602,7 +623,7 @@ class Processor:
                     )
             else:
                 tracing_repo_name = github_types.GitHubRepositoryNameUnknown(
-                    f"<unknown {bucket.repo_id}>"
+                    f"<unknown {bucket.repo_id}>",
                 )
 
             logger = daiquiri.getLogger(
@@ -628,7 +649,8 @@ class Processor:
                     resource=f"{installation.owner_login}/{tracing_repo_name}",
                 ) as span:
                     logger.debug(
-                        "unpack events without pull request number", count=len(messages)
+                        "unpack events without pull request number",
+                        count=len(messages),
                     )
 
                     decoded_messages = (
@@ -648,7 +670,8 @@ class Processor:
                     message_ids_to_delete = set()
                     try:
                         for message_id, source, score in sorted(
-                            decoded_messages, key=order_messages_without_pull_numbers
+                            decoded_messages,
+                            key=order_messages_without_pull_numbers,
                         ):
                             converted_messages = await self._convert_event_to_messages(
                                 installation,
@@ -659,7 +682,7 @@ class Processor:
                                 score,
                             )
                             message_ids_to_delete.add(
-                                typing.cast(T_MessageID, message_id)
+                                typing.cast(T_MessageID, message_id),
                             )
                             logger.debug(
                                 "assiociated non pull request event to pull requests",
@@ -708,7 +731,7 @@ class Processor:
                                 "enabled_features": installation.subscription._all_features,
                                 "gh_repo": tracing_repo_name,
                                 "gh_pull": bucket.pull_number,
-                            }
+                            },
                         )
                         await self._consume_pull(
                             bucket_org_key,
@@ -729,7 +752,7 @@ class Processor:
                             bucket.sources_key: worker_pusher.get_priority_score(
                                 bucket.priority,
                                 constants.MIN_DELAY_BETWEEN_SAME_PULL_REQUEST,
-                            )
+                            ),
                         },
                     )
                 except (PullRetry, UnexpectedPullRetry):
@@ -770,7 +793,8 @@ class Processor:
             score = worker_pusher.get_priority_score(worker_pusher.Priority.low)
 
         pipe = typing.cast(
-            redis_utils.PipelineStream, await self.redis_links.stream.pipeline()
+            redis_utils.PipelineStream,
+            await self.redis_links.stream.pipeline(),
         )
         for pull_number in pull_numbers:
             if pull_number is None:
@@ -808,7 +832,7 @@ class Processor:
 
             if "initial_score" in source:
                 priority = worker_pusher.get_priority_level_from_score(
-                    source["initial_score"]
+                    source["initial_score"],
                 )
             else:
                 # backward compat <= 7.2.1
@@ -900,11 +924,12 @@ class Processor:
 
 
 def _monitor_consumed_events(
-    source: context.T_PayloadEventSource, installation: context.Installation
+    source: context.T_PayloadEventSource,
+    installation: context.Installation,
 ) -> None:
     # NOTE(charly): CI usage metric, see MRGFY-2617
     is_customer = installation.subscription.has_feature(
-        subscription.Features.PRIVATE_REPOSITORY
+        subscription.Features.PRIVATE_REPOSITORY,
     )
     if not is_customer:
         return
@@ -912,7 +937,7 @@ def _monitor_consumed_events(
     if source["event_type"] == "check_run":
         check_run = typing.cast(github_types.GitHubEventCheckRun, source["data"])
         if check_run["action"] == "created" and check_run["check_run"]["app"].get(
-            "slug"
+            "slug",
         ):
             check_run_tags = [
                 f"app_name:{check_run['check_run']['app']['slug']}",
@@ -924,7 +949,8 @@ def _monitor_consumed_events(
         if status["state"] != "pending":
             app_name = _extract_app_from_status_event(status)
             statsd.increment(
-                "engine.buckets.events.status", tags=[f"app_name:{app_name}"]
+                "engine.buckets.events.status",
+                tags=[f"app_name:{app_name}"],
             )
 
 

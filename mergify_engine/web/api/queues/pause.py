@@ -26,7 +26,8 @@ router = fastapi.APIRouter(
 @pydantic.dataclasses.dataclass
 class QueuePause:
     reason: str = dataclasses.field(
-        default_factory=str, metadata={"description": "The reason of the queue pause"}
+        default_factory=str,
+        metadata={"description": "The reason of the queue pause"},
     )
     pause_date: datetime.datetime = dataclasses.field(
         default_factory=date.utcnow,
@@ -46,7 +47,8 @@ class QueuePauseResponse:
 # https://github.com/tiangolo/fastapi/issues/4679 is fixed
 class QueuePausePayload(pydantic.BaseModel):
     reason: str = pydantic.Field(
-        max_length=255, description="The reason of the queue pause"
+        max_length=255,
+        description="The reason of the queue pause",
     )
 
 
@@ -91,9 +93,10 @@ async def create_queue_pause(
                 {
                     "reason": queue_pause.reason,
                     "created_by": typing.cast(
-                        signals.Actor, authentication_actor.actor
+                        signals.Actor,
+                        authentication_actor.actor,
                     ),
-                }
+                },
             ),
             "Create queue pause",
         )
@@ -113,9 +116,10 @@ async def create_queue_pause(
                 {
                     "reason": queue_pause.reason,
                     "updated_by": typing.cast(
-                        signals.Actor, authentication_actor.actor
+                        signals.Actor,
+                        authentication_actor.actor,
                     ),
-                }
+                },
             ),
             "Update queue pause",
         )
@@ -126,7 +130,7 @@ async def create_queue_pause(
             QueuePause(
                 reason=queue_pause.reason,
                 pause_date=queue_pause.pause_date,
-            )
+            ),
         ],
     )
 
@@ -143,7 +147,7 @@ async def create_queue_pause(
     responses={
         **api.default_responses,  # type: ignore
         404: {
-            "description": "The merge queue is not currently paused on this repository"
+            "description": "The merge queue is not currently paused on this repository",
         },
     },
 )
@@ -168,7 +172,7 @@ async def delete_queue_pause(
         None,
         "queue.pause.delete",
         signals.EventQueuePauseDeleteMetadata(
-            {"deleted_by": typing.cast(signals.Actor, authentication_actor.actor)}
+            {"deleted_by": typing.cast(signals.Actor, authentication_actor.actor)},
         ),
         "Delete queue pause",
     )
@@ -185,7 +189,7 @@ async def delete_queue_pause(
     responses={
         **api.default_responses,  # type: ignore
         404: {
-            "description": "The merge queue is not currently paused on this repository"
+            "description": "The merge queue is not currently paused on this repository",
         },
     },
 )
@@ -204,6 +208,6 @@ async def get_queue_pause(
             QueuePause(
                 reason=queue_pause.reason,
                 pause_date=queue_pause.pause_date,
-            )
+            ),
         ],
     )

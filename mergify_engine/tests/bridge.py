@@ -25,7 +25,8 @@ async def main() -> None:
 
     payload_data = os.urandom(250)
     payload_hmac = utils.compute_hmac(
-        payload_data, settings.GITHUB_WEBHOOK_SECRET.get_secret_value()
+        payload_data,
+        settings.GITHUB_WEBHOOK_SECRET.get_secret_value(),
     )
 
     async with http.AsyncClient(

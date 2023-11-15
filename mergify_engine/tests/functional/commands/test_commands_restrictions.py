@@ -15,9 +15,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             yaml.dump(
                 {
                     "commands_restrictions": {
-                        "copy": {"conditions": [f"base={self.main_branch_name}"]}
-                    }
-                }
+                        "copy": {"conditions": [f"base={self.main_branch_name}"]},
+                    },
+                },
             ),
             test_branches=[stable_branch, feature_branch],
         )
@@ -25,22 +25,27 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         p_nok = await self.create_pr(base=feature_branch)
 
         await self.create_command(
-            p_ok["number"], f"@mergifyio copy {stable_branch}", as_="admin"
+            p_ok["number"],
+            f"@mergifyio copy {stable_branch}",
+            as_="admin",
         )
         await self.create_command(
-            p_nok["number"], f"@mergifyio copy {stable_branch}", as_="admin"
+            p_nok["number"],
+            f"@mergifyio copy {stable_branch}",
+            as_="admin",
         )
 
         # only one copy done
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 1 == len(pulls_stable)
 
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(
-                self.url_origin, [f"mergify/{self.mocked_copy_branch_prefix}"]
+                self.url_origin,
+                [f"mergify/{self.mocked_copy_branch_prefix}"],
             )
         ]
         assert (
@@ -65,21 +70,23 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
                 {
                     "commands_restrictions": {
                         "copy": {
-                            "conditions": ["sender=toto"]
-                        }  # sender is mergify-test1 but toto is expected
-                    }
-                }
+                            "conditions": ["sender=toto"],
+                        },  # sender is mergify-test1 but toto is expected
+                    },
+                },
             ),
             test_branches=[stable_branch],
         )
         pr = await self.create_pr()
         await self.create_command(
-            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
+            pr["number"],
+            f"@mergifyio copy {stable_branch}",
+            as_="admin",
         )
 
         # No copy done due to false sender
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 0 == len(pulls_stable)
 
@@ -95,20 +102,22 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             yaml.dump(
                 {
                     "commands_restrictions": {
-                        "copy": {"conditions": ["sender=@mergifyio-testing/testing"]}
-                    }
-                }
+                        "copy": {"conditions": ["sender=@mergifyio-testing/testing"]},
+                    },
+                },
             ),
             test_branches=[stable_branch],
         )
         pr = await self.create_pr()
         await self.create_command(
-            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
+            pr["number"],
+            f"@mergifyio copy {stable_branch}",
+            as_="admin",
         )
 
         # Copy done successfully because sender is in the team
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 1 == len(pulls_stable)
 
@@ -124,20 +133,22 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             yaml.dump(
                 {
                     "commands_restrictions": {
-                        "copy": {"conditions": ["sender=@mergifyio-testing/bot"]}
-                    }
-                }
+                        "copy": {"conditions": ["sender=@mergifyio-testing/bot"]},
+                    },
+                },
             ),
             test_branches=[stable_branch],
         )
         pr = await self.create_pr()
         await self.create_command(
-            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
+            pr["number"],
+            f"@mergifyio copy {stable_branch}",
+            as_="admin",
         )
 
         # No copy done
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 0 == len(pulls_stable)
 
@@ -153,9 +164,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             yaml.dump(
                 {
                     "commands_restrictions": {
-                        "copy": {"conditions": ["sender-permission=admin"]}
-                    }
-                }
+                        "copy": {"conditions": ["sender-permission=admin"]},
+                    },
+                },
             ),
             test_branches=[stable_branch],
         )
@@ -163,12 +174,14 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
 
         # Create command as non-admin user
         await self.create_command(
-            pr["number"], f"@mergifyio copy {stable_branch}", as_="fork"
+            pr["number"],
+            f"@mergifyio copy {stable_branch}",
+            as_="fork",
         )
 
         # No copy done
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 0 == len(pulls_stable)
 
@@ -179,12 +192,14 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
 
         # Create command as admin user
         await self.create_command(
-            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
+            pr["number"],
+            f"@mergifyio copy {stable_branch}",
+            as_="admin",
         )
 
         # Copy done successfully because sender is in the team
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 1 == len(pulls_stable)
 
@@ -199,8 +214,8 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             "commands_restrictions": {
                 "copy": {
                     "conditions": ["sender={{author}}"],
-                }
-            }
+                },
+            },
         }
         await self.setup_repo(
             yaml.dump(rules),
@@ -211,11 +226,13 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         # Admin creates a command, he is NOT allowed to run it, as he is not the
         # author
         await self.create_command(
-            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
+            pr["number"],
+            f"@mergifyio copy {stable_branch}",
+            as_="admin",
         )
 
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 0 == len(pulls_stable)
 
@@ -229,8 +246,8 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             "commands_restrictions": {
                 "copy": {
                     "conditions": ["sender={{author}}"],
-                }
-            }
+                },
+            },
         }
         await self.setup_repo(
             yaml.dump(rules),
@@ -240,11 +257,13 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
 
         # Author of the PR creates a command, he is allowed to run it
         await self.create_command(
-            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
+            pr["number"],
+            f"@mergifyio copy {stable_branch}",
+            as_="admin",
         )
 
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 1 == len(pulls_stable)
 

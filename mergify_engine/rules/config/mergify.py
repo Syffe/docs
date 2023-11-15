@@ -41,8 +41,8 @@ async def get_mergify_builtin_config(
     mergify_bot = await github.GitHubAppInfo.get_bot(redis_cache)
     return rules.UserConfigurationSchema(
         rules.YamlSchema(
-            MERGIFY_BUILTIN_CONFIG_YAML.format(author=mergify_bot["login"])
-        )
+            MERGIFY_BUILTIN_CONFIG_YAML.format(author=mergify_bot["login"]),
+        ),
     )
 
 
@@ -89,7 +89,8 @@ def merge_defaults(extended_defaults: Defaults, dest_defaults: Defaults) -> None
 
 
 def merge_config_with_defaults(
-    config: dict[str, typing.Any], defaults: Defaults
+    config: dict[str, typing.Any],
+    defaults: Defaults,
 ) -> None:
     if defaults_actions := defaults.get("actions"):
         for rule in config.get("pull_request_rules", []):
@@ -137,7 +138,8 @@ class InvalidRules(Exception):
 
     @classmethod
     def _walk_error(
-        cls, root_error: voluptuous.Invalid
+        cls,
+        root_error: voluptuous.Invalid,
     ) -> abc.Generator[voluptuous.Invalid, None, None]:
         if isinstance(root_error, voluptuous.MultipleInvalid):
             for error1 in root_error.errors:
@@ -182,7 +184,10 @@ async def get_mergify_config_from_file(
 
     # Validate defaults
     return await get_mergify_config_from_dict(
-        repository_ctxt, config, config_file["path"], allow_extend
+        repository_ctxt,
+        config,
+        config_file["path"],
+        allow_extend,
     )
 
 
@@ -210,7 +215,9 @@ async def get_mergify_config_from_dict(
                 error_path,
             )
         config_to_extend = await get_mergify_extended_config(
-            repository_ctxt, extended_path, error_path
+            repository_ctxt,
+            extended_path,
+            error_path,
         )
         # NOTE(jules): Anchor and shared elements can't be shared between files
         # because they are computed by rules.YamlSchema already.
@@ -271,7 +278,8 @@ async def get_mergify_extended_config(
 
     try:
         return await extended_repository_ctxt.get_mergify_config(
-            allow_extend=False, allow_empty_configuration=False
+            allow_extend=False,
+            allow_empty_configuration=False,
         )
     except exceptions.MergifyConfigFileEmpty:
         raise InvalidRules(

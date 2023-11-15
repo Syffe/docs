@@ -245,8 +245,10 @@ def is_pr_body_a_merge_queue_pr(pull_request_body: str | None) -> bool:
 
 
 def is_same_batch(
-    first_pull_position: int, second_pull_position: int, batch_size: int
+    first_pull_position: int,
+    second_pull_position: int,
+    batch_size: int,
 ) -> bool:
     return math.ceil(first_pull_position / batch_size) == math.ceil(
-        second_pull_position / batch_size
+        second_pull_position / batch_size,
     )

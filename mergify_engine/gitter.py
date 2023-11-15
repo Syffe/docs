@@ -49,7 +49,8 @@ class GitTimeout(GitFatalError):
 
 
 GIT_MESSAGE_TO_EXCEPTION: dict[
-    str | re.Pattern[str], type[GitError]
+    str | re.Pattern[str],
+    type[GitError],
 ] = collections.OrderedDict(
     [
         ("Authentication failed", GitAuthenticationFailure),
@@ -73,7 +74,7 @@ GIT_MESSAGE_TO_EXCEPTION: dict[
         ("fatal error in commit_refs ", GitErrorRetriable),
         (
             re.compile(
-                "cannot lock ref 'refs/heads/mergify/[^']*': 'refs/heads/mergify(|/bp|/copy|/merge-queue)' exists"
+                "cannot lock ref 'refs/heads/mergify/[^']*': 'refs/heads/mergify(|/bp|/copy|/merge-queue)' exists",
             ),
             GitMergifyNamespaceConflict,
         ),
@@ -85,7 +86,7 @@ GIT_MESSAGE_TO_EXCEPTION: dict[
         ("No such device or address", GitErrorRetriable),
         ("Protected branch update failed", GitFatalError),
         ("couldn't find remote ref", GitFatalError),
-    ]
+    ],
 )
 
 
@@ -94,12 +95,13 @@ class Gitter:
     logger: "logging.LoggerAdapter[logging.Logger]"
     tmp: str | None = None
     _messages: list[tuple[str, dict[str, typing.Any]]] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
     _log_level: int = logging.INFO
 
     GIT_COMMAND_TIMEOUT: float = dataclasses.field(
-        init=False, default=datetime.timedelta(minutes=10).total_seconds()
+        init=False,
+        default=datetime.timedelta(minutes=10).total_seconds(),
     )
 
     async def init(self) -> None:
@@ -187,11 +189,13 @@ class Gitter:
             try:
                 async with asyncio.timeout(self.GIT_COMMAND_TIMEOUT):
                     stdout, _ = await process.communicate(
-                        input=None if _input is None else _input.encode("utf8")
+                        input=None if _input is None else _input.encode("utf8"),
                     )
             except asyncio.TimeoutError:
                 self.log(
-                    "git operation timed out", command=command, level=logging.ERROR
+                    "git operation timed out",
+                    command=command,
+                    level=logging.ERROR,
                 )
                 raise GitTimeout(-1, "git operation took too long")
 
@@ -203,7 +207,9 @@ class Gitter:
         return output
 
     def _check_git_output(
-        self, process: asyncio.subprocess.Process, output: str
+        self,
+        process: asyncio.subprocess.Process,
+        output: str,
     ) -> None:
         if process.returncode:
             raise self._create_git_exception(process.returncode, output)
@@ -308,7 +314,10 @@ class Gitter:
     ) -> None:
         await self.add_cred(username, password, repository["full_name"])
         await self(
-            "remote", "add", name, f"{settings.GITHUB_URL}/{repository['full_name']}"
+            "remote",
+            "add",
+            name,
+            f"{settings.GITHUB_URL}/{repository['full_name']}",
         )
         await self("config", f"remote.{name}.promisor", "true")
         await self("config", f"remote.{name}.partialclonefilter", "blob:none")

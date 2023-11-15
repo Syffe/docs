@@ -15,7 +15,8 @@ class TestCommandBackport(base.FunctionalTestBase):
 
         await self.run_engine()
         await self.create_comment_as_admin(
-            p["number"], f"@mergifyio backport {stable_branch} {feature_branch}"
+            p["number"],
+            f"@mergifyio backport {stable_branch} {feature_branch}",
         )
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
@@ -27,11 +28,11 @@ class TestCommandBackport(base.FunctionalTestBase):
         await self.wait_for("issue_comment", {"action": "edited"}, test_id=p["number"])
 
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 1 == len(pulls_stable)
         pulls_feature = await self.get_pulls(
-            params={"state": "all", "base": feature_branch}
+            params={"state": "all", "base": feature_branch},
         )
         assert 1 == len(pulls_feature)
         comments = await self.get_issue_comments(p["number"])
@@ -52,7 +53,8 @@ class TestCommandBackport(base.FunctionalTestBase):
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(
-                self.url_origin, [f"mergify/{self.mocked_backport_branch_prefix}"]
+                self.url_origin,
+                [f"mergify/{self.mocked_backport_branch_prefix}"],
             )
         ]
         assert (
@@ -71,7 +73,8 @@ class TestCommandBackport(base.FunctionalTestBase):
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(
-                self.url_origin, [f"mergify/{self.mocked_backport_branch_prefix}"]
+                self.url_origin,
+                [f"mergify/{self.mocked_backport_branch_prefix}"],
             )
         ]
         assert (
@@ -93,11 +96,13 @@ class TestCommandBackport(base.FunctionalTestBase):
         }
 
         await self.setup_repo(
-            yaml.dump(rules), test_branches=[stable_branch, feature_branch]
+            yaml.dump(rules),
+            test_branches=[stable_branch, feature_branch],
         )
         p = await self.create_pr()
         await self.create_comment_as_admin(
-            p["number"], f"@mergifyio backport {stable_branch} {feature_branch}"
+            p["number"],
+            f"@mergifyio backport {stable_branch} {feature_branch}",
         )
         await self.merge_pull(p["number"])
 
@@ -129,7 +134,8 @@ class TestCommandBackport(base.FunctionalTestBase):
         p = await self.create_pr()
 
         await self.create_comment_as_admin(
-            p["number"], f"@mergifyio backport {stable_branch} {feature_branch}"
+            p["number"],
+            f"@mergifyio backport {stable_branch} {feature_branch}",
         )
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
@@ -139,11 +145,11 @@ class TestCommandBackport(base.FunctionalTestBase):
         await self.wait_for("issue_comment", {"action": "edited"}, test_id=p["number"])
 
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 1 == len(pulls_stable)
         pulls_feature = await self.get_pulls(
-            params={"state": "all", "base": feature_branch}
+            params={"state": "all", "base": feature_branch},
         )
         assert 1 == len(pulls_feature)
         comments = await self.get_issue_comments(p["number"])
@@ -163,7 +169,8 @@ class TestCommandBackport(base.FunctionalTestBase):
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(
-                self.url_origin, [f"mergify/{self.mocked_backport_branch_prefix}"]
+                self.url_origin,
+                [f"mergify/{self.mocked_backport_branch_prefix}"],
             )
         ]
         assert (
@@ -182,7 +189,8 @@ class TestCommandBackport(base.FunctionalTestBase):
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(
-                self.url_origin, [f"mergify/{self.mocked_backport_branch_prefix}"]
+                self.url_origin,
+                [f"mergify/{self.mocked_backport_branch_prefix}"],
             )
         ]
         assert (
@@ -209,7 +217,8 @@ class TestCommandBackport(base.FunctionalTestBase):
         p = await self.create_pr(files={"conflicts": "ohoh"})
         await self.run_engine()
         await self.create_comment_as_admin(
-            p["number"], f"@mergifyio backport {stable_branch}"
+            p["number"],
+            f"@mergifyio backport {stable_branch}",
         )
 
         await self.run_engine()

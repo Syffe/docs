@@ -16,7 +16,7 @@ export PGPORT="{result.port}"
 export PGDATABASE="{result.path[1:]}"
 export PGUSER="{parse.unquote(result.username)}"
 export PGPASSWORD="{parse.unquote(result.password)}"
-    """
+    """,
     )
 
 

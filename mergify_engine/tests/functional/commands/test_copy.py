@@ -12,12 +12,14 @@ class TestCommandCopy(base.FunctionalTestBase):
         feature_branch = self.get_full_branch_name("feature/one")
 
         await self.setup_repo(
-            yaml.dump({}), test_branches=[stable_branch, feature_branch]
+            yaml.dump({}),
+            test_branches=[stable_branch, feature_branch],
         )
         p = await self.create_pr()
 
         comment_id = await self.create_comment_as_admin(
-            p["number"], f"@mergifyio copy {stable_branch} {feature_branch}"
+            p["number"],
+            f"@mergifyio copy {stable_branch} {feature_branch}",
         )
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
@@ -35,18 +37,19 @@ class TestCommandCopy(base.FunctionalTestBase):
         await self.run_engine()
 
         pulls_stable = await self.get_pulls(
-            params={"state": "all", "base": stable_branch}
+            params={"state": "all", "base": stable_branch},
         )
         assert 1 == len(pulls_stable)
         pulls_feature = await self.get_pulls(
-            params={"state": "all", "base": feature_branch}
+            params={"state": "all", "base": feature_branch},
         )
         assert 1 == len(pulls_feature)
 
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(
-                self.url_origin, [f"mergify/{self.mocked_copy_branch_prefix}"]
+                self.url_origin,
+                [f"mergify/{self.mocked_copy_branch_prefix}"],
             )
         ]
         assert (
@@ -65,7 +68,8 @@ class TestCommandCopy(base.FunctionalTestBase):
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(
-                self.url_origin, [f"mergify/{self.mocked_copy_branch_prefix}"]
+                self.url_origin,
+                [f"mergify/{self.mocked_copy_branch_prefix}"],
             )
         ]
         assert (

@@ -48,7 +48,8 @@ def patch_router_to_include_everything(
 )
 @click.argument("output", required=True)
 def generate_openapi_spec(
-    visibility: typing.Literal["public", "internal", "public_future"], output: str
+    visibility: typing.Literal["public", "internal", "public_future"],
+    output: str,
 ) -> None:
     if visibility == "public":
         app = public_root.create_app(cors_enabled=True)
@@ -81,7 +82,9 @@ def generate_openapi_spec(
         for route in app.routes:
             routes.extend(patch_router_to_include_everything(route, None))
         openapi_schema = get_openapi(
-            title="Internal API", routes=routes, version="0.0.0"
+            title="Internal API",
+            routes=routes,
+            version="0.0.0",
         )
 
     path = os.path.dirname(output)

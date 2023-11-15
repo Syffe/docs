@@ -26,7 +26,8 @@ LOG = logging.getLogger(__name__)
 
 
 @pytest.mark.subscription(
-    subscription.Features.WORKFLOW_AUTOMATION, subscription.Features.MERGE_QUEUE
+    subscription.Features.WORKFLOW_AUTOMATION,
+    subscription.Features.MERGE_QUEUE,
 )
 class TestEngineV2Scenario(base.FunctionalTestBase):
     """Mergify engine tests.
@@ -43,7 +44,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=squash"],
                     "actions": {"merge": {"method": "squash"}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -98,7 +99,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                     ],
                     "actions": {"merge": {"method": "rebase"}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -121,7 +122,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                 "user",
                 "mergify-test1",
                 "mergify-test3",
-            ]
+            ],
         )
 
         logins = await live_resolvers.teams(
@@ -137,7 +138,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                 "user",
                 "mergify-test1",
                 "mergify-test3",
-            ]
+            ],
         )
 
         with self.assertRaises(live_resolvers.LiveResolutionFailure):
@@ -145,12 +146,14 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         with self.assertRaises(live_resolvers.LiveResolutionFailure):
             await live_resolvers.teams(
-                self.repository_ctxt, ["@mergifyio-testing/not-exists"]
+                self.repository_ctxt,
+                ["@mergifyio-testing/not-exists"],
             )
 
         with self.assertRaises(live_resolvers.LiveResolutionFailure):
             await live_resolvers.teams(
-                self.repository_ctxt, ["@invalid/team/break-here"]
+                self.repository_ctxt,
+                ["@invalid/team/break-here"],
             )
 
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
@@ -178,8 +181,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "actions": {"merge": {"method": method}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -230,8 +233,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "actions": {"merge": {"method": "merge"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -283,8 +286,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "#approved-reviews-by>=1",
                     ],
                     "actions": {"merge": {"method": "rebase"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -308,8 +311,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "merge": {"method": "rebase"},
                         "comment": {"message": "yo"},
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -390,7 +393,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             ctxt,
             "skipped-ci",
             check_api.Result(
-                check_api.Conclusion.SKIPPED, title="bla-skipped", summary=""
+                check_api.Conclusion.SKIPPED,
+                title="bla-skipped",
+                summary="",
             ),
         )
 
@@ -406,8 +411,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                     "name": "nothing",
                     "conditions": [f"base!={self.main_branch_name}"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
@@ -467,8 +472,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                     "name": "nothing",
                     "conditions": [f"base!={self.main_branch_name}"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
@@ -484,7 +489,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                 check_api.Conclusion.SUCCESS,
                 title="whatever",
                 summary="erased",
-            )
+            ),
         )
 
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
@@ -508,7 +513,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         )
 
         check_run_summary = await self.wait_for_check_run(
-            name=constants.SUMMARY_NAME, action="completed", conclusion="success"
+            name=constants.SUMMARY_NAME,
+            action="completed",
+            conclusion="success",
         )
         assert completed_at != check_run_summary["check_run"]["completed_at"]
 
@@ -519,8 +526,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                     "name": "comment-on-conflict",
                     "conditions": ["conflict"],
                     "actions": {"comment": {"message": "It conflict!"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules), files={"TESTING": "foobar"})
         p1 = await self.create_pr(files={"TESTING": "p1"})
@@ -547,8 +554,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                     "name": "comment-on-conflict",
                     "conditions": ["conflict"],
                     "actions": {"comment": {"message": "It conflict!"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules), files={"TESTING": "foobar"})
         p1 = await self.create_pr(files={"TESTING": "p1"})
@@ -586,7 +593,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                     check_api.Conclusion.FAILURE,
                     "damn",
                     "but we was able to set the summary ;)",
-                )
+                ),
             )
 
         assert ctxt._caches.pull_check_runs.get() is cache.Unset
@@ -636,7 +643,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
     async def test_truncated_check_output(self) -> None:
         # not used anyhow
         rules = {
-            "pull_request_rules": [{"name": "noop", "conditions": [], "actions": {}}]
+            "pull_request_rules": [{"name": "noop", "conditions": [], "actions": {}}],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr()
@@ -646,7 +653,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             pull,
             "Test",
             check_api.Result(
-                check_api.Conclusion.SUCCESS, title="bla", summary="a" * 70000
+                check_api.Conclusion.SUCCESS,
+                title="bla",
+                summary="a" * 70000,
             ),
         )
         assert check["output"]["summary"] == ("a" * 65532 + "…")
@@ -662,7 +671,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
         }
         await self.setup_repo(yaml.dump(rules))
@@ -674,7 +683,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         # Check initial summary is submitted
         pr = await self.create_pr()
         check_run_p2 = await self.wait_for_check_run(
-            action="created", status="in_progress"
+            action="created",
+            status="in_progress",
         )
 
         assert (
@@ -706,8 +716,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                     "name": "default",
                     "conditions": ["base=other"],
                     "actions": {"comment": {"message": "it works"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -734,7 +744,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             ctxt,
             "Test",
             check_api.Result(
-                check_api.Conclusion.PENDING, title="PENDING", summary="PENDING"
+                check_api.Conclusion.PENDING,
+                title="PENDING",
+                summary="PENDING",
             ),
         )
         checks = await ctxt.pull_engine_check_runs
@@ -749,7 +761,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             ctxt,
             "Test",
             check_api.Result(
-                check_api.Conclusion.CANCELLED, title="CANCELLED", summary="CANCELLED"
+                check_api.Conclusion.CANCELLED,
+                title="CANCELLED",
+                summary="CANCELLED",
             ),
         )
         checks = await ctxt.pull_engine_check_runs
@@ -774,7 +788,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             ctxt,
             "Test",
             check_api.Result(
-                check_api.Conclusion.PENDING, title="PENDING", summary="PENDING"
+                check_api.Conclusion.PENDING,
+                title="PENDING",
+                summary="PENDING",
             ),
         )
         checks = await ctxt.pull_engine_check_runs
@@ -801,7 +817,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             ctxt,
             "Test",
             check_api.Result(
-                check_api.Conclusion.CANCELLED, title="CANCELLED", summary="CANCELLED"
+                check_api.Conclusion.CANCELLED,
+                title="CANCELLED",
+                summary="CANCELLED",
             ),
             skip_cache=True,
         )
@@ -828,7 +846,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             ctxt,
             "Test",
             check_api.Result(
-                check_api.Conclusion.PENDING, title="PENDING", summary="PENDING"
+                check_api.Conclusion.PENDING,
+                title="PENDING",
+                summary="PENDING",
             ),
             skip_cache=True,
         )
@@ -852,7 +872,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
     async def test_get_repository_by_id(self) -> None:
         repo = await self.installation_ctxt.get_repository_by_id(
-            self.RECORD_CONFIG["repository_id"]
+            self.RECORD_CONFIG["repository_id"],
         )
         assert repo.repo["name"] == self.RECORD_CONFIG["repository_name"]
         assert repo.repo["name"] == self.repository_ctxt.repo["name"]
@@ -863,7 +883,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         await self.run_engine()
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=prs[1]["number"]
+            "issue_comment",
+            {"action": "created"},
+            test_id=prs[1]["number"],
         )
 
         await self.create_comment_as_admin(prs[1]["number"], "@mergifyio refresh")
@@ -871,7 +893,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.run_engine()
         # Wait for the refresh comment
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=prs[1]["number"]
+            "issue_comment",
+            {"action": "created"},
+            test_id=prs[1]["number"],
         )
 
         await refresher.send_pull_refresh(
@@ -901,10 +925,10 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                             "or": [
                                 "status-success=continuous-integration/fake-ci",
                                 "label=merge",
-                            ]
-                        }
+                            ],
+                        },
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -989,7 +1013,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                             "name": "high priority",
                             "conditions": ["label=urgent"],
                             "priority": "high",
-                        }
+                        },
                     ],
                 },
             ],
@@ -1018,7 +1042,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         found = 0
         while 1:
             check = await self.wait_for_check_run(
-                "completed", name="Rule: default merge (queue)"
+                "completed",
+                name="Rule: default merge (queue)",
             )
             assert check["check_run"]["head_sha"] in [
                 pr_1["head"]["sha"],

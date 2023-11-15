@@ -28,7 +28,7 @@ class EventsResponse(pagination.PageResponse[evt_utils.Event]):
             "metadata": {
                 "description": "The list of events",
             },
-        }
+        },
     )
 
 
@@ -49,9 +49,9 @@ class EventsResponse(pagination.PageResponse[evt_utils.Event]):
                 "description": "Successful Response.\n\n"
                 "**Important note**: response attributes `events[].timestamp` and "
                 "`events[].event` are deprecated and being replaced by `events[].received_at` and "
-                "`events[].type` respectively. Please use those instead."
-            }
-        }
+                "`events[].type` respectively. Please use those instead.",
+            },
+        },
     },
 )
 async def get_repository_events(

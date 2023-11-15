@@ -25,7 +25,8 @@ class DedicatedStreamService(stream_service_base.StreamService):
     main_task_must_shutdown_first: typing.ClassVar[bool] = True
 
     _dedicated_worker_tasks: dict[
-        github_types.GitHubAccountIdType, task.TaskRetriedForever
+        github_types.GitHubAccountIdType,
+        task.TaskRetriedForever,
     ] = dataclasses.field(init=False, default_factory=dict)
 
     @property
@@ -36,7 +37,8 @@ class DedicatedStreamService(stream_service_base.StreamService):
         ]
 
     async def dedicated_stream_worker_task(
-        self, owner_id: github_types.GitHubAccountIdType
+        self,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> None:
         stream_processor = stream.Processor(
             self.redis_links,
@@ -109,6 +111,6 @@ class DedicatedStreamService(stream_service_base.StreamService):
             return set(
                 sorted(self.service_dedicated_workers_cache_syncer.owner_ids)[
                     self.process_index :: self.dedicated_stream_processes
-                ]
+                ],
             )
         return set()

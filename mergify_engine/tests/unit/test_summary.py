@@ -14,7 +14,7 @@ SCHEMA = voluptuous.Schema(
     voluptuous.All(
         [voluptuous.Coerce(cond_config.RuleConditionSchema)],
         voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
-    )
+    ),
 )
 
 
@@ -25,14 +25,14 @@ async def test_queue_rules_order_0_depth() -> None:
                 "number": 1,
                 "base": "main",
                 "label": [],
-            }
+            },
         ),
         conftest.FakePullRequest(
             {
                 "number": 2,
                 "base": "main",
                 "label": [],
-            }
+            },
         ),
     ]
 
@@ -42,7 +42,7 @@ async def test_queue_rules_order_0_depth() -> None:
                 "base=fail",
                 "base=main",
                 "label=test",
-            ]
+            ],
         )
         await c(pulls)  # type: ignore[arg-type]
         return c.get_summary()
@@ -85,7 +85,7 @@ async def test_queue_rules_order_operator_and() -> None:
                 "number": 1,
                 "base": "main",
                 "label": [],
-            }
+            },
         ),
         conftest.FakePullRequest(
             {
@@ -93,7 +93,7 @@ async def test_queue_rules_order_operator_and() -> None:
                 "number": 2,
                 "base": "main",
                 "label": [],
-            }
+            },
         ),
     ]
 
@@ -107,9 +107,9 @@ async def test_queue_rules_order_operator_and() -> None:
                     "and": [
                         "label=test",
                         "label=test2",
-                    ]
+                    ],
                 },
-            ]
+            ],
         )
         await c(pulls)  # type: ignore[arg-type]
         return c.get_summary()
@@ -179,7 +179,7 @@ async def test_queue_rules_order_operator_or() -> None:
                 "number": 1,
                 "base": "main",
                 "label": [],
-            }
+            },
         ),
         conftest.FakePullRequest(
             {
@@ -187,7 +187,7 @@ async def test_queue_rules_order_operator_or() -> None:
                 "number": 2,
                 "base": "main",
                 "label": [],
-            }
+            },
         ),
     ]
 
@@ -201,9 +201,9 @@ async def test_queue_rules_order_operator_or() -> None:
                     "or": [
                         "label=test",
                         "label=test2",
-                    ]
+                    ],
                 },
-            ]
+            ],
         )
         await c(pulls)  # type: ignore[arg-type]
         return c.get_summary()
@@ -275,9 +275,9 @@ async def test_queue_condition_summary_display_override() -> None:
                 "or": [
                     "label=test",
                     "label=test2",
-                ]
+                ],
             },
-        ]
+        ],
     )
     await c(
         [
@@ -287,9 +287,9 @@ async def test_queue_condition_summary_display_override() -> None:
                     "number": 2,
                     "base": "main",
                     "label": ["test"],
-                }
+                },
             ),
-        ]
+        ],
     )
     assert """- [ ] `author=somebody`
 - [X] `base=main`
@@ -301,7 +301,8 @@ async def test_queue_condition_summary_display_override() -> None:
 
 async def test_condition_summary_simple() -> None:
     single_condition_checked = conditions_mod.RuleCondition.from_tree(
-        {"=": ("base", "main")}, description="Description"
+        {"=": ("base", "main")},
+        description="Description",
     )
     single_condition_checked.match = True
     single_condition_checked.evaluation_error = "Error"
@@ -319,14 +320,14 @@ async def test_condition_summary_complex() -> None:
         voluptuous.All(
             [voluptuous.Coerce(cond_config.RuleConditionSchema)],
             voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
-        )
+        ),
     )
     pr_conditions: conditions_mod.PullRequestRuleConditions = schema(
         [
             "base=main",
             {"or": ["label=foo", "label=bar"]},
             {"and": ["label=foo", "label=baz"]},
-        ]
+        ],
     )
     pr_conditions.condition.conditions[0].match = True
     pr_conditions.condition.conditions[1].description = "GitHub branch protection"
@@ -353,7 +354,7 @@ async def test_condition_summary_complex() -> None:
 
 async def test_rule_condition_negation_summary() -> None:
     rule_condition_negation = cond_config.RuleConditionSchema(
-        {"not": {"or": ["base=main", "label=foo"]}}
+        {"not": {"or": ["base=main", "label=foo"]}},
     )
     pr_conditions = conditions_mod.PullRequestRuleConditions([rule_condition_negation])
     pr_conditions.condition.conditions[0].match = True
@@ -374,7 +375,7 @@ def create_queue_rule_conditions(
         voluptuous.All(
             [voluptuous.Coerce(cond_config.RuleConditionSchema)],
             voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
-        )
+        ),
     )
     conditions: conditions_mod.QueueRuleMergeConditions = schema(pull_requests)
     return conditions
@@ -392,7 +393,7 @@ async def test_queue_rules_summary() -> None:
             {"and": ["label=foo", "check-success!=first-ci"]},
             {"not": {"and": ["label=fizz", "label=buzz"]}},
             "schedule=MON-FRI",
-        ]
+        ],
     )
     conditions.condition.conditions.extend(
         [
@@ -404,15 +405,15 @@ async def test_queue_rules_summary() -> None:
                 {
                     "or": [
                         conditions_mod.RuleCondition.from_string(
-                            "check-success=my-awesome-ci"
+                            "check-success=my-awesome-ci",
                         ),
                         conditions_mod.RuleCondition.from_string(
-                            "check-neutral=my-awesome-ci"
+                            "check-neutral=my-awesome-ci",
                         ),
                         conditions_mod.RuleCondition.from_string(
-                            "check-skipped=my-awesome-ci"
+                            "check-skipped=my-awesome-ci",
                         ),
-                    ]
+                    ],
                 },
                 description="🛡 GitHub branch protection",
             ),
@@ -420,7 +421,7 @@ async def test_queue_rules_summary() -> None:
                 "author=me",
                 description="Another mechanism to get condtions",
             ),
-        ]
+        ],
     )
 
     pulls: list[condition_value_querier.BasePullRequest] = [
@@ -428,7 +429,10 @@ async def test_queue_rules_summary() -> None:
             {
                 "number": 1,
                 "current-datetime": datetime.datetime(
-                    2022, 11, 24, tzinfo=datetime.UTC
+                    2022,
+                    11,
+                    24,
+                    tzinfo=datetime.UTC,
                 ),
                 "author": "me",
                 "base": "main",
@@ -440,13 +444,16 @@ async def test_queue_rules_summary() -> None:
                 "check": ["first-ci", "my-awesome-ci"],
                 "status-failure": ["noway"],
                 "approved-reviews-by": ["jd", "sileht"],
-            }
+            },
         ),
         conftest.FakePullRequest(
             {
                 "number": 2,
                 "current-datetime": datetime.datetime(
-                    2022, 11, 24, tzinfo=datetime.UTC
+                    2022,
+                    11,
+                    24,
+                    tzinfo=datetime.UTC,
                 ),
                 "author": "me",
                 "base": "main",
@@ -458,13 +465,16 @@ async def test_queue_rules_summary() -> None:
                 "check": ["first-ci", "my-awesome-ci"],
                 "status-failure": ["noway"],
                 "approved-reviews-by": ["jd", "sileht"],
-            }
+            },
         ),
         conftest.FakePullRequest(
             {
                 "number": 3,
                 "current-datetime": datetime.datetime(
-                    2022, 11, 24, tzinfo=datetime.UTC
+                    2022,
+                    11,
+                    24,
+                    tzinfo=datetime.UTC,
                 ),
                 "author": "not-me",
                 "base": "main",
@@ -476,7 +486,7 @@ async def test_queue_rules_summary() -> None:
                 "check": ["first-ci", "my-awesome-ci"],
                 "status-failure": ["noway"],
                 "approved-reviews-by": ["jd", "sileht"],
-            }
+            },
         ),
     ]
     await conditions(pulls)
@@ -567,7 +577,7 @@ async def test_rules_conditions_schedule() -> None:
                 "author": "me",
                 "base": "main",
                 "current-datetime": date.utcnow(),
-            }
+            },
         ),
     ]
 
@@ -577,7 +587,7 @@ async def test_rules_conditions_schedule() -> None:
             "schedule=MON-FRI 08:00-17:00",
             "schedule=MONDAY-FRIDAY 10:00-12:00",
             "schedule=SAT-SUN 07:00-12:00",
-        ]
+        ],
     )
 
     await conditions(pulls)
@@ -613,19 +623,19 @@ async def test_render_big_nested_summary() -> None:
                                                         "or": [
                                                             "base=main",
                                                             "base=main",
-                                                        ]
+                                                        ],
                                                     },
-                                                ]
+                                                ],
                                             },
-                                        ]
+                                        ],
                                     },
-                                ]
+                                ],
                             },
-                        ]
+                        ],
                     },
-                ]
-            }
-        ]
+                ],
+            },
+        ],
     )
 
     summary = conditions.get_summary()

@@ -13,7 +13,8 @@ def test_merge_queue_reset(
 ) -> None:
     repo = f"https://github.com/{recorder.config['organization_name']}/{recorder.config['repository_name']}"
     result = utils.test_console_scripts(
-        admin_cli.admin_cli, ["merge-queue-reset", repo]
+        admin_cli.admin_cli,
+        ["merge-queue-reset", repo],
     )
     assert result.exit_code == 0, result.output
     assert (

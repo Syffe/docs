@@ -12,5 +12,7 @@ class TestUnqueueCommand(test_dequeue.TestDequeueCommand):
         as_: typing.Literal["integration", "fork", "admin"] = "integration",
     ) -> int:
         return await super().create_comment(
-            pull_number, message.replace("dequeue", "unqueue"), as_
+            pull_number,
+            message.replace("dequeue", "unqueue"),
+            as_,
         )

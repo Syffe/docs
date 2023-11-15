@@ -43,11 +43,12 @@ async def insert_event(
 
 
 async def assert_base_event(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     # base event inserted
     result = await db.execute(
-        sqlalchemy.select(func.count()).select_from(evt_model.Event)
+        sqlalchemy.select(func.count()).select_from(evt_model.Event),
     )
     assert result.scalar() == 1
 
@@ -72,13 +73,14 @@ async def test_event_not_supported(fake_repository: context.Repository) -> None:
 
 
 async def test_event_action_assign_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
         "action.assign",
         signals.EventAssignMetadata(
-            {"added": ["leo", "charly", "guillaume"], "removed": ["damien", "fabien"]}
+            {"added": ["leo", "charly", "guillaume"], "removed": ["damien", "fabien"]},
         ),
     )
 
@@ -90,7 +92,8 @@ async def test_event_action_assign_consistency(
 
 
 async def test_event_post_check_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -100,7 +103,7 @@ async def test_event_post_check_consistency(
                 "title": "Rule: my check (post_check)",
                 "conclusion": "success",
                 "summary": "abc" * 100,
-            }
+            },
         ),
     )
 
@@ -112,13 +115,14 @@ async def test_event_post_check_consistency(
 
 
 async def test_event_action_copy_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
         "action.copy",
         signals.EventCopyMetadata(
-            {"to": "test_branch", "pull_request_number": 123, "conflicts": False}
+            {"to": "test_branch", "pull_request_number": 123, "conflicts": False},
         ),
     )
 
@@ -131,7 +135,8 @@ async def test_event_action_copy_consistency(
 
 
 async def test_event_action_comment_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -146,7 +151,8 @@ async def test_event_action_comment_consistency(
 
 
 async def test_event_action_close_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -161,7 +167,8 @@ async def test_event_action_close_consistency(
 
 
 async def test_event_action_delete_head_branch_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -176,7 +183,8 @@ async def test_event_action_delete_head_branch_consistency(
 
 
 async def test_event_action_dismiss_reviews_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -191,13 +199,14 @@ async def test_event_action_dismiss_reviews_consistency(
 
 
 async def test_event_action_backport_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
         "action.backport",
         signals.EventCopyMetadata(
-            {"to": "stable_branch", "pull_request_number": 456, "conflicts": True}
+            {"to": "stable_branch", "pull_request_number": 456, "conflicts": True},
         ),
     )
 
@@ -210,7 +219,8 @@ async def test_event_action_backport_consistency(
 
 
 async def test_event_action_edit_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -225,7 +235,8 @@ async def test_event_action_edit_consistency(
 
 
 async def test_event_action_label_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -234,7 +245,7 @@ async def test_event_action_label_consistency(
             {
                 "added": ["manual merge", "skip changelog"],
                 "removed": ["hotfix", "skip tests"],
-            }
+            },
         ),
     )
 
@@ -246,7 +257,8 @@ async def test_event_action_label_consistency(
 
 
 async def test_event_action_merge_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -261,7 +273,8 @@ async def test_event_action_merge_consistency(
 
 
 async def test_event_action_github_actions_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     inputs: dict[str, str | int | bool] = {"tool": "wrench", "size": 14, "in_use": True}
     await insert_event(
@@ -282,7 +295,8 @@ async def test_event_action_github_actions_consistency(
 
 @time_travel("2023-07-10T14:00:00Z")
 async def test_event_action_queue_enter_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -294,9 +308,9 @@ async def test_event_action_queue_enter_consistency(
                 "position": 3,
                 "queued_at": date.utcnow(),
                 "partition_name": partition_rules.PartitionRuleName(
-                    "default_partition"
+                    "default_partition",
                 ),
-            }
+            },
         ),
     )
 
@@ -320,14 +334,15 @@ async def test_event_action_queue_enter_consistency(
                 "position": 3,
                 "queued_at": date.utcnow(),
                 "partition_name": None,
-            }
+            },
         ),
     )
 
 
 @time_travel("2023-07-10T14:00:00Z")
 async def test_event_action_queue_merged_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -341,7 +356,7 @@ async def test_event_action_queue_merged_consistency(
                     partition_rules.PartitionRuleName("partA"),
                     partition_rules.PartitionRuleName("partB"),
                 ],
-            }
+            },
         ),
     )
 
@@ -356,7 +371,8 @@ async def test_event_action_queue_merged_consistency(
 
 @time_travel("2023-07-10T14:00:00Z")
 async def test_event_action_queue_leave_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -372,7 +388,7 @@ async def test_event_action_queue_leave_consistency(
                 "reason": "Pull request ahead in queue failed to get merged",
                 "seconds_waiting_for_schedule": 5,
                 "seconds_waiting_for_freeze": 5,
-            }
+            },
         ),
     )
 
@@ -391,7 +407,8 @@ async def test_event_action_queue_leave_consistency(
 
 
 async def test_events_with_no_metadata(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     events_set: set[signals.EventName] = {
         "action.squash",
@@ -414,7 +431,8 @@ async def test_events_with_no_metadata(
 
 @time_travel("2023-07-17T14:00:00Z")
 async def test_event_action_queue_checks_start_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     unsuccessful_check = checks.QueueCheck.Serialized(
         {
@@ -423,7 +441,7 @@ async def test_event_action_queue_checks_start_consistency(
             "state": "failure",
             "url": None,
             "avatar_url": "some_url",
-        }
+        },
     )
 
     await insert_event(
@@ -446,7 +464,7 @@ async def test_event_action_queue_checks_start_consistency(
                     "checks_ended_at": date.utcnow(),
                     "unsuccessful_checks": [unsuccessful_check],
                 },
-            }
+            },
         ),
     )
 
@@ -473,7 +491,8 @@ async def test_event_action_queue_checks_start_consistency(
 
 @time_travel("2023-07-17T14:00:00Z")
 async def test_event_action_queue_checks_end_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     unsuccessful_check = checks.QueueCheck.Serialized(
         {
@@ -482,7 +501,7 @@ async def test_event_action_queue_checks_end_consistency(
             "state": "failure",
             "url": None,
             "avatar_url": "some_url",
-        }
+        },
     )
 
     await insert_event(
@@ -508,7 +527,7 @@ async def test_event_action_queue_checks_end_consistency(
                     "checks_ended_at": date.utcnow(),
                     "unsuccessful_checks": [unsuccessful_check],
                 },
-            }
+            },
         ),
     )
 
@@ -537,7 +556,8 @@ async def test_event_action_queue_checks_end_consistency(
 
 
 async def test_event_action_request_reviews_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -546,7 +566,7 @@ async def test_event_action_request_reviews_consistency(
             {
                 "reviewers": ["leo", "charly", "guillaume"],
                 "team_reviewers": ["damien", "fabien"],
-            }
+            },
         ),
     )
 
@@ -558,7 +578,8 @@ async def test_event_action_request_reviews_consistency(
 
 
 async def test_event_action_review_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -568,7 +589,7 @@ async def test_event_action_review_consistency(
                 "review_type": "APPROVE",
                 "reviewer": "John Doe",
                 "message": "Looks good to me",
-            }
+            },
         ),
     )
 
@@ -581,7 +602,8 @@ async def test_event_action_review_consistency(
 
 
 async def test_event_queue_freeze_create_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -592,7 +614,7 @@ async def test_event_queue_freeze_create_consistency(
                 "reason": "Incident in production",
                 "cascading": True,
                 "created_by": {"id": 123456, "type": "user", "name": "krilin"},
-            }
+            },
         ),
         pull_request=None,
     )
@@ -609,7 +631,8 @@ async def test_event_queue_freeze_create_consistency(
 
 
 async def test_event_queue_freeze_update_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -620,7 +643,7 @@ async def test_event_queue_freeze_update_consistency(
                 "reason": "Incident in production",
                 "cascading": True,
                 "updated_by": {"id": 567, "type": "user", "name": "sangoku"},
-            }
+            },
         ),
         pull_request=None,
     )
@@ -637,7 +660,8 @@ async def test_event_queue_freeze_update_consistency(
 
 
 async def test_event_queue_freeze_delete_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -646,7 +670,7 @@ async def test_event_queue_freeze_delete_consistency(
             {
                 "queue_name": "hotfix",
                 "deleted_by": {"id": 454, "type": "user", "name": "freezer"},
-            }
+            },
         ),
         pull_request=None,
     )
@@ -661,7 +685,8 @@ async def test_event_queue_freeze_delete_consistency(
 
 
 async def test_event_queue_pause_create_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -670,7 +695,7 @@ async def test_event_queue_pause_create_consistency(
             {
                 "reason": "Incident in production",
                 "created_by": {"id": 145, "type": "user", "name": "vegeta"},
-            }
+            },
         ),
         pull_request=None,
     )
@@ -685,7 +710,8 @@ async def test_event_queue_pause_create_consistency(
 
 
 async def test_event_queue_pause_update_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -694,7 +720,7 @@ async def test_event_queue_pause_update_consistency(
             {
                 "reason": "Incident in production",
                 "updated_by": {"id": 145, "type": "user", "name": "sangohan"},
-            }
+            },
         ),
         pull_request=None,
     )
@@ -709,7 +735,8 @@ async def test_event_queue_pause_update_consistency(
 
 
 async def test_event_queue_pause_delete_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -743,7 +770,8 @@ def test_all_known_events_supported() -> None:
 
 
 async def test_event_as_dict(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -793,7 +821,8 @@ async def test_event_as_dict(
 
 
 async def test_event_action_queue_change_consistency(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
@@ -804,7 +833,7 @@ async def test_event_action_queue_change_consistency(
                 "partition_name": partition_rules.DEFAULT_PARTITION_NAME,
                 "size": 5,
                 "running_checks": 2,
-            }
+            },
         ),
     )
 
@@ -818,20 +847,21 @@ async def test_event_action_queue_change_consistency(
 
 
 async def test_event_cascading_delete(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     await insert_event(
         fake_repository,
         "action.assign",
         signals.EventAssignMetadata(
-            {"added": ["leo", "charly", "guillaume"], "removed": ["damien", "fabien"]}
+            {"added": ["leo", "charly", "guillaume"], "removed": ["damien", "fabien"]},
         ),
     )
     event = await db.scalar(sqlalchemy.select(evt_model.Event))
     assert event
 
     await db.execute(
-        sqlalchemy.delete(evt_model.Event).where(evt_model.Event.id == event.id)
+        sqlalchemy.delete(evt_model.Event).where(evt_model.Event.id == event.id),
     )
     with pytest.raises(sqlalchemy.exc.NoResultFound):
         await db.get_one(evt_model.EventActionAssign, {"id": event.id})

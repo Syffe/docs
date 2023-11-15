@@ -46,14 +46,17 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, e.title, e.reason
+                rule,
+                action,
+                e.title,
+                e.reason,
             )
 
         return cls(
             ctxt,
             rule,
             RebaseExecutorConfig(
-                {"bot_account": bot_account, "autosquash": action.config["autosquash"]}
+                {"bot_account": bot_account, "autosquash": action.config["autosquash"]},
             ),
         )
 
@@ -65,12 +68,16 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
             and not await self.ctxt.has_squashable_commits()
         ):
             return check_api.Result(
-                check_api.Conclusion.SUCCESS, "Nothing to do for rebase action", ""
+                check_api.Conclusion.SUCCESS,
+                "Nothing to do for rebase action",
+                "",
             )
 
         mergify_config = await self.ctxt.repository.get_mergify_config()
         convoy = await merge_train.Convoy.from_context(
-            self.ctxt, mergify_config["queue_rules"], mergify_config["partition_rules"]
+            self.ctxt,
+            mergify_config["queue_rules"],
+            mergify_config["partition_rules"],
         )
         if convoy.is_pull_embarked(self.ctxt.pull["number"]):
             return check_api.Result(
@@ -123,18 +130,20 @@ class RebaseAction(actions.Action):
     )
     validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("bot_account", default=None): voluptuous.Any(
-            None, types.Jinja2
+            None,
+            types.Jinja2,
         ),
         voluptuous.Required("autosquash", default=True): bool,
     }
     executor_class = RebaseExecutor
 
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
-        {"or": ["sender-permission>=write", "sender={{author}}"]}
+        {"or": ["sender-permission>=write", "sender={{author}}"]},
     ]
 
     async def get_conditions_requirements(
-        self, ctxt: context.Context
+        self,
+        ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
         description = ":pushpin: rebase requirement"
         conds: list[conditions.RuleConditionNode] = [
@@ -157,8 +166,8 @@ class RebaseAction(actions.Action):
                                 description=description,
                             ),
                         ],
-                    }
-                )
+                    },
+                ),
             )
 
         return conds

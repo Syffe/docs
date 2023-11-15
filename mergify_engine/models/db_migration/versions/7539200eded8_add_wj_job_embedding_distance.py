@@ -19,7 +19,10 @@ def upgrade() -> None:
     alembic.op.create_table(
         "gha_workflow_job_log_neighbours",
         sqlalchemy.Column(
-            "job_id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "job_id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "neighbour_job_id",

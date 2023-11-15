@@ -6,7 +6,8 @@ from mergify_engine.tests.functional import base
 
 
 @pytest.mark.subscription(
-    subscription.Features.WORKFLOW_AUTOMATION, subscription.Features.MERGE_QUEUE
+    subscription.Features.WORKFLOW_AUTOMATION,
+    subscription.Features.MERGE_QUEUE,
 )
 @pytest.mark.delete_branch_on_merge(True)
 class TestStackedPr(base.FunctionalTestBase):
@@ -18,7 +19,7 @@ class TestStackedPr(base.FunctionalTestBase):
                     "queue_conditions": [
                         f"base={self.main_branch_name}",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -61,12 +62,16 @@ class TestStackedPr(base.FunctionalTestBase):
 
         # Create PRs
         pr_a = await self.create_pr(
-            base=self.main_branch_name, branch=branch_a, git_tree_ready=True
+            base=self.main_branch_name,
+            branch=branch_a,
+            git_tree_ready=True,
         )
         pr_b = await self.create_pr(base=branch_a, branch=branch_b, git_tree_ready=True)
         pr_c = await self.create_pr(base=branch_b, branch=branch_c, git_tree_ready=True)
         pr_c1 = await self.create_pr(
-            base=branch_b, branch=branch_c1, git_tree_ready=True
+            base=branch_b,
+            branch=branch_c1,
+            git_tree_ready=True,
         )
         pr_d = await self.create_pr(base=branch_c, branch=branch_d, git_tree_ready=True)
 
@@ -81,11 +86,15 @@ class TestStackedPr(base.FunctionalTestBase):
         await self.run_engine()
 
         await self.wait_for_pull_request(
-            "closed", pr_number=pr_a["number"], merged=True
+            "closed",
+            pr_number=pr_a["number"],
+            merged=True,
         )
         pr_b = (
             await self.wait_for_pull_request(
-                "edited", pr_number=pr_b["number"], merged=False
+                "edited",
+                pr_number=pr_b["number"],
+                merged=False,
             )
         )["pull_request"]
 
@@ -94,16 +103,22 @@ class TestStackedPr(base.FunctionalTestBase):
         await self.run_engine()
 
         await self.wait_for_pull_request(
-            "closed", pr_number=pr_b["number"], merged=True
+            "closed",
+            pr_number=pr_b["number"],
+            merged=True,
         )
         pr_c = (
             await self.wait_for_pull_request(
-                "edited", pr_number=pr_c["number"], merged=False
+                "edited",
+                pr_number=pr_c["number"],
+                merged=False,
             )
         )["pull_request"]
         pr_c1 = (
             await self.wait_for_pull_request(
-                "edited", pr_number=pr_c1["number"], merged=False
+                "edited",
+                pr_number=pr_c1["number"],
+                merged=False,
             )
         )["pull_request"]
 
@@ -113,17 +128,23 @@ class TestStackedPr(base.FunctionalTestBase):
         await self.run_engine()
 
         await self.wait_for_pull_request(
-            "closed", pr_number=pr_c["number"], merged=True
+            "closed",
+            pr_number=pr_c["number"],
+            merged=True,
         )
 
         pr_d = (
             await self.wait_for_pull_request(
-                "edited", pr_number=pr_d["number"], merged=False
+                "edited",
+                pr_number=pr_d["number"],
+                merged=False,
             )
         )["pull_request"]
 
         await self.wait_for_pull_request(
-            "closed", pr_number=pr_c1["number"], merged=True
+            "closed",
+            pr_number=pr_c1["number"],
+            merged=True,
         )
 
         assert pr_d["base"]["ref"] == self.main_branch_name
@@ -131,5 +152,7 @@ class TestStackedPr(base.FunctionalTestBase):
         await self.run_engine()
 
         await self.wait_for_pull_request(
-            "closed", pr_number=pr_d["number"], merged=True
+            "closed",
+            pr_number=pr_d["number"],
+            merged=True,
         )

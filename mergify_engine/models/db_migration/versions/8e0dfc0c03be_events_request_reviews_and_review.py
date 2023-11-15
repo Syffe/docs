@@ -36,7 +36,8 @@ def upgrade() -> None:
             name=alembic.op.f("event_action_request_reviews_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_request_reviews_pkey")
+            "id",
+            name=alembic.op.f("event_action_request_reviews_pkey"),
         ),
     )
     alembic.op.create_table(
@@ -50,10 +51,13 @@ def upgrade() -> None:
         sqlalchemy.Column("reviewer", sqlalchemy.Text(), nullable=True),
         sqlalchemy.Column("message", sqlalchemy.Text(), nullable=True),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_review_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_review_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_review_pkey")
+            "id",
+            name=alembic.op.f("event_action_review_pkey"),
         ),
     )
     # ### end Alembic commands ###

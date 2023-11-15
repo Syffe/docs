@@ -98,7 +98,7 @@ async def test_random_reviewers_count_bigger(
                 "jd": 2,
                 "sileht": 45,
             },
-        }
+        },
     )
 
     client = mock.MagicMock()
@@ -192,8 +192,10 @@ async def test_team_permissions_missing(
     client = mock.MagicMock()
     client.get = mock.AsyncMock(
         side_effect=http.HTTPNotFound(
-            message="not found", response=mock.ANY, request=mock.ANY
-        )
+            message="not found",
+            response=mock.ANY,
+            request=mock.ANY,
+        ),
     )
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client

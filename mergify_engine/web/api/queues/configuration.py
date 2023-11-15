@@ -55,5 +55,5 @@ async def repository_queues_configuration(
                 name=rule.name,
             )
             for rule in config["queue_rules"]
-        ]
+        ],
     )

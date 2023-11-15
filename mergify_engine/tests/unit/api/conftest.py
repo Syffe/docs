@@ -50,16 +50,17 @@ async def api_token(
             "html_url": "",
             "default_branch": github_types.GitHubRefType("main"),
             "owner": gh_owner,
-        }
+        },
     )
 
     # get installation from repository
     respx_mock.get(
-        "https://api.github.com/repos/Mergifyio/engine/installation"
+        "https://api.github.com/repos/Mergifyio/engine/installation",
     ).respond(200, json={"account": gh_owner, "id": 42, "suspended_at": None})
     # get installation from account id
     respx_mock.get("https://api.github.com/user/0/installation").respond(
-        200, json={"account": gh_owner, "id": 42, "suspended_at": None}
+        200,
+        json={"account": gh_owner, "id": 42, "suspended_at": None},
     )
 
     # get the repository
@@ -81,25 +82,26 @@ async def api_token(
 
     # get a github access token
     respx_mock.post(
-        "https://api.github.com/app/installations/42/access_tokens"
+        "https://api.github.com/app/installations/42/access_tokens",
     ).respond(
         200,
         json=github_types.GitHubInstallationAccessToken(
             {
                 "token": "gh_token",
                 "expires_at": "2111-09-08T17:26:27Z",
-            }
+            },
         ),  # type: ignore[arg-type]
     )
     # NOTE(sileht): We don't care if access token is used ot not,
     # so call it once to please respx.assert_all_called()
     httpx.post(
-        "https://api.github.com/app/installations/42/access_tokens", json={"foo": "bar"}
+        "https://api.github.com/app/installations/42/access_tokens",
+        json={"foo": "bar"},
     )
 
     # get account subscription to Mergify
     respx_mock.get(
-        f"http://localhost:5000/engine/subscription/{gh_owner['id']}"
+        f"http://localhost:5000/engine/subscription/{gh_owner['id']}",
     ).respond(
         200,
         json={
@@ -122,5 +124,7 @@ async def api_token(
 
     data = resp.json()
     return TokenUserRepo(
-        f"bearer {data['api_access_key']}{data['api_secret_key']}", user, repo
+        f"bearer {data['api_access_key']}{data['api_secret_key']}",
+        user,
+        repo,
     )

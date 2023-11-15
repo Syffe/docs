@@ -14,7 +14,7 @@ from mergify_engine.models import github as gh_models
 
 @pytest.fixture
 def sample_ci_events_to_process(
-    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]]
+    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
 ) -> dict[str, github_events.CIEventToProcess]:
     ci_events = {}
 
@@ -145,7 +145,7 @@ async def test_process_event_stream_broken_workflow_job(
     stream_event = {
         "event_type": "workflow_job",
         "data": msgpack.packb(
-            sample_ci_events_to_process["workflow_job.broken_job.json"].slim_event
+            sample_ci_events_to_process["workflow_job.broken_job.json"].slim_event,
         ),
     }
     await redis_links.stream.xadd(

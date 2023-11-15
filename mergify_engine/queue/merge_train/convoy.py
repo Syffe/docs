@@ -74,7 +74,8 @@ class Convoy:
         self,
     ) -> None:
         query: collections.OrderedDict[
-            str, partr_config.PartitionRuleName | None
+            str,
+            partr_config.PartitionRuleName | None,
         ] = collections.OrderedDict()
         if self.partition_rules:
             for part_rule in self.partition_rules:
@@ -89,7 +90,8 @@ class Convoy:
 
         redis_train_key = train_import.get_redis_train_key(self.repository.installation)
         raw_trains = await self.repository.installation.redis.cache.hmget(
-            redis_train_key, query.keys()
+            redis_train_key,
+            query.keys(),
         )
 
         # NOTE(Greesb): Default partition retrocompatibility, remove once
@@ -101,7 +103,8 @@ class Convoy:
                 # Remove the old train key, so we don't accidentally load the old train
                 # instead of the new one.
                 await self.repository.installation.redis.cache.hdel(
-                    redis_train_key, f"{self.repository.repo['id']}~{self.ref}"
+                    redis_train_key,
+                    f"{self.repository.repo['id']}~{self.ref}",
                 )
 
             if raw_trains[0] is not None and raw_trains[1] is None:
@@ -118,7 +121,10 @@ class Convoy:
             del query[f"{self.repository.repo['id']}~{self.ref}"]
 
         await self.load_from_bytes(
-            {part_name: raw_trains[idx] for idx, part_name in enumerate(query.values())}  # type: ignore[misc]
+            {
+                part_name: raw_trains[idx]  # type: ignore[misc]
+                for idx, part_name in enumerate(query.values())
+            },
         )
 
     async def load_from_bytes(
@@ -143,7 +149,8 @@ class Convoy:
         return iter(self._trains)
 
     def iter_trains_from_partition_names(
-        self, partition_names: list[partr_config.PartitionRuleName]
+        self,
+        partition_names: list[partr_config.PartitionRuleName],
     ) -> abc.Iterator[train_import.Train]:
         for train in self._trains:
             # If partition_names is an empty list, we return every train
@@ -160,7 +167,7 @@ class Convoy:
             car = train.get_car(ctxt)
             if car is not None:
                 trains_and_cars.append(
-                    merge_train_types.TrainAndTrainCar(train=train, train_car=car)
+                    merge_train_types.TrainAndTrainCar(train=train, train_car=car),
                 )
 
         return trains_and_cars
@@ -262,7 +269,8 @@ class Convoy:
             queue_freezes = {
                 queue_freeze.name: queue_freeze
                 async for queue_freeze in freeze.QueueFreeze.get_all(
-                    self.repository, self.queue_rules
+                    self.repository,
+                    self.queue_rules,
                 )
             }
 
@@ -291,7 +299,8 @@ class Convoy:
         }
 
     async def find_embarked_pull(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> list[merge_train_types.ConvoyEmbarkedPullWithCarAndPos]:
         where_pull_is_embarked = []
 
@@ -304,13 +313,14 @@ class Convoy:
                         embarked_pull=ep_with_car.embarked_pull,
                         partition_name=train.partition_name,
                         position=position,
-                    )
+                    ),
                 )
 
         return where_pull_is_embarked
 
     async def find_embarked_pull_with_train(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> list[merge_train_types.ConvoyEmbarkedPullWithTrain]:
         where_pull_is_embarked = []
 
@@ -326,13 +336,14 @@ class Convoy:
                             partition_name=train.partition_name,
                             position=position,
                         ),
-                    )
+                    ),
                 )
 
         return where_pull_is_embarked
 
     def is_pull_embarked(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> bool:
         for train in self._trains:
             position, _ = train.find_embarked_pull(pull_number)
@@ -368,13 +379,14 @@ class Convoy:
             pname == partr_config.DEFAULT_PARTITION_NAME for pname in partition_names
         ):
             raise RuntimeError(
-                f"Should be impossible to have a partition name set to the default `{partr_config.DEFAULT_PARTITION_NAME}` here"
+                f"Should be impossible to have a partition name set to the default `{partr_config.DEFAULT_PARTITION_NAME}` here",
             )
 
         return f"#{ctxt.pull['number']} is queued in the following partitions: {', '.join(partition_names)}"
 
     def get_train_cars_by_tmp_pull(
-        self, ctxt: context.Context
+        self,
+        ctxt: context.Context,
     ) -> list[tc_import.TrainCar]:
         train_cars = []
         for train in self._trains:
@@ -413,12 +425,12 @@ class Convoy:
                     continue
 
                 if pr_numbers == sorted(
-                    [ep.user_pull_request_number for ep in car.initial_embarked_pulls]
+                    [ep.user_pull_request_number for ep in car.initial_embarked_pulls],
                 ):
                     await car.add_delegating_partition(delegating_partition)
                     pull_request_context = (
                         await self.repository.get_pull_request_context(
-                            car.queue_pull_request_number
+                            car.queue_pull_request_number,
                         )
                     )
                     return pull_request_context.pull
@@ -432,7 +444,7 @@ class Convoy:
         temporary_car: tc_import.TrainCar,
     ) -> None:
         user_pr_context = await self.repository.get_pull_request_context(
-            user_pull_request_number
+            user_pull_request_number,
         )
         train_cars = self.get_train_cars_by_pull(user_pr_context)
         if temporary_car not in train_cars:
@@ -457,7 +469,8 @@ class Convoy:
                 await user_pr_context.get_merge_queue_check_run_name(),
                 report,
                 details_url=await dashboard.get_queues_url_from_context(
-                    user_pr_context, self
+                    user_pr_context,
+                    self,
                 ),
             )
         else:
@@ -479,7 +492,7 @@ class Convoy:
                 for tc in train_cars
             ):
                 raise RuntimeError(
-                    f"Cannot have a `partition_name` set to the default `{partr_config.DEFAULT_PARTITION_NAME}` here"
+                    f"Cannot have a `partition_name` set to the default `{partr_config.DEFAULT_PARTITION_NAME}` here",
                 )
 
             check_title = f"The pull request is embarked in partitions {', '.join([tc.train.partition_name for tc in train_cars])}"
@@ -488,7 +501,7 @@ class Convoy:
                 [
                     tc.build_original_pr_summary_for_partition_report(checked_pull)
                     for tc in train_cars
-                ]
+                ],
             )
 
             report = check_api.Result(
@@ -502,13 +515,15 @@ class Convoy:
                 await user_pr_context.get_merge_queue_check_run_name(),
                 report,
                 details_url=await dashboard.get_queues_url_from_context(
-                    user_pr_context, self
+                    user_pr_context,
+                    self,
                 ),
             )
 
     @classmethod
     async def _get_raw_trains_by_convoy(
-        cls, installation: context.Installation
+        cls,
+        installation: context.Installation,
     ) -> dict[
         tuple[github_types.GitHubRepositoryIdType, github_types.GitHubRefType],
         dict[partr_config.PartitionRuleName, bytes],
@@ -535,7 +550,8 @@ class Convoy:
             ):
                 # Remove the key both from the dict and redis
                 await installation.redis.cache.hdel(
-                    trains_key, trains_raw_keys[0].decode()
+                    trains_key,
+                    trains_raw_keys[0].decode(),
                 )
                 del trains_raw[trains_raw_keys[0]]
 
@@ -612,7 +628,8 @@ class Convoy:
                 yield conv
 
     async def get_queue_name_from_pull_request_number(
-        self, pr_number: github_types.GitHubPullRequestNumber
+        self,
+        pr_number: github_types.GitHubPullRequestNumber,
     ) -> qr_config.QueueName | None:
         for embarked_pull in await self.find_embarked_pull(pr_number):
             return embarked_pull.embarked_pull.config["name"]

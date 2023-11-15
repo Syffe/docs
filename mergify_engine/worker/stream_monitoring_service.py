@@ -60,29 +60,35 @@ class MonitoringStreamService(task.SimpleService):
             tags=["type:dedicated"],
         )
         statsd.gauge(
-            "engine.workers-per-process.count", self.shared_stream_tasks_per_process
+            "engine.workers-per-process.count",
+            self.shared_stream_tasks_per_process,
         )
 
         # TODO(sileht): maybe we can do something with the bucket scores to
         # build a latency metric
         bucket_backlogs: dict[
-            worker_pusher.Priority, dict[str, int]
+            worker_pusher.Priority,
+            dict[str, int],
         ] = collections.defaultdict(lambda: collections.defaultdict(lambda: 0))
 
         for org_bucket, _ in org_buckets:
             owner_id = stream_service_base.StreamService.extract_owner(
-                stream_lua.BucketOrgKeyType(org_bucket.decode())
+                stream_lua.BucketOrgKeyType(org_bucket.decode()),
             )
             if owner_id in self.service_dedicated_workers_cache_syncer.owner_ids:
                 worker_id = f"dedicated-{owner_id}"
             else:
                 worker_id = shared_workers_spawner_service.SharedStreamService.get_shared_worker_id_for(
-                    owner_id, self.global_shared_tasks_count
+                    owner_id,
+                    self.global_shared_tasks_count,
                 )
             bucket_contents: list[
                 tuple[bytes, float]
             ] = await self.redis_links.stream.zrangebyscore(
-                org_bucket, min=0, max="+inf", withscores=True
+                org_bucket,
+                min=0,
+                max="+inf",
+                withscores=True,
             )
             for _, score in bucket_contents:
                 prio = worker_pusher.get_priority_level_from_score(score)

@@ -33,15 +33,21 @@ def test_key_rotation(cleanup_secrets: None) -> None:
     x = "this is an amazing string, right? 🙄".encode()
 
     with mock.patch.object(
-        settings, "REDIS_CRYPTO_SECRET_CURRENT", pydantic.SecretStr("old password")
+        settings,
+        "REDIS_CRYPTO_SECRET_CURRENT",
+        pydantic.SecretStr("old password"),
     ):
         importlib.reload(crypto)  # regen digest with new secret
         encryped_old = crypto.encrypt(x)
 
     with mock.patch.object(
-        settings, "REDIS_CRYPTO_SECRET_CURRENT", pydantic.SecretStr("new password")
+        settings,
+        "REDIS_CRYPTO_SECRET_CURRENT",
+        pydantic.SecretStr("new password"),
     ), mock.patch.object(
-        settings, "REDIS_CRYPTO_SECRET_OLD", pydantic.SecretStr("old password")
+        settings,
+        "REDIS_CRYPTO_SECRET_OLD",
+        pydantic.SecretStr("old password"),
     ):
         importlib.reload(crypto)  # regen digest with new secrets
         encryped_new = crypto.encrypt(x)

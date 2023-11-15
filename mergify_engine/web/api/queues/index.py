@@ -31,38 +31,38 @@ router = fastapi.APIRouter(
 @pydantic.dataclasses.dataclass
 class Branch:
     name: github_types.GitHubRefType = dataclasses.field(
-        metadata={"description": "The name of the branch"}
+        metadata={"description": "The name of the branch"},
     )
 
 
 @pydantic.dataclasses.dataclass
 class SpeculativeCheckPullRequest:
     in_place: bool = dataclasses.field(
-        metadata={"description": "Whether the pull request has been checked in-place"}
+        metadata={"description": "Whether the pull request has been checked in-place"},
     )
     number: github_types.GitHubPullRequestNumber = dataclasses.field(
         metadata={
-            "description": "The number of the pull request used by the speculative check"
-        }
+            "description": "The number of the pull request used by the speculative check",
+        },
     )
     started_at: datetime.datetime | None = dataclasses.field(
         metadata={
-            "description": "The timestamp when the checks have started for this pull request"
-        }
+            "description": "The timestamp when the checks have started for this pull request",
+        },
     )
     ended_at: datetime.datetime | None = dataclasses.field(
         metadata={
-            "description": "The timestamp when the checks have ended for this pull request"
-        }
+            "description": "The timestamp when the checks have ended for this pull request",
+        },
     )
     checks: list[merge_train.QueueCheck] = dataclasses.field(
-        metadata={"description": "The list of pull request checks"}
+        metadata={"description": "The list of pull request checks"},
     )
     evaluated_conditions: str = dataclasses.field(
-        metadata={"description": "The queue rule conditions evaluation report"}
+        metadata={"description": "The queue rule conditions evaluation report"},
     )
     state: merge_train.CheckStateT = dataclasses.field(
-        metadata={"description": "The global state of the checks"}
+        metadata={"description": "The global state of the checks"},
     )
 
     @classmethod
@@ -86,7 +86,7 @@ class SpeculativeCheckPullRequest:
         ):
             if car.queue_pull_request_number is None:
                 raise RuntimeError(
-                    f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
+                    f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None",
                 )
             return cls(
                 in_place=car.train_car_state.checks_type
@@ -100,37 +100,38 @@ class SpeculativeCheckPullRequest:
             )
 
         raise RuntimeError(
-            f"Car's checks type unknown: {car.train_car_state.checks_type}"
+            f"Car's checks type unknown: {car.train_car_state.checks_type}",
         )
 
 
 @pydantic.dataclasses.dataclass
 class BriefMergeabilityCheck:
     check_type: typing.Literal["in_place", "draft_pr"] = dataclasses.field(
-        metadata={"description": "The type of queue check (in_place or draft_pr)"}
+        metadata={"description": "The type of queue check (in_place or draft_pr)"},
     )
     pull_request_number: github_types.GitHubPullRequestNumber = dataclasses.field(
         metadata={
-            "description": "The number of the pull request used by the speculative check"
-        }
+            "description": "The number of the pull request used by the speculative check",
+        },
     )
     started_at: datetime.datetime = dataclasses.field(
         metadata={
-            "description": "The timestamp when the checks have started for this pull request"
-        }
+            "description": "The timestamp when the checks have started for this pull request",
+        },
     )
     ended_at: datetime.datetime | None = dataclasses.field(
         metadata={
-            "description": "The timestamp when the checks have ended for this pull request"
-        }
+            "description": "The timestamp when the checks have ended for this pull request",
+        },
     )
     state: merge_train.CheckStateT = dataclasses.field(
-        metadata={"description": "The global state of the checks"}
+        metadata={"description": "The global state of the checks"},
     )
 
     @classmethod
     def from_train_car(
-        cls, car: merge_train.TrainCar | None
+        cls,
+        car: merge_train.TrainCar | None,
     ) -> BriefMergeabilityCheck | None:
         mergeability_check = details.MergeabilityCheck.from_train_car(car)
         if mergeability_check is not None:
@@ -141,20 +142,20 @@ class BriefMergeabilityCheck:
 @pydantic.dataclasses.dataclass
 class PullRequestQueued:
     number: github_types.GitHubPullRequestNumber = pydantic.Field(
-        description="The number of the pull request"
+        description="The number of the pull request",
     )
     position: int = pydantic.Field(
-        description="The position of the pull request in the queue. The first pull request in the queue is at position 0"
+        description="The position of the pull request in the queue. The first pull request in the queue is at position 0",
     )
     priority: int = pydantic.Field(description="The priority of this pull request")
     effective_priority: int = pydantic.Field(
-        description="The effective priority of this pull request"
+        description="The effective priority of this pull request",
     )
     queue_rule: types.QueueRule = pydantic.Field(
-        description="The queue rule associated to this pull request"
+        description="The queue rule associated to this pull request",
     )
     queued_at: datetime.datetime = pydantic.Field(
-        description="The timestamp when the pull requested has entered in the queue"
+        description="The timestamp when the pull requested has entered in the queue",
     )
     speculative_check_pull_request: SpeculativeCheckPullRequest | None = pydantic.Field(
         ...,
@@ -162,20 +163,20 @@ class PullRequestQueued:
         json_schema_extra={"deprecated": True},
     )
     mergeability_check: BriefMergeabilityCheck | None = pydantic.Field(
-        description="Information about the mergeability check currently processed"
+        description="Information about the mergeability check currently processed",
     )
     estimated_time_of_merge: datetime.datetime | None = pydantic.Field(
-        description="The estimated timestamp when this pull request will be merged"
+        description="The estimated timestamp when this pull request will be merged",
     )
     partition_name: partr_config.PartitionRuleName = pydantic.Field(
-        description="The name of the partition, if any, in which the pull request is queued"
+        description="The name of the partition, if any, in which the pull request is queued",
     )
 
 
 @pydantic.dataclasses.dataclass
 class Queue:
     branch: Branch = dataclasses.field(
-        metadata={"description": "The branch of this queue"}
+        metadata={"description": "The branch of this queue"},
     )
 
     pull_requests: list[PullRequestQueued] = dataclasses.field(
@@ -187,7 +188,8 @@ class Queue:
 @pydantic.dataclasses.dataclass
 class Queues:
     queues: list[Queue] = dataclasses.field(
-        default_factory=list, metadata={"description": "The queues of the repository"}
+        default_factory=list,
+        metadata={"description": "The queues of the repository"},
     )
 
 
@@ -303,11 +305,11 @@ class Queues:
                                         "estimated_time_of_merge": "2021-10-14T15:19:12+00:00",
                                     },
                                 ],
-                            }
-                        ]
-                    }
-                }
-            }
+                            },
+                        ],
+                    },
+                },
+            },
         },
     },
 )
@@ -324,19 +326,25 @@ async def repository_queues(
         partition_names = (partr_config.DEFAULT_PARTITION_NAME,)
 
     stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
-        session, repository_ctxt, partition_rules, partition_names, queue_names
+        session,
+        repository_ctxt,
+        partition_rules,
+        partition_names,
+        queue_names,
     )
 
     queues = Queues()
     async for convoy in merge_train.Convoy.iter_convoys(
-        repository_ctxt, queue_rules, partition_rules
+        repository_ctxt,
+        queue_rules,
+        partition_rules,
     ):
         for train in convoy.iter_trains():
             queue = Queue(Branch(train.convoy.ref))
             previous_eta = None
             previous_car = None
             for position, (embarked_pull, car) in enumerate(
-                train._iter_embarked_pulls()
+                train._iter_embarked_pulls(),
             ):
                 try:
                     queue_rule = queue_rules[embarked_pull.config["name"]]
@@ -368,14 +376,15 @@ async def repository_queues(
                         priority=embarked_pull.config["priority"],
                         effective_priority=embarked_pull.config["effective_priority"],
                         queue_rule=types.QueueRule(
-                            name=embarked_pull.config["name"], config=queue_rule.config
+                            name=embarked_pull.config["name"],
+                            config=queue_rule.config,
                         ),
                         queued_at=embarked_pull.queued_at,
                         speculative_check_pull_request=speculative_check_pull_request,
                         mergeability_check=BriefMergeabilityCheck.from_train_car(car),
                         estimated_time_of_merge=estimated_time_of_merge,
                         partition_name=train.partition_name,
-                    )
+                    ),
                 )
 
         queues.queues.append(queue)

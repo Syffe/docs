@@ -117,7 +117,7 @@ async def _check_configuration_changes(
 
     if len(modified_config_files) != 1:
         raise RuntimeError(
-            "modified_config_files must have only one element at this point"
+            "modified_config_files must have only one element at this point",
         )
 
     future_mergify_config_file = modified_config_files[0]
@@ -142,11 +142,12 @@ async def _check_configuration_changes(
 
     try:
         mergify_config = await mergify_conf.get_mergify_config_from_file(
-            ctxt.repository, context.content_file_to_config_file(config_content)
+            ctxt.repository,
+            context.content_file_to_config_file(config_content),
         )
         # Evaluate rules to find dynamic errors in actions config
         await mergify_config["pull_request_rules"].get_pull_request_rules_evaluator(
-            ctxt
+            ctxt,
         )
     except (mergify_conf.InvalidRules, actions.InvalidDynamicActionConfiguration) as e:
         # Not configured, post status check with the error message
@@ -181,7 +182,8 @@ async def _check_configuration_changes(
 
 
 async def _get_summary_from_sha(
-    ctxt: context.Context, sha: github_types.SHAType
+    ctxt: context.Context,
+    sha: github_types.SHAType,
 ) -> github_types.CachedGitHubCheckRun | None:
     return first.first(
         await check_api.get_checks_for_ref(
@@ -217,10 +219,12 @@ async def _get_summary_from_synchronize_event(
             sync_event = synchronize_events.pop(after_sha, None)
             if sync_event:
                 previous_summary = await _get_summary_from_sha(
-                    ctxt, sync_event["before"]
+                    ctxt,
+                    sync_event["before"],
                 )
                 if previous_summary and actions_runner.load_conclusions_line(
-                    ctxt, previous_summary
+                    ctxt,
+                    previous_summary,
                 ):
                     ctxt.log.debug("got summary from synchronize events")
                     return previous_summary
@@ -242,7 +246,8 @@ async def _ensure_summary_on_head_sha(ctxt: context.Context) -> None:
             return
 
         ctxt.log.debug(
-            "head sha changed need to copy summary", gh_pull_previous_head_sha=sha
+            "head sha changed need to copy summary",
+            gh_pull_previous_head_sha=sha,
         )
 
     previous_summary = None
@@ -271,7 +276,7 @@ async def _ensure_summary_on_head_sha(ctxt: context.Context) -> None:
                 check_api.Conclusion(previous_summary["conclusion"]),
                 title=previous_summary["output"]["title"],
                 summary=previous_summary["output"]["summary"],
-            )
+            ),
         )
     elif previous_summary:
         ctxt.log.info(
@@ -281,7 +286,8 @@ async def _ensure_summary_on_head_sha(ctxt: context.Context) -> None:
 
 
 async def get_context_with_sha_collision(
-    ctxt: context.Context, summary: github_types.CachedGitHubCheckRun | None
+    ctxt: context.Context,
+    summary: github_types.CachedGitHubCheckRun | None,
 ) -> context.Context | None:
     if not (
         summary
@@ -293,7 +299,7 @@ async def get_context_with_sha_collision(
 
     try:
         conflicting_ctxt = await ctxt.repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(int(summary["external_id"]))
+            github_types.GitHubPullRequestNumber(int(summary["external_id"])),
         )
     except http.HTTPNotFound:
         return None
@@ -315,7 +321,8 @@ async def get_context_with_sha_collision(
 
 
 async def report_sha_collision(
-    ctxt: context.Context, conflicting_ctxt: context.Context
+    ctxt: context.Context,
+    conflicting_ctxt: context.Context,
 ) -> None:
     if not (await conflicting_ctxt.get_warned_about_sha_collision()):
         try:
@@ -349,11 +356,11 @@ async def run(
     ctxt.log.debug("engine start processing context")
 
     ctxt.sources.extend(
-        [source for source in sources if source["event_type"] != "issue_comment"]
+        [source for source in sources if source["event_type"] != "issue_comment"],
     )
 
     permissions_need_to_be_updated = github_app.permissions_need_to_be_updated(
-        ctxt.repository.installation.installation
+        ctxt.repository.installation.installation,
     )
     if permissions_need_to_be_updated:
         return check_api.Result(
@@ -365,25 +372,27 @@ async def run(
     if ctxt.pull["base"]["repo"]["private"]:
         if not ctxt.subscription.has_feature(subscription.Features.PRIVATE_REPOSITORY):
             ctxt.log.debug(
-                "mergify disabled: private repository", reason=ctxt.subscription.reason
+                "mergify disabled: private repository",
+                reason=ctxt.subscription.reason,
             )
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 title="Cannot use Mergify on a private repository",
                 summary=ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
+                    ctxt.pull["base"]["repo"]["owner"]["login"],
                 ),
             )
     else:
         if not ctxt.subscription.has_feature(subscription.Features.PUBLIC_REPOSITORY):
             ctxt.log.debug(
-                "mergify disabled: public repository", reason=ctxt.subscription.reason
+                "mergify disabled: public repository",
+                reason=ctxt.subscription.reason,
             )
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 title="Cannot use Mergify on a public repository",
                 summary=ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
+                    ctxt.pull["base"]["repo"]["owner"]["login"],
                 ),
             )
 
@@ -391,7 +400,8 @@ async def run(
 
     try:
         ctxt.configuration_changed = await _check_configuration_changes(
-            ctxt, config_file
+            ctxt,
+            config_file,
         )
     except MultipleConfigurationFileFound as e:
         files = "\n * " + "\n * ".join(f for f in e.filenames)
@@ -491,7 +501,8 @@ async def run(
 
 @exceptions.log_and_ignore_exception("fail to create initial summary")
 async def create_initial_summary(
-    redis: redis_utils.RedisCache, event: github_types.GitHubEventPullRequest
+    redis: redis_utils.RedisCache,
+    event: github_types.GitHubEventPullRequest,
 ) -> None:
     owner = event["repository"]["owner"]
     repo = event["pull_request"]["base"]["repo"]
@@ -499,7 +510,7 @@ async def create_initial_summary(
     if not await redis.exists(
         context.Repository.get_config_file_cache_key(
             repo["id"],
-        )
+        ),
     ):
         # Mergify is probably not activated on this repo
         return
@@ -514,7 +525,10 @@ async def create_initial_summary(
     # this is not a 100% reliable solution, but if we post a duplicate summary
     # check_api.set_check_run() handle this case and update both to not confuse users.
     summary_exists = await context.Context.summary_exists(
-        redis, owner["id"], repo["id"], event["pull_request"]
+        redis,
+        owner["id"],
+        repo["id"],
+        event["pull_request"],
     )
 
     if summary_exists:
@@ -528,7 +542,9 @@ async def create_initial_summary(
             "status": check_api.Status.IN_PROGRESS.value,
             "started_at": date.utcnow().isoformat(),
             "details_url": dashboard.get_eventlogs_url(
-                owner["login"], repo["name"], event["pull_request"]["number"]
+                owner["login"],
+                repo["name"],
+                event["pull_request"]["number"],
             ),
             "output": {
                 "title": constants.INITIAL_SUMMARY_TITLE,

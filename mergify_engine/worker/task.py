@@ -26,7 +26,8 @@ class TaskRetriedForever:
     sleep_time: float
     must_shutdown_first: bool = False
     shutdown_requested: asyncio.Event = dataclasses.field(
-        init=False, default_factory=asyncio.Event
+        init=False,
+        default_factory=asyncio.Event,
     )
 
     task: asyncio.Task[None] = dataclasses.field(init=False, repr=False)
@@ -43,7 +44,10 @@ class TaskRetriedForever:
         LOG.info("%s task exited", self.name)
 
     async def loop_and_sleep_forever(
-        self, name: str, func: TaskRetriedForeverFuncT, sleep_time: float
+        self,
+        name: str,
+        func: TaskRetriedForeverFuncT,
+        sleep_time: float,
     ) -> None:
         logs.WORKER_TASK.set(name)
         with sentry_sdk.Hub(sentry_sdk.Hub.current):
@@ -66,7 +70,9 @@ class TaskRetriedForever:
                     # FIXME(sileht): This should never ever occurs, but INC-78 prove the reverse
                     # We prefer to ignore it and restart the worker to continue the events processing
                     LOG.warning(
-                        "%s task unexpectedly cancelled, ignoring", name, exc_info=True
+                        "%s task unexpectedly cancelled, ignoring",
+                        name,
+                        exc_info=True,
                     )
 
                     task = asyncio.current_task()
@@ -121,7 +127,8 @@ SIMPLE_SERVICES_REGISTRY: dict[str, type[SimpleService]] = {}
 
 
 async def stop_and_wait(
-    tasks: list[TaskRetriedForever], log_extras: dict[str, typing.Any] | None = None
+    tasks: list[TaskRetriedForever],
+    log_extras: dict[str, typing.Any] | None = None,
 ) -> None:
     if log_extras is None:
         log_extras = {}

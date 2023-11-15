@@ -52,7 +52,7 @@ async def _handle_car(
 
     if car.queue_pull_request_number is None:
         raise RuntimeError(
-            "Got draft pull request event on car without queue_pull_request_number"
+            "Got draft pull request event on car without queue_pull_request_number",
         )
 
     ctxt.log.info(

@@ -14,8 +14,8 @@ class TestAssignAction(base.FunctionalTestBase):
                     "name": "assign",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"assign": {"users": ["mergify-test1"]}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -51,8 +51,8 @@ class TestAssignAction(base.FunctionalTestBase):
                     "name": "assign",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"assign": {"add_users": ["mergify-test1"]}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -73,8 +73,8 @@ class TestAssignAction(base.FunctionalTestBase):
                     "name": "assign",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"assign": {"users": ["{{author}}"]}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -96,8 +96,8 @@ class TestAssignAction(base.FunctionalTestBase):
                     "name": "assign",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"assign": {"remove_users": ["{{ assignee[0] }}"]}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -117,8 +117,8 @@ class TestAssignAction(base.FunctionalTestBase):
                     "name": "assign",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"assign": {"add_users": ["mergify-test1"]}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -140,8 +140,8 @@ class TestAssignAction(base.FunctionalTestBase):
                     "name": "assign",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"assign": {"remove_users": ["mergify-test1"]}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

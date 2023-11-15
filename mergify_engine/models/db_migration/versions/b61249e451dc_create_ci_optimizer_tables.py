@@ -21,7 +21,10 @@ def upgrade() -> None:
     alembic.op.create_table(
         "github_account",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), autoincrement=False, nullable=False
+            "id",
+            sqlalchemy.BigInteger(),
+            autoincrement=False,
+            nullable=False,
         ),
         sqlalchemy.Column("login", sqlalchemy.Text(), nullable=False),
         sqlalchemy.PrimaryKeyConstraint("id"),
@@ -30,7 +33,10 @@ def upgrade() -> None:
     alembic.op.create_table(
         "pull_request",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), autoincrement=False, nullable=False
+            "id",
+            sqlalchemy.BigInteger(),
+            autoincrement=False,
+            nullable=False,
         ),
         sqlalchemy.Column("number", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column("title", sqlalchemy.Text(), nullable=False),
@@ -41,7 +47,10 @@ def upgrade() -> None:
     alembic.op.create_table(
         "gha_job_run",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), autoincrement=False, nullable=False
+            "id",
+            sqlalchemy.BigInteger(),
+            autoincrement=False,
+            nullable=False,
         ),
         sqlalchemy.Column("workflow_run_id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column("workflow_id", sqlalchemy.BigInteger(), nullable=False),
@@ -51,7 +60,11 @@ def upgrade() -> None:
         sqlalchemy.Column(
             "conclusion",
             sqlalchemy.Enum(
-                "SUCCESS", "FAILURE", "SKIPPED", "CANCELLED", name="jobrunconclusion"
+                "SUCCESS",
+                "FAILURE",
+                "SKIPPED",
+                "CANCELLED",
+                name="jobrunconclusion",
             ),
             nullable=False,
         ),
@@ -67,13 +80,19 @@ def upgrade() -> None:
             nullable=False,
         ),
         sqlalchemy.Column(
-            "triggering_actor_id", sqlalchemy.BigInteger(), nullable=False
+            "triggering_actor_id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
         ),
         sqlalchemy.Column(
-            "started_at", sqlalchemy.DateTime(timezone=True), nullable=False
+            "started_at",
+            sqlalchemy.DateTime(timezone=True),
+            nullable=False,
         ),
         sqlalchemy.Column(
-            "completed_at", sqlalchemy.DateTime(timezone=True), nullable=False
+            "completed_at",
+            sqlalchemy.DateTime(timezone=True),
+            nullable=False,
         ),
         sqlalchemy.Column("run_attempt", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column(

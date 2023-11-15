@@ -15,7 +15,7 @@ class TestDeprecation(base.FunctionalTestBase):
                     "name": "comment",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
-                        "comment": {"message": "WTF?", "bot_account": "{{ body }}"}
+                        "comment": {"message": "WTF?", "bot_account": "{{ body }}"},
                     },
                 },
                 {
@@ -25,10 +25,10 @@ class TestDeprecation(base.FunctionalTestBase):
                         "comment": {
                             "message": "Ola quetal?",
                             "bot_account": "{{ body }}",
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

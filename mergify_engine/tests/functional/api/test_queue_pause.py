@@ -107,8 +107,8 @@ class TestQueuePause(base.FunctionalTestBase):
                     "loc": ["body"],
                     "msg": "Field required",
                     "type": "missing",
-                }
-            ]
+                },
+            ],
         }
 
         r = await self._create_queue_pause(
@@ -122,8 +122,8 @@ class TestQueuePause(base.FunctionalTestBase):
                     "loc": ["body", "reason"],
                     "msg": "Field required",
                     "type": "missing",
-                }
-            ]
+                },
+            ],
         }
 
         r = await self._create_queue_pause(
@@ -138,8 +138,8 @@ class TestQueuePause(base.FunctionalTestBase):
                     "msg": "String should have at most 255 characters",
                     "type": "string_too_long",
                     "ctx": {"max_length": 255},
-                }
-            ]
+                },
+            ],
         }
 
     async def test_queue_pause_create_and_delete_resume_merge(self) -> None:
@@ -249,7 +249,7 @@ class TestQueuePause(base.FunctionalTestBase):
                 {
                     "pause_date": mock.ANY,
                     "reason": "test pause reason",
-                }
+                },
             ],
         }
         await self.run_engine()
@@ -480,7 +480,7 @@ class TestQueuePause(base.FunctionalTestBase):
                 {
                     "pause_date": mock.ANY,
                     "reason": "test pause reason",
-                }
+                },
             ],
         }
         await self.run_engine()
@@ -680,7 +680,7 @@ class TestQueuePause(base.FunctionalTestBase):
                 {
                     "pause_date": mock.ANY,
                     "reason": "test pause reason",
-                }
+                },
             ],
         }
         await self.run_engine()
@@ -822,7 +822,7 @@ class TestQueuePause(base.FunctionalTestBase):
                 {
                     "pause_date": mock.ANY,
                     "reason": "test pause reason",
-                }
+                },
             ],
         }
 
@@ -839,7 +839,7 @@ class TestQueuePause(base.FunctionalTestBase):
                 {
                     "pause_date": mock.ANY,
                     "reason": "test pause reason",
-                }
+                },
             ],
         }
 
@@ -852,7 +852,7 @@ class TestQueuePause(base.FunctionalTestBase):
                 {
                     "pause_date": mock.ANY,
                     "reason": "new test pause reason",
-                }
+                },
             ],
         }
 
@@ -863,7 +863,7 @@ class TestQueuePause(base.FunctionalTestBase):
                 {
                     "pause_date": mock.ANY,
                     "reason": "No pause reason was specified.",
-                }
+                },
             ],
         }
 
@@ -921,7 +921,7 @@ class TestQueuePause(base.FunctionalTestBase):
 
         r = await self._delete_queue_pause(expected_status_code=404)
         assert r.json() == {
-            "detail": "The merge queue is not currently paused on this repository"
+            "detail": "The merge queue is not currently paused on this repository",
         }
 
     async def test_delete_queue_pause(self) -> None:
@@ -977,14 +977,14 @@ class TestQueuePause(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         r = await self._create_queue_pause(
-            pause_payload={"reason": "test pause reason"}
+            pause_payload={"reason": "test pause reason"},
         )
         assert r.json() == {
             "queue_pause": [
                 {
                     "pause_date": mock.ANY,
                     "reason": "test pause reason",
-                }
+                },
             ],
         }
 
@@ -1093,7 +1093,7 @@ class TestQueuePause(base.FunctionalTestBase):
 
         r = await self._get_queue_pause(expected_status_code=404)
         assert r.json() == {
-            "detail": "The merge queue is not currently paused on this repository"
+            "detail": "The merge queue is not currently paused on this repository",
         }
 
     async def test_get_queue_pause(self) -> None:
@@ -1155,7 +1155,7 @@ class TestQueuePause(base.FunctionalTestBase):
                 {
                     "pause_date": mock.ANY,
                     "reason": "test pause reason",
-                }
+                },
             ],
         }
 
@@ -1169,7 +1169,7 @@ class TestQueuePause(base.FunctionalTestBase):
                 {
                     "pause_date": mock.ANY,
                     "reason": "test pause reason",
-                }
+                },
             ],
         }
 
@@ -1198,14 +1198,14 @@ class TestQueuePause(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         r = await self._create_queue_pause(
-            pause_payload={"reason": "test pause reason"}
+            pause_payload={"reason": "test pause reason"},
         )
         assert r.json() == {
             "queue_pause": [
                 {
                     "pause_date": mock.ANY,
                     "reason": "test pause reason",
-                }
+                },
             ],
         }
 

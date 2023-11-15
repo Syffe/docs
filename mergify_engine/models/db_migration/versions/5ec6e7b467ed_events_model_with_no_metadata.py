@@ -21,60 +21,78 @@ def upgrade() -> None:
         "event_action_rebase",
         sqlalchemy.Column("id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_rebase_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_rebase_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_rebase_pkey")
+            "id",
+            name=alembic.op.f("event_action_rebase_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_action_refresh",
         sqlalchemy.Column("id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_refresh_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_refresh_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_refresh_pkey")
+            "id",
+            name=alembic.op.f("event_action_refresh_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_action_requeue",
         sqlalchemy.Column("id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_requeue_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_requeue_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_requeue_pkey")
+            "id",
+            name=alembic.op.f("event_action_requeue_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_action_squash",
         sqlalchemy.Column("id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_squash_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_squash_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_squash_pkey")
+            "id",
+            name=alembic.op.f("event_action_squash_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_action_unqueue",
         sqlalchemy.Column("id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_unqueue_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_unqueue_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_unqueue_pkey")
+            "id",
+            name=alembic.op.f("event_action_unqueue_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_action_update",
         sqlalchemy.Column("id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_update_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_update_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_update_pkey")
+            "id",
+            name=alembic.op.f("event_action_update_pkey"),
         ),
     )
     # ### end Alembic commands ###

@@ -67,7 +67,7 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
         "CONFLICT_WITH_BASE_BRANCH": 0,
         "CONFLICT_WITH_PULL_AHEAD": 0,
         "BRANCH_UPDATE_FAILED": 0,
-    }
+    },
 )
 
 
@@ -136,11 +136,11 @@ async def get_queue_checks_outcome(
 @pydantic.dataclasses.dataclass
 class QueueChecksOutcomePerQueue:
     queue_name: qr_config.QueueName = dataclasses.field(
-        metadata={"description": "The name of the queue"}
+        metadata={"description": "The name of the queue"},
     )
 
     queue_checks_outcome: web_stat_types.QueueChecksOutcome = dataclasses.field(
-        metadata={"description": "The checks outcomes data for the partition's queue"}
+        metadata={"description": "The checks outcomes data for the partition's queue"},
     )
 
 
@@ -148,14 +148,14 @@ class QueueChecksOutcomePerQueue:
 class QueueChecksOutcomePerPartition:
     partition_name: partr_config.PartitionRuleName = dataclasses.field(
         metadata={
-            "description": f"The name of the partition, if no partition are used the partition name will be `{partr_config.DEFAULT_PARTITION_NAME}`"
-        }
+            "description": f"The name of the partition, if no partition are used the partition name will be `{partr_config.DEFAULT_PARTITION_NAME}`",
+        },
     )
 
     queues: list[QueueChecksOutcomePerQueue] = dataclasses.field(
         metadata={
-            "description": "The checks outcomes data for each queue in the current partition"
-        }
+            "description": "The checks outcomes data for each queue in the current partition",
+        },
     )
 
 
@@ -231,7 +231,7 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
                     )
                     for queue_name, stats in queues_data.items()
                 ],
-            )
+            ),
         )
 
     return result

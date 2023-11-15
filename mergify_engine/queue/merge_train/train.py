@@ -59,11 +59,11 @@ class Train:
 
     # Stored in redis
     partition_name: partr_config.PartitionRuleName = dataclasses.field(
-        default=partr_config.DEFAULT_PARTITION_NAME
+        default=partr_config.DEFAULT_PARTITION_NAME,
     )
     _cars: list[train_car.TrainCar] = dataclasses.field(default_factory=list)
     _waiting_pulls: list[ep_import.EmbarkedPull] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
     _current_base_sha: github_types.SHAType | None = dataclasses.field(default=None)
 
@@ -84,7 +84,8 @@ class Train:
 
     async def test_helper_load_from_redis(self) -> None:
         train_raw = await self.convoy.repository.installation.redis.cache.hget(
-            self._get_redis_key(), self._get_redis_hash_key()
+            self._get_redis_key(),
+            self._get_redis_hash_key(),
         )
         await self.load_from_bytes(train_raw)
 
@@ -100,7 +101,8 @@ class Train:
                 train_car.TrainCar.deserialize(self, c) for c in train["cars"]
             ]
             partition_name = train.get(
-                "partition_name", partr_config.DEFAULT_PARTITION_NAME
+                "partition_name",
+                partr_config.DEFAULT_PARTITION_NAME,
             )
             # NOTE(Greesb): Default partition retrocompatibility, to remove once
             # all trains have been saved with the new default partition name.
@@ -136,7 +138,8 @@ class Train:
         )
 
     def to_serialized(
-        self, serialize_if_empty: bool = False
+        self,
+        serialize_if_empty: bool = False,
     ) -> Train.Serialized | None:
         if not self._waiting_pulls and not self._cars and not serialize_if_empty:
             return None
@@ -158,7 +161,9 @@ class Train:
             )
             raw = json.dumps(prepared)
             await self.convoy.repository.installation.redis.cache.hset(
-                self._get_redis_key(), self._get_redis_hash_key(), raw
+                self._get_redis_key(),
+                self._get_redis_hash_key(),
+                raw,
             )
             return True
 
@@ -247,7 +252,8 @@ class Train:
 
     async def reset(self, unexpected_changes: train_car.UnexpectedChanges) -> None:
         await self._slice_cars(
-            0, reason=queue_utils.UnexpectedQueueChange(change=str(unexpected_changes))
+            0,
+            reason=queue_utils.UnexpectedQueueChange(change=str(unexpected_changes)),
         )
         await self.save()
         self.log.info("train cars reset")
@@ -312,7 +318,8 @@ class Train:
         new_queue_size: int,
         reason: queue_utils.BaseQueueCancelReason,
         drop_pull_requests: dict[
-            github_types.GitHubPullRequestNumber, queue_utils.BaseQueueCancelReason
+            github_types.GitHubPullRequestNumber,
+            queue_utils.BaseQueueCancelReason,
         ]
         | None = None,
     ) -> None:
@@ -331,7 +338,8 @@ class Train:
                 new_waiting_pulls.extend(c.still_queued_embarked_pulls)
                 for ep in c.still_queued_embarked_pulls:
                     signal_reason = drop_pull_requests.get(
-                        ep.user_pull_request_number, reason
+                        ep.user_pull_request_number,
+                        reason,
                     )
                     await c.send_checks_end_signal(
                         ep.user_pull_request_number,
@@ -341,7 +349,8 @@ class Train:
                         else "REEMBARKED",
                     )
                 await c.end_checking(
-                    reason, not_reembarked_pull_requests=drop_pull_requests
+                    reason,
+                    not_reembarked_pull_requests=drop_pull_requests,
                 )
 
         if sliced:
@@ -359,7 +368,8 @@ class Train:
         ]
 
     def find_embarked_pull(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> (
         tuple[int, merge_train_types.EmbarkedPullWithCar]
         | tuple[typing.Literal[None], typing.Literal[None]]
@@ -509,7 +519,10 @@ class Train:
             return
 
         new_embarked_pull = ep_import.EmbarkedPull(
-            self, ctxt.pull["number"], config, date.utcnow()
+            self,
+            ctxt.pull["number"],
+            config,
+            date.utcnow(),
         )
         self._waiting_pulls.append(new_embarked_pull)
 
@@ -517,7 +530,7 @@ class Train:
             await self._slice_cars(
                 best_position,
                 reason=queue_utils.PrWithHigherPriorityQueued(
-                    pr_number=ctxt.pull["number"]
+                    pr_number=ctxt.pull["number"],
                 ),
             )
 
@@ -526,7 +539,7 @@ class Train:
         final_position, _ = self.find_embarked_pull(ctxt.pull["number"])
         if final_position is None:
             raise RuntimeError(
-                "Could not find the pull request we just added in the queue"
+                "Could not find the pull request we just added in the queue",
             )
 
         ctxt.log.info(
@@ -548,7 +561,7 @@ class Train:
                     "position": final_position,
                     "queue_name": new_embarked_pull.config["name"],
                     "queued_at": new_embarked_pull.queued_at,
-                }
+                },
             ),
             signal_trigger,
         )
@@ -575,7 +588,9 @@ class Train:
 
         if isinstance(dequeue_reason, queue_utils.PrMerged):
             await self._remove_merged_head_of_train(
-                pull_number, signal_trigger, dequeue_reason
+                pull_number,
+                signal_trigger,
+                dequeue_reason,
             )
         else:
             await self._remove_pull(pull_number, signal_trigger, dequeue_reason)
@@ -606,7 +621,7 @@ class Train:
                 "seconds_waiting_for_freeze": self._cars[
                     0
                 ].train_car_state.seconds_waiting_for_freeze,
-            }
+            },
         )
 
         # Head of the train was merged and the base_sha haven't changed, we can keep
@@ -685,10 +700,10 @@ class Train:
 
     async def remove_failed_car(self, car: train_car.TrainCar) -> None:
         dequeue_reason = tcs_import.dequeue_reason_from_train_car_state(
-            car.train_car_state
+            car.train_car_state,
         )
         other_prs_reason = queue_utils.PrAheadDequeued(
-            pr_number=car.still_queued_embarked_pulls[0].user_pull_request_number
+            pr_number=car.still_queued_embarked_pulls[0].user_pull_request_number,
         )
         drop_pull_requests = [
             ep.user_pull_request_number for ep in car.still_queued_embarked_pulls
@@ -701,7 +716,11 @@ class Train:
         )
         for i, ep in enumerate(car.still_queued_embarked_pulls):
             await self._send_queue_leave_signal(
-                position + i, ep, car, "merge queue internal", dequeue_reason
+                position + i,
+                ep,
+                car,
+                "merge queue internal",
+                dequeue_reason,
             )
 
         await self.save()
@@ -730,14 +749,14 @@ class Train:
                 "reason": str(dequeue_reason),
                 "seconds_waiting_for_schedule": 0,
                 "seconds_waiting_for_freeze": 0,
-            }
+            },
         )
         if car is not None:
             event_metadata.update(
                 {
                     "seconds_waiting_for_schedule": car.train_car_state.seconds_waiting_for_schedule,
                     "seconds_waiting_for_freeze": car.train_car_state.seconds_waiting_for_freeze,
-                }
+                },
             )
 
         await signals.send(
@@ -784,7 +803,7 @@ class Train:
         await self._slice_cars(
             current_queue_position,
             reason=queue_utils.PrAheadFailedToMerge(
-                [ep.user_pull_request_number for ep in car.still_queued_embarked_pulls]
+                [ep.user_pull_request_number for ep in car.still_queued_embarked_pulls],
             ),
         )
 
@@ -797,7 +816,7 @@ class Train:
 
         parents: list[ep_import.EmbarkedPull] = []
         for pos, pulls in enumerate(
-            utils.split_list(car.still_queued_embarked_pulls[:-1], parts)
+            utils.split_list(car.still_queued_embarked_pulls[:-1], parts),
         ):
             self._cars.append(
                 train_car.TrainCar(
@@ -809,7 +828,7 @@ class Train:
                     + [ep.user_pull_request_number for ep in parents],
                     initial_current_base_sha=car.initial_current_base_sha,
                     failure_history=[*car.failure_history, car],
-                )
+                ),
             )
 
             parents += pulls
@@ -957,7 +976,7 @@ class Train:
             # If there is enough PR waiting to replace the guilty PRs, then we can raise the
             # error and let the calling function or the next refresh handle it
             has_waiting_pulls_to_fill_batch = len(
-                train_waiting_pulls - set(exc.guilty_prs) - prs_left_to_check
+                train_waiting_pulls - set(exc.guilty_prs) - prs_left_to_check,
             ) >= len(exc.guilty_prs)
 
             if not prs_left_to_check or has_waiting_pulls_to_fill_batch:
@@ -1006,7 +1025,8 @@ class Train:
         if await pause.QueuePause.get(self.convoy.repository):
             if self._cars:
                 await self._slice_cars(
-                    0, reason=queue_utils.ChecksStoppedBecauseMergeQueuePause()
+                    0,
+                    reason=queue_utils.ChecksStoppedBecauseMergeQueuePause(),
                 )
                 await self._send_queue_change_signal(queue_names_before_change)
             return
@@ -1026,15 +1046,16 @@ class Train:
         non_cascading_queue_freeze_filter = {
             queue_freeze.name
             async for queue_freeze in freeze.QueueFreeze.get_all_non_cascading(
-                self.convoy.repository, self.convoy.queue_rules
+                self.convoy.repository,
+                self.convoy.queue_rules,
             )
         }
 
         try:
             head = next(
                 self._iter_embarked_pulls(
-                    ignored_queues=non_cascading_queue_freeze_filter
-                )
+                    ignored_queues=non_cascading_queue_freeze_filter,
+                ),
             ).embarked_pull
         except StopIteration:
             return
@@ -1044,7 +1065,7 @@ class Train:
 
         if non_cascading_queue_freeze_filter and self._cars:
             await self._slice_frozen_cars(
-                frozen_queues=non_cascading_queue_freeze_filter
+                frozen_queues=non_cascading_queue_freeze_filter,
             )
 
         try:
@@ -1079,7 +1100,7 @@ class Train:
                 [
                     len(car.still_queued_embarked_pulls)
                     for car in self._cars[:speculative_checks]
-                ]
+                ],
             )
             await self._slice_cars(
                 new_queue_size,
@@ -1094,7 +1115,7 @@ class Train:
                     waiting_pulls_ordered_by_priority,
                     frozen_pulls,
                 ) = self._get_waiting_pulls_ordered_by_priority(
-                    ignored_queues=non_cascading_queue_freeze_filter
+                    ignored_queues=non_cascading_queue_freeze_filter,
                 )
 
                 pulls_to_check, remaining_pulls = self._get_next_batch(
@@ -1147,7 +1168,7 @@ class Train:
                 parent_pull_request_numbers = [
                     ep.user_pull_request_number
                     for ep in itertools.chain.from_iterable(
-                        [car.still_queued_embarked_pulls for car in self._cars]
+                        [car.still_queued_embarked_pulls for car in self._cars],
                     )
                 ]
 
@@ -1210,7 +1231,7 @@ class Train:
             branch = typing.cast(
                 github_types.GitHubBranch,
                 await self.convoy.repository.installation.client.item(
-                    f"repos/{self.convoy.repository.installation.owner_login}/{self.convoy.repository.repo['name']}/branches/{escaped_branch_name}"
+                    f"repos/{self.convoy.repository.installation.owner_login}/{self.convoy.repository.repo['name']}/branches/{escaped_branch_name}",
                 ),
             )
         except http.HTTPNotFound:
@@ -1227,7 +1248,7 @@ class Train:
 
         # NOTE(Syffe): We check if the sha has been merged by another partition
         if base_sha == self._current_base_sha or await ctxt.is_sha_merged_by_mergify(
-            base_sha
+            base_sha,
         ):
             return True
 
@@ -1252,7 +1273,8 @@ class Train:
         return pull["merged"] and base_sha == pull["merge_commit_sha"]
 
     async def get_config(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> queue.PullQueueConfig:
         _, item = self.find_embarked_pull(pull_number)
         if item is not None:
@@ -1281,7 +1303,9 @@ class Train:
 
     @staticmethod
     def _get_next_batch(
-        pulls: list[ep_import.EmbarkedPull], queue_name: str, batch_size: int = 1
+        pulls: list[ep_import.EmbarkedPull],
+        queue_name: str,
+        batch_size: int = 1,
     ) -> tuple[list[ep_import.EmbarkedPull], list[ep_import.EmbarkedPull]]:
         if not pulls:
             return [], []
@@ -1359,17 +1383,19 @@ class Train:
             if queue_rule.branch_protection_injection_mode != "none":
                 branch_protections = (
                     await conditions_mod.get_branch_protection_conditions(
-                        self.convoy.repository, self.convoy.ref, strict=False
+                        self.convoy.repository,
+                        self.convoy.ref,
+                        strict=False,
                     )
                 )
 
                 merge_conditions = conditions_mod.QueueRuleMergeConditions(
                     queue_rule.merge_conditions.condition.copy().conditions
-                    + branch_protections
+                    + branch_protections,
                 )
             else:
                 merge_conditions = conditions_mod.QueueRuleMergeConditions(
-                    queue_rule.merge_conditions.condition.copy().conditions
+                    queue_rule.merge_conditions.condition.copy().conditions,
                 )
 
             description += await self.generate_merge_queue_summary_footer(
@@ -1382,11 +1408,12 @@ class Train:
             return description.strip()
 
         return await embarked_pull_with_car.car.build_draft_pr_summary(
-            pull_rule=pull_rule
+            pull_rule=pull_rule,
         )
 
     async def _close_pull_request(
-        self, pull_request_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> None:
         try:
             await self.convoy.repository.installation.client.patch(
@@ -1431,7 +1458,8 @@ class Train:
         await pipe.execute()
 
     async def _send_queue_change_signal(
-        self, queue_names_before_change: typing.Iterable[qr_config.QueueName] = ()
+        self,
+        queue_names_before_change: typing.Iterable[qr_config.QueueName] = (),
     ) -> None:
         @dataclasses.dataclass
         class _QueueData:
@@ -1441,7 +1469,7 @@ class Train:
             cars: list[train_car.TrainCar] = dataclasses.field(default_factory=list)
 
         queues: dict[qr_config.QueueName, _QueueData] = collections.defaultdict(
-            _QueueData
+            _QueueData,
         )
 
         # NOTE(charly): Initialize dict entries for queues that changed. Empty
@@ -1464,7 +1492,7 @@ class Train:
                     "queue_name": queue_name,
                     "size": len(data.pull_requests),
                     "running_checks": len(data.cars),
-                }
+                },
             )
             await signals.send(
                 self.convoy.repository,

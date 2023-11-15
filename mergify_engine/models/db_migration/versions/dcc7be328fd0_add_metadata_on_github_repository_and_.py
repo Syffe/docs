@@ -34,7 +34,7 @@ def upgrade() -> None:
     )
 
     alembic.op.execute(
-        "CREATE TYPE githubaccounttype AS ENUM ('USER', 'ORGANIZATION', 'BOT')"
+        "CREATE TYPE githubaccounttype AS ENUM ('USER', 'ORGANIZATION', 'BOT')",
     )
     alembic.op.add_column(
         "github_account",

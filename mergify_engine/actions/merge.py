@@ -61,7 +61,10 @@ class MergeExecutor(
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, e.title, e.reason
+                rule,
+                action,
+                e.title,
+                e.reason,
             )
 
         if action.config["method"] == "fast-forward":
@@ -84,7 +87,7 @@ class MergeExecutor(
                     "allow_merging_configuration_change": action.config[
                         "allow_merging_configuration_change"
                     ],
-                }
+                },
             ),
             action.queue_rules,
             action.partition_rules,
@@ -110,7 +113,9 @@ class MergeExecutor(
             )
             if report.conclusion == check_api.Conclusion.SUCCESS:
                 convoy = await merge_train.Convoy.from_context(
-                    self.ctxt, self.queue_rules, self.partition_rules
+                    self.ctxt,
+                    self.queue_rules,
+                    self.partition_rules,
                 )
                 await convoy.remove_pull(
                     self.ctxt.pull["number"],
@@ -127,7 +132,7 @@ class MergeExecutor(
                     self.ctxt.pull["base"]["ref"],
                     "action.merge",
                     signals.EventMergeMetadata(
-                        {"branch": self.ctxt.pull["base"]["ref"]}
+                        {"branch": self.ctxt.pull["base"]["ref"]},
                     ),
                     self.rule.get_signal_trigger(),
                 )
@@ -137,10 +142,14 @@ class MergeExecutor(
         return actions.CANCELLED_CHECK_REPORT
 
     async def get_pending_merge_status(
-        self, ctxt: context.Context, rule: prr_config.EvaluatedPullRequestRule
+        self,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
     ) -> check_api.Result:
         return check_api.Result(
-            check_api.Conclusion.PENDING, "The pull request will be merged soon", ""
+            check_api.Conclusion.PENDING,
+            "The pull request will be merged soon",
+            "",
         )
 
 
@@ -155,17 +164,20 @@ class MergeAction(actions.Action):
 
     validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("method", default=None): voluptuous.Any(
-            None, *typing.get_args(merge_base.MergeMethodT)
+            None,
+            *typing.get_args(merge_base.MergeMethodT),
         ),
         voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,
         voluptuous.Required(
-            "commit_message_template", default=None
+            "commit_message_template",
+            default=None,
         ): types.Jinja2WithNone,
         voluptuous.Required("allow_merging_configuration_change", default=False): bool,
     }
 
     async def get_conditions_requirements(
-        self, ctxt: context.Context
+        self,
+        ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
         conditions_requirements: list[conditions.RuleConditionNode] = []
         if self.config["method"] == "fast-forward":
@@ -173,16 +185,18 @@ class MergeAction(actions.Action):
                 conditions.RuleCondition.from_tree(
                     {"=": ("#commits-behind", 0)},
                     description=":pushpin: fast-forward merge requirement",
-                )
+                ),
             )
 
         conditions_requirements.extend(
             [
                 conditions.get_mergify_configuration_change_conditions(
-                    "merge", self.config["allow_merging_configuration_change"]
+                    "merge",
+                    self.config["allow_merging_configuration_change"],
                 ),
                 conditions.RuleCondition.from_tree(
-                    {"=": ("draft", False)}, description=":pushpin: merge requirement"
+                    {"=": ("draft", False)},
+                    description=":pushpin: merge requirement",
                 ),
                 conditions.RuleCondition.from_tree(
                     {"=": ("conflict", False)},
@@ -190,9 +204,11 @@ class MergeAction(actions.Action):
                 ),
             ]
             + await conditions.get_branch_protection_conditions(
-                ctxt.repository, ctxt.pull["base"]["ref"], strict=True
+                ctxt.repository,
+                ctxt.pull["base"]["ref"],
+                strict=True,
             )
-            + await conditions.get_depends_on_conditions(ctxt)
+            + await conditions.get_depends_on_conditions(ctxt),
         )
 
         merge_after_condition = conditions.get_merge_after_condition(ctxt)
@@ -206,7 +222,8 @@ class MergeAction(actions.Action):
     # NOTE(sileht): set by validate_config()
     queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
     partition_rules: partr_config.PartitionRules = dataclasses.field(
-        init=False, repr=False
+        init=False,
+        repr=False,
     )
 
     def validate_config(self, mergify_config: mergify_conf.MergifyConfig) -> None:

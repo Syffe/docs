@@ -14,8 +14,8 @@ class TestBranchUpdatePublic(base.FunctionalTestBase):
                     "name": "auto-rebase-on-conflict",
                     "conditions": ["conflict"],
                     "actions": {"comment": {"message": "nothing"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules), files={"TESTING": "foobar"})
         p1 = await self.create_pr(files={"TESTING2": "foobar"})

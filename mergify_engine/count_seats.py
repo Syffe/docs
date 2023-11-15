@@ -69,7 +69,7 @@ def _get_active_users_key(
     repository: github_types.GitHubRepository,
 ) -> ActiveUserKeyT:
     return ActiveUserKeyT(
-        f"{ACTIVE_USERS_PREFIX}~{repository['owner']['id']}~{repository['owner']['login']}~{repository['id']}~{repository['name']}"
+        f"{ACTIVE_USERS_PREFIX}~{repository['owner']['id']}~{repository['owner']['login']}~{repository['id']}~{repository['name']}",
     )
 
 
@@ -78,7 +78,7 @@ def _get_active_users_events_key(
     user_id: github_types.GitHubAccountIdType,
 ) -> ActiveUserKeyT:
     return ActiveUserKeyT(
-        f"{ACTIVE_USERS_EVENTS_PREFIX}~{repository['owner']['id']}~{repository['id']}~{user_id}"
+        f"{ACTIVE_USERS_EVENTS_PREFIX}~{repository['owner']['id']}~{repository['id']}~{user_id}",
     )
 
 
@@ -88,7 +88,8 @@ async def get_active_users_keys(
     repo_id: (typing.Literal["*"] | github_types.GitHubRepositoryIdType) = "*",
 ) -> collections.abc.AsyncIterator[ActiveUserKeyT]:
     async for key in redis.scan_iter(
-        f"{ACTIVE_USERS_PREFIX}~{owner_id}~*~{repo_id}~*", count=10000
+        f"{ACTIVE_USERS_PREFIX}~{owner_id}~*~{repo_id}~*",
+        count=10000,
     ):
         yield ActiveUserKeyT(key.decode())
 
@@ -103,7 +104,8 @@ def _parse_user(user: str, seen_at: datetime.datetime) -> ActiveUser:
 
 
 async def get_active_users(
-    redis: redis_utils.RedisActiveUsers, key: ActiveUserKeyT
+    redis: redis_utils.RedisActiveUsers,
+    key: ActiveUserKeyT,
 ) -> set[ActiveUser]:
     one_month_ago = date.utcnow() - datetime.timedelta(days=30)
     # NOTE(sileht): if two users has the same id but different names (because to change his login)
@@ -118,7 +120,7 @@ async def get_active_users(
                 max="+inf",
                 withscores=True,
                 score_cast_func=lambda x: date.fromtimestamp(float(x)),
-            )
+            ),
         )
     }
 
@@ -170,7 +172,8 @@ async def store_active_users(
             _add_user(typed_event["review"]["user"])
     elif event_type == "pull_request_review_comment":
         typed_event = typing.cast(
-            github_types.GitHubEventPullRequestReviewComment, event
+            github_types.GitHubEventPullRequestReviewComment,
+            event,
         )
         if typed_event["pull_request"] is not None:
             _add_user(typed_event["pull_request"]["user"])
@@ -232,8 +235,8 @@ class SeatsJsonT(typing.TypedDict):
 class Seats:
     seats: CollaboratorsT = dataclasses.field(
         default_factory=lambda: collections.defaultdict(
-            lambda: collections.defaultdict(lambda: {"active_users": None})
-        )
+            lambda: collections.defaultdict(lambda: {"active_users": None}),
+        ),
     )
 
     @classmethod
@@ -265,7 +268,7 @@ class Seats:
                                 for seat in _seats["active_users"]
                             ]
                         ),
-                    }
+                    },
                 )
                 repos_json.append(
                     SeatRepositoryJsonT(
@@ -273,8 +276,8 @@ class Seats:
                             "id": repo.id,
                             "name": repo.name,
                             "collaborators": collaborators_json,
-                        }
-                    )
+                        },
+                    ),
                 )
             data["organizations"].append(
                 SeatOrganizationJsonT(
@@ -282,8 +285,8 @@ class Seats:
                         "id": org.id,
                         "login": org.login,
                         "repositories": repos_json,
-                    }
-                )
+                    },
+                ),
             )
         return data
 
@@ -301,7 +304,8 @@ class Seats:
         owner_id: github_types.GitHubAccountIdType | None = None,
     ) -> None:
         async for key in get_active_users_keys(
-            redis, owner_id="*" if owner_id is None else owner_id
+            redis,
+            owner_id="*" if owner_id is None else owner_id,
         ):
             _, _owner_id, owner_login, repo_id, repo_name = key.split("~")
             org = SeatAccount(
@@ -330,7 +334,7 @@ async def send_seats(seats: SeatsCountResultT) -> None:
             await client.post(
                 f"{settings.SUBSCRIPTION_URL}/on-premise/report",
                 headers={
-                    "Authorization": f"token {settings.SUBSCRIPTION_TOKEN.get_secret_value()}"
+                    "Authorization": f"token {settings.SUBSCRIPTION_TOKEN.get_secret_value()}",
                 },
                 json={
                     "active_users": seats.active_users,

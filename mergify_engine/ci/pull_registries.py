@@ -50,7 +50,7 @@ class HTTPPullRequestRegistry:
             typing.cast(
                 github_types.GitHubPullRequest,
                 await client.item(
-                    f"/repos/{owner}/{repository}/pulls/{pull['number']}"
+                    f"/repos/{owner}/{repository}/pulls/{pull['number']}",
                 ),
             )
             async for pull in pulls
@@ -71,8 +71,8 @@ class PostgresPullRequestRegistry:
         pulls_from_db = (
             await self.database_session.scalars(
                 sqlalchemy.select(gh_pull_request_mod.PullRequest).where(
-                    gh_pull_request_mod.PullRequest.head["sha"].astext == commit_sha
-                )
+                    gh_pull_request_mod.PullRequest.head["sha"].astext == commit_sha,
+                ),
             )
         ).all()
 
@@ -80,7 +80,9 @@ class PostgresPullRequestRegistry:
             return typing.cast(list[gh_pull_request_mod.PullRequest], pulls_from_db)
 
         pulls_from_github = await self.http_pull_registry.get_from_commit(
-            owner, repository, commit_sha
+            owner,
+            repository,
+            commit_sha,
         )
 
         pulls_validated_typing = [
@@ -90,7 +92,7 @@ class PostgresPullRequestRegistry:
         new_inserted_pulls = (
             await self.database_session.scalars(
                 sqlalchemy.insert(gh_pull_request_mod.PullRequest).returning(
-                    gh_pull_request_mod.PullRequest
+                    gh_pull_request_mod.PullRequest,
                 ),
                 pulls_validated_typing,
             )

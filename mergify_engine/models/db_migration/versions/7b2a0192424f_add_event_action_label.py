@@ -21,16 +21,23 @@ def upgrade() -> None:
         "event_action_label",
         sqlalchemy.Column("id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column(
-            "added", sqlalchemy.ARRAY(sqlalchemy.Text(), dimensions=1), nullable=False
+            "added",
+            sqlalchemy.ARRAY(sqlalchemy.Text(), dimensions=1),
+            nullable=False,
         ),
         sqlalchemy.Column(
-            "removed", sqlalchemy.ARRAY(sqlalchemy.Text(), dimensions=1), nullable=False
+            "removed",
+            sqlalchemy.ARRAY(sqlalchemy.Text(), dimensions=1),
+            nullable=False,
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_label_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_label_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_label_pkey")
+            "id",
+            name=alembic.op.f("event_action_label_pkey"),
         ),
     )
     # ### end Alembic commands ###

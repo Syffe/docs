@@ -34,7 +34,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
                     "merge_conditions": [
                         "check-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -89,13 +89,19 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             merge_train.TrainCarState(),
             [
                 merge_train.EmbarkedPull(
-                    q, p2["number"], pull_queue_config, date.utcnow()
-                )
+                    q,
+                    p2["number"],
+                    pull_queue_config,
+                    date.utcnow(),
+                ),
             ],
             [
                 merge_train.EmbarkedPull(
-                    q, p2["number"], pull_queue_config, date.utcnow()
-                )
+                    q,
+                    p2["number"],
+                    pull_queue_config,
+                    date.utcnow(),
+                ),
             ],
             [p1["number"]],
             base_sha,
@@ -112,8 +118,8 @@ class TestTrainApiCalls(base.FunctionalTestBase):
                     priority_rules=pr_config.PriorityRules([]),
                     require_branch_protection=True,
                     branch_protection_injection_mode="queue",
-                )
-            ]
+                ),
+            ],
         )
         await car.start_checking_with_draft(None)
         assert car.queue_pull_request_number is not None
@@ -133,10 +139,13 @@ pull_requests:
         )
 
         await car.send_checks_end_signal(
-            p2["number"], queue_utils.ChecksFailed(), "REEMBARKED"
+            p2["number"],
+            queue_utils.ChecksFailed(),
+            "REEMBARKED",
         )
         await car.end_checking(
-            reason=queue_utils.ChecksFailed(), not_reembarked_pull_requests={}
+            reason=queue_utils.ChecksFailed(),
+            not_reembarked_pull_requests={},
         )
 
         await self.wait_for_pull_request("edited", tmp_pull["number"])
@@ -149,10 +158,11 @@ pull_requests:
         await self.assert_eventlog_check_end("REEMBARKED")
 
     async def assert_eventlog_check_end(
-        self, abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"]
+        self,
+        abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"],
     ) -> None:
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?event_type=action.queue.checks_end"
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?event_type=action.queue.checks_end",
         )
         assert r.status_code == 200
         assert r.json()["events"][0]["metadata"]["abort_status"] == abort_status
@@ -165,7 +175,7 @@ pull_requests:
                     "merge_conditions": [
                         "check-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -220,13 +230,19 @@ pull_requests:
             merge_train.TrainCarState(),
             [
                 merge_train.EmbarkedPull(
-                    q, p2["number"], queue_pull_config, date.utcnow()
-                )
+                    q,
+                    p2["number"],
+                    queue_pull_config,
+                    date.utcnow(),
+                ),
             ],
             [
                 merge_train.EmbarkedPull(
-                    q, p2["number"], queue_pull_config, date.utcnow()
-                )
+                    q,
+                    p2["number"],
+                    queue_pull_config,
+                    date.utcnow(),
+                ),
             ],
             [p1["number"]],
             base_sha,
@@ -243,8 +259,8 @@ pull_requests:
                     priority_rules=pr_config.PriorityRules([]),
                     require_branch_protection=True,
                     branch_protection_injection_mode="queue",
-                )
-            ]
+                ),
+            ],
         )
         await car.start_checking_with_draft(None)
         assert car.queue_pull_request_number is not None
@@ -278,7 +294,7 @@ pull_requests:
                     "merge_conditions": [
                         "check-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -328,7 +344,7 @@ pull_requests:
         )
 
         embarked_pulls = [
-            merge_train.EmbarkedPull(q, p["number"], queue_pull_config, date.utcnow())
+            merge_train.EmbarkedPull(q, p["number"], queue_pull_config, date.utcnow()),
         ]
         car = merge_train.TrainCar(
             q,
@@ -350,8 +366,8 @@ pull_requests:
                     priority_rules=pr_config.PriorityRules([]),
                     require_branch_protection=True,
                     branch_protection_injection_mode="queue",
-                )
-            ]
+                ),
+            ],
         )
         await car.start_checking_with_draft(None)
         assert car.queue_pull_request_number is not None
@@ -364,7 +380,8 @@ pull_requests:
         draft_pr = await self.wait_for_pull_request("opened")
         await self.run_engine()
         await self.wait_for(
-            "pull_request", {"action": "closed", "number": draft_pr["number"]}
+            "pull_request",
+            {"action": "closed", "number": draft_pr["number"]},
         )
 
     async def test_create_pull_conflicts(self) -> None:
@@ -429,8 +446,8 @@ pull_requests:
                     priority_rules=pr_config.PriorityRules([]),
                     require_branch_protection=True,
                     branch_protection_injection_mode="queue",
-                )
-            ]
+                ),
+            ],
         )
 
         with pytest.raises(merge_train.TrainCarPullRequestCreationFailure) as exc_info:
@@ -467,7 +484,7 @@ pull_requests:
                     "allow_inplace_checks": True,
                     "batch_size": 3,
                     "batch_max_wait_time": "0 s",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -541,7 +558,7 @@ pull_requests:
                     "allow_inplace_checks": False,
                     "batch_max_wait_time": "0 s",
                     "batch_max_failure_resolution_attempts": 0,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -573,13 +590,14 @@ pull_requests:
         await self.wait_for_pull_request("closed", draft_pr["pull_request"]["number"])
 
         check_run = await self.wait_for_check_run(
-            name="Rule: Automatic merge (queue)", conclusion="cancelled"
+            name="Rule: Automatic merge (queue)",
+            conclusion="cancelled",
         )
         assert check_run["check_run"]["output"]["title"].startswith(
-            "The pull request has been removed from the queue"
+            "The pull request has been removed from the queue",
         )
         assert check_run["check_run"]["output"]["summary"].startswith(
-            "The maximum batch failure resolution attempts has been reached."
+            "The maximum batch failure resolution attempts has been reached.",
         )
 
     async def test_handle_merge_error(self) -> None:
@@ -591,7 +609,7 @@ pull_requests:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -624,7 +642,9 @@ pull_requests:
                 raise http.HTTPClientSideError(
                     message="Head branch was modified in the meantime",
                     request=httpx.Request(
-                        "PUT", "https://api.github.com/whatever", content=b""
+                        "PUT",
+                        "https://api.github.com/whatever",
+                        content=b"",
                     ),
                     response=httpx.Response(
                         status_code=405,

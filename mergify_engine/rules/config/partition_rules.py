@@ -22,7 +22,8 @@ DEFAULT_PARTITION_NAME = PartitionRuleName("__default__")
 EvaluatedPartitionRule = typing.NewType("EvaluatedPartitionRule", "PartitionRule")
 
 PartitionRulesEvaluator = generic_evaluator.GenericRulesEvaluator[
-    "PartitionRule", EvaluatedPartitionRule
+    "PartitionRule",
+    EvaluatedPartitionRule,
 ]
 
 
@@ -47,7 +48,8 @@ class PartitionRule:
         return self.conditions
 
     async def evaluate(
-        self, pulls: list[condition_value_querier.BasePullRequest]
+        self,
+        pulls: list[condition_value_querier.BasePullRequest],
     ) -> EvaluatedPartitionRule:
         evaluated_part_rule = typing.cast(EvaluatedPartitionRule, self)
         await evaluated_part_rule.conditions(pulls)
@@ -57,7 +59,7 @@ class PartitionRule:
         return self.__class__(
             name=self.name,
             conditions=conditions_mod.PartitionRuleConditions(
-                self.conditions.condition.copy().conditions
+                self.conditions.condition.copy().conditions,
             ),
             fallback_partition=self.fallback_partition,
         )
@@ -74,23 +76,23 @@ class PartitionRules:
         for rule in self.rules:
             if rule.name in names:
                 raise voluptuous.error.Invalid(
-                    f"partition_rules names must be unique, found `{rule.name}` twice"
+                    f"partition_rules names must be unique, found `{rule.name}` twice",
                 )
             if rule.fallback_partition:
                 if rule.conditions.condition.conditions:
                     raise voluptuous.error.Invalid(
-                        f"conditions of partition `{rule.name}` must be empty to use `fallback_partition` attribute"
+                        f"conditions of partition `{rule.name}` must be empty to use `fallback_partition` attribute",
                     )
 
                 if fallback_partition_name is not None:
                     raise voluptuous.error.Invalid(
-                        "found more than one usage of `fallback_partition` attribute, it must be used only once"
+                        "found more than one usage of `fallback_partition` attribute, it must be used only once",
                     )
                 fallback_partition_name = rule.name
 
             if rule.name == DEFAULT_PARTITION_NAME:
                 raise voluptuous.error.Invalid(
-                    f"`{DEFAULT_PARTITION_NAME}` is a reserved partition name and cannot be used"
+                    f"`{DEFAULT_PARTITION_NAME}` is a reserved partition name and cannot be used",
                 )
 
             names.add(rule.name)
@@ -111,7 +113,8 @@ class PartitionRules:
         raise KeyError(f"{key} not found")
 
     async def get_evaluated_partition_names_from_context(
-        self, ctxt: context.Context
+        self,
+        ctxt: context.Context,
     ) -> list[PartitionRuleName]:
         if not self.rules:
             return []
@@ -159,7 +162,7 @@ PartitionRulesSchema = voluptuous.All(
                 ): bool,
             },
             voluptuous.Coerce(PartitionRule.from_dict),
-        )
+        ),
     ],
     voluptuous.Coerce(PartitionRules),
 )

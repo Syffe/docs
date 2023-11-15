@@ -41,7 +41,7 @@ class TestCommandUpdate(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {

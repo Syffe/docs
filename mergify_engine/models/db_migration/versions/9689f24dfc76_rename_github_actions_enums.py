@@ -18,7 +18,7 @@ depends_on = None
 def upgrade() -> None:
     alembic.op.execute("alter type jobrunconclusion rename to workflowjobconclusion")
     alembic.op.execute(
-        "alter type jobruntriggerevent rename to workflowruntriggerevent"
+        "alter type jobruntriggerevent rename to workflowruntriggerevent",
     )
 
 

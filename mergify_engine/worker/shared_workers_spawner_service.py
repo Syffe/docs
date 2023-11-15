@@ -26,7 +26,8 @@ class SharedStreamService(stream_service_base.StreamService):
     loading_priority: typing.ClassVar[int] = 11
 
     _shared_worker_tasks: list[task.TaskRetriedForever] = dataclasses.field(
-        init=False, default_factory=list
+        init=False,
+        default_factory=list,
     )
 
     def __post_init__(self) -> None:
@@ -46,7 +47,7 @@ class SharedStreamService(stream_service_base.StreamService):
                         worker_id,
                     ),
                     self.worker_idle_time,
-                )
+                ),
             )
         LOG.info(
             "workers started",
@@ -60,7 +61,7 @@ class SharedStreamService(stream_service_base.StreamService):
             range(
                 self.process_index * self.shared_stream_tasks_per_process,
                 (self.process_index + 1) * self.shared_stream_tasks_per_process,
-            )
+            ),
         )
 
     @property
@@ -90,13 +91,15 @@ class SharedStreamService(stream_service_base.StreamService):
             return False
 
         shared_worker_id = self.get_shared_worker_id_for(
-            owner_id, self.global_shared_tasks_count
+            owner_id,
+            self.global_shared_tasks_count,
         )
         return shared_worker_id == stream_processor.worker_id
 
     @staticmethod
     def get_shared_worker_id_for(
-        owner_id: github_types.GitHubAccountIdType, global_shared_tasks_count: int
+        owner_id: github_types.GitHubAccountIdType,
+        global_shared_tasks_count: int,
     ) -> str:
         hashed = hashlib.blake2s(str(owner_id).encode())
         shared_id = int(hashed.hexdigest(), 16) % global_shared_tasks_count

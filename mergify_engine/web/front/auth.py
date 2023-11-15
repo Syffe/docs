@@ -31,14 +31,17 @@ class CustomAsyncOAuth2Client(httpx_client.AsyncOAuth2Client):  # type: ignore[m
     retry_stop_after_attempt = 2
 
     async def send(
-        self, request: httpx.Request, *args: typing.Any, **kwargs: typing.Any
+        self,
+        request: httpx.Request,
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> httpx.Response:
         kwargs["retry_stop_after_attempt"] = self.retry_stop_after_attempt
         return await http.retry_async_httpx_send(super().send, request, *args, **kwargs)
 
 
 class CustomStarletteOAuth2App(
-    starlette_client.StarletteOAuth2App  # type: ignore[misc]
+    starlette_client.StarletteOAuth2App,  # type: ignore[misc]
 ):
     client_cls = CustomAsyncOAuth2Client
 
@@ -67,7 +70,8 @@ async def clear_session_and_auth(request: fastapi.Request) -> None:
     await session_handler.destroy()
     session_handler.regenerate_id()
     request.scope["auth"] = imia.UserToken(
-        user=imia.AnonymousUser(), state=imia.LoginState.ANONYMOUS
+        user=imia.AnonymousUser(),
+        state=imia.LoginState.ANONYMOUS,
     )
 
 
@@ -117,18 +121,22 @@ async def create_or_update_user(
     refresh_installations: bool = False,
 ) -> github_user.GitHubUser:
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubTokenAuth(token)
+        github.GitHubTokenAuth(token),
     ) as client:
         try:
             user_data = typing.cast(
-                github_types.GitHubAccount, await client.item("/user")
+                github_types.GitHubAccount,
+                await client.item("/user"),
             )
         except http.HTTPUnauthorized:
             await clear_session_and_auth(request)
             raise fastapi.HTTPException(401)
 
     user = await github_user.GitHubUser.create_or_update(
-        session, user_data["id"], user_data["login"], token
+        session,
+        user_data["id"],
+        user_data["login"],
+        token,
     )
 
     if settings.SAAS_MODE:
@@ -213,13 +221,13 @@ async def auth_setup(
         # NOTE(sileht): didn't found a better way to get the owner id from the
         # installation id with listing all installations
         async with github.AsyncGitHubInstallationClient(
-            github.GitHubTokenAuth(current_user.oauth_access_token)
+            github.GitHubTokenAuth(current_user.oauth_access_token),
         ) as client:
             try:
                 data = typing.cast(
                     github_types.GitHubRepositoryList,
                     await client.item(
-                        f"/user/installations/{installation_id}/repositories?per_page=1"
+                        f"/user/installations/{installation_id}/repositories?per_page=1",
                     ),
                 )
             except http.HTTPNotFound:
@@ -229,7 +237,7 @@ async def auth_setup(
             return AuthRedirectUrl("/github?new=true")
 
         return AuthRedirectUrl(
-            f"/github/{data['repositories'][0]['owner']['login']}?new=true"
+            f"/github/{data['repositories'][0]['owner']['login']}?new=true",
         )
 
     if setup_action == "request":

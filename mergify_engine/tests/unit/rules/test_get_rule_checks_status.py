@@ -33,7 +33,7 @@ async def test_rules_conditions_update() -> None:
                 "check-failure": ["jenkins/fake-tests"],
                 "check-skipped": [],
                 "check-stale": [],
-            }
+            },
         ),
     ]
     pulls[0].sync_checks()
@@ -41,7 +41,7 @@ async def test_rules_conditions_update() -> None:
         voluptuous.All(
             [voluptuous.Coerce(cond_config.RuleConditionSchema)],
             voluptuous.Coerce(conditions.QueueRuleMergeConditions),
-        )
+        ),
     )
 
     c = schema(
@@ -49,7 +49,7 @@ async def test_rules_conditions_update() -> None:
             "label=foo",
             "check-success=tests",
             "check-success=jenkins/fake-tests",
-        ]
+        ],
     )
 
     await c(pulls)
@@ -81,7 +81,7 @@ async def assert_queue_rule_checks_status(
         voluptuous.All(
             [voluptuous.Coerce(cond_config.RuleConditionSchema)],
             voluptuous.Coerce(conditions.QueueRuleMergeConditions),
-        )
+        ),
     )
 
     c = schema(conds)
@@ -113,7 +113,7 @@ async def test_rules_checks_basic() -> None:
             "check-pending": empty,
             "check-skipped": empty,
             "check-stale": empty,
-        }
+        },
     )
     conds = ["check-success=fake-ci", "label=foobar", "schedule=MON-FRI"]
 
@@ -150,7 +150,10 @@ async def test_rules_checks_basic() -> None:
     # Pending reported and schedule missing
     # Saturday
     pull.attrs["current-datetime"] = datetime.datetime(
-        2022, 11, 26, tzinfo=datetime.UTC
+        2022,
+        11,
+        26,
+        tzinfo=datetime.UTC,
     )
     pull.attrs["check-pending"] = ["fake-ci"]
     pull.attrs["check-failure"] = empty
@@ -160,7 +163,10 @@ async def test_rules_checks_basic() -> None:
     # Failure reported and schedule missing
     # Saturday
     pull.attrs["current-datetime"] = datetime.datetime(
-        2022, 11, 26, tzinfo=datetime.UTC
+        2022,
+        11,
+        26,
+        tzinfo=datetime.UTC,
     )
     pull.attrs["check-pending"] = ["whatever"]
     pull.attrs["check-failure"] = ["foo", "fake-ci"]
@@ -170,7 +176,10 @@ async def test_rules_checks_basic() -> None:
     # Success reported and schedule missing
     # Saturday
     pull.attrs["current-datetime"] = datetime.datetime(
-        2022, 11, 26, tzinfo=datetime.UTC
+        2022,
+        11,
+        26,
+        tzinfo=datetime.UTC,
     )
     pull.attrs["check-pending"] = ["whatever"]
     pull.attrs["check-failure"] = ["foo"]
@@ -192,7 +201,7 @@ async def test_rules_checks_with_and_or() -> None:
             "check-neutral": [],
             "check-skipped": [],
             "check-stale": [],
-        }
+        },
     )
     conds = [
         {"or": ["check-success=fake-ci", "label=skip-tests"]},
@@ -264,7 +273,7 @@ async def test_rules_checks_status_with_negative_conditions1() -> None:
             "check-timed-out": empty,
             "check-skipped": empty,
             "check-stale": empty,
-        }
+        },
     )
     conds = [
         "check-success=test-starter",
@@ -325,7 +334,7 @@ async def test_rules_checks_status_with_negative_conditions2() -> None:
             "check-neutral": empty,
             "check-skipped": empty,
             "check-stale": empty,
-        }
+        },
     )
     conds = [
         "check-success=test-starter",
@@ -374,7 +383,7 @@ async def test_rules_checks_status_with_negative_conditions3() -> None:
             "check-neutral": empty,
             "check-skipped": empty,
             "check-stale": empty,
-        }
+        },
     )
     conds = [
         "check-success=test-starter",
@@ -423,12 +432,12 @@ async def test_rules_checks_status_with_or_conditions() -> None:
             "check-neutral": empty,
             "check-skipped": empty,
             "check-stale": empty,
-        }
+        },
     )
     conds = [
         {
             "or": ["check-success=ci-1", "check-success=ci-2"],
-        }
+        },
     ]
 
     # Nothing reported
@@ -484,7 +493,7 @@ async def test_rules_checks_status_expected_failure() -> None:
             "check-neutral": empty,
             "check-skipped": empty,
             "check-stale": empty,
-        }
+        },
     )
     conds = ["check-failure=ci-1"]
 
@@ -523,7 +532,7 @@ async def test_rules_checks_status_regular() -> None:
             "check-neutral": empty,
             "check-skipped": empty,
             "check-stale": empty,
-        }
+        },
     )
     conds = ["check-success=ci-1", "check-success=ci-2"]
 
@@ -574,7 +583,7 @@ async def test_rules_checks_status_regex() -> None:
             "check-neutral": empty,
             "check-skipped": empty,
             "check-stale": empty,
-        }
+        },
     )
     conds = ["check-success~=^ci-1$", "check-success~=^ci-2$"]
 
@@ -628,7 +637,7 @@ async def test_rules_checks_status_depop() -> None:
             "approved-reviews-by": ["me"],
             "changes-requested-reviews-by": [],
             "label": ["mergeit"],
-        }
+        },
     )
     conds = [
         "check-success=Summary",
@@ -643,21 +652,21 @@ async def test_rules_checks_status_depop() -> None:
                 "check-success=c-ci/status",
                 "check-neutral=c-ci/status",
                 "check-skipped=c-ci/status",
-            ]
+            ],
         },
         {
             "or": [
                 "check-success=c-ci/s-c-t",
                 "check-neutral=c-ci/s-c-t",
                 "check-skipped=c-ci/s-c-t",
-            ]
+            ],
         },
         {
             "or": [
                 "check-success=c-ci/c-p-validate",
                 "check-neutral=c-ci/c-p-validate",
                 "check-skipped=c-ci/c-p-validate",
-            ]
+            ],
         },
         "#approved-reviews-by>=1",
         "#changes-requested-reviews-by=0",
@@ -778,7 +787,7 @@ async def test_rules_checks_status_ceph() -> None:
                 "ci/centos/mini-e2e/k8s-1.21",
                 "ci/centos/mini-e2e-helm/k8s-1.20",
             ],
-        }
+        },
     )
     pull.attrs["check"] = (
         pull.attrs.get("check-success", [])  # type: ignore
@@ -819,10 +828,10 @@ async def test_rules_checks_status_ceph() -> None:
                     "or": [
                         {"=": ["label", "wip"]},
                         {"=": ["label", "in-progress"]},
-                    ]
-                }
+                    ],
+                },
             },
-        ]
+        ],
     }
     f = filter.IncompleteChecksFilter(
         typing.cast(filter.TreeT, tree),
@@ -836,7 +845,7 @@ async def test_rules_checks_status_ceph() -> None:
     repo_with_team = mock.Mock(
         repo={"owner": {"login": "ceph"}},
         installation=mock.Mock(
-            get_team_members=mock.Mock(side_effect=fake_get_team_members)
+            get_team_members=mock.Mock(side_effect=fake_get_team_members),
         ),
     )
 

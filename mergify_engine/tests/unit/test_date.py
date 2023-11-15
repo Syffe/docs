@@ -80,7 +80,9 @@ def test_time_compare() -> None:
     utc = date.UTC
     with time_travel("2021-09-22T08:00:05Z"):
         assert datetime.datetime(2021, 9, 22, 8, 0, 5, tzinfo=utc) >= date.Time(
-            8, 0, utc
+            8,
+            0,
+            utc,
         )
 
     with time_travel("2012-01-14T12:15:00Z"):
@@ -264,7 +266,8 @@ def test_invalid_date_string(
     ],
 )
 def test_interval_from_string(
-    value: str, expected_interval: datetime.timedelta | None
+    value: str,
+    expected_interval: datetime.timedelta | None,
 ) -> None:
     if expected_interval is None:
         with pytest.raises(date.InvalidDate):
@@ -314,7 +317,13 @@ def test_interval_from_string(
         ),
         (
             datetime.datetime(
-                2022, 1, 1, 20, 10, 1, tzinfo=zoneinfo.ZoneInfo("Pacific/Auckland")
+                2022,
+                1,
+                1,
+                20,
+                10,
+                1,
+                tzinfo=zoneinfo.ZoneInfo("Pacific/Auckland"),
             ),
             20,
             10,
@@ -336,7 +345,12 @@ def test_datetime_inside_time_range(
 ) -> None:
     assert (
         date.is_datetime_inside_time_range(
-            time_to_check, begin_hour, begin_minute, end_hour, end_minute, strict
+            time_to_check,
+            begin_hour,
+            begin_minute,
+            end_hour,
+            end_minute,
+            strict,
         )
         == result
     )
@@ -474,7 +488,9 @@ def test_datetime_inside_time_range(
     ),
 )
 def test_schedule_next_datetime(
-    schedule: date.Schedule, from_time: datetime.datetime, expected: datetime.datetime
+    schedule: date.Schedule,
+    from_time: datetime.datetime,
+    expected: datetime.datetime,
 ) -> None:
     assert schedule.get_next_datetime(from_time) == expected
 
@@ -536,7 +552,8 @@ def test_schedule_equality(schedule1: date.Schedule, schedule2: date.Schedule) -
     ),
 )
 def test_schedule_inequality(
-    schedule1: date.Schedule, schedule2: date.Schedule
+    schedule1: date.Schedule,
+    schedule2: date.Schedule,
 ) -> None:
     # In winter
     with time_travel("2023-01-01T00:00:00Z"):
@@ -637,7 +654,9 @@ def test_schedule_equality_after_clear_cache() -> None:
     ),
 )
 def test_schedule_eq_with_datetime(
-    schedule: date.Schedule, date_to_test: datetime.datetime, expected: bool
+    schedule: date.Schedule,
+    date_to_test: datetime.datetime,
+    expected: bool,
 ) -> None:
     assert expected == (date_to_test == schedule)
     assert not expected == (date_to_test != schedule)
@@ -707,7 +726,7 @@ def test_schedule_as_json_dict_days_and_times() -> None:
                 "start_at": {"hour": 11, "minute": 0},
                 "end_at": {"hour": 15, "minute": 30},
             },
-        ]
+        ],
     }
     assert schedule.as_json_dict() == {
         "timezone": "UTC",
@@ -732,7 +751,7 @@ def test_schedule_as_json_dict_days_and_times() -> None:
                 "start_at": {"hour": 15, "minute": 30},
                 "end_at": {"hour": 23, "minute": 59},
             },
-        ]
+        ],
     }
     assert schedule.as_json_dict(reverse=True) == {
         "timezone": "UTC",
@@ -756,7 +775,7 @@ def test_schedule_as_json_dict_only_times() -> None:
                 "start_at": {"hour": 9, "minute": 0},
                 "end_at": {"hour": 16, "minute": 32},
             },
-        ]
+        ],
     }
     assert schedule.as_json_dict() == {
         "timezone": "UTC",
@@ -781,7 +800,7 @@ def test_schedule_as_json_dict_only_times() -> None:
                 "start_at": {"hour": 16, "minute": 32},
                 "end_at": {"hour": 23, "minute": 59},
             },
-        ]
+        ],
     }
     assert schedule.as_json_dict(reverse=True) == {
         "timezone": "UTC",
@@ -805,7 +824,7 @@ def test_schedule_as_json_dict_only_times_with_timezone() -> None:
                 "start_at": {"hour": 10, "minute": 2},
                 "end_at": {"hour": 22, "minute": 35},
             },
-        ]
+        ],
     }
     assert schedule.as_json_dict() == {
         "timezone": "Europe/Paris",
@@ -830,7 +849,7 @@ def test_schedule_as_json_dict_only_times_with_timezone() -> None:
                 "start_at": {"hour": 22, "minute": 35},
                 "end_at": {"hour": 23, "minute": 59},
             },
-        ]
+        ],
     }
     assert schedule.as_json_dict(reverse=True) == {
         "timezone": "Europe/Paris",
@@ -854,7 +873,7 @@ def test_schedule_as_json_reversed_edge_cases() -> None:
                 "start_at": {"hour": 12, "minute": 0},
                 "end_at": {"hour": 23, "minute": 59},
             },
-        ]
+        ],
     }
     assert schedule.as_json_dict(reverse=True) == {
         "timezone": "UTC",
@@ -876,7 +895,7 @@ def test_schedule_as_json_reversed_edge_cases() -> None:
                 "start_at": {"hour": 0, "minute": 0},
                 "end_at": {"hour": 12, "minute": 0},
             },
-        ]
+        ],
     }
     assert schedule.as_json_dict(reverse=True) == {
         "timezone": "UTC",
@@ -961,13 +980,18 @@ def test_datetimerange_as_github_date_query() -> None:
         (
             "2023-07-13T14:00[Europe/Paris]",
             datetime.datetime(
-                2023, 7, 13, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                7,
+                13,
+                14,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
         ),
     ),
 )
 def test_fromisoformat_with_zoneinfo(
-    isoformat_datetime: str, expected_datetime: datetime.datetime
+    isoformat_datetime: str,
+    expected_datetime: datetime.datetime,
 ) -> None:
     assert date.fromisoformat_with_zoneinfo(isoformat_datetime) == expected_datetime
 
@@ -1036,7 +1060,8 @@ def test_fromisoformat_with_zoneinfo_invalid(isoformat_datetime: str) -> None:
     ),
 )
 def test_datetimerange_fromisoformat_with_zoneinfo(
-    isoformat_dtr: str, expected_dtr: date.DateTimeRange
+    isoformat_dtr: str,
+    expected_dtr: date.DateTimeRange,
 ) -> None:
     assert date.DateTimeRange.fromisoformat_with_zoneinfo(isoformat_dtr) == expected_dtr
 
@@ -1063,21 +1088,21 @@ def test_datetimerange_fromisoformat_with_zoneinfo_invalid(isoformat_dtr: str) -
     (
         (
             date.DateTimeRange.fromisoformat_with_zoneinfo(
-                "2007-03-01T13:00/2008-05-11T15:30"
+                "2007-03-01T13:00/2008-05-11T15:30",
             ),
             date.DateTimeRange.fromisoformat_with_zoneinfo(
-                "2007-03-01T13:00/2008-05-11T15:30"
+                "2007-03-01T13:00/2008-05-11T15:30",
             ),
         ),
         (
             date.DateTimeRange.fromisoformat_with_zoneinfo(
-                "2007-03-01T13:00/2008-05-11T15:30"
+                "2007-03-01T13:00/2008-05-11T15:30",
             ),
             datetime.datetime(2007, 3, 1, 13, tzinfo=date.UTC),
         ),
         (
             date.DateTimeRange.fromisoformat_with_zoneinfo(
-                "2007-03-01T13:00/2008-05-11T15:30"
+                "2007-03-01T13:00/2008-05-11T15:30",
             ),
             datetime.datetime(2008, 5, 11, 15, 30, tzinfo=date.UTC),
         ),
@@ -1092,29 +1117,29 @@ def test_datetimerange_equality(actual: date.DateTimeRange, other: object) -> No
     (
         (
             date.DateTimeRange.fromisoformat_with_zoneinfo(
-                "2007-03-01T13:00/2008-05-11T15:30"
+                "2007-03-01T13:00/2008-05-11T15:30",
             ),
             date.DateTimeRange.fromisoformat_with_zoneinfo(
-                "2007-03-01T13:00/2007-05-11T15:30"
-            ),
-        ),
-        (
-            date.DateTimeRange.fromisoformat_with_zoneinfo(
-                "2007-03-01T13:00/2008-05-11T15:30"
-            ),
-            date.DateTimeRange.fromisoformat_with_zoneinfo(
-                "2006-03-01T13:00/2008-05-11T15:30"
+                "2007-03-01T13:00/2007-05-11T15:30",
             ),
         ),
         (
             date.DateTimeRange.fromisoformat_with_zoneinfo(
-                "2007-03-01T13:00/2008-05-11T15:30"
+                "2007-03-01T13:00/2008-05-11T15:30",
+            ),
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2006-03-01T13:00/2008-05-11T15:30",
+            ),
+        ),
+        (
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2007-03-01T13:00/2008-05-11T15:30",
             ),
             datetime.datetime(2007, 3, 1, 12, tzinfo=date.UTC),
         ),
         (
             date.DateTimeRange.fromisoformat_with_zoneinfo(
-                "2007-03-01T13:00/2008-05-11T15:30"
+                "2007-03-01T13:00/2008-05-11T15:30",
             ),
             datetime.datetime(2008, 5, 11, 15, 31, tzinfo=date.UTC),
         ),
@@ -1196,10 +1221,15 @@ def test_datetimerange_inequality(actual: date.DateTimeRange, other: object) -> 
     ),
 )
 def test_relativedelta(
-    current_date: str, months: int, years: int, expected_date: str
+    current_date: str,
+    months: int,
+    years: int,
+    expected_date: str,
 ) -> None:
     assert date.relativedelta(
-        date.fromisoformat(current_date), months=months, years=years
+        date.fromisoformat(current_date),
+        months=months,
+        years=years,
     ) == date.fromisoformat(expected_date)
 
 

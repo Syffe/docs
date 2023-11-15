@@ -48,9 +48,9 @@ router = fastapi.APIRouter(tags=["applications"])
                             "id": 123456,
                             "login": "Mergifyio",
                         },
-                    }
-                }
-            }
+                    },
+                },
+            },
         },
     },
 )

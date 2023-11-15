@@ -41,7 +41,10 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, e.title, e.reason
+                rule,
+                action,
+                e.title,
+                e.reason,
             )
 
         return cls(ctxt, rule, UpdateExecutorConfig({"bot_account": bot_account}))
@@ -59,7 +62,9 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
 
         mergify_config = await self.ctxt.repository.get_mergify_config()
         convoy = await merge_train.Convoy.from_context(
-            self.ctxt, mergify_config["queue_rules"], mergify_config["partition_rules"]
+            self.ctxt,
+            mergify_config["queue_rules"],
+            mergify_config["partition_rules"],
         )
         if convoy.is_pull_embarked(self.ctxt.pull["number"]):
             return check_api.Result(
@@ -111,11 +116,12 @@ class UpdateAction(actions.Action):
     executor_class = UpdateExecutor
 
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
-        {"or": ["sender-permission>=write", "sender={{author}}"]}
+        {"or": ["sender-permission>=write", "sender={{author}}"]},
     ]
 
     async def get_conditions_requirements(
-        self, ctxt: context.Context
+        self,
+        ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
         description = ":pushpin: update requirement"
         return [

@@ -49,7 +49,7 @@ PARSERS_FOR_ARRAY_SUBATTRIBUTES = {
         "date_committer": Parser.TIMESTAMP_OR_TIMEDELTA,
         "email_author": Parser.TEXT,
         "email_committer": Parser.TEXT,
-    }
+    },
 }
 
 CONDITION_PARSERS = {
@@ -188,7 +188,8 @@ GITHUB_LOGIN_CHARS = string.ascii_letters + string.digits + "-[]_"
 GITHUB_LOGIN_AND_TEAM_CHARS = GITHUB_LOGIN_CHARS + "@/"
 
 JINJA_ENV = jinja2.sandbox.SandboxedEnvironment(
-    undefined=jinja2.StrictUndefined, enable_async=True
+    undefined=jinja2.StrictUndefined,
+    enable_async=True,
 )
 
 
@@ -252,7 +253,8 @@ class ParsedCondition(typing.NamedTuple):
 
 
 def parse_raw_condition(
-    cond: str, allow_command_attributes: bool = False
+    cond: str,
+    allow_command_attributes: bool = False,
 ) -> ParsedCondition:
     length = len(cond)
     position = _skip_ws(cond, length, 0)
@@ -290,12 +292,12 @@ def parse_raw_condition(
 
     if not quantity and attribute in ATTRIBUTES_WITH_ONLY_LENGTH:
         raise ConditionParsingError(
-            f"`#` modifier is required for attribute: `{attribute}`"
+            f"`#` modifier is required for attribute: `{attribute}`",
         )
 
     if not allow_command_attributes and attribute in COMMAND_ONLY_ATTRIBUTES:
         raise ConditionParsingError(
-            "Attribute only allowed in commands_restrictions section"
+            "Attribute only allowed in commands_restrictions section",
         )
 
     # Get the type of parser
@@ -314,7 +316,7 @@ def parse_raw_condition(
                 not in PARSERS_FOR_ARRAY_SUBATTRIBUTES[attribute].keys()
             ):
                 raise ConditionParsingError(
-                    f"`{array_subattribute}` is not a valid sub-attribute for `{attribute}`"
+                    f"`{array_subattribute}` is not a valid sub-attribute for `{attribute}`",
                 )
 
             parser = PARSERS_FOR_ARRAY_SUBATTRIBUTES[attribute][array_subattribute]
@@ -330,18 +332,18 @@ def parse_raw_condition(
     negate_allowed, quantity_allowed = PARSER_MODIFIERS.get(parser, (True, True))
     if negate and not negate_allowed:
         raise ConditionParsingError(
-            f"`-` modifier is invalid for attribute: `{attribute}`"
+            f"`-` modifier is invalid for attribute: `{attribute}`",
         )
     if quantity and not quantity_allowed:
         raise ConditionParsingError(
-            f"`#` modifier is invalid for attribute: `{attribute}`"
+            f"`#` modifier is invalid for attribute: `{attribute}`",
         )
 
     if parser == Parser.BOOL:
         # Bool doesn't have operators
         if len(cond[position:].strip()) > 0:
             raise ConditionParsingError(
-                f"Operators are invalid for Boolean attribute: `{attribute}`"
+                f"Operators are invalid for Boolean attribute: `{attribute}`",
             )
         return ParsedCondition(
             attribute=attribute,
@@ -375,7 +377,8 @@ def parse_raw_condition(
 
 def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
     attribute, op, value, parser, negate, quantity = parse_raw_condition(
-        v, allow_command_attributes
+        v,
+        allow_command_attributes,
     )
 
     if parser == Parser.BOOL:
@@ -439,7 +442,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             and op not in SIMPLE_OPERATORS
         ):
             raise ConditionParsingError(
-                "Regular expression are not supported for team slug"
+                "Regular expression are not supported for team slug",
             )
 
         if quantity:
@@ -468,7 +471,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             value = _unquote(value)
             if value not in CONDITION_ENUMS[attribute]:
                 raise ConditionParsingError(
-                    f"Invalid `{attribute}` value, must be one of `{'`, `'.join(CONDITION_ENUMS[attribute])}`"
+                    f"Invalid `{attribute}` value, must be one of `{'`, `'.join(CONDITION_ENUMS[attribute])}`",
                 )
         elif parser == Parser.WORD:
             if " " in value:
@@ -511,7 +514,7 @@ def get_jinja_template_wrapper(value: str) -> filter.JinjaTemplateWrapper:
 
     if unexpected_variables:
         raise ConditionParsingError(
-            f"Invalid template, unexpected variables {unexpected_variables}"
+            f"Invalid template, unexpected variables {unexpected_variables}",
         )
 
     return filter.JinjaTemplateWrapper(JINJA_ENV, value, used_variables)

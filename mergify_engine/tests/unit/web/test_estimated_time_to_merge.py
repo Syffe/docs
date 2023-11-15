@@ -14,7 +14,8 @@ async def test_compute_estimation_no_batch_first_pr() -> None:
         embarked_pull = mock.Mock()
         embarked_pull_position = 0
         queue_rule_config = typing.cast(
-            qr_config.QueueConfig, {"speculative_checks": 1, "batch_size": 1}
+            qr_config.QueueConfig,
+            {"speculative_checks": 1, "batch_size": 1},
         )
         checks_duration = datetime.timedelta(minutes=10)
         car = mock.Mock()
@@ -24,7 +25,9 @@ async def test_compute_estimation_no_batch_first_pr() -> None:
         car.train_car_state.seconds_spent_outside_schedule_pure = 0
         car.last_merge_conditions_evaluation = (
             rule_conditions.QueueConditionEvaluationResult(
-                match=True, label="", is_label_user_input=False
+                match=True,
+                label="",
+                is_label_user_input=False,
             )
         )
         previous_eta = None
@@ -47,7 +50,8 @@ async def test_compute_estimation_no_batch_second_pr() -> None:
         embarked_pull = mock.Mock()
         embarked_pull_position = 1
         queue_rule_config = typing.cast(
-            qr_config.QueueConfig, {"speculative_checks": 1, "batch_size": 1}
+            qr_config.QueueConfig,
+            {"speculative_checks": 1, "batch_size": 1},
         )
         checks_duration = datetime.timedelta(minutes=10)
         car = None
@@ -71,7 +75,8 @@ async def test_compute_estimation_batch_second_pr() -> None:
         embarked_pull = mock.Mock()
         embarked_pull_position = 1
         queue_rule_config = typing.cast(
-            qr_config.QueueConfig, {"speculative_checks": 1, "batch_size": 2}
+            qr_config.QueueConfig,
+            {"speculative_checks": 1, "batch_size": 2},
         )
         checks_duration = datetime.timedelta(minutes=10)
         car = mock.Mock()
@@ -98,7 +103,8 @@ async def test_compute_estimation_batch_third_pr() -> None:
         embarked_pull = mock.Mock()
         embarked_pull_position = 2
         queue_rule_config = typing.cast(
-            qr_config.QueueConfig, {"speculative_checks": 1, "batch_size": 2}
+            qr_config.QueueConfig,
+            {"speculative_checks": 1, "batch_size": 2},
         )
         checks_duration = datetime.timedelta(minutes=10)
         car = None
@@ -123,7 +129,8 @@ async def test_compute_estimation_in_schedule() -> None:
         embarked_pull.queued_at = date.utcnow()
         embarked_pull_position = 0
         queue_rule_config = typing.cast(
-            qr_config.QueueConfig, {"speculative_checks": 1, "batch_size": 1}
+            qr_config.QueueConfig,
+            {"speculative_checks": 1, "batch_size": 1},
         )
         checks_duration = datetime.timedelta(minutes=10)
         car = mock.Mock()
@@ -142,7 +149,7 @@ async def test_compute_estimation_in_schedule() -> None:
                         label="schedule=09:00-17:00",
                         is_label_user_input=True,
                         attribute_name="schedule",
-                    )
+                    ),
                 ],
             )
         )
@@ -167,7 +174,8 @@ async def test_compute_estimation_out_of_schedule() -> None:
         embarked_pull.queued_at = date.utcnow()
         embarked_pull_position = 0
         queue_rule_config = typing.cast(
-            qr_config.QueueConfig, {"speculative_checks": 1, "batch_size": 1}
+            qr_config.QueueConfig,
+            {"speculative_checks": 1, "batch_size": 1},
         )
         checks_duration = datetime.timedelta(minutes=10)
         car = mock.Mock()
@@ -186,7 +194,7 @@ async def test_compute_estimation_out_of_schedule() -> None:
                         label="schedule=09:00-17:00",
                         is_label_user_input=True,
                         attribute_name="schedule",
-                    )
+                    ),
                 ],
             )
         )
@@ -211,7 +219,8 @@ async def test_compute_estimation_checks_end_in_schedule() -> None:
         embarked_pull.queued_at = date.utcnow()
         embarked_pull_position = 0
         queue_rule_config = typing.cast(
-            qr_config.QueueConfig, {"speculative_checks": 1, "batch_size": 1}
+            qr_config.QueueConfig,
+            {"speculative_checks": 1, "batch_size": 1},
         )
         checks_duration = datetime.timedelta(minutes=10)
         car = mock.Mock()
@@ -230,7 +239,7 @@ async def test_compute_estimation_checks_end_in_schedule() -> None:
                         label="schedule=09:00-17:00",
                         is_label_user_input=True,
                         attribute_name="schedule",
-                    )
+                    ),
                 ],
             )
         )

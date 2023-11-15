@@ -11,10 +11,11 @@ class DedicatedWorkersCacheSyncerService(task.SimpleService):
     loading_priority: typing.ClassVar[int] = 1
 
     owner_ids: set[github_types.GitHubAccountIdType] = dataclasses.field(
-        init=False, default_factory=set
+        init=False,
+        default_factory=set,
     )
 
     async def work(self) -> None:
         self.owner_ids = await stream.get_dedicated_worker_owner_ids_from_redis(
-            self.redis_links.stream
+            self.redis_links.stream,
         )

@@ -42,7 +42,8 @@ async def _add_refresh_attempt(
         return None
 
     bucket_sources_key = stream_lua.get_bucket_sources_key(
-        repository["id"], pull_request_number
+        repository["id"],
+        pull_request_number,
     )
 
     attempts = 1
@@ -52,7 +53,8 @@ async def _add_refresh_attempt(
         if event_unpacked["event_type"] != "refresh":
             continue
         refresh_data = typing.cast(
-            github_types.GitHubEventRefresh, event_unpacked["data"]
+            github_types.GitHubEventRefresh,
+            event_unpacked["data"],
         )
         if (
             refresh_data["action"] == "internal"
@@ -84,7 +86,11 @@ async def _send_refresh(
     max_attempts: int | None = None,
 ) -> None:
     attempts = await _add_refresh_attempt(
-        redis_stream, repository, pull_request_number, refresh_flag, max_attempts
+        redis_stream,
+        repository,
+        pull_request_number,
+        refresh_flag,
+        max_attempts,
     )
 
     data = github_types.GitHubEventRefresh(
@@ -102,7 +108,8 @@ async def _send_refresh(
                 "avatar_url": "",
             },
             "organization": typing.cast(
-                github_types.GitHubAccount, repository["owner"]
+                github_types.GitHubAccount,
+                repository["owner"],
             ),
             "installation": {
                 "id": github_types.GitHubInstallationIdType(0),
@@ -113,7 +120,7 @@ async def _send_refresh(
             },
             "flag": refresh_flag,
             "attempts": attempts,
-        }
+        },
     )
 
     slim_event = filtered_github_types.extract("refresh", None, data)

@@ -126,7 +126,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"].startswith(
-            "The pull request has been removed from the queue"
+            "The pull request has been removed from the queue",
         )
 
         check = first(
@@ -210,7 +210,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"].startswith(
-            "The pull request has been removed from the queue"
+            "The pull request has been removed from the queue",
         )
 
         check = first(
@@ -292,7 +292,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"].startswith(
-            "The pull request has been removed from the queue"
+            "The pull request has been removed from the queue",
         )
 
         check = first(
@@ -339,7 +339,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "label": {
                             "add": ["dequeued"],
                             "remove": ["queue"],
-                        }
+                        },
                     },
                 },
             ],
@@ -352,17 +352,20 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.wait_for_check_run(name="Rule: Queue (queue)", status="in_progress")
         await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue", status="in_progress"
+            name="Queue: Embarked in merge queue",
+            status="in_progress",
         )
 
         # disembark pr
         await self.create_status(pr, state="failure")
         await self.run_engine()
         await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue", conclusion="failure"
+            name="Queue: Embarked in merge queue",
+            conclusion="failure",
         )
         check = await self.wait_for_check_run(
-            name="Rule: Queue (queue)", conclusion="cancelled"
+            name="Rule: Queue (queue)",
+            conclusion="cancelled",
         )
         assert check is not None
         assert (
@@ -665,7 +668,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -716,7 +719,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -757,7 +760,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -814,7 +817,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -914,7 +917,8 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            conclusion="cancelled", name="Rule: Queue (queue)"
+            conclusion="cancelled",
+            name="Rule: Queue (queue)",
         )
         assert check_run is not None
         assert check_run["check_run"]["head_sha"] == p1_rebased["head"]["sha"]
@@ -983,7 +987,8 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            conclusion="success", name="Rule: Queue (queue)"
+            conclusion="success",
+            name="Rule: Queue (queue)",
         )
         assert check_run is not None
         assert check_run["check_run"]["head_sha"] == p1_rebased["head"]["sha"]
@@ -1095,7 +1100,8 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         await self.run_engine()
         check = await self.wait_for_check_run(
-            name="Rule: Queue (queue)", conclusion="success"
+            name="Rule: Queue (queue)",
+            conclusion="success",
         )
         assert check is not None
 
@@ -1146,7 +1152,8 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         await self.create_status(
-            draft_pr["pull_request"], "continuous-integration/fake-ci-merge"
+            draft_pr["pull_request"],
+            "continuous-integration/fake-ci-merge",
         )
         await self.run_engine()
         await self.wait_for_pull_request("closed", draft_pr["number"])
@@ -1185,7 +1192,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "batch_size": 2,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1275,7 +1282,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     ],
                     "speculative_checks": 5,
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1313,7 +1320,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     ],
                     "speculative_checks": 5,
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1349,7 +1356,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "conditions": [
                         "check-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1419,7 +1426,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "name": "default",
                     "merge_conditions": [],
                     "branch_protection_injection_mode": "queue",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1486,7 +1493,8 @@ class TestQueueAction(base.FunctionalTestBase):
         p1_merged = await self.wait_for_pull_request("closed", p1["number"])
         check = first(
             await context.Context(
-                self.repository_ctxt, p1_merged["pull_request"]
+                self.repository_ctxt,
+                p1_merged["pull_request"],
             ).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
@@ -1503,7 +1511,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "name": "default",
                     "merge_conditions": [],
                     "branch_protection_injection_mode": "merge",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1566,7 +1574,8 @@ class TestQueueAction(base.FunctionalTestBase):
         p1_merged = await self.wait_for_pull_request("closed", p1["number"])
         check = first(
             await context.Context(
-                self.repository_ctxt, p1_merged["pull_request"]
+                self.repository_ctxt,
+                p1_merged["pull_request"],
             ).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
@@ -1583,7 +1592,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "name": "default",
                     "merge_conditions": [],
                     "branch_protection_injection_mode": "none",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1593,7 +1602,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "queue": {
                             "name": "default",
                             "merge_bot_account": "mergify-test1",
-                        }
+                        },
                     },
                 },
             ],
@@ -1633,7 +1642,8 @@ class TestQueueAction(base.FunctionalTestBase):
         p1_merged = await self.wait_for_pull_request("closed", p1["number"])
         check = first(
             await context.Context(
-                self.repository_ctxt, p1_merged["pull_request"]
+                self.repository_ctxt,
+                p1_merged["pull_request"],
             ).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
@@ -1652,7 +1662,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "name": "default",
                     "merge_conditions": [],
                     "branch_protection_injection_mode": "none",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1695,14 +1705,17 @@ class TestQueueAction(base.FunctionalTestBase):
                 {
                     "name": "default",
                     "conditions": [],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
                     "name": "Merge priority high",
                     "conditions": [f"base={self.main_branch_name}", "label=queue"],
                     "actions": {
-                        "queue": {"name": "default", "require_branch_protection": False}
+                        "queue": {
+                            "name": "default",
+                            "require_branch_protection": False,
+                        },
                     },
                 },
             ],
@@ -1809,7 +1822,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "speculative_checks": 5,
                     "allow_inplace_checks": False,
                     "draft_bot_account": "mergify-test4",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1913,7 +1926,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     ],
                     "speculative_checks": 5,
                     "queue_branch_prefix": "mq-",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1956,7 +1969,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1969,7 +1982,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "queue": {
                             "name": "default",
                             "merge_method": "fast-forward",
-                        }
+                        },
                     },
                 },
             ],
@@ -2005,7 +2018,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.INPLACE,
                     p1["number"],
-                )
+                ),
             ],
             [p2["number"]],
         )
@@ -2031,7 +2044,8 @@ class TestQueueAction(base.FunctionalTestBase):
         p1_merged = await self.wait_for_pull_request("closed", p1["number"])
         check = first(
             await context.Context(
-                self.repository_ctxt, p1_merged["pull_request"]
+                self.repository_ctxt,
+                p1_merged["pull_request"],
             ).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: merge fast-forward (queue)",
         )
@@ -2048,7 +2062,7 @@ class TestQueueAction(base.FunctionalTestBase):
         branch = typing.cast(
             github_types.GitHubBranch,
             await self.client_integration.item(
-                f"{self.url_origin}/branches/{self.main_branch_name}"
+                f"{self.url_origin}/branches/{self.main_branch_name}",
             ),
         )
         assert p1_merged["pull_request"]["head"]["sha"] == branch["commit"]["sha"]
@@ -2064,7 +2078,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     p1_merged["pull_request"]["head"]["sha"],
                     merge_train.TrainCarChecksType.INPLACE,
                     p2["number"],
-                )
+                ),
             ],
         )
 
@@ -2089,7 +2103,8 @@ class TestQueueAction(base.FunctionalTestBase):
         p2_merged = await self.wait_for_pull_request("closed", p2["number"])
         check = first(
             await context.Context(
-                self.repository_ctxt, p2_merged["pull_request"]
+                self.repository_ctxt,
+                p2_merged["pull_request"],
             ).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: merge fast-forward (queue)",
         )
@@ -2106,7 +2121,7 @@ class TestQueueAction(base.FunctionalTestBase):
         branch = typing.cast(
             github_types.GitHubBranch,
             await self.client_integration.item(
-                f"{self.url_origin}/branches/{self.main_branch_name}"
+                f"{self.url_origin}/branches/{self.main_branch_name}",
             ),
         )
         assert p2_merged["pull_request"]["head"]["sha"] == branch["commit"]["sha"]
@@ -2129,7 +2144,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -2142,7 +2157,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "queue": {
                             "name": "default",
                             "merge_method": "fast-forward",
-                        }
+                        },
                     },
                 },
             ],
@@ -2176,7 +2191,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.INPLACE,
                     p1["number"],
-                )
+                ),
             ],
         )
 
@@ -2200,18 +2215,19 @@ class TestQueueAction(base.FunctionalTestBase):
             respx_mock.put(
                 f"{settings.GITHUB_REST_API_URL}"
                 f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
-                f"/git/refs/heads/{self.main_branch_name}"
+                f"/git/refs/heads/{self.main_branch_name}",
             ).respond(405, json={"message": "Base branch was modified"})
             respx_mock.route(host="api.github.com").pass_through()
             respx_mock.route(
-                url__startswith=settings.TESTING_FORWARDER_ENDPOINT
+                url__startswith=settings.TESTING_FORWARDER_ENDPOINT,
             ).pass_through()
 
             await self.run_engine()
 
         await self.wait_for_check_run(name="Queue: Embarked in merge queue")
         pr_disembarked_check = await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue", conclusion="failure"
+            name="Queue: Embarked in merge queue",
+            conclusion="failure",
         )
         assert pr_disembarked_check is not None
         assert (
@@ -2225,7 +2241,8 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         merge_check = await self.wait_for_check_run(
-            name="Rule: merge fast-forward (queue)", conclusion="cancelled"
+            name="Rule: merge fast-forward (queue)",
+            conclusion="cancelled",
         )
         assert merge_check is not None
         assert (
@@ -2247,11 +2264,11 @@ class TestQueueAction(base.FunctionalTestBase):
                             "or": [
                                 "status-success=continuous-integration/fake-ci",
                                 "files~=^.*\\.rst$",
-                            ]
-                        }
+                            ],
+                        },
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -2303,7 +2320,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -2491,7 +2508,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -2583,7 +2600,8 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.assert_merge_queue_contents(q, None, [])
 
     async def _test_queue_with_rebase_on_githubapp_pr(
-        self, rules: dict[str, typing.Any]
+        self,
+        rules: dict[str, typing.Any],
     ) -> None:
         await self.setup_repo(yaml.dump(rules))
 
@@ -2632,7 +2650,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "conditions": [
                             "status-success=continuous-integration/fake-ci",
                         ],
-                    }
+                    },
                 ],
                 "pull_request_rules": [
                     {
@@ -2646,11 +2664,11 @@ class TestQueueAction(base.FunctionalTestBase):
                                 "name": "default",
                                 "update_method": "rebase",
                                 "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',
-                            }
+                            },
                         },
                     },
                 ],
-            }
+            },
         )
 
     async def test_queue_with_rebase_on_githubapp_pr_conf_in_queue_rules(self) -> None:
@@ -2664,7 +2682,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         ],
                         "update_method": "rebase",
                         "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',
-                    }
+                    },
                 ],
                 "pull_request_rules": [
                     {
@@ -2676,11 +2694,11 @@ class TestQueueAction(base.FunctionalTestBase):
                         "actions": {
                             "queue": {
                                 "name": "default",
-                            }
+                            },
                         },
                     },
                 ],
-            }
+            },
         )
 
     async def test_queue_with_rebase_update_method(self) -> None:
@@ -2691,7 +2709,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -2705,7 +2723,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "name": "default",
                             "update_method": "rebase",
                             "update_bot_account": "{% if 1 -%}mergify-test4{% endif -%}",
-                        }
+                        },
                     },
                 },
             ],
@@ -2809,7 +2827,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     ],
                     "speculative_checks": 5,
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -2867,7 +2885,8 @@ class TestQueueAction(base.FunctionalTestBase):
         # ensure the MERGE QUEUE SUMMARY succeed
         check = first(
             await context.Context(
-                self.repository_ctxt, p1_merged["pull_request"]
+                self.repository_ctxt,
+                p1_merged["pull_request"],
             ).pull_engine_check_runs,
             key=lambda c: c["name"] == constants.MERGE_QUEUE_SUMMARY_NAME,
         )
@@ -2882,7 +2901,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "conditions": [
                         "status-success=another-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -2895,7 +2914,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "queue": {
                             "name": "default",
                             "update_method": "rebase",
-                        }
+                        },
                     },
                 },
             ],
@@ -2960,7 +2979,8 @@ class TestQueueAction(base.FunctionalTestBase):
         # Ensure all conditions have been reported, included the ones that put
         # PR in queue
         p2_checks = await context.Context(
-            self.repository_ctxt, p2
+            self.repository_ctxt,
+            p2,
         ).pull_engine_check_runs
         check = first(
             p2_checks,
@@ -3119,7 +3139,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     ],
                     "speculative_checks": 2,
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -3197,7 +3217,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert check is not None
         assert check["conclusion"] == "neutral"
         assert check["output"]["title"].endswith(
-            "cannot be merged and has been disembarked"
+            "cannot be merged and has been disembarked",
         )
 
     async def test_unqueue_rule_unmatch_with_batch_requeue(self) -> None:
@@ -3212,7 +3232,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "allow_inplace_checks": True,
                     "batch_size": 3,
                     "batch_max_wait_time": "0 s",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -3352,7 +3372,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                 queue_utils.PrDequeued(
                                     pr_number=p1["number"],
                                     details=". The pull request rule doesn't match anymore",
-                                )
+                                ),
                             ),
                         ),
                         "abort_code": queue_utils.PrDequeued.dequeue_code,
@@ -3398,7 +3418,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "allow_inplace_checks": True,
                     "batch_size": 3,
                     "batch_max_wait_time": "0 s",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -3457,7 +3477,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "payload": {"action": "created"},
                     "test_id": p1["number"],
                 },
-            ]
+            ],
         )
 
         for event in events:
@@ -3471,7 +3491,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 break
         else:
             raise RuntimeError(
-                "Received events but did not find the correct event for tmp_pull_2"
+                "Received events but did not find the correct event for tmp_pull_2",
             )
 
         q = await self.get_train()
@@ -3496,10 +3516,10 @@ class TestQueueAction(base.FunctionalTestBase):
         assert check is not None
         assert check["conclusion"] == "cancelled"
         assert check["output"]["title"].startswith(
-            "The pull request has been removed from the queue"
+            "The pull request has been removed from the queue",
         )
         assert check["output"]["summary"].startswith(
-            f"Pull request #{p1['number']} has been dequeued by a `dequeue` command.\n"
+            f"Pull request #{p1['number']} has been dequeued by a `dequeue` command.\n",
         )
 
         check = first(
@@ -3535,7 +3555,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "batch_size": 2,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -3564,7 +3584,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "data": github_types.GitHubEventRefresh(
                         {
                             "received_at": github_types.ISODateTimeType(
-                                "2022-07-26T14:14:14.000000+00:00"
+                                "2022-07-26T14:14:14.000000+00:00",
                             ),
                             "organization": p1["base"]["repo"]["owner"],
                             "installation": {
@@ -3582,20 +3602,21 @@ class TestQueueAction(base.FunctionalTestBase):
                             "source": "internal",
                             "flag": None,
                             "attempts": None,
-                        }
+                        },
                     ),
                     "timestamp": github_types.ISODateTimeType(
-                        "2022-07-26T14:14:14.000000+00:00"
+                        "2022-07-26T14:14:14.000000+00:00",
                     ),
                     "initial_score": 0,
-                }
+                },
             ),
         ]
 
         batch_draft_pr = await self.wait_for_pull_request("opened")
 
         ctxt = await self.repository_ctxt.get_pull_request_context(
-            batch_draft_pr["number"], batch_draft_pr["pull_request"]
+            batch_draft_pr["number"],
+            batch_draft_pr["pull_request"],
         )
         q = await self.get_train()
         base_sha = await q.get_base_sha()
@@ -3657,7 +3678,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "allow_inplace_checks": True,
                     "batch_size": 2,
                     "batch_max_wait_time": "0 s",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -3785,7 +3806,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "allow_inplace_checks": False,
                     "speculative_checks": 1,
                     "batch_size": 3,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -3933,7 +3954,7 @@ previous_failed_batches:
                     "event_type": "pull_request",
                     "payload": {"action": "closed", "number": tmp_pull_2["number"]},
                 },
-            ]
+            ],
         )
 
         tmp_pull_3 = await self.wait_for_pull_request("opened")
@@ -3966,7 +3987,7 @@ previous_failed_batches:
                     "speculative_checks": 2,
                     "batch_size": 3,
                     "batch_max_wait_time": "0 s",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4093,7 +4114,7 @@ previous_failed_batches:
                     "event_type": "pull_request",
                     "payload": {"action": "closed", "number": tmp_pull_4["number"]},
                 },
-            ]
+            ],
         )
 
         tmp_pull_6 = await self.wait_for_pull_request("opened")
@@ -4131,7 +4152,7 @@ previous_failed_batches:
                     "event_type": "pull_request",
                     "payload": {"action": "closed", "number": p5["number"]},
                 },
-            ]
+            ],
         )
 
         await self.assert_merge_queue_contents(q, None, [])
@@ -4147,7 +4168,7 @@ previous_failed_batches:
                     "batch_max_wait_time": "0 s",
                     "speculative_checks": 2,
                     "batch_size": 3,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4248,7 +4269,7 @@ previous_failed_batches:
                         "status-success=other-ci",
                     ],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4310,7 +4331,7 @@ previous_failed_batches:
                         "status-success=other-ci",
                     ],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4362,7 +4383,9 @@ previous_failed_batches:
         )
 
     async def assert_api_checks_end_reason(
-        self, pr_number: github_types.GitHubPullRequestNumber, expected_reason: str
+        self,
+        pr_number: github_types.GitHubPullRequestNumber,
+        expected_reason: str,
     ) -> None:
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_number}/events",
@@ -4377,7 +4400,9 @@ previous_failed_batches:
             pytest.fail("No action.queue.checks_end event found")
 
     async def assert_api_checks_start_reason(
-        self, pr_number: github_types.GitHubPullRequestNumber, expected_reason: str
+        self,
+        pr_number: github_types.GitHubPullRequestNumber,
+        expected_reason: str,
     ) -> None:
         response = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/"
@@ -4404,7 +4429,7 @@ previous_failed_batches:
                     "speculative_checks": 2,
                     "batch_size": 3,
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4456,10 +4481,12 @@ previous_failed_batches:
         await self.run_engine()
 
         await self.assert_api_checks_end_reason(
-            p1["number"], "has sustained unexpected changes from external sources"
+            p1["number"],
+            "has sustained unexpected changes from external sources",
         )
         await self.assert_api_checks_end_reason(
-            p2["number"], "has sustained unexpected changes from external sources"
+            p2["number"],
+            "has sustained unexpected changes from external sources",
         )
 
         # when detecting external changes onto the draft PR, the engine should disembark it and
@@ -4470,7 +4497,7 @@ previous_failed_batches:
         )
         assert check is not None
         assert check["output"]["title"].startswith(
-            "The pull request has been removed from the queue"
+            "The pull request has been removed from the queue",
         )
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
@@ -4478,7 +4505,7 @@ previous_failed_batches:
         )
         assert check is not None
         assert check["output"]["title"].startswith(
-            "The pull request has been removed from the queue"
+            "The pull request has been removed from the queue",
         )
 
     async def test_frozen_train_reset_after_unexpected_base_branch_changes(
@@ -4495,7 +4522,7 @@ previous_failed_batches:
                     "speculative_checks": 2,
                     "batch_size": 3,
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4594,7 +4621,7 @@ previous_failed_batches:
                     "speculative_checks": 2,
                     "batch_size": 3,
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4673,7 +4700,7 @@ previous_failed_batches:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4779,7 +4806,7 @@ previous_failed_batches:
                 {
                     "name": "default",
                     "conditions": ["label=queue"],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4819,7 +4846,7 @@ previous_failed_batches:
                 {
                     "name": "default",
                     "conditions": ["label=queue"],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4856,7 +4883,7 @@ previous_failed_batches:
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4869,7 +4896,7 @@ previous_failed_batches:
                         "queue": {
                             "name": "default",
                             "update_method": "merge",
-                        }
+                        },
                     },
                 },
             ],
@@ -4901,7 +4928,7 @@ previous_failed_batches:
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4915,7 +4942,7 @@ previous_failed_batches:
                             "name": "default",
                             "update_method": "merge",
                             "update_bot_account": "mergify-test1",
-                        }
+                        },
                     },
                 },
             ],
@@ -4946,7 +4973,7 @@ previous_failed_batches:
                 {
                     "name": "default",
                     "conditions": [],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -4960,7 +4987,7 @@ previous_failed_batches:
                             "name": "default",
                             "update_method": "merge",
                             "update_bot_account": "mergify-test4",
-                        }
+                        },
                     },
                 },
             ],
@@ -5015,7 +5042,7 @@ previous_failed_batches:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -5126,7 +5153,7 @@ previous_failed_batches:
                     ],
                     "speculative_checks": 5,
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -5156,7 +5183,9 @@ previous_failed_batches:
         await self.create_comment_as_admin(mq_pr_number, "@mergifyio update")
         await self.run_engine()
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=mq_pr_number
+            "issue_comment",
+            {"action": "created"},
+            test_id=mq_pr_number,
         )
         comments = await self.get_issue_comments(mq_pr_number)
         assert (
@@ -5166,7 +5195,9 @@ previous_failed_batches:
         await self.create_comment_as_admin(mq_pr_number, "@mergifyio refresh")
         await self.run_engine()
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=mq_pr_number
+            "issue_comment",
+            {"action": "created"},
+            test_id=mq_pr_number,
         )
         comments = await self.get_issue_comments(mq_pr_number)
         assert (
@@ -5193,7 +5224,7 @@ previous_failed_batches:
                     "speculative_checks": 5,
                     "batch_max_wait_time": "0 s",
                     "queue_branch_merge_method": "fast-forward",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -5258,7 +5289,8 @@ previous_failed_batches:
         # ensure it's fast-forward
         tmp_mq_p1_refreshed = await self.get_pull(tmp_mq_p1["number"])
         branch = await self.repository_ctxt.get_branch(
-            self.main_branch_name, bypass_cache=True
+            self.main_branch_name,
+            bypass_cache=True,
         )
         assert branch["commit"]["sha"] == tmp_mq_p1_refreshed["head"]["sha"]
 
@@ -5273,7 +5305,8 @@ previous_failed_batches:
         # ensure it's fast-forward
         tmp_mq_p2_refreshed = await self.get_pull(tmp_mq_p2["number"])
         branch = await self.repository_ctxt.get_branch(
-            self.main_branch_name, bypass_cache=True
+            self.main_branch_name,
+            bypass_cache=True,
         )
         assert branch["commit"]["sha"] == tmp_mq_p2_refreshed["head"]["sha"]
 
@@ -5310,7 +5343,8 @@ previous_failed_batches:
         # ensure it's fast-forward
         tmp_mq_p3_refreshed = await self.get_pull(tmp_mq_p3["number"])
         branch = await self.repository_ctxt.get_branch(
-            self.main_branch_name, bypass_cache=True
+            self.main_branch_name,
+            bypass_cache=True,
         )
         assert branch["commit"]["sha"] == tmp_mq_p3_refreshed["head"]["sha"]
 
@@ -5356,7 +5390,7 @@ previous_failed_batches:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -5496,7 +5530,7 @@ previous_failed_batches:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -5607,7 +5641,8 @@ previous_failed_batches:
         await self._do_test_queue_with_allow_queue_branch_edit(True)
 
     async def _do_test_queue_with_allow_queue_branch_edit(
-        self, allow_queue_branch_edit: bool
+        self,
+        allow_queue_branch_edit: bool,
     ) -> None:
         rules = {
             "queue_rules": [
@@ -5618,7 +5653,7 @@ previous_failed_batches:
                     ],
                     "allow_inplace_checks": False,
                     "allow_queue_branch_edit": allow_queue_branch_edit,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -5665,7 +5700,7 @@ previous_failed_batches:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -5774,7 +5809,7 @@ previous_failed_batches:
                     "batch_size": 2,
                     "speculative_checks": 1,
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -5863,7 +5898,7 @@ previous_failed_batches:
                     "event_type": "push",
                     "payload": {"ref": f"refs/heads/{self.main_branch_name}"},
                 },
-            ]
+            ],
         )
 
         # Only p2 is remaining and not in train
@@ -5879,7 +5914,7 @@ previous_failed_batches:
                     ],
                     "speculative_checks": 5,
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -5969,7 +6004,7 @@ previous_failed_batches:
                     ],
                     "speculative_checks": 1,
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -6074,7 +6109,7 @@ previous_failed_batches:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -6242,7 +6277,7 @@ previous_failed_batches:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -6471,10 +6506,10 @@ previous_failed_batches:
         # Change the configuration and introduce disallow_checks_interruption_from_queues
         updated_rules = typing.cast(dict[typing.Any, typing.Any], copy.deepcopy(rules))
         updated_rules["queue_rules"][0]["disallow_checks_interruption_from_queues"] = [
-            "default"
+            "default",
         ]
         p_new_config = await self.create_pr(
-            files={".mergify.yml": yaml.dump(updated_rules)}
+            files={".mergify.yml": yaml.dump(updated_rules)},
         )
         await self.merge_pull(p_new_config["number"])
         await self.run_engine()
@@ -6790,7 +6825,7 @@ previous_failed_batches:
                             "estimated_time_of_merge": None,
                         },
                     ],
-                }
+                },
             ],
         }
 
@@ -6879,7 +6914,7 @@ previous_failed_batches:
     # )
     # MRGFY-472 should fix that
     @pytest.mark.skip(
-        reason="This test is not reliable, GitHub doeesn't always allow to create the tmp pr"
+        reason="This test is not reliable, GitHub doeesn't always allow to create the tmp pr",
     )
     async def test_pull_have_base_branch_merged_commit_with_changed_workflow(
         self,
@@ -6893,7 +6928,7 @@ previous_failed_batches:
                     ],
                     "speculative_checks": 5,
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -6909,7 +6944,7 @@ previous_failed_batches:
         await self.setup_repo(
             yaml.dump(rules),
             files={
-                ".github/workflows/ci.yml": TEMPLATE_GITHUB_ACTION % "echo Default CI"
+                ".github/workflows/ci.yml": TEMPLATE_GITHUB_ACTION % "echo Default CI",
             },
         )
 
@@ -6919,8 +6954,8 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr(
             files={
-                ".github/workflows/ci.yml": TEMPLATE_GITHUB_ACTION % "echo Changed CI"
-            }
+                ".github/workflows/ci.yml": TEMPLATE_GITHUB_ACTION % "echo Changed CI",
+            },
         )
 
         p_merged = await self.merge_pull(p["number"])
@@ -7005,7 +7040,7 @@ previous_failed_batches:
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -7090,7 +7125,7 @@ previous_failed_batches:
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -7170,7 +7205,7 @@ previous_failed_batches:
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "checks_timeout": "10 m",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -7197,7 +7232,9 @@ previous_failed_batches:
             await self.run_full_engine()
 
             check_run = await self.wait_for_check_run(
-                name="Rule: queue (queue)", action="created", status="in_progress"
+                name="Rule: queue (queue)",
+                action="created",
+                status="in_progress",
             )
             assert (
                 check_run["check_run"]["output"]["title"]
@@ -7209,7 +7246,10 @@ previous_failed_batches:
             pulls_to_refresh: list[
                 tuple[bytes, float]
             ] = await self.redis_links.cache.zrangebyscore(
-                "delayed-refresh", "-inf", "+inf", withscores=True
+                "delayed-refresh",
+                "-inf",
+                "+inf",
+                withscores=True,
             )
             assert len(pulls_to_refresh) == 1
 
@@ -7235,7 +7275,7 @@ previous_failed_batches:
                     case "Rule: queue (queue)":
                         found_queue_rule = True
                         assert check_run["check_run"]["output"]["title"].startswith(
-                            "The pull request has been removed from the queue"
+                            "The pull request has been removed from the queue",
                         )
                         assert check_run["check_run"]["conclusion"] == "cancelled"
                     case "Queue: Embarked in merge queue":
@@ -7250,11 +7290,11 @@ previous_failed_batches:
 
             if not found_queue_rule:
                 raise AssertionError(
-                    "Did not find check_run event for 'Rule: queue (queue)'"
+                    "Did not find check_run event for 'Rule: queue (queue)'",
                 )
             if not found_embarked_train:
                 raise AssertionError(
-                    "Did not find check_run event for 'Queue: Embarked in merge queue'"
+                    "Did not find check_run event for 'Queue: Embarked in merge queue'",
                 )
 
     async def test_queue_ci_timeout_inplace_with_only_pull_request_rules(self) -> None:
@@ -7264,7 +7304,7 @@ previous_failed_batches:
                     "name": "default",
                     "conditions": [],
                     "checks_timeout": "10 m",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -7289,7 +7329,9 @@ previous_failed_batches:
             await self.run_full_engine()
 
             check_run = await self.wait_for_check_run(
-                name="Rule: queue (queue)", action="created", status="in_progress"
+                name="Rule: queue (queue)",
+                action="created",
+                status="in_progress",
             )
             assert (
                 check_run["check_run"]["output"]["title"]
@@ -7301,7 +7343,10 @@ previous_failed_batches:
             pulls_to_refresh: list[
                 tuple[bytes, float]
             ] = await self.redis_links.cache.zrangebyscore(
-                "delayed-refresh", "-inf", "+inf", withscores=True
+                "delayed-refresh",
+                "-inf",
+                "+inf",
+                withscores=True,
             )
             assert len(pulls_to_refresh) == 1
 
@@ -7327,7 +7372,7 @@ previous_failed_batches:
                     case "Rule: queue (queue)":
                         found_queue_rule = True
                         assert check_run["check_run"]["output"]["title"].startswith(
-                            "The pull request has been removed from the queue"
+                            "The pull request has been removed from the queue",
                         )
                         assert check_run["check_run"]["conclusion"] == "cancelled"
                     case "Queue: Embarked in merge queue":
@@ -7342,11 +7387,11 @@ previous_failed_batches:
 
             if not found_queue_rule:
                 raise AssertionError(
-                    "Did not find check_run event for 'Rule: queue (queue)'"
+                    "Did not find check_run event for 'Rule: queue (queue)'",
                 )
             if not found_embarked_train:
                 raise AssertionError(
-                    "Did not find check_run event for 'Queue: Embarked in merge queue'"
+                    "Did not find check_run event for 'Queue: Embarked in merge queue'",
                 )
 
     async def test_queue_ci_timeout_draft_pr(self) -> None:
@@ -7359,7 +7404,7 @@ previous_failed_batches:
                     ],
                     "checks_timeout": "10 m",
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -7395,7 +7440,10 @@ previous_failed_batches:
             pulls_to_refresh: list[
                 tuple[bytes, float]
             ] = await self.redis_links.cache.zrangebyscore(
-                "delayed-refresh", "-inf", "+inf", withscores=True
+                "delayed-refresh",
+                "-inf",
+                "+inf",
+                withscores=True,
             )
             assert len(pulls_to_refresh) == 1
 
@@ -7407,7 +7455,7 @@ previous_failed_batches:
             )
             assert check is not None
             assert check["output"]["title"].startswith(
-                "The pull request has been removed from the queue"
+                "The pull request has been removed from the queue",
             )
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -7426,13 +7474,13 @@ previous_failed_batches:
                             "or": [
                                 "check-success=continuous-integration/fake-ci",
                                 "check-success=continuous-integration/other-ci",
-                            ]
+                            ],
                         },
                         "schedule: MON-FRI 08:00-17:00",
                     ],
                     "checks_timeout": "10 m",
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -7467,7 +7515,7 @@ previous_failed_batches:
             )
 
             check = await ctxt_p1.get_engine_check_run(
-                constants.MERGE_QUEUE_SUMMARY_NAME
+                constants.MERGE_QUEUE_SUMMARY_NAME,
             )
             assert check is not None
 
@@ -7484,19 +7532,23 @@ previous_failed_batches:
             pulls_to_refresh: list[
                 tuple[bytes, float]
             ] = await self.redis_links.cache.zrangebyscore(
-                "delayed-refresh", "-inf", "+inf", withscores=True
+                "delayed-refresh",
+                "-inf",
+                "+inf",
+                withscores=True,
             )
             assert len(pulls_to_refresh) == 1
 
         with time_travel(
-            start_date + datetime.timedelta(minutes=12 + minutes_delay), tick=True
+            start_date + datetime.timedelta(minutes=12 + minutes_delay),
+            tick=True,
         ):
             await self.run_full_engine()
             ctxt_p1._caches.pull_check_runs.delete()
             check = await ctxt_p1.get_engine_check_run("Rule: queue (queue)")
             assert check is not None
             assert check["output"]["title"].startswith(
-                "The pull request has been removed from the queue"
+                "The pull request has been removed from the queue",
             )
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -7518,13 +7570,13 @@ previous_failed_batches:
                             "or": [
                                 "check-success=continuous-integration/fake-ci",
                                 "check-success=continuous-integration/other-ci",
-                            ]
+                            ],
                         },
                         "schedule: MON-FRI 08:00-17:00",
                     ],
                     "checks_timeout": "10 m",
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -7561,7 +7613,10 @@ previous_failed_batches:
             pulls_to_refresh: list[
                 tuple[bytes, float]
             ] = await self.redis_links.cache.zrangebyscore(
-                "delayed-refresh", "-inf", "+inf", withscores=True
+                "delayed-refresh",
+                "-inf",
+                "+inf",
+                withscores=True,
             )
             assert len(pulls_to_refresh) == 1
             await self.create_status(tmp_pull["pull_request"])
@@ -7585,7 +7640,7 @@ previous_failed_batches:
                 {
                     "name": "default",
                     "conditions": ["schedule: MON-FRI 08:00-17:00"],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -7615,7 +7670,7 @@ previous_failed_batches:
 
             train = await self.get_train()
             car = train.get_car(
-                await self.repository_ctxt.get_pull_request_context(pr["number"])
+                await self.repository_ctxt.get_pull_request_context(pr["number"]),
             )
             assert car is not None
             assert car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
@@ -7630,7 +7685,7 @@ previous_failed_batches:
 
             train = await self.get_train()
             car = train.get_car(
-                await self.repository_ctxt.get_pull_request_context(pr["number"])
+                await self.repository_ctxt.get_pull_request_context(pr["number"]),
             )
             assert car is not None
             assert car.train_car_state.outcome == merge_train.TrainCarOutcome.UNKNOWN
@@ -7649,7 +7704,7 @@ previous_failed_batches:
                 {
                     "name": "default",
                     "conditions": [],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -7733,7 +7788,8 @@ previous_failed_batches:
         await self.assert_merge_queue_contents(q, None, [])
 
     async def _test_queue_without_branch_protection_for_queueing(
-        self, rules: dict[str, typing.Any]
+        self,
+        rules: dict[str, typing.Any],
     ) -> None:
         await self.setup_repo(yaml.dump(rules))
 
@@ -7814,7 +7870,7 @@ previous_failed_batches:
                     {
                         "name": "default",
                         "conditions": [],
-                    }
+                    },
                 ],
                 "pull_request_rules": [
                     {
@@ -7828,11 +7884,11 @@ previous_failed_batches:
                                 "merge_method": "squash",
                                 "name": "default",
                                 "require_branch_protection": False,
-                            }
+                            },
                         },
                     },
                 ],
-            }
+            },
         )
 
     async def test_queue_without_branch_protection_for_queueing_conf_in_queue_rules(
@@ -7845,7 +7901,7 @@ previous_failed_batches:
                         "name": "default",
                         "conditions": [],
                         "merge_method": "squash",
-                    }
+                    },
                 ],
                 "pull_request_rules": [
                     {
@@ -7858,11 +7914,11 @@ previous_failed_batches:
                             "queue": {
                                 "name": "default",
                                 "require_branch_protection": False,
-                            }
+                            },
                         },
                     },
                 ],
-            }
+            },
         )
 
     async def test_queue_checks_and_branch(self) -> None:
@@ -7976,7 +8032,7 @@ pull_request_rules:
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8001,7 +8057,7 @@ pull_request_rules:
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8047,7 +8103,7 @@ pull_request_rules:
                     ],
                     "speculative_checks": 1,
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8079,7 +8135,7 @@ pull_request_rules:
         assert len(await queues[0].get_pulls()) == 2
 
         await self.client_integration.delete(
-            f"{self.url_origin}/git/refs/heads/{parse.quote(featureA)}"
+            f"{self.url_origin}/git/refs/heads/{parse.quote(featureA)}",
         )
         await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "closed"})
@@ -8108,7 +8164,7 @@ pull_request_rules:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8182,7 +8238,7 @@ pull_request_rules:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8197,7 +8253,7 @@ pull_request_rules:
                             "update_method": "rebase",
                             "autosquash": True,
                             "update_bot_account": "mergify-test4",
-                        }
+                        },
                     },
                 },
             ],
@@ -8225,7 +8281,7 @@ pull_request_rules:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8240,7 +8296,7 @@ pull_request_rules:
                             "update_method": "rebase",
                             "autosquash": False,
                             "update_bot_account": "mergify-test4",
-                        }
+                        },
                     },
                 },
             ],
@@ -8268,7 +8324,7 @@ pull_request_rules:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8283,7 +8339,7 @@ pull_request_rules:
                             "update_method": "rebase",
                             "autosquash": True,
                             "update_bot_account": "mergify-test4",
-                        }
+                        },
                     },
                 },
             ],
@@ -8306,7 +8362,7 @@ pull_request_rules:
                     "name": "default",
                     "conditions": [],
                     "allow_inplace_checks": True,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8321,7 +8377,7 @@ pull_request_rules:
                             "update_method": "rebase",
                             "autosquash": False,
                             "update_bot_account": "mergify-test4",
-                        }
+                        },
                     },
                 },
             ],
@@ -8385,11 +8441,11 @@ pull_request_rules:
             respx_mock.put(
                 f"{settings.GITHUB_REST_API_URL}"
                 f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
-                f"/pulls/{p1['number']}/merge"
+                f"/pulls/{p1['number']}/merge",
             ).respond(
                 409,
                 json={
-                    "message": "Head branch is out of date. Review and try the merge again."
+                    "message": "Head branch is out of date. Review and try the merge again.",
                 },
             )
 
@@ -8397,7 +8453,7 @@ pull_request_rules:
             respx_mock.get(
                 f"{settings.GITHUB_REST_API_URL}"
                 f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
-                f"/pulls/{p1['number']}"
+                f"/pulls/{p1['number']}",
             ).respond(
                 200,
                 json=p1,  # type: ignore[arg-type]
@@ -8409,7 +8465,7 @@ pull_request_rules:
             respx_mock.route(
                 url__regex=f"{settings.GITHUB_REST_API_URL}"
                 f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
-                rf"/commits/(?!{p1['head']['sha']}|{p2['head']['sha']})\w+/status"
+                rf"/commits/(?!{p1['head']['sha']}|{p2['head']['sha']})\w+/status",
             ).respond(
                 200,
                 json={
@@ -8431,7 +8487,9 @@ pull_request_rules:
                 "_handle_merge_error",
                 mocked_handle_merge_error,
             ), mock.patch.object(
-                context.Context, "is_head_sha_outdated", return_value=False
+                context.Context,
+                "is_head_sha_outdated",
+                return_value=False,
             ):
                 await self.run_full_engine()
 
@@ -8460,7 +8518,7 @@ pull_request_rules:
                 {
                     "name": "default",
                     "conditions": [],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8498,7 +8556,7 @@ pull_request_rules:
                         "pull_request": {"merged": True},
                     },
                 },
-            ]
+            ],
         )
 
     async def test_unqueue_command_after_queue_action_and_command(self) -> None:
@@ -8507,7 +8565,7 @@ pull_request_rules:
                 {
                     "name": "default",
                     "conditions": [],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8552,27 +8610,30 @@ pull_request_rules:
                             "name": "Queue: Embarked in merge queue",
                             "status": "completed",
                             "conclusion": "cancelled",
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         )
 
         # The unqueue comment should always be the last of the two issue_comment events
         if events[0].event_type == "check_run":
             check_run = typing.cast(github_types.GitHubEventCheckRun, events[0].event)
             comment_unqueue = typing.cast(
-                github_types.GitHubEventIssueComment, events[-1].event
+                github_types.GitHubEventIssueComment,
+                events[-1].event,
             )
         elif events[1].event_type == "check_run":
             check_run = typing.cast(github_types.GitHubEventCheckRun, events[1].event)
             comment_unqueue = typing.cast(
-                github_types.GitHubEventIssueComment, events[-1].event
+                github_types.GitHubEventIssueComment,
+                events[-1].event,
             )
         else:
             check_run = typing.cast(github_types.GitHubEventCheckRun, events[2].event)
             comment_unqueue = typing.cast(
-                github_types.GitHubEventIssueComment, events[1].event
+                github_types.GitHubEventIssueComment,
+                events[1].event,
             )
 
         assert (
@@ -8594,7 +8655,7 @@ pull_request_rules:
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8685,7 +8746,7 @@ pull_request_rules:
                     "name": "default",
                     "conditions": [],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8717,7 +8778,8 @@ pull_request_rules:
         await self.run_engine()
 
         pr2_labeled = await self.wait_for_pull_request(
-            "labeled", pr_number=p2["number"]
+            "labeled",
+            pr_number=p2["number"],
         )
         assert pr2_labeled is not None
         assert "queue-conflict" in [
@@ -8726,7 +8788,7 @@ pull_request_rules:
 
         ctxt = context.Context(self.repository_ctxt, p2)
         queue_summary_check_run = await ctxt.get_engine_check_run(
-            constants.MERGE_QUEUE_SUMMARY_NAME
+            constants.MERGE_QUEUE_SUMMARY_NAME,
         )
         assert queue_summary_check_run is not None
         assert (
@@ -8756,7 +8818,7 @@ pull_request_rules:
                     "conditions": [],
                     "allow_inplace_checks": False,
                     "batch_size": 2,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8783,7 +8845,8 @@ pull_request_rules:
         await self.run_engine()
 
         pr2_labeled = await self.wait_for_pull_request(
-            "labeled", pr_number=p2["number"]
+            "labeled",
+            pr_number=p2["number"],
         )
         assert pr2_labeled is not None
         assert "queue-conflict" in [
@@ -8792,7 +8855,7 @@ pull_request_rules:
 
         ctxt = context.Context(self.repository_ctxt, p2)
         queue_summary_check_run = await ctxt.get_engine_check_run(
-            constants.MERGE_QUEUE_SUMMARY_NAME
+            constants.MERGE_QUEUE_SUMMARY_NAME,
         )
         assert queue_summary_check_run is not None
         assert (
@@ -8815,7 +8878,7 @@ pull_request_rules:
                     "allow_inplace_checks": True,
                     "batch_size": 2,
                     "batch_max_wait_time": "5 m",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8888,7 +8951,7 @@ pull_request_rules:
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -8953,10 +9016,12 @@ pull_request_rules:
 
         # embarking PR in queue
         await self.wait_for_check_run(
-            name="Rule: queue_to_default (queue)", status="in_progress"
+            name="Rule: queue_to_default (queue)",
+            status="in_progress",
         )
         await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue", status="in_progress"
+            name="Queue: Embarked in merge queue",
+            status="in_progress",
         )
 
         pending_check = await self.create_check_run(
@@ -8982,20 +9047,22 @@ pull_request_rules:
         )
         await self.run_engine()
         await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue", conclusion="success"
+            name="Queue: Embarked in merge queue",
+            conclusion="success",
         )
 
         # checks_end signal has been emitted
         async with database.create_session() as db:
             result = await db.execute(
                 sqlalchemy.select(func.count()).select_from(
-                    evt_models.EventActionQueueChecksEnd
-                )
+                    evt_models.EventActionQueueChecksEnd,
+                ),
             )
         assert result.scalar() == 1
 
         await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue", conclusion="neutral"
+            name="Queue: Embarked in merge queue",
+            conclusion="neutral",
         )
 
         # queue freeze lifted
@@ -9003,15 +9070,16 @@ pull_request_rules:
         await self.run_engine()
 
         await self.wait_for_check_run(
-            name="Rule: queue_to_default (queue)", conclusion="success"
+            name="Rule: queue_to_default (queue)",
+            conclusion="success",
         )
 
         # signal has already been emitted
         async with database.create_session() as db:
             result = await db.execute(
                 sqlalchemy.select(func.count()).select_from(
-                    evt_models.EventActionQueueChecksEnd
-                )
+                    evt_models.EventActionQueueChecksEnd,
+                ),
             )
         assert result.scalar() == 1
 
@@ -9060,20 +9128,23 @@ pull_request_rules:
                 len(
                     train._cars[
                         0
-                    ].train_car_state.time_spent_outside_schedule_start_dates
+                    ].train_car_state.time_spent_outside_schedule_start_dates,
                 )
                 == 1
             )
             assert (
                 len(
-                    train._cars[0].train_car_state.time_spent_outside_schedule_end_dates
+                    train._cars[
+                        0
+                    ].train_car_state.time_spent_outside_schedule_end_dates,
                 )
                 == 0
             )
 
         # Next day at the start of schedule
         with time_travel(
-            datetime.datetime(2023, 9, 29, 9, tzinfo=datetime.UTC), tick=True
+            datetime.datetime(2023, 9, 29, 9, tzinfo=datetime.UTC),
+            tick=True,
         ):
             # The delayed_refresh should refresh the train car and add a
             # value to `train_car_state.seconds_spent_outside_schedule_end_dates`
@@ -9085,7 +9156,7 @@ pull_request_rules:
                 len(
                     train._cars[
                         0
-                    ].train_car_state.time_spent_outside_schedule_start_dates
+                    ].train_car_state.time_spent_outside_schedule_start_dates,
                 )
                 == 1
             )
@@ -9093,7 +9164,7 @@ pull_request_rules:
                 len(
                     train._cars[
                         0
-                    ].train_car_state.time_spent_outside_schedule_start_dates
+                    ].train_car_state.time_spent_outside_schedule_start_dates,
                 )
                 == 1
             )
@@ -9113,7 +9184,7 @@ pull_request_rules:
                         "check-success=second-ci",
                     ],
                     "speculative_checks": 1,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -9203,31 +9274,43 @@ pull_request_rules:
         # Allow merge
         pull = await self.create_pr()
         async with self.allow_merge_methods(
-            self.url_origin, pull["number"], ("merge",)
+            self.url_origin,
+            pull["number"],
+            ("merge",),
         ):
             await self.run_engine()
         await self.wait_for_pull_request(
-            action="closed", pr_number=pull["number"], merged=True
+            action="closed",
+            pr_number=pull["number"],
+            merged=True,
         )
 
         # Allow rebase
         pull = await self.create_pr()
         async with self.allow_merge_methods(
-            self.url_origin, pull["number"], ("rebase",)
+            self.url_origin,
+            pull["number"],
+            ("rebase",),
         ):
             await self.run_full_engine()
         await self.wait_for_pull_request(
-            action="closed", pr_number=pull["number"], merged=True
+            action="closed",
+            pr_number=pull["number"],
+            merged=True,
         )
 
         # Allow squash
         pull = await self.create_pr()
         async with self.allow_merge_methods(
-            self.url_origin, pull["number"], ("squash",)
+            self.url_origin,
+            pull["number"],
+            ("squash",),
         ):
             await self.run_engine()
         await self.wait_for_pull_request(
-            action="closed", pr_number=pull["number"], merged=True
+            action="closed",
+            pr_number=pull["number"],
+            merged=True,
         )
 
 
@@ -9241,7 +9324,7 @@ class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
                 {
                     "name": "default",
                     "conditions": [],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -9293,7 +9376,8 @@ class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
 
 class TestQueueActionWithPgEventsIngestion(TestQueueAction):
     async def run_engine(
-        self, additional_services: manager.ServiceNamesT | None = None
+        self,
+        additional_services: manager.ServiceNamesT | None = None,
     ) -> None:
         real_engine_run = stream_worker.run_engine
 

@@ -82,13 +82,17 @@ def upgrade() -> None:
             anonymizer_config="custom_masks.json_obj_array(0, 5, ARRAY['name', 'description', 'state', 'url', 'avatar_url'])",
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("speculative_check_pull_request_pkey")
+            "id",
+            name=alembic.op.f("speculative_check_pull_request_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_action_queue_checks_start",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "branch",
@@ -135,11 +139,12 @@ def upgrade() -> None:
             ["speculative_check_pull_request_id"],
             ["speculative_check_pull_request.id"],
             name=alembic.op.f(
-                "event_action_queue_checks_start_speculative_check_pull_request_id_fkey"
+                "event_action_queue_checks_start_speculative_check_pull_request_id_fkey",
             ),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_queue_checks_start_pkey")
+            "id",
+            name=alembic.op.f("event_action_queue_checks_start_pkey"),
         ),
     )
     # ### end Alembic commands ###

@@ -47,7 +47,9 @@ async def test_app_event_forward(
         "Content-Type": "application/json",
     }
     respx_mock.post(
-        "https://forward.example.com/", headers=headers, content=data
+        "https://forward.example.com/",
+        headers=headers,
+        content=data,
     ).respond(200, content="")
 
     w = manager.ServiceManager(

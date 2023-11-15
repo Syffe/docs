@@ -23,7 +23,10 @@ def upgrade() -> None:
     alembic.op.create_table(
         "event_action_github_actions",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "workflow",
@@ -43,7 +46,8 @@ def upgrade() -> None:
             name=alembic.op.f("event_action_github_actions_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_github_actions_pkey")
+            "id",
+            name=alembic.op.f("event_action_github_actions_pkey"),
         ),
     )
     # ### end Alembic commands ###

@@ -102,7 +102,9 @@ async def test_train_add_pull(
     assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
 
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(2), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(2),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
@@ -128,7 +130,9 @@ async def test_train_remove_middle_merged(
 
     # Merged by someone else
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(2), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(2),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
@@ -161,7 +165,9 @@ async def test_train_remove_middle_not_merged(
     assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
 
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(2), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(2),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
@@ -183,7 +189,9 @@ async def test_train_remove_head_not_merged(
     assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
 
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(1), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(1),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert [[2], [2, 3]] == mt_conftest.get_train_cars_content(t)
@@ -239,13 +247,17 @@ async def test_train_add_remove_pull_idempotent(
     assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
 
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(2), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(2),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
 
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(2), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(2),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
@@ -263,10 +275,14 @@ async def test_train_multiple_queue(
     await t.test_helper_load_from_redis()
 
     config_two = conftest.get_pull_queue_config(
-        mt_conftest.QUEUE_RULES, "2x1", priority=0
+        mt_conftest.QUEUE_RULES,
+        "2x1",
+        priority=0,
     )
     config_five = conftest.get_pull_queue_config(
-        mt_conftest.QUEUE_RULES, "5x1", priority=0
+        mt_conftest.QUEUE_RULES,
+        "5x1",
+        priority=0,
     )
 
     await t.add_pull(await context_getter(1), config_two, "")
@@ -297,7 +313,9 @@ async def test_train_multiple_queue(
     assert [5, 3, 4, 6, 7, 8, 9] == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(2), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(2),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert (
@@ -306,10 +324,14 @@ async def test_train_multiple_queue(
     assert [3, 4, 6, 7, 8, 9] == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(1), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(1),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(5), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(5),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert [
@@ -375,7 +397,7 @@ async def test_train_remove_duplicates(
                 t._cars[0].still_queued_embarked_pulls[0].queued_at,
             ),
             t._waiting_pulls[0],
-        ]
+        ],
     )
     t._cars = t._cars + t._cars
     assert [[1], [1, 2], [1], [1, 2]] == mt_conftest.get_train_cars_content(t)
@@ -415,7 +437,9 @@ async def test_train_remove_end_wp(
     assert [2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(3), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(3),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert [[1]] == mt_conftest.get_train_cars_content(t)
@@ -450,7 +474,9 @@ async def test_train_remove_first_wp(
     assert [2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(2), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(2),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert [[1]] == mt_conftest.get_train_cars_content(t)
@@ -485,7 +511,9 @@ async def test_train_remove_last_cars(
     assert [2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(1), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(1),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
     assert [[2]] == mt_conftest.get_train_cars_content(t)
@@ -564,8 +592,8 @@ queue_rules:
   - name: 2x1
     merge_conditions: []
     speculative_checks: 1
-"""
-        )["queue_rules"]
+""",
+        )["queue_rules"],
     )
     await t.refresh()
     assert [[1]] == mt_conftest.get_train_cars_content(t)
@@ -608,8 +636,8 @@ queue_rules:
   - name: five
     merge_conditions: []
     speculative_checks: 5
-"""
-        )["queue_rules"]
+""",
+        )["queue_rules"],
     )
     await t.refresh()
     assert [] == mt_conftest.get_train_cars_content(t)
@@ -701,16 +729,24 @@ def test_train_batch_split(
     )
 
     assert ([p1_two], [p2_two, p3_two, p4_five]) == t._get_next_batch(
-        [p1_two, p2_two, p3_two, p4_five], "2x1", 1
+        [p1_two, p2_two, p3_two, p4_five],
+        "2x1",
+        1,
     )
     assert ([p1_two, p2_two], [p3_two, p4_five]) == t._get_next_batch(
-        [p1_two, p2_two, p3_two, p4_five], "2x1", 2
+        [p1_two, p2_two, p3_two, p4_five],
+        "2x1",
+        2,
     )
     assert ([p1_two, p2_two, p3_two], [p4_five]) == t._get_next_batch(
-        [p1_two, p2_two, p3_two, p4_five], "2x1", 10
+        [p1_two, p2_two, p3_two, p4_five],
+        "2x1",
+        10,
     )
     assert ([], [p1_two, p2_two, p3_two, p4_five]) == t._get_next_batch(
-        [p1_two, p2_two, p3_two, p4_five], "5x1", 10
+        [p1_two, p2_two, p3_two, p4_five],
+        "5x1",
+        10,
     )
 
 
@@ -766,7 +802,9 @@ async def test_train_queue_splitted_on_failure_1x2(
     t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(41), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(41),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
 
     # It's 41 fault, we restart the train on 42
@@ -887,7 +925,9 @@ async def test_train_queue_splitted_on_failure_1x5(
     t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(43), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(43),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
 
     # Train got cut after 43, and we restart from the begining
@@ -1020,7 +1060,9 @@ async def test_train_queue_splitted_on_failure_2x5(
     t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(43), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(43),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
 
     # Train got cut after 43, and we restart from the begining
@@ -1105,7 +1147,9 @@ async def test_train_queue_splitted_on_failure_5x3(
     t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(41), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(41),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
@@ -1196,7 +1240,9 @@ async def test_train_queue_splitted_on_failure_5x3(
 
     # remove the failed 7
     await t.remove_pull(
-        github_types.GitHubPullRequestNumber(7), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(7),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
 
     # Train got cut after 43, and we restart from the begining
@@ -1240,7 +1286,9 @@ async def test_train_no_interrupt_add_pull(
     await t.add_pull(
         await context_getter(4),
         conftest.get_pull_queue_config(
-            mt_conftest.QUEUE_RULES, "high-2x5-noint", 20000
+            mt_conftest.QUEUE_RULES,
+            "high-2x5-noint",
+            20000,
         ),
         "",
     )
@@ -1329,10 +1377,12 @@ async def test_train_disallow_checks_interruption_scenario_1(
 
     urgent = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "urgent-1x4")
     fastlane = conftest.get_pull_queue_config(
-        mt_conftest.QUEUE_RULES, "fastlane-1x8-noint"
+        mt_conftest.QUEUE_RULES,
+        "fastlane-1x8-noint",
     )
     regular = conftest.get_pull_queue_config(
-        mt_conftest.QUEUE_RULES, "regular-1x8-noint-from-fastlane-and-regular"
+        mt_conftest.QUEUE_RULES,
+        "regular-1x8-noint-from-fastlane-and-regular",
     )
 
     await t.add_pull(await context_getter(1), fastlane, "")
@@ -1370,10 +1420,12 @@ async def test_train_disallow_checks_interruption_scenario_2(
 
     urgent = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "urgent-1x4")
     fastlane = conftest.get_pull_queue_config(
-        mt_conftest.QUEUE_RULES, "fastlane-1x8-noint"
+        mt_conftest.QUEUE_RULES,
+        "fastlane-1x8-noint",
     )
     regular = conftest.get_pull_queue_config(
-        mt_conftest.QUEUE_RULES, "regular-1x8-noint-from-fastlane-and-regular"
+        mt_conftest.QUEUE_RULES,
+        "regular-1x8-noint-from-fastlane-and-regular",
     )
 
     await t.add_pull(await context_getter(1), regular, "")
@@ -1412,7 +1464,8 @@ async def test_train_batch_max_wait_time(
         await t.test_helper_load_from_redis()
 
         config = conftest.get_pull_queue_config(
-            mt_conftest.QUEUE_RULES, "batch-wait-time"
+            mt_conftest.QUEUE_RULES,
+            "batch-wait-time",
         )
 
         await t.add_pull(await context_getter(1), config, "")
@@ -1432,11 +1485,12 @@ async def test_train_batch_max_wait_time(
         assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
 
         d = await delayed_refresh._get_current_refresh_datetime(
-            convoy.repository, github_types.GitHubPullRequestNumber(3)
+            convoy.repository,
+            github_types.GitHubPullRequestNumber(3),
         )
         assert d is not None
         assert d == freezed_time().replace(tzinfo=datetime.UTC) + datetime.timedelta(
-            minutes=5
+            minutes=5,
         )
 
     with time_travel("2021-09-22T08:05:02"):
@@ -1571,7 +1625,9 @@ def test_embarked_pull_old_serialization() -> None:
 
     now = date.utcnow()
     old_typed = merge_train.EmbarkedPull.OldSerialized(
-        github_types.GitHubPullRequestNumber(1234), config, now
+        github_types.GitHubPullRequestNumber(1234),
+        config,
+        now,
     )
     old_untyped = json.loads(json.dumps(old_typed))
     ep = merge_train.EmbarkedPull.deserialize(mock.Mock(), old_untyped)
@@ -1592,7 +1648,8 @@ async def test_train_load_from_redis_with_None_partition_name(
             merge_train.EmbarkedPull.Serialized(
                 user_pull_request_number=github_types.GitHubPullRequestNumber(12345),
                 config=conftest.get_pull_queue_config(
-                    mt_conftest.QUEUE_RULES, "inplace"
+                    mt_conftest.QUEUE_RULES,
+                    "inplace",
                 ),
                 queued_at=date.utcnow(),
                 checks_end_metadata=merge_train.embarked_pull.QueueChecksEndMetadata(),
@@ -1613,7 +1670,7 @@ async def test_train_load_from_redis_with_None_partition_name(
     # Loading all trains/convoy with `_get_raw_trains_by_convoy` should not
     # delete anything in redis since there is only the old redis train key
     trains_by_convoy = await merge_train.Convoy._get_raw_trains_by_convoy(
-        repository.installation
+        repository.installation,
     )
     assert len(trains_by_convoy[(repository.repo["id"], ref)]) == 1
     assert (
@@ -1621,7 +1678,7 @@ async def test_train_load_from_redis_with_None_partition_name(
         in trains_by_convoy[(repository.repo["id"], ref)]
     )
     redis_trains = await repository.installation.redis.cache.hgetall(
-        merge_train.get_redis_train_key(repository.installation)
+        merge_train.get_redis_train_key(repository.installation),
     )
     assert len(redis_trains) == 1
     assert next(iter(redis_trains.keys())).decode() == f"{repository.repo['id']}~{ref}"
@@ -1645,7 +1702,7 @@ async def test_train_load_from_redis_with_None_partition_name(
     # Make sure that `load_from_redis` does not delete the old key if
     # there is not yet the new key.
     redis_trains = await repository.installation.redis.cache.hgetall(
-        merge_train.get_redis_train_key(repository.installation)
+        merge_train.get_redis_train_key(repository.installation),
     )
     assert len(redis_trains) == 2
     redis_trains_keys = sorted(redis_trains.keys())
@@ -1660,7 +1717,7 @@ async def test_train_load_from_redis_with_None_partition_name(
     # when both the old and new are present.
     await convoy.load_from_redis()
     redis_trains = await repository.installation.redis.cache.hgetall(
-        merge_train.get_redis_train_key(repository.installation)
+        merge_train.get_redis_train_key(repository.installation),
     )
     assert len(redis_trains) == 1
     assert (
@@ -1677,7 +1734,7 @@ async def test_train_load_from_redis_with_None_partition_name(
         train_raw,
     )
     trains_by_convoy = await merge_train.Convoy._get_raw_trains_by_convoy(
-        repository.installation
+        repository.installation,
     )
     assert len(trains_by_convoy[(repository.repo["id"], ref)]) == 1
     assert (
@@ -1686,7 +1743,7 @@ async def test_train_load_from_redis_with_None_partition_name(
     )
 
     redis_trains = await repository.installation.redis.cache.hgetall(
-        merge_train.get_redis_train_key(repository.installation)
+        merge_train.get_redis_train_key(repository.installation),
     )
     assert len(redis_trains) == 1
     assert (
@@ -1793,7 +1850,7 @@ async def test_train_inplace_branch_rebase_failure(
         await t.refresh()
 
     with mock.patch.object(merge_train.TrainCar, "_set_creation_failure"), mock.patch(
-        "mergify_engine.actions.utils.get_github_user_from_bot_account"
+        "mergify_engine.actions.utils.get_github_user_from_bot_account",
     ), mock.patch(
         "mergify_engine.branch_updater.rebase_with_git",
         side_effect=branch_updater.BranchUpdateFailure("oops"),

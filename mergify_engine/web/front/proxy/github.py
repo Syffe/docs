@@ -22,7 +22,7 @@ async def github_proxy(
     headers = utils.headers_to_forward(request)
 
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubTokenAuth(current_user.oauth_access_token)
+        github.GitHubTokenAuth(current_user.oauth_access_token),
     ) as client:
         proxy_request: httpx.Request
         try:
@@ -37,7 +37,8 @@ async def github_proxy(
             proxy_request = proxy_response.request
         except httpx.InvalidURL:
             raise fastapi.HTTPException(
-                status_code=422, detail={"messages": "Invalid request"}
+                status_code=422,
+                detail={"messages": "Invalid request"},
             )
         except httpx.HTTPStatusError as e:
             proxy_response = e.response

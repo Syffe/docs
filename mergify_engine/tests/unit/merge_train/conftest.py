@@ -164,10 +164,10 @@ partition_rules:
 """
 
 QUEUE_RULES = voluptuous.Schema(qr_config.QueueRulesSchema)(
-    rules.YamlSchema(MERGIFY_CONFIG)["queue_rules"]
+    rules.YamlSchema(MERGIFY_CONFIG)["queue_rules"],
 )
 PARTITION_RULES = voluptuous.Schema(partr_config.PartitionRulesSchema)(
-    rules.YamlSchema(MERGIFY_CONFIG)["partition_rules"]
+    rules.YamlSchema(MERGIFY_CONFIG)["partition_rules"],
 )
 
 
@@ -188,7 +188,9 @@ def fake_client() -> mock.Mock:
     branch = {"commit": {"sha": "sha1"}}
 
     def item_call(
-        url: str, *args: typing.Any, **kwargs: typing.Any
+        url: str,
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> dict[str, typing.Any]:
         if url == "/repos/Mergifyio/mergify-engine/contents/.mergify.yml":
             return {
@@ -238,7 +240,7 @@ async def fake_train_car_start_checking_with_draft(
 ) -> None:
     inner_self.train_car_state.checks_type = merge_train.TrainCarChecksType.DRAFT
     inner_self.queue_pull_request_number = github_types.GitHubPullRequestNumber(
-        inner_self.still_queued_embarked_pulls[-1].user_pull_request_number + 10
+        inner_self.still_queued_embarked_pulls[-1].user_pull_request_number + 10,
     )
 
 
@@ -251,7 +253,9 @@ async def fake_train_car_start_checking_inplace(
 async def fake_train_car_check_mergeability(
     inner_self: merge_train.TrainCar,
     origin: typing.Literal[
-        "original_pull_request", "draft_pull_request", "batch_split"
+        "original_pull_request",
+        "draft_pull_request",
+        "batch_split",
     ],
     original_pull_request_rule: prr_config.EvaluatedPullRequestRule | None,
     original_pull_request_number: github_types.GitHubPullRequestNumber | None,
@@ -263,7 +267,8 @@ async def fake_train_car_end_checking(
     inner_self: merge_train.TrainCar,
     reason: queue_utils.BaseDequeueReason,
     not_reembarked_pull_requests: dict[
-        github_types.GitHubPullRequestNumber, queue_utils.BaseDequeueReason
+        github_types.GitHubPullRequestNumber,
+        queue_utils.BaseDequeueReason,
     ],
 ) -> None:
     pass
@@ -297,7 +302,7 @@ def get_train_cars_content(
     for car in train._cars:
         cars.append(
             car.parent_pull_request_numbers
-            + [ep.user_pull_request_number for ep in car.still_queued_embarked_pulls]
+            + [ep.user_pull_request_number for ep in car.still_queued_embarked_pulls],
         )
     return cars
 

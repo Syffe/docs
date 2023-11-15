@@ -16,7 +16,8 @@ if typing.TYPE_CHECKING:
 class BackportExecutor(copy.CopyExecutor):
     KIND: duplicate_pull.KindT = "backport"
     HOOK_EVENT_NAME: typing.Literal[
-        "action.backport", "action.copy"
+        "action.backport",
+        "action.copy",
     ] = "action.backport"
     BRANCH_PREFIX: str = "bp"
     SUCCESS_MESSAGE: str = "Backports have been created"
@@ -41,10 +42,12 @@ class BackportAction(copy.CopyAction):
         return {}
 
     async def get_conditions_requirements(
-        self, ctxt: context.Context
+        self,
+        ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
         return [
             conditions.RuleCondition.from_tree(
-                {"=": ("merged", True)}, description=":pushpin: backport requirement"
-            )
+                {"=": ("merged", True)},
+                description=":pushpin: backport requirement",
+            ),
         ]

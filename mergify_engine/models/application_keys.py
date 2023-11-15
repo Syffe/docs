@@ -101,8 +101,8 @@ class ApplicationKey(models.Base):
     ) -> ApplicationKey | None:
         result_application = await session.execute(
             sqlalchemy.select(ApplicationKey).where(
-                ApplicationKey.api_access_key == api_access_key
-            )
+                ApplicationKey.api_access_key == api_access_key,
+            ),
         )
         try:
             application = result_application.unique().scalar_one()

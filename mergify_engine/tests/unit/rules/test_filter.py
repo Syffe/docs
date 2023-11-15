@@ -240,13 +240,13 @@ def dtime(day: int) -> datetime.datetime:
 @time_travel("2012-01-14")
 async def test_datetime_binary() -> None:
     assert "foo>=2012-01-05T00:00:00" == str(
-        filter.BinaryFilter({">=": ("foo", dtime(5))})
+        filter.BinaryFilter({">=": ("foo", dtime(5))}),
     )
     assert "foo<=2012-01-05T23:59:00" == str(
-        filter.BinaryFilter({"<=": ("foo", dtime(5).replace(hour=23, minute=59))})
+        filter.BinaryFilter({"<=": ("foo", dtime(5).replace(hour=23, minute=59))}),
     )
     assert "foo<=2012-01-05T03:09:00" == str(
-        filter.BinaryFilter({"<=": ("foo", dtime(5).replace(hour=3, minute=9))})
+        filter.BinaryFilter({"<=": ("foo", dtime(5).replace(hour=3, minute=9))}),
     )
 
     f = filter.BinaryFilter({"<=": ("foo", date.utcnow())})
@@ -267,18 +267,18 @@ async def test_datetime_binary() -> None:
 @time_travel("2012-01-14")
 async def test_time_binary() -> None:
     assert "foo>=00:00" == str(
-        filter.BinaryFilter({">=": ("foo", date.Time(0, 0, date.UTC))})
+        filter.BinaryFilter({">=": ("foo", date.Time(0, 0, date.UTC))}),
     )
     assert "foo<=23:59" == str(
-        filter.BinaryFilter({"<=": ("foo", date.Time(23, 59, date.UTC))})
+        filter.BinaryFilter({"<=": ("foo", date.Time(23, 59, date.UTC))}),
     )
     assert "foo<=03:09" == str(
-        filter.BinaryFilter({"<=": ("foo", date.Time(3, 9, date.UTC))})
+        filter.BinaryFilter({"<=": ("foo", date.Time(3, 9, date.UTC))}),
     )
     assert "foo<=03:09[Europe/Paris]" == str(
         filter.BinaryFilter(
-            {"<=": ("foo", date.Time(3, 9, zoneinfo.ZoneInfo("Europe/Paris")))}
-        )
+            {"<=": ("foo", date.Time(3, 9, zoneinfo.ZoneInfo("Europe/Paris")))},
+        ),
     )
 
     now = date.utcnow()
@@ -298,7 +298,7 @@ async def test_time_binary() -> None:
     assert await f(FakePR({"foo": now.replace(hour=8, minute=9)}))
 
     f = filter.BinaryFilter(
-        {">=": ("foo", date.Time(5, 8, zoneinfo.ZoneInfo("Europe/Paris")))}
+        {">=": ("foo", date.Time(5, 8, zoneinfo.ZoneInfo("Europe/Paris")))},
     )
     assert await f(FakePR({"foo": now.replace(hour=4, minute=8)}))
     assert not await f(FakePR({"foo": now.replace(hour=1, minute=1)}))
@@ -312,7 +312,7 @@ async def test_datetime_near_datetime() -> None:
     # Condition on past date
     for op in ("<=", ">=", ">", "<", "=", "!="):
         f = filter.NearDatetimeFilter(
-            typing.cast(filter.TreeT, {op: ("updated-at", dtime(8))})
+            typing.cast(filter.TreeT, {op: ("updated-at", dtime(8))}),
         )
         assert await f(FakePR({"updated-at": dtime(2)})) == date.DT_MAX, str(f)
         assert await f(FakePR({"updated-at": dtime(10)})) == date.DT_MAX, str(f)
@@ -324,21 +324,21 @@ async def test_datetime_near_datetime() -> None:
     # Condition on future date with equality
     for op in ("<=", ">=", "=", "!="):
         f = filter.NearDatetimeFilter(
-            typing.cast(filter.TreeT, {op: ("updated-at", dtime(16))})
+            typing.cast(filter.TreeT, {op: ("updated-at", dtime(16))}),
         )
         assert await f(FakePR({"updated-at": dtime(2)})) == dtime(16), str(f)
         assert await f(FakePR({"updated-at": dtime(10)})) == dtime(16), str(f)
         assert await f(FakePR({"updated-at": dtime(14)})) == dtime(16), str(f)
         assert await f(FakePR({"updated-at": dtime(18)})) == date.DT_MAX, str(f)
         assert await f(FakePR({"updated-at": dtime(16)})) == dtime(16).replace(
-            minute=9
+            minute=9,
         ), str(f)
         assert await f(FakePR({"updated-at": None})) == date.DT_MAX
 
     # Condition on future date without equality
     for op in ("<", ">"):
         f = filter.NearDatetimeFilter(
-            typing.cast(filter.TreeT, {op: ("updated-at", dtime(16))})
+            typing.cast(filter.TreeT, {op: ("updated-at", dtime(16))}),
         )
         assert await f(FakePR({"updated-at": dtime(2)})) == dtime(16), str(f)
         assert await f(FakePR({"updated-at": dtime(10)})) == dtime(16), str(f)
@@ -513,14 +513,14 @@ async def test_parser_leaf() -> None:
 
 async def test_parser_group() -> None:
     string = str(
-        filter.BinaryFilter({"and": ({"=": ("head", "foobar")}, {">": ("#files", 3)})})
+        filter.BinaryFilter({"and": ({"=": ("head", "foobar")}, {">": ("#files", 3)})}),
     )
     assert string == "(head=foobar and #files>3)"
 
     string = str(
         filter.BinaryFilter(
-            {"not": {"and": ({"=": ("head", "foobar")}, {">": ("#files", 3)})}}
-        )
+            {"not": {"and": ({"=": ("head", "foobar")}, {">": ("#files", 3)})}},
+        ),
     )
     assert string == "not(head=foobar and #files>3)"
 
@@ -530,7 +530,7 @@ def get_scheduled_pr() -> FakePR:
         {
             "number": 3433,
             "current-datetime": date.utcnow(),
-        }
+        },
     )
 
 
@@ -548,14 +548,18 @@ async def test_schedule_with_timezone() -> None:
         ]
         for next_refresh in next_refreshes:
             next_refresh_dt = datetime.datetime.fromisoformat(next_refresh).replace(
-                tzinfo=date.UTC
+                tzinfo=date.UTC,
             )
             assert await f(get_scheduled_pr()) == next_refresh_dt
             frozen_time.move_to(next_refresh_dt)
 
         frozen_time.move_to(today.replace(day=23))
         assert await f(get_scheduled_pr()) == datetime.datetime(
-            2021, 10, 25, 7, tzinfo=date.UTC
+            2021,
+            10,
+            25,
+            7,
+            tzinfo=date.UTC,
         )
 
     with time_travel("2022-09-16T10:38:18.019100Z") as frozen_time:
@@ -569,7 +573,7 @@ async def test_schedule_with_timezone() -> None:
         ]
         for next_refresh in next_refreshes:
             next_refresh_dt = datetime.datetime.fromisoformat(next_refresh).replace(
-                tzinfo=date.UTC
+                tzinfo=date.UTC,
             )
             assert await f(get_scheduled_pr()) == next_refresh_dt
             frozen_time.move_to(next_refresh_dt)
@@ -581,7 +585,7 @@ async def test_current_datetime() -> None:
         f = filter.NearDatetimeFilter(tree)
 
         next_refresh_at = datetime.datetime.fromisoformat("2023-07-13T14:00").replace(
-            tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
         )
 
         assert await f(get_scheduled_pr()) == next_refresh_at
@@ -603,13 +607,13 @@ async def test_current_datetime_range(condition: str) -> None:
 
     with time_travel("2023-07-13T13:00+02"):
         next_refresh_at = datetime.datetime.fromisoformat("2023-07-13T14:00").replace(
-            tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
         )
         assert await f(get_scheduled_pr()) == next_refresh_at
 
     with time_travel("2023-07-13T15:00+02"):
         next_refresh_at = datetime.datetime.fromisoformat("2023-07-13T16:01").replace(
-            tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
         )
         assert await f(get_scheduled_pr()) == next_refresh_at
 
@@ -626,13 +630,22 @@ async def test_current_datetime_range(condition: str) -> None:
             "2023-07-14T10:00+02:00",  # freeze time inside range
             "2023-07-15",  # freeze time after range
             datetime.datetime(  # next refresh before range
-                2023, 7, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                7,
+                14,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh inside range
-                2023, 7, 15, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                7,
+                15,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh after range
-                2024, 7, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2024,
+                7,
+                14,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
         ),
         (
@@ -641,13 +654,22 @@ async def test_current_datetime_range(condition: str) -> None:
             "2023-07-14T10:00+02:00",  # freeze time inside range
             "2023-07-15",  # freeze time after range
             datetime.datetime(  # next refresh before range
-                2023, 7, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                7,
+                14,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh inside range
-                2023, 7, 15, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                7,
+                15,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh after range
-                2023, 8, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                8,
+                14,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
         ),
         (
@@ -656,13 +678,22 @@ async def test_current_datetime_range(condition: str) -> None:
             "2023-01-31T10:00+02:00",  # freeze time inside range
             "2023-02-02",  # freeze time after range
             datetime.datetime(  # next refresh before range
-                2023, 1, 31, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                1,
+                31,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh inside range
-                2023, 2, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                2,
+                1,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh after range
-                2023, 3, 31, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                3,
+                31,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
         ),
         (
@@ -671,13 +702,22 @@ async def test_current_datetime_range(condition: str) -> None:
             "2023-07-10",  # freeze time inside range
             "2023-08-01",  # freeze time after range
             datetime.datetime(  # next refresh before range
-                2023, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                7,
+                1,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh inside range
-                2023, 8, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                8,
+                1,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh after range
-                2024, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2024,
+                7,
+                1,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
         ),
         (
@@ -686,13 +726,26 @@ async def test_current_datetime_range(condition: str) -> None:
             "2023-07-10T10:00+02",  # freeze time inside range
             "2023-08-01",  # freeze time after range
             datetime.datetime(  # next refresh before range
-                2023, 7, 1, 8, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                7,
+                1,
+                8,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh inside range
-                2023, 7, 10, 15, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                7,
+                10,
+                15,
+                1,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh after range
-                2024, 7, 1, 8, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2024,
+                7,
+                1,
+                8,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
         ),
         (
@@ -701,13 +754,22 @@ async def test_current_datetime_range(condition: str) -> None:
             "2023-07-10",  # freeze time inside range
             "2023-08-01",  # freeze time after range
             datetime.datetime(  # next refresh before range
-                2023, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                7,
+                1,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh inside range
-                2023, 8, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                8,
+                1,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh after range
-                2024, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2024,
+                7,
+                1,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
         ),
         (
@@ -716,13 +778,22 @@ async def test_current_datetime_range(condition: str) -> None:
             "2023-01-31T10:00+02:00",  # freeze time inside range
             "2023-02-02",  # freeze time after range
             datetime.datetime(  # next refresh before range
-                2023, 1, 31, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                1,
+                31,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh inside range
-                2023, 2, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                2,
+                1,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
             datetime.datetime(  # next refresh after range
-                2023, 3, 31, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                2023,
+                3,
+                31,
+                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
             ),
         ),
     ),
@@ -762,7 +833,9 @@ async def test_regex_jinja_template(
     jinja_environment: jinja2.sandbox.SandboxedEnvironment,
 ) -> None:
     template = filter.JinjaTemplateWrapper(
-        jinja_environment, r"{{author}} \d{6}", {"author"}
+        jinja_environment,
+        r"{{author}} \d{6}",
+        {"author"},
     )
     f = filter.BinaryFilter({"~=": ("body", template)})
     assert await f(AsyncFakePR({"author": "foo", "body": "hello foo 123456 !"}))
@@ -778,40 +851,40 @@ async def test_schedule_neardatetime_filter() -> None:
         f_ne = filter.NearDatetimeFilter(tree_ne)
         # Correct datetime should be next Monday, 08:00:01 UTC
         assert await f_eq(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 14, 8, tzinfo=date.UTC)
 
         assert await f_ne(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 14, 8, tzinfo=date.UTC)
         # Friday
         frozen_time.move_to(datetime.datetime(2022, 11, 11, tzinfo=date.UTC))
         # Correct datetime should be current day, at start_hour and start_minute of the schedule
         assert await f_eq(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
         assert await f_ne(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
 
         # Friday, 15:00 UTC
         frozen_time.move_to(datetime.datetime(2022, 11, 11, 15, tzinfo=date.UTC))
         # Correct datetime should be current day, at end_hour and end_minute of the schedule + 1s
         assert await f_eq(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 11, 17, 0, 1, tzinfo=date.UTC)
         assert await f_ne(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 11, 17, 0, 1, tzinfo=date.UTC)
 
         # Friday, 17:00 UTC
         frozen_time.move_to(datetime.datetime(2022, 11, 11, 17, tzinfo=date.UTC))
         # Correct datetime should be current day, 1 second after the end of the schedule
         assert await f_eq(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 11, 17, 0, 1, tzinfo=date.UTC)
         assert await f_ne(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 11, 17, 0, 1, tzinfo=date.UTC)
 
         # Saturday
@@ -822,30 +895,30 @@ async def test_schedule_neardatetime_filter() -> None:
         f_ne = filter.NearDatetimeFilter(tree_ne)
         # Correct datetime should be current day, 08:00:00 UTC
         assert await f_eq(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 12, 8, tzinfo=date.UTC)
         assert await f_ne(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 12, 8, tzinfo=date.UTC)
 
         # Thursday
         frozen_time.move_to(datetime.datetime(2022, 11, 9, tzinfo=date.UTC))
         # Correct datetime should be Friday of the same week, 08:00:00 UTC
         assert await f_eq(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
         assert await f_ne(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
 
         # Monday
         frozen_time.move_to(datetime.datetime(2022, 11, 7, tzinfo=date.UTC))
         # Correct datetime should be current day, at start_hour and start_minute of the schedule
         assert await f_eq(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 7, 8, tzinfo=date.UTC)
         assert await f_ne(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 7, 8, tzinfo=date.UTC)
 
         # Tuesday, 18:00 UTC
@@ -853,10 +926,10 @@ async def test_schedule_neardatetime_filter() -> None:
         # Correct datetime should be Friday of the current week,
         # at start_hour and start_minute of the schedule
         assert await f_eq(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
         assert await f_ne(
-            FakePR({"current-datetime": date.utcnow()})
+            FakePR({"current-datetime": date.utcnow()}),
         ) == datetime.datetime(2022, 11, 11, 8, tzinfo=date.UTC)
 
 

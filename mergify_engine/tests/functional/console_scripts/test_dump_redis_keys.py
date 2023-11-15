@@ -78,19 +78,20 @@ class TestRedisUtilsDumper(base.FunctionalTestBase):
         assert result.exit_code == 0, result.output
 
         assert not os.path.exists(
-            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt"
+            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt",
         )
 
         result = utils.test_console_scripts(
-            admin_cli.admin_cli, ["dump-redis-keys", "--path", temporary_folder]
+            admin_cli.admin_cli,
+            ["dump-redis-keys", "--path", temporary_folder],
         )
         assert result.exit_code == 0, result.output
 
         assert os.path.exists(
-            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt"
+            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt",
         )
         with open(
-            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt"
+            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt",
         ) as file:
             jsoned_content = json.loads(file.read())
 

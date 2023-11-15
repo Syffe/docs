@@ -50,14 +50,20 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, e.title, e.reason
+                rule,
+                action,
+                e.title,
+                e.reason,
             )
         pull_attrs = condition_value_querier.PullRequest(ctxt)
         try:
             message = await pull_attrs.render_template(action.config["message"])
         except condition_value_querier.RenderTemplateFailure as rmf:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, "Invalid comment message", str(rmf)
+                rule,
+                action,
+                "Invalid comment message",
+                str(rmf),
             )
 
         return cls(
@@ -69,7 +75,9 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
     async def run(self) -> check_api.Result:
         if self.config["message"] is None:
             return check_api.Result(
-                check_api.Conclusion.SUCCESS, "Message is empty", ""
+                check_api.Conclusion.SUCCESS,
+                "Message is empty",
+                "",
             )
 
         try:
@@ -108,7 +116,9 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
             self.rule.get_signal_trigger(),
         )
         return check_api.Result(
-            check_api.Conclusion.SUCCESS, "Comment posted", self.config["message"]
+            check_api.Conclusion.SUCCESS,
+            "Comment posted",
+            self.config["message"],
         )
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover

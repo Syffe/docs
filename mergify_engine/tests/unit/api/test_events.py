@@ -25,11 +25,13 @@ LATER_TIMESTAMP = datetime.datetime.fromisoformat("2022-08-22T12:00:00+00:00")
 
 @pytest.fixture
 async def insert_data(
-    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
 ) -> None:
     # add events manually instead of evt_utils.insert() to set a mocked timestamp
     repo = await github_repository.GitHubRepository.get_or_create(
-        db, fake_repository.repo
+        db,
+        fake_repository.repo,
     )
     db.add(
         event_models.EventActionComment(
@@ -39,7 +41,7 @@ async def insert_data(
             received_at=MAIN_TIMESTAMP,
             trigger="Rule: some rule",
             message="hello world",
-        )
+        ),
     )
     db.add(
         event_models.EventActionQueueEnter(
@@ -55,11 +57,11 @@ async def insert_data(
                     "position": 3,
                     "queued_at": date.utcnow(),
                     "partition_name": partition_rules.PartitionRuleName(
-                        "default_partition"
+                        "default_partition",
                     ),
-                }
+                },
             ),
-        )
+        ),
     )
     db.add(
         event_models.EventActionMerge(
@@ -69,7 +71,7 @@ async def insert_data(
             received_at=MAIN_TIMESTAMP,
             trigger="Rule: some other rule",
             branch="merge_branch",
-        )
+        ),
     )
     await db.commit()
 
@@ -100,7 +102,7 @@ async def test_api_response(
                 "event": "action.merge",
                 "type": "action.merge",
                 "metadata": {"branch": "merge_branch"},
-            }
+            },
         ],
     }
 
@@ -136,11 +138,11 @@ async def test_api_response(
                                 "state": "failure",
                                 "url": None,
                                 "avatar_url": "some_url",
-                            }
-                        )
+                            },
+                        ),
                     ],
                 },
-            }
+            },
         ),
     )
 
@@ -187,11 +189,11 @@ async def test_api_response(
                                 "url": None,
                                 "state": "failure",
                                 "avatar_url": "some_url",
-                            }
+                            },
                         ],
                     },
                 },
-            }
+            },
         ],
     }
 
@@ -205,7 +207,7 @@ async def test_api_response(
             {
                 "reason": "Incident in production",
                 "created_by": {"id": 145, "type": "user", "name": "vegeta"},
-            }
+            },
         ),
     )
 
@@ -232,7 +234,7 @@ async def test_api_response(
                     "reason": "Incident in production",
                     "created_by": {"type": "user", "id": 145, "name": "vegeta"},
                 },
-            }
+            },
         ],
     }
 
@@ -247,7 +249,7 @@ async def test_api_response(
                 "review_type": "APPROVE",
                 "reviewer": "John Doe",
                 "message": "Looks good to me",
-            }
+            },
         ),
     )
 
@@ -275,7 +277,7 @@ async def test_api_response(
                     "reviewer": "John Doe",
                     "message": "Looks good to me",
                 },
-            }
+            },
         ],
     }
 
@@ -349,7 +351,7 @@ async def test_api_cursor_pg(
                 {
                     "added": ["leo", "charly", "guillaume"],
                     "removed": ["damien", "fabien"],
-                }
+                },
             ),
             trigger="Rule: some dummmy rule",
         )

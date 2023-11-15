@@ -76,7 +76,7 @@ Link: <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/events?cursor=d
   <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/events?cursor=abc&per_page=20>; rel="prev"
 """.strip(),
         "schema": {"type": "string"},
-    }
+    },
 }
 
 
@@ -90,27 +90,29 @@ class PageResponse(pydantic.BaseModel, typing.Generic[T]):
             "metadata": {
                 "description": "The number of items in this page",
             },
-        }
+        },
     )
     per_page: int = pydantic.Field(
         json_schema_extra={
             "metadata": {
                 "description": "The number of items per page",
             },
-        }
+        },
     )
     total: int | None = pydantic.Field(
         json_schema_extra={
             "metadata": {
                 "description": "The total number of items",
             },
-        }
+        },
     )
 
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(
-        self, page: Page[T], query_parameters: dict[str, typing.Any] | None = None
+        self,
+        page: Page[T],
+        query_parameters: dict[str, typing.Any] | None = None,
     ) -> None:
         page.current.response.headers["Link"] = self._build_link(page, query_parameters)
         kwargs = {
@@ -125,13 +127,14 @@ class PageResponse(pydantic.BaseModel, typing.Generic[T]):
 
     @staticmethod
     def _build_link(
-        page: Page[T], query_parameters: dict[str, typing.Any] | None
+        page: Page[T],
+        query_parameters: dict[str, typing.Any] | None,
     ) -> str:
         base_url = page.current.request.url
 
         if query_parameters is not None:
             cleaned_query_parameters = utils.serialize_query_parameters(
-                query_parameters
+                query_parameters,
             )
         else:
             cleaned_query_parameters = {}

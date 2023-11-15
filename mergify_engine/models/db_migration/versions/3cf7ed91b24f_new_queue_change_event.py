@@ -27,10 +27,13 @@ def upgrade() -> None:
         sqlalchemy.Column("size", sqlalchemy.Integer(), nullable=False),
         sqlalchemy.Column("running_checks", sqlalchemy.Integer(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_queue_change_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_queue_change_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_queue_change_pkey")
+            "id",
+            name=alembic.op.f("event_action_queue_change_pkey"),
         ),
     )
 

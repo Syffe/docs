@@ -45,7 +45,7 @@ async def badge_png(
     style: typing.Annotated[
         str,
         fastapi.Query(
-            description="The style of the button, more details on https://shields.io/."
+            description="The style of the button, more details on https://shields.io/.",
         ),
     ] = "flat",
 ) -> responses.RedirectResponse:  # pragma: no cover
@@ -72,7 +72,7 @@ async def badge_svg(
     style: typing.Annotated[
         str,
         fastapi.Query(
-            description="The style of the button, more details on https://shields.io/."
+            description="The style of the button, more details on https://shields.io/.",
         ),
     ] = "flat",
 ) -> responses.RedirectResponse:  # pragma: no cover
@@ -98,5 +98,5 @@ async def badge(
     repository: security.RepositoryName,
 ) -> responses.RedirectResponse:
     return responses.RedirectResponse(
-        url=f"{settings.SUBSCRIPTION_URL}/badges/{owner}/{repository}"
+        url=f"{settings.SUBSCRIPTION_URL}/badges/{owner}/{repository}",
     )

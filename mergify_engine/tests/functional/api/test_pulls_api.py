@@ -78,7 +78,7 @@ queue_rules:
         owner = settings.TESTING_ORGANIZATION_NAME
         repo = self.RECORD_CONFIG["repository_name"]
         r = await self.admin_app.get(
-            f"/v1/repos/{owner}/{repo}/pulls/{p['number']}/summary"
+            f"/v1/repos/{owner}/{repo}/pulls/{p['number']}/summary",
         )
 
         assert r.status_code == 200, r.json()

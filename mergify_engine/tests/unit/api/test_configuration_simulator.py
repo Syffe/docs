@@ -61,8 +61,8 @@ pull_request_rules:
                 "loc": ["body", "mergify_yml"],
                 "msg": "extra keys not allowed @ pull_request_rules → item 0 → actions → something_wrong",
                 "type": "mergify_config_error",
-            }
-        ]
+            },
+        ],
     }
 
 
@@ -89,11 +89,13 @@ queue_rules:
 """
 
     respx_mock.get(
-        "https://api.github.com/repos/Mergifyio/mergify-engine/branches/main/protection"
+        "https://api.github.com/repos/Mergifyio/mergify-engine/branches/main/protection",
     ).respond(200, json={})
 
     with mock.patch.object(
-        context.Repository, "get_pull_request_context", context_getter
+        context.Repository,
+        "get_pull_request_context",
+        context_getter,
     ):
         response = await web_client.post(
             "/v1/repos/Mergifyio/engine/pulls/123/configuration-simulator",
@@ -109,21 +111,21 @@ queue_rules:
                 "name": "automatic merge",
                 "conditions": anys.ANY_DICT,
                 "actions": {"merge": anys.ANY_DICT},
-            }
+            },
         ],
         "queue_rules": [
             {
                 "name": "hotfix",
                 "queue_conditions": anys.ANY_DICT,
                 "merge_conditions": anys.ANY_DICT,
-            }
+            },
         ],
     }
 
     # Assertions on pull request rules
     queue_conditions = response.json()["pull_request_rules"][0]["conditions"]
     assert queue_conditions == anys.AnyWithEntries(
-        {"label": "all of", "match": True, "subconditions": anys.ANY_LIST}
+        {"label": "all of", "match": True, "subconditions": anys.ANY_LIST},
     )
     conditions = queue_conditions["subconditions"]
     assert conditions == [
@@ -132,27 +134,27 @@ queue_rules:
                 "label": "-conflict",
                 "description": ":pushpin: merge requirement",
                 "match": True,
-            }
+            },
         ),
         anys.AnyWithEntries(
             {
                 "label": "-draft",
                 "description": ":pushpin: merge requirement",
                 "match": True,
-            }
+            },
         ),
         anys.AnyWithEntries(
             {
                 "label": "-mergify-configuration-changed",
                 "description": ":pushpin: merge -> allow_merging_configuration_change setting requirement",
                 "match": True,
-            }
+            },
         ),
         anys.AnyWithEntries(
             {
                 "label": "base=main",
                 "match": True,
-            }
+            },
         ),
     ]
     actions = response.json()["pull_request_rules"][0]["actions"]
@@ -174,10 +176,10 @@ queue_rules:
                     {
                         "label": "base=main",
                         "match": True,
-                    }
-                )
+                    },
+                ),
             ],
-        }
+        },
     )
     merge_conditions = response.json()["queue_rules"][0]["merge_conditions"]
     assert merge_conditions == anys.AnyWithEntries(
@@ -189,10 +191,10 @@ queue_rules:
                     {
                         "label": "label=merge",
                         "match": False,
-                    }
-                )
+                    },
+                ),
             ],
-        }
+        },
     )
 
 
@@ -212,7 +214,9 @@ pull_request_rules:
 """
 
     with mock.patch.object(
-        context.Repository, "get_pull_request_context", context_getter
+        context.Repository,
+        "get_pull_request_context",
+        context_getter,
     ):
         response = await web_client.post(
             "/v1/repos/Mergifyio/engine/pulls/123/configuration-simulator",
@@ -228,7 +232,7 @@ pull_request_rules:
                 "name": "automatic comment",
                 "conditions": anys.ANY_DICT,
                 "actions": {"comment": anys.ANY_DICT},
-            }
+            },
         ],
         "queue_rules": anys.ANY_LIST,
     }
@@ -258,7 +262,9 @@ pull_request_rules:
 """
 
     with mock.patch.object(
-        context.Repository, "get_pull_request_context", context_getter
+        context.Repository,
+        "get_pull_request_context",
+        context_getter,
     ):
         response = await web_client.post(
             "/v1/repos/Mergifyio/engine/pulls/123/configuration-simulator",
@@ -274,7 +280,7 @@ pull_request_rules:
                 "name": "automatic check",
                 "conditions": anys.ANY_DICT,
                 "actions": {"post_check": anys.ANY_DICT},
-            }
+            },
         ],
         "queue_rules": anys.ANY_LIST,
     }
@@ -288,7 +294,7 @@ pull_request_rules:
     }
     top_success_condition = actions["post_check"]["success_conditions"]
     assert top_success_condition == anys.AnyWithEntries(
-        {"label": "all of", "match": True, "subconditions": anys.ANY_LIST}
+        {"label": "all of", "match": True, "subconditions": anys.ANY_LIST},
     )
     success_conditions = top_success_condition["subconditions"]
     assert success_conditions == [
@@ -296,7 +302,7 @@ pull_request_rules:
             {
                 "label": "base=main",
                 "match": True,
-            }
+            },
         ),
     ]
 
@@ -316,7 +322,9 @@ pull_request_rules:
 """
 
     with mock.patch.object(
-        context.Repository, "get_pull_request_context", context_getter
+        context.Repository,
+        "get_pull_request_context",
+        context_getter,
     ):
         response = await web_client.post(
             "/v1/repos/Mergifyio/engine/pulls/123/configuration-simulator",
@@ -331,8 +339,8 @@ pull_request_rules:
                 "loc": ["body", "mergify_yml"],
                 "msg": "extra keys not allowed @ pull_request_rules → item 0 → actions → something_wrong",
                 "type": "mergify_config_error",
-            }
-        ]
+            },
+        ],
     }
 
 
@@ -352,7 +360,9 @@ pull_request_rules:
 """
 
     with mock.patch.object(
-        context.Repository, "get_pull_request_context", context_getter
+        context.Repository,
+        "get_pull_request_context",
+        context_getter,
     ):
         response = await web_client.post(
             "/v1/repos/Mergifyio/engine/pulls/123/configuration-simulator",
@@ -368,8 +378,8 @@ pull_request_rules:
                 "loc": ["body", "mergify_yml"],
                 "msg": "Cannot have `comment` action with no `message`",
                 "type": "mergify_config_error",
-            }
-        ]
+            },
+        ],
     }
 
 
@@ -390,7 +400,8 @@ pull_request_rules:
 """
 
     respx_mock.get("https://api.github.com/repos/Mergifyio/engine/pulls/404").respond(
-        404, json={"message": "Not found"}
+        404,
+        json={"message": "Not found"},
     )
 
     response = await web_client.post(
@@ -410,7 +421,9 @@ async def test_pull_request_configuration_simulator_invalid_body(
     respx_mock: respx.MockRouter,
 ) -> None:
     with mock.patch.object(
-        context.Repository, "get_pull_request_context", context_getter
+        context.Repository,
+        "get_pull_request_context",
+        context_getter,
     ):
         response = await web_client.post(
             "/v1/repos/Mergifyio/engine/pulls/123/configuration-simulator",
@@ -431,6 +444,6 @@ did not find expected alphabetic or numeric character
   in "<unicode string>", line 2, column 2
 ```""",
                 "type": "mergify_config_error",
-            }
-        ]
+            },
+        ],
     }

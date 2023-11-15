@@ -24,7 +24,7 @@ def upgrade() -> None:
     # NOTE(Kontrolix): Set head_sha to '' for old data to be able to set the
     # not null constraint, it's not a problem since it was not use before.
     alembic.op.execute(
-        "UPDATE gha_workflow_job SET head_sha = '' WHERE head_sha IS NULL"
+        "UPDATE gha_workflow_job SET head_sha = '' WHERE head_sha IS NULL",
     )
 
     alembic.op.alter_column("gha_workflow_job", "head_sha", nullable=False)

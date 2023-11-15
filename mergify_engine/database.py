@@ -42,7 +42,7 @@ class CustomPostgresException(Exception):
     def __init_subclass__(cls, *args: typing.Any, **kwargs: typing.Any) -> None:
         if cls.__name__ in cls.registry:
             raise ValueError(
-                f"A CustomPostgresException named '{cls.__name__}' has already been registered."
+                f"A CustomPostgresException named '{cls.__name__}' has already been registered.",
             )
         cls.registry[cls.__name__] = cls
         super().__init_subclass__(*args, **kwargs)
@@ -87,7 +87,7 @@ def init_sqlalchemy(service_name: str) -> None:
     ddtrace.Pin.override(async_engine.sync_engine, service="engine-db")
 
     sqlalchemy.event.listens_for(async_engine.sync_engine, "handle_error")(
-        handle_custom_pg_exception
+        handle_custom_pg_exception,
     )
 
     APP_STATE = SQLAlchemyAppState(
@@ -98,9 +98,9 @@ def init_sqlalchemy(service_name: str) -> None:
                     async_engine,
                     expire_on_commit=False,
                     class_=sqlalchemy.ext.asyncio.AsyncSession,
-                )
+                ),
             ),
-        }
+        },
     )
 
 
@@ -125,7 +125,7 @@ def tenacity_retry_on_pk_integrity_error(
     matches = []
     for model in models:
         matches.append(
-            f'\\(psycopg.errors.UniqueViolation\\) duplicate key value violates unique constraint "{model.__table__.primary_key.name}"'  # type: ignore[attr-defined]
+            f'\\(psycopg.errors.UniqueViolation\\) duplicate key value violates unique constraint "{model.__table__.primary_key.name}"',  # type: ignore[attr-defined]
         )
     return tenacity.AsyncRetrying(
         retry=tenacity.retry_if_exception_message(match="|".join(matches)),
@@ -140,5 +140,6 @@ async def get_session() -> (
 
 
 Session = typing.Annotated[
-    sqlalchemy.ext.asyncio.AsyncSession, fastapi.Depends(get_session)
+    sqlalchemy.ext.asyncio.AsyncSession,
+    fastapi.Depends(get_session),
 ]

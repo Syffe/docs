@@ -57,7 +57,7 @@ def configure(
 ) -> None:
     if default_ignore_list is not None and extend_ignore_list is not None:
         raise ConfigurationError(
-            "Either default_ignore_list or extend_ignore_list might be given, not both"
+            "Either default_ignore_list or extend_ignore_list might be given, not both",
         )
     if default_ignore_list:
         tardis_settings.default_ignore_list = default_ignore_list
@@ -214,12 +214,12 @@ def _parse_time(time_to_convert: ParsableTimeT) -> datetime.datetime:
 
     if isinstance(time_to_convert, datetime.date):
         return convert_to_timezone_naive(
-            datetime.datetime.combine(time_to_convert, datetime.time())
+            datetime.datetime.combine(time_to_convert, datetime.time()),
         )
 
     if isinstance(time_to_convert, datetime.timedelta):
         return convert_to_timezone_naive(
-            datetime.datetime.now(tz=datetime.UTC) + time_to_convert
+            datetime.datetime.now(tz=datetime.UTC) + time_to_convert,
         )
 
     # isinstance(time_to_convert, str)
@@ -509,7 +509,7 @@ class FakeDatetime(real_datetime, FakeDate, metaclass=FakeDatetimeMeta):
     ) -> FakeDatetime:
         if tz is None:
             return datetime_to_fakedatetime(
-                real_datetime.fromtimestamp(timestamp).replace(tzinfo=None)
+                real_datetime.fromtimestamp(timestamp).replace(tzinfo=None),
             )
         return datetime_to_fakedatetime(real_datetime.fromtimestamp(timestamp, tz))
 
@@ -541,7 +541,7 @@ class FakeDatetime(real_datetime, FakeDate, metaclass=FakeDatetimeMeta):
     @classmethod
     def utcnow(cls) -> FakeDatetime:
         result = cls._time_traveled_to() or real_datetime.now(tz=datetime.UTC).replace(
-            tzinfo=None
+            tzinfo=None,
         )
         return datetime_to_fakedatetime(result)
 
@@ -583,7 +583,8 @@ def pickle_fake_date(
 def pickle_fake_datetime(
     datetime_: datetime.datetime | FakeDatetime,
 ) -> tuple[
-    type[FakeDatetime], tuple[int, int, int, int, int, int, int, datetime.tzinfo | None]
+    type[FakeDatetime],
+    tuple[int, int, int, int, int, int, int, datetime.tzinfo | None],
 ]:
     # A pickle function for FakeDatetime
     return FakeDatetime, (
@@ -721,7 +722,8 @@ class _time_travel:
         freeze_factory: TickingDateTimeFactory | FrozenDateTimeFactory
         if self.tick:
             freeze_factory = TickingDateTimeFactory(
-                self.time_to_travel_to, real_datetime.now()
+                self.time_to_travel_to,
+                real_datetime.now(),
             )
         else:
             freeze_factory = FrozenDateTimeFactory(self.time_to_travel_to)
@@ -771,7 +773,7 @@ class _time_travel:
         if _PERF_COUNTER_NS_PRESENT:
             time.perf_counter_ns = fake_perf_counter_ns
             to_patch.append(
-                ("real_perf_counter_ns", real_perf_counter_ns, fake_perf_counter_ns)
+                ("real_perf_counter_ns", real_perf_counter_ns, fake_perf_counter_ns),
             )
 
         if real_clock is not None:
@@ -808,7 +810,7 @@ class _time_travel:
                     if fake:
                         setattr(module, attribute_name, fake)
                         self.undo_changes.append(
-                            (module, attribute_name, attribute_value)
+                            (module, attribute_name, attribute_value),
                         )
 
         # To avoid breaking `asyncio.sleep()`, let asyncio event loops see real
@@ -853,7 +855,7 @@ class _time_travel:
                         continue
 
                     if mod_name.startswith(self.ignore) or mod_name.endswith(
-                        ".six.moves"
+                        ".six.moves",
                     ):
                         continue
                     if not hasattr(module, "__name__") or module.__name__ in (
@@ -896,13 +898,14 @@ class _time_travel:
         return wrap_coroutine(self, coroutine)
 
     def decorate_callable(
-        self, func: typing.Callable[..., _T]
+        self,
+        func: typing.Callable[..., _T],
     ) -> typing.Callable[..., _T]:
         def wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
             with self as time_factory:
                 if self.as_arg and self.as_kwarg:
                     raise AssertionError(
-                        "You can't specify both as_arg and as_kwarg at the same time. Pick one."
+                        "You can't specify both as_arg and as_kwarg at the same time. Pick one.",
                     )
 
                 if self.as_arg:

@@ -108,28 +108,39 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, e.title, e.reason
+                rule,
+                action,
+                e.title,
+                e.reason,
             )
 
         pull_attrs = condition_value_querier.PullRequest(ctxt)
         try:
             await pull_attrs.render_template(
-                action.config["title"], extra_variables=DUPLICATE_TITLE_EXTRA_VARIABLES
+                action.config["title"],
+                extra_variables=DUPLICATE_TITLE_EXTRA_VARIABLES,
             )
         except condition_value_querier.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, "Invalid title message", str(rmf)
+                rule,
+                action,
+                "Invalid title message",
+                str(rmf),
             )
 
         try:
             await pull_attrs.render_template(
-                action.config["body"], extra_variables=DUPLICATE_BODY_EXTRA_VARIABLES
+                action.config["body"],
+                extra_variables=DUPLICATE_BODY_EXTRA_VARIABLES,
             )
         except condition_value_querier.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, "Invalid body message", str(rmf)
+                rule,
+                action,
+                "Invalid body message",
+                str(rmf),
             )
 
         branches: list[github_types.GitHubRefType] = action.config["branches"].copy()
@@ -149,13 +160,14 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                         regex.match(branch["name"])
                         for regex in action.config["regexes"]
                     )
-                ]
+                ],
             )
 
         assignees = [
             user
             for user in await action_utils.render_users_template(
-                ctxt, action.config["assignees"]
+                ctxt,
+                action.config["assignees"],
             )
             if not user.endswith("[bot]")
         ]
@@ -173,7 +185,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                     "label_conflicts": action.config["label_conflicts"],
                     "title": action.config["title"],
                     "body": action.config["body"],
-                }
+                },
             ),
         )
 
@@ -209,7 +221,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 await self.ctxt.repository.get_branch(branch_name)
             except http.HTTPClientSideError as e:
                 return self._get_failure_copy_result(
-                    branch_name, f"GitHub error: ```{e.response.json()['message']}```"
+                    branch_name,
+                    f"GitHub error: ```{e.response.json()['message']}```",
                 )
 
             try:
@@ -283,7 +296,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                     "to": branch_name,
                     "pull_request_number": new_pull["number"],
                     "conflicts": conflicting,
-                }
+                },
             ),
             self.rule.get_signal_trigger(),
         )
@@ -297,7 +310,12 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
     ) -> CopyResult:
         message = f"{cls.KIND.capitalize()} to branch `{branch_name}` in progress"
         return CopyResult(
-            branch_name, check_api.Conclusion.PENDING, message, job_id, None, False
+            branch_name,
+            check_api.Conclusion.PENDING,
+            message,
+            job_id,
+            None,
+            False,
         )
 
     @classmethod
@@ -313,7 +331,12 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         if details:
             message += f"\n\n{details}"
         return CopyResult(
-            branch_name, check_api.Conclusion.FAILURE, message, None, None, conflicting
+            branch_name,
+            check_api.Conclusion.FAILURE,
+            message,
+            None,
+            None,
+            conflicting,
         )
 
     @staticmethod
@@ -358,7 +381,9 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         # but a backport branch might already be created, but empty, due to previous failures.
         # In that case, we delete the branch, and it will be recreated by the job afterward.
         buffer_branch = duplicate_pull.get_destination_branch_name(
-            self.ctxt.pull["number"], branch_name, self.BRANCH_PREFIX
+            self.ctxt.pull["number"],
+            branch_name,
+            self.BRANCH_PREFIX,
         )
         await self.ctxt.repository.delete_branch_if_exists(buffer_branch)
 
@@ -447,7 +472,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         return [
             user
             for user in await action_utils.render_users_template(
-                self.ctxt, self.config["assignees"]
+                self.ctxt,
+                self.config["assignees"],
             )
             if not user.endswith("[bot]")
         ]
@@ -460,7 +486,12 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             previous_result = previous_results.get(
                 branch_name,
                 CopyResult(
-                    branch_name, check_api.Conclusion.PENDING, "", None, None, False
+                    branch_name,
+                    check_api.Conclusion.PENDING,
+                    "",
+                    None,
+                    None,
+                    False,
                 ),
             )
             if previous_result.status == check_api.Conclusion.PENDING:
@@ -473,7 +504,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                         at=date.utcnow() + datetime.timedelta(minutes=30),
                     )
                     result = self._get_inprogress_copy_result(
-                        branch_name, previous_result.job_id
+                        branch_name,
+                        previous_result.job_id,
                     )
             else:
                 result = previous_result
@@ -495,7 +527,9 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
 
     async def _save_state(self, results: list[CopyResult]) -> None:
         await self.ctxt.repository.installation.redis.cache.set(
-            self._state_redis_key, json.dumps(results), ex=COPY_STATE_EXPIRATION
+            self._state_redis_key,
+            json.dumps(results),
+            ex=COPY_STATE_EXPIRATION,
         )
 
     async def _load_state(self) -> dict[github_types.GitHubRefType, CopyResult]:
@@ -517,10 +551,13 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         return actions.CANCELLED_CHECK_REPORT
 
     async def get_existing_duplicate_pull(
-        self, branch_name: github_types.GitHubRefType
+        self,
+        branch_name: github_types.GitHubRefType,
     ) -> github_types.GitHubPullRequest | None:
         bp_branch = duplicate_pull.get_destination_branch_name(
-            self.ctxt.pull["number"], branch_name, self.BRANCH_PREFIX
+            self.ctxt.pull["number"],
+            branch_name,
+            self.BRANCH_PREFIX,
         )
         pulls = [
             pull
@@ -553,7 +590,8 @@ class CopyAction(actions.Action):
     def validator(self) -> actions.ValidatorT:
         return {
             voluptuous.Required("bot_account", default=None): voluptuous.Any(
-                None, types.Jinja2
+                None,
+                types.Jinja2,
             ),
             voluptuous.Required("branches", default=list): [str],
             voluptuous.Required("regexes", default=list): [voluptuous.Coerce(Regex)],
@@ -562,7 +600,8 @@ class CopyAction(actions.Action):
             voluptuous.Required("labels", default=list): [str],
             voluptuous.Required("label_conflicts", default="conflicts"): str,
             voluptuous.Required(
-                "title", default=f"{{{{ title }}}} ({self.KIND} #{{{{ number }}}})"
+                "title",
+                default=f"{{{{ title }}}} ({self.KIND} #{{{{ number }}}})",
             ): DuplicateTitleJinja2,
             voluptuous.Required(
                 "body",

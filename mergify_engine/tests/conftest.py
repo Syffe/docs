@@ -87,7 +87,8 @@ def original_environment_variables(
 
 @pytest.fixture(autouse=True)
 def setup_logging(
-    request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture
+    request: pytest.FixtureRequest,
+    caplog: pytest.LogCaptureFixture,
 ) -> abc.Generator[None, None, None]:
     # daiquiri removes all handlers during setup, as we want to sexy output and the pytest
     # capability at the same, we must add back the pytest handler
@@ -180,7 +181,7 @@ def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
     # in autouse (session scope fixture cannot require function scoped fixture)
     loop = asyncio.get_event_loop_policy().new_event_loop()
     loop.run_until_complete(
-        test_utils.create_database(mocked_url_without_db_name.geturl(), db_name)
+        test_utils.create_database(mocked_url_without_db_name.geturl(), db_name),
     )
     loop.close()
 
@@ -236,13 +237,14 @@ async def db(
 
 @pytest.fixture
 async def populated_db(
-    db: sqlalchemy.ext.asyncio.AsyncSession, request: pytest.FixtureRequest
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    request: pytest.FixtureRequest,
 ) -> abc.AsyncGenerator[sqlalchemy.ext.asyncio.AsyncSession, None]:
     if "populated_db_datasets" in request.keywords:
         datasets = request.keywords["populated_db_datasets"].args
     else:
         raise RuntimeError(
-            "At leat one dataset must be set to use populated_db fixture"
+            "At leat one dataset must be set to use populated_db fixture",
         )
 
     await DbPopulator.load(db, datasets)
@@ -294,7 +296,8 @@ async def github_server(
 ) -> abc.AsyncGenerator[respx.MockRouter, None]:
     async with respx.mock(base_url=settings.GITHUB_REST_API_URL) as respx_mock:
         respx_mock.post("/app/installations/12345/access_tokens").respond(
-            200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}
+            200,
+            json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"},
         )
         yield respx_mock
 
@@ -309,7 +312,7 @@ async def log_as(request: fastapi.Request, user_id: int) -> fastapi.Response:
             sqlalchemy.select(github_user.GitHubUser).where(
                 github_user.GitHubUser.id == int(user_id),
                 github_user.GitHubUser.oauth_access_token.isnot(None),
-            )
+            ),
         )
 
         user = typing.cast(github_user.GitHubUser, result.unique().scalar_one_or_none())
@@ -428,7 +431,9 @@ def prepare_google_cloud_storage_setup(
         mock.Mock(return_value=AnonymousCredentials()),
     )
     monkeypatch.setattr(
-        settings, "LOG_EMBEDDER_GCS_CREDENTIALS", pydantic.SecretStr(json.dumps({}))
+        settings,
+        "LOG_EMBEDDER_GCS_CREDENTIALS",
+        pydantic.SecretStr(json.dumps({})),
     )
     monkeypatch.setattr(settings, "LOG_EMBEDDER_GCS_BUCKET", bucket_name)
 

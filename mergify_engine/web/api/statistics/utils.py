@@ -31,15 +31,17 @@ def is_timestamp_in_future(timestamp: int) -> bool:
 class TimestampNotInFuture(int):
     @classmethod
     def __get_pydantic_core_schema__(
-        cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
+        cls,
+        source_type: typing.Any,
+        handler: pydantic.GetCoreSchemaHandler,
     ) -> pydantic_core.CoreSchema:
         from_int_schema = pydantic_core.core_schema.chain_schema(
             [
                 pydantic_core.core_schema.int_schema(),
                 pydantic_core.core_schema.no_info_plain_validator_function(
-                    cls.validate
+                    cls.validate,
                 ),
-            ]
+            ],
         )
 
         return pydantic_core.core_schema.json_or_python_schema(
@@ -121,7 +123,7 @@ async def get_queue_checks_duration(
             (
                 event.speculative_check_pull_request.checks_ended_at
                 - event.speculative_check_pull_request.checks_started_at
-            ).total_seconds()
+            ).total_seconds(),
         )
 
     if qstats:
@@ -133,7 +135,8 @@ async def get_queue_checks_duration(
 
 
 QueueChecksDurationsPerPartitionQueueBranchT = dict[
-    str, dict[str, dict[str, list[float]]]
+    str,
+    dict[str, dict[str, list[float]]],
 ]
 
 
@@ -145,7 +148,11 @@ async def get_queue_check_durations_per_partition_queue_branch(
     queue_names: tuple[qr_config.QueueName, ...],
 ) -> QueueChecksDurationsPerPartitionQueueBranchT:
     events = await get_queue_checks_end_events(
-        session, repository_ctxt, partition_rules, queue_names, partition_names
+        session,
+        repository_ctxt,
+        partition_rules,
+        queue_names,
+        partition_names,
     )
 
     stats: QueueChecksDurationsPerPartitionQueueBranchT = {}
@@ -170,6 +177,6 @@ async def get_queue_check_durations_per_partition_queue_branch(
             (
                 event.speculative_check_pull_request.checks_ended_at
                 - event.speculative_check_pull_request.checks_started_at
-            ).total_seconds()
+            ).total_seconds(),
         )
     return stats

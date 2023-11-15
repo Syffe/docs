@@ -56,12 +56,13 @@ router = fastapi.APIRouter(
     ],
 )
 async def list_applications(
-    github_account_id: security.GitHubAccountId, session: database.Session
+    github_account_id: security.GitHubAccountId,
+    session: database.Session,
 ) -> ApplicationsList:
     result = await session.execute(
         sqlalchemy.select(application_keys.ApplicationKey).where(
-            application_keys.ApplicationKey.github_account_id == github_account_id
-        )
+            application_keys.ApplicationKey.github_account_id == github_account_id,
+        ),
     )
     try:
         applications = result.unique().scalars().all()
@@ -79,7 +80,7 @@ async def list_applications(
                 created_at=application.created_at.isoformat(),
             )
             for application in applications
-        ]
+        ],
     )
 
 
@@ -95,7 +96,8 @@ async def create_application(
     session: database.Session,
     current_user: security.CurrentUser,
     membership: typing.Annotated[
-        security.Membership, fastapi.Depends(security.get_membership)
+        security.Membership,
+        fastapi.Depends(security.get_membership),
     ],
 ) -> ApplicationJSONWithAPIKey:
     # NOTE(sileht): the engine and dashboard token verification expected the
@@ -141,7 +143,8 @@ async def create_application(
         await session.commit()
     except application_keys.ApplicationKeyLimitReached:
         raise fastapi.HTTPException(
-            status_code=400, detail="Maximun number of applications reached"
+            status_code=400,
+            detail="Maximun number of applications reached",
         )
 
     await session.refresh(application)
@@ -174,7 +177,7 @@ async def update_application(
         sqlalchemy.select(application_keys.ApplicationKey)
         .join(application_keys.ApplicationKey.github_account)
         .where(application_keys.ApplicationKey.id == application_id)
-        .where(application_keys.ApplicationKey.github_account_id == github_account_id)
+        .where(application_keys.ApplicationKey.github_account_id == github_account_id),
     )
     try:
         application = result.unique().scalar_one()
@@ -211,7 +214,7 @@ async def delete_application(
     result = await session.execute(
         sqlalchemy.select(application_keys.ApplicationKey)
         .where(application_keys.ApplicationKey.id == application_id)
-        .where(application_keys.ApplicationKey.github_account_id == github_account_id)
+        .where(application_keys.ApplicationKey.github_account_id == github_account_id),
     )
     try:
         application = result.unique().scalar_one()

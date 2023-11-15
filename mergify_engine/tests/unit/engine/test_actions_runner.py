@@ -96,7 +96,7 @@ async def test_get_already_merged_summary(
                 "login": merged_by,
                 "type": "User",
                 "avatar_url": "",
-            }
+            },
         ),
     )
     ctxt.repository._caches.branch_protections[
@@ -133,7 +133,7 @@ async def test_get_already_merged_summary_without_rules(
                 "login": merged_by,
                 "type": "User",
                 "avatar_url": "",
-            }
+            },
         ),
     )
     ctxt.repository._caches.branch_protections[
@@ -194,19 +194,21 @@ async def test_get_already_merged_summary_without_rules(
             conditions.PullRequestRuleConditions(
                 [
                     cond_config.RuleConditionSchema(
-                        {"not": {"or": ["base=main", "label=foo"]}}
-                    )
-                ]
+                        {"not": {"or": ["base=main", "label=foo"]}},
+                    ),
+                ],
             ),
             "conditions: |-\n  - [ ] not:\n    - [ ] any of:\n      - [ ] `base=main`\n      - [ ] `label=foo`\n",
         ),
     ],
 )
 async def test_sanitize_action_config(
-    config_key: str, config_value: typing.Any, expected_value: typing.Any
+    config_key: str,
+    config_value: typing.Any,
+    expected_value: typing.Any,
 ) -> None:
     final_value = yaml.safe_dump(
-        {config_key: actions_runner._sanitize_action_config(config_key, config_value)}
+        {config_key: actions_runner._sanitize_action_config(config_key, config_value)},
     )
 
     if isinstance(expected_value, tuple):

@@ -23,7 +23,7 @@ def _fake_full_pull_request(
             "type": "User",
             "login": github_types.GitHubLogin("contributor"),
             "avatar_url": "",
-        }
+        },
     )
 
     pull: github_types.GitHubPullRequest = {
@@ -70,7 +70,7 @@ def _fake_full_pull_request(
         "head": {
             "sha": github_types.SHAType("the-head-sha"),
             "label": github_types.GitHubHeadBranchLabel(
-                f"{pull_request_author['login']}:feature-branch"
+                f"{pull_request_author['login']}:feature-branch",
             ),
             "ref": github_types.GitHubRefType("feature-branch"),
             "repo": {
@@ -115,20 +115,20 @@ async def test_can_repo_use_pull_requests_in_pg(
     ):
         assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
-                db_populator.DbPopulator.internal_ref["OneRepo"]
-            )
+                db_populator.DbPopulator.internal_ref["OneRepo"],
+            ),
         )
         assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
-            repo_owner=github_types.GitHubLogin("OneAccount")
+            repo_owner=github_types.GitHubLogin("OneAccount"),
         )
 
         assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
-                db_populator.DbPopulator.internal_ref["colliding_repo_1"]
-            )
+                db_populator.DbPopulator.internal_ref["colliding_repo_1"],
+            ),
         )
         assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
-            repo_owner=github_types.GitHubLogin("colliding-account-1")
+            repo_owner=github_types.GitHubLogin("colliding-account-1"),
         )
 
     with mock.patch(
@@ -137,20 +137,20 @@ async def test_can_repo_use_pull_requests_in_pg(
     ):
         assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
-                db_populator.DbPopulator.internal_ref["OneRepo"]
-            )
+                db_populator.DbPopulator.internal_ref["OneRepo"],
+            ),
         )
         assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
-            repo_owner=github_types.GitHubLogin("OneAccount")
+            repo_owner=github_types.GitHubLogin("OneAccount"),
         )
 
         assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
-                db_populator.DbPopulator.internal_ref["colliding_repo_1"]
-            )
+                db_populator.DbPopulator.internal_ref["colliding_repo_1"],
+            ),
         )
         assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
-            repo_owner=github_types.GitHubLogin("colliding-account-1")
+            repo_owner=github_types.GitHubLogin("colliding-account-1"),
         )
 
     with mock.patch(
@@ -159,20 +159,20 @@ async def test_can_repo_use_pull_requests_in_pg(
     ):
         assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
-                db_populator.DbPopulator.internal_ref["OneRepo"]
-            )
+                db_populator.DbPopulator.internal_ref["OneRepo"],
+            ),
         )
         assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
-            repo_owner=github_types.GitHubLogin("OneAccount")
+            repo_owner=github_types.GitHubLogin("OneAccount"),
         )
 
         assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
-                db_populator.DbPopulator.internal_ref["colliding_repo_1"]
-            )
+                db_populator.DbPopulator.internal_ref["colliding_repo_1"],
+            ),
         )
         assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
-            repo_owner=github_types.GitHubLogin("colliding-account-1")
+            repo_owner=github_types.GitHubLogin("colliding-account-1"),
         )
 
 

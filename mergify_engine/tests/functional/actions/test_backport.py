@@ -38,7 +38,7 @@ class BackportActionTestBase(base.FunctionalTestBase):
                     ],
                     "actions": {"backport": config or {"branches": [stable_branch]}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules), test_branches=[stable_branch])
@@ -69,7 +69,7 @@ class BackportActionTestBase(base.FunctionalTestBase):
         bp_pull = pulls[0]
         if expected_title is None:
             assert bp_pull["title"].endswith(
-                f": pull request n1 from integration (backport #{p['number']})"
+                f": pull request n1 from integration (backport #{p['number']})",
             )
         else:
             assert bp_pull["title"] == expected_title
@@ -104,12 +104,12 @@ class BackportActionTestBase(base.FunctionalTestBase):
             async for ref in self.find_git_refs(
                 self.url_origin,
                 [
-                    f"mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p['number']}"
+                    f"mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p['number']}",
                 ],
             )
         ]
         assert [
-            f"refs/heads/mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p['number']}"
+            f"refs/heads/mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p['number']}",
         ] == refs
         return await self.get_pull(pulls[0]["number"])
 
@@ -135,7 +135,7 @@ class TestBackportAction(BackportActionTestBase):
                     ],
                     "actions": {"backport": {"branches": ["crashme"]}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules), test_branches=[])
@@ -161,7 +161,9 @@ class TestBackportAction(BackportActionTestBase):
         )
 
     async def _do_backport_conflicts(
-        self, ignore_conflicts: bool, labels: None | list[str] = None
+        self,
+        ignore_conflicts: bool,
+        labels: None | list[str] = None,
     ) -> tuple[github_types.GitHubPullRequest, list[github_types.CachedGitHubCheckRun]]:
         stable_branch = self.get_full_branch_name("stable/#3.1")
         rules = {
@@ -184,10 +186,10 @@ class TestBackportAction(BackportActionTestBase):
                         "backport": {
                             "branches": [stable_branch],
                             "ignore_conflicts": ignore_conflicts,
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
         if labels is not None:
             rules["pull_request_rules"][1]["actions"]["backport"]["labels"] = labels  # type: ignore[index]
@@ -281,7 +283,8 @@ no changes added to commit (use "git add" and/or "git commit -a")
     async def test_backport_with_labels(self) -> None:
         stable_branch = self.get_full_branch_name("stable/#3.1")
         p = await self._do_test_backport(
-            "merge", config={"branches": [stable_branch], "labels": ["backported"]}
+            "merge",
+            config={"branches": [stable_branch], "labels": ["backported"]},
         )
         assert [label["name"] for label in p["labels"]] == ["backported"]
 
@@ -350,7 +353,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
                     ],
                     "actions": {"backport": {"branches": [stable_branch]}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules), test_branches=[stable_branch])
@@ -385,7 +388,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
         assert not bp_pull["merged"]
 
         assert bp_pull["title"].endswith(
-            f": pull request n1 from integration (backport #{p1['number']})"
+            f": pull request n1 from integration (backport #{p1['number']})",
         )
         commits = await self.get_commits(bp_pull["number"])
         # Asserts the commit already present, introduced by P2, in the stable branch has been skipped
@@ -414,12 +417,12 @@ no changes added to commit (use "git add" and/or "git commit -a")
             async for ref in self.find_git_refs(
                 self.url_origin,
                 [
-                    f"mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p1['number']}"
+                    f"mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p1['number']}",
                 ],
             )
         ]
         assert [
-            f"refs/heads/mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p1['number']}"
+            f"refs/heads/mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p1['number']}",
         ] == refs
 
 

@@ -32,7 +32,7 @@ class TestAttributes(base.FunctionalTestBase):
                         "#approved-reviews-by=0",
                     ],
                     "actions": {"comment": {"message": "no way"}},
-                }
+                },
             ],
         }
         await self.setup_repo(yaml.dump(rules))
@@ -54,14 +54,14 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "default",
                     "merge_conditions": ["schedule: MON-FRI 08:00-17:00"],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
                     "name": "fast queue",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"queue": {"name": "default"}},
-                }
+                },
             ],
         }
         with time_travel("2021-09-22T08:00:02", tick=True):
@@ -77,7 +77,8 @@ class TestAttributes(base.FunctionalTestBase):
 
             await self.run_full_engine()
             await self.wait_for(
-                "pull_request", {"action": "closed", "number": pr_queue["number"]}
+                "pull_request",
+                {"action": "closed", "number": pr_queue["number"]},
             )
             await self.wait_for_pull_request(
                 "closed",
@@ -107,7 +108,7 @@ class TestAttributes(base.FunctionalTestBase):
                     ],
                     "actions": {},
                 },
-            ]
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -130,8 +131,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "no-draft",
                     "conditions": ["schedule=MON-FRI 12:00-15:00"],
                     "actions": {"comment": {"message": "it's time"}},
-                }
-            ]
+                },
+            ],
         }
         # Sunday
         with time_travel("2021-05-30T10:00:00", tick=True):
@@ -160,8 +161,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "no-draft",
                     "conditions": ["schedule=MON-FRI 08:00-17:00[Pacific/Auckland]"],
                     "actions": {"comment": {"message": "it's time"}},
-                }
-            ]
+                },
+            ],
         }
         # Sunday 19:00 for UTC
         # Monday 07:00 for NZST (Auckland)
@@ -191,8 +192,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "no-draft",
                     "conditions": ["created-at<9999 days ago"],
                     "actions": {"comment": {"message": "it's time"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr()
@@ -284,8 +285,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "no-draft",
                     "conditions": ["created-at>=9999 days ago"],
                     "actions": {"comment": {"message": "it's time"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr()
@@ -300,8 +301,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "no-draft",
                     "conditions": ["draft"],
                     "actions": {"comment": {"message": "draft pr"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -337,7 +338,7 @@ class TestAttributes(base.FunctionalTestBase):
         assert await condition_value_querier.PullRequest(ctxt).review_requested == []
         assert (
             await condition_value_querier.PullRequest(
-                ctxt
+                ctxt,
             ).branch_protection_review_decision
             is None
         )
@@ -355,7 +356,7 @@ class TestAttributes(base.FunctionalTestBase):
             | condition_value_querier.PullRequest.NUMBER_ATTRIBUTES
             | condition_value_querier.PullRequest.BOOLEAN_ATTRIBUTES
             | condition_value_querier.PullRequest.LIST_ATTRIBUTES
-            | condition_value_querier.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION
+            | condition_value_querier.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION,
         )
         commit = (await ctxt.commits)[0]
         assert {
@@ -381,7 +382,7 @@ class TestAttributes(base.FunctionalTestBase):
             "co-authors": set(),
             "commented-reviews-by": [],
             "commits-unverified": [
-                "test_draft_attribute: pull request n2 from integration"
+                "test_draft_attribute: pull request n2 from integration",
             ],
             "milestone": "",
             "label": [],
@@ -423,11 +424,11 @@ class TestAttributes(base.FunctionalTestBase):
                 {
                     "name": "no-draft",
                     "conditions": [
-                        f"repository-full-name={self.repository_ctxt.repo['full_name']}"
+                        f"repository-full-name={self.repository_ctxt.repo['full_name']}",
                     ],
                     "actions": {"comment": {"message": "repository name full"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -453,11 +454,11 @@ class TestAttributes(base.FunctionalTestBase):
                 {
                     "name": "no-draft",
                     "conditions": [
-                        f"repository-full-name!={self.repository_ctxt.repo['name']}"
+                        f"repository-full-name!={self.repository_ctxt.repo['name']}",
                     ],
                     "actions": {"comment": {"message": "repository name full (wrong)"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -483,13 +484,13 @@ class TestAttributes(base.FunctionalTestBase):
                 {
                     "name": "no-draft",
                     "conditions": [
-                        f"repository-name!={self.repository_ctxt.repo['full_name']}"
+                        f"repository-name!={self.repository_ctxt.repo['full_name']}",
                     ],
                     "actions": {
-                        "comment": {"message": "repository name short (wrong)"}
+                        "comment": {"message": "repository name short (wrong)"},
                     },
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -515,11 +516,11 @@ class TestAttributes(base.FunctionalTestBase):
                 {
                     "name": "no-draft",
                     "conditions": [
-                        f"repository-name={self.repository_ctxt.repo['name']}"
+                        f"repository-name={self.repository_ctxt.repo['name']}",
                     ],
                     "actions": {"comment": {"message": "repository name short"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -552,16 +553,16 @@ class TestAttributes(base.FunctionalTestBase):
                                         f"base={self.main_branch_name}",
                                         "closed",
                                         "label=foo",
-                                    ]
+                                    ],
                                 },
                                 "merged",
                                 {"not": {"and": ["label=foo", "label=bar"]}},
-                            ]
+                            ],
                         },
                     ],
                     "actions": {"comment": {"message": "and or pr"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -579,11 +580,11 @@ class TestAttributes(base.FunctionalTestBase):
                 {
                     "name": "list_commits",
                     "conditions": [
-                        "commits~=test_commits_list_condition: pull request n1 from integration"
+                        "commits~=test_commits_list_condition: pull request n1 from integration",
                     ],
                     "actions": {"comment": {"message": "list commits not empty"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr()
@@ -598,8 +599,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "test-commits",
                     "conditions": ["commits[-1].date_committer < 1 day ago"],
                     "actions": {"comment": {"message": "long time no see"}},
-                }
-            ]
+                },
+            ],
         }
         start_date = datetime.datetime(2022, 12, 12, tzinfo=datetime.UTC)
         with time_travel(start_date, tick=True):
@@ -626,7 +627,7 @@ class TestAttributes(base.FunctionalTestBase):
                     "conditions": ["-commits[-1].commit_verification_verified"],
                     "actions": {"comment": {"message": "verified is not good"}},
                 },
-            ]
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr1 = await self.create_pr(verified=True)
@@ -648,8 +649,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "no-wip",
                     "conditions": ["commits[*].commit_message~=wip"],
                     "actions": {"comment": {"message": "no wip allowed"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -697,7 +698,7 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "no non verified",
                     "conditions": ["-commits[*].commit_verification_verified"],
                     "actions": {
-                        "comment": {"message": "no non-verified commits allowed"}
+                        "comment": {"message": "no non-verified commits allowed"},
                     },
                 },
                 {
@@ -705,7 +706,7 @@ class TestAttributes(base.FunctionalTestBase):
                     "conditions": ["commits[*].commit_verification_verified"],
                     "actions": {"comment": {"message": "verified is life"}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -728,8 +729,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "commits-unverified",
                     "conditions": ["#commits-unverified=1"],
                     "actions": {"comment": {"message": "commits unverified"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(two_commits=False)
@@ -744,8 +745,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "commits-unverified",
                     "conditions": ["#commits-unverified=2"],
                     "actions": {"comment": {"message": "commits unverified"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(two_commits=True)
@@ -759,11 +760,11 @@ class TestAttributes(base.FunctionalTestBase):
                 {
                     "name": "commits-unverified",
                     "conditions": [
-                        'commits-unverified="test_one_commit_unverified_message: pull request n1 from integration"'
+                        'commits-unverified="test_one_commit_unverified_message: pull request n1 from integration"',
                     ],
                     "actions": {"comment": {"message": "commits unverified"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(two_commits=True)
@@ -778,8 +779,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "commits-unverified",
                     "conditions": ['commits-unverified="foo"'],
                     "actions": {"comment": {"message": "foo test"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(two_commits=True)
@@ -794,8 +795,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "commits-unverified",
                     "conditions": ["#commits-unverified=0"],
                     "actions": {"comment": {"message": "commits verified"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(verified=True)
@@ -813,8 +814,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "commits-unverified",
                     "conditions": ["#commits-unverified=0"],
                     "actions": {"comment": {"message": "commits verified"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(verified=True, two_commits=True)
@@ -831,15 +832,17 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "resolved-threads",
                     "conditions": ["#review-threads-resolved=0"],
                     "actions": {
-                        "comment": {"message": "review-threads-resolved comment"}
+                        "comment": {"message": "review-threads-resolved comment"},
                     },
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(files={"yves_testing_file": "foo"})
         await self.create_review_thread(
-            pr["number"], "you shouldn't write `foo` here", path="yves_testing_file"
+            pr["number"],
+            "you shouldn't write `foo` here",
+            path="yves_testing_file",
         )
         await self.run_engine()
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
@@ -860,14 +863,14 @@ class TestAttributes(base.FunctionalTestBase):
                         "#review-threads-unresolved=3",
                     ],
                     "actions": {
-                        "comment": {"message": "review-threads-unresolved comment"}
+                        "comment": {"message": "review-threads-unresolved comment"},
                     },
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(
-            files={"yves_testing_file": "foo", "super_original_testfile": "42\ntest\n"}
+            files={"yves_testing_file": "foo", "super_original_testfile": "42\ntest\n"},
         )
         await self.create_review_thread(
             pr["number"],
@@ -875,7 +878,9 @@ class TestAttributes(base.FunctionalTestBase):
             path="yves_testing_file",
         )
         comment_id = await self.create_review_thread(
-            pr["number"], "How original", path="super_original_testfile"
+            pr["number"],
+            "How original",
+            path="super_original_testfile",
         )
         await self.create_review_thread(
             pr["number"],
@@ -885,7 +890,9 @@ class TestAttributes(base.FunctionalTestBase):
         )
         await self.reply_to_review_comment(pr["number"], "much originality", comment_id)
         await self.reply_to_review_comment(
-            pr["number"], "...maybe too original", comment_id
+            pr["number"],
+            "...maybe too original",
+            comment_id,
         )
         await self.run_engine()
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
@@ -910,10 +917,10 @@ class TestAttributes(base.FunctionalTestBase):
                         'review-threads-unresolved="INDEED"',
                     ],
                     "actions": {
-                        "comment": {"message": "conditions matched; s u c c e s s"}
+                        "comment": {"message": "conditions matched; s u c c e s s"},
                     },
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(
@@ -921,7 +928,7 @@ class TestAttributes(base.FunctionalTestBase):
                 "testing_file_number_one": "p e r f e c t i o n",
                 "another_one": "can't stop testing",
                 "this_file_will_change_your_life": "just kidding",
-            }
+            },
         )
         await self.create_review_thread(
             pr["number"],
@@ -977,18 +984,18 @@ class TestAttributes(base.FunctionalTestBase):
                     ],
                     "actions": {
                         "comment": {
-                            "message": "review-thread-resolved comment showing success"
-                        }
+                            "message": "review-thread-resolved comment showing success",
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(
             files={
                 "another_amazing_testing_file": "what did you expect ?",
                 "love to test": "noice",
-            }
+            },
         )
         await self.create_review_thread(
             pr["number"],
@@ -1029,7 +1036,7 @@ class TestAttributes(base.FunctionalTestBase):
                 {
                     "name": "review decision CHANGES_REQUESTED",
                     "conditions": [
-                        "branch-protection-review-decision=CHANGES_REQUESTED"
+                        "branch-protection-review-decision=CHANGES_REQUESTED",
                     ],
                     "actions": {"comment": {"message": "changes-requested"}},
                 },
@@ -1078,7 +1085,8 @@ class TestAttributes(base.FunctionalTestBase):
         assert comment_2["comment"]["body"] == "changes-requested"
 
         await self.create_review(
-            pr["number"], oauth_token=settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN
+            pr["number"],
+            oauth_token=settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN,
         )
         await self.run_engine()
 
@@ -1092,8 +1100,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "name": "Comment on New Year's Day 2024",
                     "conditions": ["current-datetime>=2024-01-01T00:00[Europe/Paris]"],
                     "actions": {"comment": {"message": "Happy New Year!"}},
-                }
-            ]
+                },
+            ],
         }
 
         with time_travel("2023-12-31T22:00:00Z", tick=True):
@@ -1118,11 +1126,11 @@ class TestAttributes(base.FunctionalTestBase):
                 {
                     "name": "Comment on New Year's Day 2024",
                     "conditions": [
-                        "current-datetime=2024-01-01T00:00/2024-01-01T23:59[Europe/Paris]"
+                        "current-datetime=2024-01-01T00:00/2024-01-01T23:59[Europe/Paris]",
                     ],
                     "actions": {"comment": {"message": "Happy New Year!"}},
-                }
-            ]
+                },
+            ],
         }
 
         with time_travel("2023-12-31T23:59+01", tick=True):
@@ -1153,8 +1161,8 @@ class TestAttributes(base.FunctionalTestBase):
                     "conditions": [f"head-repo-full-name={head_repo_full_name_og}"],
                     "actions": {
                         "comment": {
-                            "message": "head-repo-full-name={{ head_repo_full_name }}"
-                        }
+                            "message": "head-repo-full-name={{ head_repo_full_name }}",
+                        },
                     },
                 },
                 {
@@ -1162,11 +1170,11 @@ class TestAttributes(base.FunctionalTestBase):
                     "conditions": [f"head-repo-full-name={head_repo_full_name_fork}"],
                     "actions": {
                         "comment": {
-                            "message": "head-repo-full-name={{ head_repo_full_name }}"
-                        }
+                            "message": "head-repo-full-name={{ head_repo_full_name }}",
+                        },
                     },
                 },
-            ]
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -1200,8 +1208,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
                         "label=automerge",
                     ],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -1217,7 +1225,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, pr_labeled["pull_request"])
         assert ctxt.get_depends_on() == [pr1["number"], pr2["number"], 9999999]
         assert await condition_value_querier.PullRequest(ctxt)._get_consolidated_data(
-            ctxt, "depends-on"
+            ctxt,
+            "depends-on",
         ) == [f"#{pr2['number']}"]
 
         repo_url = ctxt.pull["base"]["repo"]["html_url"]
@@ -1245,8 +1254,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
                         "label=automerge",
                     ],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
         # 12:00 18th April 2023
         start_date = datetime.datetime(2023, 4, 18, 12, tzinfo=date.UTC)
@@ -1260,7 +1269,10 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
             ctxt = context.Context(self.repository_ctxt, pr_labeled["pull_request"])
             assert ctxt.get_merge_after() == datetime.datetime(
-                2023, 4, 19, tzinfo=date.UTC
+                2023,
+                4,
+                19,
+                tzinfo=date.UTC,
             )
 
             summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
@@ -1291,8 +1303,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
                     "name": "statuses-error-state",
                     "conditions": ["check-failure=sick-ci"],
                     "actions": {"post_check": {}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
@@ -1300,7 +1312,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
-            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+            await ctxt.pull_engine_check_runs,
+            key=operator.itemgetter("name"),
         )
         assert len(sorted_checks) == 2
         assert "failure" == sorted_checks[0]["conclusion"]
@@ -1309,7 +1322,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         await self.run_engine()
         ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
-            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+            await ctxt.pull_engine_check_runs,
+            key=operator.itemgetter("name"),
         )
         assert len(sorted_checks) == 2
         assert "success" == sorted_checks[0]["conclusion"]
@@ -1321,8 +1335,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
                     "name": "check-run-failure-state",
                     "conditions": ["check-failure=sick-ci"],
                     "actions": {"post_check": {}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
@@ -1330,7 +1344,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
-            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+            await ctxt.pull_engine_check_runs,
+            key=operator.itemgetter("name"),
         )
         assert len(sorted_checks) == 2
         assert "failure" == sorted_checks[0]["conclusion"]
@@ -1340,7 +1355,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
-            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+            await ctxt.pull_engine_check_runs,
+            key=operator.itemgetter("name"),
         )
         assert len(sorted_checks) == 3
         assert sorted_checks[0]["name"] == "Rule: check-run-failure-state (post_check)"
@@ -1353,8 +1369,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
                     "name": "check-run-timeout-state",
                     "conditions": ["check-timed-out=lazy-ci"],
                     "actions": {"post_check": {}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
@@ -1362,7 +1378,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
-            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+            await ctxt.pull_engine_check_runs,
+            key=operator.itemgetter("name"),
         )
         assert len(sorted_checks) == 2
         assert "failure" == sorted_checks[0]["conclusion"]
@@ -1372,7 +1389,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
-            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+            await ctxt.pull_engine_check_runs,
+            key=operator.itemgetter("name"),
         )
         assert len(sorted_checks) == 3
         assert sorted_checks[0]["name"] == "Rule: check-run-timeout-state (post_check)"
@@ -1389,7 +1407,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
                     ],
                     "actions": {"close": {}},
                 },
-            ]
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -1414,7 +1432,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {

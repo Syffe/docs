@@ -193,8 +193,8 @@ class TestQueueApi(base.FunctionalTestBase):
                         "update_bot_account": None,
                         "autosquash": True,
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules), forward_to_engine=True)
@@ -275,7 +275,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "autosquash": True,
                     },
                 },
-            ]
+            ],
         }
 
     async def test_get_queues(self) -> None:
@@ -288,7 +288,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -393,7 +393,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "schedule!=MON-FRI 12:00-15:00",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -422,7 +422,9 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.run_engine()
             ctxt = context.Context(self.repository_ctxt, p, [])
             queue_ctxt = context.Context(
-                self.repository_ctxt, tmp_mq_pr["pull_request"], []
+                self.repository_ctxt,
+                tmp_mq_pr["pull_request"],
+                [],
             )
             assert "continuous-integration/fake-ci" in (  # type:ignore [operator]
                 await condition_value_querier.QueuePullRequest(ctxt, queue_ctxt).check
@@ -473,10 +475,10 @@ class TestQueueApi(base.FunctionalTestBase):
                                     "match": False,
                                     "evaluation_error": None,
                                     "related_checks": [
-                                        "continuous-integration/fake-ci"
+                                        "continuous-integration/fake-ci",
                                     ],
                                     "next_evaluation_at": None,
-                                }
+                                },
                             ],
                         },
                         {
@@ -492,9 +494,9 @@ class TestQueueApi(base.FunctionalTestBase):
                                     "evaluation_error": None,
                                     "related_checks": [],
                                     "next_evaluation_at": anys.AnyContains(
-                                        "2023-01-10T15:00:01"
+                                        "2023-01-10T15:00:01",
                                     ),
-                                }
+                                },
                             ],
                         },
                         {
@@ -510,7 +512,7 @@ class TestQueueApi(base.FunctionalTestBase):
                                     "evaluation_error": None,
                                     "related_checks": [],
                                     "next_evaluation_at": None,
-                                }
+                                },
                             ],
                         },
                     ],
@@ -541,7 +543,7 @@ class TestQueueApi(base.FunctionalTestBase):
                     "start_at": {"hour": 15, "minute": 0},
                     "end_at": {"hour": 23, "minute": 59},
                 },
-            ]
+            ],
         }
         assert schedule == {
             "timezone": "UTC",
@@ -591,7 +593,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -664,10 +666,10 @@ class TestQueueApi(base.FunctionalTestBase):
             assert len(r.json()["queues"][0]["pull_requests"]) == 1
             queue_pr_data = r.json()["queues"][0]["pull_requests"][0]
             checks_start = datetime.datetime.fromisoformat(
-                queue_pr_data["mergeability_check"]["started_at"]
+                queue_pr_data["mergeability_check"]["started_at"],
             )
             expected_time_of_merge = checks_start + datetime.timedelta(
-                seconds=median_checks_duration
+                seconds=median_checks_duration,
             )
             assert (
                 queue_pr_data["estimated_time_of_merge"]
@@ -686,7 +688,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -767,27 +769,27 @@ class TestQueueApi(base.FunctionalTestBase):
             assert len(r.json()["queues"][0]["pull_requests"]) == 3
             first_queued_pr_data = r.json()["queues"][0]["pull_requests"][0]
             first_queued_pr_checks_start = datetime.datetime.fromisoformat(
-                first_queued_pr_data["mergeability_check"]["started_at"]
+                first_queued_pr_data["mergeability_check"]["started_at"],
             )
             first_queued_pr_started_at = datetime.datetime.fromisoformat(
-                first_queued_pr_data["mergeability_check"]["started_at"]
+                first_queued_pr_data["mergeability_check"]["started_at"],
             )
 
             assert datetime.datetime.fromisoformat(
-                first_queued_pr_data["estimated_time_of_merge"]
+                first_queued_pr_data["estimated_time_of_merge"],
             ) == first_queued_pr_checks_start + datetime.timedelta(
-                seconds=median_checks_duration
+                seconds=median_checks_duration,
             )
 
             assert datetime.datetime.fromisoformat(
-                r.json()["queues"][0]["pull_requests"][1]["estimated_time_of_merge"]
+                r.json()["queues"][0]["pull_requests"][1]["estimated_time_of_merge"],
             ) == first_queued_pr_started_at + datetime.timedelta(
-                seconds=2 * median_checks_duration
+                seconds=2 * median_checks_duration,
             )
             assert datetime.datetime.fromisoformat(
-                r.json()["queues"][0]["pull_requests"][2]["estimated_time_of_merge"]
+                r.json()["queues"][0]["pull_requests"][2]["estimated_time_of_merge"],
             ) == first_queued_pr_started_at + datetime.timedelta(
-                seconds=3 * median_checks_duration
+                seconds=3 * median_checks_duration,
             )
 
     async def test_estimated_time_of_merge_multiple_pr_waiting_batch(self) -> None:
@@ -802,7 +804,7 @@ class TestQueueApi(base.FunctionalTestBase):
                     "allow_inplace_checks": False,
                     "batch_size": 2,
                     "batch_max_wait_time": "0 s",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -882,20 +884,20 @@ class TestQueueApi(base.FunctionalTestBase):
             assert len(pull_requests_data) == 3
 
             first_batch_prs_expected_eta = datetime.datetime.fromisoformat(
-                pull_requests_data[0]["mergeability_check"]["started_at"]
+                pull_requests_data[0]["mergeability_check"]["started_at"],
             ) + datetime.timedelta(seconds=median_checks_duration)
 
             # Both PR are in the same batch so they should have the same ETA
             assert (
                 datetime.datetime.fromisoformat(
-                    pull_requests_data[0]["estimated_time_of_merge"]
+                    pull_requests_data[0]["estimated_time_of_merge"],
                 )
                 == first_batch_prs_expected_eta
             )
 
             assert (
                 datetime.datetime.fromisoformat(
-                    pull_requests_data[1]["estimated_time_of_merge"]
+                    pull_requests_data[1]["estimated_time_of_merge"],
                 )
                 == first_batch_prs_expected_eta
             )
@@ -919,7 +921,7 @@ class TestQueueApi(base.FunctionalTestBase):
             )
 
     @pytest.mark.timeout(
-        os.environ["PYTEST_TIMEOUT"] if settings.TESTING_RECORD else 60
+        os.environ["PYTEST_TIMEOUT"] if settings.TESTING_RECORD else 60,
     )
     async def test_estimated_time_of_merge_multiple_pr_waiting_multiple_batch(
         self,
@@ -936,7 +938,7 @@ class TestQueueApi(base.FunctionalTestBase):
                     "speculative_checks": 2,
                     "batch_size": 2,
                     "batch_max_wait_time": "0 s",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1024,41 +1026,41 @@ class TestQueueApi(base.FunctionalTestBase):
             assert len(pull_requests_data) == 5
 
             first_queued_pr_checks_start = datetime.datetime.fromisoformat(
-                pull_requests_data[0]["mergeability_check"]["started_at"]
+                pull_requests_data[0]["mergeability_check"]["started_at"],
             )
 
             # Spec check 1, pr #1 in batch
             assert datetime.datetime.fromisoformat(
-                pull_requests_data[0]["estimated_time_of_merge"]
+                pull_requests_data[0]["estimated_time_of_merge"],
             ) == first_queued_pr_checks_start + datetime.timedelta(
-                seconds=median_checks_duration
+                seconds=median_checks_duration,
             )
             # Spec check 1, pr #2 in batch
             assert datetime.datetime.fromisoformat(
-                pull_requests_data[1]["estimated_time_of_merge"]
+                pull_requests_data[1]["estimated_time_of_merge"],
             ) == first_queued_pr_checks_start + datetime.timedelta(
-                seconds=median_checks_duration
+                seconds=median_checks_duration,
             )
 
             second_queued_pr_checks_start = datetime.datetime.fromisoformat(
-                pull_requests_data[2]["mergeability_check"]["started_at"]
+                pull_requests_data[2]["mergeability_check"]["started_at"],
             )
             # Spec check 2, pr #1 in batch
             assert datetime.datetime.fromisoformat(
-                pull_requests_data[2]["estimated_time_of_merge"]
+                pull_requests_data[2]["estimated_time_of_merge"],
             ) == second_queued_pr_checks_start + datetime.timedelta(
-                seconds=median_checks_duration
+                seconds=median_checks_duration,
             )
             # Spec check 2, pr #2 in batch
             assert datetime.datetime.fromisoformat(
-                pull_requests_data[3]["estimated_time_of_merge"]
+                pull_requests_data[3]["estimated_time_of_merge"],
             ) == second_queued_pr_checks_start + datetime.timedelta(
-                seconds=median_checks_duration
+                seconds=median_checks_duration,
             )
             assert datetime.datetime.fromisoformat(
-                pull_requests_data[4]["estimated_time_of_merge"]
+                pull_requests_data[4]["estimated_time_of_merge"],
             ) == second_queued_pr_checks_start + datetime.timedelta(
-                seconds=2 * median_checks_duration
+                seconds=2 * median_checks_duration,
             )
 
             # GET /queue/{queue_name}/pull/{pr_number}
@@ -1075,9 +1077,9 @@ class TestQueueApi(base.FunctionalTestBase):
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p4['number']}",
             )
             assert datetime.datetime.fromisoformat(
-                r.json()["estimated_time_of_merge"]
+                r.json()["estimated_time_of_merge"],
             ) == first_queued_pr_checks_start + datetime.timedelta(
-                seconds=median_checks_duration
+                seconds=median_checks_duration,
             )
 
     async def test_estimated_time_of_merge_when_queue_is_frozen(self) -> None:
@@ -1090,7 +1092,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1164,7 +1166,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "schedule=MON-FRI 08:00-17:00[UTC]",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1219,12 +1221,13 @@ class TestQueueApi(base.FunctionalTestBase):
 
             # Make sure the eta is after the schedule start
             assert datetime.datetime.fromisoformat(
-                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
+                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"],
             ) == datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC)
 
         # Monday, 08:00 UTC, at the very start of the schedule
         with time_travel(
-            datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC), tick=True
+            datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC),
+            tick=True,
         ):
             await self.run_full_engine()
 
@@ -1240,7 +1243,7 @@ class TestQueueApi(base.FunctionalTestBase):
             )
 
             assert datetime.datetime.fromisoformat(
-                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
+                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"],
             ) == datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC)
 
     async def test_estimated_time_of_merge_schedule_condition_match(self) -> None:
@@ -1254,7 +1257,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "schedule=MON-FRI 08:00-17:00[UTC]",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1306,7 +1309,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             # ETA should be close to `start_date` since p1 was merged really fast.
             assert datetime.datetime.fromisoformat(
-                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
+                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"],
             ) < (start_date + datetime.timedelta(minutes=5))
 
     async def test_estimated_time_of_merge_schedule_condition_match_but_eta_dont(
@@ -1322,7 +1325,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "schedule=MON-FRI 08:00-17:00[UTC]",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1361,7 +1364,12 @@ class TestQueueApi(base.FunctionalTestBase):
         # This should make the ETA out of schedule
         # (16:52 + more than 10 minutes > 17:00 on the schedule)
         date_close_to_end_schedule = datetime.datetime(
-            2022, 10, 14, 16, 52, tzinfo=datetime.UTC
+            2022,
+            10,
+            14,
+            16,
+            52,
+            tzinfo=datetime.UTC,
         )
         with time_travel(date_close_to_end_schedule, tick=True):
             await self.add_label(p2["number"], "queue")
@@ -1382,7 +1390,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             # ETA should be close to `start_date` since p1 was merged really fast.
             assert datetime.datetime.fromisoformat(
-                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
+                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"],
             ) == datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC)
 
 
@@ -1399,7 +1407,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1453,7 +1461,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                     "pull_request_number": draft_pr_p1["number"],
                     "started_at": anys.ANY_AWARE_DATETIME_STR,
                     "state": "pending",
-                }
+                },
             },
             "partition_names": [partr_config.DEFAULT_PARTITION_NAME],
             "summary": {
@@ -1466,7 +1474,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                     f"{self.main_branch_name} "
                     f"({base_sha[:7]}) for merge",
                     "unexpected_changes": None,
-                }
+                },
             },
         }
 
@@ -1494,7 +1502,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1514,7 +1522,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
             files={
                 "projA/test.txt": "testA",
                 "projB/test.txt": "testB",
-            }
+            },
         )
 
         r = await self.admin_app.get(

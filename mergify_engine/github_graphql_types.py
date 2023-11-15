@@ -76,7 +76,12 @@ class GraphqlHidingCommentsQuery(typing.TypedDict):
 
 
 ReportedContentClassifiers = typing.Literal[
-    "ABUSE", "DUPLICATE", "OFF_TOPIC", "OUTDATED", "RESOLVED", "SPAM"
+    "ABUSE",
+    "DUPLICATE",
+    "OFF_TOPIC",
+    "OUTDATED",
+    "RESOLVED",
+    "SPAM",
 ]
 
 
@@ -95,7 +100,10 @@ class GraphqlMinimizedCommentResponse(typing.TypedDict):
 
 
 GitHubPullRequestReviewDecision = typing.Literal[
-    "APPROVED", "CHANGES_REQUESTED", "REVIEW_REQUIRED", None
+    "APPROVED",
+    "CHANGES_REQUESTED",
+    "REVIEW_REQUIRED",
+    None,
 ]
 
 

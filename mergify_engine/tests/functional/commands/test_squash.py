@@ -12,7 +12,11 @@ class TestCommandSquash(base.FunctionalTestBase):
         branch_name = self.get_full_branch_name("pr_squash_test")
 
         await self.git(
-            "checkout", "--quiet", f"origin/{self.main_branch_name}", "-b", branch_name
+            "checkout",
+            "--quiet",
+            f"origin/{self.main_branch_name}",
+            "-b",
+            branch_name,
         )
 
         for i in range(0, 3):
@@ -43,7 +47,8 @@ class TestCommandSquash(base.FunctionalTestBase):
         await self.run_engine()
 
         pr_updated = await self.wait_for_pull_request(
-            "synchronize", pr_opened["number"]
+            "synchronize",
+            pr_opened["number"],
         )
         assert pr_updated["pull_request"]["commits"] == 1
 
@@ -54,7 +59,11 @@ class TestCommandSquash(base.FunctionalTestBase):
         branch_name1 = self.get_full_branch_name("pr_squash_test_b1")
 
         await self.git(
-            "checkout", "--quiet", f"origin/{self.main_branch_name}", "-b", branch_name1
+            "checkout",
+            "--quiet",
+            f"origin/{self.main_branch_name}",
+            "-b",
+            branch_name1,
         )
 
         open(self.git.repository + "/file0", "wb").close()
@@ -135,7 +144,11 @@ Awesome body
         branch_name1 = self.get_full_branch_name("pr_squash_test_b1")
 
         await self.git(
-            "checkout", "--quiet", f"origin/{self.main_branch_name}", "-b", branch_name1
+            "checkout",
+            "--quiet",
+            f"origin/{self.main_branch_name}",
+            "-b",
+            branch_name1,
         )
 
         open(self.git.repository + "/file0", "wb").close()
@@ -147,7 +160,11 @@ Awesome body
         branch_name2 = self.get_full_branch_name("pr_squash_test_b2")
 
         await self.git(
-            "checkout", "--quiet", f"fork/{branch_name1}", "-b", branch_name2
+            "checkout",
+            "--quiet",
+            f"fork/{branch_name1}",
+            "-b",
+            branch_name2,
         )
 
         for i in range(1, 4):
@@ -171,7 +188,11 @@ Awesome body
         branch_name3 = self.get_full_branch_name("pr_squash_test_b3")
 
         await self.git(
-            "checkout", "--quiet", f"origin/{self.main_branch_name}", "-b", branch_name3
+            "checkout",
+            "--quiet",
+            f"origin/{self.main_branch_name}",
+            "-b",
+            branch_name3,
         )
 
         open(self.git.repository + "/an_other_file", "wb").close()
@@ -226,7 +247,11 @@ Awesome body
         branch_name = self.get_full_branch_name("pr_squash_test")
 
         await self.git(
-            "checkout", "--quiet", f"origin/{self.main_branch_name}", "-b", branch_name
+            "checkout",
+            "--quiet",
+            f"origin/{self.main_branch_name}",
+            "-b",
+            branch_name,
         )
 
         for i in range(0, 3):

@@ -61,7 +61,8 @@ class CachedToken:
 
     @classmethod
     def get(
-        cls, installation_id: github_types.GitHubInstallationIdType
+        cls,
+        installation_id: github_types.GitHubInstallationIdType,
     ) -> CachedToken | None:
         return cls.STORAGE.get(installation_id)
 
@@ -94,7 +95,8 @@ class GitHubTokenAuth(httpx.Auth):
             self.requires_response_body = False
 
     def auth_flow(
-        self, request: httpx.Request
+        self,
+        request: httpx.Request,
     ) -> abc.Generator[httpx.Request, httpx.Response, None]:
         request.headers["Authorization"] = f"token {self._token}"
         yield request
@@ -132,7 +134,8 @@ class GitHubAppInstallationAuth(httpx.Auth):
             self.requires_response_body = False
 
     def auth_flow(
-        self, request: httpx.Request
+        self,
+        request: httpx.Request,
     ) -> abc.Generator[httpx.Request, httpx.Response, None]:
         token = self.get_access_token()
         if token:
@@ -175,14 +178,18 @@ class GitHubAppInstallationAuth(httpx.Auth):
         )
 
     def build_github_app_request(
-        self, method: str, url: str, force: bool = False
+        self,
+        method: str,
+        url: str,
+        force: bool = False,
     ) -> httpx.Request:
         headers = http.DEFAULT_HEADERS.copy()
         headers["Authorization"] = f"Bearer {github_app.get_or_create_jwt(force)}"
         return httpx.Request(method, url, headers=headers)
 
     def _set_access_token(
-        self, data: github_types.GitHubInstallationAccessToken
+        self,
+        data: github_types.GitHubInstallationAccessToken,
     ) -> str:
         if self._installation is None:
             raise RuntimeError("Cannot set access token, no installation")
@@ -217,7 +224,8 @@ class GitHubAppInstallationAuth(httpx.Auth):
 
 
 async def _get_installation(
-    endpoint: str, logging_extras: dict[str, typing.Any] | None = None
+    endpoint: str,
+    logging_extras: dict[str, typing.Any] | None = None,
 ) -> github_types.GitHubInstallation:
     if logging_extras is None:
         logging_extras = {}
@@ -245,7 +253,8 @@ async def get_installation_from_account_id(
     account_id: github_types.GitHubAccountIdType,
 ) -> github_types.GitHubInstallation:
     return await _get_installation(
-        f"/user/{account_id}/installation", {"gh_owner_id": account_id}
+        f"/user/{account_id}/installation",
+        {"gh_owner_id": account_id},
     )
 
 
@@ -360,7 +369,7 @@ class AsyncGitHubClient(http.AsyncClient):
         if oauth_token:
             if isinstance(self.auth, github_app.GitHubBearerAuth):
                 raise TypeError(
-                    "oauth_token is not supported for GitHubBearerAuth auth"
+                    "oauth_token is not supported for GitHubBearerAuth auth",
                 )
             kwargs["auth"] = GitHubTokenAuth(oauth_token)
         return kwargs
@@ -373,7 +382,8 @@ class AsyncGitHubClient(http.AsyncClient):
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().get(
-            url, **self._prepare_request_kwargs(api_version, oauth_token, **kwargs)
+            url,
+            **self._prepare_request_kwargs(api_version, oauth_token, **kwargs),
         )
 
     async def post(  # type: ignore[override]
@@ -384,7 +394,8 @@ class AsyncGitHubClient(http.AsyncClient):
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().post(
-            url, **self._prepare_request_kwargs(api_version, oauth_token, **kwargs)
+            url,
+            **self._prepare_request_kwargs(api_version, oauth_token, **kwargs),
         )
 
     async def put(  # type: ignore[override]
@@ -395,7 +406,8 @@ class AsyncGitHubClient(http.AsyncClient):
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().put(
-            url, **self._prepare_request_kwargs(api_version, oauth_token, **kwargs)
+            url,
+            **self._prepare_request_kwargs(api_version, oauth_token, **kwargs),
         )
 
     async def patch(  # type: ignore[override]
@@ -406,7 +418,8 @@ class AsyncGitHubClient(http.AsyncClient):
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().patch(
-            url, **self._prepare_request_kwargs(api_version, oauth_token, **kwargs)
+            url,
+            **self._prepare_request_kwargs(api_version, oauth_token, **kwargs),
         )
 
     async def head(  # type: ignore[override]
@@ -417,7 +430,8 @@ class AsyncGitHubClient(http.AsyncClient):
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().head(
-            url, **self._prepare_request_kwargs(api_version, oauth_token, **kwargs)
+            url,
+            **self._prepare_request_kwargs(api_version, oauth_token, **kwargs),
         )
 
     async def delete(  # type: ignore[override]
@@ -428,7 +442,8 @@ class AsyncGitHubClient(http.AsyncClient):
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().delete(
-            url, **self._prepare_request_kwargs(api_version, oauth_token, **kwargs)
+            url,
+            **self._prepare_request_kwargs(api_version, oauth_token, **kwargs),
         )
 
     async def graphql_post(
@@ -505,7 +520,7 @@ class AsyncGitHubClient(http.AsyncClient):
             last_url = response.links.get("last", {}).get("url")
             if last_url:
                 last_page = int(
-                    parse.parse_qs(parse.urlparse(last_url).query)["page"][0]
+                    parse.parse_qs(parse.urlparse(last_url).query)["page"][0],
                 )
                 if page_limit is not None and last_page > page_limit:
                     raise TooManyPages(
@@ -557,7 +572,9 @@ class AsyncGitHubInstallationClient(AsyncGitHubClient):
         | httpx._client.UseClientDefault = httpx._client.USE_CLIENT_DEFAULT,
     ) -> httpx.Response:
         response = await super().send(
-            request, auth=auth, follow_redirects=follow_redirects
+            request,
+            auth=auth,
+            follow_redirects=follow_redirects,
         )
         _check_rate_limit(self, response)
         return response
@@ -615,10 +632,12 @@ class AsyncGitHubInstallationClient(AsyncGitHubClient):
 
 
 def aget_client(
-    installation: github_types.GitHubInstallation, extra_metrics: bool = False
+    installation: github_types.GitHubInstallation,
+    extra_metrics: bool = False,
 ) -> AsyncGitHubInstallationClient:
     return AsyncGitHubInstallationClient(
-        GitHubAppInstallationAuth(installation), extra_metrics=extra_metrics
+        GitHubAppInstallationAuth(installation),
+        extra_metrics=extra_metrics,
     )
 
 
@@ -631,7 +650,7 @@ class GitHubAppInfo:
     _redis_app_key: typing.ClassVar[str] = "github-info-app"
 
     EXPIRATION_CACHE: typing.ClassVar[int] = int(
-        datetime.timedelta(days=1).total_seconds()
+        datetime.timedelta(days=1).total_seconds(),
     )
 
     @staticmethod
@@ -657,12 +676,13 @@ class GitHubAppInfo:
                     yield GitHubAppInstallationAuth(installation)
 
         raise RuntimeError(
-            "Can't find an installation that can retrieve the GitHubApp bot account"
+            "Can't find an installation that can retrieve the GitHubApp bot account",
         )
 
     @classmethod
     async def _fetch_bot_from_redis(
-        cls, redis_cache: redis_utils.RedisCache
+        cls,
+        redis_cache: redis_utils.RedisCache,
     ) -> github_types.GitHubAccount | None:
         raw: bytes | None = await redis_cache.get(cls._redis_bot_key)
         if raw is None:
@@ -671,7 +691,8 @@ class GitHubAppInfo:
 
     @classmethod
     async def _fetch_bot_from_github(
-        cls, redis_cache: redis_utils.RedisCache
+        cls,
+        redis_cache: redis_utils.RedisCache,
     ) -> github_types.GitHubAccount:
         app = await cls.get_app(redis_cache)
         async for auth in cls._get_random_installation_auths():
@@ -689,12 +710,13 @@ class GitHubAppInfo:
                     return typing.cast(github_types.GitHubAccount, bot)
 
         raise RuntimeError(
-            "Can't find an installation that can retrieve the GitHubApp bot account"
+            "Can't find an installation that can retrieve the GitHubApp bot account",
         )
 
     @classmethod
     async def get_bot(
-        cls, redis_cache: redis_utils.RedisCache
+        cls,
+        redis_cache: redis_utils.RedisCache,
     ) -> github_types.GitHubAccount:
         if cls._bot is None:
             cls._bot = await cls._fetch_bot_from_redis(redis_cache)
@@ -704,7 +726,8 @@ class GitHubAppInfo:
 
     @classmethod
     async def _fetch_app_from_redis(
-        cls, redis_cache: redis_utils.RedisCache
+        cls,
+        redis_cache: redis_utils.RedisCache,
     ) -> github_types.GitHubApp | None:
         raw: bytes | None = await redis_cache.get(cls._redis_app_key)
         if raw is None:
@@ -713,7 +736,8 @@ class GitHubAppInfo:
 
     @classmethod
     async def _fetch_app_from_github(
-        cls, redis_cache: redis_utils.RedisCache
+        cls,
+        redis_cache: redis_utils.RedisCache,
     ) -> github_types.GitHubApp:
         async with AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
             app = await client.item("/app")
@@ -727,7 +751,8 @@ class GitHubAppInfo:
 
     @classmethod
     async def get_app(
-        cls, redis_cache: redis_utils.RedisCache
+        cls,
+        redis_cache: redis_utils.RedisCache,
     ) -> github_types.GitHubApp:
         if cls._app is None:
             cls._app = await cls._fetch_app_from_redis(redis_cache)

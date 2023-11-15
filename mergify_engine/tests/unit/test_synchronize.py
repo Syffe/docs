@@ -11,7 +11,8 @@ async def test_summary_synchronization_cache(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     async def items(
-        *args: typing.Any, **kwargs: typing.Any
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> abc.AsyncGenerator[None, None]:
         for _ in []:
             yield
@@ -24,7 +25,7 @@ async def test_summary_synchronization_cache(
                 return_value=github_types.GitHubCheckRun(
                     {
                         "head_sha": github_types.SHAType(
-                            "ce587453ced02b1526dfb4cb910479d431683101"
+                            "ce587453ced02b1526dfb4cb910479d431683101",
                         ),
                         "details_url": "https://example.com",
                         "status": "completed",
@@ -45,10 +46,10 @@ async def test_summary_synchronization_cache(
                         "external_id": "",
                         "pull_requests": [],
                         "before": github_types.SHAType(
-                            "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                            "4eef79d038b0327a5e035fd65059e556a55c6aa4",
                         ),
                         "after": github_types.SHAType(
-                            "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                            "4eef79d038b0327a5e035fd65059e556a55c6aa4",
                         ),
                         "started_at": github_types.ISODateTimeType(""),
                         "completed_at": github_types.ISODateTimeType(""),
@@ -62,8 +63,8 @@ async def test_summary_synchronization_cache(
                             "annotations_count": 0,
                             "annotations_url": "https://example.com",
                         },
-                    }
-                )
+                    },
+                ),
             ),
         )
 
@@ -76,7 +77,7 @@ async def test_summary_synchronization_cache(
     ctxt.repository.installation.client = client
     assert await ctxt.get_cached_last_summary_head_sha() is None
     await ctxt.set_summary_check(
-        check_api.Result(check_api.Conclusion.SUCCESS, "foo", "bar")
+        check_api.Result(check_api.Conclusion.SUCCESS, "foo", "bar"),
     )
 
     assert await ctxt.get_cached_last_summary_head_sha() == "the-head-sha"

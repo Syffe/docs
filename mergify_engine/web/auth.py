@@ -30,14 +30,16 @@ async def github_webhook_signature(request: requests.Request) -> None:
     body = await request.body()
 
     current_hmac = utils.compute_hmac(
-        body, settings.GITHUB_WEBHOOK_SECRET.get_secret_value()
+        body,
+        settings.GITHUB_WEBHOOK_SECRET.get_secret_value(),
     )
     if hmac.compare_digest(current_hmac, str(signature)):
         return
 
     if settings.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None:
         future_hmac = utils.compute_hmac(
-            body, settings.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value()
+            body,
+            settings.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value(),
         )
         if hmac.compare_digest(future_hmac, str(signature)):
             return

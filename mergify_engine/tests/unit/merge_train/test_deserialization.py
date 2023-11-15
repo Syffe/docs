@@ -80,7 +80,7 @@ def pytest_generate_tests(metafunc: typing.Any) -> None:
             for key in yaml_data.keys():
                 if key not in AUTHORIZED_YAML_KEY_IN_CASSETTES:
                     raise RuntimeError(
-                        f"Found unauthorized yaml key `{key}` in cassette `{cassette_file.name}`"
+                        f"Found unauthorized yaml key `{key}` in cassette `{cassette_file.name}`",
                     )
 
             # Encode the train dict for it to be in bytes like when reading from redis
@@ -91,7 +91,7 @@ def pytest_generate_tests(metafunc: typing.Any) -> None:
                 (
                     cassette_json_data,
                     train_properties_asserts,
-                )
+                ),
             )
 
     metafunc.parametrize(

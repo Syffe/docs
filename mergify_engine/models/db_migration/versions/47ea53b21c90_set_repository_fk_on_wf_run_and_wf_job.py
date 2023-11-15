@@ -32,7 +32,8 @@ def upgrade() -> None:
         sqlalchemy.Column("repository_id", sqlalchemy.BigInteger(), nullable=True),
     )
     alembic.op.drop_index(
-        "gha_job_run_owner_id_repository_idx", table_name="gha_workflow_run"
+        "gha_job_run_owner_id_repository_idx",
+        table_name="gha_workflow_run",
     )
     alembic.op.create_index(
         "gha_workflow_run_owner_id_repository_id_idx",

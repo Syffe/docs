@@ -24,11 +24,11 @@ class WorkflowJobEnhanced(models.Base, wf.WorkflowJobColumnMixin):
                     sqlalchemy.and_(
                         sqlalchemy.func.bool_or(
                             wf.WorkflowJob.conclusion
-                            == wf.WorkflowJobConclusion.SUCCESS
+                            == wf.WorkflowJobConclusion.SUCCESS,
                         ),
                         sqlalchemy.func.bool_or(
                             wf.WorkflowJob.conclusion
-                            == wf.WorkflowJobConclusion.FAILURE
+                            == wf.WorkflowJobConclusion.FAILURE,
                         ),
                     ),
                     FlakyStatus.FLAKY.value,
@@ -42,7 +42,7 @@ class WorkflowJobEnhanced(models.Base, wf.WorkflowJobColumnMixin):
                         1,
                     ),
                     else_=0,
-                )
+                ),
             ).label("failed_run_count"),
         )
         .group_by(

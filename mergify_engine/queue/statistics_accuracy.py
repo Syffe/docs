@@ -49,7 +49,7 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
             return
 
         if not repository.installation.subscription.has_feature(
-            subscription.Features.MERGE_QUEUE_STATS
+            subscription.Features.MERGE_QUEUE_STATS,
         ):
             return
 
@@ -58,7 +58,10 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
         else:
             async with database.create_session() as session:
                 await self.queue_checks_start(
-                    session, repository, pull_request_number, metadata
+                    session,
+                    repository,
+                    pull_request_number,
+                    metadata,
                 )
 
     async def queue_checks_start(
@@ -80,7 +83,7 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
         await convoy.load_from_redis()
 
         embarked_pulls_list = await convoy.find_embarked_pull_with_train(
-            pull_request_number
+            pull_request_number,
         )
         pipe = await repository.installation.redis.stats.pipeline()
 

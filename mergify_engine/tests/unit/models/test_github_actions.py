@@ -79,8 +79,8 @@ async def test_is_rerun_needed(
     job = (
         await populated_db.execute(
             sqlalchemy.select(gh_models.WorkflowJob).where(
-                gh_models.WorkflowJob.id == DbPopulator.internal_ref[job_ref]
-            )
+                gh_models.WorkflowJob.id == DbPopulator.internal_ref[job_ref],
+            ),
         )
     ).scalar_one()
 

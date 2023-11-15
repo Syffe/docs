@@ -12,7 +12,10 @@ class ContentLengthMiddleware:
     max_content_size: int = 1024 * 1024 * 1
 
     async def __call__(
-        self, scope: types.Scope, receive: types.Receive, send: types.Send
+        self,
+        scope: types.Scope,
+        receive: types.Receive,
+        send: types.Send,
     ) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
@@ -27,14 +30,14 @@ class ContentLengthMiddleware:
                 size = int(request.headers["content-length"])
             except ValueError:
                 response = starlette.responses.Response(
-                    status_code=status.HTTP_411_LENGTH_REQUIRED
+                    status_code=status.HTTP_411_LENGTH_REQUIRED,
                 )
                 await response(scope, receive, send)
                 return
 
             if size > self.max_content_size:
                 response = starlette.responses.Response(
-                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 )
                 await response(scope, receive, send)
                 return
@@ -43,7 +46,7 @@ class ContentLengthMiddleware:
         # https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
         elif request.method in ("POST", "PUT", "PATCH"):
             response = starlette.responses.Response(
-                status_code=status.HTTP_411_LENGTH_REQUIRED
+                status_code=status.HTTP_411_LENGTH_REQUIRED,
             )
             await response(scope, receive, send)
             return
@@ -59,7 +62,7 @@ class ContentLengthMiddleware:
             received += body_len
             if received > self.max_content_size:
                 raise starlette.exceptions.HTTPException(
-                    status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+                    status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 )
             return message
 

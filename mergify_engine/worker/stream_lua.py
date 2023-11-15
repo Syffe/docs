@@ -46,7 +46,7 @@ if (old_score == nil) or (tonumber(score) < old_score) then
 end
 -- Add the org bucket to the stream list
 redis.call("ZADD", "streams", "NX", scheduled_at_timestamp, bucket_org_key)
-"""
+""",
 )
 
 
@@ -85,7 +85,7 @@ local sources = redis.call("XRANGE", bucket_sources_key, "-", "+")
 local score = redis.call("ZSCORE", bucket_org_key, bucket_sources_key)
 redis.call("ZADD", bucket_org_key, score + score_offset, bucket_sources_key)
 return sources
-"""
+""",
 )
 
 
@@ -134,7 +134,7 @@ if table.getn(sources) == 0 then
     -- No need to clean "streams" key, CLEAN_STREAM_SCRIPT is always
     -- called at the end and it will do it
 end
-"""
+""",
 )
 
 
@@ -166,7 +166,7 @@ redis.call("DEL", unpack(members))
 redis.call("DEL", bucket_org_key)
 -- No need to clean "streams" key, CLEAN_STREAM_SCRIPT is always
 -- called at the end and it will do it
-"""
+""",
 )
 
 
@@ -195,7 +195,7 @@ else
         return "nothing"
     end
 end
-"""
+""",
 )
 
 

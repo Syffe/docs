@@ -42,17 +42,20 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
 
     # The rules matching the pull request.
     matching_rules: list[types.T_EvaluatedRule] = dataclasses.field(
-        init=False, default_factory=list
+        init=False,
+        default_factory=list,
     )
 
     # The rules that can't be computed due to runtime error (eg: team resolution failure)
     faulty_rules: list[types.T_EvaluatedRule] = dataclasses.field(
-        init=False, default_factory=list
+        init=False,
+        default_factory=list,
     )
 
     # The rules not matching the pull request.
     ignored_rules: list[types.T_EvaluatedRule] = dataclasses.field(
-        init=False, default_factory=list
+        init=False,
+        default_factory=list,
     )
 
     # The rules not matching the base changeable attributes
@@ -62,7 +65,8 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
 
     # The rules evaluated with the pull request.
     evaluated_rules: list[types.T_EvaluatedRule] = dataclasses.field(
-        init=False, default_factory=list
+        init=False,
+        default_factory=list,
     )
 
     @classmethod
@@ -80,7 +84,8 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
             live_resolvers.apply_configure_filter(repository, evaluated_rule_conditions)
 
             evaluated_rule = typing.cast(  # type: ignore[redundant-cast]
-                types.T_EvaluatedRule, await rule.evaluate(pulls)
+                types.T_EvaluatedRule,
+                await rule.evaluate(pulls),
             )
             self.evaluated_rules.append(evaluated_rule)
             del rule
@@ -102,11 +107,14 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
                     pulls,
                 ):
                     self.not_applicable_base_changeable_attributes_rules.append(
-                        evaluated_rule
+                        evaluated_rule,
                     )
 
                 if await cls.can_attributes_make_rule_always_false(
-                    repository, evaluated_rule_conditions, self.FIXED_ATTRIBUTES, pulls
+                    repository,
+                    evaluated_rule_conditions,
+                    self.FIXED_ATTRIBUTES,
+                    pulls,
                 ):
                     self.ignored_rules.append(evaluated_rule)
                     categorized = True

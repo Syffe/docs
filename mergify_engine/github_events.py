@@ -176,7 +176,8 @@ async def clean_and_fill_caches(
         event = typing.cast(github_types.GitHubEventPullRequest, event)
         if event["action"] in ("opened", "synchronize", "edited", "closed", "reopened"):
             await pull_request_finder.PullRequestFinder.sync(
-                redis_links.cache, event["pull_request"]
+                redis_links.cache,
+                event["pull_request"],
             )
 
         if event["action"] in ("opened", "edited"):
@@ -191,7 +192,8 @@ async def clean_and_fill_caches(
         event = typing.cast(github_types.GitHubEventRepository, event)
         if event["action"] in ("edited", "deleted"):
             await context.Repository.clear_config_file_cache(
-                redis_links.cache, event["repository"]["id"]
+                redis_links.cache,
+                event["repository"]["id"],
             )
 
     elif event_type == "push":
@@ -224,22 +226,26 @@ async def clean_and_fill_caches(
 
             if mergify_configuration_changed:
                 await context.Repository.clear_config_file_cache(
-                    redis_links.cache, event["repository"]["id"]
+                    redis_links.cache,
+                    event["repository"]["id"],
                 )
 
     elif event_type == "organization":
         event = typing.cast(github_types.GitHubEventOrganization, event)
         if event["action"] == "deleted":
             await context.Installation.clear_team_members_cache_for_org(
-                redis_links.team_members_cache, event["organization"]
+                redis_links.team_members_cache,
+                event["organization"],
             )
             await context.Repository.clear_team_permission_cache_for_org(
-                redis_links.team_permissions_cache, event["organization"]
+                redis_links.team_permissions_cache,
+                event["organization"],
             )
 
         if event["action"] in ("deleted", "member_added", "member_removed"):
             await context.Repository.clear_user_permission_cache_for_org(
-                redis_links.user_permissions_cache, event["organization"]
+                redis_links.user_permissions_cache,
+                event["organization"],
             )
 
     elif event_type == "installation_repositories":
@@ -249,13 +255,16 @@ async def clean_and_fill_caches(
         await clear_api_authentication_cache(redis_links, event)
         await clear_mergify_installed_cache(redis_links, event)
         await context.Installation.clear_team_members_cache_for_org(
-            redis_links.team_members_cache, event["installation"]["account"]
+            redis_links.team_members_cache,
+            event["installation"]["account"],
         )
         await context.Repository.clear_team_permission_cache_for_org(
-            redis_links.team_permissions_cache, event["installation"]["account"]
+            redis_links.team_permissions_cache,
+            event["installation"]["account"],
         )
         await context.Repository.clear_user_permission_cache_for_org(
-            redis_links.user_permissions_cache, event["installation"]["account"]
+            redis_links.user_permissions_cache,
+            event["installation"]["account"],
         )
 
     elif event_type == "member":
@@ -287,11 +296,13 @@ async def clean_and_fill_caches(
                 event["organization"],
             )
             await context.Repository.clear_team_permission_cache_for_org(
-                redis_links.team_permissions_cache, event["organization"]
+                redis_links.team_permissions_cache,
+                event["organization"],
             )
 
         await context.Repository.clear_user_permission_cache_for_org(
-            redis_links.user_permissions_cache, event["organization"]
+            redis_links.user_permissions_cache,
+            event["organization"],
         )
 
     elif event_type == "team":
@@ -327,10 +338,12 @@ async def clean_and_fill_caches(
                 )
             else:
                 await context.Repository.clear_user_permission_cache_for_org(
-                    redis_links.user_permissions_cache, event["organization"]
+                    redis_links.user_permissions_cache,
+                    event["organization"],
                 )
                 await context.Repository.clear_team_permission_cache_for_org(
-                    redis_links.team_permissions_cache, event["organization"]
+                    redis_links.team_permissions_cache,
+                    event["organization"],
                 )
 
     elif event_type == "team_add":
@@ -358,7 +371,9 @@ async def event_preprocessing(
         event = typing.cast(github_types.GitHubEventPullRequest, event)
         if event["action"] in ("opened", "synchronize"):
             background_tasks.add_task(
-                engine.create_initial_summary, redis_links.cache, event
+                engine.create_initial_summary,
+                redis_links.cache,
+                event,
             )
 
     elif event_type == "issue_comment":
@@ -374,7 +389,7 @@ async def clear_api_authentication_cache(
     event: github_types.GitHubEventInstallationRepositories,
 ) -> None:
     redis_key = api_security.get_redis_key_for_repo_access_check(
-        event["installation"]["account"]["login"]
+        event["installation"]["account"]["login"],
     )
     pipe = await redis_links.cache.pipeline()
     for new_repository in event["repositories_added"]:
@@ -392,12 +407,12 @@ async def clear_mergify_installed_cache(
     pipe = await redis_links.cache.pipeline()
     for repository in event["repositories_added"]:
         cache_key = context.Repository.get_mergify_installation_cache_key(
-            repository["full_name"]
+            repository["full_name"],
         )
         await pipe.delete(cache_key)
     for repository in event["repositories_removed"]:
         cache_key = context.Repository.get_mergify_installation_cache_key(
-            repository["full_name"]
+            repository["full_name"],
         )
         await pipe.delete(cache_key)
 
@@ -440,10 +455,10 @@ async def event_classifier(
                 # NOTE(greesb): For retrocompatibility. To remove once there are no more
                 # PR using this.
                 event["pull_request"]["head"]["ref"].startswith(
-                    constants.MERGE_QUEUE_BRANCH_PREFIX
+                    constants.MERGE_QUEUE_BRANCH_PREFIX,
                 )
                 or queue_utils.is_pr_body_a_merge_queue_pr(
-                    event["pull_request"]["body"]
+                    event["pull_request"]["body"],
                 )
             )
         ):
@@ -455,7 +470,10 @@ async def event_classifier(
             )
 
         return SendEventDataInPg(
-            event_type, event_id, event, event["pull_request"]["number"]
+            event_type,
+            event_id,
+            event,
+            event["pull_request"]["number"],
         )
 
     if event_type == "refresh":
@@ -476,25 +494,37 @@ async def event_classifier(
     if event_type == "pull_request_review":
         event = typing.cast(github_types.GitHubEventPullRequestReview, event)
         return EventToProcess(
-            event_type, event_id, event, event["pull_request"]["number"]
+            event_type,
+            event_id,
+            event,
+            event["pull_request"]["number"],
         )
 
     if event_type == "pull_request_review_thread":
         event = typing.cast(github_types.GitHubEventPullRequestReviewThread, event)
         return EventToProcess(
-            event_type, event_id, event, event["pull_request"]["number"]
+            event_type,
+            event_id,
+            event,
+            event["pull_request"]["number"],
         )
 
     if event_type == "issue_comment":
         event = typing.cast(github_types.GitHubEventIssueComment, event)
         if "pull_request" not in event["issue"]:
             return EventToIgnore(
-                event_type, event_id, event, "comment is not on a pull request"
+                event_type,
+                event_id,
+                event,
+                "comment is not on a pull request",
             )
 
         if event["action"] not in ("created", "edited"):
             return EventToIgnore(
-                event_type, event_id, event, f"comment action is '{event['action']}'"
+                event_type,
+                event_id,
+                event,
+                f"comment action is '{event['action']}'",
             )
 
         if (
@@ -518,7 +548,10 @@ async def event_classifier(
 
         if not commands_runner.COMMAND_MATCHER.search(event["comment"]["body"]):
             return EventToIgnore(
-                event_type, event_id, event, "comment is not a command"
+                event_type,
+                event_id,
+                event,
+                "comment is not a command",
             )
 
         return EventToProcess(
@@ -558,7 +591,10 @@ async def event_classifier(
         event = typing.cast(github_types.GitHubEventCheckSuite, event)
         if event["action"] != "rerequested":
             return EventToIgnore(
-                event_type, event_id, event, f"check_suite/{event['action']}"
+                event_type,
+                event_id,
+                event,
+                f"check_suite/{event['action']}",
             )
 
         if (
@@ -604,10 +640,13 @@ async def event_classifier(
     if event_type == "workflow_run":
         event = typing.cast(github_types.GitHubEventWorkflowRun, event)
         if job_registries.HTTPJobRegistry.is_workflow_run_ignored(
-            event["workflow_run"]
+            event["workflow_run"],
         ):
             return EventToIgnore(
-                event_type, event_id, event, reason="workflow_run ignored"
+                event_type,
+                event_id,
+                event,
+                reason="workflow_run ignored",
             )
         return CIEventToProcess(event_type, event_id, event)
 
@@ -615,10 +654,13 @@ async def event_classifier(
         event = typing.cast(github_types.GitHubEventWorkflowJob, event)
         event_data = event["workflow_job"]
         if event_data is None or job_registries.HTTPJobRegistry.is_workflow_job_ignored(
-            event_data
+            event_data,
         ):
             return EventToIgnore(
-                event_type, event_id, event, reason="workflow_job ignored"
+                event_type,
+                event_id,
+                event,
+                reason="workflow_job ignored",
             )
         return CIEventToProcess(event_type, event_id, event)
 
@@ -635,11 +677,18 @@ async def filter_and_dispatch(
     mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache)
     await meter_event(event_type, event, mergify_bot)
     await count_seats.store_active_users(
-        redis_links.active_users, event_type, event_id, event
+        redis_links.active_users,
+        event_type,
+        event_id,
+        event,
     )
 
     classified_event = await event_classifier(
-        redis_links, event_type, event_id, event, mergify_bot
+        redis_links,
+        event_type,
+        event_id,
+        event,
+        mergify_bot,
     )
 
     await clean_and_fill_caches(redis_links, event_type, event_id, event)
@@ -649,7 +698,11 @@ async def filter_and_dispatch(
 
     if isinstance(classified_event, EventToProcess):
         await event_preprocessing(
-            background_tasks, redis_links, event_type, event_id, event
+            background_tasks,
+            redis_links,
+            event_type,
+            event_id,
+            event,
         )
 
         await worker_pusher.push(
@@ -673,7 +726,8 @@ async def filter_and_dispatch(
         )
 
     if settings.GITHUB_IN_POSTGRES_EVENTS_INGESTION and isinstance(
-        classified_event, SendEventDataInPg
+        classified_event,
+        SendEventDataInPg,
     ):
         await worker_pusher.push_github_in_pg_event(
             redis_links.stream,

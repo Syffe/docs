@@ -23,7 +23,7 @@ GH_OWNER = github_types.GitHubAccount(
         "id": github_types.GitHubAccountIdType(12345),
         "type": "User",
         "avatar_url": "",
-    }
+    },
 )
 
 GH_REPO = github_types.GitHubRepository(
@@ -37,7 +37,7 @@ GH_REPO = github_types.GitHubRepository(
         "name": github_types.GitHubRepositoryName("name"),
         "private": False,
         "owner": GH_OWNER,
-    }
+    },
 )
 GH_PULL = github_types.GitHubPullRequest(
     {
@@ -152,7 +152,7 @@ CHECK_RUN = github_types.GitHubCheckRun(
             "annotations_count": 0,
             "annotations_url": "https://example.com",
         },
-    }
+    },
 )
 
 SUMMARY_CHECK = github_types.GitHubCheckRun(
@@ -190,7 +190,7 @@ SUMMARY_CHECK = github_types.GitHubCheckRun(
         },
         "details_url": "",
         "external_id": "",
-    }
+    },
 )
 
 CONFIGURATION_DELETED_CHECK = github_types.GitHubCheckRun(
@@ -228,7 +228,7 @@ CONFIGURATION_DELETED_CHECK = github_types.GitHubCheckRun(
         },
         "details_url": "",
         "external_id": "",
-    }
+    },
 )
 
 CONFIGURATION_CHANGED_CHECK = github_types.GitHubCheckRun(
@@ -266,7 +266,7 @@ CONFIGURATION_CHANGED_CHECK = github_types.GitHubCheckRun(
         },
         "details_url": "",
         "external_id": "",
-    }
+    },
 )
 
 BASE_URL = f"/repos/{GH_OWNER['login']}/{GH_REPO['name']}"
@@ -299,7 +299,7 @@ async def test_configuration_changed(
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
-        & ~qs_ref
+        & ~qs_ref,
     ).respond(
         200,
         json=typing.cast(
@@ -310,10 +310,10 @@ async def test_configuration_changed(
                     "content": FAKE_MERGIFY_CONTENT,
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
-                        "739e5ec79e358bae7a150941a148b4131233ce2c"
+                        "739e5ec79e358bae7a150941a148b4131233ce2c",
                     ),
                     "encoding": "base64",
-                }
+                },
             ),
         ),
     )
@@ -321,7 +321,7 @@ async def test_configuration_changed(
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
-        & qs_ref
+        & qs_ref,
     ).respond(
         200,
         json=typing.cast(
@@ -332,10 +332,10 @@ async def test_configuration_changed(
                     "content": FAKE_MERGIFY_CONTENT,
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
-                        "739e5ec79e358bae7a150941a148b4131233ce2c"
+                        "739e5ec79e358bae7a150941a148b4131233ce2c",
                     ),
                     "encoding": "base64",
-                }
+                },
             ),
         ),
     )
@@ -356,24 +356,25 @@ async def test_configuration_changed(
                     "filename": github_types.GitHubFilePath(".mergify.yml"),
                     "previous_filename": "",
                     "sha": github_types.SHAType(
-                        "ab739e5ec79e358bae7a150941a148b4131233ce"
+                        "ab739e5ec79e358bae7a150941a148b4131233ce",
                     ),
-                }
-            )
+                },
+            ),
         ],
     )
 
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs"
+        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(200, json={"check_runs": []})
 
     github_server.post(f"{BASE_URL}/check-runs").respond(
-        200, json=typing.cast(dict[typing.Any, typing.Any], CHECK_RUN)
+        200,
+        json=typing.cast(dict[typing.Any, typing.Any], CHECK_RUN),
     )
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -389,7 +390,7 @@ async def test_configuration_changed(
         )
         repository = context.Repository(installation, GH_REPO)
         ctxt = await repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(1)
+            github_types.GitHubPullRequestNumber(1),
         )
 
         main_config_file = await repository.get_mergify_config_file()
@@ -428,7 +429,7 @@ async def test_configuration_duplicated(
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
-        & ~qs_ref
+        & ~qs_ref,
     ).respond(
         200,
         json=typing.cast(
@@ -439,10 +440,10 @@ async def test_configuration_duplicated(
                     "content": FAKE_MERGIFY_CONTENT,
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
-                        "739e5ec79e358bae7a150941a148b4131233ce2c"
+                        "739e5ec79e358bae7a150941a148b4131233ce2c",
                     ),
                     "encoding": "base64",
-                }
+                },
             ),
         ),
     )
@@ -463,20 +464,20 @@ async def test_configuration_duplicated(
                     "filename": github_types.GitHubFilePath(".github/mergify.yml"),
                     "previous_filename": "",
                     "sha": github_types.SHAType(
-                        "ab739e5ec79e358bae7a150941a148b4131233ce"
+                        "ab739e5ec79e358bae7a150941a148b4131233ce",
                     ),
-                }
-            )
+                },
+            ),
         ],
     )
 
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs"
+        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(200, json={"check_runs": []})
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -492,7 +493,7 @@ async def test_configuration_duplicated(
         )
         repository = context.Repository(installation, GH_REPO)
         ctxt = await repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(1)
+            github_types.GitHubPullRequestNumber(1),
         )
 
         main_config_file = await repository.get_mergify_config_file()
@@ -535,7 +536,7 @@ async def test_configuration_not_changed(
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
-        & ~qs_ref
+        & ~qs_ref,
     ).respond(
         200,
         json=typing.cast(
@@ -546,21 +547,21 @@ async def test_configuration_not_changed(
                     "content": FAKE_MERGIFY_CONTENT,
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
-                        "739e5ec79e358bae7a150941a148b4131233ce2c"
+                        "739e5ec79e358bae7a150941a148b4131233ce2c",
                     ),
                     "encoding": "base64",
-                }
+                },
             ),
         ),
     )
 
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs"
+        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(200, json={"check_runs": []})
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -576,7 +577,7 @@ async def test_configuration_not_changed(
         )
         repository = context.Repository(installation, GH_REPO)
         ctxt = await repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(1)
+            github_types.GitHubPullRequestNumber(1),
         )
 
         main_config_file = await repository.get_mergify_config_file()
@@ -627,30 +628,30 @@ async def test_configuration_initial(
                     "filename": github_types.GitHubFilePath(".mergify.yml"),
                     "previous_filename": "",
                     "sha": github_types.SHAType(
-                        "ab739e5ec79e358bae7a150941a148b4131233ce"
+                        "ab739e5ec79e358bae7a150941a148b4131233ce",
                     ),
-                }
-            )
+                },
+            ),
         ],
     )
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
-        & ~respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
+        & ~respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]}),
     ).respond(404)
 
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify/config.yml")
-        & ~respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
+        & ~respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]}),
     ).respond(404)
 
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.github/mergify.yml")
-        & ~respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
+        & ~respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]}),
     ).respond(404)
 
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
-        & respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
+        & respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]}),
     ).respond(
         200,
         json=typing.cast(
@@ -661,25 +662,26 @@ async def test_configuration_initial(
                     "content": FAKE_MERGIFY_CONTENT,
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
-                        "739e5ec79e358bae7a150941a148b4131233ce2c"
+                        "739e5ec79e358bae7a150941a148b4131233ce2c",
                     ),
                     "encoding": "base64",
-                }
+                },
             ),
         ),
     )
 
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs"
+        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(200, json={"check_runs": []})
 
     github_server.post(f"{BASE_URL}/check-runs").respond(
-        200, json=typing.cast(dict[typing.Any, typing.Any], CHECK_RUN)
+        200,
+        json=typing.cast(dict[typing.Any, typing.Any], CHECK_RUN),
     )
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -695,7 +697,7 @@ async def test_configuration_initial(
         )
         repository = context.Repository(installation, GH_REPO)
         ctxt = await repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(1)
+            github_types.GitHubPullRequestNumber(1),
         )
 
         main_config_file = await repository.get_mergify_config_file()
@@ -738,17 +740,17 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
                     "content": FAKE_MERGIFY_CONTENT,
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
-                        "739e5ec79e358bae7a150941a148b4131233ce2c"
+                        "739e5ec79e358bae7a150941a148b4131233ce2c",
                     ),
                     "encoding": "base64",
-                }
+                },
             ),
         ),
     )
 
     # Summary is present, no need to redo the check
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs"
+        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(
         200,
         json={"check_runs": [SUMMARY_CHECK]},
@@ -756,7 +758,7 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -772,7 +774,7 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
         )
         repository = context.Repository(installation, GH_REPO)
         ctxt = await repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(1)
+            github_types.GitHubPullRequestNumber(1),
         )
 
         main_config_file = await repository.get_mergify_config_file()
@@ -812,17 +814,17 @@ async def test_configuration_check_not_needed_with_configuration_changed(
                     "content": FAKE_MERGIFY_CONTENT,
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
-                        "739e5ec79e358bae7a150941a148b4131233ce2c"
+                        "739e5ec79e358bae7a150941a148b4131233ce2c",
                     ),
                     "encoding": "base64",
-                }
+                },
             ),
         ),
     )
 
     # Summary is present, no need to redo the check
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs"
+        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(
         200,
         json={"check_runs": [SUMMARY_CHECK, CONFIGURATION_CHANGED_CHECK]},
@@ -830,7 +832,7 @@ async def test_configuration_check_not_needed_with_configuration_changed(
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -846,7 +848,7 @@ async def test_configuration_check_not_needed_with_configuration_changed(
         )
         repository = context.Repository(installation, GH_REPO)
         ctxt = await repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(1)
+            github_types.GitHubPullRequestNumber(1),
         )
 
         main_config_file = await repository.get_mergify_config_file()
@@ -887,17 +889,17 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
                     "content": FAKE_MERGIFY_CONTENT,
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
-                        "739e5ec79e358bae7a150941a148b4131233ce2c"
+                        "739e5ec79e358bae7a150941a148b4131233ce2c",
                     ),
                     "encoding": "base64",
-                }
+                },
             ),
         ),
     )
 
     # Summary is present, no need to redo the check
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs"
+        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(
         200,
         json={"check_runs": [SUMMARY_CHECK, CONFIGURATION_DELETED_CHECK]},
@@ -905,7 +907,7 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubAppInstallationAuth(installation_json)
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -921,7 +923,7 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
         )
         repository = context.Repository(installation, GH_REPO)
         ctxt = await repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(1)
+            github_types.GitHubPullRequestNumber(1),
         )
 
         main_config_file = await repository.get_mergify_config_file()

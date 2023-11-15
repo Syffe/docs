@@ -17,7 +17,7 @@ async def run_async_migrations() -> None:
     database.init_sqlalchemy("db-migration")
 
     replaceable_entity.register_entities(
-        (*models.Base.__postgres_extensions__, *models.Base.get_postgres_entities())
+        (*models.Base.__postgres_extensions__, *models.Base.get_postgres_entities()),
     )
 
     engine = database.get_engine()

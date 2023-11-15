@@ -18,7 +18,7 @@ def admin_cli() -> None:
 
 
 def async_command(
-    func: abc.Callable[P, abc.Coroutine[typing.Any, typing.Any, R]]
+    func: abc.Callable[P, abc.Coroutine[typing.Any, typing.Any, R]],
 ) -> abc.Callable[..., None]:
     @admin_cli.command()
     @functools.wraps(func)

@@ -66,7 +66,8 @@ def test_seats_renamed_account_repo() -> None:
 
 
 async def test_send_seats(
-    respx_mock: respx.MockRouter, monkeypatch: pytest.MonkeyPatch
+    respx_mock: respx.MockRouter,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something"))
     route = respx_mock.post(
@@ -95,7 +96,10 @@ async def test_store_active_users(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     await count_seats.store_active_users(
-        redis_links.active_users, event_type, "whatever", event
+        redis_links.active_users,
+        event_type,
+        "whatever",
+        event,
     )
     one_month_ago = date.utcnow() - datetime.timedelta(days=30)
     if event_type == "push":
@@ -120,7 +124,7 @@ async def test_store_active_users(
         assert msgpack.unpackb(
             await redis_links.active_users.get(
                 "active-users-events~21031067~186853002~12345678",
-            )
+            ),
         ) == {
             "action": "opened",
             "received_at": mock.ANY,
@@ -147,7 +151,10 @@ async def test_get_usage_count_seats(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     await count_seats.store_active_users(
-        redis_links.active_users, event_type, "whatever", event
+        redis_links.active_users,
+        event_type,
+        "whatever",
+        event,
     )
 
     reply = await web_client.request("GET", "/subscriptions/organization/1234/usage")
@@ -162,7 +169,8 @@ async def test_get_usage_count_seats(
     assert json.loads(reply.content) == {"repositories": [], "last_seen_at": None}
 
     reply = await web_client.request(
-        "GET", "/subscriptions/organization/21031067/usage"
+        "GET",
+        "/subscriptions/organization/21031067/usage",
     )
     assert reply.status_code == 200, reply.content
     if event_type == "pull_request":
@@ -185,7 +193,7 @@ async def test_get_usage_count_seats(
                     },
                     "id": 186853002,
                     "name": "Hello-World",
-                }
+                },
             ],
             "last_seen_at": None,
         }
@@ -204,7 +212,7 @@ async def test_get_usage_count_seats(
                     },
                     "id": 186853002,
                     "name": "Hello-World",
-                }
+                },
             ],
             "last_seen_at": None,
         }

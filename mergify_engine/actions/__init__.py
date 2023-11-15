@@ -189,7 +189,7 @@ ValidatorT = dict[voluptuous.Required, typing.Any]
 @dataclasses.dataclass
 class Action(abc.ABC):
     raw_config_: dataclasses.InitVar[RawConfigT | None] = dataclasses.field(
-        default=None
+        default=None,
     )
     raw_config: RawConfigT = dataclasses.field(init=False)
     config: RawConfigT = dataclasses.field(init=False)
@@ -220,16 +220,19 @@ class Action(abc.ABC):
             voluptuous.All(
                 {voluptuous.Extra: object},  # just ensure first it's a dict
                 self.validator,
-            )
+            ),
         )(self.raw_config)
 
     async def load_context(
-        self, ctxt: context.Context, rule: prr_config.EvaluatedPullRequestRule
+        self,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
     ) -> None:
         self.executor = await self.executor_class.create(self, ctxt, rule)
 
     def validate_config(  # noqa: B027
-        self, mergify_config: mergify_conf.MergifyConfig
+        self,
+        mergify_config: mergify_conf.MergifyConfig,
     ) -> None:  # pragma: no cover
         pass
 
@@ -239,6 +242,7 @@ class Action(abc.ABC):
         return {}
 
     async def get_conditions_requirements(
-        self, ctxt: context.Context
+        self,
+        ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
         return []

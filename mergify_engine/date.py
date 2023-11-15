@@ -47,7 +47,9 @@ def extract_timezone(
 
 
 def relativedelta(
-    d: datetime.datetime, months: int = 0, years: int = 0
+    d: datetime.datetime,
+    months: int = 0,
+    years: int = 0,
 ) -> datetime.datetime:
     objective_year = d.year + years
     objective_month = d.month
@@ -70,7 +72,9 @@ def relativedelta(
         return d.replace(year=objective_year, month=objective_month)
 
     return d.replace(
-        year=objective_year, month=objective_month, day=objective_month_max_days
+        year=objective_year,
+        month=objective_month,
+        day=objective_month_max_days,
     )
 
 
@@ -138,7 +142,7 @@ class RelativeDatetime:
         r"(?:"
         r"(?P<hours>\d+):"
         r"(?P<minutes>\d\d)"
-        r")? ago$"
+        r")? ago$",
     )
 
     @classmethod
@@ -154,7 +158,7 @@ class RelativeDatetime:
                 days=int(kw["days"] or 0),
                 hours=int(kw["hours"] or 0),
                 minutes=int(kw["minutes"] or 0),
-            )
+            ),
         )
 
     def __post_init__(self) -> None:
@@ -221,7 +225,8 @@ class Time:
 
     @staticmethod
     def _to_dt(
-        obj: Time | datetime.datetime, ref: datetime.datetime
+        obj: Time | datetime.datetime,
+        ref: datetime.datetime,
     ) -> datetime.datetime:
         if isinstance(obj, datetime.datetime):
             return obj.replace(second=0, microsecond=0)
@@ -289,7 +294,7 @@ FULL_DAY: DayJSON = {
             "start_at": {"hour": 0, "minute": 0},
             "end_at": {"hour": 23, "minute": 59},
         },
-    ]
+    ],
 }
 
 EMPTY_DAY: DayJSON = {"times": []}
@@ -342,7 +347,7 @@ class Schedule:
             start_time = Time.from_string(start_hourminute, timezone_allowed=False)
         except TimezoneNotAllowed:
             raise InvalidDate(
-                "Invalid schedule: schedule takes 1 timezone but 2 were given"
+                "Invalid schedule: schedule takes 1 timezone but 2 were given",
             )
 
         end_time = Time.from_string(end_hourminute)
@@ -414,17 +419,17 @@ class Schedule:
     def __post_init__(self) -> None:
         if self.start_hour > self.end_hour:
             raise InvalidDate(
-                "Starting hour of schedule needs to be less or equal than the ending hour"
+                "Starting hour of schedule needs to be less or equal than the ending hour",
             )
 
         if self.start_hour == self.end_hour and self.start_minute > self.end_minute:
             raise InvalidDate(
-                "Starting minute of schedule needs to be less or equal than the ending minute"
+                "Starting minute of schedule needs to be less or equal than the ending minute",
             )
 
         if self.start_hour == self.end_hour and self.start_minute == self.end_minute:
             raise InvalidDate(
-                "Cannot have schedule with the same hour+minute as start and end"
+                "Cannot have schedule with the same hour+minute as start and end",
             )
 
     def __str__(self) -> str:
@@ -519,7 +524,7 @@ class Schedule:
             ):
                 # Next time is this week at the start of schedule
                 from_time_as_tz += datetime.timedelta(
-                    days=self.start_weekday - from_time_as_tz.isoweekday()
+                    days=self.start_weekday - from_time_as_tz.isoweekday(),
                 )
 
             # self.start_weekday <= self.end_weekday and from_time_as_tz.isoweekday() >= self.end_weekday
@@ -527,7 +532,7 @@ class Schedule:
                 # Add the number of days missing to go to the starting weekday
                 # of the next week
                 from_time_as_tz += datetime.timedelta(
-                    days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
+                    days=self.start_weekday + (7 - from_time_as_tz.isoweekday()),
                 )
 
             if self.is_only_days:
@@ -537,7 +542,7 @@ class Schedule:
                         minute=0,
                         second=0,
                         microsecond=0,
-                    )
+                    ),
                 )
         # Inside of day schedule and is only a day schedule
         elif self.is_only_days:
@@ -548,13 +553,13 @@ class Schedule:
             ):
                 # Next time is this week at the end of the schedule
                 from_time_as_tz += datetime.timedelta(
-                    days=(self.end_weekday + 1) - from_time_as_tz.isoweekday()
+                    days=(self.end_weekday + 1) - from_time_as_tz.isoweekday(),
                 )
             # self.start_weekday > self.end_weekday and from_time_as_tz.isoweekday() >= self.start_weekday
             else:
                 # Next time is next week at the end of the schedule
                 from_time_as_tz += datetime.timedelta(
-                    days=7 - (from_time_as_tz.isoweekday() - (self.end_weekday + 1))
+                    days=7 - (from_time_as_tz.isoweekday() - (self.end_weekday + 1)),
                 )
             return return_as_origin_timezone(
                 from_time_as_tz.replace(
@@ -562,7 +567,7 @@ class Schedule:
                     minute=0,
                     second=0,
                     microsecond=0,
-                )
+                ),
             )
         # Inside day+time schedule
         elif self.is_datetime_inside_time_schedule(from_time_as_tz, strict=False):
@@ -574,7 +579,7 @@ class Schedule:
                     minute=self.end_minute,
                     second=0,
                 )
-                + datetime.timedelta(seconds=1)
+                + datetime.timedelta(seconds=1),
             )
         # Inside day schedule but oustide of hour+minute schedule
         elif from_time_as_tz.hour < self.start_hour or (
@@ -590,13 +595,13 @@ class Schedule:
             if self.start_weekday > self.end_weekday:
                 # Next time is this week at the start of schedule
                 from_time_as_tz += datetime.timedelta(
-                    days=self.start_weekday - from_time_as_tz.isoweekday()
+                    days=self.start_weekday - from_time_as_tz.isoweekday(),
                 )
 
             else:
                 # Next time is next week at the start of the schedule
                 from_time_as_tz += datetime.timedelta(
-                    days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
+                    days=self.start_weekday + (7 - from_time_as_tz.isoweekday()),
                 )
         else:
             # Next time is next day at start hour + start minute
@@ -604,8 +609,11 @@ class Schedule:
 
         return return_as_origin_timezone(
             from_time_as_tz.replace(
-                hour=self.start_hour, minute=self.start_minute, second=0, microsecond=0
-            )
+                hour=self.start_hour,
+                minute=self.start_minute,
+                second=0,
+                microsecond=0,
+            ),
         )
 
     def serialized(self) -> Schedule.Serialized:
@@ -665,7 +673,7 @@ class Schedule:
             {
                 "start_at": self._time_as_json_dict(self.start_hour, self.start_minute),
                 "end_at": self._time_as_json_dict(self.end_hour, self.end_minute),
-            }
+            },
         ]
 
     def _timeranges_as_json_reversed(self) -> list[TimeRangeJSON]:
@@ -675,16 +683,17 @@ class Schedule:
                 {
                     "start_at": self._time_as_json_dict(0, 0),
                     "end_at": self._time_as_json_dict(
-                        self.start_hour, self.start_minute
+                        self.start_hour,
+                        self.start_minute,
                     ),
-                }
+                },
             )
         if (self.end_hour, self.end_minute) != (23, 59):
             result.append(
                 {
                     "start_at": self._time_as_json_dict(self.end_hour, self.end_minute),
                     "end_at": self._time_as_json_dict(23, 59),
-                }
+                },
             )
         return result
 
@@ -701,7 +710,7 @@ class UncertainDatePart:
 REGEX_DATETIME_WITH_UNCERTAIN_DIGITS = re.compile(
     # We don't need to match the timezone since it will be already split from
     # the date value when this regex will be used
-    r"^(?P<year>\d{4}|X{4})-(?P<month>\d{2}|X{2})-(?P<day>\d{2}|X{2})[T ]?(?P<hour>[\d]{2}):(?P<minute>[\d]{2})"
+    r"^(?P<year>\d{4}|X{4})-(?P<month>\d{2}|X{2})-(?P<day>\d{2}|X{2})[T ]?(?P<hour>[\d]{2}):(?P<minute>[\d]{2})",
 )
 
 
@@ -721,7 +730,7 @@ class UncertainDate:
             and isinstance(self.day, UncertainDatePart)
         ):
             raise InvalidDate(
-                "Cannot have year, month and day as uncertain, use `schedule` condition instead"
+                "Cannot have year, month and day as uncertain, use `schedule` condition instead",
             )
 
         if (
@@ -865,7 +874,8 @@ class UncertainDate:
             return as_dt
 
         if isinstance(self.year, UncertainDatePart) and isinstance(
-            self.day, UncertainDatePart
+            self.day,
+            UncertainDatePart,
         ):
             return relativedelta(as_dt.replace(day=1), months=12)
 
@@ -960,7 +970,9 @@ class DateTimeRange:
 
     @classmethod
     def _fromisoformat_or_uncertain_date(
-        cls, string: str, tzinfo: zoneinfo.ZoneInfo
+        cls,
+        string: str,
+        tzinfo: zoneinfo.ZoneInfo,
     ) -> datetime.datetime | UncertainDate:
         if "X" in string:
             return UncertainDate.fromisoformat(string, tzinfo)
@@ -1005,7 +1017,7 @@ class DateTimeRange:
                 return self.end + datetime.timedelta(minutes=1)
 
             next_datetime = self.end.get_next_datetime(from_time) + datetime.timedelta(
-                minutes=1
+                minutes=1,
             )
             if self.start <= next_datetime <= self.end:
                 # This allows to handle range with a full day and uncertain days

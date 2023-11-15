@@ -33,7 +33,8 @@ def ddtrace_hook(span: ddtrace.Span) -> None:
 
 
 def sentry_before_send(
-    event: dict[str, typing.Any], hint: dict[str, typing.Any]
+    event: dict[str, typing.Any],
+    hint: dict[str, typing.Any],
 ) -> dict[str, typing.Any] | None:
     # NOTE(sileht): malicious user can craft a traceparent header with an invalid version, this is logged as an exception
     # by ddtrace
@@ -43,7 +44,9 @@ def sentry_before_send(
 
 
 def setup(
-    service_name: str, dump_config: bool = True, stdout_logging_only: bool = False
+    service_name: str,
+    dump_config: bool = True,
+    stdout_logging_only: bool = False,
 ) -> None:
     global SERVICE_NAME
     SERVICE_NAME = "engine-" + service_name

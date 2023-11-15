@@ -37,7 +37,7 @@ class EventLogsResponse(pagination.PageResponse[Event]):
             "metadata": {
                 "description": "The list of events of a pull request",
             },
-        }
+        },
     )
 
 
@@ -59,9 +59,9 @@ class EventLogsResponse(pagination.PageResponse[Event]):
                 "description": "Successful Response.\n\n"
                 "**Important note**: response attributes `events[].timestamp` and "
                 "`events[].event` are deprecated and being replaced by `events[].received_at` and "
-                "`events[].type` respectively. Please use those instead."
-            }
-        }
+                "`events[].type` respectively. Please use those instead.",
+            },
+        },
     },
 )
 async def get_pull_request_eventlogs(
@@ -96,9 +96,9 @@ async def get_pull_request_eventlogs(
                 "description": "Successful Response.\n\n"
                 "**Important note**: response attributes `events[].timestamp` and "
                 "`events[].event` are deprecated and being replaced by `events[].received_at` and "
-                "`events[].type` respectively. Please use those instead."
-            }
-        }
+                "`events[].type` respectively. Please use those instead.",
+            },
+        },
     },
 )
 async def get_repository_eventlogs(

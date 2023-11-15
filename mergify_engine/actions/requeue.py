@@ -27,7 +27,7 @@ class RequeueExecutorConfig(typing.TypedDict):
 
 
 class RequeueExecutor(
-    actions.ActionExecutor["RequeueCommand", "RequeueExecutorConfig"]
+    actions.ActionExecutor["RequeueCommand", "RequeueExecutorConfig"],
 ):
     @classmethod
     async def create(

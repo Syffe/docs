@@ -31,10 +31,10 @@ async def prepare_respx_mock(
             "login": github_types.GitHubLogin("user-login"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
     respx_mock.get(
-        "https://api.github.com/repos/user-login/engine/collaborators/user-login/permission"
+        "https://api.github.com/repos/user-login/engine/collaborators/user-login/permission",
     ).respond(200, json={"user": api_user, "permission": permission})
 
     config = """
@@ -44,7 +44,7 @@ queue_rules:
 """
     if will_access_to_repo:
         respx_mock.get(
-            "https://api.github.com/repos/user-login/engine/contents/.mergify.yml?ref=main"
+            "https://api.github.com/repos/user-login/engine/contents/.mergify.yml?ref=main",
         ).respond(
             200,
             json=github_types.GitHubContentFile(  # type: ignore[arg-type]
@@ -57,7 +57,7 @@ queue_rules:
         )
 
     respx_mock.get(
-        "https://api.github.com/repos/Mergifyio/engine/installation"
+        "https://api.github.com/repos/Mergifyio/engine/installation",
     ).respond(200, json={"account": api_user, "suspended_at": None})
     respx_mock.get("https://api.github.com/repos/Mergifyio/engine").respond(
         200,
@@ -72,7 +72,7 @@ queue_rules:
                 "html_url": "",
                 "default_branch": github_types.GitHubRefType("main"),
                 "owner": api_user,
-            }
+            },
         ),
     )
     respx_mock.get("http://localhost:5000/engine/subscription/42").respond(
@@ -101,7 +101,8 @@ queue_rules:
 
 
 @pytest.mark.parametrize(
-    "permission,expected_status_code", (("write", 200), ("read", 200), ("none", 403))
+    "permission,expected_status_code",
+    (("write", 200), ("read", 200), ("none", 403)),
 )
 async def test_engine_proxy_get_queue_freeze(
     redis_links: redis_utils.RedisLinks,  # FIXME(sileht): this fixture should be autouse to always cleanup redis
@@ -112,7 +113,11 @@ async def test_engine_proxy_get_queue_freeze(
     expected_status_code: int,
 ) -> None:
     user = await prepare_respx_mock(
-        db, respx_mock, permission, web_client, expected_status_code != 403
+        db,
+        respx_mock,
+        permission,
+        web_client,
+        expected_status_code != 403,
     )
 
     url = "/front/proxy/engine/v1/repos/Mergifyio/engine/queues/freezes"
@@ -125,7 +130,8 @@ async def test_engine_proxy_get_queue_freeze(
 
 
 @pytest.mark.parametrize(
-    "permission,expected_status_code", (("write", 200), ("read", 403), ("none", 403))
+    "permission,expected_status_code",
+    (("write", 200), ("read", 403), ("none", 403)),
 )
 async def test_engine_proxy_update_queue_freeze(
     redis_links: redis_utils.RedisLinks,  # FIXME(sileht): this fixture should be autouse to always cleanup redis
@@ -136,7 +142,11 @@ async def test_engine_proxy_update_queue_freeze(
     expected_status_code: int,
 ) -> None:
     user = await prepare_respx_mock(
-        db, respx_mock, permission, web_client, expected_status_code != 403
+        db,
+        respx_mock,
+        permission,
+        web_client,
+        expected_status_code != 403,
     )
 
     url = "/front/proxy/engine/v1/repos/Mergifyio/engine/queue/main/freeze"
@@ -166,7 +176,11 @@ async def test_engine_proxy_delete_queue_freeze(
     expected_json: dict[str, str],
 ) -> None:
     user = await prepare_respx_mock(
-        db, respx_mock, permission, web_client, expected_status_code != 403
+        db,
+        respx_mock,
+        permission,
+        web_client,
+        expected_status_code != 403,
     )
 
     url = "/front/proxy/engine/v1/repos/Mergifyio/engine/queue/main/freeze"

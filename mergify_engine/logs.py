@@ -40,7 +40,7 @@ class CustomFormatter(daiquiri.formatter.ColorExtrasFormatter):
 
 
 CUSTOM_FORMATTER = CustomFormatter(
-    fmt="%(asctime)s [%(process)d] %(color)s%(levelname)-8.8s %(name)s: \033[1m%(message)s\033[0m%(extras)s%(color_stop)s"
+    fmt="%(asctime)s [%(process)d] %(color)s%(levelname)-8.8s %(name)s: \033[1m%(message)s\033[0m%(extras)s%(color_stop)s",
 )
 
 
@@ -71,7 +71,7 @@ class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
                     f"dd.root_span.tags.{k if isinstance(k, str) else k.decode()}": v
                     for k, v in root_span.get_tags().items()
                     if k not in ddtrace_internal_tags
-                }
+                },
             )
 
         log_record.update(self.HEROKU_LOG_EXTRAS)
@@ -79,7 +79,7 @@ class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
             {
                 f"dd.{k}": v
                 for k, v in ddtrace.tracer.get_log_correlation_context().items()
-            }
+            },
         )
         worker_id = WORKER_ID.get(None)
         if worker_id is not None:
@@ -100,7 +100,7 @@ def config_log() -> None:
 
     if os.getenv("MERGIFYENGINE_STORAGE_URL") is not None:
         LOG.warning(
-            "MERGIFYENGINE_STORAGE_URL is set, on-premise legacy Redis database setup detected."
+            "MERGIFYENGINE_STORAGE_URL is set, on-premise legacy Redis database setup detected.",
         )
 
     for env in (
@@ -123,8 +123,10 @@ def setup_logging(dump_config: bool = True, stdout_logging_only: bool = False) -
     if settings.LOG_STDOUT or stdout_logging_only:
         outputs.append(
             daiquiri.output.Stream(
-                sys.stdout, level=settings.LOG_STDOUT_LEVEL, formatter=CUSTOM_FORMATTER
-            )
+                sys.stdout,
+                level=settings.LOG_STDOUT_LEVEL,
+                formatter=CUSTOM_FORMATTER,
+            ),
         )
 
     if settings.LOG_DATADOG and not stdout_logging_only:
@@ -132,7 +134,7 @@ def setup_logging(dump_config: bool = True, stdout_logging_only: bool = False) -
         if isinstance(settings.LOG_DATADOG, pydantic_core.Url):
             if settings.LOG_DATADOG.scheme != "udp":
                 raise RuntimeError(
-                    "Only UDP protocol is supported for MERGIFYENGINE_LOG_DATADOG"
+                    "Only UDP protocol is supported for MERGIFYENGINE_LOG_DATADOG",
                 )
             if settings.LOG_DATADOG.host:
                 dd_extras["hostname"] = settings.LOG_DATADOG.host
@@ -144,7 +146,7 @@ def setup_logging(dump_config: bool = True, stdout_logging_only: bool = False) -
                 handler_class=daiquiri.handlers.PlainTextDatagramHandler,
                 formatter=HerokuDatadogFormatter(),
                 **dd_extras,  # type:ignore [arg-type]
-            )
+            ),
         )
 
     daiquiri.setup(
@@ -165,7 +167,7 @@ def setup_logging(dump_config: bool = True, stdout_logging_only: bool = False) -
             ("hpack", "WARN"),
             ("filelock", "WARN"),
         ]
-        + [(name, "DEBUG") for name in settings.LOG_DEBUG_LOGGER_NAMES]
+        + [(name, "DEBUG") for name in settings.LOG_DEBUG_LOGGER_NAMES],
     )
 
     if dump_config:

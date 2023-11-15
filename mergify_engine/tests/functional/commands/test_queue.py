@@ -108,7 +108,8 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
 
         async def assert_queued(
-            pull: github_types.GitHubPullRequest, position: str
+            pull: github_types.GitHubPullRequest,
+            position: str,
         ) -> None:
             comments = await self.get_issue_comments(pull["number"])
             assert (
@@ -152,7 +153,8 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
 
         async def assert_queued(
-            pull: github_types.GitHubPullRequest, position: str
+            pull: github_types.GitHubPullRequest,
+            position: str,
         ) -> None:
             comments = await self.get_issue_comments(pull["number"])
             assert (
@@ -175,7 +177,7 @@ class TestQueueCommand(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
-                }
+                },
             ],
         }
         await self.setup_repo(yaml.dump(rules))
@@ -222,7 +224,8 @@ class TestQueueCommand(base.FunctionalTestBase):
         )
 
         async def assert_queued(
-            pull: github_types.GitHubPullRequest, position: str
+            pull: github_types.GitHubPullRequest,
+            position: str,
         ) -> None:
             comments = await self.get_issue_comments(pull["number"])
             assert (
@@ -351,7 +354,7 @@ class TestQueueCommand(base.FunctionalTestBase):
                     ],
                     "allow_inplace_checks": False,
                     "speculative_checks": 5,
-                }
+                },
             ],
         }
         await self.setup_repo(yaml.dump(rules))
@@ -382,7 +385,8 @@ class TestQueueCommand(base.FunctionalTestBase):
         )
 
         async def assert_queued(
-            pull: github_types.GitHubPullRequest, position: str
+            pull: github_types.GitHubPullRequest,
+            position: str,
         ) -> None:
             comments = await self.get_issue_comments(pull["number"])
             assert (
@@ -549,7 +553,7 @@ class TestQueueCommand(base.FunctionalTestBase):
             (
                 base.MissingEventTimeout,
                 conftest.ShutUpVcrCannotOverwriteExistingCassetteException,
-            )
+            ),
         ):
             await self.wait_for_issue_comment(str(pr["number"]), "created")
 
@@ -633,7 +637,8 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
 
         second_response = await self.wait_for_issue_comment(
-            str(pr["number"]), "created"
+            str(pr["number"]),
+            "created",
         )
         assert "Command disallowed" in second_response["comment"]["body"]
 
@@ -814,14 +819,15 @@ class TestQueueCommand(base.FunctionalTestBase):
         # First queue attempt fails
         with respx.mock(assert_all_called=False) as respx_mock:
             respx_mock.put(
-                f"{settings.GITHUB_REST_API_URL}/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/merge"
+                f"{settings.GITHUB_REST_API_URL}/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/merge",
             ).respond(405, json={"message": "Pull Request is not mergeable"})
             respx_mock.route(host="api.github.com").pass_through()
 
             await self.run_engine()
 
         queue_comment = await self.wait_for_issue_comment(
-            action="created", test_id=str(p["number"])
+            action="created",
+            test_id=str(p["number"]),
         )
         assert (
             "🟠 The pull request is the 1st in the queue to be merged"
@@ -831,7 +837,8 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.wait_for_issue_comment(action="edited", test_id=str(p["number"]))
 
         queue_comment = await self.wait_for_issue_comment(
-            action="edited", test_id=str(p["number"])
+            action="edited",
+            test_id=str(p["number"]),
         )
         assert (
             "GitHub can't merge the pull request after 15 retries."
@@ -842,7 +849,8 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.create_comment(p["number"], "@mergifyio requeue", as_="admin")
         await self.run_engine()
         queue_comment = await self.wait_for_issue_comment(
-            action="created", test_id=str(p["number"])
+            action="created",
+            test_id=str(p["number"]),
         )
         assert (
             "This pull request will be re-embarked automatically"
@@ -850,7 +858,8 @@ class TestQueueCommand(base.FunctionalTestBase):
         )
 
         queue_comment = await self.wait_for_issue_comment(
-            action="created", test_id=str(p["number"])
+            action="created",
+            test_id=str(p["number"]),
         )
         assert (
             "🟠 The pull request is the 1st in the queue to be merged"

@@ -129,7 +129,7 @@ async def _get_commits_without_base_branch_merge(
         filter(
             lambda c: not is_base_branch_merge_commit(c, base_branch),
             sorted(await ctxt.commits, key=CommitOrderingKey),
-        )
+        ),
     )
 
 
@@ -140,9 +140,9 @@ async def get_commits_to_cherrypick(
         typing.cast(
             github_types.GitHubBranchCommit,
             await ctxt.client.item(
-                f"{ctxt.base_url}/commits/{ctxt.pull['merge_commit_sha']}"
+                f"{ctxt.base_url}/commits/{ctxt.pull['merge_commit_sha']}",
             ),
-        )
+        ),
     )
 
     if len(merge_commit.parents) == 1:
@@ -204,9 +204,9 @@ async def get_commits_to_cherrypick(
                 typing.cast(
                     github_types.GitHubBranchCommit,
                     await ctxt.client.item(
-                        f"{ctxt.base_url}/commits/{parent_commit_sha}"
+                        f"{ctxt.base_url}/commits/{parent_commit_sha}",
                     ),
-                )
+                ),
             )
 
     elif len(merge_commit.parents) == 2:
@@ -228,7 +228,7 @@ def get_destination_branch_name(
     branch_prefix: str,
 ) -> github_types.GitHubRefType:
     return github_types.GitHubRefType(
-        f"mergify/{branch_prefix}/{branch_name}/pr-{pull_number}"
+        f"mergify/{branch_prefix}/{branch_name}/pr-{pull_number}",
     )
 
 
@@ -263,7 +263,9 @@ async def prepare_branch(
     :param on_behalf: The user to impersonate
     """
     destination_branch = get_destination_branch_name(
-        pull["number"], branch_name, branch_prefix
+        pull["number"],
+        branch_name,
+        branch_prefix,
     )
 
     cherry_pick_error: str = ""
@@ -292,7 +294,11 @@ async def prepare_branch(
         await git.fetch("origin", pull["base"]["ref"])
         await git.fetch("origin", branch_name)
         await git(
-            "checkout", "--quiet", "-b", destination_branch, f"origin/{branch_name}"
+            "checkout",
+            "--quiet",
+            "-b",
+            destination_branch,
+            f"origin/{branch_name}",
         )
 
         for commit in commits_to_cherry_pick:
@@ -336,30 +342,30 @@ async def prepare_branch(
         raise DuplicateFailed(
             "`Mergify uses `mergify/...` namespace for creating temporary branches. "
             "A branch of your repository is conflicting with this namespace\n"
-            f"```\n{e.output}\n```\n"
+            f"```\n{e.output}\n```\n",
         )
     except gitter.GitAuthenticationFailure as e:
         if on_behalf is None:
             # Need to get a new token
             raise DuplicateNeedRetry(
-                f"Git reported the following error:\n```\n{e.output}\n```\n"
+                f"Git reported the following error:\n```\n{e.output}\n```\n",
             )
         raise DuplicateUnexpectedError(
-            f"Git reported the following error:\n```\n{e.output}\n```\n"
+            f"Git reported the following error:\n```\n{e.output}\n```\n",
         )
     except gitter.GitErrorRetriable as e:
         raise DuplicateNeedRetry(
-            f"Git reported the following error:\n```\n{e.output}\n```\n"
+            f"Git reported the following error:\n```\n{e.output}\n```\n",
         )
     except gitter.GitFatalError as e:
         raise DuplicateUnexpectedError(
-            f"Git reported the following error:\n```\n{e.output}\n```\n"
+            f"Git reported the following error:\n```\n{e.output}\n```\n",
         )
     except gitter.GitError as e:  # pragma: no cover
         for message, out_exception in GIT_MESSAGE_TO_EXCEPTION.items():
             if message in e.output:
                 raise out_exception(
-                    f"Git reported the following error:\n```\n{e.output}\n```\n"
+                    f"Git reported the following error:\n```\n{e.output}\n```\n",
                 )
         logger.error(
             "duplicate pull failed",
@@ -411,7 +417,7 @@ async def create_duplicate_pull(
         title = await pull_attrs.render_template(
             title_template,
             extra_variables={
-                "destination_branch": duplicate_branch_result.target_branch
+                "destination_branch": duplicate_branch_result.target_branch,
             },
         )
     except condition_value_querier.RenderTemplateFailure as rmf:
@@ -425,7 +431,7 @@ async def create_duplicate_pull(
                 "cherry_pick_error": "",
             },
             mandatory_template_variables={
-                "cherry_pick_error": "\n{{ cherry_pick_error }}"
+                "cherry_pick_error": "\n{{ cherry_pick_error }}",
             },
         )
         cherry_pick_error_truncated = utils.unicode_truncate(
@@ -442,7 +448,7 @@ async def create_duplicate_pull(
                 "cherry_pick_error": cherry_pick_error_truncated,
             },
             mandatory_template_variables={
-                "cherry_pick_error": "\n{{ cherry_pick_error }}"
+                "cherry_pick_error": "\n{{ cherry_pick_error }}",
             },
         )
     except condition_value_querier.RenderTemplateFailure as rmf:

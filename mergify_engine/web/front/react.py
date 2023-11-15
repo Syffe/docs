@@ -12,7 +12,8 @@ router = fastapi.APIRouter(tags=["react"])
 
 
 async def serve_static_file(
-    request: fastapi.Request, filepath: str
+    request: fastapi.Request,
+    filepath: str,
 ) -> fastapi.Response:
     # NOTE(sileht): Ensure the destination file is located in REACT_BUILD_DIR
     assert settings.DASHBOARD_UI_STATIC_FILES_DIRECTORY is not None

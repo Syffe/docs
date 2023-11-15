@@ -66,7 +66,11 @@ class TestBranchProtection(base.FunctionalTestBase):
             "is not compatible with `batch_size>1` and must be unset."
         )
         await self.assert_check_run(
-            ctxt, check_name, expected_conclusion, expected_title, expected_summary
+            ctxt,
+            check_name,
+            expected_conclusion,
+            expected_title,
+            expected_summary,
         )
 
     async def test_required_status_checks_strict_compatibility_with_batch_size_and_queue_branch_merge_method(
@@ -79,7 +83,7 @@ class TestBranchProtection(base.FunctionalTestBase):
                 "speculative_checks": 5,
                 "batch_max_wait_time": "0 s",
                 "queue_branch_merge_method": "fast-forward",
-            }
+            },
         )
         await self.protect_main_branch_with_required_status_checks_strict()
 
@@ -108,7 +112,7 @@ class TestBranchProtection(base.FunctionalTestBase):
                         "#changes-requested-reviews-by=0",
                         "label=ready-to-merge",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -146,7 +150,7 @@ class TestBranchProtection(base.FunctionalTestBase):
                 "requiresStrictStatusChecks": False,
                 "restrictsPushes": False,
                 "restrictsReviewDismissals": False,
-            }
+            },
         )
         mergify_protection = github_graphql_types.CreateGraphqlBranchProtectionRule(
             {
@@ -166,7 +170,7 @@ class TestBranchProtection(base.FunctionalTestBase):
                 "requiresStrictStatusChecks": False,
                 "restrictsPushes": False,
                 "restrictsReviewDismissals": False,
-            }
+            },
         )
         await self.create_branch_protection_rule(mergify_protection)
         # The default queue_branch_prefix is mocked in `mergify_engine.tests.functional.base`
@@ -188,7 +192,9 @@ class TestBranchProtection(base.FunctionalTestBase):
         real_client_post = github.AsyncGitHubClient.post
 
         async def mock_client_post(  # type: ignore[no-untyped-def]
-            self, url: str, **kwargs: typing.Any
+            self,
+            url: str,
+            **kwargs: typing.Any,
         ) -> httpx.Response:
             if url.endswith("/rename"):
                 raise HTTPForbiddenRename(
@@ -219,7 +225,7 @@ class TestBranchProtection(base.FunctionalTestBase):
                 {
                     "name": "default",
                     "merge_conditions": [],
-                }
+                },
             ],
             "pull_request_rules": [
                 {

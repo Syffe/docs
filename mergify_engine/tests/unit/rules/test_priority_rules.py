@@ -81,15 +81,16 @@ pull_request_rules:
   actions:
     queue:
       name: foo
-"""
+""",
     )
 
     ctxt = await context_getter(1, labels=[{"name": label} for label in labels])
     ctxt.repository._caches.branch_protections.set(
-        github_types.GitHubRefType("main"), None
+        github_types.GitHubRefType("main"),
+        None,
     )
     evaluator = await config["pull_request_rules"].get_pull_request_rules_evaluator(
-        ctxt
+        ctxt,
     )
     rule = first.first(r for r in evaluator.matching_rules if r.conditions.match)
     assert rule is not None

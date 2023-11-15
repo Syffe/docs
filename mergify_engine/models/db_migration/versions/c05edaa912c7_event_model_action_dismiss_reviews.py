@@ -21,7 +21,9 @@ def upgrade() -> None:
         "event_action_dismiss_reviews",
         sqlalchemy.Column("id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column(
-            "users", sqlalchemy.ARRAY(sqlalchemy.Text(), dimensions=1), nullable=False
+            "users",
+            sqlalchemy.ARRAY(sqlalchemy.Text(), dimensions=1),
+            nullable=False,
         ),
         sqlalchemy.ForeignKeyConstraint(
             ["id"],
@@ -29,7 +31,8 @@ def upgrade() -> None:
             name=alembic.op.f("event_action_dismiss_reviews_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_dismiss_reviews_pkey")
+            "id",
+            name=alembic.op.f("event_action_dismiss_reviews_pkey"),
         ),
     )
     # ### end Alembic commands ###

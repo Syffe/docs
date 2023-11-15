@@ -20,7 +20,10 @@ def upgrade() -> None:
     alembic.op.create_table(
         "github_authenticated_actor",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "type",
@@ -35,13 +38,17 @@ def upgrade() -> None:
             anonymizer_config="anon.lorem_ipsum( characters := 7 )",
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("github_authenticated_actor_pkey")
+            "id",
+            name=alembic.op.f("github_authenticated_actor_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_queue_freeze_create",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "queue_name",
@@ -73,14 +80,20 @@ def upgrade() -> None:
             name=alembic.op.f("event_queue_freeze_create_created_by_id_fkey"),
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_queue_freeze_create_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_queue_freeze_create_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_queue_freeze_create_pkey")
+            "id",
+            name=alembic.op.f("event_queue_freeze_create_pkey"),
         ),
     )
     alembic.op.alter_column(
-        "event", "pull_request", existing_type=sqlalchemy.INTEGER(), nullable=True
+        "event",
+        "pull_request",
+        existing_type=sqlalchemy.INTEGER(),
+        nullable=True,
     )
     # ### end Alembic commands ###
 

@@ -24,7 +24,7 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                 "state": True,
                 "target_url": True,
                 "name": True,
-            }
+            },
         )
     elif event_type == "pull_request_review":
         # NOTE(sileht): only used for logging purpose
@@ -40,7 +40,7 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                 "source": True,
                 "flag": True,
                 "attempts": True,
-            }
+            },
         )
 
     elif event_type == "push":
@@ -51,7 +51,7 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                 "before": True,
                 "after": True,
                 "pusher": True,
-            }
+            },
         )
 
     elif event_type in ("check_suite", "check_run"):
@@ -68,10 +68,10 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                     "app": {"id": True, "slug": True},
                     "head_sha": True,
                     "pull_requests": [
-                        {"number": True, "base": {"repo": {"id": True, "url": True}}}
+                        {"number": True, "base": {"repo": {"id": True, "url": True}}},
                     ],
                 },
-            }
+            },
         )
         if event_type == "check_run":
             # NOTE(sileht): only used for logging purpose
@@ -81,7 +81,7 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                     "id": True,
                     "conclusion": True,
                     "status": True,
-                }
+                },
             )
 
     elif event_type == "pull_request":
@@ -92,7 +92,7 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                 {
                     "before": True,
                     "after": True,
-                }
+                },
             )
 
     elif event_type == "issue_comment":
@@ -138,7 +138,7 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                     "default_branch": True,
                 },
                 "organization": {"login": True},
-            }
+            },
         )
     elif event_type == "workflow_job":
         mask.update(
@@ -168,7 +168,7 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                     "private": True,
                     "default_branch": True,
                 },
-            }
+            },
         )
 
     slim_event = utils.filter_dict(event, mask)

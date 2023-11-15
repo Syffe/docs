@@ -24,7 +24,14 @@ payload_decoded = {
     "timedelta": datetime.timedelta(hours=2, minutes=5, seconds=5),
     "datetime_naive": datetime.datetime(2021, 5, 15, 8, 35, 36, 442306),  # noqa: DTZ001
     "datetime_aware": datetime.datetime(
-        2021, 5, 15, 8, 41, 36, 796485, tzinfo=datetime.UTC
+        2021,
+        5,
+        15,
+        8,
+        41,
+        36,
+        796485,
+        tzinfo=datetime.UTC,
     ),
     "a set": {1, 2, 3},
     "uuid": uuid.UUID(uuid_str),
@@ -34,7 +41,7 @@ payload_encoded = {
     "name": "hello",
     "conditions": [],
     "actions": {
-        "merge": {"strict": {"__pytype__": "enum", "class": "Color", "name": "BLUE"}}
+        "merge": {"strict": {"__pytype__": "enum", "class": "Color", "name": "BLUE"}},
     },
     "datetime_naive": {
         "__pytype__": "datetime.datetime",

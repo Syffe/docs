@@ -33,10 +33,12 @@ from mergify_engine.worker.manager import ServicesSet
 LOG = daiquiri.getLogger(__name__)
 
 PATH_INPUT_JOBS_JSON = os.path.join(
-    os.path.dirname(__file__), "raw_logs/unsorted_logs/input_jobs_json"
+    os.path.dirname(__file__),
+    "raw_logs/unsorted_logs/input_jobs_json",
 )
 PATH_INPUT_RAW_LOG_TXT = os.path.join(
-    os.path.dirname(__file__), "raw_logs/unsorted_logs/input_raw_logs_txt"
+    os.path.dirname(__file__),
+    "raw_logs/unsorted_logs/input_raw_logs_txt",
 )
 
 JOB_IDS_BY_ISSUE: dict[int, list[int]] = {
@@ -71,7 +73,8 @@ JOB_IDS_BY_ISSUE: dict[int, list[int]] = {
 
 class TestLogEmbedderGithubAction(base.FunctionalTestBase):
     async def run_github_action(
-        self, steps: list[dict[str, typing.Any]] | None = None
+        self,
+        steps: list[dict[str, typing.Any]] | None = None,
     ) -> tuple[github_types.GitHubEventWorkflowJob, github_types.GitHubPullRequest]:
         ci = {
             "name": "Continuous Integration",
@@ -81,7 +84,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     "timeout-minutes": 5,
                     "runs-on": "ubuntu-20.04",
                     "steps": steps,
-                }
+                },
             },
         }
 
@@ -105,7 +108,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         )
 
         async def download_and_check_log(
-            job_event: github_types.GitHubEventWorkflowJob, run_attempt: int
+            job_event: github_types.GitHubEventWorkflowJob,
+            run_attempt: int,
         ) -> None:
             assert job_event["workflow_job"] is not None
             assert job_event["workflow_job"]["run_attempt"] == run_attempt
@@ -113,8 +117,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             async with database.create_session() as session:
                 job = await session.scalar(
                     sqlalchemy.select(gh_models.WorkflowJob).where(
-                        gh_models.WorkflowJob.id == job_event["workflow_job"]["id"]
-                    )
+                        gh_models.WorkflowJob.id == job_event["workflow_job"]["id"],
+                    ),
                 )
 
             assert job is not None
@@ -130,7 +134,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         # Rerun the failed job
         assert job_event["workflow_job"] is not None
         await self.client_integration.post(
-            f"{self.url_origin}/actions/jobs/{job_event['workflow_job']['id']}/rerun"
+            f"{self.url_origin}/actions/jobs/{job_event['workflow_job']['id']}/rerun",
         )
         job_event = typing.cast(
             github_types.GitHubEventWorkflowJob,
@@ -154,7 +158,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                             "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }} run_attempt:${{ github.run_attempt }};exit 1",
                         },
                     ],
-                }
+                },
             },
         }
 
@@ -170,7 +174,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         assert job_event["workflow_job"] is not None
 
         await self.client_integration.post(
-            f"{self.url_origin}/actions/runs/{job_event['workflow_job']['run_id']}/cancel"
+            f"{self.url_origin}/actions/runs/{job_event['workflow_job']['run_id']}/cancel",
         )
 
         job_event = typing.cast(
@@ -184,8 +188,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         async with database.create_session() as session:
             job = await session.scalar(
                 sqlalchemy.select(gh_models.WorkflowJob).where(
-                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"]
-                )
+                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"],
+                ),
             )
 
         assert job is not None
@@ -196,7 +200,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         log = await gha_embedder.download_failure_annotations(job)
 
         assert [
-            f"The run was canceled by @{self.installation_ctxt.installation['app_slug']}."
+            f"The run was canceled by @{self.installation_ctxt.installation['app_slug']}.",
         ] == log
 
     async def test_log_downloading_with_matrix(self) -> None:
@@ -214,7 +218,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                             "run": "echo I will fail on sha ${{ github.event.pull_request.head.sha }} version: ${{ matrix.version }};exit 1",
                         },
                     ],
-                }
+                },
             },
         }
 
@@ -268,8 +272,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         async with database.create_session() as session:
             job = await session.scalar(
                 sqlalchemy.select(gh_models.WorkflowJob).where(
-                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"]
-                )
+                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"],
+                ),
             )
             assert job is not None
 
@@ -279,7 +283,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 # NOTE(Greesb): We need to mock like this because sometimes we get sent to some weird url
                 # like so: https://pipelinesghubeus5.actions.githubusercontent.com
                 pipelines_route = respx.patterns.M(
-                    host__regex=r"pipelines\w*\.actions\.githubusercontent\.com"
+                    host__regex=r"pipelines\w*\.actions\.githubusercontent\.com",
                 )
                 # NOTE(Kontrolix): Let github api pass through the mock to only catch openai api call
                 respx_mock.route(pipelines_route).pass_through()
@@ -294,7 +298,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                                 "object": "embedding",
                                 "index": 0,
                                 "embedding": OPENAI_EMBEDDING_DATASET["toto"],
-                            }
+                            },
                         ],
                         "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
                         "usage": {"prompt_tokens": 2, "total_tokens": 2},
@@ -312,8 +316,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         async with database.create_session() as session:
             result = await session.execute(
                 sqlalchemy.select(gh_models.WorkflowJob).where(
-                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"]
-                )
+                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"],
+                ),
             )
             job = result.scalar()
 
@@ -326,7 +330,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         assert job.log_status is gh_models.WorkflowJobLogStatus.EMBEDDED
 
         assert np.array_equal(
-            job.log_embedding, OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"]
+            job.log_embedding,
+            OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"],
         )
 
         gcs_client = google_cloud_storage.GoogleCloudStorageClient(
@@ -382,8 +387,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         async with database.create_session() as session:
             result = await session.execute(
                 sqlalchemy.select(gh_models.WorkflowJob).where(
-                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"]
-                )
+                    gh_models.WorkflowJob.id == job_event["workflow_job"]["id"],
+                ),
             )
             job = result.scalar()
 
@@ -391,7 +396,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
         # Get the logs
         resp = await self.client_integration.get(
-            f"/repos/{self.repository_ctxt.repo['full_name']}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
+            f"/repos/{self.repository_ctxt.repo['full_name']}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs",
         )
 
         for n, step in enumerate(steps):
@@ -402,8 +407,9 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             assert (
                 len(
                     gha_embedder.get_lines_from_zip(
-                        zipfile.ZipFile(io.BytesIO(resp.content)), job
-                    )
+                        zipfile.ZipFile(io.BytesIO(resp.content)),
+                        job,
+                    ),
                 )
                 > 0
             )
@@ -415,7 +421,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             "jobs": {
                 "unit-tests": {
                     "strategy": {
-                        "matrix": {"version": [2.8, 3.5], "os": ["windows", "mac"]}
+                        "matrix": {"version": [2.8, 3.5], "os": ["windows", "mac"]},
                     },
                     "timeout-minutes": 5,
                     "runs-on": "ubuntu-20.04",
@@ -423,7 +429,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                         {
                             "name": "run version: ${{ matrix.version }} os:${{ matrix.os }}",
                             "run": "echo version: ${{ matrix.version }} os:${{ matrix.os }}",
-                        }
+                        },
                     ],
                 },
                 "job_without_matrix": {
@@ -433,7 +439,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                         {
                             "name": "No matrix",
                             "run": "echo no matrix",
-                        }
+                        },
                     ],
                 },
             },
@@ -469,7 +475,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         for job in jobs:
             if (job.name_without_matrix, job.matrix) in expected_job_name_and_matrix:
                 expected_job_name_and_matrix.remove(
-                    (job.name_without_matrix, job.matrix)
+                    (job.name_without_matrix, job.matrix),
                 )
 
         assert expected_job_name_and_matrix == []
@@ -489,7 +495,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             # NOTE(Syffe): we sort here since depending on the OS the order of the files might not be the same
             for job_json_filename in sorted(os.listdir(PATH_INPUT_JOBS_JSON)):
                 with open(
-                    f"{PATH_INPUT_JOBS_JSON}/{job_json_filename}"
+                    f"{PATH_INPUT_JOBS_JSON}/{job_json_filename}",
                 ) as job_json_file:
                     job_json = json.load(job_json_file)
 
@@ -498,20 +504,22 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                             "name": job_json["github_name"],
                             "run_id": job_json["workflow_run_id"],
                             "conclusion": "failure",
-                        }
+                        },
                     )
                     job = await gh_models.WorkflowJob.insert(
-                        session, job_json, job_json["repository"]
+                        session,
+                        job_json,
+                        job_json["repository"],
                     )
 
                     with open(
-                        f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt"
+                        f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
                     ) as log_file:
                         (
                             tokens,
                             truncated_log,
                         ) = await github_action.get_tokenized_cleaned_log(
-                            log_file.readlines()
+                            log_file.readlines(),
                         )
                     async with openai_api.OpenAIClient() as openai_client:
                         embedding = await openai_client.get_embedding(tokens)
@@ -535,8 +543,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     job.id,
                     options=[
                         orm.joinedload(gh_models.WorkflowJob.ci_issue).selectinload(
-                            ci_issue.jobs
-                        )
+                            ci_issue.jobs,
+                        ),
                     ],
                 )
                 assert job_with_issue.ci_issue_id is not None

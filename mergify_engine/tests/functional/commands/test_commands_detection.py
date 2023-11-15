@@ -11,10 +11,12 @@ class TestCommandsDetection(base.FunctionalTestBase):
         await self.setup_repo(test_branches=[stable_branch])
         p = await self.create_pr()
         await self.create_comment_as_admin(
-            p["number"], f"@mergifyio backport {stable_branch}"
+            p["number"],
+            f"@mergifyio backport {stable_branch}",
         )
         await self.client_admin.put(
-            f"{p['issue_url']}/lock", json={"lock_reason": "off-topic"}
+            f"{p['issue_url']}/lock",
+            json={"lock_reason": "off-topic"},
         )
         await self.wait_for("pull_request", {"action": "locked"})
         await self.run_engine()
@@ -23,7 +25,9 @@ class TestCommandsDetection(base.FunctionalTestBase):
         await self.setup_repo()
         p1 = await self.create_pr()
         comment_id = await self.create_command(
-            p1["number"], "@mergifyio update", as_="admin"
+            p1["number"],
+            "@mergifyio update",
+            as_="admin",
         )
         assert await self.hide_comment(p1["number"], comment_id)
         await self.run_full_engine()
@@ -52,17 +56,22 @@ class TestCommandsDetection(base.FunctionalTestBase):
         await self.setup_repo()
         p1 = await self.create_pr()
         comment_id = await self.create_comment_as_admin(
-            p1["number"], "@mergifyio update"
+            p1["number"],
+            "@mergifyio update",
         )
         await self.run_engine()
 
         await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p1["number"]
+            "issue_comment",
+            {"action": "created"},
+            test_id=p1["number"],
         )
         await self.delete_comment(comment_id)
 
         await self.wait_for(
-            "issue_comment", {"action": "deleted"}, test_id=p1["number"]
+            "issue_comment",
+            {"action": "deleted"},
+            test_id=p1["number"],
         )
 
         await self.run_engine()

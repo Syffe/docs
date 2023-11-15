@@ -20,7 +20,10 @@ def upgrade() -> None:
     alembic.op.create_table(
         "event_queue_freeze_delete",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "queue_name",
@@ -40,16 +43,22 @@ def upgrade() -> None:
             name=alembic.op.f("event_queue_freeze_delete_deleted_by_id_fkey"),
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_queue_freeze_delete_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_queue_freeze_delete_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_queue_freeze_delete_pkey")
+            "id",
+            name=alembic.op.f("event_queue_freeze_delete_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_queue_freeze_update",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "queue_name",
@@ -76,7 +85,9 @@ def upgrade() -> None:
             anonymizer_config=None,
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_queue_freeze_update_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_queue_freeze_update_id_fkey"),
         ),
         sqlalchemy.ForeignKeyConstraint(
             ["updated_by_id"],
@@ -84,13 +95,17 @@ def upgrade() -> None:
             name=alembic.op.f("event_queue_freeze_update_updated_by_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_queue_freeze_update_pkey")
+            "id",
+            name=alembic.op.f("event_queue_freeze_update_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_queue_pause_create",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "reason",
@@ -110,16 +125,22 @@ def upgrade() -> None:
             name=alembic.op.f("event_queue_pause_create_created_by_id_fkey"),
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_queue_pause_create_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_queue_pause_create_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_queue_pause_create_pkey")
+            "id",
+            name=alembic.op.f("event_queue_pause_create_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_queue_pause_delete",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "deleted_by_id",
@@ -133,16 +154,22 @@ def upgrade() -> None:
             name=alembic.op.f("event_queue_pause_delete_deleted_by_id_fkey"),
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_queue_pause_delete_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_queue_pause_delete_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_queue_pause_delete_pkey")
+            "id",
+            name=alembic.op.f("event_queue_pause_delete_pkey"),
         ),
     )
     alembic.op.create_table(
         "event_queue_pause_update",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "reason",
@@ -157,7 +184,9 @@ def upgrade() -> None:
             anonymizer_config=None,
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_queue_pause_update_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_queue_pause_update_id_fkey"),
         ),
         sqlalchemy.ForeignKeyConstraint(
             ["updated_by_id"],
@@ -165,7 +194,8 @@ def upgrade() -> None:
             name=alembic.op.f("event_queue_pause_update_updated_by_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_queue_pause_update_pkey")
+            "id",
+            name=alembic.op.f("event_queue_pause_update_pkey"),
         ),
     )
     # ### end Alembic commands ###

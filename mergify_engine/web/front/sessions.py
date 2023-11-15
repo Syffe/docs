@@ -13,7 +13,9 @@ from mergify_engine.web import redis
 
 class RedisStore(SessionStore):
     def get_redis_key(
-        self, session_id: str, purpose: typing.Literal["data", "invalidation"]
+        self,
+        session_id: str,
+        purpose: typing.Literal["data", "invalidation"],
     ) -> str:
         return f"fastapi-session/{session_id}/{purpose}"
 
@@ -37,7 +39,9 @@ class RedisStore(SessionStore):
         ttl = max(1, ttl)
         redis_links = redis.get_redis_links()
         await redis_links.authentication.set(
-            self.get_redis_key(session_id, "data"), data, ex=ttl
+            self.get_redis_key(session_id, "data"),
+            data,
+            ex=ttl,
         )
         return session_id
 
@@ -65,19 +69,26 @@ class RedisStore(SessionStore):
 
 class ImiaUserProvider(imia.user_providers.UserProvider):  # type: ignore[misc]
     async def find_by_id(
-        self, connection: starlette.requests.HTTPConnection, identifier: typing.Any
+        self,
+        connection: starlette.requests.HTTPConnection,
+        identifier: typing.Any,
     ) -> imia.protocols.UserLike | None:
         async with database.create_session() as session:
             return await github_user.GitHubUser.get_by_id(
-                session, github_types.GitHubAccountIdType(int(identifier))
+                session,
+                github_types.GitHubAccountIdType(int(identifier)),
             )
 
     async def find_by_username(
-        self, connection: starlette.requests.HTTPConnection, username_or_email: str
+        self,
+        connection: starlette.requests.HTTPConnection,
+        username_or_email: str,
     ) -> imia.protocols.UserLike | None:
         raise NotImplementedError()
 
     async def find_by_token(
-        self, connection: starlette.requests.HTTPConnection, token: str
+        self,
+        connection: starlette.requests.HTTPConnection,
+        token: str,
     ) -> imia.protocols.UserLike | None:
         raise NotImplementedError()

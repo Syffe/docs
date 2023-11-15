@@ -30,7 +30,10 @@ class OAuthTokenEncryptedType(sqlalchemy_utils.StringEncryptedType):  # type: ig
 
     def __init__(self) -> None:
         super().__init__(
-            sqlalchemy.String(512), None, encrypted_type.AesGcmEngine, length=512
+            sqlalchemy.String(512),
+            None,
+            encrypted_type.AesGcmEngine,
+            length=512,
         )
 
     def process_bind_param(
@@ -42,7 +45,9 @@ class OAuthTokenEncryptedType(sqlalchemy_utils.StringEncryptedType):  # type: ig
         return super().process_bind_param(value, dialect)
 
     def process_result_value(
-        self, value: str | None, dialect: typing.Any
+        self,
+        value: str | None,
+        dialect: typing.Any,
     ) -> OAuthTokenSecretString:
         self.key = settings.DATABASE_OAUTH_TOKEN_SECRET_CURRENT.get_secret_value()
         try:
@@ -76,7 +81,8 @@ class GitHubUser(models.Base):
     )
 
     oauth_access_token: orm.Mapped[github_types.GitHubOAuthToken] = orm.mapped_column(
-        OAuthTokenEncryptedType(), anonymizer_config="''CONFIDENTIAL''"
+        OAuthTokenEncryptedType(),
+        anonymizer_config="''CONFIDENTIAL''",
     )
 
     def get_id(self) -> int:
@@ -110,8 +116,8 @@ class GitHubUser(models.Base):
     ) -> GitHubUser | None:
         result = await session.execute(
             sqlalchemy.select(cls).where(
-                sqlalchemy.func.lower(cls.login) == login.lower()
-            )
+                sqlalchemy.func.lower(cls.login) == login.lower(),
+            ),
         )
         return result.unique().scalar_one_or_none()
 
@@ -136,5 +142,5 @@ class GitHubUser(models.Base):
 
     def to_github_account(self) -> github_types.GitHubAccount:
         return github_types.GitHubAccount(
-            {"id": self.id, "login": self.login, "type": "User", "avatar_url": ""}
+            {"id": self.id, "login": self.login, "type": "User", "avatar_url": ""},
         )

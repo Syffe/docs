@@ -25,10 +25,10 @@ class TestReviewAction(base.FunctionalTestBase):
                         "#approved-reviews-by>=1",
                     ],
                     "actions": {
-                        "review": {"message": "WTF?", "type": "REQUEST_CHANGES"}
+                        "review": {"message": "WTF?", "type": "REQUEST_CHANGES"},
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -59,10 +59,10 @@ class TestReviewAction(base.FunctionalTestBase):
                         "review": {
                             "message": "WTF {{author}}?",
                             "type": "REQUEST_CHANGES",
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -77,7 +77,8 @@ class TestReviewAction(base.FunctionalTestBase):
         assert r2["review"]["body"] == "WTF mergify-test2?"
 
     async def _test_review_template_error(
-        self, msg: str
+        self,
+        msg: str,
     ) -> github_types.CachedGitHubCheckRun:
         rules = {
             "pull_request_rules": [
@@ -88,7 +89,7 @@ class TestReviewAction(base.FunctionalTestBase):
                     ],
                     "actions": {"review": {"message": msg, "type": "REQUEST_CHANGES"}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -133,7 +134,7 @@ Unknown pull request attribute: hello
                     "actions": {
                         "review": {
                             "type": "APPROVE",
-                        }
+                        },
                     },
                 },
                 {
@@ -144,10 +145,10 @@ Unknown pull request attribute: hello
                             "message": "WTF?",
                             "type": "REQUEST_CHANGES",
                             "bot_account": "mergify-test4",
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

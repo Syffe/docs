@@ -59,7 +59,8 @@ from mergify_engine.rules.config import pull_request_rules
     ),
 )
 async def test_markdown(
-    condition: rule_conditions.ConditionEvaluationResult, expected_markdown: str
+    condition: rule_conditions.ConditionEvaluationResult,
+    expected_markdown: str,
 ) -> None:
     assert condition._as_markdown_element() == expected_markdown
 
@@ -74,7 +75,7 @@ async def test_group_condition_as_markdown() -> None:
                 match=True,
                 label="base=main",
                 is_label_user_input=True,
-            )
+            ),
         ],
     )
     assert condition.as_markdown() == "- [X] `base=main`"
@@ -95,9 +96,9 @@ async def test_condition_tree_as_markdown() -> None:
                         match=False,
                         label="base=main",
                         is_label_user_input=True,
-                    )
+                    ),
                 ],
-            )
+            ),
         ],
     )
     expected_markdown = """\
@@ -121,9 +122,14 @@ async def test_condition_dict_serialization() -> None:
                 evaluation_error="Some error",
                 related_checks=["ci"],
                 next_evaluation_at=datetime.datetime(
-                    2022, 1, 10, 14, 30, tzinfo=date.UTC
+                    2022,
+                    1,
+                    10,
+                    14,
+                    30,
+                    tzinfo=date.UTC,
                 ),
-            )
+            ),
         ],
     )
 
@@ -144,10 +150,15 @@ async def test_condition_dict_serialization() -> None:
                 "evaluation_error": "Some error",
                 "related_checks": ["ci"],
                 "next_evaluation_at": datetime.datetime(
-                    2022, 1, 10, 14, 30, tzinfo=date.UTC
+                    2022,
+                    1,
+                    10,
+                    14,
+                    30,
+                    tzinfo=date.UTC,
                 ),
                 "subconditions": [],
-            }
+            },
         ],
     }
     assert (
@@ -168,7 +179,7 @@ async def test_condition_dict_serialization_with_default_values() -> None:
                 is_label_user_input=True,
                 description="Some description",
                 evaluation_error="Some error",
-            )
+            ),
         ],
     )
     condition_dict = typing.cast(
@@ -187,7 +198,7 @@ async def test_condition_dict_serialization_with_default_values() -> None:
                     "description": "Some description",
                     "evaluation_error": "Some error",
                     "subconditions": [],
-                }
+                },
             ],
         },
     )
@@ -222,7 +233,7 @@ pull_request_rules:
 """
 
     prrules = voluptuous.Schema(pull_request_rules.get_pull_request_rules_schema())(
-        rules.YamlSchema(config)["pull_request_rules"]
+        rules.YamlSchema(config)["pull_request_rules"],
     )
 
     for prr in prrules:

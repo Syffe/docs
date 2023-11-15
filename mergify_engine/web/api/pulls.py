@@ -38,9 +38,9 @@ class MatchingPullRequests(pagination.PageResponse[github_types.GitHubPullReques
     pull_requests: list[github_types.GitHubPullRequest] = pydantic.Field(
         json_schema_extra={
             "metadata": {
-                "description": "The pull requests of the repository that matches the given conditions"
-            }
-        }
+                "description": "The pull requests of the repository that matches the given conditions",
+            },
+        },
     )
 
 
@@ -97,7 +97,7 @@ async def get_pull_requests(
     matching_pulls: list[github_types.GitHubPullRequest] = []
 
     base_pull_conditions = rules_conditions.RuleConditionCombination(
-        {"and": validated_conditions}
+        {"and": validated_conditions},
     )
 
     needs_full_data = False
@@ -161,7 +161,7 @@ async def get_pull_requests(
                     pull_with_all_data = typing.cast(
                         github_types.GitHubPullRequest,
                         await repository.installation.client.item(
-                            f"{repository.base_url}/pulls/{pull['number']}"
+                            f"{repository.base_url}/pulls/{pull['number']}",
                         ),
                     )
 
@@ -182,13 +182,13 @@ async def get_pull_requests(
 @pydantic.dataclasses.dataclass
 class PullRequestRule:
     name: str = dataclasses.field(
-        metadata={"description": "The pull request rule name"}
+        metadata={"description": "The pull request rule name"},
     )
     conditions: (
         rule_conditions.ConditionEvaluationResult.Serialized
     ) = dataclasses.field(metadata={"description": "The pull request rule conditions"})
     actions: dict[str, actions_mod.RawConfigT] = dataclasses.field(
-        metadata={"description": "The pull request rule actions"}
+        metadata={"description": "The pull request rule actions"},
     )
 
 
@@ -206,7 +206,8 @@ class QueueRule:
 class PullRequestSummarySerializerMixin:
     @classmethod
     def _serialize_queue_rules(
-        cls, qr_evaluator: qr_mod.QueueRulesEvaluator
+        cls,
+        qr_evaluator: qr_mod.QueueRulesEvaluator,
     ) -> list[QueueRule]:
         serialized_qr = []
 
@@ -219,14 +220,15 @@ class PullRequestSummarySerializerMixin:
                     name=rule.name,
                     queue_conditions=queue_conditions.as_json_dict(),
                     merge_conditions=merge_conditions.as_json_dict(),
-                )
+                ),
             )
 
         return serialized_qr
 
     @classmethod
     def _serialize_pull_request_rules(
-        cls, prr_evaluator: prr_mod.PullRequestRulesEvaluator
+        cls,
+        prr_evaluator: prr_mod.PullRequestRulesEvaluator,
     ) -> list[PullRequestRule]:
         serialized_prr = []
 
@@ -250,20 +252,22 @@ class PullRequestSummarySerializerMixin:
                     name=rule.name,
                     conditions=conditions.serialized(),
                     actions=actions,
-                )
+                ),
             )
 
         return serialized_prr
 
     @staticmethod
     def _sanitize_action_config(
-        config_key: str, config_value: typing.Any
+        config_key: str,
+        config_value: typing.Any,
     ) -> typing.Any:
         if "bot_account" in config_key and isinstance(config_value, dict):
             return config_value["login"]
         if isinstance(config_value, rule_conditions.PullRequestRuleConditions):
             return rule_conditions.ConditionEvaluationResult.from_rule_condition_node(
-                config_value.condition, filter_key=None
+                config_value.condition,
+                filter_key=None,
             )
         if isinstance(config_value, re.Pattern):
             return config_value.pattern
@@ -273,10 +277,10 @@ class PullRequestSummarySerializerMixin:
 @pydantic.dataclasses.dataclass
 class PullRequestSummaryResponse(PullRequestSummarySerializerMixin):
     pull_request_rules: list[PullRequestRule] = dataclasses.field(
-        metadata={"description": "The evaluated pull request rules"}
+        metadata={"description": "The evaluated pull request rules"},
     )
     queue_rules: list[QueueRule] = dataclasses.field(
-        metadata={"description": "The evaluated queue rules"}
+        metadata={"description": "The evaluated queue rules"},
     )
 
     @classmethod
@@ -315,7 +319,7 @@ async def get_pull_request_summary(
 
     try:
         ctxt = await repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(number)
+            github_types.GitHubPullRequestNumber(number),
         )
     except http.HTTPClientSideError as e:
         raise fastapi.HTTPException(status_code=e.status_code, detail=e.message)
@@ -331,7 +335,7 @@ async def get_pull_request_summary(
                 "msg": e.reason,
                 "details": e.details,
                 "type": "mergify_config_error",
-            }
+            },
         ]
         raise fastapi.HTTPException(status_code=422, detail=detail)
 

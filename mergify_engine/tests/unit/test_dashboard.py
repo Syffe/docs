@@ -30,7 +30,10 @@ async def test_get_queues_url_from_context(
 
     # PR in partition B
     await fake_convoy.add_pull(
-        ctxt, config, [partr_config.PartitionRuleName("projectB")], ""
+        ctxt,
+        config,
+        [partr_config.PartitionRuleName("projectB")],
+        "",
     )
     assert (
         await dashboard.get_queues_url_from_context(ctxt, fake_convoy)
@@ -38,14 +41,19 @@ async def test_get_queues_url_from_context(
     )
     assert (
         await dashboard.get_queues_url_from_context(
-            ctxt, fake_convoy, open_pr_details=False
+            ctxt,
+            fake_convoy,
+            open_pr_details=False,
         )
         == f"{settings.DASHBOARD_UI_FRONT_URL}/github/Mergifyio/repo/mergify-engine/queues/partitions/projectB?branch=main&queues=default"
     )
 
     # PR in partition B and partion A
     await fake_convoy.add_pull(
-        ctxt, config, [partr_config.PartitionRuleName("projectA")], ""
+        ctxt,
+        config,
+        [partr_config.PartitionRuleName("projectA")],
+        "",
     )
     assert ["projectA", "projectB"] == [
         epwt.train.partition_name
@@ -57,7 +65,9 @@ async def test_get_queues_url_from_context(
     )
     assert (
         await dashboard.get_queues_url_from_context(
-            ctxt, fake_convoy, open_pr_details=False
+            ctxt,
+            fake_convoy,
+            open_pr_details=False,
         )
         == f"{settings.DASHBOARD_UI_FRONT_URL}/github/Mergifyio/repo/mergify-engine/queues/partitions/projectA?branch=main&queues=default"
     )

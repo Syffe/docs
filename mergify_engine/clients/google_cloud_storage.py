@@ -16,8 +16,8 @@ class GoogleCloudStorageClient(storage.Client):  # type: ignore[misc]
     def __init__(self, credentials: types.SecretStrFromBase64) -> None:
         super().__init__(
             credentials=service_account.Credentials.from_service_account_info(
-                json.loads(credentials.get_secret_value())
-            )
+                json.loads(credentials.get_secret_value()),
+            ),
         )
 
     def _sync_upload(self, bucket_name: str, path: str, content: bytes) -> storage.Blob:

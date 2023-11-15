@@ -15,7 +15,9 @@ from mergify_engine.console_scripts import admin_cli
 @click.pass_context
 @click.argument("url", required=True)
 @click.option(
-    "--action", default="user", type=click.Choice(["user", "admin", "internal"])
+    "--action",
+    default="user",
+    type=click.Choice(["user", "admin", "internal"]),
 )
 async def refresh(
     cli_ctxt: click.Context,

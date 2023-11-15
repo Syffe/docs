@@ -10,7 +10,8 @@ from mergify_engine.rules.config import queue_rules
 
 def test_has_only_one_of_min_value() -> None:
     with pytest.raises(
-        ValueError, match=r"^Need at least 2 keys to check for exclusivity$"
+        ValueError,
+        match=r"^Need at least 2 keys to check for exclusivity$",
     ):
         queue_rules._has_only_one_of("foo")
 
@@ -50,8 +51,8 @@ queue_rules:
         - status-success=ci/fake-ci-merge
       queue_conditions:
         - status-success=ci/fake-ci-queue
-"""
-        )["queue_rules"]
+""",
+        )["queue_rules"],
     )
 
     eval_result = await qrules["default"].evaluate([pr])

@@ -19,13 +19,15 @@ def get_current_user(request: fastapi.Request) -> github_user.GitHubUser:
 
 
 CurrentUser = typing.Annotated[
-    github_user.GitHubUser, fastapi.Depends(get_current_user)
+    github_user.GitHubUser,
+    fastapi.Depends(get_current_user),
 ]
 RequiredLogin = CurrentUser
 
 
 def is_mergify_admin(
-    auth: imia.user_token.UserToken, connection: starlette.requests.HTTPConnection
+    auth: imia.user_token.UserToken,
+    connection: starlette.requests.HTTPConnection,
 ) -> bool:
     return (
         auth
@@ -47,7 +49,8 @@ _RawGitHubAccountId = typing.Annotated[
 
 
 async def _get_validated_github_account_id(
-    github_account_id: _RawGitHubAccountId, logged_user: CurrentUser
+    github_account_id: _RawGitHubAccountId,
+    logged_user: CurrentUser,
 ) -> github_types.GitHubAccountIdType:
     # NOTE(sileht): We get the installation only to check the account still exists and Mergify is still installed
     await github.get_installation_from_account_id(github_account_id)
@@ -67,14 +70,15 @@ class Membership(typing.TypedDict):
 
 
 async def get_membership(
-    account_id: GitHubAccountId, logged_user: CurrentUser
+    account_id: GitHubAccountId,
+    logged_user: CurrentUser,
 ) -> Membership:
     if account_id == logged_user.id:
         # We are always admin of our account
         return Membership(role="admin", user=logged_user.to_github_account())
 
     async with github.AsyncGitHubInstallationClient(
-        github.GitHubTokenAuth(logged_user.oauth_access_token)
+        github.GitHubTokenAuth(logged_user.oauth_access_token),
     ) as client:
         try:
             gh_membership = typing.cast(
@@ -92,7 +96,8 @@ async def get_membership(
 
 
 async def github_admin_role_required(
-    account_id: GitHubAccountId, logged_user: CurrentUser
+    account_id: GitHubAccountId,
+    logged_user: CurrentUser,
 ) -> None:
     membership = await get_membership(account_id, logged_user)
     if membership["role"] != "admin":

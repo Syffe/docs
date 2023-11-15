@@ -17,7 +17,9 @@ def set_dashboard_ui_static_files_directory(
 ) -> None:
     # NOTE(sileht): must be done before web_client is created
     monkeypatch.setattr(
-        settings, "DASHBOARD_UI_STATIC_FILES_DIRECTORY", FAKE_REACT_BUILD_DIR
+        settings,
+        "DASHBOARD_UI_STATIC_FILES_DIRECTORY",
+        FAKE_REACT_BUILD_DIR,
     )
 
 

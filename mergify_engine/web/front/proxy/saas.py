@@ -40,7 +40,8 @@ async def get_subscription_details_cache(
     user_id: github_types.GitHubAccountIdType,
 ) -> fastapi.Response | None:
     raw = await redis_cache.hget(
-        get_subscription_detail_hkey(github_account_id), str(user_id)
+        get_subscription_detail_hkey(github_account_id),
+        str(user_id),
     )
     if raw:
         deserialized = typing.cast(SubscriptionDetailsResponse, msgpack.unpackb(raw))
@@ -68,8 +69,8 @@ async def set_subscription_details_cache(
                 "body": response.body,
                 "headers": dict(response.headers),
                 "updated": date.utcnow().isoformat(timespec="seconds"),
-            }
-        )
+            },
+        ),
     )
     pipeline = await redis_cache.pipeline()
     subscription_detail_hkey = get_subscription_detail_hkey(github_account_id)
@@ -87,7 +88,8 @@ async def clear_subscription_details_cache(
         await redis_cache.delete(get_subscription_detail_hkey(github_account_id))
     else:
         await redis_cache.hdel(
-            get_subscription_detail_hkey(github_account_id), str(user_github_account_id)
+            get_subscription_detail_hkey(github_account_id),
+            str(user_github_account_id),
         )
 
 
@@ -97,7 +99,8 @@ async def saas_proxy(
 ) -> fastapi.responses.Response:
     if not settings.SAAS_MODE:
         raise fastapi.HTTPException(
-            510, "On-Premise installation must not use SaaS endpoints"
+            510,
+            "On-Premise installation must not use SaaS endpoints",
         )
 
     path = request.url.path.removeprefix("/front/proxy/saas/")
@@ -120,7 +123,8 @@ async def saas_proxy(
             proxy_request = proxy_response.request
         except httpx.InvalidURL:
             raise fastapi.HTTPException(
-                status_code=422, detail={"messages": "Invalid request"}
+                status_code=422,
+                detail={"messages": "Invalid request"},
             )
         except httpx.HTTPStatusError as e:
             proxy_response = e.response
@@ -173,18 +177,24 @@ async def saas_subscription(
 ) -> fastapi.responses.Response:
     if settings.SAAS_MODE:
         response = await get_subscription_details_cache(
-            redis_links.cache, github_account_id, current_user.id
+            redis_links.cache,
+            github_account_id,
+            current_user.id,
         )
 
         if response is None:
             response = await saas_proxy(request, current_user)
             await set_subscription_details_cache(
-                redis_links.cache, github_account_id, current_user.id, response
+                redis_links.cache,
+                github_account_id,
+                current_user.id,
+                response,
             )
         return response
 
     sub = await subscription.Subscription.get_subscription(
-        redis_links.cache, github_account_id
+        redis_links.cache,
+        github_account_id,
     )
 
     return fastapi.responses.JSONResponse(
@@ -198,7 +208,7 @@ async def saas_subscription(
                 "name": "OnPremise Premium",
                 "features": sub.to_dict()["features"],
             },
-        }
+        },
     )
 
 

@@ -132,7 +132,7 @@ def to_check_run_light(
             "conclusion": check["conclusion"],
             "completed_at": check["completed_at"],
             "html_url": check["html_url"],
-        }
+        },
     )
 
 
@@ -239,7 +239,7 @@ async def set_check_run(
                 "title": result.title,
                 "summary": result.summary,
             },
-        }
+        },
     )
 
     # please mypy
@@ -253,7 +253,9 @@ async def set_check_run(
     summary = post_parameters["output"]["summary"]
     if summary:
         post_parameters["output"]["summary"] = utils.unicode_truncate(
-            summary, 65535, "…"
+            summary,
+            65535,
+            "…",
         )
 
     if external_id:
@@ -263,7 +265,8 @@ async def set_check_run(
         ended_at = (result.ended_at or date.utcnow()).isoformat()
         post_parameters["conclusion"] = result.conclusion.value
         post_parameters["completed_at"] = typing.cast(
-            github_types.ISODateTimeType, ended_at
+            github_types.ISODateTimeType,
+            ended_at,
         )
 
     if skip_cache:
@@ -291,7 +294,9 @@ async def set_check_run(
             skip_cache=skip_cache,
             all_checks=await ctxt.pull_engine_check_runs,
             fresh_checks=await get_checks_for_ref(
-                ctxt, ctxt.pull["head"]["sha"], app_id=settings.GITHUB_APP_ID
+                ctxt,
+                ctxt.pull["head"]["sha"],
+                app_id=settings.GITHUB_APP_ID,
             ),
         )
 
@@ -311,7 +316,7 @@ async def set_check_run(
                         json=post_parameters,
                     )
                 ).json(),
-            )
+            ),
         )
     else:
         if details_url is None:
@@ -329,7 +334,7 @@ async def set_check_run(
                             json=post_parameters,
                         )
                     ).json(),
-                )
+                ),
             )
         else:
             new_check = checks[0]

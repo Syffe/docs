@@ -51,7 +51,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                         "merge": {},
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -272,7 +272,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -301,7 +301,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test freeze reason",
                     "cascading": True,
-                }
+                },
             ],
         }
 
@@ -320,7 +320,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "name": "default",
                     "reason": "test updated freeze reason",
                     "cascading": False,
-                }
+                },
             ],
         }
 
@@ -723,7 +723,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                                     "and": [
                                         "status-success=continuous-integration/toto",
                                         "status-success=continuous-integration/tutu",
-                                    ]
+                                    ],
                                 },
                                 "status-success=continuous-integration/tata",
                             ],
@@ -736,7 +736,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "batch_size": 2,
                     "allow_inplace_checks": True,
                     "merge_method": "squash",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -778,10 +778,14 @@ class TestEventLogsAction(base.FunctionalTestBase):
             state="failure",
         )
         await self.create_status(
-            tmp_pull["pull_request"], "continuous-integration/toto", state="failure"
+            tmp_pull["pull_request"],
+            "continuous-integration/toto",
+            state="failure",
         )
         await self.create_status(
-            tmp_pull["pull_request"], "continuous-integration/tata", state="failure"
+            tmp_pull["pull_request"],
+            "continuous-integration/tata",
+            state="failure",
         )
         await self.create_status(
             tmp_pull["pull_request"],
@@ -810,7 +814,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         # assert first PR has no unsuccessful checks
         self.assert_unsuccessful_checks(
-            events=r.json()["events"], expected_unsuccessful_checks=[]
+            events=r.json()["events"],
+            expected_unsuccessful_checks=[],
         )
 
         r = await self.admin_app.get(
@@ -864,7 +869,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                                     "and": [
                                         "status-success=continuous-integration/toto",
                                         "status-success=continuous-integration/tutu",
-                                    ]
+                                    ],
                                 },
                                 "status-success=continuous-integration/tata",
                             ],
@@ -876,7 +881,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "speculative_checks": 3,
                     "allow_inplace_checks": False,
                     "merge_method": "squash",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -905,10 +910,14 @@ class TestEventLogsAction(base.FunctionalTestBase):
             state="failure",
         )
         await self.create_status(
-            tmp_pull_1["pull_request"], "continuous-integration/toto", state="failure"
+            tmp_pull_1["pull_request"],
+            "continuous-integration/toto",
+            state="failure",
         )
         await self.create_status(
-            tmp_pull_1["pull_request"], "continuous-integration/tata", state="failure"
+            tmp_pull_1["pull_request"],
+            "continuous-integration/tata",
+            state="failure",
         )
         await self.create_status(
             tmp_pull_1["pull_request"],
@@ -981,7 +990,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                                     "and": [
                                         "status-success=continuous-integration/toto",
                                         "status-success=continuous-integration/tutu",
-                                    ]
+                                    ],
                                 },
                                 "status-success=continuous-integration/tata",
                             ],
@@ -993,7 +1002,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "speculative_checks": 3,
                     "allow_inplace_checks": True,
                     "merge_method": "squash",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1035,10 +1044,14 @@ class TestEventLogsAction(base.FunctionalTestBase):
             state="failure",
         )
         await self.create_status(
-            tmp_pull_1["pull_request"], "continuous-integration/toto", state="failure"
+            tmp_pull_1["pull_request"],
+            "continuous-integration/toto",
+            state="failure",
         )
         await self.create_status(
-            tmp_pull_1["pull_request"], "continuous-integration/tata", state="failure"
+            tmp_pull_1["pull_request"],
+            "continuous-integration/tata",
+            state="failure",
         )
         await self.create_status(
             tmp_pull_1["pull_request"],
@@ -1067,7 +1080,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         # assert first PR has no unsuccessful checks
         self.assert_unsuccessful_checks(
-            events=r.json()["events"], expected_unsuccessful_checks=[]
+            events=r.json()["events"],
+            expected_unsuccessful_checks=[],
         )
 
         r = await self.admin_app.get(
@@ -1119,7 +1133,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci_2",
                         "status-success=continuous-integration/fake-ci_3",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1142,13 +1156,17 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         await self.create_status(pr, "continuous-integration/fake-ci", state="failure")
         await self.create_status(
-            pr, "continuous-integration/fake-ci_2", state="pending"
+            pr,
+            "continuous-integration/fake-ci_2",
+            state="pending",
         )
         await self.create_status(pr, "continuous-integration/fake-ci_3")
         # Create another one to check that it's not present in the eventlog even if it
         # not success
         await self.create_status(
-            pr, "continuous-integration/fake-ci_4", state="failure"
+            pr,
+            "continuous-integration/fake-ci_4",
+            state="failure",
         )
 
         await self.run_engine()
@@ -1186,7 +1204,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci_2",
                     ],
                     "checks_timeout": "10 m",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -1210,12 +1228,16 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
             await self.create_status(pr, "continuous-integration/fake-ci")
             await self.create_status(
-                pr, "continuous-integration/fake-ci_2", state="pending"
+                pr,
+                "continuous-integration/fake-ci_2",
+                state="pending",
             )
             # Create another one to check that it's not present in the eventlog even
             # if it not success
             await self.create_status(
-                pr, "continuous-integration/fake-ci_3", state="pending"
+                pr,
+                "continuous-integration/fake-ci_3",
+                state="pending",
             )
 
             with time_travel(date.utcnow() + datetime.timedelta(minutes=15), tick=True):
@@ -1233,7 +1255,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                             "name": "continuous-integration/fake-ci_2",
                             "state": "pending",
                             "url": anys.ANY_STR,
-                        }
+                        },
                     ],
                 )
 
@@ -1248,8 +1270,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
                         "assign": {"users": ["mergify-test1"]},
                         "label": {"add": ["toto"]},
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -1257,6 +1279,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
         await self.run_engine()
         async with database.create_session() as db:
             result = await db.execute(
-                sqlalchemy.select(func.count()).select_from(evt_models.Event)
+                sqlalchemy.select(func.count()).select_from(evt_models.Event),
             )
         assert result.scalar() == 2

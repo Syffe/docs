@@ -41,7 +41,7 @@ def get_priority_score(prio: Priority, offset: datetime.timedelta | None = None)
         when += offset
     return str(
         int(when.timestamp() * SCORE_TIMESTAMP_PRECISION)
-        + prio.value * PRIORITY_OFFSET * SCORE_TIMESTAMP_PRECISION
+        + prio.value * PRIORITY_OFFSET * SCORE_TIMESTAMP_PRECISION,
     )
 
 
@@ -96,7 +96,7 @@ async def push(
                 "gh_owner": owner_login,
                 "gh_repo": tracing_repo_name,
                 "gh_pull": pull_number,
-            }
+            },
         )
         now = date.utcnow()
 

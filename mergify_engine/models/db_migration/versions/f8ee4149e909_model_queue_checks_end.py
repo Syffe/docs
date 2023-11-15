@@ -20,7 +20,10 @@ def upgrade() -> None:
     alembic.op.create_table(
         "event_action_queue_checks_end",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), nullable=False, anonymizer_config=None
+            "id",
+            sqlalchemy.BigInteger(),
+            nullable=False,
+            anonymizer_config=None,
         ),
         sqlalchemy.Column(
             "branch",
@@ -133,11 +136,12 @@ def upgrade() -> None:
             ["speculative_check_pull_request_id"],
             ["speculative_check_pull_request.id"],
             name=alembic.op.f(
-                "event_action_queue_checks_end_speculative_check_pull_request_id_fkey"
+                "event_action_queue_checks_end_speculative_check_pull_request_id_fkey",
             ),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_queue_checks_end_pkey")
+            "id",
+            name=alembic.op.f("event_action_queue_checks_end_pkey"),
         ),
     )
     # ### end Alembic commands ###

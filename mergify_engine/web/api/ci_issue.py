@@ -104,7 +104,7 @@ async def query_issues(
                 started_at=github_types.ISODateTimeType(result.started_at.isoformat()),
                 flaky=FlakyStatus(result.flaky),
                 failed_run_count=result.failed_run_count,
-            )
+            ),
         )
 
     if issue_id is not None and len(reponses) > 1:
@@ -128,7 +128,7 @@ async def get_ci_issues(
     repository_ctxt: security.Repository,
 ) -> CiIssuesResponse:
     return CiIssuesResponse(
-        issues=list((await query_issues(session, repository_ctxt.repo["id"])).values())
+        issues=list((await query_issues(session, repository_ctxt.repo["id"])).values()),
     )
 
 
@@ -147,7 +147,8 @@ async def get_ci_issue(
     session: database.Session,
     repository_ctxt: security.Repository,
     ci_issue_id: typing.Annotated[
-        int, fastapi.Path(description="The ID of the CI Issue")
+        int,
+        fastapi.Path(description="The ID of the CI Issue"),
     ],
 ) -> CiIssueResponse:
     reponses = await query_issues(session, repository_ctxt.repo["id"], ci_issue_id)
@@ -181,7 +182,8 @@ async def get_ci_issue_event_detail(
     session: database.Session,
     repository_ctxt: security.Repository,
     ci_issue_id: typing.Annotated[
-        int, fastapi.Path(description="The ID of the CI Issue")
+        int,
+        fastapi.Path(description="The ID of the CI Issue"),
     ],
     event_id: typing.Annotated[int, fastapi.Path(description="The ID of the Event")],
 ) -> CiIssueEventDetailResponse:
@@ -215,7 +217,7 @@ async def get_ci_issue_event_detail(
         steps=event_detail.steps,
         failed_step_number=event_detail.failed_step_number,
         completed_at=github_types.ISODateTimeType(
-            event_detail.completed_at.isoformat()
+            event_detail.completed_at.isoformat(),
         ),
         started_at=github_types.ISODateTimeType(event_detail.started_at.isoformat()),
         flaky=FlakyStatus(event_detail.flaky),

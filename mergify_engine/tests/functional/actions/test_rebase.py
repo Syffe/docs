@@ -15,8 +15,8 @@ class TestRebaseAction(base.FunctionalTestBase):
                     "name": "rebase",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"rebase": {}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -52,7 +52,7 @@ class TestRebaseAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=merge"],
                     "actions": {"merge": {}, "delete_head_branch": {}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -93,7 +93,7 @@ class TestRebaseAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=update"],
                     "actions": {"update": {}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -133,7 +133,7 @@ class TestRebaseAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=rebase"],
                     "actions": {"rebase": {"autosquash": False}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -158,7 +158,7 @@ class TestRebaseAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=rebase"],
                     "actions": {"rebase": {"autosquash": True}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -183,7 +183,7 @@ class TestRebaseAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=rebase"],
                     "actions": {"rebase": {"autosquash": True}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -208,7 +208,7 @@ class TestRebaseAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=rebase"],
                     "actions": {"rebase": {"autosquash": True}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -240,13 +240,15 @@ class TestRebaseAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=rebase"],
                     "actions": {"rebase": {"autosquash": True}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
 
         pr_fixup = await self.create_pr_with_autosquash_commit(
-            "fixup=amend", autosquash_commit_body="test123", as_="admin"
+            "fixup=amend",
+            autosquash_commit_body="test123",
+            as_="admin",
         )
 
         p2 = await self.create_pr()
@@ -269,13 +271,15 @@ class TestRebaseAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=rebase"],
                     "actions": {"rebase": {"autosquash": True}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
 
         pr_fixup = await self.create_pr_with_autosquash_commit(
-            "fixup=reword", autosquash_commit_body="test123", as_="admin"
+            "fixup=reword",
+            autosquash_commit_body="test123",
+            as_="admin",
         )
 
         p2 = await self.create_pr()
@@ -298,7 +302,7 @@ class TestRebaseAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=rebase"],
                     "actions": {"rebase": {"autosquash": True}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

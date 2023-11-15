@@ -42,7 +42,7 @@ class TestSummary(base.FunctionalTestBase):
                     ],
                     "actions": {"merge": {"method": "rebase"}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -76,12 +76,12 @@ class TestSummary(base.FunctionalTestBase):
                             "or": [
                                 "label=test",
                                 "base=dummy",
-                            ]
+                            ],
                         },
                     ],
                     "actions": {"merge": {"method": "rebase"}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -108,8 +108,8 @@ class TestSummary(base.FunctionalTestBase):
                         "label=test",
                     ],
                     "actions": {"merge": {"method": "rebase"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -151,8 +151,8 @@ class TestSummary(base.FunctionalTestBase):
                         },
                     ],
                     "actions": {"merge": {"method": "rebase"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -205,8 +205,8 @@ class TestSummary(base.FunctionalTestBase):
                         },
                     ],
                     "actions": {"merge": {"method": "rebase"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -258,7 +258,7 @@ class TestQueueCISummary(base.FunctionalTestBase):
                         "status-success=continuous-integration/success-ci",
                     ],
                     "speculative_checks": 5,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -294,13 +294,19 @@ class TestQueueCISummary(base.FunctionalTestBase):
 
         tmp_pull_1 = pulls[1]
         await self.create_status(
-            tmp_pull_1, "continuous-integration/fail-ci", "failure"
+            tmp_pull_1,
+            "continuous-integration/fail-ci",
+            "failure",
         )
         await self.create_status(
-            tmp_pull_1, "continuous-integration/pending-ci", "pending"
+            tmp_pull_1,
+            "continuous-integration/pending-ci",
+            "pending",
         )
         await self.create_status(
-            tmp_pull_1, "continuous-integration/success-ci", "success"
+            tmp_pull_1,
+            "continuous-integration/success-ci",
+            "success",
         )
 
         await self.run_engine()
@@ -331,7 +337,7 @@ class TestQueueCISummary(base.FunctionalTestBase):
                         "label=<h1>foo</h1>bar",
                     ],
                     "actions": {"comment": {"message": "no way"}},
-                }
+                },
             ],
         }
         await self.setup_repo(yaml.dump(rules))
@@ -360,7 +366,7 @@ class TestQueueCISummary(base.FunctionalTestBase):
                         "label=<h1>foo</h1>bar",
                     ],
                     "actions": {"queue": {"name": "not <h1>exists</h1> !!"}},
-                }
+                },
             ],
         }
         await self.setup_repo(yaml.dump(rules))

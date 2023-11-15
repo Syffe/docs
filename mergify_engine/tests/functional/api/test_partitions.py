@@ -23,7 +23,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -89,10 +89,10 @@ class TestPartitionsApi(base.FunctionalTestBase):
                                 "state": "pending",
                             },
                             "estimated_time_of_merge": None,
-                        }
+                        },
                     ],
                 },
-            }
+            },
         ]
 
         r = await self.admin_app.get(
@@ -131,7 +131,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -164,7 +164,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
 
         p1 = await self.create_pr(files={"projA/test1.txt": "testA"})
         p2 = await self.create_pr(
-            files={"projA/test2.txt": "testA", "projB/test2.txt": "testB"}
+            files={"projA/test2.txt": "testA", "projB/test2.txt": "testB"},
         )
 
         await self.add_label(p1["number"], "queue")
@@ -211,7 +211,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                                 "state": "pending",
                             },
                             "estimated_time_of_merge": None,
-                        }
+                        },
                     ],
                     "projectB": [],
                 },
@@ -304,7 +304,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                                 "state": "pending",
                             },
                             "estimated_time_of_merge": None,
-                        }
+                        },
                     ],
                 },
             },
@@ -343,7 +343,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -398,7 +398,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                         "check-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -533,7 +533,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                                     "state": "pending",
                                 },
                                 "estimated_time_of_merge": anys.ANY_DATETIME_STR,
-                            }
+                            },
                         ],
                     },
                 },
@@ -542,21 +542,21 @@ class TestPartitionsApi(base.FunctionalTestBase):
             assert r.json() == expected_output
             assert r2.json() == expected_output[0]
             assert rprojectA.json() == {
-                "pull_requests": expected_output[0]["partitions"]["projectA"]  # type: ignore[index]
+                "pull_requests": expected_output[0]["partitions"]["projectA"],  # type: ignore[index]
             }
             assert rprojectB.json() == {
-                "pull_requests": expected_output[0]["partitions"]["projectB"]  # type: ignore[index]
+                "pull_requests": expected_output[0]["partitions"]["projectB"],  # type: ignore[index]
             }
 
             # projB eta should be at least 1 hour more than projA
             assert datetime.datetime.fromisoformat(
-                rprojectB.json()["pull_requests"][0]["estimated_time_of_merge"]
+                rprojectB.json()["pull_requests"][0]["estimated_time_of_merge"],
             ) > datetime.datetime.fromisoformat(
-                rprojectA.json()["pull_requests"][0]["estimated_time_of_merge"]
+                rprojectA.json()["pull_requests"][0]["estimated_time_of_merge"],
             ) + datetime.timedelta(hours=1)
 
     async def test_estimated_time_of_merge_without_partitions_and_pr_in_multiple_queues(
-        self
+        self,
     ) -> None:
         rules = {
             "queue_rules": [
@@ -639,7 +639,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                             "pull_request": {"merged": True},
                         },
                     },
-                ]
+                ],
             )
 
         with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
@@ -682,7 +682,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                             "pull_request": {"merged": True},
                         },
                     },
-                ]
+                ],
             )
 
             p4 = await self.create_pr()
@@ -716,7 +716,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                 < datetime.datetime.fromisoformat(
                     r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME][0][
                         "estimated_time_of_merge"
-                    ]
+                    ],
                 )
                 < start_date + datetime.timedelta(hours=4, minutes=10)
             )
@@ -726,7 +726,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                 < datetime.datetime.fromisoformat(
                     r.json()[0]["partitions"][partr_config.DEFAULT_PARTITION_NAME][1][
                         "estimated_time_of_merge"
-                    ]
+                    ],
                 )
                 < start_date + datetime.timedelta(hours=4, minutes=10)
             )
@@ -753,7 +753,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
             )
 
     async def test_estimated_time_of_merge_with_1_speculative_check_and_multiple_batch(
-        self
+        self,
     ) -> None:
         rules = {
             "queue_rules": [
@@ -827,7 +827,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                             "pull_request": {"merged": True},
                         },
                     },
-                ]
+                ],
             )
 
             p5 = await self.create_pr()
@@ -839,7 +839,8 @@ class TestPartitionsApi(base.FunctionalTestBase):
             await self.run_full_engine()
 
         with time_travel(
-            start_date + datetime.timedelta(hours=1, minutes=10), tick=True
+            start_date + datetime.timedelta(hours=1, minutes=10),
+            tick=True,
         ):
             # Travel a few minutes after the run_engine so the batch max wait time is elapsed and
             # the draft PR is created with only 2 PR out of the 3 possible in the batch

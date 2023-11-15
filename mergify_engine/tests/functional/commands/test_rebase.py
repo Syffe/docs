@@ -32,7 +32,7 @@ class TestCommandRebase(base.FunctionalTestBase):
         f = typing.cast(
             github_types.GitHubContentFile,
             await self.client_integration.item(
-                f"{self.url_origin}/contents/TESTING?ref={self.main_branch_name}"
+                f"{self.url_origin}/contents/TESTING?ref={self.main_branch_name}",
             ),
         )
         data = base64.b64decode(bytearray(f["content"], "utf-8"))
@@ -51,7 +51,7 @@ class TestCommandRebase(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -90,9 +90,9 @@ class TestCommandRebase(base.FunctionalTestBase):
             yaml.dump(
                 {
                     "commands_restrictions": {
-                        "rebase": {"conditions": ["sender-permission>=read"]}
-                    }
-                }
+                        "rebase": {"conditions": ["sender-permission>=read"]},
+                    },
+                },
             ),
             files={"TESTING": "foobar\n"},
         )
@@ -104,7 +104,8 @@ class TestCommandRebase(base.FunctionalTestBase):
         # The repo is a fork with "maintainer_can_modify" authorization, but the
         # user is not a maintainer of the fork
         with mock.patch.object(context.Context, "pull_from_fork", True), mock.patch(
-            "mergify_engine.branch_updater.pre_rebase_check", return_value=True
+            "mergify_engine.branch_updater.pre_rebase_check",
+            return_value=True,
         ):
             await self.create_comment_as_fork(p2["number"], "@mergifyio rebase")
             await self.run_engine()

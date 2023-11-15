@@ -34,7 +34,7 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
                             "run": """echo I will fail on sha ${{ github.event.pull_request.head.sha }} and if run_attempt is lower than 2 run_attempt:${{ github.run_attempt }};[[ ${{ github.run_attempt }} -lt 2 ]] && exit 1 || exit 0""",
                         },
                     ],
-                }
+                },
             },
         }
 
@@ -45,7 +45,7 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
                     "merge_conditions": [
                         "check-success=unit-tests",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -72,10 +72,12 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
         assert job_event["workflow_job"] is not None
         assert job_event["workflow_job"]["conclusion"] == "failure"
         await self.client_integration.post(
-            f"{self.url_origin}/actions/jobs/{job_event['workflow_job']['id']}/rerun"
+            f"{self.url_origin}/actions/jobs/{job_event['workflow_job']['id']}/rerun",
         )
         await self.wait_for_check_run(
-            "completed", conclusion="success", name="unit-tests"
+            "completed",
+            conclusion="success",
+            name="unit-tests",
         )
         await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
         await self.wait_for_pull_request("closed", pr["number"], merged=True)
@@ -98,11 +100,11 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
                         },
                     },
                 },
-            ]
+            ],
         )
 
         await self.run_engine(
-            additionnal_services=ServicesSet("ci-event-processing,github-in-postgres")
+            additionnal_services=ServicesSet("ci-event-processing,github-in-postgres"),
         )
 
         async with database.create_session() as session:
@@ -117,8 +119,8 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
                 )
                 .where(
                     gh_models.WorkflowJob.conclusion
-                    == gh_models.WorkflowJobConclusion.FAILURE
-                )
+                    == gh_models.WorkflowJobConclusion.FAILURE,
+                ),
             )
 
             await session.commit()
@@ -137,7 +139,9 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
         await self.run_engine()
 
         await self.wait_for_check_run(
-            "completed", conclusion="success", name="unit-tests"
+            "completed",
+            conclusion="success",
+            name="unit-tests",
         )
         await self.run_engine()
         await self.wait_for_pull_request("closed", pr2["number"], merged=True)

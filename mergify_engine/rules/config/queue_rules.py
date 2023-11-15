@@ -33,7 +33,8 @@ QueueName = typing.NewType("QueueName", str)
 EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
 
 QueueRulesEvaluator = generic_evaluator.GenericRulesEvaluator[
-    "QueueRule", EvaluatedQueueRule
+    "QueueRule",
+    EvaluatedQueueRule,
 ]
 
 
@@ -96,7 +97,8 @@ class QueueRule:
             queue_conditions = d.pop("queue_conditions")
 
         branch_protection_injection_mode = d.pop(
-            "branch_protection_injection_mode", "queue"
+            "branch_protection_injection_mode",
+            "queue",
         )
         # NOTE(Syffe): with the new parameter branch_protection_injection_mode, require_branch_protection is now irrelevant,
         # for now we keep it because it is subject to a deprecation process. We will need to do it as a separate pull request/process beside
@@ -138,8 +140,10 @@ class QueueRule:
         if self.branch_protection_injection_mode != "none":
             branch_protections.extend(
                 await conditions_mod.get_branch_protection_conditions(
-                    repository, ref, strict=False
-                )
+                    repository,
+                    ref,
+                    strict=False,
+                ),
             )
 
         pull_request_rules_conditions: list[conditions_mod.RuleConditionNode] = []
@@ -152,29 +156,29 @@ class QueueRule:
                     [
                         conditions_mod.RuleConditionCombination(
                             {
-                                "and": evaluated_pull_request_rule_conditions.condition.conditions
+                                "and": evaluated_pull_request_rule_conditions.condition.conditions,
                             },
                             description=f"📃 From pull request rule **{html.escape(evaluated_pull_request_rule.name)}**",
-                        )
-                    ]
+                        ),
+                    ],
                 )
 
         merge_conditions = conditions_mod.QueueRuleMergeConditions(
             branch_protections
             + pull_request_rules_conditions
-            + self.merge_conditions.condition.copy().conditions
+            + self.merge_conditions.condition.copy().conditions,
         )
 
         if self.branch_protection_injection_mode == "queue":
             queue_conditions = conditions_mod.QueueRuleMergeConditions(
                 branch_protections
                 + pull_request_rules_conditions
-                + self.queue_conditions.condition.copy().conditions
+                + self.queue_conditions.condition.copy().conditions,
             )
         else:
             queue_conditions = conditions_mod.QueueRuleMergeConditions(
                 pull_request_rules_conditions
-                + self.queue_conditions.condition.copy().conditions
+                + self.queue_conditions.condition.copy().conditions,
             )
 
         return QueueRule(
@@ -196,7 +200,9 @@ class QueueRule:
         | None = None,
     ) -> EvaluatedQueueRule:
         queue_rule_with_extra_conditions = await self.get_queue_rule_for_evaluator(
-            repository, ref, evaluated_pull_request_rule
+            repository,
+            ref,
+            evaluated_pull_request_rule,
         )
         queue_rules_evaluator = await QueueRulesEvaluator.create(
             [queue_rule_with_extra_conditions],
@@ -211,11 +217,12 @@ class QueueRule:
     ) -> conditions_mod.QueueRuleMergeConditions:
         return conditions_mod.QueueRuleMergeConditions(
             self.merge_conditions.condition.conditions
-            + self.queue_conditions.condition.conditions
+            + self.queue_conditions.condition.conditions,
         )
 
     async def evaluate(
-        self, pulls: list[condition_value_querier.BasePullRequest]
+        self,
+        pulls: list[condition_value_querier.BasePullRequest],
     ) -> EvaluatedQueueRule:
         await self.merge_conditions(pulls)
 
@@ -227,7 +234,7 @@ class QueueRule:
         # in `pulls` are of `QueuePullRequest` instance.
         pulls = [
             condition_value_querier.PullRequest(
-                typing.cast(condition_value_querier.QueuePullRequest, p).context
+                typing.cast(condition_value_querier.QueuePullRequest, p).context,
             )
             for p in pulls
         ]
@@ -270,7 +277,7 @@ class QueueRules:
             rule.config["priority"] = i
             if rule.name in names:
                 raise voluptuous.error.Invalid(
-                    f"queue_rules names must be unique, found `{rule.name}` twice"
+                    f"queue_rules names must be unique, found `{rule.name}` twice",
                 )
             names.add(rule.name)
 
@@ -278,7 +285,7 @@ class QueueRules:
             for name in rule.config["disallow_checks_interruption_from_queues"]:
                 if name not in names:
                     raise voluptuous.error.Invalid(
-                        f"disallow_checks_interruption_from_queues contains an unkown queue: {name}"
+                        f"disallow_checks_interruption_from_queues contains an unkown queue: {name}",
                     )
 
     async def queue_conditions_exists(self) -> bool:
@@ -288,7 +295,8 @@ class QueueRules:
         return False
 
     async def get_evaluated_queue_conditions(
-        self, ctxt: context.Context
+        self,
+        ctxt: context.Context,
     ) -> list[EvaluatedQueueRule]:
         # NOTE(Syffe): in order to only evaluate queue_conditions (and not basic conditions) before queuing the PR,
         # we create a list of temporary QueueRules that only contains queue_conditions for evaluation
@@ -297,7 +305,7 @@ class QueueRules:
                 name=rule.name,
                 merge_conditions=conditions_mod.QueueRuleMergeConditions([]),
                 queue_conditions=conditions_mod.QueueRuleMergeConditions(
-                    rule.queue_conditions.condition.copy().conditions
+                    rule.queue_conditions.condition.copy().conditions,
                 ),
                 config=rule.config,
                 priority_rules=rule.priority_rules,
@@ -316,16 +324,17 @@ class QueueRules:
         return routing_rules_evaluator.matching_rules
 
     async def get_queue_rules_evaluator(
-        self, ctxt: context.Context
+        self,
+        ctxt: context.Context,
     ) -> QueueRulesEvaluator:
         runtime_rules = [
             QueueRule(
                 name=rule.name,
                 merge_conditions=conditions_mod.QueueRuleMergeConditions(
-                    rule.merge_conditions.condition.copy().conditions
+                    rule.merge_conditions.condition.copy().conditions,
                 ),
                 queue_conditions=conditions_mod.QueueRuleMergeConditions(
-                    rule.queue_conditions.condition.copy().conditions
+                    rule.queue_conditions.condition.copy().conditions,
                 ),
                 config=rule.config,
                 priority_rules=rule.priority_rules,
@@ -377,7 +386,7 @@ def _has_only_one_of(
         nonlocal msg
         if not isinstance(obj, dict):
             raise RuntimeError(
-                "_has_only_one_of() must be used after `obj` format has been valided by voluptuous"
+                "_has_only_one_of() must be used after `obj` format has been valided by voluptuous",
             )
 
         if len(keys_set & obj.keys()) > 1:
@@ -417,11 +426,11 @@ QueueRulesSchema = voluptuous.All(
                                 voluptuous.Required("conditions"): voluptuous.All(
                                     [
                                         voluptuous.Coerce(
-                                            cond_config.RuleConditionSchema
-                                        )
+                                            cond_config.RuleConditionSchema,
+                                        ),
                                     ],
                                     voluptuous.Coerce(
-                                        conditions_mod.PriorityRuleConditions
+                                        conditions_mod.PriorityRuleConditions,
                                     ),
                                 ),
                                 voluptuous.Required(
@@ -430,9 +439,9 @@ QueueRulesSchema = voluptuous.All(
                                 ): queue.PrioritySchema,
                             },
                             voluptuous.Coerce(
-                                priority_rules_config.PriorityRule.from_dict
+                                priority_rules_config.PriorityRule.from_dict,
                             ),
-                        )
+                        ),
                     ],
                     voluptuous.Coerce(priority_rules_config.PriorityRules),
                 ),
@@ -454,29 +463,37 @@ QueueRulesSchema = voluptuous.All(
                 ),
                 voluptuous.Required("require_branch_protection", default=True): bool,
                 voluptuous.Required(
-                    "branch_protection_injection_mode", default="queue"
+                    "branch_protection_injection_mode",
+                    default="queue",
                 ): voluptuous.Any("queue", "merge", "none"),
                 voluptuous.Required("speculative_checks", default=1): voluptuous.All(
-                    int, voluptuous.Range(min=1, max=20)
+                    int,
+                    voluptuous.Range(min=1, max=20),
                 ),
                 voluptuous.Required("batch_size", default=1): voluptuous.All(
-                    int, voluptuous.Range(min=1, max=20)
+                    int,
+                    voluptuous.Range(min=1, max=20),
                 ),
                 voluptuous.Required(
-                    "batch_max_wait_time", default="30 s"
+                    "batch_max_wait_time",
+                    default="30 s",
                 ): voluptuous.All(str, voluptuous.Coerce(PositiveInterval)),
                 voluptuous.Required("allow_inplace_checks", default=True): bool,
                 voluptuous.Required(
-                    "disallow_checks_interruption_from_queues", default=[]
+                    "disallow_checks_interruption_from_queues",
+                    default=[],
                 ): [str],
                 voluptuous.Required("checks_timeout", default=None): voluptuous.Any(
-                    None, voluptuous.All(str, voluptuous.Coerce(ChecksTimeout))
+                    None,
+                    voluptuous.All(str, voluptuous.Coerce(ChecksTimeout)),
                 ),
                 voluptuous.Required("draft_bot_account", default=None): voluptuous.Any(
-                    None, str
+                    None,
+                    str,
                 ),
                 voluptuous.Required(
-                    "queue_branch_merge_method", default=None
+                    "queue_branch_merge_method",
+                    default=None,
                 ): voluptuous.Any(
                     None,
                     *QueueBranchMergeMethod.__args__[0].__args__,  # type: ignore[attr-defined]
@@ -490,42 +507,52 @@ QueueRulesSchema = voluptuous.All(
                 ): str,
                 voluptuous.Required("allow_queue_branch_edit", default=False): bool,
                 voluptuous.Required(
-                    "batch_max_failure_resolution_attempts", default=None
+                    "batch_max_failure_resolution_attempts",
+                    default=None,
                 ): voluptuous.Any(None, int),
                 # Queue action options
                 # NOTE(greesb): If you change the default values below, you might
                 # need to change the retrocompatibility behavior in
                 # mergify_engine/actions/queue.py::QueueAction.validate_config
                 voluptuous.Required(
-                    "commit_message_template", default=None
+                    "commit_message_template",
+                    default=None,
                 ): types.Jinja2WithNone,
                 voluptuous.Required("merge_method", default=None): voluptuous.Any(
-                    None, *typing.get_args(merge_base.MergeMethodT)
+                    None,
+                    *typing.get_args(merge_base.MergeMethodT),
                 ),
                 voluptuous.Required(
-                    "merge_bot_account", default=None
+                    "merge_bot_account",
+                    default=None,
                 ): types.Jinja2WithNone,
                 voluptuous.Required(
-                    "update_bot_account", default=None
+                    "update_bot_account",
+                    default=None,
                 ): types.Jinja2WithNone,
                 voluptuous.Required("update_method", default=None): voluptuous.Any(
-                    "rebase", "merge", None
+                    "rebase",
+                    "merge",
+                    None,
                 ),
                 voluptuous.Required("autosquash", default=True): bool,
                 # TODO(sileht): options to deprecate
                 voluptuous.Required(
-                    "allow_checks_interruption", default=None
+                    "allow_checks_interruption",
+                    default=None,
                 ): voluptuous.Any(None, bool),
                 # Deprecated options
                 voluptuous.Required(
-                    "allow_inplace_speculative_checks", default=None
+                    "allow_inplace_speculative_checks",
+                    default=None,
                 ): voluptuous.Any(None, bool),
                 voluptuous.Required(
-                    "allow_speculative_checks_interruption", default=None
+                    "allow_speculative_checks_interruption",
+                    default=None,
                 ): voluptuous.Any(None, bool),
             },
             voluptuous.Coerce(QueueRule.from_dict),
-        )
+        ),
     ],
     voluptuous.Coerce(QueueRules),
 )

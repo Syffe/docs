@@ -41,7 +41,8 @@ class Event(models.Base):
     )
     type: orm.Mapped[enumerations.EventType] = orm.mapped_column(
         sqlalchemy.Enum(
-            enumerations.EventType, values_callable=lambda x: [e.value for e in x]
+            enumerations.EventType,
+            values_callable=lambda x: [e.value for e in x],
         ),
         index=True,
         anonymizer_config="anon.random_in_enum(type)",
@@ -63,10 +64,11 @@ class Event(models.Base):
     )
 
     repository_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_repository.id"), anonymizer_config=None
+        sqlalchemy.ForeignKey("github_repository.id"),
+        anonymizer_config=None,
     )
     repository: orm.Mapped[github_repository.GitHubRepository] = orm.relationship(
-        lazy="joined"
+        lazy="joined",
     )
 
     base_ref: orm.Mapped[str | None] = orm.mapped_column(
@@ -86,7 +88,8 @@ class Event(models.Base):
         metadata: signals.EventMetadata,
     ) -> Event:
         repository_obj = await github_repository.GitHubRepository.get_or_create(
-            session, repository
+            session,
+            repository,
         )
 
         return cls(
@@ -146,7 +149,9 @@ class Event(models.Base):
             await session.scalars(
                 sqlalchemy.select(events_aliased)
                 .order_by(events_aliased.id.desc())
-                .options(orm.selectin_polymorphic(events_aliased, cls.__subclasses__()))
+                .options(
+                    orm.selectin_polymorphic(events_aliased, cls.__subclasses__()),
+                ),
             )
         ).all()
 
@@ -215,7 +220,8 @@ class EventActionCopy(Event):
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     pull_request_number: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0,100000)"
+        sqlalchemy.Integer,
+        anonymizer_config="anon.random_int_between(0,100000)",
     )
     conflicts: orm.Mapped[bool] = orm.mapped_column(
         sqlalchemy.Boolean,
@@ -235,7 +241,8 @@ class EventActionComment(Event):
         anonymizer_config=None,
     )
     message: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( words := 20)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 20)",
     )
 
 
@@ -251,7 +258,8 @@ class EventActionClose(Event):
         anonymizer_config=None,
     )
     message: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( words := 20)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 20)",
     )
 
 
@@ -267,7 +275,8 @@ class EventActionDeleteHeadBranch(Event):
         anonymizer_config=None,
     )
     branch: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
 
 
@@ -304,7 +313,8 @@ class EventActionBackport(Event):
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     pull_request_number: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0,100000)"
+        sqlalchemy.Integer,
+        anonymizer_config="anon.random_int_between(0,100000)",
     )
     conflicts: orm.Mapped[bool] = orm.mapped_column(
         sqlalchemy.Boolean,
@@ -362,7 +372,8 @@ class EventActionMerge(Event):
         anonymizer_config=None,
     )
     branch: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
 
 
@@ -378,7 +389,8 @@ class EventActionGithubActions(Event):
         anonymizer_config=None,
     )
     workflow: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     inputs: orm.Mapped[dict[str, str | int | bool]] = orm.mapped_column(
         postgresql.JSONB,
@@ -400,13 +412,16 @@ class EventActionQueueEnter(Event):
         anonymizer_config=None,
     )
     queue_name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     branch: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     position: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0, 50)"
+        sqlalchemy.Integer,
+        anonymizer_config="anon.random_int_between(0, 50)",
     )
     queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime(timezone=True),
@@ -433,10 +448,12 @@ class EventActionQueueMerged(Event):
         anonymizer_config=None,
     )
     branch: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     queue_name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime(timezone=True),
@@ -462,13 +479,16 @@ class EventActionQueueLeave(Event):
         anonymizer_config=None,
     )
     queue_name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     branch: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     position: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0, 50)"
+        sqlalchemy.Integer,
+        anonymizer_config="anon.random_int_between(0, 50)",
     )
     queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime(timezone=True),
@@ -486,13 +506,16 @@ class EventActionQueueLeave(Event):
         anonymizer_config="anon.random_int_between(0,1)",
     )
     reason: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( words := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7)",
     )
     seconds_waiting_for_schedule: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config=None
+        sqlalchemy.Integer,
+        anonymizer_config=None,
     )
     seconds_waiting_for_freeze: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config=None
+        sqlalchemy.Integer,
+        anonymizer_config=None,
     )
 
 
@@ -508,7 +531,8 @@ class EventActionQueueChange(Event):
         anonymizer_config=None,
     )
     queue_name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     partition_name: orm.Mapped[
         partition_rules.PartitionRuleName | None
@@ -518,10 +542,12 @@ class EventActionQueueChange(Event):
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     size: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config=None
+        sqlalchemy.Integer,
+        anonymizer_config=None,
     )
     running_checks: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config=None
+        sqlalchemy.Integer,
+        anonymizer_config=None,
     )
 
 
@@ -615,7 +641,8 @@ class EventActionQueueChecksStart(Event):
         anonymizer_config=None,
     )
     branch: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     partition_name: orm.Mapped[
         partition_rules.PartitionRuleName | None
@@ -625,10 +652,12 @@ class EventActionQueueChecksStart(Event):
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     position: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0, 50)"
+        sqlalchemy.Integer,
+        anonymizer_config="anon.random_int_between(0, 50)",
     )
     queue_name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime(timezone=True),
@@ -659,12 +688,13 @@ class EventActionQueueChecksStart(Event):
         metadata: signals.EventMetadata,
     ) -> Event:
         repository_obj = await github_repository.GitHubRepository.get_or_create(
-            session, repository
+            session,
+            repository,
         )
 
         metadata = typing.cast(signals.EventQueueChecksStartMetadata, metadata.copy())
         speculative_check_pull_request = events_metadata.SpeculativeCheckPullRequest(
-            **metadata.pop("speculative_check_pull_request")
+            **metadata.pop("speculative_check_pull_request"),
         )
 
         event = cls(
@@ -697,7 +727,8 @@ class EventActionQueueChecksEnd(Event):
         anonymizer_config=None,
     )
     branch: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     partition_name: orm.Mapped[
         partition_rules.PartitionRuleName | None
@@ -706,10 +737,12 @@ class EventActionQueueChecksEnd(Event):
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     position: orm.Mapped[int | None] = orm.mapped_column(
-        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0, 50)"
+        sqlalchemy.Integer,
+        anonymizer_config="anon.random_int_between(0, 50)",
     )
     queue_name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
     queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime(timezone=True),
@@ -755,12 +788,13 @@ class EventActionQueueChecksEnd(Event):
         metadata: signals.EventMetadata,
     ) -> Event:
         repository_obj = await github_repository.GitHubRepository.get_or_create(
-            session, repository
+            session,
+            repository,
         )
 
         metadata = typing.cast(signals.EventQueueChecksEndMetadata, metadata.copy())
         speculative_check_pull_request = events_metadata.SpeculativeCheckPullRequest(
-            **metadata.pop("speculative_check_pull_request")
+            **metadata.pop("speculative_check_pull_request"),
         )
 
         event = cls(
@@ -844,7 +878,8 @@ class EventActionReview(Event):
         # NOTE(lecrepont01): field `type` already exists on base class as discriminator,
         # meaning that it must be renamed `review_type` in the relation
         repository_obj = await github_repository.GitHubRepository.get_or_create(
-            session, repository
+            session,
+            repository,
         )
         metadata = typing.cast(signals.EventReviewMetadata, metadata)
 
@@ -871,7 +906,8 @@ class EventQueueFreezeCreate(Event):
         anonymizer_config=None,
     )
     queue_name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7 )"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
     reason: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.Text,
@@ -883,10 +919,11 @@ class EventQueueFreezeCreate(Event):
     )
 
     created_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
+        anonymizer_config=None,
     )
     created_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
-        lazy="joined"
+        lazy="joined",
     )
 
     @classmethod
@@ -901,7 +938,8 @@ class EventQueueFreezeCreate(Event):
         metadata: signals.EventMetadata,
     ) -> Event:
         repository_obj = await github_repository.GitHubRepository.get_or_create(
-            session, repository
+            session,
+            repository,
         )
 
         metadata = typing.cast(signals.EventQueueFreezeCreateMetadata, metadata.copy())
@@ -932,7 +970,8 @@ class EventQueueFreezeUpdate(Event):
         anonymizer_config=None,
     )
     queue_name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7 )"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
     reason: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.Text,
@@ -944,10 +983,11 @@ class EventQueueFreezeUpdate(Event):
     )
 
     updated_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
+        anonymizer_config=None,
     )
     updated_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
-        lazy="joined"
+        lazy="joined",
     )
 
     @classmethod
@@ -962,7 +1002,8 @@ class EventQueueFreezeUpdate(Event):
         metadata: signals.EventMetadata,
     ) -> Event:
         repository_obj = await github_repository.GitHubRepository.get_or_create(
-            session, repository
+            session,
+            repository,
         )
 
         metadata = typing.cast(signals.EventQueueFreezeUpdateMetadata, metadata.copy())
@@ -993,14 +1034,16 @@ class EventQueueFreezeDelete(Event):
         anonymizer_config=None,
     )
     queue_name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7 )"
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
 
     deleted_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
+        anonymizer_config=None,
     )
     deleted_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
-        lazy="joined"
+        lazy="joined",
     )
 
     @classmethod
@@ -1015,7 +1058,8 @@ class EventQueueFreezeDelete(Event):
         metadata: signals.EventMetadata,
     ) -> Event:
         repository_obj = await github_repository.GitHubRepository.get_or_create(
-            session, repository
+            session,
+            repository,
         )
 
         metadata = typing.cast(signals.EventQueueFreezeDeleteMetadata, metadata.copy())
@@ -1051,10 +1095,11 @@ class EventQueuePauseCreate(Event):
     )
 
     created_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
+        anonymizer_config=None,
     )
     created_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
-        lazy="joined"
+        lazy="joined",
     )
 
     @classmethod
@@ -1069,7 +1114,8 @@ class EventQueuePauseCreate(Event):
         metadata: signals.EventMetadata,
     ) -> Event:
         repository_obj = await github_repository.GitHubRepository.get_or_create(
-            session, repository
+            session,
+            repository,
         )
 
         metadata = typing.cast(signals.EventQueuePauseCreateMetadata, metadata.copy())
@@ -1105,10 +1151,11 @@ class EventQueuePauseUpdate(Event):
     )
 
     updated_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
+        anonymizer_config=None,
     )
     updated_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
-        lazy="joined"
+        lazy="joined",
     )
 
     @classmethod
@@ -1123,7 +1170,8 @@ class EventQueuePauseUpdate(Event):
         metadata: signals.EventMetadata,
     ) -> Event:
         repository_obj = await github_repository.GitHubRepository.get_or_create(
-            session, repository
+            session,
+            repository,
         )
 
         metadata = typing.cast(signals.EventQueuePauseUpdateMetadata, metadata.copy())
@@ -1154,10 +1202,11 @@ class EventQueuePauseDelete(Event):
         anonymizer_config=None,
     )
     deleted_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
+        anonymizer_config=None,
     )
     deleted_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
-        lazy="joined"
+        lazy="joined",
     )
 
     @classmethod
@@ -1172,7 +1221,8 @@ class EventQueuePauseDelete(Event):
         metadata: signals.EventMetadata,
     ) -> Event:
         repository_obj = await github_repository.GitHubRepository.get_or_create(
-            session, repository
+            session,
+            repository,
         )
 
         metadata = typing.cast(signals.EventQueuePauseDeleteMetadata, metadata.copy())

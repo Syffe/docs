@@ -44,29 +44,33 @@ FAKE_COMMENT = github_types.GitHubComment(
         },
         "created_at": github_types.ISODateTimeType("2021-06-01T18:41:39Z"),
         "updated_at": github_types.ISODateTimeType("2021-06-01T18:41:39Z"),
-    }
+    },
 )
 
 
 async def test_command_loader() -> None:
     with pytest.raises(commands_runner.CommandInvalid):
         commands_runner.load_command(
-            await get_empty_config(), "@mergifyio notexist foobar\n"
+            await get_empty_config(),
+            "@mergifyio notexist foobar\n",
         )
 
     with pytest.raises(commands_runner.CommandInvalid):
         commands_runner.load_command(
-            await get_empty_config(), "@mergifyio comment foobar\n"
+            await get_empty_config(),
+            "@mergifyio comment foobar\n",
         )
 
     with pytest.raises(commands_runner.CommandInvalid):
         commands_runner.load_command(
-            await get_empty_config(), "@Mergifyio comment foobar\n"
+            await get_empty_config(),
+            "@Mergifyio comment foobar\n",
         )
 
     with pytest.raises(commands_runner.NotACommand):
         commands_runner.load_command(
-            await get_empty_config(), "comment @Mergifyio test foobar\n"
+            await get_empty_config(),
+            "comment @Mergifyio test foobar\n",
         )
 
     for message in [
@@ -87,7 +91,8 @@ async def test_command_loader() -> None:
         assert isinstance(command.action, RebaseAction)
 
     command = commands_runner.load_command(
-        await get_empty_config(), "@mergifyio backport branch-3.1 branch-3.2\nfoobar\n"
+        await get_empty_config(),
+        "@mergifyio backport branch-3.1 branch-3.2\nfoobar\n",
     )
     assert command.name == "backport"
     assert command.command_args == "branch-3.1 branch-3.2"
@@ -156,7 +161,8 @@ def create_fake_user(user_id: int = 1) -> github_types.GitHubAccount:
 
 
 def create_fake_installation_client(
-    user: github_types.GitHubAccount, user_permission: str
+    user: github_types.GitHubAccount,
+    user_permission: str,
 ) -> mock.Mock:
     client = mock.Mock()
     client.item = mock.AsyncMock()
@@ -239,7 +245,7 @@ async def test_run_command_with_user(
 
     if result and result != commands_runner.UNKNOWN_COMMAND_MESSAGE:
         respx_mock.get(
-            f"{ctxt.base_url}/collaborators/{user['login']}/permission"
+            f"{ctxt.base_url}/collaborators/{user['login']}/permission",
         ).respond(
             200,
             json={
@@ -259,7 +265,7 @@ async def test_run_command_with_user(
                     "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
                     "user": user,
                     "body": "unrelated",
-                }
+                },
             ),
             github_types.GitHubComment(
                 {
@@ -269,14 +275,14 @@ async def test_run_command_with_user(
                     "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
                     "user": user,
                     "body": comment,
-                }
+                },
             ),
         ],
     )
 
     if result is not None:
         post_comment_router = respx_mock.post(
-            f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments"
+            f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
         ).respond(200, json={})
 
     await commands_runner.run_commands_tasks(
@@ -323,7 +329,7 @@ DO NOT EDIT
             "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
             "user": user,
             "body": body,
-        }
+        },
     )
 
     command_state = commands_runner.extract_command_state(
@@ -355,13 +361,13 @@ async def test_run_command_with_wrong_arg(
                     "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
                     "user": user,
                     "body": "@mergifyio squash invalid-arg",
-                }
-            )
+                },
+            ),
         ],
     )
 
     post_comment_router = respx_mock.post(
-        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments"
+        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
     ).respond(200, json={})
 
     await commands_runner.run_commands_tasks(
@@ -420,13 +426,13 @@ async def test_run_command_with_no_subscription(
                     "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
                     "user": user,
                     "body": f"@mergifyio {command_name}",
-                }
-            )
+                },
+            ),
         ],
     )
 
     post_comment_router = respx_mock.post(
-        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments"
+        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
     ).respond(200, json={})
 
     await commands_runner.run_commands_tasks(
@@ -533,12 +539,12 @@ commands_restrictions:
                     "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
                     "user": user,
                     "body": "@mergifyio squash",
-                }
-            )
+                },
+            ),
         ],
     )
     post_comment_router = respx_mock.post(
-        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments"
+        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
     ).respond(200, json={})
 
     await commands_runner.run_commands_tasks(ctxt=ctxt, mergify_config=mergify_config)
@@ -574,7 +580,7 @@ async def test_pending_commands_ordering(
                     "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
                     "user": user,
                     "body": "@mergifyio squash",
-                }
+                },
             ),
             github_types.GitHubComment(
                 {
@@ -584,7 +590,7 @@ async def test_pending_commands_ordering(
                     "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
                     "user": user,
                     "body": "@mergifyio rebase",
-                }
+                },
             ),
             github_types.GitHubComment(
                 {
@@ -602,7 +608,7 @@ async def test_pending_commands_ordering(
                         ),
                         True,
                     ),
-                }
+                },
             ),
         ],
     )

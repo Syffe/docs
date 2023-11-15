@@ -20,10 +20,10 @@ class CopyActionTestBase(base.FunctionalTestBase):
                     "actions": {
                         "copy": {
                             "regexes": ["whatever-that-will-never-ever-match"],
-                        }
+                        },
                     },
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

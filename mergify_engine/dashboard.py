@@ -30,7 +30,8 @@ async def get_queues_url_from_context(
     from mergify_engine.rules.config import partition_rules as partr_config
 
     repo_url = get_dashboard_repo_url(
-        ctxt.pull["base"]["repo"]["owner"]["login"], ctxt.pull["base"]["repo"]["name"]
+        ctxt.pull["base"]["repo"]["owner"]["login"],
+        ctxt.pull["base"]["repo"]["name"],
     )
     url = f"{repo_url}/queues"
 
@@ -38,7 +39,7 @@ async def get_queues_url_from_context(
 
     if convoy:
         embarked_pull = first.first(
-            await convoy.find_embarked_pull_with_train(ctxt.pull["number"])
+            await convoy.find_embarked_pull_with_train(ctxt.pull["number"]),
         )
         if embarked_pull:
             if (
@@ -48,7 +49,7 @@ async def get_queues_url_from_context(
                 url += f"/partitions/{embarked_pull.train.partition_name}"
 
             params["queues"] = str(
-                embarked_pull.convoy_embarked_pull.embarked_pull.config["name"]
+                embarked_pull.convoy_embarked_pull.embarked_pull.config["name"],
             )
 
     if open_pr_details:

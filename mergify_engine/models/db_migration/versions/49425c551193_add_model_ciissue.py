@@ -60,13 +60,17 @@ def upgrade() -> None:
             name=alembic.op.f("ci_issue_counter_repository_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "repository_id", name=alembic.op.f("ci_issue_counter_pkey")
+            "repository_id",
+            name=alembic.op.f("ci_issue_counter_pkey"),
         ),
     )
     alembic.op.add_column(
         "gha_workflow_job",
         sqlalchemy.Column(
-            "ci_issue_id", sqlalchemy.Integer(), nullable=True, anonymizer_config=None
+            "ci_issue_id",
+            sqlalchemy.Integer(),
+            nullable=True,
+            anonymizer_config=None,
         ),
     )
     alembic.op.create_foreign_key(

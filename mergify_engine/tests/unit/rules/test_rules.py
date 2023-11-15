@@ -71,10 +71,10 @@ async def test_multiple_pulls_to_match() -> None:
                     "or": [
                         conditions.RuleCondition.from_string("base=main"),
                         conditions.RuleCondition.from_string("base=main"),
-                    ]
-                }
-            )
-        ]
+                    ],
+                },
+            ),
+        ],
     )
     assert await c([conftest.FakePullRequest({"number": 1, "base": "main"})])
     c = c.copy()
@@ -86,7 +86,7 @@ async def test_multiple_pulls_to_match() -> None:
         [
             conftest.FakePullRequest({"number": 1, "base": "main"}),
             conftest.FakePullRequest({"number": 1, "base": "main"}),
-        ]
+        ],
     )
     c = c.copy()
     assert await c(
@@ -94,7 +94,7 @@ async def test_multiple_pulls_to_match() -> None:
             conftest.FakePullRequest({"number": 1, "base": "main"}),
             conftest.FakePullRequest({"number": 1, "base": "main"}),
             conftest.FakePullRequest({"number": 1, "base": "main"}),
-        ]
+        ],
     )
     c = c.copy()
     assert not await c(
@@ -102,7 +102,7 @@ async def test_multiple_pulls_to_match() -> None:
             conftest.FakePullRequest({"number": 1, "base": "main"}),
             conftest.FakePullRequest({"number": 1, "base": "main"}),
             conftest.FakePullRequest({"number": 1, "base": "other"}),
-        ]
+        ],
     )
 
 
@@ -189,19 +189,19 @@ def test_pull_request_rule(valid: typing.Any) -> None:
                                                                             },
                                                                         ],
                                                                     },
-                                                                ]
+                                                                ],
                                                             },
                                                         ],
                                                     },
-                                                ]
+                                                ],
                                             },
-                                        ]
+                                        ],
                                     },
                                     "label=bar",
-                                ]
+                                ],
                             },
-                        ]
-                    }
+                        ],
+                    },
                 ],
                 "actions": {},
             },
@@ -232,7 +232,7 @@ async def test_same_pull_request_rules_name() -> None:
                         "conditions": ["base=new_rule", "-merged"],
                         "actions": {"merge": {}},
                     },
-                ]
+                ],
             },
             "",
         )
@@ -258,7 +258,7 @@ async def test_same_queue_rules_name() -> None:
                         "merge_conditions": ["schedule: MON-FRI 08:00-17:00"],
                         "allow_inplace_checks": False,
                     },
-                ]
+                ],
             },
             "",
         )
@@ -279,7 +279,7 @@ async def test_fallback_partition_attribute_without_empty_conditions() -> None:
                         "conditions": ["schedule: MON-FRI 08:00-17:00"],
                         "fallback_partition": True,
                     },
-                ]
+                ],
             },
             "",
         )
@@ -303,7 +303,7 @@ async def test_double_fallback_partition_attribute() -> None:
                         "name": "projectB",
                         "fallback_partition": True,
                     },
-                ]
+                ],
             },
             "",
         )
@@ -327,7 +327,7 @@ async def test_same_partition_rules_name() -> None:
                         "name": "projectA",
                         "conditions": ["schedule: MON-FRI 08:00-17:00"],
                     },
-                ]
+                ],
             },
             "",
         )
@@ -351,7 +351,7 @@ async def test_default_partition_name_used() -> None:
                         "name": "projectA",
                         "conditions": ["schedule: MON-FRI 08:00-17:00"],
                     },
-                ]
+                ],
             },
             "",
         )
@@ -394,7 +394,7 @@ async def test_jinja_with_list_attribute() -> None:
                       @{{name}}
                       {% endfor %}
                       Thank you @{{author}} for your contributions!
-            """
+            """,
     )
     assert [rule.name for rule in config["pull_request_rules"]] == [
         "ahah",
@@ -418,8 +418,8 @@ pull_request_rules:
         commit_message_template: |
           Merge PR #{{ number }} - {{ title }}
           {{ body | get_section("## Commit Message", "") }}
-"""
-        )
+""",
+        ),
     )
     rules.UserConfigurationSchema(
         rules.YamlSchema(
@@ -437,8 +437,8 @@ pull_request_rules:
         commit_message_template: |
           Merge PR #{{ number }} - {{ title }}
           {{ body | get_section("## Commit Message") | markdownify }}
-"""
-        )
+""",
+        ),
     )
 
 
@@ -456,8 +456,8 @@ def test_jinja_with_wrong_syntax() -> None:
           This pull request has been approved by:
           {% for name in approved_reviews_by %}
           Thank you @{{author}} for your contributions!
-"""
-            )
+""",
+            ),
         )
     assert str(i.value) == (
         "Template syntax error @ data['pull_request_rules']"
@@ -479,8 +479,8 @@ def test_jinja_with_wrong_syntax() -> None:
           @{{ name }}
           {% endfor %}
           Thank you @{{foo}} for your contributions!
-"""
-            )
+""",
+            ),
         )
     assert str(i.value) == (
         "Template syntax error for dictionary value @ data['pull_request_rules']"
@@ -563,10 +563,12 @@ def test_jinja_with_wrong_syntax() -> None:
     ),
 )
 async def test_get_mergify_config(
-    valid: str, fake_repository: context.Repository
+    valid: str,
+    fake_repository: context.Repository,
 ) -> None:
     async def item(
-        *args: typing.Any, **kwargs: typing.Any
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> github_types.GitHubContentFile:
         return github_types.GitHubContentFile(
             {
@@ -575,7 +577,7 @@ async def test_get_mergify_config(
                 "type": "file",
                 "sha": github_types.SHAType("azertyu"),
                 "encoding": "base64",
-            }
+            },
         )
 
     client = mock.Mock()
@@ -585,7 +587,8 @@ async def test_get_mergify_config(
     config_file = await fake_repository.get_mergify_config_file()
     assert config_file is not None
     schema = await mergify_conf.get_mergify_config_from_file(
-        mock.MagicMock(), config_file
+        mock.MagicMock(),
+        config_file,
     )
     assert isinstance(schema, dict)
     assert "pull_request_rules" in schema
@@ -617,7 +620,8 @@ pull_request_rules:
 """
 
     async def item(
-        *args: typing.Any, **kwargs: typing.Any
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> github_types.GitHubContentFile:
         return github_types.GitHubContentFile(
             {
@@ -626,7 +630,7 @@ pull_request_rules:
                 "type": "file",
                 "sha": github_types.SHAType("azertyu"),
                 "encoding": "base64",
-            }
+            },
         )
 
     client = mock.Mock()
@@ -637,7 +641,8 @@ pull_request_rules:
     assert config_file is not None
 
     schema = await mergify_conf.get_mergify_config_from_file(
-        mock.MagicMock(), config_file
+        mock.MagicMock(),
+        config_file,
     )
     assert isinstance(schema, dict)
 
@@ -677,7 +682,8 @@ pull_request_rules:
     assert config_file is not None
 
     schema = await mergify_conf.get_mergify_config_from_file(
-        mock.MagicMock(), config_file
+        mock.MagicMock(),
+        config_file,
     )
     assert isinstance(schema, dict)
 
@@ -716,7 +722,7 @@ async def test_get_mergify_config_file_content_from_cache(
                 "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
                 "encoding": "base64",
-            }
+            },
         ),
     ]
 
@@ -749,7 +755,7 @@ async def test_get_mergify_config_location_from_cache(
                 "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
                 "encoding": "base64",
-            }
+            },
         ),
     ]
     fake_repository.installation.client = client
@@ -769,7 +775,7 @@ async def test_get_mergify_config_location_from_cache(
                 "/repos/Mergifyio/mergify-engine/contents/.github/mergify.yml",
                 params={"ref": "main"},
             ),
-        ]
+        ],
     )
 
     client.item.reset_mock()
@@ -781,7 +787,7 @@ async def test_get_mergify_config_location_from_cache(
                 "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
                 "encoding": "base64",
-            }
+            },
         ),
     ]
 
@@ -809,12 +815,14 @@ async def test_get_mergify_config_location_from_cache(
     ),
 )
 async def test_get_mergify_config_invalid(
-    invalid: str, fake_repository: context.Repository
+    invalid: str,
+    fake_repository: context.Repository,
 ) -> None:
     with pytest.raises(mergify_conf.InvalidRules):
 
         async def item(
-            *args: typing.Any, **kwargs: typing.Any
+            *args: typing.Any,
+            **kwargs: typing.Any,
         ) -> github_types.GitHubContentFile:
             return github_types.GitHubContentFile(
                 {
@@ -823,7 +831,7 @@ async def test_get_mergify_config_invalid(
                     "type": "file",
                     "sha": github_types.SHAType("azertyu"),
                     "encoding": "base64",
-                }
+                },
             )
 
         client = mock.Mock()
@@ -847,8 +855,8 @@ def test_user_configuration_schema() -> None:
                 pull_request_rules:
                   - name: ahah
                     key: not really what we expected
-                """
-            )
+                """,
+            ),
         )
     assert (
         str(i.value) == "extra keys not allowed @ data['pull_request_rules'][0]['key']"
@@ -867,8 +875,8 @@ def test_user_configuration_schema() -> None:
             rules.YamlSchema(
                 """invalid:
 - *yaml
-                """
-            )
+                """,
+            ),
         )
     assert str(i.value) == "Invalid YAML at [line 2, column 3]"
 
@@ -892,7 +900,7 @@ found undefined alias
             "start_column": 3,
             "start_line": 2,
             "title": "Invalid YAML",
-        }
+        },
     ] == ir.get_annotations(".mergify.yml")
 
     with pytest.raises(voluptuous.Invalid) as i:
@@ -900,8 +908,8 @@ found undefined alias
             rules.YamlSchema(
                 """
                 pull_request_rules:
-                """
-            )
+                """,
+            ),
         )
     assert (
         str(i.value)
@@ -928,8 +936,8 @@ found undefined alias
                       label:
                         add:
                           - conflict:
-                """
-            )
+                """,
+            ),
         )
     assert (
         str(i.value)
@@ -950,8 +958,8 @@ found undefined alias
                 merge_conditions:
                   - "#approved-reviews-by>=2"
                   - check-success=Travis CI - Pull Request
-            """
-        )
+            """,
+        ),
     )
     rules.UserConfigurationSchema(
         rules.YamlSchema(
@@ -961,8 +969,8 @@ found undefined alias
                 conditions:
                   - "#approved-reviews-by>=2"
                   - check-success=Travis CI - Pull Request
-            """
-        )
+            """,
+        ),
     )
 
     with pytest.raises(voluptuous.error.MultipleInvalid) as exc:
@@ -976,12 +984,12 @@ found undefined alias
                     conditions:
                       - "#approved-reviews-by>=2"
                       - check-success=Travis CI - Pull Request
-                """
-            )
+                """,
+            ),
         )
 
     assert str(exc.value).startswith(
-        "Cannot have both `conditions` and `merge_conditions`, only use `merge_conditions (`conditions` is deprecated)"
+        "Cannot have both `conditions` and `merge_conditions`, only use `merge_conditions (`conditions` is deprecated)",
     )
 
     with pytest.raises(voluptuous.error.MultipleInvalid) as exc:
@@ -995,12 +1003,12 @@ found undefined alias
                     queue_conditions:
                       - "#approved-reviews-by>=2"
                       - check-success=Travis CI - Pull Request
-                """
-            )
+                """,
+            ),
         )
 
     assert str(exc.value).startswith(
-        "Cannot have both `routing_conditions` and `queue_conditions`, only use `queue_conditions (`routing_conditions` is deprecated)"
+        "Cannot have both `routing_conditions` and `queue_conditions`, only use `queue_conditions (`routing_conditions` is deprecated)",
     )
 
     # Just to make sure both routing_conditions and queue_conditions works fine
@@ -1014,8 +1022,8 @@ found undefined alias
                   - base=test
                   - "#approved-reviews-by>=2"
                   - check-success=Travis CI - Pull Request
-            """
-        )
+            """,
+        ),
     )
 
     rules.UserConfigurationSchema(
@@ -1027,8 +1035,8 @@ found undefined alias
                   - base=test
                   - "#approved-reviews-by>=2"
                   - check-success=Travis CI - Pull Request
-            """
-        )
+            """,
+        ),
     )
 
     with pytest.raises(voluptuous.error.MultipleInvalid) as exc:
@@ -1044,12 +1052,12 @@ found undefined alias
                         name: default
                         merge_method: rebase
                         method: rebase
-                """
-            )
+                """,
+            ),
         )
 
     assert str(exc.value).startswith(
-        "Cannot have both `method` and `merge_method` options in `queue` action, use `merge_method` only (`method` is deprecated)"
+        "Cannot have both `method` and `merge_method` options in `queue` action, use `merge_method` only (`method` is deprecated)",
     )
 
     # new `merge_method` option name
@@ -1064,8 +1072,8 @@ found undefined alias
                   queue:
                     name: default
                     merge_method: rebase
-            """
-        )
+            """,
+        ),
     )
 
     # old `method` option name for retro-compatibility
@@ -1080,8 +1088,8 @@ found undefined alias
                   queue:
                     name: default
                     method: fast-forward
-            """
-        )
+            """,
+        ),
     )
     assert (
         validated_config["pull_request_rules"]
@@ -1129,19 +1137,21 @@ async def test_extends_infinite_loop() -> None:
                 "extends": github_types.GitHubRepositoryName(".github"),
             },
             "_checks_to_retry_on_failure": {},
-        }
+        },
     )
     repository_ctxt = mock.MagicMock()
     repository_ctxt.get_mergify_config.side_effect = mock.AsyncMock(
-        return_value=mergify_config
+        return_value=mergify_config,
     )
 
     repository_ctxt.installation.get_repository_by_name = mock.AsyncMock(
-        return_value=repository_ctxt
+        return_value=repository_ctxt,
     )
     with pytest.raises(mergify_conf.InvalidRules) as i:
         await mergify_conf.get_mergify_config_from_dict(
-            repository_ctxt, mergify_config["raw_config"], ""
+            repository_ctxt,
+            mergify_config["raw_config"],
+            "",
         )
     assert (
         str(i.value)
@@ -1150,7 +1160,8 @@ async def test_extends_infinite_loop() -> None:
 
 
 async def test_extends_limit(
-    fake_repository: context.Repository, respx_mock: respx.MockRouter
+    fake_repository: context.Repository,
+    respx_mock: respx.MockRouter,
 ) -> None:
     mergify_config = mergify_conf.MergifyConfig(
         {
@@ -1164,7 +1175,7 @@ async def test_extends_limit(
                 "extends": github_types.GitHubRepositoryName(".github"),
             },
             "_checks_to_retry_on_failure": {},
-        }
+        },
     )
 
     # "Mergifyio/mergify-engine" because this is the value of the fake_repository
@@ -1173,7 +1184,7 @@ async def test_extends_limit(
 
     repository_ctxt = mock.MagicMock()
     repository_ctxt.installation.get_repository_by_name = mock.AsyncMock(
-        return_value=fake_repository
+        return_value=fake_repository,
     )
     with mock.patch.object(
         fake_repository,
@@ -1186,12 +1197,14 @@ async def test_extends_limit(
                 path=github_types.GitHubFilePath("whatever"),
                 decoded_content="extends: faraway",
                 encoding="base64",
-            )
+            ),
         ),
     ):
         with pytest.raises(mergify_conf.InvalidRules) as i:
             await mergify_conf.get_mergify_config_from_dict(
-                repository_ctxt, mergify_config["raw_config"], ""
+                repository_ctxt,
+                mergify_config["raw_config"],
+                "",
             )
     assert (
         str(i.value)
@@ -1216,7 +1229,7 @@ async def test_extends_without_database_cache(
             "commands_restrictions": {},
             "raw_config": {},
             "_checks_to_retry_on_failure": {},
-        }
+        },
     )
 
     respx_mock.get("repos/Mergifyio/.github").respond(
@@ -1292,7 +1305,7 @@ async def test_extends_with_database_cache(
             "commands_restrictions": {},
             "raw_config": {},
             "_checks_to_retry_on_failure": {},
-        }
+        },
     )
 
     with mock.patch.object(
@@ -1392,7 +1405,8 @@ unacceptable character #x0004: control characters are not allowed
     ),
 )
 def test_pull_request_rule_schema_invalid(
-    invalid: typing.Any, match: re.Pattern[str]
+    invalid: typing.Any,
+    match: re.Pattern[str],
 ) -> None:
     with pytest.raises(voluptuous.MultipleInvalid, match=match):
         pull_request_rule_from_list([invalid])
@@ -1407,12 +1421,14 @@ async def test_queue_rules_evaluator_with_users_or_team(
             "user": {"login": "sileht", "id": 12321, "type": "User"},
             "state": "APPROVED",
             "author_association": "MEMBER",
-        }
+        },
     ]
     get_team_members = [{"login": "sileht", "id": 12321}, {"login": "jd", "id": 2644}]
 
     async def client_item(
-        url: str, *args: typing.Any, **kwargs: typing.Any
+        url: str,
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> dict[str, str] | None:
         if url == "/repos/Mergifyio/mergify-engine/collaborators/sileht/permission":
             return {"permission": "write"}
@@ -1422,7 +1438,9 @@ async def test_queue_rules_evaluator_with_users_or_team(
 
         if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
             raise http.HTTPNotFound(
-                message="boom", response=mock.Mock(), request=mock.Mock()
+                message="boom",
+                response=mock.Mock(),
+                request=mock.Mock(),
             )
 
         raise RuntimeError(f"not handled url {url}")
@@ -1430,7 +1448,9 @@ async def test_queue_rules_evaluator_with_users_or_team(
     client.item.side_effect = client_item
 
     async def client_items(
-        url: str, *args: typing.Any, **kwargs: typing.Any
+        url: str,
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> abc.AsyncGenerator[dict[str, typing.Any], None] | None:
         if url == "/repos/Mergifyio/mergify-engine/pulls/1/reviews":
             for r in get_reviews:
@@ -1454,8 +1474,8 @@ queue_rules:
     merge_conditions: []
     queue_conditions:
       - approved-reviews-by=@Mergifyio/my-reviewers
-"""
-        )["queue_rules"]
+""",
+        )["queue_rules"],
     )
 
     match = await qr_config.QueueRulesEvaluator.create(
@@ -1477,7 +1497,7 @@ async def test_get_pull_request_rules_evaluator(
             "user": {"login": "sileht", "id": 12321, "type": "User"},
             "state": "APPROVED",
             "author_association": "MEMBER",
-        }
+        },
     ]
     get_files = [
         {"filename": "README.rst", "status": "added"},
@@ -1494,11 +1514,13 @@ async def test_get_pull_request_rules_evaluator(
             "description": "foobar",
             "target_url": "http://example.com",
             "avatar_url": "",
-        }
+        },
     ]
 
     async def client_item(
-        url: str, *args: typing.Any, **kwargs: typing.Any
+        url: str,
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> dict[str, str] | github_types.GitHubContentFile | None:
         if url == "/repos/Mergifyio/mergify-engine/collaborators/sileht/permission":
             return {"permission": "write"}
@@ -1508,7 +1530,9 @@ async def test_get_pull_request_rules_evaluator(
 
         if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
             raise http.HTTPNotFound(
-                message="boom", response=mock.Mock(), request=mock.Mock()
+                message="boom",
+                response=mock.Mock(),
+                request=mock.Mock(),
             )
 
         if url == "/repos/Mergifyio/mergify-engine/contents/.mergify.yml":
@@ -1518,10 +1542,10 @@ async def test_get_pull_request_rules_evaluator(
                     "type": "file",
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
-                        "8ac2d8f970ab504e4d65351b10a2b5d8480bc38a"
+                        "8ac2d8f970ab504e4d65351b10a2b5d8480bc38a",
                     ),
                     "encoding": "base64",
-                }
+                },
             )
 
         raise RuntimeError(f"not handled url {url}")
@@ -1529,7 +1553,9 @@ async def test_get_pull_request_rules_evaluator(
     client.item.side_effect = client_item
 
     async def client_items(
-        url: str, *args: typing.Any, **kwargs: typing.Any
+        url: str,
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> abc.AsyncGenerator[dict[str, typing.Any], None] | None:
         if url == "/repos/Mergifyio/mergify-engine/pulls/1/reviews":
             for r in get_reviews:
@@ -1563,8 +1589,8 @@ async def test_get_pull_request_rules_evaluator(
                 conditions=conditions.PullRequestRuleConditions([]),
                 actions={},
                 hidden=False,
-            )
-        ]
+            ),
+        ],
     )
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1574,7 +1600,7 @@ async def test_get_pull_request_rules_evaluator(
         assert rule.actions == {}
 
     pull_request_rules = pull_request_rule_from_list(
-        [{"name": "hello", "conditions": ["base:main"], "actions": {}}]
+        [{"name": "hello", "conditions": ["base:main"], "actions": {}}],
     )
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1587,7 +1613,7 @@ async def test_get_pull_request_rules_evaluator(
         [
             {"name": "hello", "conditions": ["base:main"], "actions": {}},
             {"name": "backport", "conditions": ["base:main"], "actions": {}},
-        ]
+        ],
     )
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1600,7 +1626,7 @@ async def test_get_pull_request_rules_evaluator(
         [
             {"name": "hello", "conditions": ["author:foobar"], "actions": {}},
             {"name": "backport", "conditions": ["base:main"], "actions": {}},
-        ]
+        ],
     )
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1613,7 +1639,7 @@ async def test_get_pull_request_rules_evaluator(
         [
             {"name": "hello", "conditions": ["author:contributor"], "actions": {}},
             {"name": "backport", "conditions": ["base:main"], "actions": {}},
-        ]
+        ],
     )
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1633,14 +1659,14 @@ async def test_get_pull_request_rules_evaluator(
                     "#approved-reviews-by>=1",
                 ],
                 "actions": {},
-            }
-        ]
+            },
+        ],
     )
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["merge"]
     assert [r.name for r in match.not_applicable_base_changeable_attributes_rules] == [
-        "merge"
+        "merge",
     ]
 
     pull_request_rules = pull_request_rule_from_list(
@@ -1653,8 +1679,8 @@ async def test_get_pull_request_rules_evaluator(
                     "#approved-reviews-by>=1",
                 ],
                 "actions": {},
-            }
-        ]
+            },
+        ],
     )
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1694,10 +1720,10 @@ async def test_get_pull_request_rules_evaluator(
                                 "and": [
                                     "label=automerge",
                                     "label=ready",
-                                ]
+                                ],
                             },
                             "label=fast-track",
-                        ]
+                        ],
                     },
                     "check-success=continuous-integration/fake-ci-bis",
                     "#approved-reviews-by>=1",
@@ -1712,14 +1738,14 @@ async def test_get_pull_request_rules_evaluator(
                         "or": [
                             "label=python-deps",
                             "label=node-deps",
-                        ]
+                        ],
                     },
                     "author=mybot",
                     "check-success=continuous-integration/fake-ci",
                 ],
                 "actions": {},
             },
-        ]
+        ],
     )
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
 
@@ -1776,8 +1802,8 @@ async def test_get_pull_request_rules_evaluator(
                     "#approved-reviews-by>=2",
                 ],
                 "actions": {},
-            }
-        ]
+            },
+        ],
     )
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1797,7 +1823,7 @@ async def test_get_pull_request_rules_evaluator(
             "user": {"login": "jd", "id": 2644, "type": "User"},
             "state": "APPROVED",
             "author_association": "MEMBER",
-        }
+        },
     )
 
     ctxt._caches.reviews.delete()
@@ -1813,8 +1839,8 @@ async def test_get_pull_request_rules_evaluator(
                     "#approved-reviews-by>=2",
                 ],
                 "actions": {},
-            }
-        ]
+            },
+        ],
     )
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1831,8 +1857,8 @@ async def test_get_pull_request_rules_evaluator(
                 "name": "default",
                 "conditions": ["-label~=^(status/wip|status/blocked|review/need2)$"],
                 "actions": {},
-            }
-        ]
+            },
+        ],
     )
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1843,7 +1869,7 @@ async def test_get_pull_request_rules_evaluator(
 
     # Forbidden labels, when forbiden label set
     ctxt.pull["labels"] = [
-        {"id": 0, "color": "#1234", "default": False, "name": "status/wip"}
+        {"id": 0, "color": "#1234", "default": False, "name": "status/wip"},
     ]
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1861,7 +1887,7 @@ async def test_get_pull_request_rules_evaluator(
 
     # Forbidden labels, when other label set
     ctxt.pull["labels"] = [
-        {"id": 0, "color": "#1234", "default": False, "name": "allowed"}
+        {"id": 0, "color": "#1234", "default": False, "name": "allowed"},
     ]
 
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -1881,8 +1907,8 @@ async def test_get_pull_request_rules_evaluator(
                 "name": "default",
                 "conditions": ["author~=^(user1|user2|contributor)$"],
                 "actions": {},
-            }
-        ]
+            },
+        ],
     )
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["default"]
@@ -1895,7 +1921,9 @@ async def test_get_pull_request_rules_evaluator(
 
     # branch protection
     async def client_item_with_branch_protection_enabled(
-        url: str, *args: typing.Any, **kwargs: typing.Any
+        url: str,
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> None | (dict[str, dict[str, list[str] | bool]]):
         if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
             return {
@@ -1912,8 +1940,8 @@ async def test_get_pull_request_rules_evaluator(
                 "name": "default",
                 "conditions": [],
                 "actions": {"merge": {}, "comment": {"message": "yo"}},
-            }
-        ]
+            },
+        ],
     )
     match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
 
@@ -1970,8 +1998,8 @@ def test_check_runs_custom() -> None:
                       Thank you @{{author}} for your contributions!
 
                       {{ check_conditions }}
-            """
-        )
+            """,
+        ),
     )["pull_request_rules"]
     assert [rule.name for rule in pull_request_rules] == [
         "ahah",
@@ -1988,8 +2016,8 @@ def test_check_runs_default() -> None:
                 - base=main
                 actions:
                   post_check: {}
-            """
-        )
+            """,
+        ),
     )["pull_request_rules"]
     assert [rule.name for rule in pull_request_rules] == [
         "ahah",
@@ -2004,7 +2032,7 @@ def test_merge_config() -> None:
                 "name": "hello",
                 "conditions": ["head:main"],
                 "actions": {"rebase": {}},
-            }
+            },
         ],
     }
 
@@ -2020,14 +2048,14 @@ def test_merge_config() -> None:
             "actions": {
                 "rebase": {"bot_account": "foo"},
                 "comment": {"message": "Hello World!"},
-            }
+            },
         },
         "pull_request_rules": [
             {
                 "name": "hello",
                 "conditions": ["head:main"],
                 "actions": {"rebase": {"bot_account": "bar"}},
-            }
+            },
         ],
     }
 
@@ -2042,7 +2070,7 @@ def test_merge_config() -> None:
                 "name": "hello",
                 "conditions": ["head:main"],
                 "actions": {"rebase": {"bot_account": "bar"}},
-            }
+            },
         ],
     }
     defaults = config.pop("defaults", {})
@@ -2360,7 +2388,7 @@ async def test_template_with_empty_body() -> None:
           {{title}}
 
           {{ body.split('----PR MESSAGE----')[0] }}
-"""
+""",
     )
 
     queue_config = config["pull_request_rules"].rules[0].actions["queue"]
@@ -2411,7 +2439,7 @@ pull_request_rules:
 
 async def test_rule_condition_negation_extract_raw_filter_tree() -> None:
     rule_condition_negation = cond_config.RuleConditionSchema(
-        {"not": {"or": ["base=main", "label=foo"]}}
+        {"not": {"or": ["base=main", "label=foo"]}},
     )
     pr_conditions = conditions.PullRequestRuleConditions([rule_condition_negation])
 
@@ -2422,10 +2450,10 @@ async def test_rule_condition_negation_extract_raw_filter_tree() -> None:
                     "or": [
                         {"=": ("base", "main")},
                         {"=": ("label", "foo")},
-                    ]
-                }
-            }
-        ]
+                    ],
+                },
+            },
+        ],
     }
 
     assert pr_conditions.extract_raw_filter_tree() == expected_tree
@@ -2450,7 +2478,7 @@ pull_request_rules:
       - sender-permission=write
      actions:
        comment:
-"""
+""",
         )
     assert (
         str(e.value)
@@ -2485,7 +2513,7 @@ Attribute only allowed in commands_restrictions section
                     "check-success": ["ci-1", "ci-2"],
                     "check-failure": ["ci-3", "ci-4"],
                     "check": ["ci-1", "ci-2", "ci-3", "ci-4"],
-                }
+                },
             ),
             True,
             ["ci-1"],
@@ -2498,7 +2526,7 @@ Attribute only allowed in commands_restrictions section
                     "check-success": ["ci-1", "ci-2"],
                     "check-failure": ["ci-3", "ci-4"],
                     "check": ["ci-1", "ci-2", "ci-3", "ci-4"],
-                }
+                },
             ),
             False,
             ["ci-3"],
@@ -2511,7 +2539,7 @@ Attribute only allowed in commands_restrictions section
                     "check-success": [],
                     "check-failure": [],
                     "check": [],
-                }
+                },
             ),
             False,
             ["ci-3"],
@@ -2524,7 +2552,7 @@ Attribute only allowed in commands_restrictions section
                     "check-success": ["ci-1", "ci-2"],
                     "check-failure": ["ci-3", "ci-4"],
                     "check": ["ci-1", "ci-2", "ci-3", "ci-4"],
-                }
+                },
             ),
             False,
             ["ci-3"],
@@ -2561,7 +2589,7 @@ queue_rules:
      queue_branch_prefix: my-prefix
      allow_queue_branch_edit: True
      batch_max_failure_resolution_attempts: 10
-"""
+""",
     )
 
     queue_rule = config["queue_rules"].rules[0]
@@ -2569,7 +2597,7 @@ queue_rules:
     assert queue_rule.config["speculative_checks"] == 5
     assert queue_rule.config["batch_size"] == 6
     assert queue_rule.config["batch_max_wait_time"] == qr_config.PositiveInterval(
-        "60 s"
+        "60 s",
     )
     assert queue_rule.config["allow_inplace_checks"] is False
     assert queue_rule.config["disallow_checks_interruption_from_queues"] == ["foo"]
@@ -2590,7 +2618,7 @@ def _dt(at: str) -> datetime.datetime:
     [
         pytest.param(
             conditions.RuleCondition.from_string(
-                "schedule=Mon-Fri 09:00-17:30[Europe/Paris]"
+                "schedule=Mon-Fri 09:00-17:30[Europe/Paris]",
             ),
             conftest.FakePullRequest({"current-datetime": _dt("2022-01-10T12:00:00")}),
             True,
@@ -2599,7 +2627,7 @@ def _dt(at: str) -> datetime.datetime:
         ),
         pytest.param(
             conditions.RuleCondition.from_string(
-                "schedule=Mon-Fri 09:00-17:30[Europe/Paris]"
+                "schedule=Mon-Fri 09:00-17:30[Europe/Paris]",
             ),
             conftest.FakePullRequest({"current-datetime": _dt("2022-01-10T00:00:00")}),
             False,
@@ -2609,7 +2637,7 @@ def _dt(at: str) -> datetime.datetime:
         pytest.param(
             conditions.RuleCondition.from_string("base=main"),
             conftest.FakePullRequest(
-                {"current-datetime": _dt("2022-01-10T00:00:00"), "base": "main"}
+                {"current-datetime": _dt("2022-01-10T00:00:00"), "base": "main"},
             ),
             True,
             date.DT_MAX,
@@ -2631,7 +2659,7 @@ async def test_rule_condition_next_evaluation_at(
 
 def test_rule_condition_value() -> None:
     condition = conditions.RuleCondition.from_string(
-        "schedule=Mon-Fri 09:00-17:30[Europe/Paris]"
+        "schedule=Mon-Fri 09:00-17:30[Europe/Paris]",
     )
     expected_value = date.Schedule.from_string("Mon-Fri 09:00-17:30[Europe/Paris]")
 
@@ -2650,7 +2678,8 @@ def test_rule_condition_value() -> None:
     ),
 )
 def test_rule_condition_operator(
-    condition: conditions.RuleCondition, expected_operator: str
+    condition: conditions.RuleCondition,
+    expected_operator: str,
 ) -> None:
     assert condition.operator == expected_operator
 
@@ -2693,14 +2722,14 @@ async def test_rule_condition_walk_only_failing_conditions() -> None:
                     {
                         "or": [
                             conditions.RuleCondition.from_string(
-                                "schedule=09:00-18:00"
+                                "schedule=09:00-18:00",
                             ),
                             conditions.RuleCondition.from_string("label=bar"),
-                        ]
-                    }
+                        ],
+                    },
                 ),
-            ]
-        }
+            ],
+        },
     )
 
     pull = conftest.FakePullRequest(
@@ -2709,7 +2738,7 @@ async def test_rule_condition_walk_only_failing_conditions() -> None:
             "base": "main",
             "label": ["bar"],
             "current-datetime": _dt("2023-09-27T20:00:00"),
-        }
+        },
     )
 
     await conds(pull)

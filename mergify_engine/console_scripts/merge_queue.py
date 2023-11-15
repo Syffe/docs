@@ -38,10 +38,14 @@ async def merge_queue_reset(cli_ctxt: click.Context, url: str) -> None:
     redis_links = redis_utils.RedisLinks(name="debug")
 
     cached_sub = await subscription.Subscription.get_subscription(
-        redis_links.cache, owner_id
+        redis_links.cache,
+        owner_id,
     )
     installation = context.Installation(
-        installation_json, cached_sub, client, redis_links
+        installation_json,
+        cached_sub,
+        client,
+        redis_links,
     )
 
     repository = await installation.get_repository_by_name(repo)
@@ -52,7 +56,9 @@ async def merge_queue_reset(cli_ctxt: click.Context, url: str) -> None:
         cli_ctxt.fail(f"configuration is invalid {e!s}")
 
     async for convoy in merge_train.Convoy.iter_convoys(
-        repository, mergify_config["queue_rules"], mergify_config["partition_rules"]
+        repository,
+        mergify_config["queue_rules"],
+        mergify_config["partition_rules"],
     ):
         for train in convoy.iter_trains():
             # NOTE(sileht): This is not concurrent safe, if a pull request is added/removed on the train

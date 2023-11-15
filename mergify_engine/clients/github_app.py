@@ -17,7 +17,8 @@ from mergify_engine import settings
 LOG = daiquiri.getLogger(__name__)
 
 EXPECTED_MINIMAL_PERMISSIONS: dict[
-    github_types.GitHubAccountType, github_types.GitHubInstallationPermissions
+    github_types.GitHubAccountType,
+    github_types.GitHubInstallationPermissions,
 ] = {
     "Organization": {
         "checks": "write",
@@ -103,7 +104,8 @@ def permissions_need_to_be_updated(
 
 class GitHubBearerAuth(httpx.Auth):
     def auth_flow(
-        self, request: httpx.Request
+        self,
+        request: httpx.Request,
     ) -> abc.Generator[httpx.Request, httpx.Response, None]:
         bearer = get_or_create_jwt()
         request.headers["Authorization"] = f"Bearer {bearer}"

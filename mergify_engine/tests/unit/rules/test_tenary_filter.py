@@ -14,7 +14,8 @@ from mergify_engine.rules import filter
     ),
 )
 async def test_operator_negate(
-    value: filter.TernaryFilterResult, expected: filter.TernaryFilterResult
+    value: filter.TernaryFilterResult,
+    expected: filter.TernaryFilterResult,
 ) -> None:
     result = filter.TernaryFilterOperatorNegate(value)
     assert result == expected
@@ -75,7 +76,8 @@ async def test_operator_negate(
     ),
 )
 async def test_operator_any(
-    values: list[filter.TernaryFilterResult], expected: filter.TernaryFilterResult
+    values: list[filter.TernaryFilterResult],
+    expected: filter.TernaryFilterResult,
 ) -> None:
     result = filter.TernaryFilterOperatorAny(values)
     assert result == expected
@@ -136,7 +138,8 @@ async def test_operator_any(
     ),
 )
 async def test_operator_all(
-    values: list[filter.TernaryFilterResult], expected: filter.TernaryFilterResult
+    values: list[filter.TernaryFilterResult],
+    expected: filter.TernaryFilterResult,
 ) -> None:
     result = filter.TernaryFilterOperatorAll(values)
     assert result == expected

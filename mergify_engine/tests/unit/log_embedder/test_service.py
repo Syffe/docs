@@ -31,7 +31,8 @@ from mergify_engine.tests.openai_embedding_dataset import (
 
 
 GHA_CI_LOGS_ZIP_DIRECTORY = os.path.join(
-    os.path.dirname(__file__), "gha-ci-logs-examples"
+    os.path.dirname(__file__),
+    "gha-ci-logs-examples",
 )
 GHA_CI_LOGS_ZIP_BUFFER = io.BytesIO()
 
@@ -53,14 +54,16 @@ async def test_embed_logs_on_controlled_data(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     owner = gh_models.GitHubAccount(
-        id=1, login="owner_login", avatar_url="https://dummy.com"
+        id=1,
+        login="owner_login",
+        avatar_url="https://dummy.com",
     )
     db.add(owner)
     repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo_name")
     db.add(repo)
 
     respx_mock.get(
-        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation"
+        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation",
     ).respond(
         200,
         json=github_types.GitHubInstallation(  # type: ignore[arg-type]
@@ -72,11 +75,11 @@ async def test_embed_logs_on_controlled_data(
                 "account": sample_ci_events_to_process[
                     "workflow_job.completed.json"
                 ].slim_event["repository"]["owner"],
-            }
+            },
         ),
     )
     respx_mock.post(
-        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens"
+        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens",
     ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
@@ -89,7 +92,7 @@ async def test_embed_logs_on_controlled_data(
                     "object": "embedding",
                     "index": 0,
                     "embedding": OPENAI_EMBEDDING_DATASET["toto"],
-                }
+                },
             ],
             "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
@@ -112,7 +115,7 @@ async def test_embed_logs_on_controlled_data(
                         "content": "Toto title",
                     },
                     "finish_reason": "stop",
-                }
+                },
             ],
             "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
         },
@@ -140,7 +143,7 @@ async def test_embed_logs_on_controlled_data(
         db.add(job)
 
         respx_mock.get(
-            f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
+            f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs",
         ).respond(
             200,
             stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
@@ -194,7 +197,7 @@ async def test_embed_logs_on_controlled_data(
         gh_models.WorkflowJob,
         jobs[0].id,
         options=[
-            orm.joinedload(gh_models.WorkflowJob.ci_issue).selectinload(CiIssue.jobs)
+            orm.joinedload(gh_models.WorkflowJob.ci_issue).selectinload(CiIssue.jobs),
         ],
     )
 
@@ -217,7 +220,7 @@ async def test_embed_logs_on_various_data(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     respx_mock.get(
-        re.compile(f"{settings.GITHUB_REST_API_URL}/users/.+/installation")
+        re.compile(f"{settings.GITHUB_REST_API_URL}/users/.+/installation"),
     ).respond(
         200,
         json=github_types.GitHubInstallation(  # type: ignore[arg-type]
@@ -229,11 +232,11 @@ async def test_embed_logs_on_various_data(
                 "account": sample_ci_events_to_process[
                     "workflow_job.completed.json"
                 ].slim_event["repository"]["owner"],
-            }
+            },
         ),
     )
     respx_mock.post(
-        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens"
+        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens",
     ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
 
     respx_mock.post(
@@ -247,7 +250,7 @@ async def test_embed_logs_on_various_data(
                     "object": "embedding",
                     "index": 0,
                     "embedding": OPENAI_EMBEDDING_DATASET["toto"],
-                }
+                },
             ],
             "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
@@ -270,7 +273,7 @@ async def test_embed_logs_on_various_data(
                         "content": "Toto title",
                     },
                     "finish_reason": "stop",
-                }
+                },
             ],
             "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
         },
@@ -278,8 +281,8 @@ async def test_embed_logs_on_various_data(
 
     respx_mock.get(
         re.compile(
-            f"{settings.GITHUB_REST_API_URL}/repos/.+/.+/actions/runs/.+/attempts/.+/logs"
-        )
+            f"{settings.GITHUB_REST_API_URL}/repos/.+/.+/actions/runs/.+/attempts/.+/logs",
+        ),
     ).respond(
         200,
         stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
@@ -296,7 +299,7 @@ async def test_embed_logs_on_various_data(
         .where(
             gh_models.WorkflowJob.failed_step_name.is_not(None),
             gh_models.WorkflowJob.failed_step_number.is_not(None),
-        )
+        ),
     )
     await populated_db.commit()
 
@@ -315,8 +318,8 @@ async def test_embed_logs_on_various_data(
     count = (
         await populated_db.execute(
             sqlalchemy.select(sqlalchemy.func.count(gh_models.WorkflowJob.id)).where(
-                gh_models.WorkflowJob.embedded_log.is_not(None)
-            )
+                gh_models.WorkflowJob.embedded_log.is_not(None),
+            ),
         )
     ).all()[0][0]
 
@@ -329,8 +332,8 @@ async def test_embed_logs_on_various_data(
     count = (
         await populated_db.execute(
             sqlalchemy.select(sqlalchemy.func.count(gh_models.WorkflowJob.id)).where(
-                gh_models.WorkflowJob.embedded_log.is_not(None)
-            )
+                gh_models.WorkflowJob.embedded_log.is_not(None),
+            ),
         )
     ).all()[0][0]
 
@@ -338,10 +341,12 @@ async def test_embed_logs_on_various_data(
 
 
 @pytest.mark.ignored_logging_errors(
-    "log-embedder: too many unexpected failures, giving up"
+    "log-embedder: too many unexpected failures, giving up",
 )
 @mock.patch.object(
-    exceptions, "need_retry", return_value=datetime.timedelta(seconds=-60)
+    exceptions,
+    "need_retry",
+    return_value=datetime.timedelta(seconds=-60),
 )
 async def test_workflow_job_log_life_cycle(
     _: None,
@@ -404,7 +409,7 @@ async def test_workflow_job_log_life_cycle(
     db.expunge_all()
 
     respx_mock.get(
-        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation"
+        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation",
     ).respond(
         200,
         json=github_types.GitHubInstallation(  # type: ignore[arg-type]
@@ -419,11 +424,11 @@ async def test_workflow_job_log_life_cycle(
                     "type": "User",
                     "avatar_url": "",
                 },
-            }
+            },
         ),
     )
     respx_mock.post(
-        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens"
+        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens",
     ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
@@ -436,23 +441,23 @@ async def test_workflow_job_log_life_cycle(
                     "object": "embedding",
                     "index": 0,
                     "embedding": OPENAI_EMBEDDING_DATASET["toto"],
-                }
+                },
             ],
             "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
         },
     )
     respx_mock.get(
-        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job1.workflow_run_id}/attempts/{job1.run_attempt}/logs"
+        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job1.workflow_run_id}/attempts/{job1.run_attempt}/logs",
     ).respond(410)
     respx_mock.get(
-        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job2.workflow_run_id}/attempts/{job2.run_attempt}/logs"
+        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job2.workflow_run_id}/attempts/{job2.run_attempt}/logs",
     ).respond(
         200,
         stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
     )
     respx_mock.get(
-        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job3.workflow_run_id}/attempts/{job3.run_attempt}/logs"
+        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job3.workflow_run_id}/attempts/{job3.run_attempt}/logs",
     ).respond(500)
 
     respx_mock.post(
@@ -472,7 +477,7 @@ async def test_workflow_job_log_life_cycle(
                         "content": "Toto title",
                     },
                     "finish_reason": "stop",
-                }
+                },
             ],
             "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
         },
@@ -495,7 +500,7 @@ async def test_workflow_job_log_life_cycle(
                         "content": "Toto title",
                     },
                     "finish_reason": "stop",
-                }
+                },
             ],
             "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
         },
@@ -509,10 +514,10 @@ async def test_workflow_job_log_life_cycle(
             (
                 await db.scalars(
                     sqlalchemy.select(gh_models.WorkflowJob).order_by(
-                        gh_models.WorkflowJob.id
-                    )
+                        gh_models.WorkflowJob.id,
+                    ),
                 )
-            ).all()
+            ).all(),
         )
 
     jobs = await get_jobs()
@@ -577,7 +582,7 @@ async def test_workflow_job_from_real_life(
     db.expunge_all()
 
     respx_mock.get(
-        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation"
+        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation",
     ).respond(
         200,
         json=github_types.GitHubInstallation(  # type: ignore[arg-type]
@@ -592,11 +597,11 @@ async def test_workflow_job_from_real_life(
                     "type": "User",
                     "avatar_url": "",
                 },
-            }
+            },
         ),
     )
     respx_mock.post(
-        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens"
+        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens",
     ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
@@ -609,7 +614,7 @@ async def test_workflow_job_from_real_life(
                     "object": "embedding",
                     "index": 0,
                     "embedding": OPENAI_EMBEDDING_DATASET["toto"],
-                }
+                },
             ],
             "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
@@ -632,13 +637,13 @@ async def test_workflow_job_from_real_life(
                         "content": "Toto title",
                     },
                     "finish_reason": "stop",
-                }
+                },
             ],
             "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
         },
     )
     respx_mock.get(
-        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
+        f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs",
     ).respond(
         200,
         stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]

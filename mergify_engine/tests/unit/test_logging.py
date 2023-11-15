@@ -15,7 +15,8 @@ from mergify_engine import logs
 def enable_tracer() -> abc.Generator[None, None, None]:
     enabled = tracer.enabled
     with mock.patch.object(tracer._writer, "flush_queue"), mock.patch.object(
-        tracer._writer, "write"
+        tracer._writer,
+        "write",
     ):
         tracer.enabled = True
         try:
@@ -36,7 +37,10 @@ def test_logging(
     logs.WORKER_ID.set("shared-30")
 
     with tracer.trace(
-        "testing", span_type="test", resource="test_logging", service="whatever"
+        "testing",
+        span_type="test",
+        resource="test_logging",
+        service="whatever",
     ) as span:
         span.set_tag("gh_owner", "foobar")
         record = logging.LogRecord(

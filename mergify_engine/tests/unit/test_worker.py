@@ -64,13 +64,13 @@ async def legacy_push(
         use_bin_type=True,
     )
     scheduled_at = now + datetime.timedelta(
-        seconds=worker_pusher.WORKER_PROCESSING_DELAY
+        seconds=worker_pusher.WORKER_PROCESSING_DELAY,
     )
     if score is None:
         score = str(date.utcnow().timestamp())
     bucket_org_key = stream_lua.BucketOrgKeyType(f"bucket~{owner_id}~{owner_login}")
     bucket_sources_key = stream_lua.BucketSourcesKeyType(
-        f"bucket-sources~{repo_id}~{repo_name}~{pull_number or 0}"
+        f"bucket-sources~{repo_id}~{repo_name}~{pull_number or 0}",
     )
     await stream_lua.push_pull(
         redis,
@@ -107,7 +107,7 @@ FAKE_INSTALLATION = github_types.GitHubInstallation(
         "target_type": "Organization",
         "permissions": github_app.EXPECTED_MINIMAL_PERMISSIONS["Organization"],
         "suspended_at": None,
-    }
+    },
 )
 
 HTTP_500_EXCEPTION = http.HTTPServerSideError(
@@ -164,7 +164,8 @@ WORKER_HAS_WORK_INTERVAL_CHECK = 0.02
 
 
 async def run_worker(
-    test_timeout: float | None = None, **kwargs: typing.Any
+    test_timeout: float | None = None,
+    **kwargs: typing.Any,
 ) -> manager.ServiceManager:
     w = manager.ServiceManager(
         worker_idle_time=0.01,
@@ -192,7 +193,10 @@ async def run_worker(
         worker_concurrency_works[0] += 1
         try:
             await real_consume_method(
-                inner_self, bucket_org_key, owner_id, owner_login_for_tracing
+                inner_self,
+                bucket_org_key,
+                owner_id,
+                owner_login_for_tracing,
             )
         finally:
             worker_concurrency_works[0] -= 1
@@ -445,7 +449,7 @@ async def test_worker_expanded_events(
             owner_id=123,
             owner_login="owner-123",
             installation=fake_get_installation_from_account_id(
-                github_types.GitHubAccountIdType(123)
+                github_types.GitHubAccountIdType(123),
             ),
         ),
     )
@@ -951,7 +955,7 @@ async def test_stream_processor_retrying_pull(
     assert 1 == len(await redis_links.stream.hgetall("attempts"))
     assert len(run_engine.mock_calls) == 4
     assert {b"bucket-sources~123~42": b"2"} == await redis_links.stream.hgetall(
-        "attempts"
+        "attempts",
     )
 
     # Check nothing is retried if we replay the steram before 30s
@@ -971,7 +975,7 @@ async def test_stream_processor_retrying_pull(
     assert 1 == len(await redis_links.stream.hgetall("attempts"))
     assert len(run_engine.mock_calls) == 4
     assert {b"bucket-sources~123~42": b"2"} == await redis_links.stream.hgetall(
-        "attempts"
+        "attempts",
     )
 
     when = date.fromisoformat("2020-01-01 22:01:33")
@@ -1026,7 +1030,9 @@ async def test_stream_processor_retrying_stream_recovered(
     response.json.return_value = {"message": "boom"}
     response.status_code = 401
     run_engine.side_effect = http.HTTPClientSideError(
-        message="foobar", request=response.request, response=response
+        message="foobar",
+        request=response.request,
+        response=response,
     )
 
     with time_travel("2020-01-01 22:00:00", tick=True):
@@ -1142,7 +1148,9 @@ async def test_stream_processor_retrying_stream_failure(
     response.json.return_value = {"message": "boom"}
     response.status_code = 401
     run_engine.side_effect = http.HTTPClientSideError(
-        message="foobar", request=response.request, response=response
+        message="foobar",
+        request=response.request,
+        response=response,
     )
 
     with time_travel("2020-01-01 22:00:00", tick=True):
@@ -1375,7 +1383,8 @@ async def test_stream_processor_priority(
     run_engine.side_effect = fake_engine
     syncer_service = (
         dedicated_workers_cache_syncer_service.DedicatedWorkersCacheSyncerService(
-            redis_links, idle_time=0
+            redis_links,
+            idle_time=0,
         )
     )
     shared_service = shared_workers_spawner_service.SharedStreamService(
@@ -1391,8 +1400,8 @@ async def test_stream_processor_priority(
     shared_service.shared_stream_tasks_per_process = 1
     request.addfinalizer(
         lambda: event_loop.run_until_complete(
-            task.stop_and_wait(syncer_service.tasks + shared_service.tasks)
-        )
+            task.stop_and_wait(syncer_service.tasks + shared_service.tasks),
+        ),
     )
 
     with time_travel("2020-01-14", tick=True):
@@ -1451,7 +1460,8 @@ async def test_stream_processor_date_scheduling(
 
     syncer_service = (
         dedicated_workers_cache_syncer_service.DedicatedWorkersCacheSyncerService(
-            redis_links, idle_time=0
+            redis_links,
+            idle_time=0,
         )
     )
     shared_service = shared_workers_spawner_service.SharedStreamService(
@@ -1467,8 +1477,8 @@ async def test_stream_processor_date_scheduling(
     shared_service.shared_stream_tasks_per_process = 1
     request.addfinalizer(
         lambda: event_loop.run_until_complete(
-            task.stop_and_wait(syncer_service.tasks + shared_service.tasks)
-        )
+            task.stop_and_wait(syncer_service.tasks + shared_service.tasks),
+        ),
     )
 
     received = []
@@ -1557,13 +1567,16 @@ async def test_worker_drop_bucket(
         assert 3 == await redis_links.stream.xlen(bucket_source)
 
     await stream_lua.drop_bucket(
-        redis_links.stream, stream_lua.BucketOrgKeyType("bucket~123")
+        redis_links.stream,
+        stream_lua.BucketOrgKeyType("bucket~123"),
     )
     assert 0 == len(await redis_links.stream.keys("bucket~*"))
     assert 0 == len(await redis_links.stream.keys("bucket-sources~*"))
 
     await stream_lua.clean_org_bucket(
-        redis_links.stream, stream_lua.BucketOrgKeyType("bucket~123"), date.utcnow()
+        redis_links.stream,
+        stream_lua.BucketOrgKeyType("bucket~123"),
+        date.utcnow(),
     )
 
     assert 0 == (await redis_links.stream.zcard("streams"))
@@ -1593,7 +1606,7 @@ async def test_stream_processor_retrying_after_read_error(
 
     with pytest.raises(stream.OrgBucketRetry):
         async with stream_processor._translate_exception_to_retries(
-            stream_lua.BucketOrgKeyType("stream~owner~123")
+            stream_lua.BucketOrgKeyType("stream~owner~123"),
         ):
             await stream.run_engine(
                 fake_installation,
@@ -1707,7 +1720,7 @@ async def test_worker_with_multiple_workers(
                 process_index=i,
             )
             for i in range(shared_stream_processes)
-        ]
+        ],
     )
 
     # Check redis is empty
@@ -1751,7 +1764,7 @@ async def _test_worker_stuck_shutdown(
 
 
 @pytest.mark.flaky(  # drop me when asyncio_timeout is removed from redispy and python >= 3.11.3
-    reruns=5
+    reruns=5,
 )
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
@@ -1786,7 +1799,8 @@ async def test_dedicated_worker_scaleup_scaledown(
     run_engine.side_effect = track_context
 
     async def fake_get_subscription_dedicated(
-        redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
+        redis: redis_utils.RedisStream,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         # 123 is always shared
@@ -1797,7 +1811,8 @@ async def test_dedicated_worker_scaleup_scaledown(
         return sub
 
     async def fake_get_subscription_shared(
-        redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
+        redis: redis_utils.RedisStream,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         sub.has_feature.return_value = False
@@ -1859,7 +1874,7 @@ async def test_dedicated_worker_scaleup_scaledown(
         {
             github_types.GitHubAccountIdType(1),
             github_types.GitHubAccountIdType(4446),
-        }
+        },
     )
 
     tracker.clear()
@@ -1893,7 +1908,7 @@ async def test_dedicated_worker_scaleup_scaledown(
         {
             github_types.GitHubAccountIdType(1),
             github_types.GitHubAccountIdType(4446),
-        }
+        },
     )
     tracker.clear()
 
@@ -1908,7 +1923,7 @@ async def test_dedicated_worker_scaleup_scaledown(
 
 
 @pytest.mark.flaky(  # drop me when asyncio_timeout is removed from redispy and python >= 3.11.3
-    reruns=5
+    reruns=5,
 )
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
@@ -1945,10 +1960,10 @@ async def test_dedicated_worker_process_scaleup_scaledown(
     request.addfinalizer(lambda: event_loop.run_until_complete(w_shared._shutdown()))
 
     serv_shared = w_shared.get_service(
-        shared_workers_spawner_service.SharedStreamService
+        shared_workers_spawner_service.SharedStreamService,
     )
     serv_dedicated = w_dedicated.get_service(
-        dedicated_workers_spawner_service.DedicatedStreamService
+        dedicated_workers_spawner_service.DedicatedStreamService,
     )
     assert serv_shared is not None
     assert serv_dedicated is not None
@@ -1961,7 +1976,8 @@ async def test_dedicated_worker_process_scaleup_scaledown(
     run_engine.side_effect = track_context
 
     async def fake_get_subscription_dedicated(
-        redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
+        redis: redis_utils.RedisStream,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         # 123 is always shared
@@ -1972,7 +1988,8 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         return sub
 
     async def fake_get_subscription_shared(
-        redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
+        redis: redis_utils.RedisStream,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         sub.has_feature.return_value = False
@@ -2101,7 +2118,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
 
 
 @pytest.mark.flaky(  # drop me when asyncio_timeout is removed from redispy and python >= 3.11.3
-    reruns=5
+    reruns=5,
 )
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
@@ -2139,7 +2156,8 @@ async def test_separate_dedicated_worker(
     run_engine.side_effect = track_context
 
     async def fake_get_subscription_dedicated(
-        redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
+        redis: redis_utils.RedisStream,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         # 123 is always shared
@@ -2150,7 +2168,8 @@ async def test_separate_dedicated_worker(
         return sub
 
     async def fake_get_subscription_shared(
-        redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
+        redis: redis_utils.RedisStream,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         sub.has_feature.return_value = False
@@ -2230,13 +2249,13 @@ async def test_separate_dedicated_worker(
 @mock.patch("mergify_engine.worker.manager.ServiceManager.setup_signals")
 @mock.patch("mergify_engine.worker.delayed_refresh_service.DelayedRefreshService.work")
 @mock.patch(
-    "mergify_engine.worker.stream_monitoring_service.MonitoringStreamService.work"
+    "mergify_engine.worker.stream_monitoring_service.MonitoringStreamService.work",
 )
 @mock.patch(
-    "mergify_engine.worker.dedicated_workers_spawner_service.DedicatedStreamService.work"
+    "mergify_engine.worker.dedicated_workers_spawner_service.DedicatedStreamService.work",
 )
 @mock.patch(
-    "mergify_engine.worker.shared_workers_spawner_service.SharedStreamService.shared_stream_worker_task"
+    "mergify_engine.worker.shared_workers_spawner_service.SharedStreamService.shared_stream_worker_task",
 )
 @mock.patch(
     "mergify_engine.worker.manager.ServiceManager.wait_shutdown_complete",
@@ -2271,13 +2290,13 @@ def test_worker_start_all_tasks(
 @mock.patch("mergify_engine.worker.manager.ServiceManager.setup_signals")
 @mock.patch("mergify_engine.worker.delayed_refresh_service.DelayedRefreshService.work")
 @mock.patch(
-    "mergify_engine.worker.stream_monitoring_service.MonitoringStreamService.work"
+    "mergify_engine.worker.stream_monitoring_service.MonitoringStreamService.work",
 )
 @mock.patch(
-    "mergify_engine.worker.dedicated_workers_spawner_service.DedicatedStreamService.work"
+    "mergify_engine.worker.dedicated_workers_spawner_service.DedicatedStreamService.work",
 )
 @mock.patch(
-    "mergify_engine.worker.shared_workers_spawner_service.SharedStreamService.shared_stream_worker_task"
+    "mergify_engine.worker.shared_workers_spawner_service.SharedStreamService.shared_stream_worker_task",
 )
 @mock.patch(
     "mergify_engine.worker.manager.ServiceManager.wait_shutdown_complete",
@@ -2312,13 +2331,13 @@ def test_worker_start_just_shared(
 @mock.patch("mergify_engine.worker.manager.ServiceManager.setup_signals")
 @mock.patch("mergify_engine.worker.delayed_refresh_service.DelayedRefreshService.work")
 @mock.patch(
-    "mergify_engine.worker.stream_monitoring_service.MonitoringStreamService.work"
+    "mergify_engine.worker.stream_monitoring_service.MonitoringStreamService.work",
 )
 @mock.patch(
-    "mergify_engine.worker.dedicated_workers_spawner_service.DedicatedStreamService.work"
+    "mergify_engine.worker.dedicated_workers_spawner_service.DedicatedStreamService.work",
 )
 @mock.patch(
-    "mergify_engine.worker.shared_workers_spawner_service.SharedStreamService.shared_stream_worker_task"
+    "mergify_engine.worker.shared_workers_spawner_service.SharedStreamService.shared_stream_worker_task",
 )
 @mock.patch(
     "mergify_engine.worker.manager.ServiceManager.wait_shutdown_complete",
@@ -2343,8 +2362,8 @@ def test_worker_start_except_shared(
 
     manager.main(
         [
-            "--enabled-services=dedicated-workers-spawner,stream-monitoring,delayed-refresh"
-        ]
+            "--enabled-services=dedicated-workers-spawner,stream-monitoring,delayed-refresh",
+        ],
     )
     while not wait_shutdown_complete.called:
         time.sleep(0.01)
@@ -2418,7 +2437,7 @@ async def test_get_my_dedicated_worker_ids(
     await w1.start()
     request.addfinalizer(lambda: event_loop.run_until_complete(w1._shutdown()))
     dedicated_serv1 = w1.get_service(
-        dedicated_workers_spawner_service.DedicatedStreamService
+        dedicated_workers_spawner_service.DedicatedStreamService,
     )
     assert dedicated_serv1 is not None
     dedicated_serv1.service_dedicated_workers_cache_syncer.owner_ids = owners_cache
@@ -2438,7 +2457,7 @@ async def test_get_my_dedicated_worker_ids(
     await w2.start()
     request.addfinalizer(lambda: event_loop.run_until_complete(w2._shutdown()))
     dedicated_serv2 = w2.get_service(
-        dedicated_workers_spawner_service.DedicatedStreamService
+        dedicated_workers_spawner_service.DedicatedStreamService,
     )
     assert dedicated_serv2 is not None
     dedicated_serv2.service_dedicated_workers_cache_syncer.owner_ids = owners_cache
@@ -2474,7 +2493,7 @@ async def test_stream_processor_ignoring_error_422(
 
     with pytest.raises(stream.IgnoredException):
         async with stream_processor._translate_exception_to_retries(
-            stream_lua.BucketOrgKeyType("stream~owner~123")
+            stream_lua.BucketOrgKeyType("stream~owner~123"),
         ):
             await stream.run_engine(
                 fake_installation,
@@ -2495,13 +2514,14 @@ async def test_stream_processor_ignoring_error_422(
     ),
 )
 def test_score_priority_helpers(
-    priority: worker_pusher.Priority, timestamp: str
+    priority: worker_pusher.Priority,
+    timestamp: str,
 ) -> None:
     with time_travel(timestamp) as frozen_time:
         score = float(worker_pusher.get_priority_score(priority))
         assert worker_pusher.get_priority_level_from_score(score) == priority
         assert worker_pusher.get_date_from_score(score) == frozen_time().replace(
-            tzinfo=datetime.UTC
+            tzinfo=datetime.UTC,
         )
 
 
@@ -2556,7 +2576,7 @@ async def test_dedicated_multiple_processes(
     request.addfinalizer(lambda: event_loop.run_until_complete(w2._shutdown()))
 
     serv_dedicated_of_shared = w_shared.get_service(
-        dedicated_workers_spawner_service.DedicatedStreamService
+        dedicated_workers_spawner_service.DedicatedStreamService,
     )
     assert serv_dedicated_of_shared is None
     serv1 = w1.get_service(dedicated_workers_spawner_service.DedicatedStreamService)
@@ -2565,7 +2585,8 @@ async def test_dedicated_multiple_processes(
     assert serv2 is not None
 
     async def fake_get_subscription_dedicated(
-        redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
+        redis: redis_utils.RedisStream,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         # 123 is always shared
@@ -2576,7 +2597,8 @@ async def test_dedicated_multiple_processes(
         return sub
 
     async def fake_get_subscription_shared(
-        redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
+        redis: redis_utils.RedisStream,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         sub.has_feature.return_value = False
@@ -2630,10 +2652,10 @@ async def test_dedicated_multiple_processes(
     await push_and_wait()
     await push_and_wait()
     assert set(serv1._dedicated_worker_tasks.keys()) == {
-        github_types.GitHubAccountIdType(1)
+        github_types.GitHubAccountIdType(1),
     }
     assert set(serv2._dedicated_worker_tasks.keys()) == {
-        github_types.GitHubAccountIdType(4446)
+        github_types.GitHubAccountIdType(4446),
     }
 
     LOG.log(42, "should move everything in shared process 0")
@@ -2649,10 +2671,10 @@ async def test_dedicated_multiple_processes(
     await push_and_wait()
     await push_and_wait()
     assert set(serv1._dedicated_worker_tasks.keys()) == {
-        github_types.GitHubAccountIdType(1)
+        github_types.GitHubAccountIdType(1),
     }
     assert set(serv2._dedicated_worker_tasks.keys()) == {
-        github_types.GitHubAccountIdType(4446)
+        github_types.GitHubAccountIdType(4446),
     }
 
     get_subscription.side_effect = fake_get_subscription_shared
@@ -2698,7 +2720,7 @@ async def test_start_stop_cycle(
     serv_shared = w.get_service(shared_workers_spawner_service.SharedStreamService)
     assert serv_shared is not None
     serv_dedicated = w.get_service(
-        dedicated_workers_spawner_service.DedicatedStreamService
+        dedicated_workers_spawner_service.DedicatedStreamService,
     )
     assert serv_dedicated is not None
     assert w.get_service(stream_monitoring_service.MonitoringStreamService) is not None
@@ -3018,6 +3040,7 @@ async def test_task_stop_ordering(
     ),
 )
 def test_extract_app_from_status(
-    status_event: github_types.GitHubEventStatus, expected_app_name: str
+    status_event: github_types.GitHubEventStatus,
+    expected_app_name: str,
 ) -> None:
     assert stream._extract_app_from_status_event(status_event) == expected_app_name

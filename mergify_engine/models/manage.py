@@ -40,7 +40,7 @@ async def drop_all() -> None:
 
 def load_alembic_config() -> alembic.config.Config:
     config_file = importlib.resources.files(__package__).joinpath(
-        "db_migration/alembic.ini"
+        "db_migration/alembic.ini",
     )
     return alembic.config.Config(str(config_file))
 

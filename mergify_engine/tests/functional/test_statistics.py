@@ -21,7 +21,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
                     "batch_size": 2,
                     "batch_max_wait_time": "0 s",
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -82,7 +82,8 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             tmp_mq_pr_3_4 = await self.wait_for_pull_request("opened")
 
         with time_travel(
-            start_date + datetime.timedelta(hours=3), tick=True
+            start_date + datetime.timedelta(hours=3),
+            tick=True,
         ), mock.patch("mergify_engine.queue.statistics_accuracy.statsd") as statsd:
             statsd.gauge = mock.Mock()
             await self.create_status(tmp_mq_pr_3_4["pull_request"])

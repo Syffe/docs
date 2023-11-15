@@ -44,7 +44,9 @@ def test_queue_freeze_deserialize(
     repository = mock.Mock()
     queue_rule = mock.Mock(name=name)
     queue_freeze = freeze.QueueFreeze.deserialize(
-        repository, queue_rule, untyped_serialized_payload
+        repository,
+        queue_rule,
+        untyped_serialized_payload,
     )
 
     assert queue_freeze.name == name

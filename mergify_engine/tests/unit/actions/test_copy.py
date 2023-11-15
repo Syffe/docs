@@ -25,7 +25,7 @@ async def test_copy_conclusion_success(
             job_id=None,
             pull_request_number=None,
             conflicting=False,
-        )
+        ),
     ]
 
     with mock.patch(
@@ -149,7 +149,7 @@ async def test_copy_unknown_conclusion(
             job_id=None,
             pull_request_number=None,
             conflicting=False,
-        )
+        ),
     ]
 
     with mock.patch(

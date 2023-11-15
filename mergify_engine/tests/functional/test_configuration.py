@@ -38,7 +38,7 @@ class TestConfiguration(base.FunctionalTestBase):
                 "name": "foobar",
                 "conditions": ["label!=wip"],
                 "actions": {"merge": {}},
-            }
+            },
         ]
         p = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
 
@@ -102,7 +102,7 @@ class TestConfiguration(base.FunctionalTestBase):
                     "name": "foobar",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
-                        "request_reviews": {"teams": [teams[0]["slug"].upper()]}
+                        "request_reviews": {"teams": [teams[0]["slug"].upper()]},
                     },
                 },
             ],
@@ -120,7 +120,7 @@ class TestConfiguration(base.FunctionalTestBase):
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         config_changed_check = await ctxt.get_engine_check_run(
-            constants.CONFIGURATION_CHANGED_CHECK_NAME
+            constants.CONFIGURATION_CHANGED_CHECK_NAME,
         )
         assert config_changed_check is not None
         assert (
@@ -160,7 +160,7 @@ Team `atchoum` does not exist or has not access to this repository
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -180,7 +180,9 @@ Team `atchoum` does not exist or has not access to this repository
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            action="completed", status="completed", conclusion="failure"
+            action="completed",
+            status="completed",
+            conclusion="failure",
         )
 
         assert (
@@ -235,7 +237,7 @@ did not find expected alphabetic or numeric character
                 "title": "Invalid YAML",
                 "message": mock.ANY,
                 "raw_details": None,
-            }
+            },
         ]
 
     async def test_cached_config_changes_when_push_event_received(self) -> None:
@@ -325,7 +327,8 @@ did not find expected alphabetic or numeric character
         await self.git("reset", "--hard", "HEAD^", "--")
         # Create a lot of file to ignore optimization
         p = await self.create_pr(
-            git_tree_ready=True, files={f"f{i}": "data" for i in range(0, 160)}
+            git_tree_ready=True,
+            files={f"f{i}": "data" for i in range(0, 160)},
         )
         ctxt = context.Context(self.repository_ctxt, p, [])
         await self.run_engine()
@@ -378,12 +381,12 @@ did not find expected alphabetic or numeric character
                     "name": "nothing",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         rules["pull_request_rules"].append(
-            {"name": "foobar", "conditions": ["label!=wip"], "actions": {"merge": {}}}
+            {"name": "foobar", "conditions": ["label!=wip"], "actions": {"merge": {}}},
         )
         p1 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
         await self.run_engine()
@@ -402,12 +405,12 @@ did not find expected alphabetic or numeric character
                     "name": "nothing",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {"allow_merging_configuration_change": True}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         rules["pull_request_rules"].append(
-            {"name": "foobar", "conditions": ["label!=wip"], "actions": {"merge": {}}}
+            {"name": "foobar", "conditions": ["label!=wip"], "actions": {"merge": {}}},
         )
         p1 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
         await self.run_engine()
@@ -426,12 +429,12 @@ did not find expected alphabetic or numeric character
                     "name": "nothing",
                     "conditions": [f"base!={self.main_branch_name}"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         rules["pull_request_rules"].append(
-            {"name": "foobar", "conditions": ["label!=wip"], "actions": {"merge": {}}}
+            {"name": "foobar", "conditions": ["label!=wip"], "actions": {"merge": {}}},
         )
         p = await self.create_pr(files={f"f{i}": "data" for i in range(0, 160)})
         await self.run_engine()
@@ -514,7 +517,7 @@ did not find expected alphabetic or numeric character
                 "actions": {
                     "label": {"toggle": ["queued"]},
                 },
-            }
+            },
         )
 
         p2 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
@@ -576,7 +579,7 @@ did not find expected alphabetic or numeric character
             in summary["output"]["title"]
         )
         additionnal_check = await ctxt.get_engine_check_run(
-            "Configuration has been deleted"
+            "Configuration has been deleted",
         )
         assert additionnal_check is not None
 
@@ -595,14 +598,14 @@ did not find expected alphabetic or numeric character
             in summary["output"]["title"]
         )
         additionnal_check = await ctxt.get_engine_check_run(
-            "Configuration has been deleted"
+            "Configuration has been deleted",
         )
         assert additionnal_check is not None
 
     async def test_multiple_configurations(self) -> None:
         await self.setup_repo(files={".mergify.yml": ""})
         p = await self.create_pr(
-            files={".github/mergify.yml": "pull_request_rules: []"}
+            files={".github/mergify.yml": "pull_request_rules: []"},
         )
         await self.run_engine()
 
@@ -639,7 +642,7 @@ did not find expected alphabetic or numeric character
                     "conditions": [f"base={self.main_branch_name}", "-merged"],
                     "actions": {"merge": {}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -700,8 +703,8 @@ did not find expected alphabetic or numeric character
         # Make sure the installation status is stored in redis
         cache_value = await self.redis_links.cache.get(
             context.Repository.get_mergify_installation_cache_key(
-                f"{settings.TESTING_ORGANIZATION_NAME}/.github"
-            )
+                f"{settings.TESTING_ORGANIZATION_NAME}/.github",
+            ),
         )
         assert cache_value is not None
         assert json.loads(cache_value) == {"installed": True, "error": None}
@@ -720,22 +723,22 @@ did not find expected alphabetic or numeric character
                         "account": {
                             "id": settings.TESTING_ORGANIZATION_ID,
                             "login": settings.TESTING_ORGANIZATION_NAME,
-                        }
+                        },
                     },
                     "repositories_added": [
                         {
                             "full_name": f"{settings.TESTING_ORGANIZATION_NAME}/.github",
-                        }
+                        },
                     ],
                     "repositories_removed": [],
-                }
+                },
             ),
         )
 
         cache_value = await self.redis_links.cache.get(
             context.Repository.get_mergify_installation_cache_key(
-                f"{settings.TESTING_ORGANIZATION_NAME}/.github"
-            )
+                f"{settings.TESTING_ORGANIZATION_NAME}/.github",
+            ),
         )
         assert cache_value is None
 
@@ -756,7 +759,7 @@ did not find expected alphabetic or numeric character
                     "name": "new_rule",
                     "merge_conditions": ["schedule: MON-FRI 08:00-17:00"],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "commands_restrictions": {"copy": {"conditions": ["base=new_rule"]}},
         }
@@ -851,8 +854,8 @@ did not find expected alphabetic or numeric character
 
         cache_value = await self.redis_links.cache.get(
             context.Repository.get_mergify_installation_cache_key(
-                f"{settings.TESTING_ORGANIZATION_NAME}/repo-without-mergify"
-            )
+                f"{settings.TESTING_ORGANIZATION_NAME}/repo-without-mergify",
+            ),
         )
         assert cache_value is not None
         assert json.loads(cache_value) == {"installed": False, "error": anys.ANY_STR}
@@ -876,7 +879,9 @@ did not find expected alphabetic or numeric character
             "get_mergify_config_file",
             mocked_get_mergify_config_file,
         ), mock.patch.object(
-            context.Repository, "is_mergify_installed", return_value={"installed": True}
+            context.Repository,
+            "is_mergify_installed",
+            return_value={"installed": True},
         ):
             await self.run_engine()
 

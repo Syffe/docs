@@ -64,9 +64,9 @@ class NormalizedUrl(str):
             [
                 pydantic_core.core_schema.str_schema(),
                 pydantic_core.core_schema.no_info_plain_validator_function(
-                    validate_from_str
+                    validate_from_str,
                 ),
-            ]
+            ],
         )
 
         return pydantic_core.core_schema.json_or_python_schema(
@@ -76,10 +76,10 @@ class NormalizedUrl(str):
                     # check if it's an instance first before doing any further work
                     pydantic_core.core_schema.is_instance_schema(NormalizedUrl),
                     from_str_schema,
-                ]
+                ],
             ),
             serialization=pydantic_core.core_schema.plain_serializer_function_ser_schema(
-                lambda instance: str(instance)
+                lambda instance: str(instance),
             ),
         )
 
@@ -98,7 +98,9 @@ class ListFromStrWithComma(list[T]):
 
     @classmethod
     def __get_pydantic_core_schema__(
-        cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
+        cls,
+        source_type: typing.Any,
+        handler: pydantic.GetCoreSchemaHandler,
     ) -> pydantic_core.CoreSchema:
         return pydantic_core.core_schema.no_info_plain_validator_function(cls.parse)
 
@@ -125,7 +127,8 @@ class DictFromStr(dict[str, TT]):
     def parse(cls, v: str | dict[typing.Any, typing.Any]) -> typing.Self:
         if isinstance(v, dict):
             return typing.cast(
-                typing.Self, {str(k): cls._type(va) for k, va in v.items()}
+                typing.Self,
+                {str(k): cls._type(va) for k, va in v.items()},
             )
         return typing.cast(typing.Self, utils.string_to_dict(v, cls._type))
 
@@ -135,7 +138,9 @@ class DictFromStr(dict[str, TT]):
 
     @classmethod
     def __get_pydantic_core_schema__(
-        cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
+        cls,
+        source_type: typing.Any,
+        handler: pydantic.GetCoreSchemaHandler,
     ) -> pydantic_core.CoreSchema:
         return pydantic_core.core_schema.no_info_plain_validator_function(cls.parse)
 
@@ -179,7 +184,7 @@ class SecretUrl(parse.SplitResult):
                 and parsed.scheme not in cls.allowed_schemes
             ):
                 raise ValueError(
-                    f"scheme `{parsed.scheme}` is invalid, must be {','.join(cls.allowed_schemes)}"
+                    f"scheme `{parsed.scheme}` is invalid, must be {','.join(cls.allowed_schemes)}",
                 )
 
         return cls(
@@ -194,7 +199,9 @@ class SecretUrl(parse.SplitResult):
 
     @classmethod
     def __get_pydantic_core_schema__(
-        cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
+        cls,
+        source_type: typing.Any,
+        handler: pydantic.GetCoreSchemaHandler,
     ) -> pydantic_core.CoreSchema:
         return pydantic_core.core_schema.no_info_plain_validator_function(cls.parse)
 
@@ -242,7 +249,7 @@ class AccountTokens(list[tuple[int, str, pydantic.SecretStr]]):
                         pydantic.SecretStr(token) if isinstance(token, str) else token,
                     )
                     for _id, login, token in v
-                ]
+                ],
             )
 
         return AccountTokens(
@@ -252,12 +259,14 @@ class AccountTokens(list[tuple[int, str, pydantic.SecretStr]]):
                     list[tuple[int, str, str]],
                     utils.string_to_list_of_tuple(v, split=3),
                 )
-            ]
+            ],
         )
 
     @classmethod
     def __get_pydantic_core_schema__(
-        cls, source_type: typing.Any, handler: pydantic.GetCoreSchemaHandler
+        cls,
+        source_type: typing.Any,
+        handler: pydantic.GetCoreSchemaHandler,
     ) -> pydantic_core.CoreSchema:
         return pydantic_core.core_schema.no_info_plain_validator_function(cls.parse)
 
@@ -281,7 +290,7 @@ def ApplicationAPIKeys(v: str) -> dict[str, ApplicationAPIKey]:
         raise ValueError(
             "wrong format, "
             "expect `api_key1:github_account_id1:github_account_login1,api_key1:github_account_id2:github_account_login2`, "
-            "api_key must be 64 character long"
+            "api_key must be 64 character long",
         )
 
     return {

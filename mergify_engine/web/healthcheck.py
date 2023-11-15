@@ -15,7 +15,8 @@ from mergify_engine.web import redis
 
 class HealthCheckAuth(fastapi.security.http.HTTPBearer):
     async def __call__(
-        self, request: fastapi.requests.Request
+        self,
+        request: fastapi.requests.Request,
     ) -> fastapi.security.http.HTTPAuthorizationCredentials | None:
         if settings.HEALTHCHECK_SHARED_TOKEN is None:
             raise fastapi.HTTPException(status_code=404)
@@ -33,7 +34,8 @@ class HealthCheckAuth(fastapi.security.http.HTTPBearer):
 check_healthcheck_auth = HealthCheckAuth()
 
 router = fastapi.APIRouter(
-    tags=["monitoring"], dependencies=[fastapi.Security(check_healthcheck_auth)]
+    tags=["monitoring"],
+    dependencies=[fastapi.Security(check_healthcheck_auth)],
 )
 
 
@@ -49,31 +51,31 @@ def default_service_status() -> ServiceStatus:
 @pydantic.dataclasses.dataclass
 class HealthCheckResult:
     redis_queue: ServiceStatus = dataclasses.field(
-        default_factory=default_service_status
+        default_factory=default_service_status,
     )
     redis_stream: ServiceStatus = dataclasses.field(
-        default_factory=default_service_status
+        default_factory=default_service_status,
     )
     redis_team_members_cache: ServiceStatus = dataclasses.field(
-        default_factory=default_service_status
+        default_factory=default_service_status,
     )
     redis_team_permissions_cache: ServiceStatus = dataclasses.field(
-        default_factory=default_service_status
+        default_factory=default_service_status,
     )
     redis_user_permissions_cache: ServiceStatus = dataclasses.field(
-        default_factory=default_service_status
+        default_factory=default_service_status,
     )
     redis_stats: ServiceStatus = dataclasses.field(
-        default_factory=default_service_status
+        default_factory=default_service_status,
     )
     redis_active_users: ServiceStatus = dataclasses.field(
-        default_factory=default_service_status
+        default_factory=default_service_status,
     )
     redis_authentication: ServiceStatus = dataclasses.field(
-        default_factory=default_service_status
+        default_factory=default_service_status,
     )
     redis_cache: ServiceStatus = dataclasses.field(
-        default_factory=default_service_status
+        default_factory=default_service_status,
     )
     postgres: ServiceStatus = dataclasses.field(default_factory=default_service_status)
 
@@ -83,7 +85,7 @@ async def get_healthcheck(
     redis_links: redis.RedisLinks,
     response: fastapi.responses.Response,
     session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
-        database.get_session
+        database.get_session,
     ),
 ) -> HealthCheckResult:
     result = HealthCheckResult()

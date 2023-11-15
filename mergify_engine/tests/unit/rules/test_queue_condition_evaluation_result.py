@@ -55,7 +55,7 @@ from mergify_engine.rules import conditions as rule_conditions
                     rule_conditions.QueueConditionEvaluationResult.Evaluation(
                         pull_request=github_types.GitHubPullRequestNumber(1),
                         match=True,
-                    )
+                    ),
                 ],
             ),
             """\
@@ -73,7 +73,7 @@ from mergify_engine.rules import conditions as rule_conditions
                         pull_request=github_types.GitHubPullRequestNumber(1),
                         match=False,
                         evaluation_error="Some error",
-                    )
+                    ),
                 ],
             ),
             """\
@@ -83,7 +83,8 @@ from mergify_engine.rules import conditions as rule_conditions
     ),
 )
 async def test_markdown(
-    condition: rule_conditions.QueueConditionEvaluationResult, expected_markdown: str
+    condition: rule_conditions.QueueConditionEvaluationResult,
+    expected_markdown: str,
 ) -> None:
     assert condition._as_markdown_element() == expected_markdown
 
@@ -98,7 +99,7 @@ async def test_group_condition_as_markdown() -> None:
                 match=True,
                 label="base=main",
                 is_label_user_input=True,
-            )
+            ),
         ],
     )
     assert condition.as_markdown() == "- [X] `base=main`"
@@ -123,11 +124,11 @@ async def test_condition_tree_as_markdown() -> None:
                             rule_conditions.QueueConditionEvaluationResult.Evaluation(
                                 pull_request=github_types.GitHubPullRequestNumber(1),
                                 match=False,
-                            )
+                            ),
                         ],
-                    )
+                    ),
                 ],
-            )
+            ),
         ],
     )
     expected_markdown = """\
@@ -158,7 +159,7 @@ async def test_condition_dict_serialization() -> None:
                         evaluation_error="Some error",
                         related_checks=["ci"],
                         next_evaluation_at=None,
-                    )
+                    ),
                 ],
             ),
             rule_conditions.QueueConditionEvaluationResult(
@@ -176,9 +177,14 @@ async def test_condition_dict_serialization() -> None:
                         evaluation_error="Some error",
                         related_checks=[],
                         next_evaluation_at=datetime.datetime(
-                            2023, 1, 10, 14, 30, tzinfo=date.UTC
+                            2023,
+                            1,
+                            10,
+                            14,
+                            30,
+                            tzinfo=date.UTC,
                         ),
-                    )
+                    ),
                 ],
             ),
         ],
@@ -209,7 +215,7 @@ async def test_condition_dict_serialization() -> None:
                         "evaluation_error": "Some error",
                         "related_checks": ["ci"],
                         "next_evaluation_at": None,
-                    }
+                    },
                 ],
             },
             {
@@ -238,9 +244,14 @@ async def test_condition_dict_serialization() -> None:
                         "evaluation_error": "Some error",
                         "related_checks": [],
                         "next_evaluation_at": datetime.datetime(
-                            2023, 1, 10, 14, 30, tzinfo=date.UTC
+                            2023,
+                            1,
+                            10,
+                            14,
+                            30,
+                            tzinfo=date.UTC,
                         ),
-                    }
+                    },
                 ],
             },
         ],
@@ -248,7 +259,7 @@ async def test_condition_dict_serialization() -> None:
     }
     assert (
         rule_conditions.QueueConditionEvaluationResult.deserialize(
-            condition.serialized()
+            condition.serialized(),
         )
         == condition
     )
@@ -271,9 +282,9 @@ async def test_condition_dict_serialization_with_default_values() -> None:
                         pull_request=github_types.GitHubPullRequestNumber(1),
                         match=False,
                         evaluation_error="Some error",
-                    )
+                    ),
                 ],
-            )
+            ),
         ],
     )
     condition_dict = typing.cast(
@@ -297,9 +308,9 @@ async def test_condition_dict_serialization_with_default_values() -> None:
                             "pull_request": 1,
                             "match": False,
                             "evaluation_error": "Some error",
-                        }
+                        },
                     ],
-                }
+                },
             ],
             "evaluations": [],
         },
@@ -333,9 +344,9 @@ async def test_condition_copy() -> None:
                         match=False,
                         evaluation_error="Some error",
                         related_checks=["ci"],
-                    )
+                    ),
                 ],
-            )
+            ),
         ],
     )
     condition_copy = condition.copy()
@@ -369,11 +380,16 @@ async def test_condition_json_serialization() -> None:
                         evaluation_error="Some error",
                         related_checks=["ci"],
                         next_evaluation_at=datetime.datetime(
-                            2023, 1, 10, 14, 30, tzinfo=date.UTC
+                            2023,
+                            1,
+                            10,
+                            14,
+                            30,
+                            tzinfo=date.UTC,
                         ),
-                    )
+                    ),
                 ],
-            )
+            ),
         ],
     )
 
@@ -407,11 +423,16 @@ async def test_condition_json_serialization() -> None:
                         evaluation_error="Some error",
                         related_checks=["ci"],
                         next_evaluation_at=datetime.datetime(
-                            2023, 1, 10, 14, 30, tzinfo=date.UTC
+                            2023,
+                            1,
+                            10,
+                            14,
+                            30,
+                            tzinfo=date.UTC,
                         ),
-                    )
+                    ),
                 ],
-            )
+            ),
         ],
         evaluations=[],
     )
@@ -440,7 +461,7 @@ async def test_condition_json_serialization_reversed_schedule() -> None:
                 "start_at": {"hour": 15, "minute": 30},
                 "end_at": {"hour": 23, "minute": 59},
             },
-        ]
+        ],
     }
     expected = rule_conditions.QueueConditionEvaluationJsonSerialized(
         match=True,
@@ -476,7 +497,7 @@ def test_deepdiff() -> None:
                 label="schedule=MON-FRI",
                 is_label_user_input=True,
                 schedule=date.Schedule.from_string("MON-FRI"),
-            )
+            ),
         ],
     )
 
@@ -490,14 +511,17 @@ def test_deepdiff() -> None:
                 label="schedule=MON-FRI",
                 is_label_user_input=True,
                 schedule=date.Schedule.from_string("MON-FRI"),
-            )
+            ),
         ],
     )
 
     # NOTE(charly): deepdiff is used by TrainCar to compare two
     # QueueConditionEvaluationResult, triggering a summary update if necessary
     diff_result = deepdiff.DeepDiff(
-        condition1, condition2, ignore_order=True, exclude_types=[date.Schedule]
+        condition1,
+        condition2,
+        ignore_order=True,
+        exclude_types=[date.Schedule],
     )
     assert diff_result
     assert diff_result.affected_paths

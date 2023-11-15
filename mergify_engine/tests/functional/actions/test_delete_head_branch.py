@@ -33,7 +33,7 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
                     ],
                     "actions": {"delete_head_branch": {}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -85,8 +85,8 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
                         "merged",
                     ],
                     "actions": {"delete_head_branch": None},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -123,8 +123,8 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
                     "name": "delete on merge",
                     "conditions": [],
                     "actions": {"delete_head_branch": None},
-                }
-            ]
+                },
+            ],
         }
         another_branch = self.get_full_branch_name("another")
         await self.setup_repo(yaml.dump(rules), test_branches=[another_branch])
@@ -173,8 +173,8 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
                         "merged",
                     ],
                     "actions": {"delete_head_branch": {"force": True}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

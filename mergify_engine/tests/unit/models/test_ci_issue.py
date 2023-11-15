@@ -17,7 +17,7 @@ async def test_ci_issue_compute_short_id(
     issue = await CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
-            DbPopulator.internal_ref["OneRepo"]
+            DbPopulator.internal_ref["OneRepo"],
         ),
     )
 
@@ -26,7 +26,7 @@ async def test_ci_issue_compute_short_id(
     issue = await CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
-            DbPopulator.internal_ref["OneRepo"]
+            DbPopulator.internal_ref["OneRepo"],
         ),
     )
 
@@ -44,7 +44,7 @@ async def test_ci_issue_compute_short_id(
     issue = await CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
-            DbPopulator.internal_ref["OneRepo"]
+            DbPopulator.internal_ref["OneRepo"],
         ),
     )
 
@@ -58,7 +58,7 @@ async def test_ci_issue_short_id_unicity(
     issue = await CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
-            DbPopulator.internal_ref["OneRepo"]
+            DbPopulator.internal_ref["OneRepo"],
         ),
     )
 
@@ -76,7 +76,7 @@ async def test_ci_issue_short_id_unicity(
     issue = await CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
-            DbPopulator.internal_ref["OneRepo"]
+            DbPopulator.internal_ref["OneRepo"],
         ),
     )
 
@@ -105,20 +105,20 @@ async def test_link_job_to_ci_issue(
                 gh_models.WorkflowJob.log_status
                 == gh_models.WorkflowJobLogStatus.EMBEDDED,
                 gh_models.WorkflowJob.ci_issue_id.is_(None),
-            )
+            ),
         )
     ).scalar_one() == 5
 
     assert (
         await populated_db.execute(
-            sqlalchemy.select(sqlalchemy.func.count()).select_from(CiIssue)
+            sqlalchemy.select(sqlalchemy.func.count()).select_from(CiIssue),
         )
     ).scalar_one() == 0
 
     for embedded_job in await populated_db.scalars(
         sqlalchemy.select(gh_models.WorkflowJob).where(
-            gh_models.WorkflowJob.log_status == gh_models.WorkflowJobLogStatus.EMBEDDED
-        )
+            gh_models.WorkflowJob.log_status == gh_models.WorkflowJobLogStatus.EMBEDDED,
+        ),
     ):
         await CiIssue.link_job_to_ci_issue(populated_db, embedded_job)
 
@@ -130,13 +130,13 @@ async def test_link_job_to_ci_issue(
                 gh_models.WorkflowJob.log_status
                 == gh_models.WorkflowJobLogStatus.EMBEDDED,
                 gh_models.WorkflowJob.ci_issue_id.is_(None),
-            )
+            ),
         )
     ).scalar_one() == 0
 
     assert (
         await populated_db.execute(
-            sqlalchemy.select(sqlalchemy.func.count()).select_from(CiIssue)
+            sqlalchemy.select(sqlalchemy.func.count()).select_from(CiIssue),
         )
     ).scalar_one() == 3
 
@@ -166,8 +166,8 @@ async def test_link_job_to_ci_issue(
             DbPopulator.internal_ref[internal_ref_job],
             options=[
                 orm.joinedload(gh_models.WorkflowJob.ci_issue).selectinload(
-                    CiIssue.jobs
-                )
+                    CiIssue.jobs,
+                ),
             ],
         )
 

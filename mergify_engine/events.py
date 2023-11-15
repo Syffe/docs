@@ -27,7 +27,8 @@ LOG = daiquiri.getLogger(__name__)
 
 EVENT_NAME_TO_MODEL = {
     subclass.__mapper_args__["polymorphic_identity"]: typing.cast(
-        evt_models.Event, subclass
+        evt_models.Event,
+        subclass,
     )
     for subclass in evt_models.Event.__subclasses__()
 }
@@ -51,7 +52,7 @@ async def insert(
         raise EventNotHandled(f"Event '{event}' not supported in database")
 
     async for attempt in database.tenacity_retry_on_pk_integrity_error(
-        (gh_models.GitHubRepository, gh_models.GitHubAccount)
+        (gh_models.GitHubRepository, gh_models.GitHubAccount),
     ):
         with attempt:
             async with database.create_session() as session:

@@ -29,7 +29,7 @@ def _testing_route(request: fastapi.Request) -> fastapi.Response:
             "scheme": request.scope["scheme"],
             "url": str(request.url),
             "url_for": str(request.url_for("easy-route")),
-        }
+        },
     )
 
 
@@ -105,7 +105,9 @@ async def test_http_redirect_to_https(monkeypatch: pytest.MonkeyPatch) -> None:
     ((0, logging.ERROR), (200, logging.INFO)),
 )
 async def test_logging_middleware(
-    status_code: int, log_level: int, caplog: pytest.LogCaptureFixture
+    status_code: int,
+    log_level: int,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     app = fastapi.FastAPI(debug=True)
     app.add_middleware(LoggingMiddleware)
@@ -116,12 +118,15 @@ async def test_logging_middleware(
             raise Exception("boom")  # noqa: TRY002
 
         return starlette.responses.PlainTextResponse(
-            content="", status_code=status_code, headers={"see": "me"}
+            content="",
+            status_code=status_code,
+            headers={"see": "me"},
         )
 
     client = fastapi.testclient.TestClient(app, raise_server_exceptions=False)
     response = client.get(
-        "/", headers={"authorization": "should-be-hidden", "see": "me"}
+        "/",
+        headers={"authorization": "should-be-hidden", "see": "me"},
     )
     if status_code == 0:
         assert response.status_code == 500
@@ -149,7 +154,8 @@ async def test_sudo_middleware() -> None:
     app = fastapi.FastAPI(debug=True)
     app.add_middleware(SudoMiddleware)
     app.add_middleware(
-        starlette.middleware.sessions.SessionMiddleware, secret_key="foobar"
+        starlette.middleware.sessions.SessionMiddleware,
+        secret_key="foobar",
     )
 
     @app.get("/")
@@ -202,7 +208,9 @@ async def test_without_trusted_hosts(monkeypatch: pytest.MonkeyPatch) -> None:
 async def test_with_trusted_hosts(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "HTTP_TO_HTTPS_REDIRECT", False)
     monkeypatch.setattr(
-        settings, "HTTP_TRUSTED_HOSTS", types.StrListFromStrWithComma(["*.mergify.com"])
+        settings,
+        "HTTP_TRUSTED_HOSTS",
+        types.StrListFromStrWithComma(["*.mergify.com"]),
     )
 
     app = web_root.create_app(debug=True)
@@ -227,7 +235,8 @@ async def test_content_length_middleware() -> None:
     @app.post("/")
     async def root(request: fastapi.Request) -> starlette.responses.PlainTextResponse:
         return starlette.responses.PlainTextResponse(
-            content=(await request.body()).decode(), status_code=200
+            content=(await request.body()).decode(),
+            status_code=200,
         )
 
     client = fastapi.testclient.TestClient(app)
@@ -258,7 +267,9 @@ async def test_content_length_middleware() -> None:
 
 async def test_saas_addons_middleware(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        settings, "HTTP_CF_TO_MERGIFY_SECRET", pydantic.SecretStr("so-secret")
+        settings,
+        "HTTP_CF_TO_MERGIFY_SECRET",
+        pydantic.SecretStr("so-secret"),
     )
     monkeypatch.setattr(settings, "HTTP_CF_TO_MERGIFY_HOSTS", ["allowed.example.com"])
     monkeypatch.setattr(settings, "HTTP_GITHUB_TO_MERGIFY_HOST", "github.example.com")
@@ -306,7 +317,8 @@ async def test_saas_addons_middleware(monkeypatch: pytest.MonkeyPatch) -> None:
 
         # wrong GitHub host, wrong header
         response = client.get(
-            "http://hacker.example.com/", headers={"X-Hub-Signature": "noway-it-works"}
+            "http://hacker.example.com/",
+            headers={"X-Hub-Signature": "noway-it-works"},
         )
         assert response.status_code == unexpected_status_code
 

@@ -24,7 +24,7 @@ class EmbarkedPull:
     config: queue.PullQueueConfig
     queued_at: datetime.datetime
     checks_end_metadata: QueueChecksEndMetadata = dataclasses.field(
-        default_factory=lambda: QueueChecksEndMetadata()
+        default_factory=lambda: QueueChecksEndMetadata(),
     )
 
     class Serialized(typing.TypedDict):
@@ -58,7 +58,7 @@ class EmbarkedPull:
             )
 
         checks_end_metadata = QueueChecksEndMetadata(
-            **data.setdefault("checks_end_metadata", {})
+            **data.setdefault("checks_end_metadata", {}),
         )
 
         return cls(
@@ -78,7 +78,8 @@ class EmbarkedPull:
         )
 
     def associate_queue_checks_end_metadata(
-        self, metadata: "signals.EventQueueChecksEndMetadata"
+        self,
+        metadata: "signals.EventQueueChecksEndMetadata",
     ) -> None:
         self.checks_end_metadata = QueueChecksEndMetadata(
             aborted=metadata["aborted"],

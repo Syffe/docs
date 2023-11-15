@@ -23,26 +23,30 @@ async def stream_status() -> None:
     redis_links = redis_utils.RedisLinks(name="async_status")
 
     dedicated_worker_owner_ids = await stream.get_dedicated_worker_owner_ids_from_redis(
-        redis_links.stream
+        redis_links.stream,
     )
 
     def sorter(item: tuple[bytes, float]) -> str:
         org_bucket, score = item
         owner_id = stream_service_base.StreamService.extract_owner(
-            stream_lua.BucketOrgKeyType(org_bucket.decode())
+            stream_lua.BucketOrgKeyType(org_bucket.decode()),
         )
         if owner_id in dedicated_worker_owner_ids:
             return f"dedicated-{owner_id}"
 
         return (
             shared_workers_spawner_service.SharedStreamService.get_shared_worker_id_for(
-                owner_id, global_shared_tasks_count
+                owner_id,
+                global_shared_tasks_count,
             )
         )
 
     org_buckets: list[tuple[bytes, float]] = sorted(
         await redis_links.stream.zrangebyscore(
-            "streams", min=0, max="+inf", withscores=True
+            "streams",
+            min=0,
+            max="+inf",
+            withscores=True,
         ),
         key=sorter,
     )

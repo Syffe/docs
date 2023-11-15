@@ -30,7 +30,8 @@ async def event_handler(
     redis_links: redis.RedisLinks,
 ) -> responses.Response:
     event_type = typing.cast(
-        github_types.GitHubEventType, request.headers["X-GitHub-Event"]
+        github_types.GitHubEventType,
+        request.headers["X-GitHub-Event"],
     )
     event_id = request.headers["X-GitHub-Delivery"]
     data = await request.json()
@@ -48,7 +49,11 @@ async def event_handler(
 
     try:
         await github_events.filter_and_dispatch(
-            background_tasks, redis_links, event_type, event_id, data
+            background_tasks,
+            redis_links,
+            event_type,
+            event_id,
+            data,
         )
     except github_events.IgnoredEvent as ie:
         status_code = 200

@@ -22,7 +22,8 @@ def endpoint_with_testing_router(web_server: fastapi.FastAPI) -> None:
     )
     async def test_exception_rate_limited() -> None:
         raise exceptions.RateLimited(
-            datetime.timedelta(seconds=622, microseconds=280475), 0
+            datetime.timedelta(seconds=622, microseconds=280475),
+            0,
         )
 
     @router.get(
@@ -61,7 +62,8 @@ def generate_endpoints() -> list[str]:
 
 @pytest.mark.parametrize("endpoint", generate_endpoints())
 async def test_handler_exception_rate_limited(
-    web_client: httpx.AsyncClient, endpoint: str
+    web_client: httpx.AsyncClient,
+    endpoint: str,
 ) -> None:
     r = await web_client.get(f"{ endpoint }/testing-endpoint-exception-rate-limited")
     assert r.status_code == 403, r.json()
@@ -70,10 +72,11 @@ async def test_handler_exception_rate_limited(
 
 @pytest.mark.parametrize("endpoint", generate_endpoints())
 async def test_handler_exception_mergify_not_installed(
-    web_client: httpx.AsyncClient, endpoint: str
+    web_client: httpx.AsyncClient,
+    endpoint: str,
 ) -> None:
     r = await web_client.get(
-        f"{ endpoint }/testing-endpoint-exception-mergify-not-installed"
+        f"{ endpoint }/testing-endpoint-exception-mergify-not-installed",
     )
     assert r.status_code == 403, r.json()
     assert (
@@ -84,7 +87,8 @@ async def test_handler_exception_mergify_not_installed(
 
 @pytest.mark.parametrize("endpoint", generate_endpoints())
 async def test_handler_pagination_invalid_cursor(
-    web_client: httpx.AsyncClient, endpoint: str
+    web_client: httpx.AsyncClient,
+    endpoint: str,
 ) -> None:
     r = await web_client.get(f"{ endpoint }/testing-endpoint-pagination-invalid-cursor")
     assert r.status_code == 422, r.json()

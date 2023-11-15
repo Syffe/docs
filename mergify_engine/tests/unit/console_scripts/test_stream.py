@@ -75,7 +75,8 @@ async def test_stream_reschedule(
     planned_for = date.fromtimestamp(score)
 
     result = utils.test_console_scripts(
-        admin_cli.admin_cli, ["stream-reschedule-now", "other"]
+        admin_cli.admin_cli,
+        ["stream-reschedule-now", "other"],
     )
     assert result.exit_code == 0
     assert result.output == "Stream for bucket~other not found\n"
@@ -87,7 +88,8 @@ async def test_stream_reschedule(
     assert planned_for == planned_for_not_rescheduled
 
     result = utils.test_console_scripts(
-        admin_cli.admin_cli, ["stream-reschedule-now", "123"]
+        admin_cli.admin_cli,
+        ["stream-reschedule-now", "123"],
     )
     assert result.exit_code == 0
     assert result.output == "Stream for bucket~123 rescheduled now\n"

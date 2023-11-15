@@ -25,7 +25,10 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
         await self._test_dismiss_reviews(message="Loser")
 
     async def _push_for_synchronize(
-        self, branch: str, filename: str = "unwanted_changes", remote: str = "origin"
+        self,
+        branch: str,
+        filename: str = "unwanted_changes",
+        remote: str = "origin",
     ) -> None:
         open(self.git.repository + f"/{filename}", "wb").close()
         await self.git("add", self.git.repository + f"/{filename}")
@@ -43,10 +46,10 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
                             "message": msg,
                             "approved": True,
                             "changes_requested": ["mergify-test1"],
-                        }
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -89,7 +92,8 @@ Unknown pull request attribute: Loser
 ```""" == check["output"]["summary"]
 
     async def _test_dismiss_reviews(
-        self, message: None | str = None
+        self,
+        message: None | str = None,
     ) -> github_types.GitHubPullRequest:
         rules = {
             "pull_request_rules": [
@@ -100,10 +104,10 @@ Unknown pull request attribute: Loser
                         "dismiss_reviews": {
                             "approved": True,
                             "changes_requested": ["mergify-test1"],
-                        }
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         if message is not None:
@@ -212,10 +216,10 @@ Unknown pull request attribute: Loser
                     "actions": {
                         "dismiss_reviews": {
                             "approved": True,
-                        }
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -257,17 +261,19 @@ Unknown pull request attribute: Loser
                         "dismiss_reviews": {
                             "when": "always",
                             "approved": "from_requested_reviewers",
-                        }
+                        },
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
         await self.create_review(p["number"], "APPROVE")
         await self.create_review(
-            p["number"], "APPROVE", oauth_token=settings.TESTING_ORG_USER_PERSONAL_TOKEN
+            p["number"],
+            "APPROVE",
+            oauth_token=settings.TESTING_ORG_USER_PERSONAL_TOKEN,
         )
 
         self.assertEqual(
@@ -300,8 +306,8 @@ Unknown pull request attribute: Loser
                     "name": "dismiss reviews",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"dismiss_reviews": {}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -315,7 +321,9 @@ Unknown pull request attribute: Loser
             json={"event": "APPROVE", "body": "event: APPROVE"},
         )
         await self.wait_for(
-            "pull_request_review", {"action": "submitted"}, forward_to_engine=False
+            "pull_request_review",
+            {"action": "submitted"},
+            forward_to_engine=False,
         )
 
         await self.run_engine()

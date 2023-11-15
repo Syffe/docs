@@ -40,13 +40,16 @@ FakeTreeT = dict[str, typing.Any]
 # but the file can't load in our type are recursively dependant
 # I hope cpython will fix the issue before releasing __futures__.annotations
 RuleConditionNode = typing.Union[
-    "RuleConditionCombination", "RuleConditionNegation", "RuleCondition"
+    "RuleConditionCombination",
+    "RuleConditionNegation",
+    "RuleCondition",
 ]
 
 ConditionFilterKeyT = abc.Callable[[RuleConditionNode], bool]
 
 EvaluatedConditionNodeT = abc.Mapping[
-    github_types.GitHubPullRequestNumber, RuleConditionNode
+    github_types.GitHubPullRequestNumber,
+    RuleConditionNode,
 ]
 EvaluatedConditionT = abc.Mapping[github_types.GitHubPullRequestNumber, "RuleCondition"]
 EvaluatedConditionGroupT = abc.Mapping[
@@ -81,10 +84,12 @@ class RuleConditionFilters:
         attribute = self.get_attribute_name(with_length_operator=True)
         if attribute.startswith(("check-", "status-")):
             new_tree = self._replace_attribute_name(
-                condition, "check", overwrite_operator="="
+                condition,
+                "check",
+                overwrite_operator="=",
             )
             self.related_checks = filter.ListValuesFilter(
-                typing.cast(filter.TreeT, new_tree)
+                typing.cast(filter.TreeT, new_tree),
             )
         else:
             self.related_checks = None
@@ -100,7 +105,9 @@ class RuleConditionFilters:
 
     @staticmethod
     def _replace_attribute_name(
-        tree: filter.TreeT, new_name: str, overwrite_operator: str | None = None
+        tree: filter.TreeT,
+        new_name: str,
+        overwrite_operator: str | None = None,
     ) -> FakeTreeT:
         negate = "-" in tree
         tree = tree.get("-", tree)
@@ -133,7 +140,8 @@ class RuleCondition:
     evaluation_error: str | None = dataclasses.field(init=False, default=None)
     related_checks: list[str] = dataclasses.field(init=False, default_factory=list)
     next_evaluation_at: datetime.datetime = dataclasses.field(
-        init=False, default=date.DT_MAX
+        init=False,
+        default=date.DT_MAX,
     )
 
     @classmethod
@@ -253,11 +261,12 @@ class RuleConditionGroup(abstract.ABC):
 
     def get_unmatched_summary(self) -> str:
         return self.get_evaluation_result(
-            filter_key=lambda c: not c.match
+            filter_key=lambda c: not c.match,
         ).as_markdown()
 
     def get_evaluation_result(
-        self, filter_key: ConditionFilterKeyT | None = None
+        self,
+        filter_key: ConditionFilterKeyT | None = None,
     ) -> ConditionEvaluationResult:
         return ConditionEvaluationResult.from_rule_condition_node(
             self,  # type:ignore [arg-type]
@@ -304,8 +313,9 @@ class RuleConditionGroup(abstract.ABC):
         cond_cpy = conditions.copy()
         cond_cpy.sort(
             key=functools.partial(
-                RuleConditionGroup._conditions_sort_key, should_match=should_match
-            )
+                RuleConditionGroup._conditions_sort_key,
+                should_match=should_match,
+            ),
         )
         return cond_cpy
 
@@ -319,7 +329,8 @@ class RuleConditionGroup(abstract.ABC):
             conditions = self.conditions
 
         ordered_conditions = RuleConditionGroup._get_conditions_ordered(
-            conditions, should_match=parent_condition_matching
+            conditions,
+            should_match=parent_condition_matching,
         )
 
         for condition in ordered_conditions:
@@ -347,7 +358,7 @@ class RuleConditionGroup(abstract.ABC):
                 {
                     condition.operator: [
                         self.extract_raw_filter_tree(c) for c in condition.conditions
-                    ]
+                    ],
                 },
             )
 
@@ -383,7 +394,7 @@ class RuleConditionCombination(RuleConditionGroup):
 
     async def _get_filter_result(self, obj: filter.GetAttrObjectT) -> bool:
         return await filter.BinaryFilter(
-            typing.cast(filter.TreeT, {self.operator: self.conditions})
+            typing.cast(filter.TreeT, {self.operator: self.conditions}),
         )(obj)
 
     @property
@@ -395,7 +406,8 @@ class RuleConditionCombination(RuleConditionGroup):
         return self._conditions
 
     def extract_raw_filter_tree(
-        self, condition: None | RuleConditionNode = None
+        self,
+        condition: None | RuleConditionNode = None,
     ) -> filter.TreeT:
         if condition is None:
             condition = self
@@ -423,7 +435,8 @@ class RuleConditionNegation(RuleConditionGroup):
     match: bool = dataclasses.field(init=False, default=False)
 
     def __post_init__(
-        self, data: dict[typing.Literal["not"], RuleConditionCombination]
+        self,
+        data: dict[typing.Literal["not"], RuleConditionCombination],
     ) -> None:
         if len(data) != 1:
             raise RuntimeError("Invalid condition")
@@ -432,7 +445,8 @@ class RuleConditionNegation(RuleConditionGroup):
 
     def copy(self) -> RuleConditionNegation:
         return self.__class__(
-            {self.operator: self.condition.copy()}, description=self.description
+            {self.operator: self.condition.copy()},
+            description=self.description,
         )
 
     @property
@@ -445,7 +459,7 @@ class RuleConditionNegation(RuleConditionGroup):
 
     async def _get_filter_result(self, obj: filter.GetAttrObjectT) -> bool:
         return await filter.BinaryFilter(
-            typing.cast(filter.TreeT, {self.operator: self.condition})
+            typing.cast(filter.TreeT, {self.operator: self.condition}),
         )(obj)
 
 
@@ -453,7 +467,8 @@ BRANCH_PROTECTION_CONDITION_TAG = "🛡 GitHub branch protection"
 
 
 def get_mergify_configuration_change_conditions(
-    action_name: str, allow_merging_configuration_change: bool
+    action_name: str,
+    allow_merging_configuration_change: bool,
 ) -> RuleConditionNode:
     description = f":pushpin: {action_name} -> allow_merging_configuration_change setting requirement"
     if allow_merging_configuration_change:
@@ -461,17 +476,17 @@ def get_mergify_configuration_change_conditions(
             {
                 "or": [
                     RuleCondition.from_tree(
-                        {"=": ("mergify-configuration-changed", False)}
+                        {"=": ("mergify-configuration-changed", False)},
                     ),
                     RuleCondition.from_tree(
                         {
                             "=": (
                                 "check-success",
                                 constants.CONFIGURATION_CHANGED_CHECK_NAME,
-                            )
-                        }
+                            ),
+                        },
                     ),
-                ]
+                ],
             },
             description=description,
         )
@@ -483,7 +498,10 @@ def get_mergify_configuration_change_conditions(
 
 
 async def get_branch_protection_conditions(
-    repository: context.Repository, ref: github_types.GitHubRefType, *, strict: bool
+    repository: context.Repository,
+    ref: github_types.GitHubRefType,
+    *,
+    strict: bool,
 ) -> list[RuleConditionNode]:
     protection = await repository.get_branch_protection(ref)
     conditions: list[RuleConditionNode] = []
@@ -495,20 +513,20 @@ async def get_branch_protection_conditions(
                         {
                             "or": [
                                 RuleCondition.from_tree(
-                                    {"=": ("check-success", check)}
+                                    {"=": ("check-success", check)},
                                 ),
                                 RuleCondition.from_tree(
-                                    {"=": ("check-neutral", check)}
+                                    {"=": ("check-neutral", check)},
                                 ),
                                 RuleCondition.from_tree(
-                                    {"=": ("check-skipped", check)}
+                                    {"=": ("check-skipped", check)},
                                 ),
-                            ]
+                            ],
                         },
                         description=BRANCH_PROTECTION_CONDITION_TAG,
                     )
                     for check in protection["required_status_checks"]["contexts"]
-                ]
+                ],
             )
             if (
                 strict
@@ -519,12 +537,12 @@ async def get_branch_protection_conditions(
                     RuleCondition.from_tree(
                         {"=": ("#commits-behind", 0)},
                         description=BRANCH_PROTECTION_CONDITION_TAG,
-                    )
+                    ),
                 )
 
         if (
             required_pull_request_reviews := protection.get(
-                "required_pull_request_reviews"
+                "required_pull_request_reviews",
             )
         ) is not None:
             if (
@@ -535,7 +553,7 @@ async def get_branch_protection_conditions(
                     RuleCondition.from_tree(
                         {"=": ("branch-protection-review-decision", "APPROVED")},
                         description=BRANCH_PROTECTION_CONDITION_TAG,
-                    )
+                    ),
                 )
 
             if required_pull_request_reviews["required_approving_review_count"] > 0:
@@ -548,7 +566,7 @@ async def get_branch_protection_conditions(
                                     required_pull_request_reviews[
                                         "required_approving_review_count"
                                     ],
-                                )
+                                ),
                             },
                             description=BRANCH_PROTECTION_CONDITION_TAG,
                         ),
@@ -556,7 +574,7 @@ async def get_branch_protection_conditions(
                             {"=": ("#changes-requested-reviews-by", 0)},
                             description=BRANCH_PROTECTION_CONDITION_TAG,
                         ),
-                    ]
+                    ],
                 )
 
         if (
@@ -567,7 +585,7 @@ async def get_branch_protection_conditions(
                 RuleCondition.from_tree(
                     {"=": ("#review-threads-unresolved", 0)},
                     description=BRANCH_PROTECTION_CONDITION_TAG,
-                )
+                ),
             )
 
     return conditions
@@ -579,7 +597,7 @@ async def get_depends_on_conditions(ctxt: context.Context) -> list[RuleCondition
     for pull_request_number in ctxt.get_depends_on():
         try:
             dep_ctxt = await ctxt.repository.get_pull_request_context(
-                pull_request_number
+                pull_request_number,
             )
         except http.HTTPNotFound:
             description = f"⛓️ ⚠️ *pull request not found* (#{pull_request_number})"
@@ -591,7 +609,7 @@ async def get_depends_on_conditions(ctxt: context.Context) -> list[RuleCondition
             RuleCondition.from_tree(
                 {"=": ("depends-on", f"#{pull_request_number}")},
                 description=description,
-            )
+            ),
         )
     return conds
 
@@ -627,7 +645,9 @@ async def get_queue_conditions(
             and rule.branch_protection_injection_mode == "queue"
         ):
             branch_protections = await get_branch_protection_conditions(
-                ctxt.repository, ctxt.pull["base"]["ref"], strict=False
+                ctxt.repository,
+                ctxt.pull["base"]["ref"],
+                strict=False,
             )
             if branch_protections:
                 and_conds: list[RuleConditionNode] = branch_protections
@@ -654,7 +674,8 @@ async def get_queue_conditions(
 
 
 BaseRuleConditionsType = typing.TypeVar(
-    "BaseRuleConditionsType", bound="BaseRuleConditions"
+    "BaseRuleConditionsType",
+    bound="BaseRuleConditions",
 )
 
 
@@ -667,11 +688,12 @@ class BaseRuleConditions:
         self.condition = RuleConditionCombination({"and": conditions})
 
     async def __call__(
-        self, objs: list[condition_value_querier.BasePullRequest]
+        self,
+        objs: list[condition_value_querier.BasePullRequest],
     ) -> bool:
         if len(objs) > 1:
             raise RuntimeError(
-                f"{self.__class__.__name__} take only one pull request at a time"
+                f"{self.__class__.__name__} take only one pull request at a time",
             )
         return await self.condition(objs[0])
 
@@ -717,7 +739,8 @@ class PartitionRuleConditions(BaseRuleConditions):
 @dataclasses.dataclass
 class QueueRuleMergeConditions(BaseRuleConditions):
     _evaluated_conditions: dict[
-        github_types.GitHubPullRequestNumber, RuleConditionCombination
+        github_types.GitHubPullRequestNumber,
+        RuleConditionCombination,
     ] = dataclasses.field(default_factory=dict, init=False, repr=False)
     _match: bool = dataclasses.field(init=False, default=False)
     _used: bool = dataclasses.field(init=False, default=False)
@@ -727,7 +750,8 @@ class QueueRuleMergeConditions(BaseRuleConditions):
         return self._match
 
     async def __call__(
-        self, pull_requests: list[condition_value_querier.BasePullRequest]
+        self,
+        pull_requests: list[condition_value_querier.BasePullRequest],
     ) -> bool:
         if self._used:
             raise RuntimeError(f"{self.__class__.__name__} cannot be re-used")
@@ -745,7 +769,8 @@ class QueueRuleMergeConditions(BaseRuleConditions):
 
     @staticmethod
     def _conditions_sort_key(
-        condition: EvaluatedConditionNodeT, should_match: bool
+        condition: EvaluatedConditionNodeT,
+        should_match: bool,
     ) -> tuple[bool, int, typing.Any, typing.Any]:
         """
         Group conditions based on (in order):
@@ -777,13 +802,15 @@ class QueueRuleMergeConditions(BaseRuleConditions):
 
     @staticmethod
     def _get_conditions_ordered(
-        conditions: list[EvaluatedConditionNodeT], should_match: bool
+        conditions: list[EvaluatedConditionNodeT],
+        should_match: bool,
     ) -> list[EvaluatedConditionNodeT]:
         cond_cpy = conditions.copy()
         cond_cpy.sort(
             key=functools.partial(
-                QueueRuleMergeConditions._conditions_sort_key, should_match=should_match
-            )
+                QueueRuleMergeConditions._conditions_sort_key,
+                should_match=should_match,
+            ),
         )
         return cond_cpy
 
@@ -794,10 +821,12 @@ class QueueRuleMergeConditions(BaseRuleConditions):
         return self.condition.get_summary()
 
     def get_evaluation_result(
-        self, display_evaluations: bool | None = None
+        self,
+        display_evaluations: bool | None = None,
     ) -> QueueConditionEvaluationResult:
         return QueueConditionEvaluationResult.from_evaluated_condition_node(
-            self._evaluated_conditions, display_evaluations
+            self._evaluated_conditions,
+            display_evaluations,
         )
 
     def is_faulty(self) -> bool:
@@ -806,7 +835,8 @@ class QueueRuleMergeConditions(BaseRuleConditions):
         return self.condition.is_faulty()
 
     def walk(
-        self, yield_only_failing_conditions: bool = False
+        self,
+        yield_only_failing_conditions: bool = False,
     ) -> abc.Iterator[RuleCondition]:
         if self._used:
             for conditions in self._evaluated_conditions.values():
@@ -814,7 +844,7 @@ class QueueRuleMergeConditions(BaseRuleConditions):
                     yield_only_failing_conditions and not conditions.match
                 ):
                     yield from conditions.walk(
-                        yield_only_failing_conditions=yield_only_failing_conditions
+                        yield_only_failing_conditions=yield_only_failing_conditions,
                     )
         else:
             yield from self.condition.walk()
@@ -830,7 +860,7 @@ class ConditionEvaluationResult:
     related_checks: list[str] = dataclasses.field(default_factory=list)
     next_evaluation_at: datetime.datetime | None = None
     subconditions: list[ConditionEvaluationResult] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
 
     class Serialized(typing_extensions.TypedDict):
@@ -856,7 +886,8 @@ class ConditionEvaluationResult:
                 is_label_user_input=False,
                 description=rule_condition_node.description,
                 subconditions=cls._create_subconditions(
-                    rule_condition_node, filter_key
+                    rule_condition_node,
+                    filter_key,
                 ),
             )
 
@@ -880,7 +911,8 @@ class ConditionEvaluationResult:
         filter_key: ConditionFilterKeyT | None,
     ) -> list[ConditionEvaluationResult]:
         sorted_subconditions = RuleConditionGroup._get_conditions_ordered(
-            condition_group.conditions, condition_group.match
+            condition_group.conditions,
+            condition_group.match,
         )
         return [
             cls.from_rule_condition_node(c, filter_key)
@@ -890,7 +922,8 @@ class ConditionEvaluationResult:
 
     @classmethod
     def deserialize(
-        cls, data: ConditionEvaluationResult.Serialized
+        cls,
+        data: ConditionEvaluationResult.Serialized,
     ) -> ConditionEvaluationResult:
         return cls(
             match=data["match"],
@@ -905,7 +938,8 @@ class ConditionEvaluationResult:
 
     def serialized(self) -> ConditionEvaluationResult.Serialized:
         return typing.cast(
-            ConditionEvaluationResult.Serialized, dataclasses.asdict(self)
+            ConditionEvaluationResult.Serialized,
+            dataclasses.asdict(self),
         )
 
     def as_markdown(self) -> str:
@@ -944,10 +978,10 @@ class QueueConditionEvaluationResult:
     operator: str | None = None
     schedule: date.Schedule | None = None
     subconditions: list[QueueConditionEvaluationResult] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
     evaluations: list[QueueConditionEvaluationResult.Evaluation] = dataclasses.field(
-        default_factory=list
+        default_factory=list,
     )
     display_evaluations_: bool | None = None
 
@@ -1040,7 +1074,8 @@ class QueueConditionEvaluationResult:
 
         if isinstance(first_evaluated_condition, RuleConditionGroup):
             evaluated_condition_group = typing.cast(
-                EvaluatedConditionGroupT, evaluated_condition_node
+                EvaluatedConditionGroupT,
+                evaluated_condition_node,
             )
             global_match = all(c.match for c in evaluated_condition_group.values())
 
@@ -1049,14 +1084,17 @@ class QueueConditionEvaluationResult:
                 label=first_evaluated_condition.operator_label,
                 description=first_evaluated_condition.description,
                 subconditions=cls._create_subconditions(
-                    evaluated_condition_group, global_match, display_evaluations
+                    evaluated_condition_group,
+                    global_match,
+                    display_evaluations,
                 ),
                 is_label_user_input=False,
             )
 
         if isinstance(first_evaluated_condition, RuleCondition):
             evaluated_condition = typing.cast(
-                EvaluatedConditionT, evaluated_condition_node
+                EvaluatedConditionT,
+                evaluated_condition_node,
             )
             schedule = (
                 first_evaluated_condition.value
@@ -1080,7 +1118,7 @@ class QueueConditionEvaluationResult:
             )
 
         raise RuntimeError(
-            f"Unsupported condition type: {type(first_evaluated_condition)}"
+            f"Unsupported condition type: {type(first_evaluated_condition)}",
         )
 
     @classmethod
@@ -1096,7 +1134,8 @@ class QueueConditionEvaluationResult:
             for i, _ in enumerate(first_evaluated_condition.conditions)
         ]
         sorted_subconditions = QueueRuleMergeConditions._get_conditions_ordered(
-            evaluated_subconditions, global_match
+            evaluated_subconditions,
+            global_match,
         )
         return [
             cls.from_evaluated_condition_node(c, display_evaluations)
@@ -1105,7 +1144,8 @@ class QueueConditionEvaluationResult:
 
     @classmethod
     def deserialize(
-        cls, data: QueueConditionEvaluationResult.Serialized
+        cls,
+        data: QueueConditionEvaluationResult.Serialized,
     ) -> QueueConditionEvaluationResult:
         schedule = (
             date.Schedule.deserialize(schedule_data)
@@ -1207,7 +1247,8 @@ class QueueConditionEvaluationResult:
         return text
 
     def get_evaluation_match_from_pr_number(
-        self, pr_number: github_types.GitHubPullRequestNumber
+        self,
+        pr_number: github_types.GitHubPullRequestNumber,
     ) -> bool | None:
         for evaluation in self.evaluations:
             if evaluation.pull_request == pr_number:
@@ -1262,7 +1303,8 @@ def re_evaluate_schedule_conditions(
 
         elif cond.subconditions:
             cond.subconditions = re_evaluate_schedule_conditions(
-                cond.subconditions, from_time
+                cond.subconditions,
+                from_time,
             )
             cond.match = all(c.match for c in cond.subconditions)
 

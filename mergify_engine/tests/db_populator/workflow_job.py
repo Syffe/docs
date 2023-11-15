@@ -21,9 +21,10 @@ class WorkflowJob(DbPopulator):
                     await session.execute(
                         sqlalchemy.select(gh_models.GitHubRepository)
                         .where(
-                            gh_models.GitHubRepository.full_name == "OneAccount/OneRepo"
+                            gh_models.GitHubRepository.full_name
+                            == "OneAccount/OneRepo",
                         )
-                        .limit(1)
+                        .limit(1),
                     )
                 ).scalar_one()
             ).as_github_dict(),
@@ -49,13 +50,13 @@ class WorkflowJob(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         status="completed",
-                    )
+                    ),
                 ],
                 runner_id=1,
             ),
@@ -82,13 +83,13 @@ class WorkflowJob(DbPopulator):
                         conclusion="success",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         status="completed",
-                    )
+                    ),
                 ],
                 runner_id=1,
             ),

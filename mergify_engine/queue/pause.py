@@ -29,7 +29,8 @@ class QueuePause:
 
     # Stored in redis
     reason: str = dataclasses.field(
-        default_factory=str, metadata={"description": "The reason of the queue pause"}
+        default_factory=str,
+        metadata={"description": "The reason of the queue pause"},
     )
     pause_date: datetime.datetime = dataclasses.field(
         default_factory=date.utcnow,
@@ -110,7 +111,9 @@ class QueuePause:
         )
 
         await self._refresh_pulls(
-            queue_rules, partition_rules, source="internal/queue_pause_create"
+            queue_rules,
+            partition_rules,
+            source="internal/queue_pause_create",
         )
 
     async def delete(
@@ -121,11 +124,13 @@ class QueuePause:
         result = bool(
             await self.repository.installation.redis.queue.delete(
                 self._get_redis_key(self.repository),
-            )
+            ),
         )
 
         await self._refresh_pulls(
-            queue_rules, partition_rules, source="internal/queue_pause_delete"
+            queue_rules,
+            partition_rules,
+            source="internal/queue_pause_delete",
         )
 
         return result
@@ -137,7 +142,9 @@ class QueuePause:
         source: str,
     ) -> None:
         async for convoy in merge_train.Convoy.iter_convoys(
-            self.repository, queue_rules, partition_rules
+            self.repository,
+            queue_rules,
+            partition_rules,
         ):
             for train in convoy.iter_trains():
                 await train.refresh_pulls(

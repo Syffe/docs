@@ -17,16 +17,16 @@ depends_on = None
 
 def upgrade() -> None:
     alembic.op.execute(
-        "ALTER TYPE queuechecksabortcode ADD VALUE 'CONFLICT_WITH_BASE_BRANCH';"
+        "ALTER TYPE queuechecksabortcode ADD VALUE 'CONFLICT_WITH_BASE_BRANCH';",
     )
     alembic.op.execute(
-        "ALTER TYPE queuechecksabortcode ADD VALUE 'CONFLICT_WITH_PULL_AHEAD';"
+        "ALTER TYPE queuechecksabortcode ADD VALUE 'CONFLICT_WITH_PULL_AHEAD';",
     )
     alembic.op.execute(
-        "ALTER TYPE queuechecksunqueuecode ADD VALUE 'CONFLICT_WITH_BASE_BRANCH';"
+        "ALTER TYPE queuechecksunqueuecode ADD VALUE 'CONFLICT_WITH_BASE_BRANCH';",
     )
     alembic.op.execute(
-        "ALTER TYPE queuechecksunqueuecode ADD VALUE 'CONFLICT_WITH_PULL_AHEAD';"
+        "ALTER TYPE queuechecksunqueuecode ADD VALUE 'CONFLICT_WITH_PULL_AHEAD';",
     )
 
 

@@ -36,9 +36,9 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_minute=59,
                                 tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
                             ),
-                        )
+                        ),
                     },
-                )
+                ),
             },
         ),
         (
@@ -58,9 +58,9 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_minute=59,
                                 tzinfo=date.UTC,
                             ),
-                        )
+                        ),
                     },
-                )
+                ),
             },
         ),
         ("base:main", {"=": ("base", "main")}),
@@ -72,7 +72,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "=": (
                     "head-repo-full-name",
                     "some-fork/repo",
-                )
+                ),
             },
         ),
         ("-base:foobar", {"-": {"=": ("base", "foobar")}}),
@@ -96,9 +96,9 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_minute=0,
                                 tzinfo=date.UTC,
                             ),
-                        )
+                        ),
                     },
-                )
+                ),
             },
         ),
         (
@@ -118,9 +118,9 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_minute=35,
                                 tzinfo=date.UTC,
                             ),
-                        )
+                        ),
                     },
-                )
+                ),
             },
         ),
         (
@@ -140,9 +140,9 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_minute=59,
                                 tzinfo=date.UTC,
                             ),
-                        )
+                        ),
                     },
-                )
+                ),
             },
         ),
         (
@@ -162,9 +162,9 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_minute=35,
                                 tzinfo=date.UTC,
                             ),
-                        )
+                        ),
                     },
-                )
+                ),
             },
         ),
         (
@@ -184,9 +184,9 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_minute=35,
                                 tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
                             ),
-                        )
+                        ),
                     },
-                )
+                ),
             },
         ),
         ("locked", {"=": ("locked", True)}),
@@ -198,7 +198,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "<": (
                     "commits[0].date_committer-relative",
                     date.RelativeDatetime(now - datetime.timedelta(days=1)),
-                )
+                ),
             },
         ),
         (
@@ -207,7 +207,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "~=": (
                     "commits[-1].author",
                     "hellothere",
-                )
+                ),
             },
         ),
         (
@@ -216,7 +216,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "=": (
                     "commits[-1].commit_verification_verified",
                     True,
-                )
+                ),
             },
         ),
         (
@@ -226,7 +226,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                     "=": (
                         "commits[-1].commit_verification_verified",
                         True,
-                    )
+                    ),
                 },
             },
         ),
@@ -236,7 +236,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "~=": (
                     "commits[*].commit_message",
                     "wip",
-                )
+                ),
             },
         ),
         (
@@ -269,9 +269,9 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 ">=": (
                     "closed-at-relative",
                     date.RelativeDatetime(
-                        now - datetime.timedelta(hours=18, minutes=2)
+                        now - datetime.timedelta(hours=18, minutes=2),
                     ),
-                )
+                ),
             },
         ),
         (
@@ -280,9 +280,9 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 ">": (
                     "merged-at-relative",
                     date.RelativeDatetime(
-                        now - datetime.timedelta(hours=18, minutes=2)
+                        now - datetime.timedelta(hours=18, minutes=2),
                     ),
-                )
+                ),
             },
         ),
         (
@@ -291,7 +291,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "<": (
                     "created-at-relative",
                     date.RelativeDatetime(
-                        now - datetime.timedelta(hours=18, minutes=2)
+                        now - datetime.timedelta(hours=18, minutes=2),
                     ),
                 ),
             },
@@ -302,9 +302,9 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 ">=": (
                     "updated-at-relative",
                     date.RelativeDatetime(
-                        now - datetime.timedelta(hours=18, minutes=2)
+                        now - datetime.timedelta(hours=18, minutes=2),
                     ),
-                )
+                ),
             },
         ),
         (
@@ -313,7 +313,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "<=": (
                     "updated-at-relative",
                     date.RelativeDatetime(now - datetime.timedelta(days=7)),
-                )
+                ),
             },
         ),
         (
@@ -324,7 +324,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                     date.RelativeDatetime(
                         now - datetime.timedelta(days=7, hours=18, minutes=2),
                     ),
-                )
+                ),
             },
         ),
         ("-linear-history", {"-": {"=": ("linear-history", True)}}),
@@ -403,7 +403,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "=": (
                     "sender-permission",
                     github_types.GitHubRepositoryPermission.ADMIN,
-                )
+                ),
             },
         ),
         (
@@ -412,7 +412,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 ">=": (
                     "sender-permission",
                     github_types.GitHubRepositoryPermission.WRITE,
-                )
+                ),
             },
         ),
         (
@@ -421,7 +421,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "!=": (
                     "sender-permission",
                     github_types.GitHubRepositoryPermission.READ,
-                )
+                ),
             },
         ),
         (
@@ -430,9 +430,13 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 ">=": (
                     "current-datetime",
                     datetime.datetime(
-                        2023, 7, 13, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                        2023,
+                        7,
+                        13,
+                        14,
+                        tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
                     ),
-                )
+                ),
             },
         ),
         (
@@ -442,13 +446,21 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                     "current-datetime",
                     date.DateTimeRange(
                         datetime.datetime(
-                            2023, 7, 13, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                            2023,
+                            7,
+                            13,
+                            14,
+                            tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
                         ),
                         datetime.datetime(
-                            2023, 7, 13, 16, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                            2023,
+                            7,
+                            13,
+                            16,
+                            tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
                         ),
                     ),
-                )
+                ),
             },
         ),
         (
@@ -474,7 +486,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                             tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
                         ),
                     ),
-                )
+                ),
             },
         ),
     ),
@@ -611,7 +623,8 @@ def test_is_github_team_name() -> None:
 )
 def test_validate_github_team_name(value: str) -> None:
     with pytest.raises(
-        parser.ConditionParsingError, match=re.escape("Invalid GitHub team name")
+        parser.ConditionParsingError,
+        match=re.escape("Invalid GitHub team name"),
     ):
         parser.validate_github_team_name(value)
 
@@ -622,7 +635,8 @@ def test_validate_github_team_name(value: str) -> None:
 )
 def test_validate_github_login(value: str) -> None:
     with pytest.raises(
-        parser.ConditionParsingError, match=re.escape("Invalid GitHub login")
+        parser.ConditionParsingError,
+        match=re.escape("Invalid GitHub login"),
     ):
         parser.validate_github_login(value)
 

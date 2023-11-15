@@ -23,9 +23,10 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                     await session.execute(
                         sqlalchemy.select(gh_models.GitHubRepository)
                         .where(
-                            gh_models.GitHubRepository.full_name == "OneAccount/OneRepo"
+                            gh_models.GitHubRepository.full_name
+                            == "OneAccount/OneRepo",
                         )
-                        .limit(1)
+                        .limit(1),
                     )
                 ).scalar_one()
             ).as_github_dict(),
@@ -51,13 +52,13 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         status="completed",
-                    )
+                    ),
                 ],
                 runner_id=1,
             ),
@@ -90,13 +91,13 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         status="completed",
-                    )
+                    ),
                 ],
                 runner_id=1,
             ),
@@ -129,13 +130,13 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="success",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         status="completed",
-                    )
+                    ),
                 ],
                 runner_id=1,
             ),
@@ -164,13 +165,13 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         status="completed",
-                    )
+                    ),
                 ],
                 runner_id=1,
             ),
@@ -192,10 +193,10 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 name="A job",
                 workflow_name="unit-test",
                 started_at=github_types.ISODateTimeType(
-                    (date.utcnow() - datetime.timedelta(days=10)).isoformat()
+                    (date.utcnow() - datetime.timedelta(days=10)).isoformat(),
                 ),
                 completed_at=github_types.ISODateTimeType(
-                    (date.utcnow() - datetime.timedelta(days=10)).isoformat()
+                    (date.utcnow() - datetime.timedelta(days=10)).isoformat(),
                 ),
                 conclusion="failure",
                 labels=[],
@@ -207,13 +208,13 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            (date.utcnow() - datetime.timedelta(days=10)).isoformat()
+                            (date.utcnow() - datetime.timedelta(days=10)).isoformat(),
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         status="completed",
-                    )
+                    ),
                 ],
                 runner_id=1,
             ),
@@ -235,9 +236,9 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         sqlalchemy.select(gh_models.GitHubRepository)
                         .where(
                             gh_models.GitHubRepository.full_name
-                            == "colliding-account-1/colliding_repo_name"
+                            == "colliding-account-1/colliding_repo_name",
                         )
-                        .limit(1)
+                        .limit(1),
                     )
                 ).scalar_one()
             ).as_github_dict(),
@@ -262,13 +263,13 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         status="completed",
-                    )
+                    ),
                 ],
                 runner_id=1,
             ),
@@ -303,13 +304,13 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                         conclusion="failure",
                         number=1,
                         started_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         completed_at=github_types.ISODateTimeType(
-                            date.utcnow().isoformat()
+                            date.utcnow().isoformat(),
                         ),
                         status="completed",
-                    )
+                    ),
                 ],
                 runner_id=1,
             ),
@@ -336,8 +337,8 @@ class TestGhaFailedJobsLinkToCissueDataset(DbPopulator):
             job = (
                 await session.execute(
                     sqlalchemy.select(gh_models.WorkflowJob).where(
-                        gh_models.WorkflowJob.id == DbPopulator.internal_ref[ref]
-                    )
+                        gh_models.WorkflowJob.id == DbPopulator.internal_ref[ref],
+                    ),
                 )
             ).scalar_one()
 

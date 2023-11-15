@@ -24,7 +24,9 @@ def upgrade() -> None:
             sqlalchemy.Column("id", sqlalchemy.Integer(), nullable=False),
             sqlalchemy.Column("login", sqlalchemy.String(length=255), nullable=False),
             sqlalchemy.Column(
-                "oauth_access_token", sqlalchemy.String(), nullable=False
+                "oauth_access_token",
+                sqlalchemy.String(),
+                nullable=False,
             ),
             sqlalchemy.PrimaryKeyConstraint("id"),
         )

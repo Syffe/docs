@@ -39,7 +39,7 @@ async def test_new_user(
             "login": github_types.GitHubLogin("user-login"),
             "avatar_url": "http://example.com/logo",
             "type": "User",
-        }
+        },
     )
 
     respx_mock.post(
@@ -57,7 +57,9 @@ async def test_new_user(
     db.expire_all()
 
     result = await db.execute(
-        sqlalchemy.select(github_user.GitHubUser).where(github_user.GitHubUser.id == 42)
+        sqlalchemy.select(github_user.GitHubUser).where(
+            github_user.GitHubUser.id == 42,
+        ),
     )
 
     new_account = result.unique().scalar_one()
@@ -110,7 +112,8 @@ async def test_auth_setup(
 
     if has_repositories is True:
         respx_mock.get("/user/installations/123/repositories").respond(
-            200, json={"repositories": [{"owner": github_api_user}], "total_count": 1}
+            200,
+            json={"repositories": [{"owner": github_api_user}], "total_count": 1},
         )
     elif has_repositories is False:
         respx_mock.get("/user/installations/123/repositories").respond(404)
@@ -146,7 +149,8 @@ async def test_auth_lifecycle(
     respx_mock.get("/user").respond(200, json=dict(github_api_user))
 
     respx_mock.post("https://github.com/login/oauth/access_token").respond(
-        200, json={"access_token": user.oauth_access_token}
+        200,
+        json={"access_token": user.oauth_access_token},
     )
     respx_mock.get("https://api.github.com/repos/foo/bar/pulls").respond(200, json=[])
 
@@ -172,7 +176,8 @@ async def test_auth_lifecycle(
 
     # old cookie doesn't work anymore
     r = await web_client.get(
-        "/front/proxy/github/repos/foo/bar/pulls", cookies=saved_cookies_logged
+        "/front/proxy/github/repos/foo/bar/pulls",
+        cookies=saved_cookies_logged,
     )
     assert r.status_code == 401
 
@@ -181,7 +186,7 @@ async def test_auth_lifecycle(
     assert r.status_code == 401
 
     r = await web_client.get(
-        f"/front/auth/authorized?code=XXXXX&state={query_string['state'][0]}"
+        f"/front/auth/authorized?code=XXXXX&state={query_string['state'][0]}",
     )
     assert r.status_code == 204, r.text
 
@@ -196,13 +201,15 @@ async def test_auth_lifecycle(
 
     # old cookie doesn't work anymore
     r = await web_client.get(
-        "/front/proxy/github/repos/foo/bar/pulls", cookies=saved_cookies_logged
+        "/front/proxy/github/repos/foo/bar/pulls",
+        cookies=saved_cookies_logged,
     )
     assert r.status_code == 401
 
     # mid-session cookie still doesn't work anymore
     r = await web_client.get(
-        "/front/proxy/github/repos/foo/bar/pulls", cookies=saved_cookies_mid_login
+        "/front/proxy/github/repos/foo/bar/pulls",
+        cookies=saved_cookies_mid_login,
     )
     assert r.status_code == 401
 
@@ -213,12 +220,14 @@ async def test_auth_lifecycle(
 
     # mid-session cookie doesn't work
     r = await web_client.get(
-        "/front/proxy/github/repos/foo/bar/pulls", cookies=saved_cookies_mid_login
+        "/front/proxy/github/repos/foo/bar/pulls",
+        cookies=saved_cookies_mid_login,
     )
     assert r.status_code == 401
 
     # old cookie doesn't work
     r = await web_client.get(
-        "/front/proxy/github/repos/foo/bar/pulls", cookies=saved_cookies_logged
+        "/front/proxy/github/repos/foo/bar/pulls",
+        cookies=saved_cookies_logged,
     )
     assert r.status_code == 401

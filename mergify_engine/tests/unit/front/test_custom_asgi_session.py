@@ -29,7 +29,7 @@ async def test_redis_concurrent_sessions() -> None:
             await asyncio.sleep(0.4)
 
         response = starlette.responses.Response(
-            connection.session.get("logged_user", "<not-logged>")
+            connection.session.get("logged_user", "<not-logged>"),
         )
         await response(scope, receive, send)
 
@@ -56,13 +56,13 @@ async def test_redis_concurrent_sessions() -> None:
 
     # This take 1 second
     task_logout = asyncio.create_task(
-        client.get("/logout", cookies={"session": session_id})
+        client.get("/logout", cookies={"session": session_id}),
     )
 
     # Start another slow request in the meantime
     await asyncio.sleep(0.1)
     task_slow = asyncio.create_task(
-        client.get("/slow", cookies={"session": session_id})
+        client.get("/slow", cookies={"session": session_id}),
     )
 
     # Wait both finished

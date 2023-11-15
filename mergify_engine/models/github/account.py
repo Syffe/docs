@@ -50,7 +50,9 @@ class GitHubAccount(models.Base):
         anonymizer_config="anon.random_in_enum(type)",
     )
     application_keys_count: orm.Mapped[int] = orm.mapped_column(
-        nullable=False, server_default="0", anonymizer_config=None
+        nullable=False,
+        server_default="0",
+        anonymizer_config=None,
     )
     avatar_url: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.Text,
@@ -87,7 +89,8 @@ class GitHubAccount(models.Base):
                 login=account["login"],
                 type=account.get("type"),
                 avatar_url=account.get(
-                    "avatar_url", cls.build_avatar_url(account["id"])
+                    "avatar_url",
+                    cls.build_avatar_url(account["id"]),
                 ),
             )
             .on_conflict_do_update(
@@ -104,13 +107,14 @@ class GitHubAccount(models.Base):
         account: github_types.GitHubAccount,
     ) -> GitHubAccount:
         result = await session.execute(
-            sqlalchemy.select(cls).where(cls.id == account["id"])
+            sqlalchemy.select(cls).where(cls.id == account["id"]),
         )
         if (account_obj := result.scalar_one_or_none()) is not None:
             # NOTE(lecrepont01): update attributes
             account_obj.login = account["login"]
             account_obj.avatar_url = account.get(
-                "avatar_url", cls.build_avatar_url(account["id"])
+                "avatar_url",
+                cls.build_avatar_url(account["id"]),
             )
             if "type" in account:
                 account_obj.type = GitHubAccountType(account["type"])

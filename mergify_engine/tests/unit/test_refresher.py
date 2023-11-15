@@ -14,7 +14,7 @@ async def test_refresh_with_pull_request_number(
             "login": github_types.GitHubLogin("foo"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
 
     gh_repo = github_types.GitHubRepository(
@@ -28,7 +28,7 @@ async def test_refresh_with_pull_request_number(
             "default_branch": github_types.GitHubRefType(""),
             "name": github_types.GitHubRepositoryName("test"),
             "private": False,
-        }
+        },
     )
 
     await refresher.send_pull_refresh(

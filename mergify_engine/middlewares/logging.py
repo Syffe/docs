@@ -23,7 +23,10 @@ class LoggingMiddleware:
     app: types.ASGIApp
 
     async def __call__(
-        self, scope: types.Scope, receive: types.Receive, send: types.Send
+        self,
+        scope: types.Scope,
+        receive: types.Receive,
+        send: types.Send,
     ) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)

@@ -121,7 +121,7 @@ async def test_api_auth_no_token(
     recorder: func_conftest.RecorderFixture,
 ) -> None:
     r = await web_client.get(
-        f"/v1/testing-endpoint/{recorder.config['organization_name']}/{recorder.config['repository_name']}"
+        f"/v1/testing-endpoint/{recorder.config['organization_name']}/{recorder.config['repository_name']}",
     )
     assert r.status_code == 403
     assert r.json() == {"detail": "Forbidden"}
@@ -142,7 +142,7 @@ async def test_api_repository_auth_cached(
     )
     respx_mock.route(~mocked_request).pass_through()
     installation_json = await github.get_installation_from_account_id(
-        settings.TESTING_ORGANIZATION_ID
+        settings.TESTING_ORGANIZATION_ID,
     )
     respx_mock.get(
         f"/repos/{recorder.config['organization_name']}/testbar/installation",
@@ -163,7 +163,7 @@ async def test_api_repository_auth_cached(
     assert r.status_code == 200
 
     cache_redis_key = security.get_redis_key_for_repo_access_check(
-        recorder.config["organization_name"]
+        recorder.config["organization_name"],
     )
     raw_redis_value = await redis_links.cache.hget(
         cache_redis_key,
@@ -215,19 +215,19 @@ async def test_api_repository_auth_cached(
                     "account": {
                         "id": recorder.config["organization_id"],
                         "login": recorder.config["organization_name"],
-                    }
+                    },
                 },
                 "repositories_added": [
                     {
                         "full_name": f"{recorder.config['organization_name']}/testbar",
-                    }
+                    },
                 ],
                 "repositories_removed": [
                     {
                         "full_name": f"{recorder.config['organization_name']}/{recorder.config['repository_name']}",
-                    }
+                    },
                 ],
-            }
+            },
         ),
     )
 

@@ -17,7 +17,7 @@ class TestWorkflowAutomationFeatureFlag(base.FunctionalTestBase):
                     ],
                     "actions": {"comment": {"message": "Hello there"}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -48,7 +48,7 @@ class TestWorkflowAutomationFeatureFlag(base.FunctionalTestBase):
                     ],
                     "actions": {"comment": {"message": "Hello there"}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

@@ -45,7 +45,7 @@ class DismissReviewsExecutorConfig(typing.TypedDict):
 
 
 class DismissReviewsExecutor(
-    actions.ActionExecutor["DismissReviewsAction", DismissReviewsExecutorConfig]
+    actions.ActionExecutor["DismissReviewsAction", DismissReviewsExecutorConfig],
 ):
     @classmethod
     async def create(
@@ -64,7 +64,10 @@ class DismissReviewsExecutor(
             message = await pull_attrs.render_template(message_raw)
         except condition_value_querier.RenderTemplateFailure as rmf:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, "Invalid dismiss reviews message", str(rmf)
+                rule,
+                action,
+                "Invalid dismiss reviews message",
+                str(rmf),
             )
 
         return cls(
@@ -76,7 +79,7 @@ class DismissReviewsExecutor(
                     "approved": action.config["approved"],
                     "changes_requested": action.config["changes_requested"],
                     "when": action.config["when"],
-                }
+                },
             ),
         )
 
@@ -100,7 +103,9 @@ class DismissReviewsExecutor(
             last_user_sync = await self.ctxt.synchronized_by_user_at()
             if last_user_sync is None:
                 return check_api.Result(
-                    check_api.Conclusion.SUCCESS, "Updated by Mergify, ignoring", ""
+                    check_api.Conclusion.SUCCESS,
+                    "Updated by Mergify, ignoring",
+                    "",
                 )
         else:
             last_user_sync = None
@@ -132,7 +137,7 @@ class DismissReviewsExecutor(
                     to_dismiss.add(review["id"])
                     to_dismiss_users.add(review["user"]["login"])
                     to_dismiss_user_from_requested_reviewers.add(
-                        review["user"]["login"]
+                        review["user"]["login"],
                     )
             elif isinstance(conf, list):
                 if review["user"] is not None and review["user"]["login"] in conf:
@@ -141,7 +146,9 @@ class DismissReviewsExecutor(
 
         if not to_dismiss:
             return check_api.Result(
-                check_api.Conclusion.SUCCESS, "Nothing to dismiss", ""
+                check_api.Conclusion.SUCCESS,
+                "Nothing to dismiss",
+                "",
             )
 
         if (
@@ -219,7 +226,8 @@ class DismissReviewsAction(actions.Action):
         ),
         voluptuous.Required("message", default=None): types.Jinja2WithNone,
         voluptuous.Required("when", default=WHEN_SYNCHRONIZE): voluptuous.Any(
-            WHEN_SYNCHRONIZE, WHEN_ALWAYS
+            WHEN_SYNCHRONIZE,
+            WHEN_ALWAYS,
         ),
     }
 

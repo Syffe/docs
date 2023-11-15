@@ -51,7 +51,7 @@ async def test_saas_proxy_saas_mode_true(
                 "Mergify-On-Behalf-Of": str(user.id),
             },
         )
-        & ~unwanted_headers
+        & ~unwanted_headers,
     ).respond(200, json={"url": "https://portal.stripe.com/foobar"})
 
     url = "/front/proxy/saas/github-account/42/stripe-create?plan=Essential"
@@ -158,7 +158,7 @@ async def test_saas_subscription_with_saas_mode_true(
                 "Mergify-On-Behalf-Of": str(user.id),
             },
         )
-        & ~unwanted_headers
+        & ~unwanted_headers,
     ).respond(200, json={"plan": {"name": "Essential"}})
 
     url = "/front/proxy/saas/github-account/42/subscription-details"
@@ -185,7 +185,8 @@ async def test_saas_subscription_with_saas_mode_true(
 
     # After cleaning the cache
     await saas.clear_subscription_details_cache(
-        redis_links.cache, github_types.GitHubAccountIdType(42)
+        redis_links.cache,
+        github_types.GitHubAccountIdType(42),
     )
     resp = await web_client.get(url, headers={"dnt": "1"})
     assert resp.json() == {"plan": {"name": "Essential"}}
@@ -298,7 +299,7 @@ async def test_saas_intercom_with_saas_mode_true(
                 "Mergify-On-Behalf-Of": str(user.id),
             },
         )
-        & ~unwanted_headers
+        & ~unwanted_headers,
     ).respond(200, json={"yo": "ya"})
 
     url = "/front/proxy/saas/intercom"
@@ -405,7 +406,7 @@ async def test_saas_proxy_content_type(
     assert resp.status_code == 204, resp.text
 
     assert mocked_request.calls[-1].request.headers["Mergify-On-Behalf-Of"] == str(
-        user.id
+        user.id,
     )
     assert (
         mocked_request.calls[-1].request.headers["Content-Type"]

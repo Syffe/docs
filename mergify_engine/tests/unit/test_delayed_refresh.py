@@ -41,18 +41,22 @@ pull_request_rules:
       label:
         add:
           - conflict
-"""
+""",
     )
     ctxt = await context_getter(0, **pull)
     rule = typing.cast(
-        list[prr_config.EvaluatedPullRequestRule], config["pull_request_rules"].rules
+        list[prr_config.EvaluatedPullRequestRule],
+        config["pull_request_rules"].rules,
     )
     await delayed_refresh.plan_next_refresh(
-        ctxt, rule, condition_value_querier.PullRequest(ctxt)
+        ctxt,
+        rule,
+        condition_value_querier.PullRequest(ctxt),
     )
 
     when = await delayed_refresh._get_current_refresh_datetime(
-        ctxt.repository, ctxt.pull["number"]
+        ctxt.repository,
+        ctxt.pull["number"],
     )
     assert when == expected_refresh
 
@@ -109,7 +113,7 @@ pull_request_rules:
           {% else %}
           We are in working hours, well done
           {% endif %}
-"""
+""",
     )
     with time_travel(start_datetime, tick=False):
         ctxt = await context_getter(0)
@@ -118,11 +122,14 @@ pull_request_rules:
             config["pull_request_rules"].rules,
         )
         await delayed_refresh.plan_next_refresh(
-            ctxt, rule, condition_value_querier.PullRequest(ctxt)
+            ctxt,
+            rule,
+            condition_value_querier.PullRequest(ctxt),
         )
 
         when = await delayed_refresh._get_current_refresh_datetime(
-            ctxt.repository, ctxt.pull["number"]
+            ctxt.repository,
+            ctxt.pull["number"],
         )
         assert when == expected_refresh
 
@@ -183,7 +190,7 @@ pull_request_rules:
           {% else %}
           We are in working hours, well done
           {% endif %}
-"""
+""",
     )
     with time_travel(start_datetime, tick=True):
         ctxt = await context_getter(0, **pull)
@@ -192,11 +199,14 @@ pull_request_rules:
             config["pull_request_rules"].rules,
         )
         await delayed_refresh.plan_next_refresh(
-            ctxt, rule, condition_value_querier.PullRequest(ctxt)
+            ctxt,
+            rule,
+            condition_value_querier.PullRequest(ctxt),
         )
 
         when = await delayed_refresh._get_current_refresh_datetime(
-            ctxt.repository, ctxt.pull["number"]
+            ctxt.repository,
+            ctxt.pull["number"],
         )
         assert when == expected_refresh
 
@@ -217,62 +227,90 @@ pull_request_rules:
       label:
         add:
           - conflict
-"""
+""",
     )
 
     expected_refresh_due_to_rules = datetime.datetime(
-        2021, 9, 22, 15, 0, 1, tzinfo=datetime.UTC
+        2021,
+        9,
+        22,
+        15,
+        0,
+        1,
+        tzinfo=datetime.UTC,
     )
 
     ctxt = await context_getter(0)
     rule = typing.cast(
-        list[prr_config.EvaluatedPullRequestRule], config["pull_request_rules"].rules
+        list[prr_config.EvaluatedPullRequestRule],
+        config["pull_request_rules"].rules,
     )
 
     # No delay refresh yet
     await delayed_refresh.plan_next_refresh(
-        ctxt, rule, condition_value_querier.PullRequest(ctxt), only_if_earlier=True
+        ctxt,
+        rule,
+        condition_value_querier.PullRequest(ctxt),
+        only_if_earlier=True,
     )
     when = await delayed_refresh._get_current_refresh_datetime(
-        ctxt.repository, ctxt.pull["number"]
+        ctxt.repository,
+        ctxt.pull["number"],
     )
     assert when == expected_refresh_due_to_rules
 
     # hardcode a date in the future and ensure it's overriden
     future = datetime.datetime(2021, 9, 23, 00, 0, tzinfo=datetime.UTC)
     await delayed_refresh._set_current_refresh_datetime(
-        ctxt.repository, ctxt.pull["number"], future
+        ctxt.repository,
+        ctxt.pull["number"],
+        future,
     )
     await delayed_refresh.plan_next_refresh(
-        ctxt, rule, condition_value_querier.PullRequest(ctxt), only_if_earlier=True
+        ctxt,
+        rule,
+        condition_value_querier.PullRequest(ctxt),
+        only_if_earlier=True,
     )
     when = await delayed_refresh._get_current_refresh_datetime(
-        ctxt.repository, ctxt.pull["number"]
+        ctxt.repository,
+        ctxt.pull["number"],
     )
     assert when == expected_refresh_due_to_rules
 
     # hardcode a date in the past and ensure it's not overriden
     past = datetime.datetime(2021, 9, 22, 00, 0, tzinfo=datetime.UTC)
     await delayed_refresh._set_current_refresh_datetime(
-        ctxt.repository, ctxt.pull["number"], past
+        ctxt.repository,
+        ctxt.pull["number"],
+        past,
     )
     await delayed_refresh.plan_next_refresh(
-        ctxt, rule, condition_value_querier.PullRequest(ctxt), only_if_earlier=True
+        ctxt,
+        rule,
+        condition_value_querier.PullRequest(ctxt),
+        only_if_earlier=True,
     )
     when = await delayed_refresh._get_current_refresh_datetime(
-        ctxt.repository, ctxt.pull["number"]
+        ctxt.repository,
+        ctxt.pull["number"],
     )
     assert when == past
 
     # Don't use only_if_earlier and it's overriden
     past = datetime.datetime(2021, 9, 22, 00, 0, tzinfo=datetime.UTC)
     await delayed_refresh._set_current_refresh_datetime(
-        ctxt.repository, ctxt.pull["number"], past
+        ctxt.repository,
+        ctxt.pull["number"],
+        past,
     )
     await delayed_refresh.plan_next_refresh(
-        ctxt, rule, condition_value_querier.PullRequest(ctxt)
+        ctxt,
+        rule,
+        condition_value_querier.PullRequest(ctxt),
     )
     when = await delayed_refresh._get_current_refresh_datetime(
-        ctxt.repository, ctxt.pull["number"]
+        ctxt.repository,
+        ctxt.pull["number"],
     )
     assert when == expected_refresh_due_to_rules

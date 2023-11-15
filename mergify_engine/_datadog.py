@@ -26,7 +26,7 @@ class Signal(signals.SignalBase):
                 f"event:{event.partition('action.')[-1]}",
             ]
             sub = repository.installation.subscription.has_feature(
-                subscription.Features.PRIVATE_REPOSITORY
+                subscription.Features.PRIVATE_REPOSITORY,
             )
             # NOTE(Syffe): We detect non-Open Source users in order to
             # not overload the quantity of metrics sent to Datadog

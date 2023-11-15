@@ -31,19 +31,21 @@ async def _get_user(
         # NOTE(sileht): In case an user has been deleted and a new user reused the same login
         # we pick the second one only
         .order_by(github_user.GitHubUser.id.desc())
-        .limit(1)
+        .limit(1),
     )
     return result.unique().scalar_one_or_none()
 
 
 async def _get_user_by_id(
-    session: sqlalchemy.ext.asyncio.AsyncSession, _id: int
+    session: sqlalchemy.ext.asyncio.AsyncSession,
+    _id: int,
 ) -> github_user.GitHubUser | None:
     return await _get_user(session, github_user.GitHubUser.id == _id)
 
 
 async def _get_user_by_login(
-    session: sqlalchemy.ext.asyncio.AsyncSession, login: str
+    session: sqlalchemy.ext.asyncio.AsyncSession,
+    login: str,
 ) -> github_user.GitHubUser | None:
     return await _get_user(session, github_user.GitHubUser.login == login)
 
@@ -99,7 +101,9 @@ router = fastapi.APIRouter(tags=["front"])
     ],
 )
 async def sudo(
-    request: fastapi.Request, login: str, session: database.Session
+    request: fastapi.Request,
+    login: str,
+    session: database.Session,
 ) -> fastapi.Response:
     from_user = imia.impersonation.get_original_user(request).login
 

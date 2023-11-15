@@ -46,7 +46,10 @@ class SaasSecurityMiddleware:
     app: types.ASGIApp
 
     async def __call__(
-        self, scope: types.Scope, receive: types.Receive, send: types.Send
+        self,
+        scope: types.Scope,
+        receive: types.Receive,
+        send: types.Send,
     ) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
@@ -59,7 +62,8 @@ class SaasSecurityMiddleware:
         except UnexpectedConnection:
             if settings.HTTP_SAAS_SECURITY_ENFORCE:
                 response = starlette.responses.Response(
-                    status_code=542, content="Unexpected downstream servers"
+                    status_code=542,
+                    content="Unexpected downstream servers",
                 )
                 await response(scope, receive, send)
                 return

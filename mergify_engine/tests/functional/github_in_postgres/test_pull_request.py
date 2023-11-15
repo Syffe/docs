@@ -25,7 +25,7 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
         async with database.create_session() as session:
             pulls_in_db = (
                 await session.scalars(
-                    sqlalchemy.select(gh_pull_request_mod.PullRequest)
+                    sqlalchemy.select(gh_pull_request_mod.PullRequest),
                 )
             ).all()
             assert len(pulls_in_db) == 1
@@ -34,7 +34,7 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
         p1_labeled = await self.add_label(p1["number"], "test")
         p1_typing_validated = (
             gh_pull_request_mod.PullRequest.type_adapter.validate_python(
-                p1_labeled["pull_request"]
+                p1_labeled["pull_request"],
             )
         )
         await self.run_engine({"github-in-postgres"})
@@ -42,7 +42,7 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
         async with database.create_session() as session:
             pulls_in_db = (
                 await session.scalars(
-                    sqlalchemy.select(gh_pull_request_mod.PullRequest)
+                    sqlalchemy.select(gh_pull_request_mod.PullRequest),
                 )
             ).all()
             assert len(pulls_in_db) == 1
@@ -53,15 +53,16 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
                     "name": "test",
                     "color": anys.ANY_STR,
                     "default": anys.ANY_BOOL,
-                }
+                },
             ]
 
         p1_with_review_req = await self.create_review_request(
-            p1["number"], ["mergify-test1", "mergify-test4"]
+            p1["number"],
+            ["mergify-test1", "mergify-test4"],
         )
         p1_typing_validated = (
             gh_pull_request_mod.PullRequest.type_adapter.validate_python(
-                p1_with_review_req["pull_request"]
+                p1_with_review_req["pull_request"],
             )
         )
         await self.run_engine({"github-in-postgres"})
@@ -69,14 +70,15 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
         async with database.create_session() as session:
             pulls_in_db = (
                 await session.scalars(
-                    sqlalchemy.select(gh_pull_request_mod.PullRequest)
+                    sqlalchemy.select(gh_pull_request_mod.PullRequest),
                 )
             ).all()
             assert len(pulls_in_db) == 1
             assert pulls_in_db[0].as_github_dict() == p1_typing_validated
 
             assert isinstance(
-                pulls_in_db[0].requested_reviewers[0], gh_account_mod.GitHubAccount
+                pulls_in_db[0].requested_reviewers[0],
+                gh_account_mod.GitHubAccount,
             )
             assert pulls_in_db[0].as_github_dict()["requested_reviewers"] == [
                 typing.cast(
@@ -104,12 +106,13 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
 
         p1 = await self.create_pr(forward_event_to_engine=False)
         p1_with_review_req = await self.create_review_request(
-            p1["number"], ["mergify-test1", "mergify-test4"]
+            p1["number"],
+            ["mergify-test1", "mergify-test4"],
         )
 
         p1_typing_validated = (
             gh_pull_request_mod.PullRequest.type_adapter.validate_python(
-                p1_with_review_req["pull_request"]
+                p1_with_review_req["pull_request"],
             )
         )
 
@@ -118,14 +121,15 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
         async with database.create_session() as session:
             pulls_in_db = (
                 await session.scalars(
-                    sqlalchemy.select(gh_pull_request_mod.PullRequest)
+                    sqlalchemy.select(gh_pull_request_mod.PullRequest),
                 )
             ).all()
             assert len(pulls_in_db) == 1
             assert pulls_in_db[0].as_github_dict() == p1_typing_validated
 
             assert isinstance(
-                pulls_in_db[0].requested_reviewers[0], gh_account_mod.GitHubAccount
+                pulls_in_db[0].requested_reviewers[0],
+                gh_account_mod.GitHubAccount,
             )
             assert pulls_in_db[0].as_github_dict()["requested_reviewers"] == [
                 typing.cast(

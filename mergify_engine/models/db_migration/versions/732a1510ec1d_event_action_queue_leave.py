@@ -24,22 +24,31 @@ def upgrade() -> None:
         sqlalchemy.Column("branch", sqlalchemy.Text(), nullable=False),
         sqlalchemy.Column("position", sqlalchemy.Integer(), nullable=False),
         sqlalchemy.Column(
-            "queued_at", sqlalchemy.DateTime(timezone=True), nullable=False
+            "queued_at",
+            sqlalchemy.DateTime(timezone=True),
+            nullable=False,
         ),
         sqlalchemy.Column("partition_name", sqlalchemy.Text(), nullable=True),
         sqlalchemy.Column("merged", sqlalchemy.Boolean(), nullable=False),
         sqlalchemy.Column("reason", sqlalchemy.Text(), nullable=False),
         sqlalchemy.Column(
-            "seconds_waiting_for_schedule", sqlalchemy.Integer(), nullable=False
+            "seconds_waiting_for_schedule",
+            sqlalchemy.Integer(),
+            nullable=False,
         ),
         sqlalchemy.Column(
-            "seconds_waiting_for_freeze", sqlalchemy.Integer(), nullable=False
+            "seconds_waiting_for_freeze",
+            sqlalchemy.Integer(),
+            nullable=False,
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_queue_leave_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_queue_leave_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_queue_leave_pkey")
+            "id",
+            name=alembic.op.f("event_action_queue_leave_pkey"),
         ),
     )
     # ### end Alembic commands ###

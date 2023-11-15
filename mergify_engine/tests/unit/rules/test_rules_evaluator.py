@@ -251,11 +251,11 @@ async def test_pull_request_rules_evaluator(
                 "external_id": "123456",
                 "status": "in_progress",
             },
-        ]
+        ],
     )
     ctxt._caches.pull_statuses.set([])
     ctxt._caches.consolidated_reviews.set(
-        ([], [{"state": "APPROVED", "user": {"login": "foobar"}}])  # type: ignore[typeddict-item]
+        ([], [{"state": "APPROVED", "user": {"login": "foobar"}}]),  # type: ignore[typeddict-item]
     )
     ctxt._caches.review_threads.set([])
     ctxt._caches.review_decision.set("APPROVED")
@@ -271,7 +271,10 @@ async def test_pull_request_rules_evaluator(
     ]
 
     parsed_config = await mergify_conf.get_mergify_config_from_dict(
-        ctxt.repository, rules_mod.YamlSchema(config), "", False
+        ctxt.repository,
+        rules_mod.YamlSchema(config),
+        "",
+        False,
     )
 
     evaluated_rules = await pull_request_rules.PullRequestRulesEvaluator.create(

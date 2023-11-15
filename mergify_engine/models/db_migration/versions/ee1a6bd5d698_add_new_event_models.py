@@ -20,7 +20,10 @@ def upgrade() -> None:
     alembic.op.create_table(
         "event",
         sqlalchemy.Column(
-            "id", sqlalchemy.BigInteger(), autoincrement=True, nullable=False
+            "id",
+            sqlalchemy.BigInteger(),
+            autoincrement=True,
+            nullable=False,
         ),
         sqlalchemy.Column("type", sqlalchemy.Text(), nullable=False),
         sqlalchemy.Column(
@@ -40,25 +43,38 @@ def upgrade() -> None:
         sqlalchemy.PrimaryKeyConstraint("id", name=alembic.op.f("event_pkey")),
     )
     alembic.op.create_index(
-        alembic.op.f("event_pull_request_idx"), "event", ["pull_request"], unique=False
+        alembic.op.f("event_pull_request_idx"),
+        "event",
+        ["pull_request"],
+        unique=False,
     )
     alembic.op.create_index(
-        alembic.op.f("event_type_idx"), "event", ["type"], unique=False
+        alembic.op.f("event_type_idx"),
+        "event",
+        ["type"],
+        unique=False,
     )
     alembic.op.create_table(
         "event_action_assign",
         sqlalchemy.Column("id", sqlalchemy.BigInteger(), nullable=False),
         sqlalchemy.Column(
-            "added", sqlalchemy.ARRAY(sqlalchemy.Text(), dimensions=1), nullable=False
+            "added",
+            sqlalchemy.ARRAY(sqlalchemy.Text(), dimensions=1),
+            nullable=False,
         ),
         sqlalchemy.Column(
-            "removed", sqlalchemy.ARRAY(sqlalchemy.Text(), dimensions=1), nullable=False
+            "removed",
+            sqlalchemy.ARRAY(sqlalchemy.Text(), dimensions=1),
+            nullable=False,
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_assign_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_assign_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_assign_pkey")
+            "id",
+            name=alembic.op.f("event_action_assign_pkey"),
         ),
     )
     alembic.op.create_table(
@@ -83,10 +99,13 @@ def upgrade() -> None:
         sqlalchemy.Column("title", sqlalchemy.Text(), nullable=False),
         sqlalchemy.Column("summary", sqlalchemy.Text(), nullable=False),
         sqlalchemy.ForeignKeyConstraint(
-            ["id"], ["event.id"], name=alembic.op.f("event_action_post_check_id_fkey")
+            ["id"],
+            ["event.id"],
+            name=alembic.op.f("event_action_post_check_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_post_check_pkey")
+            "id",
+            name=alembic.op.f("event_action_post_check_pkey"),
         ),
     )
     alembic.op.add_column(

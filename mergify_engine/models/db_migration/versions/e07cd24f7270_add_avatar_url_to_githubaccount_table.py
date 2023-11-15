@@ -42,8 +42,8 @@ def upgrade() -> None:
         GitHubAccount.update()
         .where(GitHubAccount.c.avatar_url.is_(None))
         .values(
-            avatar_url=f"https://avatars.githubusercontent.com/u/{GitHubAccount.c.id}?v=4"
-        )
+            avatar_url=f"https://avatars.githubusercontent.com/u/{GitHubAccount.c.id}?v=4",
+        ),
     )
 
     alembic.op.alter_column(

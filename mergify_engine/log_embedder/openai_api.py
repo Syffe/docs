@@ -19,7 +19,7 @@ OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN: int = 8191
 
 # NOTE: https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken
 mergeable_ranks_file = str(
-    importlib.resources.files(__package__).joinpath("cl100k_base.tiktoken")
+    importlib.resources.files(__package__).joinpath("cl100k_base.tiktoken"),
 )
 
 with open(mergeable_ranks_file) as f:
@@ -129,7 +129,8 @@ class OpenAIClient(http.AsyncClient):
         )
 
     async def get_chat_completion(
-        self, query: ChatCompletionQuery
+        self,
+        query: ChatCompletionQuery,
     ) -> ChatCompletionObject:
         # NOTE(Kontrolix): nb_free_token_min_for_answer is the minimum number of tokens
         # that we reserve in the max number of tokens of a model since the max number
@@ -147,7 +148,8 @@ class OpenAIClient(http.AsyncClient):
         return typing.cast(ChatCompletionObject, response.json())
 
     async def get_embedding(
-        self, input_data: str | list[int]
+        self,
+        input_data: str | list[int],
     ) -> npt.NDArray[np.float32]:
         response = await self.post(
             "embeddings",

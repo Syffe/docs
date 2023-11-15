@@ -28,15 +28,15 @@ async def _can_repo_use_pull_requests_in_pg(
 
     if repo_id is None and repo_owner is None:
         raise RuntimeError(
-            "`_can_repo_use_pull_requests_in_pg` needs to have either `repo_id`  or `repo_owner` specified"
+            "`_can_repo_use_pull_requests_in_pg` needs to have either `repo_id`  or `repo_owner` specified",
         )
 
     if not repo_owner:
         async with database.create_session() as session:
             repo_obj = await session.scalar(
                 sqlalchemy.select(gh_repo_model.GitHubRepository).where(
-                    gh_repo_model.GitHubRepository.id == repo_id
-                )
+                    gh_repo_model.GitHubRepository.id == repo_id,
+                ),
             )
             if repo_obj is None:
                 LOG.warning(
@@ -81,7 +81,7 @@ async def _find_pull_in_db(
         )
         if repo_id:
             stmt = stmt.where(
-                gh_pull_model.PullRequest.base["repo"]["id"].astext == str(repo_id)
+                gh_pull_model.PullRequest.base["repo"]["id"].astext == str(repo_id),
             )
         else:
             stmt = stmt.where(
@@ -142,7 +142,7 @@ async def get_pull_request(
             )
         else:
             raise RuntimeError(
-                "`get_pull_request` needs to have either `repo_id` or both `repo_owner` and `repo_name` specified"
+                "`get_pull_request` needs to have either `repo_id` or both `repo_owner` and `repo_name` specified",
             )
 
         if pull_from_db is not None:
@@ -152,13 +152,15 @@ async def get_pull_request(
         return typing.cast(
             github_types.GitHubPullRequest,
             await client.item(
-                f"/repositories/{repo_id}/pulls/{pull_number}", **client_kwargs
+                f"/repositories/{repo_id}/pulls/{pull_number}",
+                **client_kwargs,
             ),
         )
 
     return typing.cast(
         github_types.GitHubPullRequest,
         await client.item(
-            f"/repos/{repo_owner}/{repo_name}/pulls/{pull_number}", **client_kwargs
+            f"/repos/{repo_owner}/{repo_name}/pulls/{pull_number}",
+            **client_kwargs,
         ),
     )

@@ -54,7 +54,10 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
                         inputs[ik] = await pull_attrs.render_template(iv)
                     except condition_value_querier.RenderTemplateFailure as rmf:
                         raise actions.InvalidDynamicActionConfiguration(
-                            rule, action, "Invalid input value", str(rmf)
+                            rule,
+                            action,
+                            "Invalid input value",
+                            str(rmf),
                         )
                 else:
                     inputs[ik] = iv
@@ -65,8 +68,8 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
                         "workflow": wf["workflow"],
                         "ref": ref,
                         "inputs": inputs,
-                    }
-                )
+                    },
+                ),
             )
         return workflows
 
@@ -79,7 +82,7 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
     ) -> GhaExecutor:
         try:
             config = GhaExecutorConfig(
-                workflows=await cls._get_workflow_dispatch_config(action, ctxt, rule)
+                workflows=await cls._get_workflow_dispatch_config(action, ctxt, rule),
             )
         except KeyError as e:
             raise actions.InvalidDynamicActionConfiguration(
@@ -134,7 +137,8 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
         )
 
     async def _dispatch_workflow(
-        self, wf: GhaExecutorDispatchConfig
+        self,
+        wf: GhaExecutorDispatchConfig,
     ) -> check_api.Result:
         base_err_msg = f"Failed to dispatch workflow `{wf['workflow']}`. "
 
@@ -174,7 +178,8 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
             self.ctxt.pull["base"]["ref"],
             "action.github_actions",
             signals.EventGithubActionsMetadata(
-                workflow=wf["workflow"], inputs=wf["inputs"]
+                workflow=wf["workflow"],
+                inputs=wf["inputs"],
             ),
             self.rule.get_signal_trigger(),
         )
@@ -196,19 +201,21 @@ class GhaAction(actions.Action):
                 [
                     {
                         voluptuous.Required("workflow"): voluptuous.All(
-                            str, urllib.parse.quote
+                            str,
+                            urllib.parse.quote,
                         ),
                         voluptuous.Required("ref", default=None): voluptuous.Any(
-                            str, None
+                            str,
+                            None,
                         ),
                         voluptuous.Required("inputs", default={}): voluptuous.All(
                             {str: voluptuous.Any(types.Jinja2, int, bool)},
                             voluptuous.Length(max=10),
                         ),
-                    }
+                    },
                 ],
                 voluptuous.Length(max=MAX_DISPATCHED_EVENTS),
-            )
-        }
+            ),
+        },
     }
     executor_class = GhaExecutor

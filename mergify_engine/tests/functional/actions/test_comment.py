@@ -15,8 +15,8 @@ class TestCommentAction(base.FunctionalTestBase):
                     "name": "comment",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"comment": {"message": "WTF?"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -61,8 +61,8 @@ class TestCommentAction(base.FunctionalTestBase):
                     "name": "comment",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"comment": {"message": "Thank you {{author}}"}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -77,7 +77,8 @@ class TestCommentAction(base.FunctionalTestBase):
         )
 
     async def _test_comment_template_error(
-        self, msg: str
+        self,
+        msg: str,
     ) -> github_types.GitHubCheckRun:
         rules = {
             "pull_request_rules": [
@@ -85,8 +86,8 @@ class TestCommentAction(base.FunctionalTestBase):
                     "name": "comment",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"comment": {"message": msg}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -95,7 +96,9 @@ class TestCommentAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            action="completed", status="completed", conclusion="failure"
+            action="completed",
+            status="completed",
+            conclusion="failure",
         )
 
         assert (
@@ -129,10 +132,10 @@ Unknown pull request attribute: hello
                     "name": "comment",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
-                        "comment": {"message": "WTF?", "bot_account": "{{ body }}"}
+                        "comment": {"message": "WTF?", "bot_account": "{{ body }}"},
                     },
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -149,7 +152,7 @@ Unknown pull request attribute: hello
             "defaults": {
                 "actions": {
                     "comment": {},
-                }
+                },
             },
             "pull_request_rules": [
                 {
@@ -158,7 +161,7 @@ Unknown pull request attribute: hello
                     "actions": {
                         "comment": {"message": "Hello World!"},
                     },
-                }
+                },
             ],
         }
 
@@ -168,7 +171,9 @@ Unknown pull request attribute: hello
         await self.run_engine()
 
         await self.wait_for_check_run(
-            action="completed", status="completed", conclusion="success"
+            action="completed",
+            status="completed",
+            conclusion="success",
         )
         comment = await self.wait_for_issue_comment(str(p["number"]), "created")
         assert comment["comment"]["body"] == "Hello World!"
@@ -178,7 +183,7 @@ Unknown pull request attribute: hello
             "defaults": {
                 "actions": {
                     "comment": {"message": "Hello World!"},
-                }
+                },
             },
             "pull_request_rules": [
                 {
@@ -187,7 +192,7 @@ Unknown pull request attribute: hello
                     "actions": {
                         "comment": None,
                     },
-                }
+                },
             ],
         }
 
@@ -197,7 +202,9 @@ Unknown pull request attribute: hello
         await self.run_engine()
 
         await self.wait_for_check_run(
-            action="completed", status="completed", conclusion="success"
+            action="completed",
+            status="completed",
+            conclusion="success",
         )
         comment = await self.wait_for_issue_comment(str(p["number"]), "created")
         assert comment["comment"]["body"] == "Hello World!"
@@ -211,7 +218,7 @@ Unknown pull request attribute: hello
                     "actions": {
                         "comment": None,
                     },
-                }
+                },
             ],
         }
 
@@ -221,7 +228,9 @@ Unknown pull request attribute: hello
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(
-            action="completed", status="completed", conclusion="action_required"
+            action="completed",
+            status="completed",
+            conclusion="action_required",
         )
 
         # Make sure no message have been posted
@@ -233,5 +242,5 @@ Unknown pull request attribute: hello
             == "The current Mergify configuration is invalid"
         )
         assert check_run["check_run"]["output"]["summary"].startswith(
-            "In the rule `comment without default message`, the action `comment` configuration is invalid:\nCannot have `comment` action with no `message"
+            "In the rule `comment without default message`, the action `comment` configuration is invalid:\nCannot have `comment` action with no `message",
         )

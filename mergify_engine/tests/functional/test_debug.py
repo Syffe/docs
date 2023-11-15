@@ -24,10 +24,12 @@ class TestDebugger(base.FunctionalTestBase):
         main_branch_name = self.main_branch_name
 
         async def mocked_get_all(
-            self: typing.Any, pattern_branch_filter: str | None = None
+            self: typing.Any,
+            pattern_branch_filter: str | None = None,
         ) -> list[github_graphql_types.GraphqlBranchProtectionRule]:
             return await real_get_all_branch_protection_rules(
-                self, pattern_branch_filter=main_branch_name
+                self,
+                pattern_branch_filter=main_branch_name,
             )
 
         m = mock.patch.object(
@@ -69,7 +71,7 @@ class TestDebugger(base.FunctionalTestBase):
                 filter(
                     lambda key_value: key_value[0] in graphql_allowed_fields,
                     base_protection.items(),
-                )
+                ),
             ),
         )
 
@@ -79,15 +81,15 @@ class TestDebugger(base.FunctionalTestBase):
         self.expected_branch_protection_rules: list[
             github_graphql_types.GraphqlBranchProtectionRule
         ] = [
-            protection_filtered.copy()  # type: ignore[list-item]
+            protection_filtered.copy(),  # type: ignore[list-item]
         ]
         self.expected_branch_protection_rules[0]["matchingRefs"] = [
             github_graphql_types.GraphqlBranchProtectionRuleMatchingRef(
                 {
                     "name": self.main_branch_name,
                     "prefix": "refs/heads/",
-                }
-            )
+                },
+            ),
         ]
         await self.create_branch_protection_rule(protection_filtered)
 
@@ -102,18 +104,18 @@ class TestDebugger(base.FunctionalTestBase):
                             "or": [
                                 "label=doubt",
                                 "label=suspect",
-                            ]
+                            ],
                         },
                         {
                             "and": [
                                 "number>0",
                                 "title~=pull request",
-                            ]
+                            ],
                         },
                     ],
                     "actions": {"comment": {"message": "WTF?"}},
-                }
-            ]
+                },
+            ],
         }
 
         # Enable one feature to see the debug output
@@ -123,7 +125,7 @@ class TestDebugger(base.FunctionalTestBase):
                 subscription.Features.PUBLIC_REPOSITORY,
                 subscription.Features.SHOW_SPONSOR,
                 subscription.Features.WORKFLOW_AUTOMATION,
-            ]
+            ],
         )
         self.subscription._all_features = [
             "priority_queues",
@@ -351,18 +353,18 @@ mergeable_state: blocked
                             "or": [
                                 "label=doubt",
                                 "label=suspect",
-                            ]
+                            ],
                         },
                         {
                             "and": [
                                 "number>0",
                                 "title~=pull request",
-                            ]
+                            ],
                         },
                     ],
                     "actions": {"comment": {"message": "WTF?"}},
-                }
-            ]
+                },
+            ],
         }
 
         # Enable one feature to see the debug output
@@ -372,7 +374,7 @@ mergeable_state: blocked
                 subscription.Features.PUBLIC_REPOSITORY,
                 subscription.Features.SHOW_SPONSOR,
                 subscription.Features.WORKFLOW_AUTOMATION,
-            ]
+            ],
         )
         self.subscription._all_features = [
             "priority_queues",
@@ -394,7 +396,9 @@ mergeable_state: blocked
         real_graphql_post = github.AsyncGitHubClient.graphql_post
 
         async def graphql_post_mock(  # type: ignore[no-untyped-def]
-            self, query: str, **kwargs: typing.Any
+            self,
+            query: str,
+            **kwargs: typing.Any,
         ) -> typing.Any:
             # NOTE: Return an empty list of fields so that the call made to
             # `Repository.get_graphql_allowed_branch_protection_rules_fields`
@@ -409,7 +413,9 @@ mergeable_state: blocked
         with (
             mock.patch("sys.stdout") as stdout,
             mock.patch.object(
-                github.AsyncGitHubClient, "graphql_post", graphql_post_mock
+                github.AsyncGitHubClient,
+                "graphql_post",
+                graphql_post_mock,
             ),
         ):
             await debug.report(p["html_url"])

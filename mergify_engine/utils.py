@@ -81,7 +81,7 @@ def unicode_truncate(
         placeholder_length = len(placeholder_bytes)
         if placeholder_length > length:
             raise ValueError(
-                "`placeholder` length must be greater or equal to `length`"
+                "`placeholder` length must be greater or equal to `length`",
             )
 
         cut_at = length - placeholder_length
@@ -121,7 +121,9 @@ SupportsLessThanT = typing.TypeVar("SupportsLessThanT", bound=SupportsLessThan)
 
 
 def get_random_choices(
-    random_number: int, population: dict[SupportsLessThanT, int], k: int = 1
+    random_number: int,
+    population: dict[SupportsLessThanT, int],
+    k: int = 1,
 ) -> set[SupportsLessThanT]:
     """Return a random number of item from a population without replacement.
 
@@ -188,7 +190,9 @@ def split_list(remaining: list[_T], part: int) -> abc.Generator[list[_T], None, 
 
 
 MergifyCommentHiddenPayload = typing.TypedDict(
-    "MergifyCommentHiddenPayload", {"merge-queue-pr": bool}, total=False
+    "MergifyCommentHiddenPayload",
+    {"merge-queue-pr": bool},
+    total=False,
 )
 
 
@@ -228,7 +232,10 @@ def strtobool(string: str) -> bool:
 
 
 def string_to_list_of_tuple(
-    v: str, split: int = 2, list_sep: str = ",", tuple_sep: str = ":"
+    v: str,
+    split: int = 2,
+    list_sep: str = ",",
+    tuple_sep: str = ":",
 ) -> list[tuple[str, ...]]:
     d = []
     for tuple_str in v.split(list_sep):
@@ -244,7 +251,8 @@ StringToDictCastT = typing.TypeVar("StringToDictCastT", int, str)
 
 
 def string_to_dict(
-    v: str, _type: type[StringToDictCastT]
+    v: str,
+    _type: type[StringToDictCastT],
 ) -> dict[str, StringToDictCastT]:
     return {
         key: _type(value)
@@ -343,7 +351,7 @@ CoroThrowT = typing.TypeVar("CoroThrowT")
 
 
 def map_tenacity_try_again_to_real_cause(
-    func: abc.Callable[P, abc.Coroutine[CoroSendT, CoroThrowT, CoroReturn]]
+    func: abc.Callable[P, abc.Coroutine[CoroSendT, CoroThrowT, CoroReturn]],
 ) -> abc.Callable[P, abc.Coroutine[CoroSendT, CoroThrowT, CoroReturn]]:
     @functools.wraps(func)
     async def inner_func(*args: P.args, **kwargs: P.kwargs) -> CoroReturn:
@@ -352,7 +360,7 @@ def map_tenacity_try_again_to_real_cause(
         except tenacity.TryAgain as exc:
             if exc.__context__ is None:
                 raise RuntimeError(
-                    "map_tenacity_try_again_to_real_cause must be used only if TryAgain is raise in an except block"
+                    "map_tenacity_try_again_to_real_cause must be used only if TryAgain is raise in an except block",
                 )
             raise exc.__context__
 

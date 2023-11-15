@@ -112,7 +112,9 @@ async def tests_convoy_remove_middle_not_merged_1_partition(
 
     # Merged by someone else
     await convoy.remove_pull(
-        github_types.GitHubPullRequestNumber(2), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(2),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await convoy.refresh_trains()
 
@@ -149,7 +151,9 @@ async def tests_convoy_remove_middle_not_merged_multiple_partitions(
 
     # Merged by someone else
     await convoy.remove_pull(
-        github_types.GitHubPullRequestNumber(2), "", UNQUEUE_REASON_DEQUEUED
+        github_types.GitHubPullRequestNumber(2),
+        "",
+        UNQUEUE_REASON_DEQUEUED,
     )
     await convoy.refresh_trains()
 

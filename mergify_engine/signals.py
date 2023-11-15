@@ -187,7 +187,8 @@ class EventQueueChecksEndMetadata(EventMetadata, total=False):
     abort_code: queue_utils.AbortCodeT | enumerations.QueueChecksAbortCode | None
     abort_reason: str | None
     abort_status: typing.Literal[
-        "DEFINITIVE", "REEMBARKED"
+        "DEFINITIVE",
+        "REEMBARKED",
     ] | enumerations.QueueChecksAbortStatus
     branch: str
     partition_name: partr_config.PartitionRuleName
@@ -209,7 +210,8 @@ class EventQueueChecksStartMetadata(EventMetadata, total=False):
 
 class Actor(typing_extensions.TypedDict):
     type: typing.Literal[
-        "user", "application"
+        "user",
+        "application",
     ] | enumerations.GithubAuthenticatedActorType
     id: int
     name: str

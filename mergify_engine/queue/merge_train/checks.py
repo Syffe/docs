@@ -45,7 +45,7 @@ class QueueCheck:
     url: str | None = dataclasses.field(metadata={"description": "Check detail url"})
     state: CheckStateT = dataclasses.field(metadata={"description": "Check state"})
     avatar_url: str | None = dataclasses.field(
-        metadata={"description": "Check avatar_url"}
+        metadata={"description": "Check avatar_url"},
     )
 
     class Serialized(typing_extensions.TypedDict):
@@ -87,6 +87,6 @@ def get_check_list_ordered(
             CHECK_SORTING.get(c.state, CHECK_SORTING["neutral"]),
             c.name,
             c.description,
-        )
+        ),
     )
     return checks_cpy

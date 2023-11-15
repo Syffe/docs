@@ -21,7 +21,8 @@ class LiveResolutionFailure(Exception):
 
 
 async def _resolve_login(
-    repository: context.Repository, name: str
+    repository: context.Repository,
+    name: str,
 ) -> list[github_types.GitHubLogin]:
     if not name:
         return []
@@ -40,7 +41,7 @@ async def _resolve_login(
         expected_organization = repository.repo["owner"]["login"]
         if organization != expected_organization:
             raise LiveResolutionFailure(
-                f"Team `{name}` is not part of the organization `{expected_organization}`"
+                f"Team `{name}` is not part of the organization `{expected_organization}`",
             )
         team_slug = github_types.GitHubTeamSlug(team_slug)
     else:
@@ -58,7 +59,7 @@ async def _resolve_login(
             detail=e.message,
         )
         raise LiveResolutionFailure(
-            f"Failed retrieve team `{name}`, details: {e.message}"
+            f"Failed retrieve team `{name}`, details: {e.message}",
         )
 
 
@@ -74,8 +75,8 @@ async def teams(
 
     return list(
         itertools.chain.from_iterable(
-            [await _resolve_login(repository, value) for value in values]
-        )
+            [await _resolve_login(repository, value) for value in values],
+        ),
     )
 
 
@@ -91,11 +92,13 @@ _TEAM_ATTRIBUTES = (
 
 
 def configure_filter(
-    repository: context.Repository, f: filter.Filter[filter.FilterResultT]
+    repository: context.Repository,
+    f: filter.Filter[filter.FilterResultT],
 ) -> None:
     for attrib in _TEAM_ATTRIBUTES:
         f.value_expanders[attrib] = functools.partial(  # type: ignore[assignment]
-            teams, repository
+            teams,
+            repository,
         )
 
 

@@ -20,25 +20,25 @@ class DummyDataset(DbPopulator):
         session.add(
             gh_models.GitHubRepository(
                 id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(gh_models.GitHubRepository)
+                    cls.next_id(gh_models.GitHubRepository),
                 ),
                 name=github_types.GitHubRepositoryName("dds_repo1"),
                 owner=account,
                 private=False,
                 archived=False,
-            )
+            ),
         )
 
         session.add(
             gh_models.GitHubRepository(
                 id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(gh_models.GitHubRepository)
+                    cls.next_id(gh_models.GitHubRepository),
                 ),
                 name=github_types.GitHubRepositoryName("dds_repo2"),
                 owner=account,
                 private=False,
                 archived=False,
-            )
+            ),
         )
 
 
@@ -55,25 +55,25 @@ class AnotherDummyDataset(DbPopulator):
         session.add(
             gh_models.GitHubRepository(
                 id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(gh_models.GitHubRepository)
+                    cls.next_id(gh_models.GitHubRepository),
                 ),
                 name=github_types.GitHubRepositoryName("adds_repo1"),
                 owner=account,
                 private=False,
                 archived=False,
-            )
+            ),
         )
 
         session.add(
             gh_models.GitHubRepository(
                 id=github_types.GitHubRepositoryIdType(
-                    cls.next_id(gh_models.GitHubRepository)
+                    cls.next_id(gh_models.GitHubRepository),
                 ),
                 name=github_types.GitHubRepositoryName("adds_repo2"),
                 owner=account,
                 private=False,
                 archived=False,
-            )
+            ),
         )
 
 
@@ -122,8 +122,8 @@ async def test_db_populator_dataset(
     accounts = (
         await db.scalars(
             sqlalchemy.select(gh_models.GitHubAccount).order_by(
-                gh_models.GitHubAccount.login
-            )
+                gh_models.GitHubAccount.login,
+            ),
         )
     ).all()
     assert len(accounts) == len(expected_accounts)
@@ -133,8 +133,8 @@ async def test_db_populator_dataset(
     repos = (
         await db.scalars(
             sqlalchemy.select(gh_models.GitHubRepository).order_by(
-                gh_models.GitHubRepository.name
-            )
+                gh_models.GitHubRepository.name,
+            ),
         )
     ).all()
     assert len(repos) == len(expected_repos)
@@ -155,8 +155,8 @@ async def test_populated_db_with_datasets(
     repos = (
         await populated_db.scalars(
             sqlalchemy.select(gh_models.GitHubRepository).order_by(
-                gh_models.GitHubRepository.name
-            )
+                gh_models.GitHubRepository.name,
+            ),
         )
     ).all()
     assert len(repos) == 2
@@ -178,7 +178,8 @@ async def test_db_populator_dataset_registry_key_unicity() -> None:
             pass
 
     with pytest.raises(
-        ValueError, match="A dataset named 'FooBar' has already been registered."
+        ValueError,
+        match="A dataset named 'FooBar' has already been registered.",
     ):
         create_another_foo_bar()
 
@@ -190,6 +191,7 @@ async def test_db_populator_load_implementation(
         pass
 
     with pytest.raises(
-        NotImplementedError, match="_load must be reimplemented on DbPopulator dataset"
+        NotImplementedError,
+        match="_load must be reimplemented on DbPopulator dataset",
     ):
         await DbPopulator.load(db, {"BrokenDataset"})

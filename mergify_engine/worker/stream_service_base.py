@@ -21,7 +21,8 @@ class StreamService(task.SimpleService):
     retry_handled_exception_forever: bool
 
     _owners_cache: stream.OwnerLoginsCache = dataclasses.field(
-        init=False, default_factory=stream.OwnerLoginsCache
+        init=False,
+        default_factory=stream.OwnerLoginsCache,
     )
 
     def should_handle_owner(
@@ -43,7 +44,9 @@ class StreamService(task.SimpleService):
     ) -> stream_lua.BucketOrgKeyType | None:
         now = time.time()
         for org_bucket in await self.redis_links.stream.zrangebyscore(
-            "streams", min=0, max=now
+            "streams",
+            min=0,
+            max=now,
         ):
             bucket_org_key = stream_lua.BucketOrgKeyType(org_bucket.decode())
             owner_id = self.extract_owner(bucket_org_key)
@@ -52,7 +55,8 @@ class StreamService(task.SimpleService):
 
             has_pull_requests_to_process = (
                 await stream_processor.select_pull_request_bucket(
-                    bucket_org_key, cleanup_if_bucket_is_empty=True
+                    bucket_org_key,
+                    cleanup_if_bucket_is_empty=True,
                 )
             )
             if not has_pull_requests_to_process:
@@ -94,7 +98,9 @@ class StreamService(task.SimpleService):
                         scope.set_tag("gh_owner", owner_login_for_tracing)
                         scope.set_user({"username": owner_login_for_tracing})
                         await stream_processor.consume(
-                            bucket_org_key, owner_id, owner_login_for_tracing
+                            bucket_org_key,
+                            owner_id,
+                            owner_login_for_tracing,
                         )
         finally:
             LOG.debug(

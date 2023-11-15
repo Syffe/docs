@@ -27,7 +27,7 @@ async def test_openai_get_embedding(
                     "object": "embedding",
                     "index": 0,
                     "embedding": OPENAI_EMBEDDING_DATASET["toto"],
-                }
+                },
             ],
             "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
@@ -45,7 +45,7 @@ async def test_openai_chat_completion_models_order() -> None:
     for model in openai_api.OPENAI_CHAT_COMPLETION_MODELS:
         if model["max_tokens"] <= previous_max_tokens:
             pytest.fail(
-                "OPENAI_CHAT_COMPLETION_MODELS list must be ascending sorted according to max_tokens values"
+                "OPENAI_CHAT_COMPLETION_MODELS list must be ascending sorted according to max_tokens values",
             )
         previous_max_tokens = model["max_tokens"]
 
@@ -74,7 +74,7 @@ async def test_get_chat_completion(
                         "content": "Hello! How can I assist you today?",
                     },
                     "finish_reason": "stop",
-                }
+                },
             ],
             "usage": {"prompt_tokens": 8, "completion_tokens": 9, "total_tokens": 17},
         },
@@ -82,7 +82,7 @@ async def test_get_chat_completion(
 
     async with openai_api.OpenAIClient() as client:
         chat_completion = await client.get_chat_completion(
-            openai_api.ChatCompletionQuery("user", "hello", 0)
+            openai_api.ChatCompletionQuery("user", "hello", 0),
         )
 
     assert (
@@ -151,6 +151,7 @@ async def test_get_chat_completion_model() -> None:
         101,
     )
     with pytest.raises(
-        openai_api.OpenAiException, match="No model found to handle 16385 tokens"
+        openai_api.OpenAiException,
+        match="No model found to handle 16385 tokens",
     ):
         model = query.get_chat_completion_model()

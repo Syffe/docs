@@ -45,7 +45,10 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, e.title, e.reason
+                rule,
+                action,
+                e.title,
+                e.reason,
             )
 
         return cls(
@@ -55,7 +58,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
                 {
                     "commit_message": action.config["commit_message"],
                     "bot_account": bot_account,
-                }
+                },
             ),
         )
 
@@ -95,7 +98,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
         elif self.config["commit_message"] == "all-commits":
             message = f"{(await pull_attrs.title)} (#{(await pull_attrs.number)})\n"
             message += "\n\n* ".join(
-                [commit.commit_message for commit in await self.ctxt.commits]
+                [commit.commit_message for commit in await self.ctxt.commits],
             )
 
         elif self.config["commit_message"] == "first-commit":
@@ -112,7 +115,9 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
             await squash_pull.squash(self.ctxt, message, on_behalf=on_behalf)
         except squash_pull.SquashFailure as e:
             return check_api.Result(
-                check_api.Conclusion.FAILURE, "Pull request squash failed", e.reason
+                check_api.Conclusion.FAILURE,
+                "Pull request squash failed",
+                e.reason,
             )
         else:
             await signals.send(
@@ -124,7 +129,9 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
                 self.rule.get_signal_trigger(),
             )
         return check_api.Result(
-            check_api.Conclusion.SUCCESS, "Pull request squashed successfully", ""
+            check_api.Conclusion.SUCCESS,
+            "Pull request squashed successfully",
+            "",
         )
 
     async def cancel(self) -> check_api.Result:
@@ -138,13 +145,15 @@ class SquashAction(actions.Action):
     validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
         voluptuous.Required("commit_message", default="all-commits"): voluptuous.Any(
-            "all-commits", "first-commit", "title+body"
+            "all-commits",
+            "first-commit",
+            "title+body",
         ),
     }
     executor_class = SquashExecutor
 
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
-        {"or": ["sender-permission>=write", "sender={{author}}"]}
+        {"or": ["sender-permission>=write", "sender={{author}}"]},
     ]
 
     @staticmethod

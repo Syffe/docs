@@ -13,8 +13,8 @@ class TestGitHubClient(base.FunctionalTestBase):
                     "name": "simulator",
                     "conditions": [f"base!={self.main_branch_name}"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
         other_branch = self.get_full_branch_name("other")
         await self.setup_repo(yaml.dump(rules), test_branches=[other_branch])
@@ -23,7 +23,7 @@ class TestGitHubClient(base.FunctionalTestBase):
         await self.create_pr(base=other_branch)
 
         installation_json = await github.get_installation_from_login(
-            github_types.GitHubLogin("mergifyio-testing")
+            github_types.GitHubLogin("mergifyio-testing"),
         )
         client = github.aget_client(installation_json)
 
@@ -76,7 +76,10 @@ class TestGitHubClient(base.FunctionalTestBase):
         pulls = [
             p
             async for p in client.items(
-                url, params={"base": "unknown"}, resource_name="pull", page_limit=5
+                url,
+                params={"base": "unknown"},
+                resource_name="pull",
+                page_limit=5,
             )
         ]
         self.assertEqual(0, len(pulls))
@@ -99,8 +102,8 @@ class TestGitHubClient(base.FunctionalTestBase):
                     "name": "fake PR",
                     "conditions": ["base=main"],
                     "actions": {"merge": {}},
-                }
-            ]
+                },
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

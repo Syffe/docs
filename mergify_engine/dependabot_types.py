@@ -14,5 +14,6 @@ DependabotAttributes = typing_extensions.TypedDict(
 
 class DependabotYamlMessageSchema(pydantic.BaseModel):
     updated_dependencies: list[DependabotAttributes] = pydantic.Field(
-        alias="updated-dependencies", min_length=1
+        alias="updated-dependencies",
+        min_length=1,
     )

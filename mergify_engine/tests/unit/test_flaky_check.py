@@ -13,7 +13,8 @@ from mergify_engine.flaky_check.utils import NeedRerunStatus
 
 
 @mock.patch(
-    "mergify_engine.flaky_check.is_gha_job_rerun_needed", new_callable=mock.AsyncMock
+    "mergify_engine.flaky_check.is_gha_job_rerun_needed",
+    new_callable=mock.AsyncMock,
 )
 @pytest.mark.parametrize(
     "mergify_conf, mock_is_gha_job_rerun_needed_value, pending_checks, failure_cheks, flaky_checks_to_rerun",
@@ -29,7 +30,7 @@ from mergify_engine.flaky_check.utils import NeedRerunStatus
                     check_id=5,
                     check_app_slug="github-actions",
                     status=NeedRerunStatus.NEED_RERUN,
-                )
+                ),
             ],
         ),
         (
@@ -43,7 +44,7 @@ from mergify_engine.flaky_check.utils import NeedRerunStatus
                     check_id=5,
                     check_app_slug="github-actions",
                     status=NeedRerunStatus.UNKONWN,
-                )
+                ),
             ],
         ),
         (
@@ -83,7 +84,7 @@ async def test_flaky_check_get_consolidate_data(
     repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
     repo.installation.client.items = mock.MagicMock(__aiter__=[])
     repo.get_mergify_config = mock.AsyncMock(
-        return_value=rules.UserConfigurationSchema(mergify_conf)
+        return_value=rules.UserConfigurationSchema(mergify_conf),
     )
     ctxt = context.Context(repo, a_pull_request)
 

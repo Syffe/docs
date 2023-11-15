@@ -92,11 +92,12 @@ async def embed_log(
 
 
 def get_lines_from_zip(
-    zip_file: zipfile.ZipFile, job: gh_models.WorkflowJob
+    zip_file: zipfile.ZipFile,
+    job: gh_models.WorkflowJob,
 ) -> list[str]:
     if job.failed_step_number is None:
         raise RuntimeError(
-            "get_lines_from_zip() called on a job without failed_step_number"
+            "get_lines_from_zip() called on a job without failed_step_number",
         )
 
     cleaned_job_name = WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP.sub("", job.github_name)
@@ -122,7 +123,7 @@ async def download_failed_step_log(job: gh_models.WorkflowJob) -> list[str]:
     with io.BytesIO() as zip_data:
         async with github.aget_client(installation_json) as client:
             resp = await client.get(
-                f"/repos/{repo.owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs"
+                f"/repos/{repo.owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs",
             )
             zip_data.write(resp.content)
 
@@ -136,7 +137,7 @@ async def download_failure_annotations(job: gh_models.WorkflowJob) -> list[str]:
     installation_json = await github.get_installation_from_login(repo.owner.login)
     async with github.aget_client(installation_json) as client:
         resp = await client.get(
-            f"/repos/{repo.owner.login}/{repo.name}/check-runs/{job.id}/annotations"
+            f"/repos/{repo.owner.login}/{repo.name}/check-runs/{job.id}/annotations",
         )
 
         annotations = []
@@ -215,7 +216,8 @@ async def get_tokenized_cleaned_log(
 
 
 async def set_ci_issue_name(
-    openai_client: openai_api.OpenAIClient, job: gh_models.WorkflowJob
+    openai_client: openai_api.OpenAIClient,
+    job: gh_models.WorkflowJob,
 ) -> None:
     if job.embedded_log is None:
         raise RuntimeError("set_ci_issue_name called with job.embedded_log=None")
@@ -312,7 +314,7 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                 sqlalchemy.and_(
                     gh_models.GitHubRepository.owner_id == gh_models.GitHubAccount.id,
                     gh_models.GitHubAccount.login.in_(
-                        settings.LOG_EMBEDDER_ENABLED_ORGS
+                        settings.LOG_EMBEDDER_ENABLED_ORGS,
                     ),
                 ),
             )
@@ -327,7 +329,7 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                     (
                         gh_models.WorkflowJobLogStatus.GONE,
                         gh_models.WorkflowJobLogStatus.ERROR,
-                    )
+                    ),
                 ),
                 sqlalchemy.or_(
                     wjob.log_embedding.is_(None),
@@ -346,7 +348,7 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
             None
             if settings.LOG_EMBEDDER_GCS_CREDENTIALS is None
             else google_cloud_storage.GoogleCloudStorageClient(
-                settings.LOG_EMBEDDER_GCS_CREDENTIALS
+                settings.LOG_EMBEDDER_GCS_CREDENTIALS,
             )
         )
         async with openai_api.OpenAIClient() as openai_client:

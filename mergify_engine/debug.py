@@ -25,7 +25,8 @@ LOG = daiquiri.getLogger(__name__)
 
 
 async def get_repositories_setuped(
-    token: str, install_id: int
+    token: str,
+    install_id: int,
 ) -> list[github_types.GitHubRepository]:  # pragma: no cover
     repositories = []
     url = f"{settings.GITHUB_REST_API_URL}/user/installations/{install_id}/repositories"
@@ -49,11 +50,15 @@ async def get_repositories_setuped(
 
 
 async def report_worker_status(
-    redis_links: redis_utils.RedisLinks, owner: github_types.GitHubLogin
+    redis_links: redis_utils.RedisLinks,
+    owner: github_types.GitHubLogin,
 ) -> None:
     stream_name = f"stream~{owner}".encode()
     streams: list[tuple[bytes, float]] = await redis_links.stream.zrangebyscore(
-        "streams", min=0, max="+inf", withscores=True
+        "streams",
+        min=0,
+        max="+inf",
+        withscores=True,
     )
 
     for pos, item in enumerate(streams):  # noqa: B007
@@ -74,7 +79,7 @@ async def report_worker_status(
         "* WORKER: Installation queued, "
         f" pos: {pos}/{len(streams)},"
         f" next_run: {planned},"
-        f" attempts: {attempts}"
+        f" attempts: {attempts}",
     )
 
     size = await redis_links.stream.xlen(stream_name)
@@ -94,11 +99,12 @@ async def report_queue(title: str, train: merge_train.Train) -> None:
         return p, (await train.get_config(p))["priority"]
 
     pulls_priorities: dict[github_types.GitHubPullRequestNumber, int] = dict(
-        await asyncio.gather(*(_get_config(p) for p in pulls))
+        await asyncio.gather(*(_get_config(p) for p in pulls)),
     )
 
     for priority, grouped_pulls in itertools.groupby(
-        pulls, key=lambda p: pulls_priorities[p]
+        pulls,
+        key=lambda p: pulls_priorities[p],
     ):
         try:
             fancy_priority = queue.PriorityAliases(priority).name
@@ -133,10 +139,12 @@ async def report(
 
     owner_id = installation_json["account"]["id"]
     cached_sub = await subscription.Subscription.get_subscription(
-        redis_links.cache, owner_id
+        redis_links.cache,
+        owner_id,
     )
     db_sub = await subscription.Subscription._retrieve_subscription_from_db(
-        redis_links.cache, owner_id
+        redis_links.cache,
+        owner_id,
     )
 
     print("* Features (db):")
@@ -147,7 +155,10 @@ async def report(
         print(f"  - {v}")
 
     installation = context.Installation(
-        installation_json, cached_sub, client, redis_links
+        installation_json,
+        cached_sub,
+        client,
+        redis_links,
     )
 
     print(f"* ENGINE-CACHE SUB DETAIL: {cached_sub.reason}")
@@ -187,7 +198,9 @@ async def report(
             return client
 
         async for convoy in merge_train.Convoy.iter_convoys(
-            repository, mergify_config["queue_rules"], mergify_config["partition_rules"]
+            repository,
+            mergify_config["queue_rules"],
+            mergify_config["partition_rules"],
         ):
             for train in convoy.iter_trains():
                 await report_queue("TRAIN", train)
@@ -196,11 +209,11 @@ async def report(
         return client
 
     repository = await installation.get_repository_by_name(
-        github_types.GitHubRepositoryName(repo)
+        github_types.GitHubRepositoryName(repo),
     )
     try:
         ctxt = await repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(int(pull_number))
+            github_types.GitHubPullRequestNumber(int(pull_number)),
         )
     except http.HTTPNotFound:
         print(f"Pull request `{url}` does not exist")
@@ -217,7 +230,7 @@ async def report(
         )
         for train in convoy.iter_trains():
             print(
-                f"* TRAIN (partition:{train.partition_name}): {', '.join([f'#{p}' for p in await train.get_pulls()])}"
+                f"* TRAIN (partition:{train.partition_name}): {', '.join([f'#{p}' for p in await train.get_pulls()])}",
             )
 
     print("* PULL REQUEST:")
@@ -233,15 +246,15 @@ async def report(
     print("* MERGIFY LAST CHECKS:")
     for c in await ctxt.pull_engine_check_runs:
         print(
-            f"[{c['name']}]: {c['conclusion']} | {c['output'].get('title')} | {c['html_url']}"
+            f"[{c['name']}]: {c['conclusion']} | {c['output'].get('title')} | {c['html_url']}",
         )
         print(
             "> "
             + "\n> ".join(
                 ("No Summary",)
                 if c["output"]["summary"] is None
-                else c["output"]["summary"].split("\n")
-            )
+                else c["output"]["summary"].split("\n"),
+            ),
         )
 
     if mergify_config is not None:
@@ -249,7 +262,9 @@ async def report(
         pull_request_rules = mergify_config["pull_request_rules"]
         match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
         summary_title, summary = await actions_runner.gen_summary(
-            ctxt, pull_request_rules, match
+            ctxt,
+            pull_request_rules,
+            match,
         )
         print(f"[Summary]: success | {summary_title}")
         print("> " + "\n> ".join(summary.strip().split("\n")))

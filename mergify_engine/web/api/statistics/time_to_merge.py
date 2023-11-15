@@ -61,7 +61,7 @@ async def get_queue_leave_events(
 
         query_filter.add(
             model.received_at
-            >= at_dt - web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION
+            >= at_dt - web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION,
         )
         query_filter.add(model.received_at <= at_dt)
 
@@ -102,7 +102,8 @@ async def get_time_to_merge_from_partitions_and_queues(
 
     if qstats:
         return web_stat_types.TimeToMergeResponse(
-            mean=statistics.fmean(qstats), median=statistics.median(qstats)
+            mean=statistics.fmean(qstats),
+            median=statistics.median(qstats),
         )
 
     return web_stat_types.TimeToMergeResponse(mean=None, median=None)
@@ -111,11 +112,11 @@ async def get_time_to_merge_from_partitions_and_queues(
 @pydantic.dataclasses.dataclass
 class TimeToMergePerQueue:
     queue_name: qr_config.QueueName = dataclasses.field(
-        metadata={"description": "The name of the queue"}
+        metadata={"description": "The name of the queue"},
     )
 
     time_to_merge: web_stat_types.TimeToMergeResponse = dataclasses.field(
-        metadata={"description": "The time to merge data for the partition's queue"}
+        metadata={"description": "The time to merge data for the partition's queue"},
     )
 
 
@@ -123,14 +124,14 @@ class TimeToMergePerQueue:
 class TimeToMergePerPartition:
     partition_name: partr_config.PartitionRuleName = dataclasses.field(
         metadata={
-            "description": f"The name of the partition, if no partition are used the partition name will be `{partr_config.DEFAULT_PARTITION_NAME}`"
-        }
+            "description": f"The name of the partition, if no partition are used the partition name will be `{partr_config.DEFAULT_PARTITION_NAME}`",
+        },
     )
 
     queues: list[TimeToMergePerQueue] = dataclasses.field(
         metadata={
-            "description": "The time to merge data for each queue in the current partition"
-        }
+            "description": "The time to merge data for each queue in the current partition",
+        },
     )
 
 
@@ -173,7 +174,7 @@ async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
     for event in events.all():
         if event.partition_name is None:
             raise RuntimeError(
-                "It's not possible anymore, but please mypy until we drop eventlogs in Redis code"
+                "It's not possible anymore, but please mypy until we drop eventlogs in Redis code",
             )
 
         if event.partition_name not in data:
@@ -181,7 +182,7 @@ async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
         if event.queue_name not in data[event.partition_name]:
             data[event.partition_name][event.queue_name] = []
         data[event.partition_name][event.queue_name].append(
-            get_time_to_merge_from_event(event)
+            get_time_to_merge_from_event(event),
         )
 
     result: list[TimeToMergePerPartition] = []
@@ -204,14 +205,14 @@ async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
                 TimeToMergePerQueue(
                     queue_name=queue_name,
                     time_to_merge=ttm_data,
-                )
+                ),
             )
 
         result.append(
             TimeToMergePerPartition(
                 partition_name=part_name,
                 queues=queues,
-            )
+            ),
         )
 
     return result

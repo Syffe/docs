@@ -21,7 +21,7 @@ class TestUpdateActionWithoutBot(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=merge"],
                     "actions": {"merge": {}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -60,7 +60,7 @@ class TestUpdateActionWithoutBot(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=merge"],
                     "actions": {"merge": {}, "delete_head_branch": {}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))
@@ -112,7 +112,7 @@ class TestUpdateActionWithBot(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}", "label=merge"],
                     "actions": {"merge": {}},
                 },
-            ]
+            ],
         }
 
         await self.setup_repo(yaml.dump(rules))

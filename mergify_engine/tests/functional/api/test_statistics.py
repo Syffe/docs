@@ -25,7 +25,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -140,7 +140,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -216,7 +216,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -297,7 +297,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -365,7 +365,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                     "allow_inplace_checks": True,
                     "batch_size": 3,
                     "batch_max_wait_time": "0 s",
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -422,7 +422,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         at_timestamp = int(
             (
                 date.utcnow() - (web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION * 2)
-            ).timestamp()
+            ).timestamp(),
         )
 
         r = await self.admin_app.get(
@@ -446,7 +446,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
-                }
+                },
             ],
             "pull_request_rules": [
                 {
@@ -532,7 +532,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                     "batch_size": 3,
                     "batch_max_wait_time": "0 s",
                     "speculative_checks": 1,
-                }
+                },
             ],
             "pull_request_rules": [
                 {

@@ -44,7 +44,9 @@ class RefreshExecutor(actions.ActionExecutor["RefreshCommand", RefreshExecutorCo
             self.rule.get_signal_trigger(),
         )
         return check_api.Result(
-            check_api.Conclusion.SUCCESS, title="Pull request refreshed", summary=""
+            check_api.Conclusion.SUCCESS,
+            title="Pull request refreshed",
+            summary="",
         )
 
     async def cancel(self) -> check_api.Result:
@@ -58,5 +60,5 @@ class RefreshCommand(actions.Action):
     executor_class = RefreshExecutor
 
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
-        {"or": ["sender-permission>=write", "sender={{author}}"]}
+        {"or": ["sender-permission>=write", "sender={{author}}"]},
     ]

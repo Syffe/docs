@@ -17,7 +17,9 @@ depends_on = None
 
 def upgrade() -> None:
     alembic.op.alter_column(
-        "github_user", "oauth_access_token", type_=sqlalchemy.String(length=512)
+        "github_user",
+        "oauth_access_token",
+        type_=sqlalchemy.String(length=512),
     )
 
 

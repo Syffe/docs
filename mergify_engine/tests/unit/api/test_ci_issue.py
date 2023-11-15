@@ -23,13 +23,16 @@ async def test_api_ci_issue_get_ci_issues(
             gh_models.WorkflowJob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
             gh_models.WorkflowJob.log_embedding.isnot(None),
             gh_models.WorkflowJob.ci_issue_id.is_(None),
-        )
+        ),
     ):
         await CiIssue.link_job_to_ci_issue(populated_db, job)
     await populated_db.commit()
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
-        respx_mock, populated_db, web_client, "OneAccount/OneRepo"
+        respx_mock,
+        populated_db,
+        web_client,
+        "OneAccount/OneRepo",
     )
 
     reply = await web_client.get(
@@ -84,7 +87,7 @@ async def test_api_ci_issue_get_ci_issues(
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
-                    }
+                    },
                 ],
                 "id": anys.ANY_INT,
                 "job_name": "A job",
@@ -95,7 +98,10 @@ async def test_api_ci_issue_get_ci_issues(
     }
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
-        respx_mock, populated_db, web_client, "colliding-account-1/colliding_repo_name"
+        respx_mock,
+        populated_db,
+        web_client,
+        "colliding-account-1/colliding_repo_name",
     )
 
     reply = await web_client.get(
@@ -115,7 +121,7 @@ async def test_api_ci_issue_get_ci_issues(
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
-                    }
+                    },
                 ],
                 "id": anys.ANY_INT,
                 "job_name": "A job",
@@ -137,13 +143,16 @@ async def test_api_ci_issue_get_ci_issue(
             gh_models.WorkflowJob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
             gh_models.WorkflowJob.log_embedding.isnot(None),
             gh_models.WorkflowJob.ci_issue_id.is_(None),
-        )
+        ),
     ):
         await CiIssue.link_job_to_ci_issue(populated_db, job)
     await populated_db.commit()
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
-        respx_mock, populated_db, web_client, "OneAccount/OneRepo"
+        respx_mock,
+        populated_db,
+        web_client,
+        "OneAccount/OneRepo",
     )
 
     job = await populated_db.get_one(
@@ -194,7 +203,10 @@ async def test_api_ci_issue_get_ci_issue(
     }
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
-        respx_mock, populated_db, web_client, "colliding-account-1/colliding_repo_name"
+        respx_mock,
+        populated_db,
+        web_client,
+        "colliding-account-1/colliding_repo_name",
     )
 
     reply = await web_client.get(
@@ -247,13 +259,16 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
             gh_models.WorkflowJob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
             gh_models.WorkflowJob.log_embedding.isnot(None),
             gh_models.WorkflowJob.ci_issue_id.is_(None),
-        )
+        ),
     ):
         await CiIssue.link_job_to_ci_issue(populated_db, job)
     await populated_db.commit()
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
-        respx_mock, populated_db, web_client, "OneAccount/OneRepo"
+        respx_mock,
+        populated_db,
+        web_client,
+        "OneAccount/OneRepo",
     )
 
     job = await populated_db.get_one(
@@ -283,7 +298,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
                 "number": 1,
                 "started_at": job.steps[0]["started_at"],
                 "completed_at": job.steps[0]["completed_at"],
-            }
+            },
         ],
         "failed_step_number": 1,
         "started_at": job.started_at.isoformat(),
@@ -321,7 +336,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
                 "number": 1,
                 "started_at": job.steps[0]["started_at"],
                 "completed_at": job.steps[0]["completed_at"],
-            }
+            },
         ],
         "failed_step_number": 1,
         "started_at": job.started_at.isoformat(),
@@ -347,7 +362,10 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     assert reply.status_code == 404
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
-        respx_mock, populated_db, web_client, "colliding-account-1/colliding_repo_name"
+        respx_mock,
+        populated_db,
+        web_client,
+        "colliding-account-1/colliding_repo_name",
     )
 
     reply = await web_client.get(

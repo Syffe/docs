@@ -9,7 +9,8 @@ from mergify_engine.console_scripts import admin_cli
 
 
 async def suspended(
-    verb: typing.Literal["PUT", "DELETE"], owner: github_types.GitHubLogin
+    verb: typing.Literal["PUT", "DELETE"],
+    owner: github_types.GitHubLogin,
 ) -> typing.Any:
     async with github.AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
         installation = typing.cast(

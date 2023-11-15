@@ -48,7 +48,10 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, e.title, e.reason
+                rule,
+                action,
+                e.title,
+                e.reason,
             )
 
         if action.config["message"]:
@@ -57,7 +60,10 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                 message = await pull_attrs.render_template(action.config["message"])
             except condition_value_querier.RenderTemplateFailure as rmf:
                 raise actions.InvalidDynamicActionConfiguration(
-                    rule, action, "Invalid review message", str(rmf)
+                    rule,
+                    action,
+                    "Invalid review message",
+                    str(rmf),
                 )
         else:
             message = None
@@ -70,7 +76,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                     "message": message,
                     "type": action.config["type"],
                     "bot_account": bot_account,
-                }
+                },
             ),
         )
 
@@ -96,7 +102,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
 
         if on_behalf is None:
             mergify_bot = await github.GitHubAppInfo.get_bot(
-                self.ctxt.repository.installation.redis.cache
+                self.ctxt.repository.installation.redis.cache,
             )
             review_user_id = mergify_bot["id"]
         else:
@@ -108,8 +114,8 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                     lambda r: r["user"] is not None
                     and r["user"]["id"] == review_user_id,
                     await self.ctxt.reviews,
-                )
-            )
+                ),
+            ),
         )
 
         if self.config["message"]:
@@ -126,7 +132,9 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
             ):
                 # Already posted
                 return check_api.Result(
-                    check_api.Conclusion.SUCCESS, "Review already posted", ""
+                    check_api.Conclusion.SUCCESS,
+                    "Review already posted",
+                    "",
                 )
 
             if (
@@ -185,7 +193,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                     "review_type": self.config["type"],
                     "reviewer": (review["user"] and review["user"]["login"]) or None,
                     "message": payload.get("body"),
-                }
+                },
             ),
             self.rule.get_signal_trigger(),
         )
@@ -199,7 +207,7 @@ class ReviewAction(actions.Action):
     flags = actions.ActionFlag.ALWAYS_RUN
     validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("type", default="APPROVE"): voluptuous.Any(
-            *github_types.GitHubReviewStateChangeType.__args__  # type: ignore[attr-defined]
+            *github_types.GitHubReviewStateChangeType.__args__,  # type: ignore[attr-defined]
         ),
         voluptuous.Required("message", default=None): types.Jinja2WithNone,
         voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,

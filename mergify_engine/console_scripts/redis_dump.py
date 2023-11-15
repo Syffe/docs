@@ -16,13 +16,14 @@ async def dump_redis_keys(path: str, key: str) -> None:
         pass
 
     async with redis_utils.RedisLinks(
-        name="script_download_redis_cached_keys"
+        name="script_download_redis_cached_keys",
     ) as redis_links:
         async for redis_key in redis_links.cache.scan_iter(key, count=1000):
             click.echo(f"Downloading {redis_key.decode()}...")
             value = await redis_links.cache.get(redis_key)
             if value is not None:
                 with open(
-                    f"{path}/{redis_key.decode().replace('/', '-')}.txt", "wb"
+                    f"{path}/{redis_key.decode().replace('/', '-')}.txt",
+                    "wb",
                 ) as f:
                     f.write(value)

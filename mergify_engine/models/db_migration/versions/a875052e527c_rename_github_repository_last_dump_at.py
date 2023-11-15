@@ -17,7 +17,9 @@ depends_on = None
 
 def upgrade() -> None:
     alembic.op.alter_column(
-        "github_repository", "last_dump_at", new_column_name="last_download_at"
+        "github_repository",
+        "last_dump_at",
+        new_column_name="last_download_at",
     )
 
 

@@ -27,7 +27,8 @@ async def push(
 ) -> None:
     info = ForwardInfo({"body": body, "headers": headers})
     await redis_links.stream.xadd(
-        EVENT_FORWARDER_REDIS_KEY, {"info": msgpack.packb(info)}
+        EVENT_FORWARDER_REDIS_KEY,
+        {"info": msgpack.packb(info)},
     )
 
 

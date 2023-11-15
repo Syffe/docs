@@ -27,7 +27,7 @@ def upgrade() -> None:
         ),
     )
     alembic.op.execute(
-        "UPDATE event_action_queue_checks_start SET start_reason = '' WHERE start_reason IS NULL"
+        "UPDATE event_action_queue_checks_start SET start_reason = '' WHERE start_reason IS NULL",
     )
 
 

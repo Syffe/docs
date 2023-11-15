@@ -51,10 +51,15 @@ def YAML(v: str) -> typing.Any:
         path = []
         if e.problem_mark is not None:
             path.append(
-                types.LineColumnPath(e.problem_mark.line + 1, e.problem_mark.column + 1)
+                types.LineColumnPath(
+                    e.problem_mark.line + 1,
+                    e.problem_mark.column + 1,
+                ),
             )
         raise YAMLInvalid(
-            message="Invalid YAML", error_message=error_message, path=path
+            message="Invalid YAML",
+            error_message=error_message,
+            path=path,
         )
     except yaml.YAMLError as e:
         error_message = str(e)
@@ -62,7 +67,8 @@ def YAML(v: str) -> typing.Any:
 
 
 def UserConfigurationSchema(
-    config: dict[str, typing.Any], partial_validation: bool = False
+    config: dict[str, typing.Any],
+    partial_validation: bool = False,
 ) -> voluptuous.Schema:
     # Circular import
     from mergify_engine.rules.config import partition_rules as partr_config
@@ -78,7 +84,8 @@ def UserConfigurationSchema(
             ),
         ),
         voluptuous.Required(
-            "pull_request_rules", default=[]
+            "pull_request_rules",
+            default=[],
         ): prr_config.get_pull_request_rules_schema(),
         voluptuous.Required(
             "queue_rules",
@@ -88,30 +95,35 @@ def UserConfigurationSchema(
                     "priority_rules": [],
                     "merge_conditions": [],
                     "queue_conditions": [],
-                }
+                },
             ],
         ): qr_config.QueueRulesSchema,
         voluptuous.Required(
-            "partition_rules", default=[]
+            "partition_rules",
+            default=[],
         ): partr_config.PartitionRulesSchema,
         voluptuous.Required("commands_restrictions", default={}): {
             voluptuous.Required(
-                name, default={}
+                name,
+                default={},
             ): prr_config.CommandsRestrictionsSchema(command)
             for name, command in actions_mod.get_commands().items()
         },
         voluptuous.Required(
-            "defaults", default={}
+            "defaults",
+            default={},
         ): defaults_config.get_defaults_schema(),
         voluptuous.Required(
-            "_checks_to_retry_on_failure", default={}
+            "_checks_to_retry_on_failure",
+            default={},
         ): voluptuous.Schema({str: int}),
         voluptuous.Remove("shared"): voluptuous.Any(dict, list, str, int, float, bool),
     }
 
     if not partial_validation:
         schema = voluptuous.And(
-            schema, voluptuous.Coerce(prr_config.FullifyPullRequestRules)
+            schema,
+            voluptuous.Coerce(prr_config.FullifyPullRequestRules),
         )
 
     return voluptuous.Schema(schema)(config)

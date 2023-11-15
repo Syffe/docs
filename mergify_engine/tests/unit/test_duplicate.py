@@ -8,7 +8,10 @@ from mergify_engine.tests.unit import conftest
 
 
 async def fake_get_github_pulls_from_sha(
-    url: str, resource_name: str, page_limit: str, api_version: None | str = None
+    url: str,
+    resource_name: str,
+    page_limit: str,
+    api_version: None | str = None,
 ) -> abc.AsyncGenerator[github_types.GitHubPullRequest, None]:
     pr = github_types.GitHubPullRequest(
         {
@@ -23,7 +26,7 @@ async def fake_get_github_pulls_from_sha(
                     "id": github_types.GitHubAccountIdType(0),
                     "type": "User",
                     "avatar_url": "",
-                }
+                },
             ),
             "labels": [],
             "merged": False,
@@ -56,7 +59,7 @@ async def fake_get_github_pulls_from_sha(
                         "id": github_types.GitHubAccountIdType(0),
                         "type": "User",
                         "avatar_url": "",
-                    }
+                    },
                 ),
                 "ref": github_types.GitHubRefType("main"),
                 "sha": github_types.SHAType("the-base-sha"),
@@ -68,7 +71,7 @@ async def fake_get_github_pulls_from_sha(
                             "id": github_types.GitHubAccountIdType(0),
                             "type": "User",
                             "avatar_url": "",
-                        }
+                        },
                     ),
                     "archived": False,
                     "url": "",
@@ -89,7 +92,7 @@ async def fake_get_github_pulls_from_sha(
                         "id": github_types.GitHubAccountIdType(0),
                         "type": "User",
                         "avatar_url": "",
-                    }
+                    },
                 ),
                 "repo": {
                     "id": github_types.GitHubRepositoryIdType(1),
@@ -99,7 +102,7 @@ async def fake_get_github_pulls_from_sha(
                             "id": github_types.GitHubAccountIdType(0),
                             "type": "User",
                             "avatar_url": "",
-                        }
+                        },
                     ),
                     "archived": False,
                     "url": "",
@@ -110,7 +113,7 @@ async def fake_get_github_pulls_from_sha(
                     "private": False,
                 },
             },
-        }
+        },
     )
     if url.endswith("commits/rebased_c1/pulls"):
         yield pr
@@ -164,7 +167,7 @@ async def test_get_commits_to_cherry_pick_rebase(
     ctxt.repository.installation.client = client
 
     base_branch = github_types.GitHubBranchCommitParent(
-        {"sha": github_types.SHAType("base_branch")}
+        {"sha": github_types.SHAType("base_branch")},
     )
     rebased_c1 = github_types.GitHubBranchCommit(
         {
@@ -198,7 +201,7 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "type": "User",
                 "avatar_url": "",
             },
-        }
+        },
     )
     rebased_c2 = github_types.GitHubBranchCommit(
         {
@@ -232,11 +235,12 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "type": "User",
                 "avatar_url": "",
             },
-        }
+        },
     )
 
     async def fake_get_github_commit_from_sha(
-        url: str, api_version: None | str = None
+        url: str,
+        api_version: None | str = None,
     ) -> github_types.GitHubBranchCommit:
         if url.endswith("/commits/rebased_c1"):
             return rebased_c1

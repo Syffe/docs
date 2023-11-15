@@ -66,7 +66,8 @@ if typing.TYPE_CHECKING:
 LOG = daiquiri.getLogger(__name__)
 FAKE_DATA = "whatdataisthat"
 FAKE_HMAC = utils.compute_hmac(
-    FAKE_DATA.encode("utf8"), settings.GITHUB_WEBHOOK_SECRET.get_secret_value()
+    FAKE_DATA.encode("utf8"),
+    settings.GITHUB_WEBHOOK_SECRET.get_secret_value(),
 )
 
 
@@ -142,7 +143,7 @@ class GitterRecorder(gitter.Gitter):
                             "output": e.output,
                         },
                         "out": "",
-                    }
+                    },
                 )
                 raise
             else:
@@ -151,7 +152,7 @@ class GitterRecorder(gitter.Gitter):
                         "args": self.prepare_args(args),
                         "kwargs": self.prepare_kwargs(kwargs),
                         "out": output,
-                    }
+                    },
                 )
             return output
 
@@ -160,10 +161,10 @@ class GitterRecorder(gitter.Gitter):
             raise self._create_git_exception(r["exc"]["returncode"], r["exc"]["output"])
 
         assert r["args"] == self.prepare_args(
-            args
+            args,
         ), f'{r["args"]} != {self.prepare_args(args)}'
         assert r["kwargs"] == self.prepare_kwargs(
-            kwargs
+            kwargs,
         ), f'{r["kwargs"]} != {self.prepare_kwargs(kwargs)}'
         return r["out"]
 
@@ -193,10 +194,12 @@ class GitterRecorder(gitter.Gitter):
 
 class MissingEventTimeout(Exception):
     def __init__(
-        self, event_type: github_types.GitHubEventType, expected_payload: typing.Any
+        self,
+        event_type: github_types.GitHubEventType,
+        expected_payload: typing.Any,
     ) -> None:
         super().__init__(
-            f"Never got event `{event_type}` with payload `{expected_payload}` (timeout)"
+            f"Never got event `{event_type}` with payload `{expected_payload}` (timeout)",
         )
 
 
@@ -270,7 +273,7 @@ class EventReader:
                         "event_type": event_type,
                         "payload": expected_payload,
                         "test_id": test_id,
-                    }
+                    },
                 ],
                 forward_to_engine,
             )
@@ -301,7 +304,8 @@ class EventReader:
         for idx, event in enumerate(self._events_already_received):
             for expected_event_data in expected_events:
                 if event["type"] == expected_event_data["event_type"] and self._match(
-                    event["payload"], expected_event_data["payload"]
+                    event["payload"],
+                    expected_event_data["payload"],
                 ):
                     LOG.log(
                         42,
@@ -313,7 +317,7 @@ class EventReader:
                     )
 
                     received_events.append(
-                        EventReceived(event_type=event["type"], event=event["payload"])
+                        EventReceived(event_type=event["type"], event=event["payload"]),
                     )
                     expected_events.remove(expected_event_data)
 
@@ -354,10 +358,11 @@ class EventReader:
 
             for expected_event_data in expected_events:
                 if event["type"] == expected_event_data["event_type"] and self._match(
-                    event["payload"], expected_event_data["payload"]
+                    event["payload"],
+                    expected_event_data["payload"],
                 ):
                     received_events.append(
-                        EventReceived(event_type=event["type"], event=event["payload"])
+                        EventReceived(event_type=event["type"], event=event["payload"]),
                     )
                     expected_events.remove(expected_event_data)
                     # NOTE(Kontrolix): Restart timer every time we receive an
@@ -587,14 +592,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 constants,
                 "NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST",
                 datetime.timedelta(seconds=0),
-            )
+            ),
         )
         self.register_mock(
             mock.patch.object(
                 constants,
                 "MIN_DELAY_BETWEEN_SAME_PULL_REQUEST",
                 datetime.timedelta(seconds=0),
-            )
+            ),
         )
 
         self._graphql_repository_id: str | None = None
@@ -605,14 +610,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self.git_counter: int = 0
 
         self.register_mock(
-            mock.patch.object(branch_updater.gitter, "Gitter", self.get_gitter)  # type: ignore[attr-defined]
+            mock.patch.object(branch_updater.gitter, "Gitter", self.get_gitter),  # type: ignore[attr-defined]
         )
         self.register_mock(
-            mock.patch.object(duplicate_pull.gitter, "Gitter", self.get_gitter)  # type: ignore[attr-defined]
+            mock.patch.object(duplicate_pull.gitter, "Gitter", self.get_gitter),  # type: ignore[attr-defined]
         )
 
         self.main_branch_name = github_types.GitHubRefType(
-            self.get_full_branch_name("main")
+            self.get_full_branch_name("main"),
         )
         self.escaped_main_branch_name = parse.quote(self.main_branch_name, safe="")
         # ########## MOCK MERGE_QUEUE_BRANCH_PREFIX
@@ -640,14 +645,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 backport.BackportExecutor,
                 "BRANCH_PREFIX",
                 self.mocked_backport_branch_prefix,
-            )
+            ),
         )
         self.register_mock(
             mock.patch.object(
                 copy_action.CopyExecutor,
                 "BRANCH_PREFIX",
                 self.mocked_copy_branch_prefix,
-            )
+            ),
         )
         # ##############################
 
@@ -665,7 +670,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 utils,
                 "extract_default_branch",
                 mock_extract_default_branch,
-            )
+            ),
         )
         # ##############################
 
@@ -679,7 +684,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             return await real_repository_get_pulls(*args, **kwargs)
 
         self.register_mock(
-            mock.patch.object(context.Repository, "get_pulls", mocked_get_pulls)
+            mock.patch.object(context.Repository, "get_pulls", mocked_get_pulls),
         )
 
         # ##############################
@@ -698,19 +703,19 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.redis_links.flushall()
 
         installation_json = await github.get_installation_from_account_id(
-            settings.TESTING_ORGANIZATION_ID
+            settings.TESTING_ORGANIZATION_ID,
         )
 
         self.client_integration = github.aget_client(installation_json)
         self.client_admin = github.AsyncGitHubInstallationClient(
             auth=github.GitHubTokenAuth(
                 token=settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN,
-            )
+            ),
         )
         self.client_fork = github.AsyncGitHubInstallationClient(
             auth=github.GitHubTokenAuth(
                 token=self.FORK_PERSONAL_TOKEN,
-            )
+            ),
         )
         self.addAsyncCleanup(self.client_integration.aclose)
         self.addAsyncCleanup(self.client_admin.aclose)
@@ -733,7 +738,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             self.redis_links,
         )
         self.repository_ctxt = await self.installation_ctxt.get_repository_by_id(
-            github_types.GitHubRepositoryIdType(self.RECORD_CONFIG["repository_id"])
+            github_types.GitHubRepositoryIdType(self.RECORD_CONFIG["repository_id"]),
         )
 
         # NOTE(sileht): We mock this method because when we replay test, the
@@ -746,7 +751,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             mock.patch(
                 "mergify_engine.date.pretty_datetime",
                 side_effect=fake_pretty_datetime,
-            )
+            ),
         )
 
         self._event_reader = EventReader(
@@ -771,7 +776,10 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             self.worker_concurrency_works += 1
             try:
                 await real_consume_method(
-                    inner_self, bucket_org_key, owner_id, owner_login_for_tracing
+                    inner_self,
+                    bucket_org_key,
+                    owner_id,
+                    owner_login_for_tracing,
                 )
             finally:
                 self.worker_concurrency_works -= 1
@@ -821,7 +829,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
                 try:
                     await self.client_integration.delete(
-                        f"{self.url_origin}/git/refs/heads/{parse.quote(branch['name'])}"
+                        f"{self.url_origin}/git/refs/heads/{parse.quote(branch['name'])}",
                     )
                 except http.HTTPNotFound:
                     continue
@@ -854,12 +862,16 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self.repository_ctxt.clear_caches()
 
     async def wait_for(
-        self, *args: typing.Any, **kwargs: typing.Any
+        self,
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> github_types.GitHubEvent:
         return await self._event_reader.wait_for(*args, **kwargs)
 
     async def wait_for_all(
-        self, *args: typing.Any, **kwargs: typing.Any
+        self,
+        *args: typing.Any,
+        **kwargs: typing.Any,
     ) -> list[EventReceived]:
         return await self._event_reader.wait_for_all(*args, **kwargs)
 
@@ -887,7 +899,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         return typing.cast(
             github_types.GitHubEventPullRequest,
             await self.wait_for(
-                "pull_request", wait_for_payload, forward_to_engine=forward_to_engine
+                "pull_request",
+                wait_for_payload,
+                forward_to_engine=forward_to_engine,
             ),
         )
 
@@ -910,7 +924,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     ) -> github_types.GitHubEventCheckRun:
         if not action and not status and not conclusion and not name:
             raise RuntimeError(
-                "Need at least one of `action`, `status`, `conclusion` or `name` when waiting for `check_run` event"
+                "Need at least one of `action`, `status`, `conclusion` or `name` when waiting for `check_run` event",
             )
 
         wait_for_payload: dict[str, typing.Any] = {}
@@ -934,7 +948,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
 
     async def wait_for_pull_request_review(
-        self, state: github_types.GitHubEventReviewStateType
+        self,
+        state: github_types.GitHubEventReviewStateType,
     ) -> github_types.GitHubEventPullRequestReview:
         return typing.cast(
             github_types.GitHubEventPullRequestReview,
@@ -976,7 +991,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await w.wait_shutdown_complete()
 
     async def run_engine(
-        self, additionnal_services: manager.ServiceNamesT | None = None
+        self,
+        additionnal_services: manager.ServiceNamesT | None = None,
     ) -> None:
         LOG.log(42, "RUNNING ENGINE")
 
@@ -989,7 +1005,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         syncer_service = (
             dedicated_workers_cache_syncer_service.DedicatedWorkersCacheSyncerService(
-                self.redis_links, idle_time=0.01
+                self.redis_links,
+                idle_time=0.01,
             )
         )
 
@@ -1027,13 +1044,13 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         while (await self.redis_links.stream.zcard("streams")) > 0:
             await shared_service.shared_stream_worker_task(0)
             await dedicated_service.dedicated_stream_worker_task(
-                settings.TESTING_ORGANIZATION_ID
+                settings.TESTING_ORGANIZATION_ID,
             )
             while not gitter_serv._queue.empty():
                 await gitter_serv._gitter_worker("gitter-worker-0")
 
         await task.stop_and_wait(
-            list(itertools.chain.from_iterable([s.tasks for s in services]))
+            list(itertools.chain.from_iterable([s.tasks for s in services])),
         )
 
         if additionnal_services and "ci-event-processing" in additionnal_services:
@@ -1050,7 +1067,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 pending_work = await github_action.embed_logs(self.redis_links)
 
     def get_gitter(
-        self, logger: "logging.LoggerAdapter[logging.Logger]"
+        self,
+        logger: "logging.LoggerAdapter[logging.Logger]",
     ) -> GitterRecorder:
         self.git_counter += 1
         return GitterRecorder(logger, self.cassette_library_dir, str(self.git_counter))
@@ -1188,10 +1206,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 env=self.git.prepare_safe_env(tmp_env),
             )
             await self.git(
-                "config", "user.signingkey", settings.TESTING_GPG_SECRET_KEY_ID
+                "config",
+                "user.signingkey",
+                settings.TESTING_GPG_SECRET_KEY_ID,
             )
             await self.git(
-                "config", "user.email", "engineering+mergify-test@mergify.com"
+                "config",
+                "user.email",
+                "engineering+mergify-test@mergify.com",
             )
             args_commit.append("-S")
             tmp_kwargs.setdefault("_env", {})
@@ -1251,7 +1273,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
 
         pr_opened_event = await self.wait_for_pull_request(
-            "opened", forward_to_engine=forward_event_to_engine
+            "opened",
+            forward_to_engine=forward_event_to_engine,
         )
 
         self.created_branches.add(github_types.GitHubRefType(branch))
@@ -1276,7 +1299,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         assert len(commits_headline) > 0, "Cannot have empty commits_headline"
         assert len(files) == len(
-            commits_headline
+            commits_headline,
         ), "The list of `files` must be the same length as `commits_headline`"
 
         if commits_body is not None:
@@ -1316,10 +1339,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 env=self.git.prepare_safe_env(tmp_env),
             )
             await self.git(
-                "config", "user.signingkey", settings.TESTING_GPG_SECRET_KEY_ID
+                "config",
+                "user.signingkey",
+                settings.TESTING_GPG_SECRET_KEY_ID,
             )
             await self.git(
-                "config", "user.email", "engineering+mergify-test@mergify.com"
+                "config",
+                "user.email",
+                "engineering+mergify-test@mergify.com",
             )
             tmp_kwargs.setdefault("_env", {})
             tmp_kwargs["_env"].update(tmp_env)
@@ -1518,7 +1545,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         pull: github_types.GitHubPullRequest,
     ) -> list[github_types.GitHubCheckRun]:
         req = await self.client_integration.get(
-            f"{self.url_origin}/commits/{pull['head']['ref']}/check-runs"
+            f"{self.url_origin}/commits/{pull['head']['ref']}/check-runs",
         )
         assert req.status_code == 200
         return [
@@ -1546,7 +1573,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             payload["external_id"] = external_id
 
         await self.client_integration.post(
-            f"{self.url_origin}/check-runs", json=payload
+            f"{self.url_origin}/check-runs",
+            json=payload,
         )
 
         return typing.cast(
@@ -1596,7 +1624,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             wait_payload.update({"status": "completed", "conclusion": conclusion})
 
         await self.client_integration.patch(
-            f"{self.url_origin}/check-runs/{check_id}", json=payload
+            f"{self.url_origin}/check-runs/{check_id}",
+            json=payload,
         )
 
         return typing.cast(
@@ -1611,7 +1640,10 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         event: typing.Literal[
-            "APPROVE", "REQUEST_CHANGES", "COMMENT", "PENDING"
+            "APPROVE",
+            "REQUEST_CHANGES",
+            "COMMENT",
+            "PENDING",
         ] = "APPROVE",
         oauth_token: github_types.GitHubOAuthToken | None = None,
     ) -> None:
@@ -1646,7 +1678,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     async def get_comment(self, comment_id: int) -> github_types.GitHubComment:
         r = await self.client_integration.get(
-            f"{self.url_origin}/issues/comments/{comment_id}"
+            f"{self.url_origin}/issues/comments/{comment_id}",
         )
         return typing.cast(github_types.GitHubComment, r.json())
 
@@ -1664,18 +1696,23 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             client = self.client_integration
 
         response = await client.post(
-            f"{self.url_origin}/issues/{pull_number}/comments", json={"body": message}
+            f"{self.url_origin}/issues/{pull_number}/comments",
+            json={"body": message},
         )
         await self.wait_for("issue_comment", {"action": "created"}, test_id=pull_number)
         return typing.cast(int, response.json()["id"])
 
     async def create_comment_as_fork(
-        self, pull_number: github_types.GitHubPullRequestNumber, message: str
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
+        message: str,
     ) -> int:
         return await self.create_comment(pull_number, message, as_="fork")
 
     async def create_comment_as_admin(
-        self, pull_number: github_types.GitHubPullRequestNumber, message: str
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
+        message: str,
     ) -> int:
         return await self.create_comment(pull_number, message, as_="admin")
 
@@ -1692,7 +1729,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         return comment_id
 
     async def get_gql_id_of_comment_to_hide(
-        self, pr_number: int, comment_number: int
+        self,
+        pr_number: int,
+        comment_number: int,
     ) -> str | None:
         query = f"""
         query {{
@@ -1710,7 +1749,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         """
         response = await self.client_integration.graphql_post(query)
         data = typing.cast(
-            github_graphql_types.GraphqlHidingCommentsQuery, response["data"]
+            github_graphql_types.GraphqlHidingCommentsQuery,
+            response["data"],
         )
 
         for comment in data["repository"]["pullRequest"]["comments"]["nodes"]:
@@ -1726,7 +1766,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         | (github_graphql_types.ReportedContentClassifiers) = "OUTDATED",
     ) -> bool:
         gql_comment_id = await self.get_gql_id_of_comment_to_hide(
-            pull_number, comment_number
+            pull_number,
+            comment_number,
         )
         mutation = f"""
         mutation {{
@@ -1742,13 +1783,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         response = await self.client_integration.graphql_post(mutation)
         data = typing.cast(
-            github_graphql_types.GraphqlMinimizedCommentResponse, response["data"]
+            github_graphql_types.GraphqlMinimizedCommentResponse,
+            response["data"],
         )
         return data["minimizeComment"]["minimizedComment"]["isMinimized"]
 
     async def delete_comment(self, comment_number: int) -> None:
         resp = await self.client_integration.delete(
-            f"/repos/{self.repository_ctxt.repo['owner']['login']}/{self.repository_ctxt.repo['name']}/issues/comments/{comment_number}"
+            f"/repos/{self.repository_ctxt.repo['owner']['login']}/{self.repository_ctxt.repo['name']}/issues/comments/{comment_number}",
         )
         assert resp.status_code == 204
 
@@ -1773,7 +1815,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         return typing.cast(int, response.json()["id"])
 
     async def get_review_threads(
-        self, number: int
+        self,
+        number: int,
     ) -> github_graphql_types.GraphqlReviewThreadsQuery:
         query = f"""
         query {{
@@ -1831,13 +1874,15 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         """
         response = await self.client_integration.graphql_post(mutation)
         data = typing.cast(
-            github_graphql_types.GraphqlResolveThreadMutationResponse, response["data"]
+            github_graphql_types.GraphqlResolveThreadMutationResponse,
+            response["data"],
         )
         return data["resolveReviewThread"]["thread"]["isResolved"]
 
     async def create_issue(self, title: str, body: str) -> github_types.GitHubIssue:
         resp = await self.client_integration.post(
-            f"{self.url_origin}/issues", json={"body": body, "title": title}
+            f"{self.url_origin}/issues",
+            json={"body": body, "title": title},
         )
         # NOTE(sileht):Our GitHubApp doesn't subscribe to issues event
         # because we don't request the permissions for it.
@@ -1845,7 +1890,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         return typing.cast(github_types.GitHubIssue, resp.json())
 
     async def add_assignee(
-        self, pull_number: github_types.GitHubPullRequestNumber, assignee: str
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
+        assignee: str,
     ) -> None:
         await self.client_integration.post(
             f"{self.url_origin}/issues/{pull_number}/assignees",
@@ -1854,7 +1901,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.wait_for("pull_request", {"action": "assigned"})
 
     async def send_refresh(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> None:
         await refresher.send_pull_refresh(
             redis_stream=self.redis_links.stream,
@@ -1865,12 +1913,15 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
 
     async def add_label(
-        self, pull_number: github_types.GitHubPullRequestNumber, label: str
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
+        label: str,
     ) -> github_types.GitHubEventPullRequest:
         if label not in self.existing_labels:
             try:
                 await self.client_integration.post(
-                    f"{self.url_origin}/labels", json={"name": label, "color": "000000"}
+                    f"{self.url_origin}/labels",
+                    json={"name": label, "color": "000000"},
                 )
             except http.HTTPClientSideError as e:
                 if e.status_code != 422:
@@ -1879,20 +1930,24 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             self.existing_labels.append(label)
 
         await self.client_integration.post(
-            f"{self.url_origin}/issues/{pull_number}/labels", json={"labels": [label]}
+            f"{self.url_origin}/issues/{pull_number}/labels",
+            json={"labels": [label]},
         )
         return await self.wait_for_pull_request("labeled", pr_number=pull_number)
 
     async def remove_label(
-        self, pull_number: github_types.GitHubPullRequestNumber, label: str
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
+        label: str,
     ) -> None:
         await self.client_integration.delete(
-            f"{self.url_origin}/issues/{pull_number}/labels/{label}"
+            f"{self.url_origin}/issues/{pull_number}/labels/{label}",
         )
         await self.wait_for("pull_request", {"action": "unlabeled"})
 
     async def get_graphql_repository_id(
-        self, repository_ctxt: context.Repository
+        self,
+        repository_ctxt: context.Repository,
     ) -> str:
         query = f"""
         query {{
@@ -1908,12 +1963,13 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     async def graphql_repository_id(self) -> str:
         if self._graphql_repository_id is None:
             self._graphql_repository_id = await self.get_graphql_repository_id(
-                self.repository_ctxt
+                self.repository_ctxt,
             )
         return self._graphql_repository_id
 
     async def delete_graphql_branch_protection_rule(
-        self, branch_protection_rule_id: str
+        self,
+        branch_protection_rule_id: str,
     ) -> None:
         query = f"""
         mutation {{
@@ -1944,7 +2000,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             return val
 
         return ",\n".join(
-            [f"{k}: {_get_value_as_graphql_str(v)}" for k, v in _dict.items()]
+            [f"{k}: {_get_value_as_graphql_str(v)}" for k, v in _dict.items()],
         )
 
     async def create_branch_protection_rule(
@@ -2004,7 +2060,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 raise
 
     async def branch_protection_protect(
-        self, branch: str, protection: dict[str, typing.Any]
+        self,
+        branch: str,
+        protection: dict[str, typing.Any],
     ) -> None:
         if protection["required_pull_request_reviews"]:
             protection = copy.deepcopy(protection)
@@ -2017,13 +2075,16 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
 
     async def get_branches(
-        self, filter_on_name: bool = True
+        self,
+        filter_on_name: bool = True,
     ) -> list[github_types.GitHubBranch]:
         branch_name_prefix = self.get_full_branch_name()
         return [
             b
             async for b in self.client_integration.items(
-                f"{self.url_origin}/branches", resource_name="branches", page_limit=10
+                f"{self.url_origin}/branches",
+                resource_name="branches",
+                page_limit=10,
             )
             if not filter_on_name or b["name"].startswith(branch_name_prefix)
         ]
@@ -2033,12 +2094,13 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         return typing.cast(
             github_types.GitHubBranch,
             await self.client_integration.item(
-                f"{self.url_origin}/branches/{escaped_branch_name}"
+                f"{self.url_origin}/branches/{escaped_branch_name}",
             ),
         )
 
     async def get_commits(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> list[github_types.GitHubBranchCommit]:
         return [
             c
@@ -2053,7 +2115,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         ]
 
     async def get_commit(
-        self, sha: github_types.SHAType
+        self,
+        sha: github_types.SHAType,
     ) -> github_types.GitHubBranchCommit:
         return typing.cast(
             github_types.GitHubBranchCommit,
@@ -2064,12 +2127,13 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         return typing.cast(
             github_types.GitHubBranch,
             await self.client_integration.item(
-                f"{self.url_origin}/branches/{self.main_branch_name}"
+                f"{self.url_origin}/branches/{self.main_branch_name}",
             ),
         )["commit"]
 
     async def get_issue_comments(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> list[github_types.GitHubComment]:
         return [
             comment
@@ -2084,7 +2148,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         ]
 
     async def get_reviews(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> list[github_types.GitHubReview]:
         return [
             review
@@ -2099,7 +2164,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         ]
 
     async def get_review_comments(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> list[github_types.GitHubReview]:
         return [
             review
@@ -2114,17 +2180,19 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         ]
 
     async def get_pull(
-        self, pull_number: github_types.GitHubPullRequestNumber
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
     ) -> github_types.GitHubPullRequest:
         return typing.cast(
             github_types.GitHubPullRequest,
             await self.client_integration.item(
-                f"{self.url_origin}/pulls/{pull_number}"
+                f"{self.url_origin}/pulls/{pull_number}",
             ),
         )
 
     async def get_pulls(
-        self, **kwargs: typing.Any
+        self,
+        **kwargs: typing.Any,
     ) -> list[github_types.GitHubPullRequest]:
         params = kwargs.pop("params", {})
         params.setdefault("base", self.main_branch_name)
@@ -2149,7 +2217,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             github_types.GitHubPullRequest,
             (
                 await self.client_integration.patch(
-                    f"{self.url_origin}/pulls/{pull_number}", json=payload
+                    f"{self.url_origin}/pulls/{pull_number}",
+                    json=payload,
                 )
             ).json(),
         )
@@ -2159,7 +2228,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         pull_number: github_types.GitHubPullRequestNumber,
     ) -> None:
         r = await self.client_integration.patch(
-            f"{self.url_origin}/pulls/{pull_number}", json={"state": "closed"}
+            f"{self.url_origin}/pulls/{pull_number}",
+            json={"state": "closed"},
         )
         assert r.status_code == 200
         assert r.json()["state"] == "closed"
@@ -2170,7 +2240,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     ) -> bool:
         try:
             await self.client_integration.get(
-                f"{self.url_origin}/pulls/{pull_number}/merge"
+                f"{self.url_origin}/pulls/{pull_number}/merge",
             )
         except http.HTTPNotFound:
             return False
@@ -2201,13 +2271,17 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             async for label in typing.cast(
                 abc.AsyncGenerator[github_types.GitHubLabel, None],
                 self.client_integration.items(
-                    f"{self.url_origin}/labels", resource_name="labels", page_limit=3
+                    f"{self.url_origin}/labels",
+                    resource_name="labels",
+                    page_limit=3,
                 ),
             )
         ]
 
     async def find_git_refs(
-        self, url: str, matches: list[str]
+        self,
+        url: str,
+        matches: list[str],
     ) -> abc.AsyncGenerator[github_types.GitHubGitRef, None]:
         for match in matches:
             async for matchedBranch in typing.cast(
@@ -2226,7 +2300,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             async for t in typing.cast(
                 abc.AsyncGenerator[github_types.GitHubTeam, None],
                 self.client_integration.items(
-                    "/orgs/mergifyio-testing/teams", resource_name="teams", page_limit=5
+                    "/orgs/mergifyio-testing/teams",
+                    resource_name="teams",
+                    page_limit=5,
                 ),
             )
         ]
@@ -2273,7 +2349,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     @staticmethod
     def _assert_merge_queue_car(
-        car: merge_train.TrainCar, expected_car: MergeQueueCarMatcher
+        car: merge_train.TrainCar,
+        expected_car: MergeQueueCarMatcher,
     ) -> None:
         for i, ep in enumerate(car.still_queued_embarked_pulls):
             assert (
@@ -2328,14 +2405,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             self.order_expected_waiting_pulls_by_priority(q, expected_waiting_pulls)
         )
         assert len(expected_waiting_pulls_ordered_by_priority) == len(
-            expected_waiting_pulls
+            expected_waiting_pulls,
         )
 
         expected_pulls_in_queue = (
             list(
                 itertools.chain.from_iterable(
-                    [p.user_pull_request_numbers for p in expected_cars]
-                )
+                    [p.user_pull_request_numbers for p in expected_cars],
+                ),
             )
             + expected_waiting_pulls_ordered_by_priority
         )
@@ -2364,7 +2441,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.git("add", filename)
         await self.git("commit", "--no-edit", "-m", "random update")
         head_sha = github_types.SHAType(
-            (await self.git("log", "-1", "--format=%H")).strip()
+            (await self.git("log", "-1", "--format=%H")).strip(),
         )
         await self.git("push", "--quiet", "origin", f"random:{target_branch}")
         await self.wait_for("push", {"ref": f"refs/heads/{target_branch}"})
@@ -2479,7 +2556,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
             respx_mock.route(host=settings.GITHUB_REST_API_HOST).pass_through()
             respx_mock.route(
-                url__startswith=settings.TESTING_FORWARDER_ENDPOINT
+                url__startswith=settings.TESTING_FORWARDER_ENDPOINT,
             ).pass_through()
 
             yield

@@ -59,7 +59,11 @@ async def test_event_classifier(
     for filename, expected_event_class in expected_event_classes.items():
         event_type, event = sample_events[filename]
         classified_event = await github_events.event_classifier(
-            redis_links, event_type, "whatever", event, mergify_bot
+            redis_links,
+            event_type,
+            "whatever",
+            event,
+            mergify_bot,
         )
         assert isinstance(classified_event, expected_event_class)
 
@@ -70,7 +74,10 @@ async def test_push_ci_event_workflow_run(
 ) -> None:
     _, event = sample_events["workflow_run.completed.json"]
     await worker_pusher.push_ci_event(
-        redis_links.stream, "workflow_run", "whatever", event
+        redis_links.stream,
+        "workflow_run",
+        "whatever",
+        event,
     )
 
     stream_events = await redis_links.stream.xrange("gha_workflow_run")
@@ -89,7 +96,10 @@ async def test_push_ci_event_workflow_job(
 ) -> None:
     _, event = sample_events["workflow_job.completed.json"]
     await worker_pusher.push_ci_event(
-        redis_links.stream, "workflow_job", "whatever", event
+        redis_links.stream,
+        "workflow_job",
+        "whatever",
+        event,
     )
 
     stream_events = await redis_links.stream.xrange("gha_workflow_job")

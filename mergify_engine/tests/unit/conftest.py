@@ -42,10 +42,10 @@ partition_rules:
 """
 
 QUEUE_RULES = voluptuous.Schema(qr_config.QueueRulesSchema)(
-    rules.YamlSchema(MERGIFY_CONFIG)["queue_rules"]
+    rules.YamlSchema(MERGIFY_CONFIG)["queue_rules"],
 )
 PARTITION_RULES = voluptuous.Schema(partr_config.PartitionRulesSchema)(
-    rules.YamlSchema(MERGIFY_CONFIG)["partition_rules"]
+    rules.YamlSchema(MERGIFY_CONFIG)["partition_rules"],
 )
 
 
@@ -111,7 +111,7 @@ def fake_repository(
             "id": github_types.GitHubAccountIdType(0),
             "type": "User",
             "avatar_url": "https://avatars.githubusercontent.com/u/0?v=4",
-        }
+        },
     )
 
     gh_repo = github_types.GitHubRepository(
@@ -125,7 +125,7 @@ def fake_repository(
             "url": "",
             "html_url": "",
             "default_branch": github_types.GitHubRefType("main"),
-        }
+        },
     )
     installation_json = github_types.GitHubInstallation(
         {
@@ -134,14 +134,17 @@ def fake_repository(
             "permissions": {},
             "account": gh_owner,
             "suspended_at": None,
-        }
+        },
     )
 
     fake_client = github.AsyncGitHubInstallationClient(
-        auth=github.GitHubTokenAuth("fake")
+        auth=github.GitHubTokenAuth("fake"),
     )
     installation = context.Installation(
-        installation_json, fake_subscription, fake_client, redis_links
+        installation_json,
+        fake_subscription,
+        fake_client,
+        redis_links,
     )
     return context.Repository(installation, gh_repo)
 
@@ -168,7 +171,7 @@ async def build_fake_context(
             "type": "User",
             "login": github_types.GitHubLogin("contributor"),
             "avatar_url": "",
-        }
+        },
     )
 
     pull: github_types.GitHubPullRequest = {
@@ -215,7 +218,7 @@ async def build_fake_context(
         "head": {
             "sha": github_types.SHAType("the-head-sha"),
             "label": github_types.GitHubHeadBranchLabel(
-                f"{pull_request_author['login']}:feature-branch"
+                f"{pull_request_author['login']}:feature-branch",
             ),
             "ref": github_types.GitHubRefType("feature-branch"),
             "repo": {
@@ -249,7 +252,8 @@ async def build_fake_context(
 
 
 ContextGetterFixture = abc.Callable[
-    ..., abc.Coroutine[typing.Any, typing.Any, context.Context]
+    ...,
+    abc.Coroutine[typing.Any, typing.Any, context.Context],
 ]
 
 
@@ -261,7 +265,8 @@ def context_getter(fake_repository: context.Repository) -> ContextGetterFixture:
 @pytest.fixture
 async def jinja_environment() -> jinja2.sandbox.SandboxedEnvironment:
     return jinja2.sandbox.SandboxedEnvironment(
-        undefined=jinja2.StrictUndefined, enable_async=True
+        undefined=jinja2.StrictUndefined,
+        enable_async=True,
     )
 
 
@@ -270,7 +275,8 @@ class FakePullRequest(condition_value_querier.BasePullRequest):
     attrs: dict[str, condition_value_querier.PullRequestAttributeType]
 
     async def __getattr__(
-        self, name: str
+        self,
+        name: str,
     ) -> condition_value_querier.PullRequestAttributeType:
         fancy_name = name.replace("_", "-")
         try:
@@ -326,7 +332,7 @@ def fake_github_app_info() -> abc.Generator[None, None, None]:
                 "type": "Organization",
                 "avatar_url": "",
             },
-        }
+        },
     )
 
     bot = github_types.GitHubAccount(
@@ -335,11 +341,13 @@ def fake_github_app_info() -> abc.Generator[None, None, None]:
             "login": github_types.GitHubLogin("Mergify-test[bot]"),
             "type": "Bot",
             "avatar_url": "",
-        }
+        },
     )
 
     with mock.patch.object(github.GitHubAppInfo, "_app", app), mock.patch.object(
-        github.GitHubAppInfo, "_bot", bot
+        github.GitHubAppInfo,
+        "_bot",
+        bot,
     ):
         yield
 
@@ -366,7 +374,7 @@ def sample_events() -> dict[str, tuple[github_types.GitHubEventType, typing.Any]
 
 @pytest.fixture
 def sample_ci_events_to_process(
-    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]]
+    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
 ) -> dict[str, github_events.CIEventToProcess]:
     ci_events = {}
 
@@ -394,7 +402,7 @@ def a_pull_request() -> github_types.GitHubPullRequest:
             "id": github_types.GitHubAccountIdType(0),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
 
     gh_repo = github_types.GitHubRepository(
@@ -408,7 +416,7 @@ def a_pull_request() -> github_types.GitHubPullRequest:
             "name": github_types.GitHubRepositoryName("repo"),
             "private": False,
             "owner": gh_owner,
-        }
+        },
     )
 
     return github_types.GitHubPullRequest(
@@ -486,5 +494,5 @@ def a_pull_request() -> github_types.GitHubPullRequest:
             "mergeable_state": "clean",
             "mergeable": True,
             "body": None,
-        }
+        },
     )

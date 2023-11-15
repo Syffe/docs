@@ -111,7 +111,7 @@ async def gen_postgresql_anonymized_rules() -> None:
         for col in table.c:
             if "anonymizer_config" not in col.dialect_kwargs:
                 raise MissingAnonymizedFunction(
-                    f"{table.name}.{col.name} does not have anonymizer config yet"
+                    f"{table.name}.{col.name} does not have anonymizer config yet",
                 )
 
             anonymizer_config = col.dialect_kwargs["anonymizer_config"]
@@ -131,7 +131,8 @@ async def gen_postgresql_anonymized_rules() -> None:
     database.init_sqlalchemy("test")
     await manage.create_all()
     utils.dump_schema(
-        settings.DATABASE_URL.path[1:], pathlib.Path("empty_database.sql")
+        settings.DATABASE_URL.path[1:],
+        pathlib.Path("empty_database.sql"),
     )
 
 

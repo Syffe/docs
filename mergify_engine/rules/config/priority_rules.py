@@ -19,7 +19,8 @@ if typing.TYPE_CHECKING:
 PriorityRuleName = typing.NewType("PriorityRuleName", str)
 EvaluatedPriorityRule = typing.NewType("EvaluatedPriorityRule", "PriorityRule")
 PriorityRulesEvaluator = generic_evaluator.GenericRulesEvaluator[
-    "PriorityRule", EvaluatedPriorityRule
+    "PriorityRule",
+    EvaluatedPriorityRule,
 ]
 
 
@@ -42,7 +43,8 @@ class PriorityRule:
         return self.conditions
 
     async def evaluate(
-        self, pulls: list[condition_value_querier.BasePullRequest]
+        self,
+        pulls: list[condition_value_querier.BasePullRequest],
     ) -> EvaluatedPriorityRule:
         evaluated_rule = typing.cast(EvaluatedPriorityRule, self)
         await evaluated_rule.conditions(pulls)
@@ -52,7 +54,7 @@ class PriorityRule:
         return self.__class__(
             name=self.name,
             conditions=conditions_mod.PriorityRuleConditions(
-                self.conditions.condition.copy().conditions
+                self.conditions.condition.copy().conditions,
             ),
             priority=self.priority,
         )
@@ -67,7 +69,7 @@ class PriorityRules:
         for rule in self.rules:
             if rule.name in names:
                 raise voluptuous.error.Invalid(
-                    f"priority_rules names must be unique, found `{rule.name}` twice"
+                    f"priority_rules names must be unique, found `{rule.name}` twice",
                 )
             names.add(rule.name)
 

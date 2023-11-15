@@ -27,7 +27,8 @@ def upgrade() -> None:
             name=alembic.op.f("event_action_delete_head_branch_id_fkey"),
         ),
         sqlalchemy.PrimaryKeyConstraint(
-            "id", name=alembic.op.f("event_action_delete_head_branch_pkey")
+            "id",
+            name=alembic.op.f("event_action_delete_head_branch_pkey"),
         ),
     )
     # ### end Alembic commands ###

@@ -109,7 +109,7 @@ def extract_subscription_marker_features(
     for feat in marker.args:
         if not isinstance(feat, subscription.Features):
             raise Exception(  # noqa: TRY002
-                "Expected every arguments of `subscription` marker to be an instance of `subscription.Features`"
+                "Expected every arguments of `subscription` marker to be an instance of `subscription.Features`",
             )
 
     return frozenset(DEFAULT_SUBSCRIPTION_FEATURES + marker.args)
@@ -182,7 +182,8 @@ async def shadow_office(
         )
 
     async def fake_subscription(
-        redis_cache: redis_utils.RedisCache, owner_id: github_types.GitHubAccountIdType
+        redis_cache: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> subscription.Subscription:
         if owner_id == settings.TESTING_ORGANIZATION_ID:
             return await real_get_subscription(redis_cache, owner_id)
@@ -220,7 +221,7 @@ async def shadow_office(
 
 
 def pyvcr_response_filter(
-    response: dict[str, typing.Any]
+    response: dict[str, typing.Any],
 ) -> dict[str, typing.Any] | None:
     if (
         response["status_code"] in (403, 429)
@@ -308,7 +309,8 @@ async def recorder(
         cassette_library_dir = os.path.join(
             CASSETTE_LIBRARY_DIR_BASE,
             request.node.module.__name__.replace(
-                "mergify_engine.tests.functional.", ""
+                "mergify_engine.tests.functional.",
+                "",
             ).replace(".", "/"),
             request.node.name,
         )
@@ -351,7 +353,9 @@ async def recorder(
     else:
         # Never expire token during replay
         patcher = mock.patch.object(
-            github_app, "get_or_create_jwt", return_value="<TOKEN>"
+            github_app,
+            "get_or_create_jwt",
+            return_value="<TOKEN>",
         )
         patcher.start()
         request.addfinalizer(patcher.stop)
@@ -383,19 +387,21 @@ async def recorder(
                             "organization_name": settings.TESTING_ORGANIZATION_NAME,
                             "repository_id": settings.TESTING_REPOSITORY_ID,
                             "repository_name": github_types.GitHubRepositoryName(
-                                settings.TESTING_REPOSITORY_NAME
+                                settings.TESTING_REPOSITORY_NAME,
                             ),
                             "branch_prefix": date.utcnow().strftime("%Y%m%d%H%M%S"),
-                        }
-                    )
-                )
+                        },
+                    ),
+                ),
             )
 
     request.addfinalizer(cleanup_github_app_info)
     with open(record_config_file) as f:
         recorder_config = typing.cast(RecordConfigType, json.loads(f.read()))
         monkeypatch.setattr(
-            settings, "GITHUB_APP_ID", recorder_config["integration_id"]
+            settings,
+            "GITHUB_APP_ID",
+            recorder_config["integration_id"],
         )
         monkeypatch.setattr(
             github.GitHubAppInfo,
@@ -406,7 +412,7 @@ async def recorder(
                     "login": recorder_config["app_user_login"],
                     "type": "Bot",
                     "avatar_url": "",
-                }
+                },
             ),
         )
         monkeypatch.setattr(
@@ -423,7 +429,7 @@ async def recorder(
                         "type": "Organization",
                         "avatar_url": "",
                     },
-                }
+                },
             ),
         )
 
@@ -440,7 +446,8 @@ def unittest_asyncio_glue(
 
 @pytest.fixture
 async def web_client_as_admin(
-    web_client: httpx.AsyncClient, shadow_office: SubscriptionFixture
+    web_client: httpx.AsyncClient,
+    shadow_office: SubscriptionFixture,
 ) -> httpx.AsyncClient:
     web_client.headers["Authorization"] = f"bearer {shadow_office.api_key_admin}"
     return web_client
@@ -508,7 +515,7 @@ async def _request_with_secondatary_rate_limit() -> abc.AsyncIterator[None]:
             raise
 
         raise RetrySecondaryRateLimit(
-            float(exc.response.headers.get("X-RateLimit-Reset"))
+            float(exc.response.headers.get("X-RateLimit-Reset")),
         )
 
 
@@ -546,7 +553,10 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
         real_request = github.AsyncGitHubClient.request
 
         async def mocked_request(  # type: ignore[no-untyped-def]
-            self, method: str, *args: typing.Any, **kwargs: typing.Any
+            self,
+            method: str,
+            *args: typing.Any,
+            **kwargs: typing.Any,
         ) -> httpx.Response:
             async for attempts in tenacity.AsyncRetrying(
                 wait=wait_rate_limit(),
@@ -554,8 +564,8 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
                 stop=tenacity.stop_after_attempt(5),
                 retry=tenacity.retry_any(
                     tenacity.retry_if_exception_type(
-                        (exceptions.RateLimited, RetrySecondaryRateLimit)
-                    )
+                        (exceptions.RateLimited, RetrySecondaryRateLimit),
+                    ),
                 ),
             ):
                 with attempts:
@@ -564,7 +574,7 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
                             await stack.enter_async_context(_request_sync_lock())
 
                         await stack.enter_async_context(
-                            _request_with_secondatary_rate_limit()
+                            _request_with_secondatary_rate_limit(),
                         )
 
                         response = await real_request(self, method, *args, **kwargs)
@@ -584,7 +594,7 @@ async def lock_settings_delete_branch_on_merge(
     if request.node.get_closest_marker("delete_branch_on_merge"):
         request.node.get_closest_marker("delete_branch_on_merge")
         with filelock.FileLock(
-            os.path.join(os.path.dirname(__file__), "delete_branch_on_merge.lock")
+            os.path.join(os.path.dirname(__file__), "delete_branch_on_merge.lock"),
         ):
             yield
     else:
@@ -639,10 +649,12 @@ def mock_vcr_stubs_httpx_stubs_from_serialized_response() -> (
     import vcr.stubs.httpx_stubs
 
     @vcr.stubs.httpx_stubs.patch(  # type: ignore[misc]
-        "httpx.Response.close", vcr.stubs.httpx_stubs.MagicMock()
+        "httpx.Response.close",
+        vcr.stubs.httpx_stubs.MagicMock(),
     )
     @vcr.stubs.httpx_stubs.patch(  # type: ignore[misc]
-        "httpx.Response.read", vcr.stubs.httpx_stubs.MagicMock()
+        "httpx.Response.read",
+        vcr.stubs.httpx_stubs.MagicMock(),
     )
     def _from_serialized_response(
         request: httpx.Request,
@@ -658,7 +670,7 @@ def mock_vcr_stubs_httpx_stubs_from_serialized_response() -> (
             status_code=serialized_response["status_code"],
             request=request,
             headers=vcr.stubs.httpx_stubs._from_serialized_headers(
-                serialized_response.get("headers")
+                serialized_response.get("headers"),
             ),
             content=content,
             history=history or [],

@@ -91,7 +91,10 @@ class PullRequestAttributeError(AttributeError):
 class BasePullRequest:
     @classmethod
     async def _get_commits_attribute(
-        cls, ctxt: context_mod.Context, commit_attribute: str, relative_time: bool
+        cls,
+        ctxt: context_mod.Context,
+        commit_attribute: str,
+        relative_time: bool,
     ) -> CommitListAttributeType:
         return_values = [
             cls._get_commit_attribute(ctxt, commit, commit_attribute, relative_time)
@@ -156,7 +159,8 @@ class BasePullRequest:
 
     @staticmethod
     async def _get_consolidated_queue_data(
-        ctxt: context_mod.Context, name: str
+        ctxt: context_mod.Context,
+        name: str,
     ) -> PullRequestAttributeType:
         # Circular import
         from mergify_engine.actions import utils as action_utils
@@ -167,7 +171,9 @@ class BasePullRequest:
         queue_rules = mergify_config["queue_rules"]
         partition_rules = mergify_config["partition_rules"]
         convoy = await merge_train.Convoy.from_context(
-            ctxt, queue_rules, partition_rules
+            ctxt,
+            queue_rules,
+            partition_rules,
         )
 
         if name == "queue-position":
@@ -217,7 +223,7 @@ class BasePullRequest:
 
         if name == "queue-partition-name":
             return await partition_rules.get_evaluated_partition_names_from_context(
-                ctxt
+                ctxt,
             )
 
         # NOTE(Syffe): this attribute in only used for merge-conditions internally. Because at this point
@@ -231,7 +237,8 @@ class BasePullRequest:
                 return (
                     (
                         await action_utils.get_dequeue_reason_from_outcome(
-                            ctxt, error_if_unknown=False
+                            ctxt,
+                            error_if_unknown=False,
                         )
                     )
                     .dequeue_code.lower()
@@ -248,7 +255,8 @@ class BasePullRequest:
 
     @staticmethod
     async def _get_consolidated_checks_data(
-        ctxt: context_mod.Context, states: tuple[str | None, ...] | None
+        ctxt: context_mod.Context,
+        states: tuple[str | None, ...] | None,
     ) -> PullRequestAttributeType:
         checks = [
             check_name
@@ -263,7 +271,9 @@ class BasePullRequest:
 
     @classmethod
     async def _get_consolidated_data(
-        cls, ctxt: context_mod.Context, name: str
+        cls,
+        ctxt: context_mod.Context,
+        name: str,
     ) -> PullRequestAttributeType:
         if name in ("assignee", "assignees"):
             return [a["login"] for a in ctxt.pull["assignees"]]
@@ -386,7 +396,9 @@ class BasePullRequest:
             nb_commit = match.group(1)
             if nb_commit == "*":
                 return await cls._get_commits_attribute(
-                    ctxt, commit_attribute, relative_time
+                    ctxt,
+                    commit_attribute,
+                    relative_time,
                 )
 
             try:
@@ -395,7 +407,10 @@ class BasePullRequest:
                 return None
 
             return cls._get_commit_attribute(
-                ctxt, commit, commit_attribute, relative_time
+                ctxt,
+                commit,
+                commit_attribute,
+                relative_time,
             )
 
         if name == "approved-reviews-by":
@@ -433,7 +448,8 @@ class BasePullRequest:
         # NOTE(jd) The Check API set conclusion to None for pending.
         if name == "check-success-or-neutral-or-pending":
             return await cls._get_consolidated_checks_data(
-                ctxt, ("success", "neutral", "pending", None)
+                ctxt,
+                ("success", "neutral", "pending", None),
             )
 
         if name == "check-success-or-neutral":
@@ -447,7 +463,8 @@ class BasePullRequest:
             # I think it is, however it could be the same thing as the
             # "skipped" status.
             return await cls._get_consolidated_checks_data(
-                ctxt, ("failure", "action_required", "cancelled", "timed_out", "error")
+                ctxt,
+                ("failure", "action_required", "cancelled", "timed_out", "error"),
             )
 
         if name in ("status-neutral", "check-neutral"):
@@ -476,7 +493,7 @@ class BasePullRequest:
             for pull_request_number in ctxt.get_depends_on():
                 try:
                     depends_on_ctxt = await ctxt.repository.get_pull_request_context(
-                        pull_request_number
+                        pull_request_number,
                     )
                 except http.HTTPNotFound:
                     continue
@@ -657,14 +674,15 @@ class PullRequest(BasePullRequest):
             | self.NUMBER_ATTRIBUTES
             | self.BOOLEAN_ATTRIBUTES
             | self.LIST_ATTRIBUTES
-            | self.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION
+            | self.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION,
         )
 
     @staticmethod
     def _markdownify(s: str) -> str:
         with warnings.catch_warnings():
             warnings.filterwarnings(
-                "ignore", category=bs4.MarkupResemblesLocatorWarning
+                "ignore",
+                category=bs4.MarkupResemblesLocatorWarning,
             )
             return typing.cast(str, markdownify.markdownify(s))
 
@@ -680,12 +698,14 @@ class PullRequest(BasePullRequest):
 
         """Render a template interpolating variables based on pull request attributes."""
         env = jinja2.sandbox.ImmutableSandboxedEnvironment(
-            undefined=jinja2.StrictUndefined, enable_async=True
+            undefined=jinja2.StrictUndefined,
+            enable_async=True,
         )
         env.filters["markdownify"] = self._markdownify
         if allow_get_section:
             env.filters["get_section"] = functools.partial(
-                self._filter_get_section, self
+                self._filter_get_section,
+                self,
             )
 
         with self._template_exceptions_mapping():
@@ -706,7 +726,10 @@ class PullRequest(BasePullRequest):
 
     @staticmethod
     async def _filter_get_section(
-        pull: PullRequest, v: str, section: str, default: str | None = None
+        pull: PullRequest,
+        v: str,
+        section: str,
+        default: str | None = None,
     ) -> str:
         if not isinstance(section, str):
             raise jinja2.exceptions.TemplateError("level must be a string")

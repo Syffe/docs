@@ -25,10 +25,13 @@ LOG = daiquiri.getLogger(__name__)
 class TestCountSeats(base.FunctionalTestBase):
     @pytest.fixture(autouse=True)
     def prepare_fixture(
-        self, monkeypatch: pytest.MonkeyPatch
+        self,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> abc.Generator[None, None, None]:
         monkeypatch.setattr(
-            settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something")
+            settings,
+            "SUBSCRIPTION_TOKEN",
+            pydantic.SecretStr("something"),
         )
         yield
 
@@ -62,14 +65,14 @@ class TestCountSeats(base.FunctionalTestBase):
         organization[key_repo] = count_seats.CollaboratorsSetsT(
             {
                 "active_users": active_users,
-            }
+            },
         )
 
         collaborators = {
             count_seats.SeatAccount(
                 github_types.GitHubAccountIdType(settings.TESTING_ORGANIZATION_ID),
                 github_types.GitHubLogin(settings.TESTING_ORGANIZATION_NAME),
-            ): organization
+            ): organization,
         }
 
         return count_seats.Seats(collaborators)
@@ -125,14 +128,14 @@ class TestCountSeats(base.FunctionalTestBase):
             [
                 {
                     "id": github_types.GitHubAccountIdType(
-                        settings.TESTING_MERGIFY_TEST_1_ID
+                        settings.TESTING_MERGIFY_TEST_1_ID,
                     ),
                     "login": github_types.GitHubLogin("mergify-test1"),
                     "seen_at": anys.ANY_AWARE_DATETIME_STR,
                 },
                 {
                     "id": github_types.GitHubAccountIdType(
-                        settings.TESTING_MERGIFY_TEST_2_ID
+                        settings.TESTING_MERGIFY_TEST_2_ID,
                     ),
                     "login": github_types.GitHubLogin("mergify-test2"),
                     "seen_at": anys.ANY_AWARE_DATETIME_STR,
@@ -149,8 +152,8 @@ class TestCountSeats(base.FunctionalTestBase):
                     "name": "no-draft",
                     "conditions": ["created-at<9999 days ago"],
                     "actions": {"comment": {"message": "it's time"}},
-                }
-            ]
+                },
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
         await self.create_pr(as_="admin")
@@ -164,7 +167,10 @@ class TestCountSeats(base.FunctionalTestBase):
         active_users: list[
             tuple[bytes, float]
         ] = await self.redis_links.active_users.zrangebyscore(
-            key, min="-inf", max="+inf", withscores=True
+            key,
+            min="-inf",
+            max="+inf",
+            withscores=True,
         )
         now = time.time()
         assert len(active_users) == 2

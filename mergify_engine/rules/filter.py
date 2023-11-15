@@ -121,7 +121,8 @@ class Filter(typing.Generic[FilterResultT]):
     multiple_operators: dict[str, MultipleOperatorT[FilterResultT]]
 
     value_expanders: dict[
-        str, abc.Callable[[typing.Any], list[typing.Any]]
+        str,
+        abc.Callable[[typing.Any], list[typing.Any]],
     ] = dataclasses.field(default_factory=dict, init=False)
 
     _eval: CompiledTreeT[GetAttrObject, FilterResultT] = dataclasses.field(init=False)
@@ -133,7 +134,8 @@ class Filter(typing.Generic[FilterResultT]):
         return self._tree_to_str(self.tree)
 
     def _tree_to_str(
-        self, tree: TreeT | CompiledTreeT[GetAttrObject, FilterResultT]
+        self,
+        tree: TreeT | CompiledTreeT[GetAttrObject, FilterResultT],
     ) -> str:
         if callable(tree):
             raise RuntimeError("Cannot convert compiled tree")
@@ -218,13 +220,17 @@ class Filter(typing.Generic[FilterResultT]):
         if attribute_name.startswith(self.LENGTH_OPERATOR):
             try:
                 return await self._get_attribute_values(
-                    obj, attribute_name, _format_attribute_value
+                    obj,
+                    attribute_name,
+                    _format_attribute_value,
                 )
             except UnknownAttribute:
                 return await self._get_attribute_values(obj, attribute_name[1:], len)
         else:
             return await self._get_attribute_values(
-                obj, attribute_name, _format_attribute_value
+                obj,
+                attribute_name,
+                _format_attribute_value,
             )
 
     def build_evaluator(
@@ -298,7 +304,8 @@ class Filter(typing.Generic[FilterResultT]):
             nonlocal reference_value
             attribute_values = await self._find_attribute_values(obj, attribute_name)
             reference_value_expander = self.value_expanders.get(
-                attribute_name, self._to_list
+                attribute_name,
+                self._to_list,
             )
 
             if isinstance(reference_value, JinjaTemplateWrapper):
@@ -307,17 +314,23 @@ class Filter(typing.Generic[FilterResultT]):
             ref_values_expanded = reference_value_expander(reference_value)
             if inspect.iscoroutine(ref_values_expanded):
                 ref_values_expanded = await typing.cast(
-                    abc.Awaitable[typing.Any], ref_values_expanded
+                    abc.Awaitable[typing.Any],
+                    ref_values_expanded,
                 )
 
             return self._eval_binary_op(
-                op, attribute_name, attribute_values, ref_values_expanded
+                op,
+                attribute_name,
+                attribute_values,
+                ref_values_expanded,
             )
 
         return _op
 
     def _handle_unary_op(
-        self, unary_op: UnaryOperatorT[FilterResultT], nodes: TreeT
+        self,
+        unary_op: UnaryOperatorT[FilterResultT],
+        nodes: TreeT,
     ) -> CompiledTreeT[GetAttrObject, FilterResultT]:
         element = self.build_evaluator(nodes)
 
@@ -403,7 +416,10 @@ class _ListValuesFilter(Filter[ListValuesFilterResult]):
         ref_values_expanded: list[typing.Any],
     ) -> ListValuesFilterResult:
         obj = super()._eval_binary_op(
-            op, attribute_name, attribute_values, ref_values_expanded
+            op,
+            attribute_name,
+            attribute_values,
+            ref_values_expanded,
         )
         # NOTE(sileht): needed for mypy other it think isinstance will always return False)
         inner_op = typing.cast(_ListValuesOp, op[0])
@@ -594,7 +610,8 @@ UnknownOrFalseAttribute: typing.Final = UnknownType._MARKER_UNKNOWN_OR_FALSE
 TernaryFilterResult = bool | UnknownType
 
 MultipleOperatorPrecedencesT = dict[
-    tuple[TernaryFilterResult, TernaryFilterResult], TernaryFilterResult
+    tuple[TernaryFilterResult, TernaryFilterResult],
+    TernaryFilterResult,
 ]
 
 # X OR Y = Z
@@ -687,7 +704,7 @@ def TernaryFilterOperatorNegate(
 
 
 def cast_ret_to_ternary_filter_result(
-    op: abc.Callable[[typing.Any, typing.Any], bool]
+    op: abc.Callable[[typing.Any, typing.Any], bool],
 ) -> abc.Callable[[typing.Any, typing.Any], TernaryFilterResult]:
     return typing.cast(abc.Callable[[typing.Any, typing.Any], TernaryFilterResult], op)
 
@@ -699,10 +716,11 @@ class TernaryFilter(Filter[TernaryFilterResult]):
         default_factory=lambda: {
             "-": TernaryFilterOperatorNegate,
             "not": TernaryFilterOperatorNegate,
-        }
+        },
     )
     binary_operators: dict[
-        str, BinaryOperatorT[TernaryFilterResult]
+        str,
+        BinaryOperatorT[TernaryFilterResult],
     ] = dataclasses.field(
         default_factory=lambda: {
             "=": (
@@ -737,20 +755,21 @@ class TernaryFilter(Filter[TernaryFilterResult]):
             ),
             "~=": (
                 cast_ret_to_ternary_filter_result(
-                    lambda a, b: bool(a is not None and b.search(a))
+                    lambda a, b: bool(a is not None and b.search(a)),
                 ),
                 TernaryFilterOperatorAny,
                 re.compile,
             ),
-        }
+        },
     )
     multiple_operators: dict[
-        str, MultipleOperatorT[TernaryFilterResult]
+        str,
+        MultipleOperatorT[TernaryFilterResult],
     ] = dataclasses.field(
         default_factory=lambda: {
             "or": TernaryFilterOperatorAny,
             "and": TernaryFilterOperatorAll,
-        }
+        },
     )
 
     def _eval_binary_op(
@@ -764,7 +783,10 @@ class TernaryFilter(Filter[TernaryFilterResult]):
             return UnknownOnlyAttribute
 
         return super()._eval_binary_op(
-            op, attribute_name, attribute_values, ref_values_expanded
+            op,
+            attribute_name,
+            attribute_values,
+            ref_values_expanded,
         )
 
     def is_known(
@@ -865,5 +887,5 @@ class JinjaTemplateWrapper:
             infos[k] = await getattr(obj, k)
 
         return self.compile_func(
-            await self.env.from_string(self.template).render_async(**infos)
+            await self.env.from_string(self.template).render_async(**infos),
         )

@@ -19,7 +19,10 @@ def upgrade() -> None:
     alembic.op.add_column(
         "gha_workflow_job",
         sqlalchemy.Column(
-            "steps", sqlalchemy.JSON(), nullable=True, anonymizer_config=None
+            "steps",
+            sqlalchemy.JSON(),
+            nullable=True,
+            anonymizer_config=None,
         ),
     )
     alembic.op.add_column(

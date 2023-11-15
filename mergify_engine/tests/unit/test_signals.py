@@ -54,7 +54,7 @@ async def test_copy_signal(
             ctxt.pull["base"]["ref"],
             "action.copy",
             signals.EventCopyMetadata(
-                {"to": "test_branch", "pull_request_number": 123, "conflicts": False}
+                {"to": "test_branch", "pull_request_number": 123, "conflicts": False},
             ),
             "Rule: awesome rule",
         )
@@ -89,14 +89,15 @@ async def test_datadog(
             "Rule: awesome rule",
         )
         increment.assert_called_once_with(
-            "engine.signals.action.count", tags=["event:label"]
+            "engine.signals.action.count",
+            tags=["event:label"],
         )
 
     ctxt.repository.installation.subscription.features = frozenset(
         [
             subscription.Features.PUBLIC_REPOSITORY,
             subscription.Features.PRIVATE_REPOSITORY,
-        ]
+        ],
     )
 
     with mock.patch("datadog.statsd.increment") as increment:

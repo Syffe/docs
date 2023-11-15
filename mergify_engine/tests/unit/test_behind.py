@@ -41,7 +41,7 @@ def create_commit(sha: github_types.SHAType) -> github_types.GitHubBranchCommit:
                 "type": "User",
                 "avatar_url": "",
             },
-        }
+        },
     )
 
 
@@ -57,7 +57,7 @@ def create_commit(sha: github_types.SHAType) -> github_types.GitHubBranchCommit:
         "P-A-B-C",
         "O-AP-BP-C",
         "O-AP-B-CP",
-    ]
+    ],
 )
 def commits_tree_generator(
     request: typing.Any,
@@ -92,7 +92,8 @@ def commits_tree_generator(
 
 @pytest.mark.ignored_logging_errors("is_behind testing")
 async def test_pull_behind(
-    commits_tree_generator: typing.Any, context_getter: conftest.ContextGetterFixture
+    commits_tree_generator: typing.Any,
+    context_getter: conftest.ContextGetterFixture,
 ) -> None:
     expected, commits = commits_tree_generator
 
@@ -107,7 +108,7 @@ async def test_pull_behind(
 
     async def get_compare(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
         return github_types.GitHubCompareCommits(
-            {"behind_by": 0 if expected else 100, "status": "behind"}
+            {"behind_by": 0 if expected else 100, "status": "behind"},
         )
 
     client = mock.Mock()

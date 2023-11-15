@@ -36,14 +36,19 @@ class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
             message = await pull_attrs.render_template(action.config["message"])
         except condition_value_querier.RenderTemplateFailure as rmf:
             raise actions.InvalidDynamicActionConfiguration(
-                rule, action, "Invalid close message", str(rmf)
+                rule,
+                action,
+                "Invalid close message",
+                str(rmf),
             )
         return cls(ctxt, rule, CloseExecutorConfig({"message": message}))
 
     async def run(self) -> check_api.Result:
         if self.ctxt.closed:
             return check_api.Result(
-                check_api.Conclusion.SUCCESS, "Pull request is already closed", ""
+                check_api.Conclusion.SUCCESS,
+                "Pull request is already closed",
+                "",
             )
 
         try:
@@ -53,7 +58,9 @@ class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
             )
         except http.HTTPClientSideError as e:  # pragma: no cover
             return check_api.Result(
-                check_api.Conclusion.FAILURE, "Pull request can't be closed", e.message
+                check_api.Conclusion.FAILURE,
+                "Pull request can't be closed",
+                e.message,
             )
 
         try:
@@ -93,6 +100,6 @@ class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
 class CloseAction(actions.Action):
     flags = actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     validator: typing.ClassVar[actions.ValidatorT] = {
-        voluptuous.Required("message", default=MSG): types.Jinja2
+        voluptuous.Required("message", default=MSG): types.Jinja2,
     }
     executor_class = CloseExecutor

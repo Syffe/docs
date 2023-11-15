@@ -94,7 +94,9 @@ class SubscriptionBase(abstract.ABC):
                 feature = Features(f)
             except ValueError:
                 LOG.log(
-                    cls.feature_flag_log_level, "Unknown subscription feature %s", f
+                    cls.feature_flag_log_level,
+                    "Unknown subscription feature %s",
+                    f,
                 )
             else:
                 features.append(feature)
@@ -183,7 +185,9 @@ class SubscriptionBase(abstract.ABC):
 
     @classmethod
     async def delete_subscription(
-        cls, redis: redis_utils.RedisCache, owner_id: github_types.GitHubAccountIdType
+        cls,
+        redis: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> None:
         await redis.delete(cls._cache_key(owner_id))
 
@@ -262,12 +266,12 @@ class SubscriptionShadowOfficeOnPremise(SubscriptionBase):
                 resp = await client.get(f"/on-premise/subscription/{owner_id}")
             except http.HTTPUnauthorized:
                 LOG.critical(
-                    "The SUBSCRIPTION_TOKEN is invalid, the subscription can't be checked"
+                    "The SUBSCRIPTION_TOKEN is invalid, the subscription can't be checked",
                 )
                 raise exceptions.MergifyNotInstalled()
             except http.HTTPForbidden:
                 LOG.critical(
-                    "The subscription attached to SUBSCRIPTION_TOKEN is not valid"
+                    "The subscription attached to SUBSCRIPTION_TOKEN is not valid",
                 )
                 raise exceptions.MergifyNotInstalled()
             else:

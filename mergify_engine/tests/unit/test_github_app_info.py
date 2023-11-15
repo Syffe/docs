@@ -6,7 +6,8 @@ from mergify_engine.clients import github
 
 
 async def test_github_app_info_getter(
-    respx_mock: respx.MockRouter, redis_cache: redis_utils.RedisCache
+    respx_mock: respx.MockRouter,
+    redis_cache: redis_utils.RedisCache,
 ) -> None:
     account = github_types.GitHubAccount(
         {
@@ -14,7 +15,7 @@ async def test_github_app_info_getter(
             "login": github_types.GitHubLogin("foobar"),
             "type": "User",
             "avatar_url": "",
-        }
+        },
     )
     expected_bot = github_types.GitHubAccount(
         {
@@ -22,10 +23,10 @@ async def test_github_app_info_getter(
             "login": github_types.GitHubLogin("app[bot]"),
             "type": "Bot",
             "avatar_url": "",
-        }
+        },
     )
     expected_app = github_types.GitHubApp(
-        {"id": 4242, "name": "app", "slug": "app", "owner": account}
+        {"id": 4242, "name": "app", "slug": "app", "owner": account},
     )
 
     route_installation = respx_mock.get("/app/installations").respond(
@@ -38,12 +39,13 @@ async def test_github_app_info_getter(
                     "target_type": "User",
                     "suspended_at": None,
                     "permissions": {"checks": "write", "contents": "write"},
-                }
-            )
+                },
+            ),
         ],
     )
     route_token = respx_mock.post("/app/installations/1234/access_tokens").respond(
-        200, json={"token": "foobar", "expires_at": "9999-09-26T07:58:30Z"}
+        200,
+        json={"token": "foobar", "expires_at": "9999-09-26T07:58:30Z"},
     )
     route_app = respx_mock.get("/app").respond(
         200,
