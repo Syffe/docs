@@ -1605,7 +1605,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25652",
-    "Title": "by feeding specially crafted input to `git apply --reject`, a path outside the working tree can be overwritten with partially controlled contents",
+    "Title": "git: by feeding specially crafted input to `git apply --reject`, a path outside the working tree can be overwritten with partially controlled contents",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-25T20:15:00Z"
   },
@@ -1615,7 +1615,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25652",
-    "Title": "by feeding specially crafted input to `git apply --reject`, a path outside the working tree can be overwritten with partially controlled contents",
+    "Title": "git: by feeding specially crafted input to `git apply --reject`, a path outside the working tree can be overwritten with partially controlled contents",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-25T20:15:00Z"
   },
@@ -1645,7 +1645,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
-    "Title": "Memory Leak on pthread_create() Error",
+    "Title": "libcap: Memory Leak on pthread_create() Error",
     "Severity": "LOW",
     "PublishedDate": "2023-06-06T20:15:00Z"
   },
@@ -1655,7 +1655,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
-    "Title": "Memory Leak on pthread_create() Error",
+    "Title": "libcap: Memory Leak on pthread_create() Error",
     "Severity": "LOW",
     "PublishedDate": "2023-06-06T20:15:00Z"
   },
@@ -1665,7 +1665,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
-    "Title": "Memory Leak on pthread_create() Error",
+    "Title": "libcap: Memory Leak on pthread_create() Error",
     "Severity": "LOW",
     "PublishedDate": "2023-06-06T20:15:00Z"
   },
@@ -1675,7 +1675,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
-    "Title": "Integer Overflow in _libcap_strdup()",
+    "Title": "libcap: Integer Overflow in _libcap_strdup()",
     "Severity": "HIGH",
     "PublishedDate": "2023-06-06T20:15:00Z"
   },
@@ -1685,7 +1685,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
-    "Title": "Integer Overflow in _libcap_strdup()",
+    "Title": "libcap: Integer Overflow in _libcap_strdup()",
     "Severity": "HIGH",
     "PublishedDate": "2023-06-06T20:15:00Z"
   },
@@ -1695,7 +1695,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
-    "Title": "Integer Overflow in _libcap_strdup()",
+    "Title": "libcap: Integer Overflow in _libcap_strdup()",
     "Severity": "HIGH",
     "PublishedDate": "2023-06-06T20:15:00Z"
   },
@@ -1905,7 +1905,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
+    "Title": "perl: CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1915,7 +1915,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
+    "Title": "perl: CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1925,7 +1925,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
+    "Title": "perl: CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1935,7 +1935,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
+    "Title": "perl: CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1945,7 +1945,7 @@
     "Status": "affected",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "insecure TLS cert default",
+    "Title": "http-tiny: insecure TLS cert default",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1955,7 +1955,7 @@
     "Status": "affected",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "insecure TLS cert default",
+    "Title": "http-tiny: insecure TLS cert default",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1965,7 +1965,7 @@
     "Status": "affected",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "insecure TLS cert default",
+    "Title": "http-tiny: insecure TLS cert default",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1975,7 +1975,7 @@
     "Status": "affected",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "insecure TLS cert default",
+    "Title": "http-tiny: insecure TLS cert default",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1985,7 +1985,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4016",
-    "Title": "ps buffer overflow",
+    "Title": "procps: ps buffer overflow",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-08-02T05:15:00Z"
   },
@@ -1995,7 +1995,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4016",
-    "Title": "ps buffer overflow",
+    "Title": "procps: ps buffer overflow",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-08-02T05:15:00Z"
   },
@@ -2064,7 +2064,7 @@
     "PkgName": "login",
     "Status": "affected",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4641",
-    "Title": "possible password leak during passwd(1) change",
+    "Title": "shadow-utils: possible password leak during passwd(1) change",
     "Severity": "MEDIUM"
   },
   {
@@ -2072,7 +2072,7 @@
     "PkgName": "passwd",
     "Status": "affected",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4641",
-    "Title": "possible password leak during passwd(1) change",
+    "Title": "shadow-utils: possible password leak during passwd(1) change",
     "Severity": "MEDIUM"
   },
   {
@@ -2081,7 +2081,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4806",
-    "Title": "potential use-after-free in getaddrinfo()",
+    "Title": "glibc: potential use-after-free in getaddrinfo()",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-09-18T17:15:00Z"
   },
@@ -2091,7 +2091,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4806",
-    "Title": "potential use-after-free in getaddrinfo()",
+    "Title": "glibc: potential use-after-free in getaddrinfo()",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-09-18T17:15:00Z"
   },
@@ -2101,7 +2101,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4813",
-    "Title": "potential use-after-free in gaih_inet()",
+    "Title": "glibc: potential use-after-free in gaih_inet()",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-09-12T22:15:00Z"
   },
@@ -2111,7 +2111,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4813",
-    "Title": "potential use-after-free in gaih_inet()",
+    "Title": "glibc: potential use-after-free in gaih_inet()",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-09-12T22:15:00Z"
   },
