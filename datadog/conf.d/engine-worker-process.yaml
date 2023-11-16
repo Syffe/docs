@@ -2,5 +2,5 @@ init_config:
 
 instances:
   - name: mergify-engine-worker
-    search_string: ["bin/mergify-engine-worker"]
+    search_string: [bin/mergify-engine-worker]
     exact_match: false

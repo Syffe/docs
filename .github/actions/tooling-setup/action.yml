@@ -3,10 +3,10 @@ name: Tooling setup
 inputs:
   github_token:
     required: true
-    description: "Token used to curl the tooling file"
+    description: Token used to curl the tooling file
 
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Setup Python
       uses: actions/setup-python@v4.1.0

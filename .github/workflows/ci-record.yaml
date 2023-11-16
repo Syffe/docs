@@ -5,7 +5,7 @@ on:
 
   # NOTE(sileht): should be in sync with the chunk later.
   schedule:
-    - cron: "0 14 * * 1-5"
+    - cron: 0 14 * * 1-5
 
 jobs:
   record:
@@ -17,7 +17,7 @@ jobs:
         ports:
           - 6363:6379
         env:
-          REDIS_EXTRA_FLAGS: "--databases 1000"
+          REDIS_EXTRA_FLAGS: --databases 1000
           ALLOW_EMPTY_PASSWORD: yes
 
       postgres:
@@ -33,6 +33,7 @@ jobs:
       matrix:
         target:
           # - {"name": "GitHub.com", "secret_name": "FIXTURES_RECORDER_CONFIG_GITHUB_DOT_COM"}
+          # yamllint disable-line rule:quoted-strings
           - {"name": "GitHub Enterprise Server", "secret_name": "FIXTURES_RECORDER_CONFIG_GHES_DEV"}
 
     steps:
@@ -68,5 +69,5 @@ jobs:
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-slack-notification@main
         with:
-          message: "${{ matrix.target.name }}, engine fixture re-generation tests"
+          message: ${{ matrix.target.name }}, engine fixture re-generation tests
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}

@@ -87,5 +87,5 @@ jobs:
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-slack-notification@main
         with:
-          message: "create-linear-for-docs failed"
+          message: create-linear-for-docs failed
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}

@@ -7,9 +7,9 @@ on:
     branches:
       - main
       - devs/**
-    types: ["opened", "synchronize", "reopened", "edited"]
+    types: [opened, synchronize, reopened, edited]
   pull_request_review:
-    types: ["dismissed"]
+    types: [dismissed]
 
 permissions: write-all
 

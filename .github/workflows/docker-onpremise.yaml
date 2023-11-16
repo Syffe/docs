@@ -10,16 +10,16 @@ on:
       - main
       - devs/**
     paths:
-      - "dockerfiles/**"
-      - "datadog/**"
-      - "datadog-wrapper.sh"
-      - "onpremise/**"
-      - "fake.env"
-      - ".github/workflows/docker-*.yaml"
+      - dockerfiles/**
+      - datadog/**
+      - datadog-wrapper.sh
+      - onpremise/**
+      - fake.env
+      - .github/workflows/docker-*.yaml
 
 concurrency:
   # yamllint disable-line rule:line-length
-  group: "${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  group: ${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:

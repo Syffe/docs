@@ -10,7 +10,7 @@ instances:
     ssl: allow
     custom_queries:
       - metric_prefix: engine.db
-        query: 'SELECT count(*) FROM "github_user"'
+        query: SELECT count(*) FROM github_user
         columns:
           - name: users.count
             type: gauge

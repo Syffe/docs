@@ -34,7 +34,7 @@ sources:
 targets:
   # PYTHON VERSION
   heroku_runtime.txt:
-    name: "Update runtime.txt"
+    name: Update runtime.txt
     kind: file
     sourceID: python-version
     spec:
@@ -42,21 +42,21 @@ targets:
       forcecreate: true
       content: python-{{ source `python-version` }}
   github-workflow-python-version:
-    name: "Update CI file GitHub workflow"
+    name: Update CI file GitHub workflow
     kind: file
     sourceID: python-version
     spec:
       files:
-        - ".github/workflows/ci.yaml"
-        - ".github/workflows/ci-record.yaml"
-        - ".github/workflows/api-schemas-upload.yaml"
-        - ".github/actions/tooling-setup/action.yml"
+        - .github/workflows/ci.yaml
+        - .github/workflows/ci-record.yaml
+        - .github/workflows/api-schemas-upload.yaml
+        - .github/actions/tooling-setup/action.yml
       lineMatchPattern: "(\\s+python-version: )(.+)"
     transformers:
       - replaceRegexGroup: 2
   # DATADOG AGENT VERSION
   datadog-agent-version-txt:
-    name: "Update datadog/agent-version.txt"
+    name: Update datadog/agent-version.txt
     kind: file
     sourceID: datadog-agent-version
     spec:
@@ -64,60 +64,60 @@ targets:
       forcecreate: true
       content: "{{ source `datadog-agent-version` }}"
   dockerfile-dd-agent:
-    name: "Update DD_AGENT_VERSION in dockerfiles/Dockerfile.common"
+    name: Update DD_AGENT_VERSION in dockerfiles/Dockerfile.common
     sourceID: datadog-agent-version
     kind: file
     spec:
       file: dockerfiles/Dockerfile.common
-      lineMatchPattern: "^ARG DD_AGENT_VERSION="
+      lineMatchPattern: ^ARG DD_AGENT_VERSION=
     transformers:
-      - addPrefix: "ARG DD_AGENT_VERSION="
+      - addPrefix: ARG DD_AGENT_VERSION=
   pyproject.toml-py3X:
-    name: "Update pyproject.toml py3X target-version"
+    name: Update pyproject.toml py3X target-version
     kind: file
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: "(target-version = .*py)(3\\d+)(.*)"
+      lineMatchPattern: (target-version = .*py)(3\\d+)(.*)
     transformers:
-      - find: "^\\d+\\.\\d+"
+      - find: ^\\d+\\.\\d+
       - replacer:
-          from: "."
+          from: .
           to: ""
       - replaceRegexGroup: 2
   pyproject.toml-python-version:
-    name: "Update pyproject.toml python version"
+    name: Update pyproject.toml python version
     kind: file
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: "(python = \"~)(3\\.\\d+)(\")"
+      lineMatchPattern: (python = \"~)(3\\.\\d+)(\")
     transformers:
-      - find: "^\\d+\\.\\d+"
+      - find: ^\\d+\\.\\d+
       - replaceRegexGroup: 2
   pyproject.toml-classifers-py-version:
-    name: "Update pyproject.toml python classifier version"
+    name: Update pyproject.toml python classifier version
     kind: file
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: "(classifiers = .*)(3\\.\\d+)(.*)"
+      lineMatchPattern: (classifiers = .*)(3\\.\\d+)(.*)
     transformers:
-      - find: "^\\d+\\.\\d+"
+      - find: ^\\d+\\.\\d+
       - replaceRegexGroup: 2
 
   # DATADOG MERGIFY INTEGRATION VERSION
   dockerfile-dd-mergify:
-    name: "Update DD_MERGIFY_VERSION in dockerfiles/Dockerfile.common"
+    name: Update DD_MERGIFY_VERSION in dockerfiles/Dockerfile.common
     sourceID: datadog-mergify-integration-version
     kind: file
     spec:
       file: dockerfiles/Dockerfile.common
-      lineMatchPattern: "^ARG DD_MERGIFY_VERSION="
+      lineMatchPattern: ^ARG DD_MERGIFY_VERSION=
     transformers:
-      - addPrefix: "ARG DD_MERGIFY_VERSION="
+      - addPrefix: ARG DD_MERGIFY_VERSION=
   datadog-mergify-integration-version-txt:
-    name: "Update datadog/agent-version.txt"
+    name: Update datadog/agent-version.txt
     kind: file
     sourceID: datadog-mergify-integration-version
     spec:
@@ -127,20 +127,20 @@ targets:
 
   # ACTIONLINT VERSION
   github-workflow-actionlint-version:
-    name: "Update CI file GitHub workflow"
+    name: Update CI file GitHub workflow
     kind: file
     sourceID: actionlint-version
     spec:
-      files: [".github/workflows/ci.yaml"]
+      files: [.github/workflows/ci.yaml]
       lineMatchPattern: "(\\s+run: bash.*download-actionlint.bash\\) )(.+)"
     transformers:
       - replaceRegexGroup: 2
   overmind-version:
-    name: "Update overmind version"
+    name: Update overmind version
     kind: file
     sourceID: overmind-version
     spec:
       file: dockerfiles/Dockerfile.onpremise.footer
-      lineMatchPattern: "^ARG OVERMIND_VERSION="
+      lineMatchPattern: ^ARG OVERMIND_VERSION=
     transformers:
-      - addPrefix: "ARG OVERMIND_VERSION="
+      - addPrefix: ARG OVERMIND_VERSION=

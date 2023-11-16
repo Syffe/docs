@@ -5,18 +5,18 @@ on:
   workflow_dispatch:
     inputs:
       head-repo:
-        description: "Full name of the head repository"
+        description: Full name of the head repository
         type: string
         required: true
       head-branch:
-        description: "Head branch"
+        description: Head branch
         type: string
         required: true
       base-branch:
-        description: "Base branch"
+        description: Base branch
         type: string
         required: false
-        default: "main"
+        default: main
 
 jobs:
   resolve_conflicts:

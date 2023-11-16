@@ -12,5 +12,5 @@ train_dumped: |
   }
 
 train_properties_asserts:
-  partition_name: "__default__"
+  partition_name: __default__
   cars: []

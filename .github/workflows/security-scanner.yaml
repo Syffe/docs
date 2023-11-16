@@ -5,17 +5,17 @@ permissions: read-all
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: 0 0 * * *
   pull_request:
     branches:
       - main
       - devs/**
     paths:
-      - ".github/workflows/security-scanner.yml"
+      - .github/workflows/security-scanner.yml
 
 concurrency:
   # yamllint disable-line rule:line-length
-  group: "${{ github.workflow }}-${{ github.ref }}"
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -56,9 +56,9 @@ jobs:
         uses: aquasecurity/trivy-action@0.14.0
         with:
           image-ref: ${{ steps.download-image.outputs.image-ref }}
-          format: "json"
-          scanners: "vuln"
-          output: "docker-security-scan.json.tmp"
+          format: json
+          scanners: vuln
+          output: docker-security-scan.json.tmp
 
       - uses: ./.github/actions/tooling-setup
         with:
@@ -113,5 +113,5 @@ jobs:
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-slack-notification@main
         with:
-          message: "Docker image security scan"
+          message: Docker image security scan
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}

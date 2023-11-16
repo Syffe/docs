@@ -6,7 +6,7 @@ on:
   #  - cron: "30 6 * * 1"
 
 concurrency:
-  group: "${{ github.workflow }}"
+  group: ${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
@@ -14,9 +14,9 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-22.04
     permissions:
-      contents: "read"
-      id-token: "write"
-      actions: "read"
+      contents: read
+      id-token: write
+      actions: read
     steps:
       - uses: actions/checkout@v4
 
@@ -60,5 +60,5 @@ jobs:
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-slack-notification@main
         with:
-          message: "Database sync testing"
+          message: Database sync testing
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
