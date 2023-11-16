@@ -11,6 +11,7 @@ from mergify_engine import condition_value_querier
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import queue
 from mergify_engine import settings
 from mergify_engine.clients import http
 from mergify_engine.models.github import user as github_user
@@ -132,6 +133,7 @@ async def get_github_user_from_bot_account(
     purpose: str,
     login: github_types.GitHubLogin,
     required_permissions: list[github_types.GitHubRepositoryPermission],
+    branch_protection_injection_mode: queue.BranchProtectionInjectionModeT = "queue",
 ) -> github_user.GitHubUser:
     ...
 
@@ -142,6 +144,7 @@ async def get_github_user_from_bot_account(
     purpose: str,
     login: github_types.GitHubLogin | None,
     required_permissions: list[github_types.GitHubRepositoryPermission],
+    branch_protection_injection_mode: queue.BranchProtectionInjectionModeT = "queue",
 ) -> github_user.GitHubUser | None:
     ...
 
@@ -151,6 +154,7 @@ async def get_github_user_from_bot_account(
     purpose: str,
     login: github_types.GitHubLogin | None,
     required_permissions: list[github_types.GitHubRepositoryPermission],
+    branch_protection_injection_mode: queue.BranchProtectionInjectionModeT = "queue",
 ) -> github_user.GitHubUser | None:
     if login is None:
         return None
@@ -192,6 +196,18 @@ async def get_github_user_from_bot_account(
                 "",
             )
 
+        if (
+            branch_protection_injection_mode == "none"
+            and permission != github_types.GitHubRepositoryPermission.ADMIN
+        ):
+            raise BotAccountNotFound(
+                check_api.Conclusion.ACTION_REQUIRED,
+                (
+                    f"`{login}` account used as "
+                    f"`bot_account` must have `{github_types.GitHubRepositoryPermission.ADMIN.value}` permission"
+                ),
+                "To allow merge with branch protection enabled on the repository, please make sure the bot used has the necessary permissions.",
+            )
     if not settings.SAAS_MODE:
         for (
             hardcoded_id,

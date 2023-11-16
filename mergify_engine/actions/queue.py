@@ -844,6 +844,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                         github_types.GitHubRepositoryPermission.WRITE,
                     )
                 ),
+                branch_protection_injection_mode=self.queue_rule.branch_protection_injection_mode,
             )
         except action_utils.BotAccountNotFound as e:
             raise InvalidQueueConfiguration(e.title, e.reason)

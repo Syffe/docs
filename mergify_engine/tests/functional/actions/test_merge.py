@@ -75,6 +75,117 @@ class TestMergeAction(base.FunctionalTestBase):
             == f"The pull request has been merged automatically at *{p['merge_commit_sha']}*"
         )
 
+    async def test_report_queue_merge_without_admin_bot_account_and_branch_protections_bypassing(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "queue_conditions": [
+                        "status-success=continuous-integration/fake-ci-queue",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci-merge",
+                    ],
+                    "branch_protection_injection_mode": "none",
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge default",
+                    "conditions": [f"base={self.main_branch_name}", "label=queue"],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "merge_bot_account": "mergify-test4",
+                        },
+                    },
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        protection = {
+            "required_status_checks": None,
+            "required_linear_history": True,
+            "required_pull_request_reviews": {
+                "require_code_owner_reviews": True,
+                "required_approving_review_count": 1,
+            },
+            "restrictions": None,
+            "enforce_admins": False,
+        }
+
+        await self.branch_protection_protect(self.main_branch_name, protection)
+
+        p = await self.create_pr()
+        await self.create_status(p, "continuous-integration/fake-ci-queue")
+        await self.create_status(p, "continuous-integration/fake-ci-merge")
+        await self.add_label(p["number"], "queue")
+        await self.run_engine()
+        await self.wait_for_check_run(
+            name="Rule: Merge default (queue)",
+            conclusion="cancelled",
+        )
+
+        p = await self.get_pull(p["number"])
+        assert not p["merged"]
+
+        ctxt = context.Context(self.repository_ctxt, p, [])
+        check = await ctxt.get_engine_check_run("Rule: Merge default (queue)")
+        assert check is not None
+        assert check["conclusion"] == "cancelled"
+        assert (
+            check["output"]["title"]
+            == "`mergify-test4` account used as `bot_account` must have `admin` permission"
+        )
+        assert (
+            check["output"]["summary"]
+            == "To allow merge with branch protection enabled on the repository, please make sure the bot used has the necessary permissions."
+        )
+
+        updated_rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "queue_conditions": [
+                        "status-success=continuous-integration/fake-ci-queue",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci-merge",
+                    ],
+                    "branch_protection_injection_mode": "none",
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge default",
+                    "conditions": [f"base={self.main_branch_name}", "label=queue"],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "merge_bot_account": "mergify-test1",
+                        },
+                    },
+                },
+            ],
+        }
+
+        # set admin bot account
+        p2 = await self.create_pr(files={".mergify.yml": yaml.dump(updated_rules)})
+        await self.merge_pull_as_admin(p2["number"])
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.run_engine()
+        p = await self.get_pull(p["number"])
+        await self.create_status(p, "continuous-integration/fake-ci-queue")
+        await self.create_status(p, "continuous-integration/fake-ci-merge")
+        await self.run_engine()
+        merged_p = await self.wait_for_pull_request("closed", p["number"], merged=True)
+        assert merged_p["pull_request"]["merged_by"] is not None
+        assert merged_p["pull_request"]["merged_by"]["login"] == "mergify-test1"
+
     async def test_report_error_bot_account_wrong_permissions(self) -> None:
         rules = {
             "queue_rules": [
