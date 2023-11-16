@@ -17,8 +17,10 @@ instances:
       - metric_prefix: engine.db
         query: >
           SELECT
-            SUM(CASE WHEN log_embedding IS NULL THEN 1 ELSE 0 END) AS log_embedding_need_update,
-            SUM(CASE WHEN embedded_log IS NULL THEN 1 ELSE 0 END) AS embedded_log_need_update
+            count(*),
+            log_embedding IS NULL AS log_embedding_need_update,
+            embedded_log IS NULL  AS embedded_log_need_update,
+            ci_issue_id IS NULL AS not_linked_to_ci_issue
           FROM gha_workflow_job
             JOIN github_repository
               ON gha_workflow_job.repository_id = github_repository.id
@@ -29,9 +31,24 @@ instances:
               AND gha_workflow_job.failed_step_number is not NULL
               AND log_status not in ('GONE', 'ERROR')
               AND github_account.login in (<LOG_EMBEDDER_MONITORED_ACCOUNTS>)
+          GROUP BY
+            log_embedding IS NULL,
+            embedded_log IS NULL,
+            ci_issue_id IS NULL
           ;
         columns:
-          - name: workflow-job.log-embedding-need-update
+          - name: workflow-job.count
             type: gauge
-          - name: workflow-job.embedded-log-need-update
+          - name: log-embedding-need-update
+            type: tag
+          - name: embedded-log-need-update
+            type: tag
+          - name: not-linked-to-ci-issue
+            type: tag
+      - metric_prefix: engine.db
+        query: SELECT count(*), name IS NULL FROM ci_issue group by name IS NULL ;
+        columns:
+          - name: ci-issue.count
             type: gauge
+          - name: name-is-null
+            type: tag
