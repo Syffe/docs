@@ -1989,18 +1989,20 @@
     "VulnerabilityID": "CVE-2023-5678",
     "PkgName": "libssl1.1",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-5678",
     "Title": "openssl: Generating excessively long X9.42 DH keys or checking excessively long X9.42 DH keys or parameters may be very slow",
-    "Severity": "MEDIUM",
+    "Severity": "HIGH",
     "PublishedDate": "2023-11-06T16:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-5678",
     "PkgName": "openssl",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-5678",
     "Title": "openssl: Generating excessively long X9.42 DH keys or checking excessively long X9.42 DH keys or parameters may be very slow",
-    "Severity": "MEDIUM",
+    "Severity": "HIGH",
     "PublishedDate": "2023-11-06T16:15:00Z"
   }
 ]
