@@ -416,6 +416,7 @@ class TestAttributes(base.FunctionalTestBase):
             "check-success-or-neutral": ["Summary"],
             "check-skipped": [],
             "check-timed-out": [],
+            "queue-name": None,
         }
 
     async def test_repo_name_full_right(self) -> None:
@@ -1527,3 +1528,52 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
         assert comment["comment"]["body"] == "dependabot was here"
+
+    async def test_queue_attributes(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "hotfix",
+                    "queue_conditions": ["label=hotfix"],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Add to merge queue",
+                    "conditions": ["label=queue"],
+                    "actions": {"queue": {}},
+                },
+                {
+                    "name": "Label queue name",
+                    "conditions": ["queue-position>=0"],
+                    "actions": {"label": {"toggle": ["queued: {{queue_name}}"]}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+        labelled_p1 = await self.wait_for_pull_request(action="labeled")
+        assert "queued: default" in [
+            label["name"] for label in labelled_p1["pull_request"]["labels"]
+        ]
+
+        p2 = await self.create_pr()
+        await self.add_label(p2["number"], "hotfix")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+        labelled_p2 = await self.wait_for_pull_request(action="labeled")
+        assert "queued: hotfix" in [
+            label["name"] for label in labelled_p2["pull_request"]["labels"]
+        ]

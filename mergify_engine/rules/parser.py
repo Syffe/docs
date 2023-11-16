@@ -117,6 +117,7 @@ CONDITION_PARSERS = {
     "sender-permission": Parser.PERMISSION,
     "queue-partition-name": Parser.TEXT,
     "current-datetime": Parser.TIMESTAMP,
+    "queue-name": Parser.TEXT,
 }
 COMMAND_ONLY_ATTRIBUTES = ("sender", "sender-permission")
 CONDITION_ENUMS = {

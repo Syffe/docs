@@ -489,6 +489,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 ),
             },
         ),
+        ("queue-name=hotfix", {"=": ("queue-name", "hotfix")}),
     ),
 )
 @time_travel(now)

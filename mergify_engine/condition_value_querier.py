@@ -176,6 +176,16 @@ class BasePullRequest:
             partition_rules,
         )
 
+        if name == "queue-name":
+            embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])
+            if not embarked_pulls:
+                return None
+            if len(embarked_pulls) == 1:
+                return embarked_pulls[0].embarked_pull.config["name"]
+
+            # NOTE(charly): Attribute not yet handled for multiple queues
+            raise PullRequestAttributeError(name)
+
         if name == "queue-position":
             embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])
             if not embarked_pulls:
@@ -626,6 +636,7 @@ class PullRequest(BasePullRequest):
         "repository-name",
         "repository-full-name",
         "queue-dequeue-reason",
+        "queue-name",
     }
 
     LIST_ATTRIBUTES: typing.ClassVar[set[str]] = {

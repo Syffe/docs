@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    New pull request attribute `queue-name` containing the name of the queue in
+    which the pull request is.

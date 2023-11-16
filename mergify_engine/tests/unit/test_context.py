@@ -18,6 +18,10 @@ from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine.clients import github
 from mergify_engine.clients import http
+from mergify_engine.queue import merge_train
+from mergify_engine.queue.merge_train import types as merge_train_types
+from mergify_engine.rules.config import partition_rules
+from mergify_engine.tests.unit import conftest
 
 
 @pytest.mark.ignored_logging_errors(
@@ -1677,3 +1681,94 @@ Co-Authored-By: {{ co_author.name }} <{{ co_author.email }}>
 {% endfor %}
 """,
     ) == (expected_title, expected_body)
+
+
+async def test_queue_attributes(context_getter: conftest.ContextGetterFixture) -> None:
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+
+    async def client_item(
+        url: str,
+        *args: typing.Any,
+        **kwargs: typing.Any,
+    ) -> typing.Any:
+        if url == "/repos/Mergifyio/mergify-engine/contents/.mergify.yml":
+            return github_types.GitHubContentFile(
+                {
+                    "content": "",
+                    "type": "file",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
+                    "sha": github_types.SHAType(
+                        "8ac2d8f970ab504e4d65351b10a2b5d8480bc38a",
+                    ),
+                    "encoding": "base64",
+                },
+            )
+
+        raise RuntimeError(f"url not mocked: {url}")
+
+    client = mock.Mock()
+    client.item.side_effect = client_item
+    ctxt.repository.installation.client = client
+    some_date = date.utcnow()
+
+    pull_request = condition_value_querier.PullRequest(ctxt)
+
+    # Not queued
+    assert await pull_request.queue_name is None
+    assert await pull_request.queue_position == -1
+    assert await pull_request.queued_at is None
+    assert await pull_request.queued_at_relative is None
+    assert await pull_request.queue_partition_name == []
+
+    # Queued in one queue (hotfix)
+    embarked_pull = merge_train_types.ConvoyEmbarkedPullWithCarAndPos(
+        car=mock.Mock(),
+        embarked_pull=mock.Mock(config={"name": "hotfix"}, queued_at=some_date),
+        partition_name=partition_rules.PartitionRuleName("__default__"),
+        position=0,
+    )
+    with mock.patch.object(
+        merge_train.Convoy,
+        "find_embarked_pull",
+        return_value=[embarked_pull],
+    ):
+        assert await pull_request.queue_name == "hotfix"
+        assert await pull_request.queue_position == 0
+        assert await pull_request.queued_at == some_date
+        assert await pull_request.queued_at_relative == date.RelativeDatetime(some_date)
+        assert await pull_request.queue_partition_name == []
+
+    # Queued in multiple queues
+    embarked_pull1 = merge_train_types.ConvoyEmbarkedPullWithCarAndPos(
+        car=mock.Mock(),
+        embarked_pull=mock.Mock(config={"name": "queue1"}, queued_at=some_date),
+        partition_name=partition_rules.PartitionRuleName("partition1"),
+        position=0,
+    )
+    embarked_pull2 = merge_train_types.ConvoyEmbarkedPullWithCarAndPos(
+        car=mock.Mock(),
+        embarked_pull=mock.Mock(config={"name": "queue2"}, queued_at=some_date),
+        partition_name=partition_rules.PartitionRuleName("partition2"),
+        position=1,
+    )
+    with mock.patch.object(
+        merge_train.Convoy,
+        "find_embarked_pull",
+        return_value=[embarked_pull1, embarked_pull2],
+    ):
+        assert await pull_request.queue_position == 1
+        assert await pull_request.queued_at == some_date
+        assert await pull_request.queued_at_relative == date.RelativeDatetime(some_date)
+
+        with pytest.raises(
+            condition_value_querier.PullRequestAttributeError,
+            match="queue-name",
+        ):
+            assert await pull_request.queue_name
+
+    # Attribute does not exist
+    with pytest.raises(
+        condition_value_querier.PullRequestAttributeError,
+        match="queue-whatever",
+    ):
+        assert await pull_request.queue_whatever
