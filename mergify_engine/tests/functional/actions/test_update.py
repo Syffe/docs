@@ -95,6 +95,49 @@ class TestUpdateActionWithoutBot(base.FunctionalTestBase):
         for check in checks:
             assert check["conclusion"] == "success", check
 
+    async def test_update_action_on_conflict(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "update",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {"update": {}},
+                },
+                {
+                    "name": "merge",
+                    "conditions": [f"base={self.main_branch_name}", "label=merge"],
+                    "actions": {"merge": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        p1, p2 = await self.create_prs_with_conflicts()
+
+        await self.add_label(p1["number"], "merge")
+        await self.run_engine()
+        await self.wait_for_pull_request(
+            action="closed",
+            pr_number=p1["number"],
+            merged=True,
+        )
+
+        # FIXME(charly): this won't work for now. GitHub reports the pull request
+        # as mergeable, the update action runs and fails as there is a conflict.
+        # It happens event though we retrieve fresh pull request data from
+        # GitHub (without cache). MRGFY-2315
+
+        # check_runs = await self.get_check_runs(p2)
+        # for check_run in check_runs:
+        #     assert check_run["conclusion"] == "success"
+
+        await self.create_comment(p2["number"], "@mergifyio update", as_="admin")
+        await self.run_engine()
+        comment = await self.wait_for_issue_comment(
+            test_id=str(p2["number"]),
+            action="created",
+        )
+        assert "Nothing to do" in comment["comment"]["body"]
+
 
 class TestUpdateActionWithBot(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True

@@ -133,4 +133,10 @@ class UpdateAction(actions.Action):
                 {">": ("#commits-behind", 0)},
                 description=description,
             ),
+            # FIXME(charly): it partially works for now. See MRGFY-2315 and
+            # test_update_action_on_conflict.
+            conditions.RuleCondition.from_tree(
+                {"=": ("conflict", False)},
+                description=description,
+            ),
         ]

@@ -151,6 +151,12 @@ class RebaseAction(actions.Action):
                 {"=": ("closed", False)},
                 description=description,
             ),
+            # FIXME(charly): it partially works for now. See MRGFY-2315 and
+            # test_rebase_action_on_conflict.
+            conditions.RuleCondition.from_tree(
+                {"=": ("conflict", False)},
+                description=description,
+            ),
         ]
         if not self.config["autosquash"]:
             conds.append(
