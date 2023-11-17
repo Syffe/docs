@@ -9,7 +9,12 @@ import starlette.exceptions
 @dataclasses.dataclass
 class ContentLengthMiddleware:
     app: types.ASGIApp
-    max_content_size: int = 1024 * 1024 * 1
+    default_max_content_size: int = 1024 * 1024 * 1
+    endpoints_max_content_size: dict[tuple[str, str], int] = dataclasses.field(
+        default_factory=lambda: {
+            ("POST", "/front/proxy/saas/plain/bug-report"): 1024 * 1024 * 6,
+        },
+    )
 
     async def __call__(
         self,
@@ -22,6 +27,10 @@ class ContentLengthMiddleware:
             return
 
         request = requests.Request(scope=scope)
+        max_content_size = self.endpoints_max_content_size.get(
+            (request.method, request.url.path),
+            self.default_max_content_size,
+        )
 
         if "content-length" in request.headers:
             # the header value is not really trustable, but we can fail fast
@@ -35,7 +44,7 @@ class ContentLengthMiddleware:
                 await response(scope, receive, send)
                 return
 
-            if size > self.max_content_size:
+            if size > max_content_size:
                 response = starlette.responses.Response(
                     status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 )
@@ -60,7 +69,7 @@ class ContentLengthMiddleware:
                 return message
             body_len = len(message.get("body", b""))
             received += body_len
-            if received > self.max_content_size:
+            if received > max_content_size:
                 raise starlette.exceptions.HTTPException(
                     status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 )

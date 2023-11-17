@@ -230,9 +230,14 @@ async def test_with_trusted_hosts(monkeypatch: pytest.MonkeyPatch) -> None:
 
 async def test_content_length_middleware() -> None:
     app = fastapi.FastAPI(debug=True)
-    app.add_middleware(ContentLengthMiddleware, max_content_size=10)
+    app.add_middleware(
+        ContentLengthMiddleware,
+        default_max_content_size=10,
+        endpoints_max_content_size={("POST", "/foo"): 60},
+    )
 
     @app.post("/")
+    @app.post("/foo")
     async def root(request: fastapi.Request) -> starlette.responses.PlainTextResponse:
         return starlette.responses.PlainTextResponse(
             content=(await request.body()).decode(),
@@ -251,6 +256,12 @@ async def test_content_length_middleware() -> None:
 
     # Too big content-length
     response = client.post("/", json={}, headers={"Content-Length": "30000"})
+    assert response.status_code == 413
+
+    # Too big content-length for special endpoint
+    response = client.post("/foo", json={}, headers={"Content-Length": "30"})
+    assert response.status_code == 200
+    response = client.post("/foo", json={}, headers={"Content-Length": "70"})
     assert response.status_code == 413
 
     # Invalid content-length
