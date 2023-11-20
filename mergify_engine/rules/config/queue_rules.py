@@ -251,7 +251,7 @@ class QueueRules:
         for rule in self:
             if rule.name == key:
                 return rule
-        raise KeyError(key)
+        raise KeyError(f"{key} not found")
 
     def get(self, key: QueueName) -> QueueRule | None:
         try:

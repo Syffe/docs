@@ -104,14 +104,6 @@ class UnexpectedChanges:
 
 
 @dataclasses.dataclass
-class QueueRuleVanished(UnexpectedChanges):
-    queue_name: str
-
-    def __str__(self) -> str:
-        return f"Queue named `{self.queue_name}` does not exist anymore"
-
-
-@dataclasses.dataclass
 class UnexpectedDraftPullRequestChange(UnexpectedChanges):
     draft_pull_request_number: github_types.GitHubPullRequestNumber
 
@@ -1850,21 +1842,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
         checked_ctxt = await self.repository.get_pull_request_context(
             self.queue_pull_request_number,
         )
-
-        # NOTE(Kontrolix): Type unexpected_changes to please mypy
-        unexpected_changes: UnexpectedChanges | None
-
-        try:
-            queue_rule = self.get_queue_rule()
-        except KeyError as err:
-            unexpected_changes = QueueRuleVanished(err.args[0])
-        else:
-            unexpected_changes = await self.get_unexpected_changes(queue_rule)
-
-        if isinstance(
-            unexpected_changes,
-            UnexpectedBaseBranchChange | QueueRuleVanished,
-        ):
+        queue_rule = self.get_queue_rule()
+        unexpected_changes = await self.get_unexpected_changes(queue_rule)
+        if isinstance(unexpected_changes, UnexpectedBaseBranchChange):
             checked_ctxt.log.info(
                 "train will be reset",
                 gh_pull_queued=[
