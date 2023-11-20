@@ -17,7 +17,7 @@ jobs:
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
         run: |
           echo "Author: ${PR_AUTHOR}"
-          ASSIGNEE_EMAIL=$(echo "$EMAIL_MAPPING" | awk '/ '"${PR_AUTHOR}"'$/{print $1}')
+          ASSIGNEE_EMAIL=$(echo "$EMAIL_MAPPING" | tr -d $'\r' | awk '/ '"${PR_AUTHOR}"'$/{print $1}')
           if [ -z "$ASSIGNEE_EMAIL" ]; then
             echo "Email of ${PR_AUTHOR} not found in email mapping: ${EMAIL_MAPPING}"
             exit 1
