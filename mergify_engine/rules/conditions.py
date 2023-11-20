@@ -630,7 +630,6 @@ def get_merge_after_condition(ctxt: context.Context) -> RuleConditionNode | None
 async def get_queue_conditions(
     ctxt: context.Context,
     for_queue_name: str | None = None,
-    require_branch_protection: bool = False,
 ) -> RuleConditionNode | None:
     mergify_config = await ctxt.repository.get_mergify_config()
 
@@ -639,11 +638,7 @@ async def get_queue_conditions(
         if for_queue_name is not None and rule.name != for_queue_name:
             continue
 
-        if (
-            rule.require_branch_protection
-            and require_branch_protection
-            and rule.branch_protection_injection_mode == "queue"
-        ):
+        if rule.branch_protection_injection_mode == "queue":
             branch_protections = await get_branch_protection_conditions(
                 ctxt.repository,
                 ctxt.pull["base"]["ref"],

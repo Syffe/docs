@@ -24,7 +24,6 @@ from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.actions import merge_base
-from mergify_engine.engine import actions_runner
 from mergify_engine.engine import commands_runner
 from mergify_engine.github_in_postgres import process_events as github_event_processing
 from mergify_engine.models import events as evt_models
@@ -1705,6 +1704,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 {
                     "name": "default",
                     "conditions": [],
+                    "branch_protection_injection_mode": "merge",
                 },
             ],
             "pull_request_rules": [
@@ -1714,7 +1714,6 @@ class TestQueueAction(base.FunctionalTestBase):
                     "actions": {
                         "queue": {
                             "name": "default",
-                            "require_branch_protection": False,
                         },
                     },
                 },
@@ -1739,12 +1738,6 @@ class TestQueueAction(base.FunctionalTestBase):
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
-
-        summary = await self.wait_for_check_run(name="Summary")
-        assert (
-            actions_runner.REQUIRE_BRANCH_PROTECTION_DEPRECATION_SAAS
-            in summary["check_run"]["output"]["summary"]
-        )
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(
@@ -7870,6 +7863,7 @@ previous_failed_batches:
                     {
                         "name": "default",
                         "conditions": [],
+                        "branch_protection_injection_mode": "merge",
                     },
                 ],
                 "pull_request_rules": [
@@ -7883,7 +7877,6 @@ previous_failed_batches:
                             "queue": {
                                 "merge_method": "squash",
                                 "name": "default",
-                                "require_branch_protection": False,
                             },
                         },
                     },
@@ -7901,6 +7894,7 @@ previous_failed_batches:
                         "name": "default",
                         "conditions": [],
                         "merge_method": "squash",
+                        "branch_protection_injection_mode": "merge",
                     },
                 ],
                 "pull_request_rules": [
@@ -7913,7 +7907,6 @@ previous_failed_batches:
                         "actions": {
                             "queue": {
                                 "name": "default",
-                                "require_branch_protection": False,
                             },
                         },
                     },
@@ -7925,13 +7918,14 @@ previous_failed_batches:
         rules = f"""
 queue_rules:
   - name: default
-    conditions:
+    merge_conditions:
       - "check-success=Summary"
       - "check-success=ci/status"
       - "check-success=ci/service-test"
       - "check-success=ci/pipelines"
       - "#approved-reviews-by>=1"
       - "-label=flag:wait"
+    branch_protection_injection_mode: merge
 
 pull_request_rules:
   - name: merge
@@ -7946,7 +7940,6 @@ pull_request_rules:
       queue:
         name: default
         update_method: rebase
-        require_branch_protection: false
 """
         await self.setup_repo(rules)
 
