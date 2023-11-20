@@ -22,6 +22,7 @@ from mergify_engine import delayed_refresh
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine import utils
@@ -52,6 +53,13 @@ if typing.TYPE_CHECKING:
 BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
     "Require branches to be up to date before merging"
 )
+
+DEPRECATED_MESSAGE_REQUIRE_BRANCH_PROTECTION_QUEUE_ACTION = """The configuration uses the deprecated `require_branch_protection` attribute of the queue action. This attribute has been moved to the `queue_rules`.
+A brownout is planned on September 26th, 2023.
+This option will be removed on October 26th, 2023.
+For more information: https://docs.mergify.com/actions/queue/
+
+`%s` is invalid"""
 
 
 @dataclasses.dataclass
@@ -120,6 +128,7 @@ class QueueExecutorConfig(typing.TypedDict):
     update_bot_account: github_types.GitHubLogin | None
     update_method: QueueUpdateT
     commit_message_template: str | None
+    require_branch_protection: bool
     allow_merging_configuration_change: bool
     autosquash: bool
 
@@ -163,6 +172,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     "commit_message_template": action.config["commit_message_template"],
                     "merge_bot_account": action.config["merge_bot_account"],
                     "update_bot_account": action.config["update_bot_account"],
+                    "require_branch_protection": action.config[
+                        "require_branch_protection"
+                    ],
                     "allow_merging_configuration_change": action.config[
                         "allow_merging_configuration_change"
                     ],
@@ -1377,6 +1389,21 @@ class QueueAction(actions.Action):
             voluptuous.Required("autosquash", default=True): bool,
         }
 
+        if settings.ALLOW_REQUIRE_BRANCH_PROTECTION_QUEUE_ATTRIBUTE:
+            config[
+                voluptuous.Required("require_branch_protection", default=True)
+            ] = bool
+        else:
+            config[
+                voluptuous.Required(
+                    "require_branch_protection",
+                    default=utils.UnsetMarker,
+                )
+            ] = utils.DeprecatedOption(
+                DEPRECATED_MESSAGE_REQUIRE_BRANCH_PROTECTION_QUEUE_ACTION,
+                True,
+            )
+
         return typing.cast(
             actions.ValidatorT,
             voluptuous.All(
@@ -1448,6 +1475,9 @@ class QueueAction(actions.Action):
         if queue_conditions := await conditions.get_queue_conditions(
             ctxt,
             self.config["name"],
+            # NOTE: Retrocompatibility, remove once the config option has been removed
+            # MRGFY-2495
+            require_branch_protection=self.config["require_branch_protection"],
         ):
             conditions_requirements.append(queue_conditions)
 

@@ -67,6 +67,7 @@ class QueueRule:
     merge_conditions: conditions_mod.QueueRuleMergeConditions
     queue_conditions: conditions_mod.QueueRuleMergeConditions
     priority_rules: priority_rules_config.PriorityRules
+    require_branch_protection: bool
     branch_protection_injection_mode: queue.BranchProtectionInjectionModeT
 
     class T_from_dict(QueueConfig, total=False):
@@ -79,6 +80,7 @@ class QueueRule:
         routing_conditions: conditions_mod.QueueRuleMergeConditions
         queue_conditions: conditions_mod.QueueRuleMergeConditions
         priority_rules: priority_rules_config.PriorityRules
+        require_branch_protection: bool
         branch_protection_injection_mode: queue.BranchProtectionInjectionModeT
 
     @classmethod
@@ -98,6 +100,11 @@ class QueueRule:
             "branch_protection_injection_mode",
             "queue",
         )
+        # NOTE(Syffe): with the new parameter branch_protection_injection_mode, require_branch_protection is now irrelevant,
+        # for now we keep it because it is subject to a deprecation process. We will need to do it as a separate pull request/process beside
+        # the implementation of branch_protection_injection_mode.
+        require_branch_protection = branch_protection_injection_mode == "queue"
+
         priority_rules = d.pop("priority_rules")
 
         # NOTE(sileht): backward compat
@@ -118,6 +125,7 @@ class QueueRule:
             merge_conditions=merge_conditions,
             queue_conditions=queue_conditions,
             priority_rules=priority_rules,
+            require_branch_protection=require_branch_protection,
             branch_protection_injection_mode=branch_protection_injection_mode,
         )
 
@@ -179,6 +187,7 @@ class QueueRule:
             queue_conditions=queue_conditions,
             config=self.config,
             priority_rules=self.priority_rules,
+            require_branch_protection=self.require_branch_protection,
             branch_protection_injection_mode=self.branch_protection_injection_mode,
         )
 
@@ -300,6 +309,7 @@ class QueueRules:
                 ),
                 config=rule.config,
                 priority_rules=rule.priority_rules,
+                require_branch_protection=rule.require_branch_protection,
                 branch_protection_injection_mode=rule.branch_protection_injection_mode,
             )
             for rule in self.rules
@@ -328,6 +338,7 @@ class QueueRules:
                 ),
                 config=rule.config,
                 priority_rules=rule.priority_rules,
+                require_branch_protection=rule.require_branch_protection,
                 branch_protection_injection_mode=rule.branch_protection_injection_mode,
             )
             for rule in self.rules
@@ -450,6 +461,7 @@ QueueRulesSchema = voluptuous.All(
                     [voluptuous.Coerce(cond_config.RuleConditionSchema)],
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
+                voluptuous.Required("require_branch_protection", default=True): bool,
                 voluptuous.Required(
                     "branch_protection_injection_mode",
                     default="queue",

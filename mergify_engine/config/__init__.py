@@ -631,6 +631,8 @@ class EngineSettings(
 
     HEALTHCHECK_SHARED_TOKEN: pydantic.SecretStr | None = None
 
+    ALLOW_REQUIRE_BRANCH_PROTECTION_QUEUE_ATTRIBUTE: bool = pydantic.Field(default=True)
+
     @classmethod
     def settings_customise_sources(
         cls,
