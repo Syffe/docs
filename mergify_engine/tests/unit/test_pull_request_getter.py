@@ -176,7 +176,6 @@ async def test_can_repo_use_pull_requests_in_pg(
         )
 
 
-@pytest.mark.populated_db_datasets("AccountAndRepo")
 async def test_same_pull_request_number_in_multiple_repo(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
