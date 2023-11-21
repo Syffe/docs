@@ -29,6 +29,7 @@ shared:
     - check-success=semgrep
     - check-success=actionlint
     - check-success=secrets-leakage
+    - check-success=poetry-wheel-check
     - check-success=test (1)
     - check-success=test (2)
     - check-success=test (3)

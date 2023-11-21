@@ -67,7 +67,6 @@ jobs:
           tools/poetry-ci-install.sh
           poetry run poe linters
 
-  # TODO(sileht): We need to validate the idea before adding this requirements to Mergify config
   poetry-wheel-check:
     timeout-minutes: 20
     runs-on: ubuntu-22.04
@@ -87,7 +86,11 @@ jobs:
           tools/poetry-ci-install.sh
           if ! poetry check --lock ; then
             cat <<EOF
-          Your local poetry cache as some missing wheels. To fix it run:
+          The poetry.lock is not in sync with pyproject.toml. To fix it run:
+          $ poetry update --lock
+          $ poetry check --lock
+
+          If the problem persist maybe also try this:
           $ poetry cache clear PyPI --all
           $ poetry update --lock
           $ poetry check --lock
