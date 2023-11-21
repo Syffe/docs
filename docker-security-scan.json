@@ -975,7 +975,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-31239",
-    "Title": "denial of service via the appendvfs.c function",
+    "Title": "sqlite: denial of service via the appendvfs.c function",
     "Severity": "HIGH",
     "PublishedDate": "2023-05-09T02:15:00Z"
   },
@@ -1495,7 +1495,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25815",
-    "Title": "malicious placement of crafted messages when git was compiled with runtime prefix",
+    "Title": "git: malicious placement of crafted messages when git was compiled with runtime prefix",
     "Severity": "LOW",
     "PublishedDate": "2023-04-25T20:15:00Z"
   },
@@ -1505,7 +1505,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25815",
-    "Title": "malicious placement of crafted messages when git was compiled with runtime prefix",
+    "Title": "git: malicious placement of crafted messages when git was compiled with runtime prefix",
     "Severity": "LOW",
     "PublishedDate": "2023-04-25T20:15:00Z"
   },
@@ -1605,7 +1605,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29007",
-    "Title": "arbitrary configuration injection when renaming or deleting a section from a configuration file",
+    "Title": "git: arbitrary configuration injection when renaming or deleting a section from a configuration file",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-25T21:15:00Z"
   },
@@ -1615,7 +1615,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29007",
-    "Title": "arbitrary configuration injection when renaming or deleting a section from a configuration file",
+    "Title": "git: arbitrary configuration injection when renaming or deleting a section from a configuration file",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-25T21:15:00Z"
   },
@@ -1918,16 +1918,6 @@
     "Title": "HTTP/2: Multiple HTTP/2 enabled web servers are vulnerable to a DDoS attack (Rapid Reset Attack)",
     "Severity": "HIGH",
     "PublishedDate": "2023-10-10T14:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-45853",
-    "PkgName": "zlib1g",
-    "Status": "affected",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-45853",
-    "Title": "zlib: integer overflow and resultant heap-based buffer overflow in zipOpenNewFileInZip4_6",
-    "Severity": "CRITICAL",
-    "PublishedDate": "2023-10-14T02:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-4641",
