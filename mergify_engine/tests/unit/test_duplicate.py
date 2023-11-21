@@ -179,13 +179,11 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "author": {
                     "email": "",
                     "name": "someone",
-                    "username": "someone",
                     "date": github_types.ISODateTimeType(date.utcnow().isoformat()),
                 },
                 "committer": {
                     "email": "",
                     "name": "someone-else",
-                    "username": "someone-else",
                     "date": github_types.ISODateTimeType(date.utcnow().isoformat()),
                 },
             },
@@ -213,13 +211,11 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "author": {
                     "email": "",
                     "name": "someone",
-                    "username": "someone",
                     "date": github_types.ISODateTimeType(date.utcnow().isoformat()),
                 },
                 "committer": {
                     "email": "",
                     "name": "someone-else",
-                    "username": "someone-else",
                     "date": github_types.ISODateTimeType(date.utcnow().isoformat()),
                 },
             },
@@ -324,13 +320,11 @@ async def test_get_commits_to_cherry_pick_merge(
             "verification": {"verified": True},
             "author": {
                 "name": "",
-                "username": "",
                 "email": "",
                 "date": github_types.ISODateTimeType(date.utcnow().isoformat()),
             },
             "committer": {
                 "name": "",
-                "username": "",
                 "email": "",
                 "date": github_types.ISODateTimeType(date.utcnow().isoformat()),
             },

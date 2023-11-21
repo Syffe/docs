@@ -228,13 +228,11 @@ def fake_client() -> mock.Mock:
                             "committer": {
                                 "email": "",
                                 "name": "",
-                                "username": "",
                                 "date": github_types.ISODateTimeType(""),
                             },
                             "author": {
                                 "email": "",
                                 "name": "",
-                                "username": "",
                                 "date": github_types.ISODateTimeType(""),
                             },
                         },
