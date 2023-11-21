@@ -523,27 +523,6 @@ class Repository:
         content.setdefault("encoding", "base64")
         return content_file_to_config_file(content)
 
-    async def get_commits(
-        self,
-        branch_name: github_types.GitHubRefType,
-    ) -> list[github_types.GitHubBranchCommit]:
-        """Returns the last commits from a branch.
-
-        This only returns the last 100 commits."""
-
-        commits = self._caches.commits.get(branch_name)
-        if commits is cache.Unset:
-            commits = typing.cast(
-                list[github_types.GitHubBranchCommit],
-                await self.installation.client.item(
-                    f"{self.base_url}/commits",
-                    params={"per_page": "100", "sha": branch_name},
-                ),
-            )
-            self._caches.commits.set(branch_name, commits)
-
-        return commits
-
     async def get_branch(
         self,
         branch_name: github_types.GitHubRefType,
