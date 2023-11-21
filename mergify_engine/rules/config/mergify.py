@@ -66,12 +66,14 @@ def merge_raw_configs(
     dest_config: dict[str, typing.Any],
 ) -> None:
     for rule_to_merge in ("pull_request_rules", "queue_rules", "partition_rules"):
-        dest_rules = dest_config.setdefault(rule_to_merge, [])
-        dest_rule_names = [rule["name"] for rule in dest_rules]
+        dest_rule_names = [rule["name"] for rule in dest_config.get(rule_to_merge, [])]
 
         for source_rule in extended_config.get(rule_to_merge, []):
             if source_rule["name"] not in dest_rule_names:
-                dest_rules.append(source_rule)
+                if rule_to_merge in dest_config:
+                    dest_config[rule_to_merge].append(source_rule)
+                else:
+                    dest_config[rule_to_merge] = [source_rule]
 
     for commands_restriction in extended_config.get("commands_restrictions", {}):
         dest_config["commands_restrictions"].setdefault(

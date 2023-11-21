@@ -2745,3 +2745,46 @@ async def test_rule_condition_walk_only_failing_conditions() -> None:
 
     for cond in conds.walk(yield_only_failing_conditions=True):
         assert cond.label == "label=foo"
+
+
+async def test_default_queue_rules() -> None:
+    empty_config_file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path=github_types.GitHubFilePath("whatever"),
+        decoded_content="",
+        encoding="base64",
+    )
+    extends_only_config_file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path=github_types.GitHubFilePath("whatever"),
+        decoded_content="extends: foobar",
+        encoding="base64",
+    )
+
+    empty_config = await mergify_conf.get_mergify_config_from_file(
+        mock.Mock(),
+        empty_config_file,
+    )
+    assert len(empty_config["queue_rules"].rules) == 1
+
+    installation = mock.Mock()
+    extends_repository_ctxt = mock.Mock(
+        installation=installation,
+        repo={"id": 4321},
+        is_mergify_installed=mock.AsyncMock(return_value={"installed": True}),
+        get_mergify_config=mock.AsyncMock(return_value=empty_config),
+    )
+    repository_ctxt = mock.Mock(installation=installation, repo={"id": 1234})
+    installation.get_repository_by_name = mock.AsyncMock(
+        return_value=extends_repository_ctxt,
+    )
+
+    extended_config = await mergify_conf.get_mergify_config_from_file(
+        repository_ctxt,
+        extends_only_config_file,
+    )
+    assert len(extended_config["queue_rules"].rules) == 1

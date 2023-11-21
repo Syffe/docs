@@ -644,7 +644,6 @@ def test_merge_raw_configs() -> None:
                 "speculative_checks": 3,
             },
         ],
-        "partition_rules": [],
     }
 
     mergify_conf.merge_raw_configs(source_config, dest_config)
@@ -654,11 +653,7 @@ def test_merge_raw_configs() -> None:
 def test_merge_raw_configs_empty() -> None:
     config: dict[str, typing.Any] = {}
     mergify_conf.merge_raw_configs({}, config)
-    assert config == {
-        "pull_request_rules": [],
-        "queue_rules": [],
-        "partition_rules": [],
-    }
+    assert config == {}
 
 
 def test_merge_raw_configs_src_empty() -> None:
@@ -673,8 +668,6 @@ def test_merge_raw_configs_src_empty() -> None:
     }
     mergify_conf.merge_raw_configs({}, config)
     assert config == {
-        "partition_rules": [],
-        "pull_request_rules": [],
         "queue_rules": [
             {
                 "allow_inplace_checks": False,
@@ -700,8 +693,6 @@ def test_merge_raw_configs_dest_empty() -> None:
         config,
     )
     assert config == {
-        "partition_rules": [],
-        "pull_request_rules": [],
         "queue_rules": [
             {
                 "allow_inplace_checks": False,
@@ -745,8 +736,6 @@ def test_merge_raw_override_and_new_rules() -> None:
         config,
     )
     assert config == {
-        "partition_rules": [],
-        "pull_request_rules": [],
         "queue_rules": [
             {
                 "allow_inplace_checks": False,
@@ -854,8 +843,6 @@ async def test_merge_rules_and_defaults() -> None:
 
     expected_result = {
         "extends": "extended_configuration.yml",
-        "partition_rules": [],
-        "queue_rules": [],
         "pull_request_rules": [
             {
                 "name": "new_rule",
