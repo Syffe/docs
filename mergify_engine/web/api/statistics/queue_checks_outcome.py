@@ -218,6 +218,11 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
     for event in events.all():
         partition_name = event.partition_name or partr_config.DEFAULT_PARTITION_NAME
         queue_name = qr_config.QueueName(event.queue_name)
+
+        # These partitions or queues may not exist anymore
+        if partition_name not in partition_names or queue_name not in queue_names:
+            continue
+
         if event.abort_code is None:
             data[partition_name][queue_name]["SUCCESS"] += 1
         else:
