@@ -78,9 +78,9 @@ targets:
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: (target-version = .*py)(3\\d+)(.*)
+      lineMatchPattern: (target-version = .*py)(3\d+)(.*)
     transformers:
-      - find: ^\\d+\\.\\d+
+      - find: ^\d+\.\d+
       - replacer:
           from: .
           to: ""
@@ -91,9 +91,9 @@ targets:
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: (python = \"~)(3\\.\\d+)(\")
+      lineMatchPattern: (python = \"~)(3\.\d+)(\")
     transformers:
-      - find: ^\\d+\\.\\d+
+      - find: ^\d+\.\d+
       - replaceRegexGroup: 2
   pyproject.toml-classifers-py-version:
     name: Update pyproject.toml python classifier version
@@ -101,9 +101,9 @@ targets:
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: (classifiers = .*)(3\\.\\d+)(.*)
+      lineMatchPattern: (classifiers = .*)(3\.\d+)(.*)
     transformers:
-      - find: ^\\d+\\.\\d+
+      - find: ^\d+\.\d+
       - replaceRegexGroup: 2
 
   # DATADOG MERGIFY INTEGRATION VERSION
