@@ -1,6 +1,7 @@
 import datetime
 import typing
 
+import annotated_types
 import fastapi
 import pydantic
 
@@ -61,6 +62,8 @@ async def get_repository_events(
     pull_request: typing.Annotated[
         github_types.GitHubPullRequestNumber | None,
         fastapi.Query(description="Get the events for the specified pull request"),
+        annotated_types.Ge(1),
+        annotated_types.Lt(security.PG_INT_MAX),
     ] = None,
     base_ref: typing.Annotated[
         github_types.GitHubRefType | None,

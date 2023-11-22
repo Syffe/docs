@@ -1,5 +1,6 @@
 import typing
 
+import annotated_types
 import daiquiri
 import fastapi
 import pydantic
@@ -70,6 +71,8 @@ async def get_pull_request_eventlogs(
     pull: typing.Annotated[
         github_types.GitHubPullRequestNumber,
         fastapi.Path(description="Pull request number"),
+        annotated_types.Ge(1),
+        annotated_types.Lt(security.PG_INT_MAX),
     ],
     current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:

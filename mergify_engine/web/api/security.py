@@ -32,6 +32,8 @@ ScopeT = typing.NewType("ScopeT", str)
 
 AUTH_CACHE_EXPIRE = datetime.timedelta(days=7)
 
+PG_INT_MAX = (2**31) - 1
+
 
 def NoStartingEndingHyphen(v: str) -> str:
     # FIXME(sileht): pydantic does not support look-ahead/look-behind regex
