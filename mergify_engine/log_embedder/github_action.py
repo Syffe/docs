@@ -12,6 +12,7 @@ import daiquiri
 from ddtrace import tracer
 import sqlalchemy
 from sqlalchemy import orm
+import sqlalchemy.ext.asyncio
 
 from mergify_engine import database
 from mergify_engine import date
@@ -37,14 +38,32 @@ WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP = re.compile(r"[\*\"/\\<>:|\?]")
 LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 LOG_EMBEDDER_MAX_ATTEMPTS = 30
 
+EXTRACT_DATA_QUERY_TEMPLATE = openai_api.ChatCompletionQuery(
+    role="user",
+    content="""Analyze the program logs I will provide you and identify the root cause of the program's failure.
+Your response must be an array of json object matching the following json structure.
+If you find only one failure, add only one object to the array.
+If you identify multiple source of failure, add multiple objects in the array.
+If you don't find the requested information, don't speculate, fill the field with json `null` value.
+JSON response structure:
+{"failures: [{json object}]"}
+JSON object structure:
+{
+"problem_type": "What is the root cause",
+"language": "The programming language of the program that produces these logs",
+"filename": "The filename where the error was raised.",
+"lineno": "The line number where the error was raised",
+"error": "The precise error type",
+"test_framework": "The framework that was running when the error was raised"
+"stack_trace: "The stack trace of the error",
+}
 
-ERROR_TITLE_QUERY_TEMPLATE = openai_api.ChatCompletionQuery(
-    "user",
-    """Analyze the following logs, spot the error and give me a
-meaningful title to qualify this error. Your answer must contain only the title. The logs:
-
+Logs:
 """,
-    100,
+    answer_size=500,
+    seed=1,
+    temperature=0,
+    response_format="json_object",
 )
 
 
@@ -52,6 +71,16 @@ meaningful title to qualify this error. Your answer must contain only the title.
 class UnexpectedLogEmbedderError(Exception):
     message: str
     log_extras: dict[str, typing.Any] = dataclasses.field(default_factory=dict)
+
+
+class ExtractedDataObject(typing.TypedDict):
+    problem_type: str | None
+    language: str | None
+    filename: str | None
+    lineno: str | None
+    error: str | None
+    test_framework: str | None
+    stack_trace: str | None
 
 
 async def embed_log(
@@ -167,7 +196,7 @@ async def get_tokenized_cleaned_log(
     max_embedding_tokens = openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
     max_chat_completion_tokens = (
         openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
-        - ERROR_TITLE_QUERY_TEMPLATE.get_tokens_size()
+        - EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
     )
 
     cleaned_tokens: list[int] = []
@@ -215,29 +244,38 @@ async def get_tokenized_cleaned_log(
     return cleaned_tokens, truncated_log
 
 
-async def set_ci_issue_name(
+async def extract_data_from_log(
     openai_client: openai_api.OpenAIClient,
+    session: sqlalchemy.ext.asyncio.AsyncSession,
     job: gh_models.WorkflowJob,
 ) -> None:
     if job.embedded_log is None:
-        raise RuntimeError("set_ci_issue_name called with job.embedded_log=None")
+        raise RuntimeError("extract_data_from_log called with job.embedded_log=None")
 
     query = openai_api.ChatCompletionQuery(
-        role=ERROR_TITLE_QUERY_TEMPLATE.role,
-        content=f"{ERROR_TITLE_QUERY_TEMPLATE.content}{job.embedded_log}",
-        answer_size=ERROR_TITLE_QUERY_TEMPLATE.answer_size,
+        role=EXTRACT_DATA_QUERY_TEMPLATE.role,
+        content=f"{EXTRACT_DATA_QUERY_TEMPLATE.content}{job.embedded_log}",
+        answer_size=EXTRACT_DATA_QUERY_TEMPLATE.answer_size,
+        seed=EXTRACT_DATA_QUERY_TEMPLATE.seed,
+        temperature=EXTRACT_DATA_QUERY_TEMPLATE.temperature,
+        response_format=EXTRACT_DATA_QUERY_TEMPLATE.response_format,
     )
 
     chat_completion = await openai_client.get_chat_completion(query)
-    title = chat_completion.get("choices", [{}])[0].get("message", {}).get("content")  # type: ignore[typeddict-item]
+    chat_response = chat_completion["choices"][0].get("message", {}).get("content")
 
-    if not title:
+    if not chat_response:
         raise UnexpectedLogEmbedderError(
-            "ChatGPT returned no title for the job log",
+            "ChatGPT returned no extracted data for the job log",
             log_extras={"chat_completion": chat_completion},
         )
 
-    job.ci_issue.name = title
+    extracted_data: list[ExtractedDataObject] = json.loads(chat_response)["failures"]
+
+    for data in extracted_data:
+        log_metadata = gh_models.WorkflowJobLogMetadata(workflow_job_id=job.id, **data)
+        session.add(log_metadata)
+        job.log_metadata.append(log_metadata)
 
 
 @contextlib.contextmanager
@@ -307,7 +345,7 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
     async with database.create_session() as session:
         stmt = (
             sqlalchemy.select(wjob)
-            .options(orm.joinedload(wjob.ci_issue))
+            .options(orm.joinedload(wjob.ci_issue), orm.joinedload(wjob.log_metadata))
             .join(gh_models.GitHubRepository)
             .join(
                 gh_models.GitHubAccount,
@@ -335,12 +373,14 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                     wjob.log_embedding.is_(None),
                     wjob.ci_issue_id.is_(None),
                     wjob.ci_issue.has(CiIssue.name.is_(None)),
+                    ~wjob.log_metadata.any(),
                 ),
             )
             .order_by(wjob.completed_at.asc())
             .limit(LOG_EMBEDDER_JOBS_BATCH_SIZE)
         )
-        jobs = (await session.scalars(stmt)).all()
+
+        jobs = (await session.scalars(stmt)).unique().all()
 
         LOG.info("log-embedder: %d jobs to embed", len(jobs), request=str(stmt))
 
@@ -358,16 +398,20 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                     if job.log_embedding is None:
                         await embed_log(openai_client, gcs_client, job)
 
+                    if job.embedded_log is not None:
+                        await extract_data_from_log(openai_client, session, job)
+                        if job.ci_issue is not None and job.ci_issue.name is None:
+                            job.ci_issue.name = job.log_metadata[0].problem_type
+
                     if (
                         job.log_status == gh_models.WorkflowJobLogStatus.EMBEDDED
                         and job.ci_issue_id is None
                     ):
                         await CiIssue.link_job_to_ci_issue(session, job)
+                        if job.ci_issue is not None and job.ci_issue.name is None:
+                            job.ci_issue.name = job.log_metadata[0].problem_type
 
                         refresh_ready_job_ids.append(job.id)
-
-                    if job.ci_issue is not None and job.ci_issue.name is None:
-                        await set_ci_issue_name(openai_client, job)
 
                 await session.commit()
 

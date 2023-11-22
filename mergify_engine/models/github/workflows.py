@@ -344,6 +344,12 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
         "head_sha",
     )
 
+    log_metadata: orm.Mapped[list[WorkflowJobLogMetadata]] = orm.relationship(
+        "WorkflowJobLogMetadata",
+        back_populates="workflow_job",
+        lazy="raise_on_sql",
+    )
+
     @sqlalchemy.ext.hybrid.hybrid_property
     def github_name(self) -> str:
         if self.matrix is not None:
@@ -510,3 +516,37 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
 
     def as_github_dict(self) -> GitHubWorkflowJobDict:
         return typing.cast(GitHubWorkflowJobDict, super().as_github_dict())
+
+
+class WorkflowJobLogMetadata(models.Base):
+    __tablename__ = "gha_workflow_job_log_metadata"
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        primary_key=True,
+        autoincrement=True,
+        anonymizer_config=None,
+    )
+
+    workflow_job_id: orm.Mapped[WorkflowJob] = orm.mapped_column(
+        sqlalchemy.ForeignKey("gha_workflow_job.id"),
+        anonymizer_config=None,
+        index=True,
+    )
+
+    workflow_job: orm.Mapped[WorkflowJob] = orm.relationship(
+        lazy="joined",
+    )
+
+    problem_type: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
+
+    language: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
+
+    filename: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
+
+    lineno: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
+
+    error: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
+
+    test_framework: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
+
+    stack_trace: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)

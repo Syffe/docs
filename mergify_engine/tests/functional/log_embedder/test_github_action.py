@@ -551,3 +551,71 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 assert JOB_IDS_BY_ISSUE[job_with_issue.ci_issue_id] == [
                     job.id for job in job_with_issue.ci_issue.jobs
                 ]
+
+    @pytest.mark.make_real_openai_calls()
+    async def test_extract_data_from_log(
+        self,
+    ) -> None:
+        async with database.create_session() as session:
+            with open(
+                f"{PATH_INPUT_JOBS_JSON}/37838584_575916772_17890412896_jobs.json",
+            ) as job_json_file:
+                job_json = json.load(job_json_file)
+
+                job_json.update(
+                    {
+                        "name": job_json["github_name"],
+                        "run_id": job_json["workflow_run_id"],
+                        "conclusion": "failure",
+                    },
+                )
+                job = await gh_models.WorkflowJob.insert(
+                    session,
+                    job_json,
+                    job_json["repository"],
+                )
+
+                with open(
+                    f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
+                ) as log_file:
+                    (
+                        tokens,
+                        truncated_log,
+                    ) = await github_action.get_tokenized_cleaned_log(
+                        log_file.readlines(),
+                    )
+
+                job.embedded_log = truncated_log
+                job.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
+                job.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+
+                async with openai_api.OpenAIClient() as openai_client:
+                    await github_action.extract_data_from_log(
+                        openai_client,
+                        session,
+                        job,
+                    )
+
+                await ci_issue.link_job_to_ci_issue(session, job)
+
+            await session.commit()
+            session.expunge_all()
+
+            job = await session.get_one(
+                gh_models.WorkflowJob,
+                job.id,
+                options=[orm.joinedload(gh_models.WorkflowJob.log_metadata)],
+            )
+
+            for metadata in job.log_metadata:
+                assert metadata.language == "JavaScript"
+                assert metadata.lineno == "15"
+                assert (
+                    metadata.stack_trace
+                    == """TypeError: Cannot read properties of undefined (reading 'id') at eval (eval at callAsyncFunction (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15143:16), <anonymous>:15:31) at processTicksAndRejections (node:internal/process/task_queues:96:5) at async main (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15236:20)"""
+                )
+                assert metadata.error == "TypeError"
+                assert (
+                    metadata.problem_type
+                    == "Attempting to access a property of an undefined object"
+                )

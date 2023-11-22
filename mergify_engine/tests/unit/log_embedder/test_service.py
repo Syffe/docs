@@ -112,7 +112,19 @@ async def test_embed_logs_on_controlled_data(
                     "index": 0,
                     "message": {
                         "role": "assistant",
-                        "content": "Toto title",
+                        "content": """{
+                                        "failures": [
+                                            {
+                                                "problem_type": "Toto title",
+                                                "language": "Python",
+                                                "filename": "toto.py",
+                                                "lineno": null,
+                                                "error": "Exception",
+                                                "test_framework": "pytest",
+                                                "stack_trace": ""
+                                            }
+                                        ]
+                                    }""",
                     },
                     "finish_reason": "stop",
                 },
@@ -270,7 +282,19 @@ async def test_embed_logs_on_various_data(
                     "index": 0,
                     "message": {
                         "role": "assistant",
-                        "content": "Toto title",
+                        "content": """{
+    "failures": [
+        {
+            "problem_type": "Toto title",
+            "language": "Python",
+            "filename": "toto.py",
+            "lineno": null,
+            "error": "Exception",
+            "test_framework": "pytest",
+            "stack_trace": ""
+        }
+    ]
+}""",
                     },
                     "finish_reason": "stop",
                 },
@@ -474,7 +498,19 @@ async def test_workflow_job_log_life_cycle(
                     "index": 0,
                     "message": {
                         "role": "assistant",
-                        "content": "Toto title",
+                        "content": """{
+    "failures": [
+        {
+            "problem_type": "Toto title",
+            "language": "Python",
+            "filename": "toto.py",
+            "lineno": null,
+            "error": "Exception",
+            "test_framework": "pytest",
+            "stack_trace": ""
+        }
+    ]
+}""",
                     },
                     "finish_reason": "stop",
                 },
@@ -497,7 +533,19 @@ async def test_workflow_job_log_life_cycle(
                     "index": 0,
                     "message": {
                         "role": "assistant",
-                        "content": "Toto title",
+                        "content": """{
+    "failures": [
+        {
+            "problem_type": "Toto title",
+            "language": "Python",
+            "filename": "toto.py",
+            "lineno": null,
+            "error": "Exception",
+            "test_framework": "pytest",
+            "stack_trace": ""
+        }
+    ]
+}""",
                     },
                     "finish_reason": "stop",
                 },
@@ -634,7 +682,19 @@ async def test_workflow_job_from_real_life(
                     "index": 0,
                     "message": {
                         "role": "assistant",
-                        "content": "Toto title",
+                        "content": """{
+    "failures": [
+        {
+            "problem_type": "Toto title",
+            "language": "Python",
+            "filename": "toto.py",
+            "lineno": null,
+            "error": "Exception",
+            "test_framework": "pytest",
+            "stack_trace": ""
+        }
+    ]
+}""",
                     },
                     "finish_reason": "stop",
                 },

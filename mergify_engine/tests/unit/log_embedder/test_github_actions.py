@@ -6,7 +6,7 @@ from mergify_engine.log_embedder import openai_api
 
 MAX_TOKENS_EMBEDDED_LOG = (
     openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
-    - github_action.ERROR_TITLE_QUERY_TEMPLATE.get_tokens_size()
+    - github_action.EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
 )
 
 

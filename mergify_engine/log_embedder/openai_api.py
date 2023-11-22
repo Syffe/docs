@@ -47,8 +47,11 @@ class OpenAiException(Exception):
     pass
 
 
+OpenAIModel = typing.Literal["gpt-4-1106-preview"]
+
+
 class ChatCompletionModel(typing.TypedDict):
-    name: str
+    name: OpenAIModel
     max_tokens: int
 
 
@@ -56,8 +59,9 @@ class ChatCompletionModel(typing.TypedDict):
 # according to max_tokens values because when we use it, it must be sorted that way
 OPENAI_CHAT_COMPLETION_MODELS: list[ChatCompletionModel] = sorted(
     [
-        ChatCompletionModel(name="gpt-3.5-turbo", max_tokens=4096),
-        ChatCompletionModel(name="gpt-3.5-turbo-16k", max_tokens=16384),
+        # NOTE(Kontrolix): We don't use the full token potential of 128k
+        # to avoid too much billing with unecessary amount of context
+        ChatCompletionModel(name="gpt-4-1106-preview", max_tokens=16384),
     ],
     key=lambda e: e["max_tokens"],
 )
@@ -82,6 +86,18 @@ class ChatCompletionMessage(typing.TypedDict):
     content: str
 
 
+class ChatCompletionResponseFormat(typing.TypedDict):
+    type: typing.Literal["text", "json_object"]
+
+
+class ChatCompletionJson(typing.TypedDict, total=False):
+    model: OpenAIModel
+    messages: list[ChatCompletionMessage]
+    response_format: ChatCompletionResponseFormat
+    seed: int | None
+    temperature: float | None
+
+
 class ChatCompletionChoice(typing.TypedDict):
     index: int
     message: ChatCompletionMessage
@@ -98,9 +114,27 @@ class ChatCompletionQuery:
     role: ChatCompletionRole
     content: str
     answer_size: int
+    response_format: typing.Literal["text", "json_object"] = "text"
+    seed: int | None = None
+    temperature: float | None = None
 
-    def json(self) -> ChatCompletionMessage:
-        return ChatCompletionMessage({"role": self.role, "content": self.content})
+    def json(self) -> ChatCompletionJson:
+        values = ChatCompletionJson(
+            {
+                "model": self.get_chat_completion_model()["name"],
+                "messages": [
+                    ChatCompletionMessage(role=self.role, content=self.content),
+                ],
+                "response_format": ChatCompletionResponseFormat(
+                    type=self.response_format,
+                ),
+            },
+        )
+        if self.seed is not None:
+            values["seed"] = self.seed
+        if self.seed is not None:
+            values["temperature"] = self.temperature
+        return values
 
     def get_tokens_size(self) -> int:
         return (
@@ -132,17 +166,9 @@ class OpenAIClient(http.AsyncClient):
         self,
         query: ChatCompletionQuery,
     ) -> ChatCompletionObject:
-        # NOTE(Kontrolix): nb_free_token_min_for_answer is the minimum number of tokens
-        # that we reserve in the max number of tokens of a model since the max number
-        # includes the inputs and the answer according to OpenAI documentation :
-        # https://platform.openai.com/docs/guides/gpt/managing-tokens
-
         response = await self.post(
             "chat/completions",
-            json={
-                "model": query.get_chat_completion_model()["name"],
-                "messages": [query.json()],
-            },
+            json=query.json(),
         )
 
         return typing.cast(ChatCompletionObject, response.json())
