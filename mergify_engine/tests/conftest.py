@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import re
+import time
 import typing
 from unittest import mock
 import uuid
@@ -43,6 +44,24 @@ from mergify_engine.web import root as web_root
 tardis.configure(extend_ignore_list=["mergify_engine.clients.github_app"])
 
 GITHUB_CI = utils.strtobool(os.getenv("CI", "false"))
+
+
+PYTEST_FIXTURES_TIMING = utils.strtobool(os.getenv("PYTEST_FIXTURES_TIMING", "false"))
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_fixture_setup(
+    fixturedef: typing.Any,
+    request: pytest.FixtureRequest,
+) -> abc.Generator[None, None, None]:
+    start = time.monotonic()
+
+    try:
+        yield
+    finally:
+        end = time.monotonic()
+        if PYTEST_FIXTURES_TIMING:
+            print(f"pytest_fixture_setup, request={request}, time={end - start}")
 
 
 def msgpack_fakedatetime_fixes(obj: typing.Any) -> typing.Any:
