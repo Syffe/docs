@@ -47,7 +47,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                     "name": "urgent",
                     "queue_conditions": [
                         "label=urgent-projA",
-                        "queue-partition-name=projA",
+                        "partition-name=projA",
                         "status-success=continuous-integration/fake-ci-A",
                     ],
                     "merge_conditions": [
@@ -60,13 +60,13 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                     "queue_conditions": [
                         {
                             "or": [
-                                "queue-partition-name!=projA",
+                                "partition-name!=projA",
                                 "status-success=continuous-integration/fake-ci-A",
                             ],
                         },
                         {
                             "or": [
-                                "queue-partition-name!=projB",
+                                "partition-name!=projB",
                                 "status-success=continuous-integration/fake-ci-B",
                             ],
                         },
@@ -156,7 +156,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                     "name": "urgent",
                     "queue_conditions": [
                         "label=urgent-projA",
-                        "queue-partition-name=projA",
+                        "partition-name=projA",
                         "status-success=continuous-integration/fake-ci-A",
                     ],
                     "merge_conditions": [
@@ -169,13 +169,13 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                     "queue_conditions": [
                         {
                             "or": [
-                                "queue-partition-name!=projA",
+                                "partition-name!=projA",
                                 "status-success=continuous-integration/fake-ci-A",
                             ],
                         },
                         {
                             "or": [
-                                "queue-partition-name!=projB",
+                                "partition-name!=projB",
                                 "status-success=continuous-integration/fake-ci-B",
                             ],
                         },
@@ -1649,13 +1649,13 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                     "merge_conditions": [
                         {
                             "or": [
-                                "queue-partition-name!=projA",
+                                "partition-name!=projA",
                                 "status-success=continuous-integration/fake-ci-A",
                             ],
                         },
                         {
                             "or": [
-                                "queue-partition-name!=projB",
+                                "partition-name!=projB",
                                 "status-success=continuous-integration/fake-ci-B",
                             ],
                         },

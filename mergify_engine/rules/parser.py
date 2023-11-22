@@ -116,6 +116,7 @@ CONDITION_PARSERS = {
     "sender": Parser.LOGIN_AND_TEAMS,
     "sender-permission": Parser.PERMISSION,
     "queue-partition-name": Parser.TEXT,
+    "partition-name": Parser.TEXT,
     "current-datetime": Parser.TIMESTAMP,
     "queue-name": Parser.TEXT,
 }

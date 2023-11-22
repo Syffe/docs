@@ -231,15 +231,15 @@ class BasePullRequest:
                 return started_at
             return date.RelativeDatetime(started_at)
 
-        if name == "queue-partition-name":
+        if name == "queue-partition-name" or name == "partition-name":
             return await partition_rules.get_evaluated_partition_names_from_context(
                 ctxt,
             )
 
         # NOTE(Syffe): this attribute in only used for merge-conditions internally. Because at this point
-        # we want only the partitions the PR is currently queued in. Whereas with "queue-partition-name"
-        # we return all the partitions the PR could be queued in.
-        if name == "queue-current-partition-name":
+        # we want only the partitions the PR is currently queued in. Whereas with "queue-partition-name" and
+        # "partition-name" we return all the partitions the PR could be queued in.
+        if name == "current-partition-name":
             return convoy.get_queue_pull_request_partition_names_from_context(ctxt)
 
         if name == "queue-dequeue-reason":
@@ -288,7 +288,7 @@ class BasePullRequest:
         if name in ("assignee", "assignees"):
             return [a["login"] for a in ctxt.pull["assignees"]]
 
-        if name.startswith("queue"):
+        if name.startswith("queue") or ("partition-name" in name):
             return await cls._get_consolidated_queue_data(ctxt, name)
 
         if name == "label":
@@ -864,13 +864,14 @@ class QueuePullRequest(BasePullRequest):
         "modified-files",
         "removed-files",
         "queue-partition-name",
+        "partition-name",
     )
 
     async def __getattr__(self, name: str) -> PullRequestAttributeType:
         fancy_name = name.replace("_", "-")
         if fancy_name in self.QUEUE_ATTRIBUTES:
-            if fancy_name == "queue-partition-name":
-                fancy_name = "queue-current-partition-name"
+            if fancy_name == "queue-partition-name" or fancy_name == "partition-name":
+                fancy_name = "current-partition-name"
             return await self._get_consolidated_data(self.queue_context, fancy_name)
         return await self._get_consolidated_data(self.context, fancy_name)
 
