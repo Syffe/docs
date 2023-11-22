@@ -1705,6 +1705,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 {
                     "name": "default",
                     "conditions": [],
+                    "require_branch_protection": False,
                 },
             ],
             "pull_request_rules": [
@@ -1714,7 +1715,6 @@ class TestQueueAction(base.FunctionalTestBase):
                     "actions": {
                         "queue": {
                             "name": "default",
-                            "require_branch_protection": False,
                         },
                     },
                 },
@@ -7870,6 +7870,7 @@ previous_failed_batches:
                     {
                         "name": "default",
                         "conditions": [],
+                        "branch_protection_injection_mode": "merge",
                     },
                 ],
                 "pull_request_rules": [
@@ -7883,7 +7884,6 @@ previous_failed_batches:
                             "queue": {
                                 "merge_method": "squash",
                                 "name": "default",
-                                "require_branch_protection": False,
                             },
                         },
                     },
@@ -7901,6 +7901,7 @@ previous_failed_batches:
                         "name": "default",
                         "conditions": [],
                         "merge_method": "squash",
+                        "branch_protection_injection_mode": "merge",
                     },
                 ],
                 "pull_request_rules": [
@@ -7913,7 +7914,6 @@ previous_failed_batches:
                         "actions": {
                             "queue": {
                                 "name": "default",
-                                "require_branch_protection": False,
                             },
                         },
                     },
@@ -7925,13 +7925,14 @@ previous_failed_batches:
         rules = f"""
 queue_rules:
   - name: default
-    conditions:
+    merge_conditions:
       - "check-success=Summary"
       - "check-success=ci/status"
       - "check-success=ci/service-test"
       - "check-success=ci/pipelines"
       - "#approved-reviews-by>=1"
       - "-label=flag:wait"
+    branch_protection_injection_mode: merge
 
 pull_request_rules:
   - name: merge
@@ -7946,7 +7947,6 @@ pull_request_rules:
       queue:
         name: default
         update_method: rebase
-        require_branch_protection: false
 """
         await self.setup_repo(rules)
 

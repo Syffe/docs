@@ -711,7 +711,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         train = await self.get_train()
         assert len(train._cars) == 0
         assert len(train._waiting_pulls) == 0
-
+        p1 = await self.get_pull(p1["number"])
         comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "edited")
 
         assert (

@@ -100,10 +100,7 @@ class QueueRule:
             "branch_protection_injection_mode",
             "queue",
         )
-        # NOTE(Syffe): with the new parameter branch_protection_injection_mode, require_branch_protection is now irrelevant,
-        # for now we keep it because it is subject to a deprecation process. We will need to do it as a separate pull request/process beside
-        # the implementation of branch_protection_injection_mode.
-        require_branch_protection = branch_protection_injection_mode == "queue"
+        require_branch_protection = d.pop("require_branch_protection")
 
         priority_rules = d.pop("priority_rules")
 

@@ -37,7 +37,7 @@ NOT_APPLICABLE_TEMPLATE = """<details>
 
 REQUIRE_BRANCH_PROTECTION_DEPRECATION_GHES = """
 :bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated option `require_branch_protection` in the queue action or the queue_rules.**
+> **The configuration uses the deprecated option `require_branch_protection` in the queue_rules.**
 > It must be replaced with the `queue_rules` option `branch_protection_injection_mode`.
 > The `require_branch_protection` option will be removed on a future version.
 > For more information and examples on how to use the `branch_protection_injection_mode` option: https://docs.mergify.com/actions/queue/#queue-rules
@@ -45,10 +45,10 @@ REQUIRE_BRANCH_PROTECTION_DEPRECATION_GHES = """
 
 REQUIRE_BRANCH_PROTECTION_DEPRECATION_SAAS = """
 :bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated option `require_branch_protection` in the queue action or the queue_rules.**
+> **The configuration uses the deprecated option `require_branch_protection` in the queue_rules.**
 > It must be replaced with the `queue_rules` option `branch_protection_injection_mode`.
-> A brownout for `require_branch_protection` is planned on October 20th, 2023.
-> The option will be removed on November 20th, 2023.
+> A brownout for `require_branch_protection` is planned on November 21st, 2023.
+> The option will be removed on December 20th, 2023.
 > For more information and examples on how to use the `branch_protection_injection_mode` option: https://docs.mergify.com/actions/queue/#queue-rules
 """
 
