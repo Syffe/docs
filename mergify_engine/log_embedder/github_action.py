@@ -66,6 +66,17 @@ Logs:
     response_format="json_object",
 )
 
+# NOTE(Kontrolix): This date is the date we merged https://github.com/Mergifyio/engine/pull/8919
+LOG_METADATA_MERGED_TIME = datetime.datetime(
+    2023,
+    11,
+    22,
+    14,
+    15,
+    00,
+    tzinfo=datetime.UTC,
+)
+
 
 @dataclasses.dataclass
 class UnexpectedLogEmbedderError(Exception):
@@ -373,7 +384,12 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                     wjob.log_embedding.is_(None),
                     wjob.ci_issue_id.is_(None),
                     wjob.ci_issue.has(CiIssue.name.is_(None)),
-                    ~wjob.log_metadata.any(),
+                    sqlalchemy.and_(
+                        ~wjob.log_metadata.any(),
+                        # NOTE(Kontrolix): Adding a filter on completed_at to avoid
+                        # trying to extract metadata on all previous embedded jobs
+                        wjob.completed_at > LOG_METADATA_MERGED_TIME,
+                    ),
                 ),
             )
             .order_by(wjob.completed_at.asc())
