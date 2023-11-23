@@ -2781,9 +2781,7 @@ async def test_default_queue_rules() -> None:
         installation=installation,
         repo={"id": 4321},
         is_mergify_installed=mock.AsyncMock(return_value={"installed": True}),
-        mergify_config=empty_config,
-        get_mergify_config_file=mock.AsyncMock(return_value=extends_only_config_file),
-        load_mergify_config=mock.AsyncMock(),
+        get_mergify_config_file=mock.AsyncMock(return_value=empty_config_file),
     )
     repository_ctxt = mock.Mock(installation=installation, repo={"id": 1234})
     installation.get_repository_by_name = mock.AsyncMock(

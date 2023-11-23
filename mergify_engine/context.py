@@ -440,7 +440,6 @@ class Repository:
 
     async def load_mergify_config(
         self,
-        allow_extend: bool = True,
         config_file: MergifyConfigFile | None = None,
     ) -> None:
         # Circular import
@@ -460,10 +459,6 @@ class Repository:
             mergify_config = await mergify_conf.get_mergify_config_from_file(
                 self,
                 config_file,
-                # FIXME(sileht): this is buggy by design, we have no idea if the cached version
-                # has extends extended or not... By chance, the repository pointed by `extends`
-                # does not use `extends` itself...
-                allow_extend=allow_extend,
             )
         except Exception as e:
             self._caches.mergify_config.set(e)

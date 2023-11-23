@@ -287,11 +287,8 @@ async def get_mergify_extended_config(
             error_path,
         )
 
-    try:
-        await extended_repository_ctxt.load_mergify_config(
-            allow_extend=False,
-        )
-    except context.ConfigurationFileAlreadyLoaded as e:
-        e.reraise_configuration_error()
-
-    return extended_repository_ctxt.mergify_config
+    return await get_mergify_config_from_file(
+        repository_ctxt,
+        config_file,
+        allow_extend=False,
+    )
