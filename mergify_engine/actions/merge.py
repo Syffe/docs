@@ -20,10 +20,7 @@ from mergify_engine.rules import types
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
-    from mergify_engine.rules.config import mergify as mergify_conf
-    from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config
-    from mergify_engine.rules.config import queue_rules as qr_config
 
 
 class MergeExecutorConfig(typing.TypedDict):
@@ -38,9 +35,6 @@ class MergeExecutor(
     actions.ActionExecutor["MergeAction", "MergeExecutorConfig"],
     merge_base.MergeUtilsMixin,
 ):
-    queue_rules: qr_config.QueueRules
-    partition_rules: partr_config.PartitionRules
-
     @property
     def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return ()
@@ -89,8 +83,6 @@ class MergeExecutor(
                     ],
                 },
             ),
-            action.queue_rules,
-            action.partition_rules,
         )
 
     async def run(self) -> check_api.Result:
@@ -112,11 +104,7 @@ class MergeExecutor(
                 ),
             )
             if report.conclusion == check_api.Conclusion.SUCCESS:
-                convoy = await merge_train.Convoy.from_context(
-                    self.ctxt,
-                    self.queue_rules,
-                    self.partition_rules,
-                )
+                convoy = await merge_train.Convoy.from_context(self.ctxt)
                 await convoy.remove_pull(
                     self.ctxt.pull["number"],
                     self.rule.get_signal_trigger(),
@@ -218,14 +206,3 @@ class MergeAction(actions.Action):
         return conditions_requirements
 
     executor_class = MergeExecutor
-
-    # NOTE(sileht): set by validate_config()
-    queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
-    partition_rules: partr_config.PartitionRules = dataclasses.field(
-        init=False,
-        repr=False,
-    )
-
-    def validate_config(self, mergify_config: mergify_conf.MergifyConfig) -> None:
-        self.queue_rules = mergify_config["queue_rules"]
-        self.partition_rules = mergify_config["partition_rules"]

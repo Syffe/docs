@@ -9,13 +9,13 @@ from mergify_engine import check_api
 from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine import queue as merge_queue
-from mergify_engine import rules
 from mergify_engine import subscription
 from mergify_engine.actions import queue
 from mergify_engine.clients import http
 from mergify_engine.rules import checks_status
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.unit import conftest
 
 
@@ -380,89 +380,103 @@ async def test_get_rule_checks_status(
     ) == conclusion
 
 
-def create_queue_action(queue_rule_config: dict[str, typing.Any]) -> queue.QueueAction:
-    action = queue.QueueAction({})
-
-    default_queue_rule_config = {
-        "name": "default",
-        "speculative_checks": 1,
-        "allow_inplace_checks": True,
-        "batch_size": 1,
-        "queue_branch_merge_method": None,
-    }
-    default_queue_rule_config.update(queue_rule_config)
-
-    action.queue_rule = mock.Mock()
-    action.queue_rule.config = default_queue_rule_config
-
-    return action
-
-
-def create_context_with_branch_protection_required_status_checks_strict() -> (
-    mock.AsyncMock
-):
-    protection = {
+GITHUB_BRANCH_PROTECTION = github_types.GitHubBranchProtection(
+    {
         "required_status_checks": {
             "strict": True,
             "contexts": [],
         },
-        "required_pull_request_reviews": None,
-        "restrictions": None,
-        "enforce_admins": False,
-    }
-    ctxt = mock.AsyncMock()
-    ctxt.repository.get_branch_protection.return_value = protection
-    return ctxt
+    },
+)
 
 
 @pytest.mark.parametrize(
-    ("queue_rule_config", "queue_executor_config"),
+    ("queue_rules", "queue_executor_config"),
     (
-        ({}, {}),
+        ([{"name": "default"}], {}),
         (
-            {"batch_size": 5, "queue_branch_merge_method": "fast-forward"},
+            [
+                {
+                    "name": "default",
+                    "speculative_checks": 1,
+                    "allow_inplace_checks": True,
+                    "batch_size": 5,
+                    "queue_branch_merge_method": "fast-forward",
+                },
+            ],
             {},
         ),
         (
-            {},
-            {"update_method": "rebase", "update_bot_account": "test"},
+            [
+                {
+                    "name": "default",
+                    "speculative_checks": 1,
+                    "allow_inplace_checks": True,
+                    "batch_size": 1,
+                    "queue_branch_merge_method": None,
+                },
+            ],
+            [{"update_method": "rebase", "update_bot_account": "test"}],
         ),
     ),
 )
 async def test_required_status_checks_strict_compatibility_with_queue_rules(
-    queue_rule_config: dict[str, typing.Any],
+    queue_rules: list[dict[str, typing.Any]],
     queue_executor_config: dict[str, typing.Any],
+    context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    action = create_queue_action(queue_rule_config)
-    ctxt = create_context_with_branch_protection_required_status_checks_strict()
+    action = queue.QueueAction({})
+
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository._caches.branch_protections[
+        github_types.GitHubRefType("main")
+    ] = GITHUB_BRANCH_PROTECTION
+    ctxt.repository.mergify_config["queue_rules"] = qr_config.QueueRulesSchema(
+        queue_rules,
+    )
+
     queue_executor = await queue.QueueExecutor.create(action, ctxt, mock.Mock())
     queue_executor.config.update(queue_executor_config)  # type: ignore[typeddict-item]
+    print(queue_executor.config)
+    print(queue_executor.config)
 
     # Nothing raised
     await queue.QueueExecutor._check_config_compatibility_with_branch_protection(
         ctxt,
-        action.queue_rule.config,
+        ctxt.repository.mergify_config["queue_rules"][
+            qr_config.QueueName("default")
+        ].config,
         queue_executor.config,
     )
 
 
 @pytest.mark.parametrize(
     (
-        "queue_rule_config",
+        "queue_rules",
         "queue_executor_config",
         "expected_config_error_configuration",
         "expected_config_error_required_additional_configuration",
     ),
     (
-        ({"batch_size": 2}, {"update_method": "merge"}, "batch_size>1", None),
         (
-            {"speculative_checks": 2},
+            [
+                {
+                    "name": "default",
+                    "batch_size": 2,
+                },
+            ],
+            {"update_method": "merge"},
+            "batch_size>1",
+            None,
+        ),
+        (
+            [{"name": "default", "speculative_checks": 2}],
             {},
             "speculative_checks>1",
             None,
         ),
         (
-            {"allow_inplace_checks": False},
+            [{"name": "default", "allow_inplace_checks": False}],
             {},
             "allow_inplace_checks=false",
             None,
@@ -470,20 +484,29 @@ async def test_required_status_checks_strict_compatibility_with_queue_rules(
     ),
 )
 async def test_required_status_checks_strict_incompatibility_with_queue_rules(
-    queue_rule_config: dict[str, typing.Any],
+    context_getter: conftest.ContextGetterFixture,
+    queue_rules: list[dict[str, typing.Any]],
     queue_executor_config: dict[str, typing.Any],
     expected_config_error_configuration: str,
     expected_config_error_required_additional_configuration: str | None,
 ) -> None:
-    action = create_queue_action(queue_rule_config)
-    ctxt = create_context_with_branch_protection_required_status_checks_strict()
+    action = queue.QueueAction({})
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository._caches.branch_protections[
+        github_types.GitHubRefType("main")
+    ] = GITHUB_BRANCH_PROTECTION
+    ctxt.repository.mergify_config["queue_rules"] = qr_config.QueueRulesSchema(
+        queue_rules,
+    )
     queue_executor = await queue.QueueExecutor.create(action, ctxt, mock.Mock())
     queue_executor.config.update(queue_executor_config)  # type: ignore[typeddict-item]
 
     with pytest.raises(queue.IncompatibleBranchProtection) as e:
         await queue.QueueExecutor._check_config_compatibility_with_branch_protection(
             ctxt,
-            action.queue_rule.config,
+            ctxt.repository.mergify_config["queue_rules"][
+                qr_config.QueueName("default")
+            ].config,
             queue_executor.config,
         )
 
@@ -514,31 +537,30 @@ async def test_required_status_checks_strict_incompatibility_with_queue_rules(
 async def test_action_rules_in_queue_rules(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    queue_rules = rules.UserConfigurationSchema(
+    queue_rules = [
         {
-            "queue_rules": [
-                {
-                    "name": "default",
-                    "commit_message_template": "test",
-                    "merge_method": "rebase",
-                    "merge_bot_account": "test",
-                    "update_method": "rebase",
-                    "update_bot_account": "test",
-                    "merge_conditions": [],
-                },
-            ],
+            "name": "default",
+            "commit_message_template": "test",
+            "merge_method": "rebase",
+            "merge_bot_account": "test",
+            "update_method": "rebase",
+            "update_bot_account": "test",
+            "merge_conditions": [],
         },
-    )
+    ]
 
     action = queue.QueueAction({})
-    action.queue_rule = queue_rules["queue_rules"]["default"]
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.mergify_config["queue_rules"] = qr_config.QueueRulesSchema(
+        queue_rules,
+    )
     evaluated_pull_request_rule = mock.Mock()
     executor = await action.executor_class.create(
         action,
         ctxt,
         evaluated_pull_request_rule,
     )
+    await executor._set_action_queue_rule()
     executor._set_action_config_from_queue_rules()
 
     assert executor.config["commit_message_template"] == "test"
@@ -616,37 +638,38 @@ async def test_check_method_fastforward_configuration(
     expected_message: str,
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    queue_rules = rules.UserConfigurationSchema(
+    queue_rules = [
         {
-            "queue_rules": [
-                {
-                    "name": "default",
-                    "commit_message_template": commit_message_template,
-                    "update_method": update_method,
-                    "batch_size": batch_size,
-                    "speculative_checks": speculative_checks,
-                    "allow_inplace_checks": allow_inplace_checks,
-                },
-            ],
+            "name": "default",
+            "commit_message_template": commit_message_template,
+            "update_method": update_method,
+            "batch_size": batch_size,
+            "speculative_checks": speculative_checks,
+            "allow_inplace_checks": allow_inplace_checks,
         },
-    )
+    ]
 
     action = queue.QueueAction({})
-    action.queue_rule = queue_rules["queue_rules"]["default"]
     action.config["merge_method"] = "fast-forward"
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.mergify_config["queue_rules"] = qr_config.QueueRulesSchema(
+        queue_rules,
+    )
     evaluated_pull_request_rule = mock.Mock()
     executor = await action.executor_class.create(
         action,
         ctxt,
         evaluated_pull_request_rule,
     )
+    await executor._set_action_queue_rule()
     executor._set_action_config_from_queue_rules()
 
     with pytest.raises(queue.InvalidQueueConfiguration) as e:
         executor._check_method_fastforward_configuration(
             config=executor.config,
-            queue_rule=executor.queue_rule,
+            queue_rule=ctxt.repository.mergify_config["queue_rules"][
+                qr_config.QueueName("default")
+            ],
         )
 
     assert e.value.title == expected_title
@@ -656,28 +679,30 @@ async def test_check_method_fastforward_configuration(
 async def test_check_queue_branch_merge_method_fastforward_with_partition_rules(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    config = rules.UserConfigurationSchema(
+    queue_rules = [
         {
-            "queue_rules": [
-                {
-                    "name": "default",
-                    "allow_inplace_checks": False,
-                    "queue_branch_merge_method": "fast-forward",
-                },
-            ],
-            "partition_rules": [
-                {
-                    "name": "projA",
-                    "conditions": [],
-                },
-            ],
+            "name": "default",
+            "allow_inplace_checks": False,
+            "queue_branch_merge_method": "fast-forward",
         },
-    )
+    ]
+    partition_rules = [
+        {
+            "name": "projA",
+            "conditions": [],
+        },
+    ]
 
     action = queue.QueueAction({})
-    action.partition_rules = config["partition_rules"]
-    action.queue_rules = config["queue_rules"]
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.mergify_config["queue_rules"] = qr_config.QueueRulesSchema(
+        queue_rules,
+    )
+    ctxt.repository.mergify_config[
+        "partition_rules"
+    ] = partr_config.PartitionRulesSchema(
+        partition_rules,
+    )
     evaluated_pull_request_rule = mock.Mock()
     executor = await action.executor_class.create(
         action,
@@ -701,60 +726,53 @@ async def test_check_queue_branch_merge_method_fastforward_with_partition_rules(
     ),
     (
         (
-            {
-                "queue_rules": [
-                    {
-                        "name": "default",
-                        "batch_size": 2,
-                        "speculative_checks": 2,
-                    },
-                    {
-                        "name": "test",
-                        "batch_size": 2,
-                        "speculative_checks": 2,
-                    },
-                ],
-            },
+            [
+                {
+                    "name": "default",
+                    "batch_size": 2,
+                    "speculative_checks": 2,
+                },
+                {
+                    "name": "test",
+                    "batch_size": 2,
+                    "speculative_checks": 2,
+                },
+            ],
             "Cannot use multiple queues.",
         ),
         (
-            {
-                "queue_rules": [
-                    {
-                        "name": "default",
-                        "batch_size": 2,
-                        "speculative_checks": 2,
-                    },
-                ],
-            },
+            [
+                {
+                    "name": "default",
+                    "batch_size": 2,
+                    "speculative_checks": 2,
+                },
+            ],
             "Cannot use `speculative_checks` with queue action.",
         ),
         (
-            {
-                "queue_rules": [
-                    {
-                        "name": "default",
-                        "batch_size": 2,
-                        "speculative_checks": 1,
-                    },
-                ],
-            },
+            [
+                {
+                    "name": "default",
+                    "batch_size": 2,
+                    "speculative_checks": 1,
+                },
+            ],
             "Cannot use `batch_size` with queue action.",
         ),
     ),
 )
 async def test_check_subscription_status(
-    queue_rules: dict[str, typing.Any],
+    queue_rules: list[dict[str, typing.Any]],
     expected_title: str,
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    queue_rules = rules.UserConfigurationSchema(queue_rules)
-
     action = queue.QueueAction({})
-    action.queue_rule = queue_rules["queue_rules"]["default"]
-    action.queue_rules = queue_rules["queue_rules"]
     action.config["priority"] = merge_queue.PriorityAliases.high.value
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.mergify_config["queue_rules"] = qr_config.QueueRulesSchema(
+        queue_rules,
+    )
     ctxt.subscription.features = frozenset(
         {
             subscription.Features.PUBLIC_REPOSITORY,
@@ -770,7 +788,8 @@ async def test_check_subscription_status(
         ctxt,
         evaluated_pull_request_rule,
     )
-    executor.partition_rules = partr_config.PartitionRules([])
+    ctxt.repository.mergify_config["partition_rules"] = partr_config.PartitionRules([])
+    await executor._set_action_queue_rule()
     executor._set_action_config_from_queue_rules()
 
     with pytest.raises(queue.InvalidQueueConfiguration) as e:

@@ -1422,6 +1422,7 @@ class Context:
             self._caches.review_decision.set(review_decision)
         return review_decision
 
+    # FIXME(sileht): move me in condition_value_querier as it's only used there
     async def is_pr_queued_above(
         self,
         dependent_pr_number: github_types.GitHubPullRequestNumber,
@@ -1429,13 +1430,7 @@ class Context:
         # Circular import
         from mergify_engine.queue import merge_train
 
-        queue_rules = self.repository.mergify_config["queue_rules"]
-        partition_rules = self.repository.mergify_config["partition_rules"]
-        convoy = await merge_train.Convoy.from_context(
-            self,
-            queue_rules,
-            partition_rules,
-        )
+        convoy = await merge_train.Convoy.from_context(self)
 
         list_dependent_pr = await convoy.find_embarked_pull(dependent_pr_number)
         if not list_dependent_pr:

@@ -239,7 +239,9 @@ class Train:
 
     async def _sync_configuration_change(self) -> None:
         for i, (embarked_pull, _) in enumerate(list(self._iter_embarked_pulls())):
-            queue_rule = self.convoy.queue_rules.get(embarked_pull.config["name"])
+            queue_rule = self.convoy.repository.mergify_config["queue_rules"].get(
+                embarked_pull.config["name"],
+            )
             if queue_rule is None:
                 # NOTE(sileht): We just slice the cars list here, so when the
                 # car will be recreated if the rule doesn't exists anymore, the
@@ -273,7 +275,9 @@ class Train:
             # we need to ensure that the PR doesn't match any other partition before we reset it.
             partition_rule_to_evaluate = [
                 rule.copy()
-                for rule in self.convoy.partition_rules.rules
+                for rule in self.convoy.repository.mergify_config[
+                    "partition_rules"
+                ].rules
                 if not rule.fallback_partition
             ]
         else:
@@ -281,7 +285,9 @@ class Train:
             # the current train.
             partition_rule_to_evaluate = [
                 rule.copy()
-                for rule in self.convoy.partition_rules.rules
+                for rule in self.convoy.repository.mergify_config[
+                    "partition_rules"
+                ].rules
                 if rule.name == self.partition_name
             ]
 
@@ -436,7 +442,9 @@ class Train:
         # NOTE(charly): ensure there is no configuration change since the train
         # creation
         for embarked_pull, _ in list(self._iter_embarked_pulls()):
-            queue_rule = self.convoy.queue_rules.get(embarked_pull.config["name"])
+            queue_rule = self.convoy.repository.mergify_config["queue_rules"].get(
+                embarked_pull.config["name"],
+            )
             if queue_rule is None:
                 await self._remove_pull(
                     embarked_pull.user_pull_request_number,
@@ -444,15 +452,17 @@ class Train:
                     queue_utils.QueueRuleMissing(),
                 )
 
-        new_pull_queue_rule = self.convoy.queue_rules[config["name"]]
+        new_pull_queue_rule = self.convoy.repository.mergify_config["queue_rules"][
+            config["name"]
+        ]
         best_position = -1
         need_to_be_readded = False
         frozen_queues = await self.convoy.get_frozen_queue_names()
 
         for position, (embarked_pull, car) in enumerate(self._iter_embarked_pulls()):
-            embarked_pull_queue_rule = self.convoy.queue_rules[
-                embarked_pull.config["name"]
-            ]
+            embarked_pull_queue_rule = self.convoy.repository.mergify_config[
+                "queue_rules"
+            ][embarked_pull.config["name"]]
             car_can_be_interrupted = car is None or (
                 (
                     car.can_be_interrupted()
@@ -786,13 +796,15 @@ class Train:
 
         queue_name = car.get_queue_name()
         try:
-            queue_rule = self.convoy.queue_rules[queue_name]
+            queue_rule = self.convoy.repository.mergify_config["queue_rules"][
+                queue_name
+            ]
         except KeyError:
             # We just need to wait the pull request has been removed from
             # the queue by the action
             self.log.info(
                 "cant split failed batch train_car.TrainCar, queue rule does not exist anymore",
-                queue_rules=self.convoy.queue_rules,
+                queue_rules=self.convoy.repository.mergify_config["queue_rules"],
                 queue_name=queue_name,
             )
             return
@@ -911,13 +923,13 @@ class Train:
         ):
             queue_name = self._cars[0].get_queue_name()
             try:
-                self.convoy.queue_rules[queue_name]
+                self.convoy.repository.mergify_config["queue_rules"][queue_name]
             except KeyError:
                 # We just need to wait the pull request has been removed from
                 # the queue by the action
                 self.log.info(
                     "can't start testing second half of a failed batch train_car.TrainCar, queue rule does not exist anymore",
-                    queue_rules=self.convoy.queue_rules,
+                    queue_rules=self.convoy.repository.mergify_config["queue_rules"],
                     queue_name=queue_name,
                 )
                 return
@@ -1047,7 +1059,6 @@ class Train:
             queue_freeze.name
             async for queue_freeze in freeze.QueueFreeze.get_all_non_cascading(
                 self.convoy.repository,
-                self.convoy.queue_rules,
             )
         }
 
@@ -1069,13 +1080,15 @@ class Train:
             )
 
         try:
-            queue_rule = self.convoy.queue_rules[head.config["name"]]
+            queue_rule = self.convoy.repository.mergify_config["queue_rules"][
+                head.config["name"]
+            ]
         except KeyError:
             # We just need to wait the pull request has been removed from
             # the queue by the action
             self.log.info(
                 "cant populate cars, queue rule does not exist",
-                queue_rules=self.convoy.queue_rules,
+                queue_rules=self.convoy.repository.mergify_config["queue_rules"],
                 queue_name=head.config["name"],
             )
             car = train_car.TrainCar(

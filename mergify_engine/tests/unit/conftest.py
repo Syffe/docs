@@ -150,8 +150,6 @@ def fake_repository(
 def fake_convoy(fake_repository: context.Repository) -> merge_train.Convoy:
     return merge_train.Convoy(
         fake_repository,
-        QUEUE_RULES,
-        PARTITION_RULES,
         github_types.GitHubRefType("main"),
     )
 

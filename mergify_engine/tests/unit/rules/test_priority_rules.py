@@ -85,6 +85,7 @@ pull_request_rules:
     )
 
     ctxt = await context_getter(1, labels=[{"name": label} for label in labels])
+    ctxt.repository._caches.mergify_config.set(config)
     ctxt.repository._caches.branch_protections.set(
         github_types.GitHubRefType("main"),
         None,

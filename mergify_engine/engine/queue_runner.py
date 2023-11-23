@@ -1,17 +1,11 @@
 from mergify_engine import context
 from mergify_engine.queue import merge_train
-from mergify_engine.rules.config import partition_rules as partr_config
-from mergify_engine.rules.config import queue_rules as qr_config
 
 
-async def handle(
-    ctxt: context.Context,
-    queue_rules: qr_config.QueueRules,
-    partition_rules: partr_config.PartitionRules,
-) -> None:
+async def handle(ctxt: context.Context) -> None:
     # FIXME: Maybe create a command to force the retesting to put back the PR in the queue?
 
-    convoy = await merge_train.Convoy.from_context(ctxt, queue_rules, partition_rules)
+    convoy = await merge_train.Convoy.from_context(ctxt)
 
     cars = convoy.get_train_cars_by_tmp_pull(ctxt)
     if not cars:
@@ -31,13 +25,12 @@ async def handle(
         return
 
     for car in cars:
-        await _handle_car(ctxt, car, queue_rules)
+        await _handle_car(ctxt, car)
 
 
 async def _handle_car(
     ctxt: context.Context,
     car: merge_train.TrainCar,
-    queue_rules: qr_config.QueueRules,
 ) -> None:
     if (
         car.train_car_state.outcome != merge_train.TrainCarOutcome.UNKNOWN
@@ -65,6 +58,7 @@ async def _handle_car(
     )
 
     queue_name = car.still_queued_embarked_pulls[0].config["name"]
+    queue_rules = ctxt.repository.mergify_config["queue_rules"]
     try:
         queue_rules[queue_name]
     except KeyError:

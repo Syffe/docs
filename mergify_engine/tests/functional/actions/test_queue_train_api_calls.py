@@ -109,7 +109,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         )
         q._cars.append(car)
 
-        q.convoy.queue_rules = qr_config.QueueRules(
+        self.repository_ctxt.mergify_config["queue_rules"] = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
@@ -250,7 +250,7 @@ pull_requests:
         )
         q._cars.append(car)
 
-        q.convoy.queue_rules = qr_config.QueueRules(
+        self.repository_ctxt.mergify_config["queue_rules"] = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
@@ -357,7 +357,7 @@ pull_requests:
         )
         q._cars.append(car)
 
-        q.convoy.queue_rules = qr_config.QueueRules(
+        self.repository_ctxt.mergify_config["queue_rules"] = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
@@ -441,7 +441,7 @@ pull_requests:
             base_sha,
         )
 
-        q.convoy.queue_rules = qr_config.QueueRules(
+        self.repository_ctxt.mergify_config["queue_rules"] = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),

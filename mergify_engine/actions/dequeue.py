@@ -15,10 +15,7 @@ from mergify_engine.queue import utils as queue_utils
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
-    from mergify_engine.rules.config import mergify as mergify_conf
-    from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config
-    from mergify_engine.rules.config import queue_rules as qr_config
 
 
 class DequeueExecutorConfig(typing.TypedDict):
@@ -29,9 +26,6 @@ class DequeueExecutorConfig(typing.TypedDict):
 class DequeueExecutor(
     actions.ActionExecutor["DequeueCommand", "DequeueExecutorConfig"],
 ):
-    queue_rules: qr_config.QueueRules
-    partition_rules: partr_config.PartitionRules
-
     @classmethod
     async def create(
         cls,
@@ -43,16 +37,10 @@ class DequeueExecutor(
             ctxt,
             rule,
             DequeueExecutorConfig(),
-            action.queue_rules,
-            action.partition_rules,
         )
 
     async def run(self) -> check_api.Result:
-        convoy = await merge_train.Convoy.from_context(
-            self.ctxt,
-            self.queue_rules,
-            self.partition_rules,
-        )
+        convoy = await merge_train.Convoy.from_context(self.ctxt)
         queue_name = await convoy.get_queue_name_from_pull_request_number(
             self.ctxt.pull["number"],
         )
@@ -154,13 +142,3 @@ class DequeueCommand(actions.Action):
     ]
 
     required_feature_for_command = subscription.Features.MERGE_QUEUE
-
-    queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
-    partition_rules: partr_config.PartitionRules = dataclasses.field(
-        init=False,
-        repr=False,
-    )
-
-    def validate_config(self, mergify_config: mergify_conf.MergifyConfig) -> None:
-        self.queue_rules = mergify_config["queue_rules"]
-        self.partition_rules = mergify_config["partition_rules"]

@@ -8130,8 +8130,6 @@ pull_request_rules:
             q
             async for convoy in merge_train.Convoy.iter_convoys(
                 self.repository_ctxt,
-                self.get_queue_rules(),
-                self.get_partition_rules(),
             )
             for q in convoy.iter_trains()
         ]
@@ -8148,11 +8146,7 @@ pull_request_rules:
 
         queues = [
             q
-            async for convoy in merge_train.Convoy.iter_convoys(
-                self.repository_ctxt,
-                self.get_queue_rules(),
-                self.get_partition_rules(),
-            )
+            async for convoy in merge_train.Convoy.iter_convoys(self.repository_ctxt)
             for q in convoy.iter_trains()
         ]
         assert len(queues) == 0

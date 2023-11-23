@@ -86,22 +86,18 @@ class BranchPartitions:
 )
 async def repository_partitions(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: security.RepositoryWithConfig,
 ) -> list[BranchPartitions]:
     partition_list = []
 
     async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt,
-        queue_rules,
-        partition_rules,
     ):
         branch_partitions = BranchPartitions(branch_name=convoy.ref, partitions={})
 
-        for rule in partition_rules:
+        for rule in repository_ctxt.mergify_config["partition_rules"]:
             branch_partitions.partitions.setdefault(rule.name, [])
-        if not partition_rules:
+        if not repository_ctxt.mergify_config["partition_rules"]:
             branch_partitions.partitions.setdefault(
                 partr_config.DEFAULT_PARTITION_NAME,
                 [],
@@ -116,7 +112,9 @@ async def repository_partitions(
                 train._iter_embarked_pulls(),
             ):
                 try:
-                    queue_rule = queue_rules[embarked_pull.config["name"]]
+                    queue_rule = repository_ctxt.mergify_config["queue_rules"][
+                        embarked_pull.config["name"]
+                    ]
                 except KeyError:
                     # This car is going to be deleted so skip it
                     continue
@@ -137,7 +135,6 @@ async def repository_partitions(
                     estimated_time_of_merge
                 ) = await estimated_time_to_merge.get_estimation(
                     session,
-                    partition_rules,
                     train,
                     embarked_pull,
                     position - previous_queue_idx,
@@ -182,19 +179,18 @@ async def repository_partitions(
 async def repository_partitions_branch(
     session: database.Session,
     branch_name: security.BranchFromPath,
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: security.RepositoryWithConfig,
 ) -> BranchPartitions:
     branch_partitions = BranchPartitions(branch_name=branch_name, partitions={})
 
     convoy = merge_train.Convoy(
         repository_ctxt,
-        queue_rules,
-        partition_rules,
         branch_name,
     )
     await convoy.load_from_redis()
+
+    partition_rules = repository_ctxt.mergify_config["partition_rules"]
+    queue_rules = repository_ctxt.mergify_config["queue_rules"]
 
     for rule in partition_rules:
         branch_partitions.partitions.setdefault(rule.name, [])
@@ -214,7 +210,6 @@ async def repository_partitions_branch(
                 estimated_time_of_merge
             ) = await estimated_time_to_merge.get_estimation(
                 session,
-                partition_rules,
                 train,
                 embarked_pull,
                 position,
@@ -253,10 +248,11 @@ async def repository_partition_branch(
     session: database.Session,
     partition_name: security.PartitionNameFromPath,
     branch_name: security.BranchFromPath,
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: security.RepositoryWithConfig,
 ) -> Partition | None:
+    partition_rules = repository_ctxt.mergify_config["partition_rules"]
+    queue_rules = repository_ctxt.mergify_config["queue_rules"]
+
     if (
         partition_name != partr_config.DEFAULT_PARTITION_NAME
         and partition_name not in partition_rules
@@ -269,8 +265,6 @@ async def repository_partition_branch(
     partition = Partition(pull_requests=[])
     convoy = merge_train.Convoy(
         repository_ctxt,
-        queue_rules,
-        partition_rules,
         branch_name,
     )
     await convoy.load_from_redis()
@@ -292,7 +286,6 @@ async def repository_partition_branch(
                 estimated_time_of_merge
             ) = await estimated_time_to_merge.get_estimation(
                 session,
-                partition_rules,
                 train,
                 embarked_pull,
                 position,

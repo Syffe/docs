@@ -10,7 +10,6 @@ import msgpack
 from mergify_engine import date
 from mergify_engine import worker_pusher
 from mergify_engine.queue import merge_train
-from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
 
@@ -104,7 +103,6 @@ class QueueFreeze:
     async def get_all(
         cls,
         repository: context.Repository,
-        queue_rules: qr_config.QueueRules,
     ) -> abc.AsyncGenerator[QueueFreeze, None]:
         async for (
             key,
@@ -115,7 +113,7 @@ class QueueFreeze:
         ):
             name = cls._get_name_from_redis_key(key)
             try:
-                queue_rule = queue_rules[name]
+                queue_rule = repository.mergify_config["queue_rules"][name]
             except KeyError:
                 # TODO(sileht): cleanup Redis in this case
                 continue
@@ -130,9 +128,8 @@ class QueueFreeze:
     async def get_all_non_cascading(
         cls,
         repository: context.Repository,
-        queue_rules: qr_config.QueueRules,
     ) -> abc.AsyncGenerator[QueueFreeze, None]:
-        async for queue_freeze in cls.get_all(repository, queue_rules):
+        async for queue_freeze in cls.get_all(repository):
             if not queue_freeze.cascading:
                 yield queue_freeze
 
@@ -172,11 +169,7 @@ class QueueFreeze:
     def _get_redis_key_match(cls, repository: context.Repository) -> str:
         return f"{repository.repo['id']}~*"
 
-    async def save(
-        self,
-        queue_rules: qr_config.QueueRules,
-        partition_rules: partr_config.PartitionRules,
-    ) -> None:
+    async def save(self) -> None:
         await self.repository.installation.redis.queue.hset(
             self._get_redis_hash(self.repository),
             self._get_redis_key(self.repository, self.name),
@@ -193,17 +186,9 @@ class QueueFreeze:
             ),
         )
 
-        await self._refresh_pulls(
-            queue_rules,
-            partition_rules,
-            source="internal/queue_freeze_create",
-        )
+        await self._refresh_pulls(source="internal/queue_freeze_create")
 
-    async def delete(
-        self,
-        queue_rules: qr_config.QueueRules,
-        partition_rules: partr_config.PartitionRules,
-    ) -> bool:
+    async def delete(self) -> bool:
         result = bool(
             await self.repository.installation.redis.queue.hdel(
                 self._get_redis_hash(self.repository),
@@ -211,25 +196,12 @@ class QueueFreeze:
             ),
         )
 
-        await self._refresh_pulls(
-            queue_rules,
-            partition_rules,
-            source="internal/queue_freeze_delete",
-        )
+        await self._refresh_pulls(source="internal/queue_freeze_delete")
 
         return result
 
-    async def _refresh_pulls(
-        self,
-        queue_rules: qr_config.QueueRules,
-        partition_rules: partr_config.PartitionRules,
-        source: str,
-    ) -> None:
-        async for convoy in merge_train.Convoy.iter_convoys(
-            self.repository,
-            queue_rules,
-            partition_rules,
-        ):
+    async def _refresh_pulls(self, source: str) -> None:
+        async for convoy in merge_train.Convoy.iter_convoys(self.repository):
             for train in convoy.iter_trains():
                 await train.refresh_pulls(
                     source=source,

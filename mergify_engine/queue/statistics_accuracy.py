@@ -74,8 +74,6 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
         metadata = typing.cast(signals.EventQueueChecksStartMetadata, metadata)
         convoy = merge_train.Convoy(
             repository,
-            repository.mergify_config["queue_rules"],
-            repository.mergify_config["partition_rules"],
             github_types.GitHubRefType(metadata["branch"]),
         )
         await convoy.load_from_redis()
@@ -121,7 +119,6 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
 
             eta = await eta_queues_api.get_estimation(
                 session,
-                repository.mergify_config["partition_rules"],
                 train,
                 embarked_pull,
                 position,

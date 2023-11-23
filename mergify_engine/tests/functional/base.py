@@ -2338,8 +2338,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     ) -> merge_train.Train:
         convoy = merge_train.Convoy(
             repository=self.repository_ctxt,
-            queue_rules=self.get_queue_rules(),
-            partition_rules=self.get_partition_rules(),
             ref=self.main_branch_name,
         )
         train = merge_train.Train(convoy=convoy, partition_name=partition_name)
@@ -2349,8 +2347,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     async def get_convoy(self) -> merge_train.Convoy:
         convoy = merge_train.Convoy(
             repository=self.repository_ctxt,
-            queue_rules=self.get_queue_rules(),
-            partition_rules=self.get_partition_rules(),
             ref=self.main_branch_name,
         )
         await convoy.load_from_redis()

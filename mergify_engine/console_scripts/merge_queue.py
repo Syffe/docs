@@ -55,11 +55,7 @@ async def merge_queue_reset(cli_ctxt: click.Context, url: str) -> None:
     except mergify_conf.InvalidRules as e:  # pragma: no cover
         cli_ctxt.fail(f"configuration is invalid {e!s}")
 
-    async for convoy in merge_train.Convoy.iter_convoys(
-        repository,
-        repository.mergify_config["queue_rules"],
-        repository.mergify_config["partition_rules"],
-    ):
+    async for convoy in merge_train.Convoy.iter_convoys(repository):
         for train in convoy.iter_trains():
             # NOTE(sileht): This is not concurrent safe, if a pull request is added/removed on the train
             # on the same moment, we will lost the change.

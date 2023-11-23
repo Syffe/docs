@@ -112,7 +112,8 @@ async def test_get_already_merged_summary(
         encoding="base64",
     )
 
-    config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
+    config = await mergify_conf.get_mergify_config_from_file(ctxt.repository, file)
+    ctxt.repository._caches.mergify_config.set(config)
     match = await config["pull_request_rules"].get_pull_request_rules_evaluator(ctxt)
     assert result == await actions_runner.get_already_merged_summary(ctxt, match)
 

@@ -15,8 +15,6 @@ if typing.TYPE_CHECKING:
     import datetime
 
     from mergify_engine import context
-    from mergify_engine.rules.config import partition_rules as partr_config
-    from mergify_engine.rules.config import queue_rules as qr_config
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -92,11 +90,7 @@ class QueuePause:
     def _get_redis_key(cls, repository: context.Repository) -> str:
         return f"merge-pause~{repository.installation.owner_id}~{repository.repo['id']}"
 
-    async def save(
-        self,
-        queue_rules: qr_config.QueueRules,
-        partition_rules: partr_config.PartitionRules,
-    ) -> None:
+    async def save(self) -> None:
         await self.repository.installation.redis.queue.set(
             self._get_redis_key(self.repository),
             msgpack.packb(
@@ -110,42 +104,21 @@ class QueuePause:
             ),
         )
 
-        await self._refresh_pulls(
-            queue_rules,
-            partition_rules,
-            source="internal/queue_pause_create",
-        )
+        await self._refresh_pulls(source="internal/queue_pause_create")
 
-    async def delete(
-        self,
-        queue_rules: qr_config.QueueRules,
-        partition_rules: partr_config.PartitionRules,
-    ) -> bool:
+    async def delete(self) -> bool:
         result = bool(
             await self.repository.installation.redis.queue.delete(
                 self._get_redis_key(self.repository),
             ),
         )
 
-        await self._refresh_pulls(
-            queue_rules,
-            partition_rules,
-            source="internal/queue_pause_delete",
-        )
+        await self._refresh_pulls(source="internal/queue_pause_delete")
 
         return result
 
-    async def _refresh_pulls(
-        self,
-        queue_rules: qr_config.QueueRules,
-        partition_rules: partr_config.PartitionRules,
-        source: str,
-    ) -> None:
-        async for convoy in merge_train.Convoy.iter_convoys(
-            self.repository,
-            queue_rules,
-            partition_rules,
-        ):
+    async def _refresh_pulls(self, source: str) -> None:
+        async for convoy in merge_train.Convoy.iter_convoys(self.repository):
             for train in convoy.iter_trains():
                 await train.refresh_pulls(
                     source=source,

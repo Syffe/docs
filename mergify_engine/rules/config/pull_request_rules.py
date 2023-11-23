@@ -15,7 +15,6 @@ from mergify_engine.rules.config import conditions as cond_config
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
-    from mergify_engine.rules.config import mergify as mergify_conf
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -201,18 +200,3 @@ def get_pull_request_rules_schema() -> voluptuous.All:
         ],
         voluptuous.Coerce(PullRequestRules),
     )
-
-
-def FullifyPullRequestRules(
-    v: "mergify_conf.MergifyConfig",
-) -> "mergify_conf.MergifyConfig":
-    try:
-        for pr_rule in v["pull_request_rules"]:
-            for action in pr_rule.actions.values():
-                action.validate_config(v)
-    except voluptuous.error.Error:
-        raise
-    except Exception as e:
-        LOG.error("fail to dispatch config", exc_info=True)
-        raise voluptuous.error.Invalid(str(e))
-    return v

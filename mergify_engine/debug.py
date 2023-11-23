@@ -200,11 +200,7 @@ async def report(
         if mergify_config is None:
             return client
 
-        async for convoy in merge_train.Convoy.iter_convoys(
-            repository,
-            mergify_config["queue_rules"],
-            mergify_config["partition_rules"],
-        ):
+        async for convoy in merge_train.Convoy.iter_convoys(repository):
             for train in convoy.iter_trains():
                 await report_queue("TRAIN", train)
 
@@ -226,11 +222,7 @@ async def report(
     # FIXME queues could also be printed if no pull number given
     # TODO(sileht): display train if any
     if mergify_config is not None:
-        convoy = await merge_train.Convoy.from_context(
-            ctxt,
-            mergify_config["queue_rules"],
-            mergify_config["partition_rules"],
-        )
+        convoy = await merge_train.Convoy.from_context(ctxt)
         for train in convoy.iter_trains():
             print(
                 f"* TRAIN (partition:{train.partition_name}): {', '.join([f'#{p}' for p in await train.get_pulls()])}",

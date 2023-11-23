@@ -168,7 +168,6 @@ class TrainCarState:
     def deserialize(
         cls,
         repository: context.Repository,
-        queue_rules: qr_config.QueueRules,
         data: TrainCarState.Serialized,
     ) -> TrainCarState:
         # Backward compat, introduced in 7.6.0
@@ -205,6 +204,7 @@ class TrainCarState:
         # backward compatibility following the implementation of "frozen_by" attribute, introduced in 7.6.0
         frozen_by = None
         if (frozen_by_raw := data.get("frozen_by")) is not None:
+            queue_rules = repository.mergify_config["queue_rules"]
             try:
                 queue_rule = queue_rules[qr_config.QueueName(frozen_by_raw["name"])]
             except KeyError:

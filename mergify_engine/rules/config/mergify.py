@@ -199,7 +199,7 @@ async def get_mergify_config_from_dict(
     allow_extend: bool = True,
 ) -> MergifyConfig:
     try:
-        rules.UserConfigurationSchema(config, partial_validation=True)
+        rules.UserConfigurationSchema(config)
     except voluptuous.Invalid as e:
         raise InvalidRules(e, error_path)
 
@@ -228,7 +228,7 @@ async def get_mergify_config_from_dict(
     merge_config_with_defaults(config, defaults)
 
     try:
-        final_config = rules.UserConfigurationSchema(config, partial_validation=False)
+        final_config = rules.UserConfigurationSchema(config)
         final_config["defaults"] = defaults
         final_config["raw_config"] = config
     except voluptuous.Invalid as e:

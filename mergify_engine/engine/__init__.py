@@ -472,8 +472,6 @@ async def run(
             # Since it blocks the merge queue, we had to unblock it.
             await merge_train.Convoy.force_remove_pull(
                 conflicting_ctxt.repository,
-                mergify_config["queue_rules"],
-                mergify_config["partition_rules"],
                 ctxt.pull["number"],
                 "merge queue internal",
                 queue_utils.PrDequeued(
@@ -493,19 +491,10 @@ async def run(
 
     ctxt.log.debug("engine handle actions")
     if queue_utils.is_merge_queue_pr(ctxt.pull):
-        await queue_runner.handle(
-            ctxt,
-            mergify_config["queue_rules"],
-            mergify_config["partition_rules"],
-        )
+        await queue_runner.handle(ctxt)
         return None
 
-    return await actions_runner.handle(
-        ctxt,
-        mergify_config["pull_request_rules"],
-        mergify_config["queue_rules"],
-        mergify_config["partition_rules"],
-    )
+    return await actions_runner.handle(ctxt)
 
 
 @exceptions.log_and_ignore_exception("fail to create initial summary")

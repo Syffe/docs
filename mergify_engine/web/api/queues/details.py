@@ -317,15 +317,11 @@ async def repository_queue_pull_request(
         github_types.GitHubPullRequestNumber,
         fastapi.Path(description="The queued pull request number"),
     ],
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
+    repository_ctxt: security.RepositoryWithConfig,
     queue_rule: security.QueueRuleByNameFromPath,
-    partition_rules: security.PartitionRules,
 ) -> EnhancedPullRequestQueued:
     async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt,
-        queue_rules,
-        partition_rules,
     ):
         for train in convoy.iter_trains():
             if train.partition_name != partr_config.DEFAULT_PARTITION_NAME:
@@ -340,7 +336,6 @@ async def repository_queue_pull_request(
                 mergeability_check = MergeabilityCheck.from_train_car(car)
                 estimated_time_of_merge = await estimated_time_to_merge.get_estimation(
                     session,
-                    partition_rules,
                     train,
                     embarked_pull,
                     position,

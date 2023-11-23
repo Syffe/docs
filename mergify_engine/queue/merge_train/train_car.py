@@ -352,7 +352,6 @@ class TrainCar:
 
         train_car_state = train_car_state_mod.TrainCarState.deserialize(
             train.convoy.repository,
-            train.convoy.queue_rules,
             data["train_car_state"],
         )
 
@@ -1773,9 +1772,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
         if train_synced_with_base_branch:
             return None
 
-        fallback_partition_name = (
-            self.train.convoy.partition_rules.get_fallback_partition_name()
-        )
+        fallback_partition_name = self.train.convoy.repository.mergify_config[
+            "partition_rules"
+        ].get_fallback_partition_name()
         if fallback_partition_name is None:
             # There is no fallback partition, and we don't know the change, we reset every partition
             return UnexpectedBaseBranchChange(current_base_sha)
@@ -2039,8 +2038,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     def get_queue_rule(self) -> qr_config.QueueRule:
         queue_name = self.initial_embarked_pulls[0].config["name"]
+        queue_rules = self.train.convoy.repository.mergify_config["queue_rules"]
         try:
-            return self.train.convoy.queue_rules[queue_name]
+            return queue_rules[queue_name]
         except IndexError:
             raise RuntimeError(
                 f"The rule for queue `{queue_name}` is missing from configuration",

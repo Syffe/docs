@@ -582,7 +582,6 @@ class TestQueueApi(base.FunctionalTestBase):
             stat = await web_stats_utils.get_queue_checks_duration(
                 session,
                 self.repository_ctxt,
-                self.get_partition_rules(),
                 queue_names=(),
                 partition_names=(),
             )

@@ -313,10 +313,10 @@ class Queues:
 )
 async def repository_queues(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: security.RepositoryWithConfig,
 ) -> Queues:
+    partition_rules = repository_ctxt.mergify_config["partition_rules"]
+    queue_rules = repository_ctxt.mergify_config["queue_rules"]
     queue_names = tuple(rule.name for rule in queue_rules)
     if partition_rules:
         partition_names = tuple(rule.name for rule in partition_rules)
@@ -326,7 +326,6 @@ async def repository_queues(
     stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
         session,
         repository_ctxt,
-        partition_rules,
         partition_names,
         queue_names,
     )
@@ -334,8 +333,6 @@ async def repository_queues(
     queues = Queues(queues=[])
     async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt,
-        queue_rules,
-        partition_rules,
     ):
         for train in convoy.iter_trains():
             queue = Queue(Branch(train.convoy.ref), pull_requests=[])

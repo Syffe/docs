@@ -13,7 +13,6 @@ from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 if typing.TYPE_CHECKING:
-    from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import queue_rules as qr_config
 
 
@@ -42,7 +41,7 @@ async def get_estimation_from_stats(
     return await compute_estimation(
         embarked_pull,
         embarked_pull_position,
-        train.convoy.queue_rules[queue_name].config,
+        train.convoy.repository.mergify_config["queue_rules"][queue_name].config,
         median,
         car,
         previous_eta,
@@ -52,7 +51,6 @@ async def get_estimation_from_stats(
 
 async def get_estimation(
     session: database.Session,
-    partition_rules: partr_config.PartitionRules,
     train: merge_train.Train,
     embarked_pull: merge_train.EmbarkedPull,
     embarked_pull_position: int,
@@ -67,7 +65,6 @@ async def get_estimation(
     queue_checks_duration_stats = await web_stat_utils.get_queue_checks_duration(
         session=session,
         repository_ctxt=train.convoy.repository,
-        partition_rules=partition_rules,
         queue_names=(queue_name,),
         partition_names=(train.partition_name,),
         branch=train.convoy.ref,
@@ -75,7 +72,7 @@ async def get_estimation(
     return await compute_estimation(
         embarked_pull,
         embarked_pull_position,
-        train.convoy.queue_rules[queue_name].config,
+        train.convoy.repository.mergify_config["queue_rules"][queue_name].config,
         queue_checks_duration_stats["median"],
         car,
         previous_eta,

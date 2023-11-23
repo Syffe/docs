@@ -66,9 +66,7 @@ class QueuePausePayload(pydantic.BaseModel):
 async def create_queue_pause(
     queue_pause_payload: QueuePausePayload,
     authentication_actor: security.AuthenticatedActor,
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: security.RepositoryWithConfig,
 ) -> QueuePauseResponse:
     if queue_pause_payload.reason == "":
         queue_pause_payload.reason = "No pause reason was specified."
@@ -121,7 +119,7 @@ async def create_queue_pause(
             "Update queue pause",
         )
 
-    await queue_pause.save(queue_rules, partition_rules)
+    await queue_pause.save()
     return QueuePauseResponse(
         queue_pause=[
             QueuePause(
@@ -150,14 +148,12 @@ async def create_queue_pause(
 )
 async def delete_queue_pause(
     authentication_actor: security.AuthenticatedActor,
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: security.RepositoryWithConfig,
 ) -> fastapi.Response:
     queue_pause = pause.QueuePause(
         repository=repository_ctxt,
     )
-    if not await queue_pause.delete(queue_rules, partition_rules):
+    if not await queue_pause.delete():
         raise fastapi.HTTPException(
             status_code=404,
             detail="The merge queue is not currently paused on this repository",
@@ -191,7 +187,7 @@ async def delete_queue_pause(
     },
 )
 async def get_queue_pause(
-    repository_ctxt: security.Repository,
+    repository_ctxt: security.RepositoryWithConfig,
 ) -> QueuePauseResponse:
     queue_pause = await pause.QueuePause.get(repository_ctxt)
     if queue_pause is None:

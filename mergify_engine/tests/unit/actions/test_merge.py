@@ -222,8 +222,6 @@ async def test_request_merge_without_method_merge_success(
         ctxt=context,
         rule=mock.Mock(),
         config=mock.Mock(),
-        queue_rules=mock.Mock(),
-        partition_rules=mock.Mock(),
     )
 
     respx_mock.get(
@@ -253,8 +251,6 @@ async def test_request_merge_without_method_rebase_success(
         ctxt=context,
         rule=mock.Mock(),
         config=mock.Mock(),
-        queue_rules=mock.Mock(),
-        partition_rules=mock.Mock(),
     )
 
     respx_mock.get(
@@ -291,8 +287,6 @@ async def test_request_merge_without_method_failure(
         ctxt=context,
         rule=mock.Mock(),
         config=mock.Mock(),
-        queue_rules=mock.Mock(),
-        partition_rules=mock.Mock(),
     )
 
     respx_mock.get(
@@ -329,8 +323,6 @@ async def test_request_merge_without_method_rebase_success_with_cache(
         ctxt=context,
         rule=mock.Mock(),
         config=mock.Mock(),
-        queue_rules=mock.Mock(),
-        partition_rules=mock.Mock(),
     )
     await redis_links.cache.set("merge-method/0/0", "rebase")
 
@@ -359,8 +351,6 @@ async def test_request_merge_without_method_rebase_success_with_invalid_cache(
         ctxt=context,
         rule=mock.Mock(),
         config=mock.Mock(),
-        queue_rules=mock.Mock(),
-        partition_rules=mock.Mock(),
     )
     await redis_links.cache.set("merge-method/0/0", "rebase")
 
@@ -393,8 +383,6 @@ async def test_request_merge_without_method_rebase_success_with_linear_history_r
         ctxt=context,
         rule=mock.Mock(),
         config=mock.Mock(),
-        queue_rules=mock.Mock(),
-        partition_rules=mock.Mock(),
     )
 
     respx_mock.get(

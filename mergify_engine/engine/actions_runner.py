@@ -25,9 +25,7 @@ from mergify_engine.clients import github
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
-from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
-from mergify_engine.rules.config import queue_rules as qr_config
 
 
 NOT_APPLICABLE_TEMPLATE = """<details>
@@ -598,8 +596,6 @@ async def run_actions(
 
 async def cleanup_pending_actions_with_no_associated_rules(
     ctxt: context.Context,
-    queue_rules: qr_config.QueueRules,
-    partition_rules: partr_config.PartitionRules,
     current_conclusions: dict[str, check_api.Conclusion],
     previous_conclusions: dict[str, check_api.Conclusion],
 ) -> None:
@@ -639,20 +635,14 @@ async def cleanup_pending_actions_with_no_associated_rules(
         ctxt.log.debug("action removal cleanup, cleanup queue")
         await merge_train.Convoy.force_remove_pull(
             ctxt.repository,
-            queue_rules,
-            partition_rules,
             ctxt.pull["number"],
             signal_trigger,
             queue_utils.PrDequeued(ctxt.pull["number"], " by workflow automation"),
         )
 
 
-async def handle(
-    ctxt: context.Context,
-    pull_request_rules: prr_config.PullRequestRules,
-    queue_rules: qr_config.QueueRules,
-    partition_rules: partr_config.PartitionRules,
-) -> check_api.Result | None:
+async def handle(ctxt: context.Context) -> check_api.Result | None:
+    pull_request_rules = ctxt.repository.mergify_config["pull_request_rules"]
     if pull_request_rules.has_user_rules() and not ctxt.subscription.has_feature(
         subscription.Features.WORKFLOW_AUTOMATION,
     ):
@@ -705,8 +695,6 @@ async def handle(
     conclusions = await run_actions(ctxt, match, checks, previous_conclusions)
     await cleanup_pending_actions_with_no_associated_rules(
         ctxt,
-        queue_rules,
-        partition_rules,
         conclusions,
         previous_conclusions,
     )

@@ -16,7 +16,6 @@ if typing.TYPE_CHECKING:
     from mergify_engine import context
     from mergify_engine.engine import commands_runner
     from mergify_engine.rules import conditions
-    from mergify_engine.rules.config import mergify as mergify_conf
     from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
@@ -229,12 +228,6 @@ class Action(abc.ABC):
         rule: prr_config.EvaluatedPullRequestRule,
     ) -> None:
         self.executor = await self.executor_class.create(self, ctxt, rule)
-
-    def validate_config(  # noqa: B027
-        self,
-        mergify_config: mergify_conf.MergifyConfig,
-    ) -> None:  # pragma: no cover
-        pass
 
     @staticmethod
     def command_to_config(string: str) -> dict[str, typing.Any]:

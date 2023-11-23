@@ -6,13 +6,13 @@ import pydantic
 import pydantic_core
 import sqlalchemy
 
+from mergify_engine import context
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_models
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
-from mergify_engine.web.api import security
 from mergify_engine.web.api.statistics import types as web_stat_types
 
 
@@ -59,8 +59,7 @@ class TimestampNotInFuture(int):
 
 async def get_queue_checks_end_events(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: context.Repository,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
     start_at: TimestampNotInFuture | None = None,
@@ -93,8 +92,7 @@ async def get_queue_checks_end_events(
 
 async def get_queue_checks_duration(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: context.Repository,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
     start_at: TimestampNotInFuture | None = None,
@@ -104,7 +102,6 @@ async def get_queue_checks_duration(
     events = await get_queue_checks_end_events(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         queue_names=queue_names,
         partition_names=partition_names,
         start_at=start_at,
@@ -142,15 +139,13 @@ QueueChecksDurationsPerPartitionQueueBranchT = dict[
 
 async def get_queue_check_durations_per_partition_queue_branch(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: context.Repository,
     partition_names: tuple[partr_config.PartitionRuleName, ...],
     queue_names: tuple[qr_config.QueueName, ...],
 ) -> QueueChecksDurationsPerPartitionQueueBranchT:
     events = await get_queue_checks_end_events(
         session,
         repository_ctxt,
-        partition_rules,
         queue_names,
         partition_names,
     )

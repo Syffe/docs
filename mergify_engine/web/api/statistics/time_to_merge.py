@@ -7,6 +7,7 @@ import fastapi
 import pydantic
 import sqlalchemy
 
+from mergify_engine import context
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine.models import enumerations
@@ -23,8 +24,7 @@ router = fastapi.APIRouter()
 
 async def get_queue_leave_events(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: context.Repository,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
     at: web_stat_utils.TimestampNotInFuture | None = None,
@@ -79,8 +79,7 @@ def get_time_to_merge_from_event(event: evt_models.EventActionQueueLeave) -> flo
 
 async def get_time_to_merge_from_partitions_and_queues(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: context.Repository,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
     at: web_stat_utils.TimestampNotInFuture | None = None,
@@ -89,7 +88,6 @@ async def get_time_to_merge_from_partitions_and_queues(
     events = await get_queue_leave_events(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         queue_names=queue_names,
         partition_names=partition_names,
         at=at,
@@ -143,9 +141,7 @@ class TimeToMergePerPartition:
 )
 async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: security.RepositoryWithConfig,
     at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
         fastapi.Query(
@@ -154,6 +150,9 @@ async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
     ] = None,
     branch: security.OptionalBranchFromQuery = None,
 ) -> list[TimeToMergePerPartition]:
+    queue_rules = repository_ctxt.mergify_config["queue_rules"]
+    partition_rules = repository_ctxt.mergify_config["partition_rules"]
+
     queue_names = tuple(rule.name for rule in queue_rules)
     if partition_rules:
         partition_names = tuple(rule.name for rule in partition_rules)
@@ -163,7 +162,6 @@ async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
     events = await get_queue_leave_events(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         queue_names=queue_names,
         partition_names=partition_names,
         at=at,
@@ -226,9 +224,8 @@ async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
 )
 async def get_average_time_to_merge_stats_endpoint(
     session: database.Session,
-    repository_ctxt: security.Repository,
+    repository_ctxt: security.RepositoryWithConfig,
     queue_name: security.QueueNameFromPath,
-    partition_rules: security.PartitionRules,
     at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
         fastapi.Query(
@@ -237,6 +234,7 @@ async def get_average_time_to_merge_stats_endpoint(
     ] = None,
     branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.TimeToMergeResponse:
+    partition_rules = repository_ctxt.mergify_config["partition_rules"]
     if len(partition_rules):
         raise fastapi.HTTPException(
             status_code=400,
@@ -246,7 +244,6 @@ async def get_average_time_to_merge_stats_endpoint(
     return await get_time_to_merge_from_partitions_and_queues(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         queue_names=(queue_name,),
         partition_names=(partr_config.DEFAULT_PARTITION_NAME,),
         at=at,
@@ -262,10 +259,9 @@ async def get_average_time_to_merge_stats_endpoint(
 )
 async def get_average_time_to_merge_stats_partition_endpoint(
     session: database.Session,
-    repository_ctxt: security.Repository,
+    repository_ctxt: security.RepositoryWithConfig,
     partition_name: security.PartitionNameFromPath,
     queue_name: security.QueueNameFromPath,
-    partition_rules: security.PartitionRules,
     at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
         fastapi.Query(
@@ -274,6 +270,7 @@ async def get_average_time_to_merge_stats_partition_endpoint(
     ] = None,
     branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.TimeToMergeResponse:
+    partition_rules = repository_ctxt.mergify_config["partition_rules"]
     if (
         partition_name != partr_config.DEFAULT_PARTITION_NAME
         and partition_name not in partition_rules
@@ -286,7 +283,6 @@ async def get_average_time_to_merge_stats_partition_endpoint(
     return await get_time_to_merge_from_partitions_and_queues(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         queue_names=(queue_name,),
         partition_names=(partition_name,),
         at=at,

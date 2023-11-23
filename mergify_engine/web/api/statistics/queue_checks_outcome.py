@@ -6,6 +6,7 @@ import pydantic
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import context
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine.models import enumerations
@@ -73,8 +74,7 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
 
 async def get_queue_checks_end_events(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: context.Repository,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
     start_at: web_stat_utils.TimestampNotInFuture | None = None,
@@ -105,8 +105,7 @@ async def get_queue_checks_end_events(
 
 async def get_queue_checks_outcome(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: context.Repository,
     partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName,
     start_at: web_stat_utils.TimestampNotInFuture | None = None,
@@ -116,7 +115,6 @@ async def get_queue_checks_outcome(
     events = await get_queue_checks_end_events(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         partition_names=(partition_name,),
         queue_names=(queue_name,),
         start_at=start_at,
@@ -171,9 +169,7 @@ class QueueChecksOutcomePerPartition:
 )
 async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: security.RepositoryWithConfig,
     start_at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
         fastapi.Query(
@@ -188,6 +184,8 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
     ] = None,
     branch: security.OptionalBranchFromQuery = None,
 ) -> list[QueueChecksOutcomePerPartition]:
+    queue_rules = repository_ctxt.mergify_config["queue_rules"]
+    partition_rules = repository_ctxt.mergify_config["partition_rules"]
     queue_names = tuple(rule.name for rule in queue_rules)
     if partition_rules:
         partition_names = tuple(rule.name for rule in partition_rules)
@@ -197,7 +195,6 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
     events = await get_queue_checks_end_events(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         partition_names=partition_names,
         queue_names=queue_names,
         start_at=start_at,
@@ -258,9 +255,8 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
 )
 async def get_queue_checks_outcome_stats_all_partitions_endpoint(
     session: database.Session,
-    repository_ctxt: security.Repository,
+    repository_ctxt: security.RepositoryWithConfig,
     queue_name: security.QueueNameFromPath,
-    partition_rules: security.PartitionRules,
     start_at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
         fastapi.Query(
@@ -275,7 +271,7 @@ async def get_queue_checks_outcome_stats_all_partitions_endpoint(
     ] = None,
     branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.QueueChecksOutcome:
-    if len(partition_rules):
+    if len(repository_ctxt.mergify_config["partition_rules"]):
         raise fastapi.HTTPException(
             status_code=400,
             detail="This endpoint cannot be called for this repository because it uses partition rules.",
@@ -284,7 +280,6 @@ async def get_queue_checks_outcome_stats_all_partitions_endpoint(
     return await get_queue_checks_outcome(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         partition_name=partr_config.DEFAULT_PARTITION_NAME,
         queue_name=queue_name,
         start_at=start_at,
@@ -301,10 +296,9 @@ async def get_queue_checks_outcome_stats_all_partitions_endpoint(
 )
 async def get_queue_checks_outcome_stats_partition_endpoint(
     session: database.Session,
-    repository_ctxt: security.Repository,
+    repository_ctxt: security.RepositoryWithConfig,
     partition_name: security.PartitionNameFromPath,
     queue_name: security.QueueNameFromPath,
-    partition_rules: security.PartitionRules,
     start_at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
         fastapi.Query(
@@ -321,7 +315,7 @@ async def get_queue_checks_outcome_stats_partition_endpoint(
 ) -> web_stat_types.QueueChecksOutcome:
     if (
         partition_name != partr_config.DEFAULT_PARTITION_NAME
-        and partition_name not in partition_rules
+        and partition_name not in repository_ctxt.mergify_config["partition_rules"]
     ):
         raise fastapi.HTTPException(
             status_code=404,
@@ -331,7 +325,6 @@ async def get_queue_checks_outcome_stats_partition_endpoint(
     return await get_queue_checks_outcome(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         partition_name=partition_name,
         queue_name=queue_name,
         start_at=start_at,

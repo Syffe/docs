@@ -20,9 +20,8 @@ router = fastapi.APIRouter()
 )
 async def get_checks_duration_stats_endpoint(
     session: database.Session,
-    repository_ctxt: security.Repository,
+    repository_ctxt: security.RepositoryWithConfig,
     queue_name: security.QueueNameFromPath,
-    partition_rules: security.PartitionRules,
     start_at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
         fastapi.Query(
@@ -37,7 +36,7 @@ async def get_checks_duration_stats_endpoint(
     ] = None,
     branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.ChecksDurationResponse:
-    if len(partition_rules):
+    if len(repository_ctxt.mergify_config["partition_rules"]):
         raise fastapi.HTTPException(
             status_code=400,
             detail="This endpoint cannot be called for this repository because it uses partition rules.",
@@ -45,7 +44,6 @@ async def get_checks_duration_stats_endpoint(
     return await web_stat_utils.get_queue_checks_duration(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         queue_names=(queue_name,),
         partition_names=(partr_config.DEFAULT_PARTITION_NAME,),
         start_at=start_at,
@@ -62,10 +60,9 @@ async def get_checks_duration_stats_endpoint(
 )
 async def get_checks_duration_stats_partition_endpoint(
     session: database.Session,
-    repository_ctxt: security.Repository,
+    repository_ctxt: security.RepositoryWithConfig,
     partition_name: security.PartitionNameFromPath,
     queue_name: security.QueueNameFromPath,
-    partition_rules: security.PartitionRules,
     start_at: typing.Annotated[
         web_stat_utils.TimestampNotInFuture | None,
         fastapi.Query(
@@ -82,7 +79,7 @@ async def get_checks_duration_stats_partition_endpoint(
 ) -> web_stat_types.ChecksDurationResponse:
     if (
         partition_name != partr_config.DEFAULT_PARTITION_NAME
-        and partition_name not in partition_rules
+        and partition_name not in repository_ctxt.mergify_config["partition_rules"]
     ):
         raise fastapi.HTTPException(
             status_code=404,
@@ -91,7 +88,6 @@ async def get_checks_duration_stats_partition_endpoint(
     return await web_stat_utils.get_queue_checks_duration(
         session=session,
         repository_ctxt=repository_ctxt,
-        partition_rules=partition_rules,
         queue_names=(queue_name,),
         partition_names=(partition_name,),
         start_at=start_at,

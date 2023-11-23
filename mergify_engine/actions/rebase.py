@@ -73,11 +73,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
                 "",
             )
 
-        convoy = await merge_train.Convoy.from_context(
-            self.ctxt,
-            self.ctxt.repository.mergify_config["queue_rules"],
-            self.ctxt.repository.mergify_config["partition_rules"],
-        )
+        convoy = await merge_train.Convoy.from_context(self.ctxt)
         if convoy.is_pull_embarked(self.ctxt.pull["number"]):
             return check_api.Result(
                 check_api.Conclusion.CANCELLED,

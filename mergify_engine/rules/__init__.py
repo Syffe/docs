@@ -68,7 +68,6 @@ def YAML(v: str) -> typing.Any:
 
 def UserConfigurationSchema(
     config: dict[str, typing.Any],
-    partial_validation: bool = False,
 ) -> voluptuous.Schema:
     # Circular import
     from mergify_engine.rules.config import partition_rules as partr_config
@@ -119,12 +118,6 @@ def UserConfigurationSchema(
         ): voluptuous.Schema({str: int}),
         voluptuous.Remove("shared"): voluptuous.Any(dict, list, str, int, float, bool),
     }
-
-    if not partial_validation:
-        schema = voluptuous.And(
-            schema,
-            voluptuous.Coerce(prr_config.FullifyPullRequestRules),
-        )
 
     return voluptuous.Schema(schema)(config)
 

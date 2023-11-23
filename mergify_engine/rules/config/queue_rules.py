@@ -510,7 +510,7 @@ QueueRulesSchema = voluptuous.All(
                 # Queue action options
                 # NOTE(greesb): If you change the default values below, you might
                 # need to change the retrocompatibility behavior in
-                # mergify_engine/actions/queue.py::QueueAction.validate_config
+                # mergify_engine/actions/queue.py::QueueExecutor.create
                 voluptuous.Required(
                     "commit_message_template",
                     default=None,

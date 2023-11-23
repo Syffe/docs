@@ -33,8 +33,6 @@ LOG = daiquiri.getLogger(__name__)
 @dataclasses.dataclass
 class Convoy:
     repository: context.Repository
-    queue_rules: qr_config.QueueRules
-    partition_rules: partr_config.PartitionRules
     ref: github_types.GitHubRefType
 
     _trains: list[train_import.Train] = dataclasses.field(default_factory=list)
@@ -44,15 +42,8 @@ class Convoy:
     async def from_context(
         cls,
         ctxt: context.Context,
-        queue_rules: qr_config.QueueRules,
-        partition_rules: partr_config.PartitionRules,
     ) -> Convoy:
-        convoy = cls(
-            ctxt.repository,
-            queue_rules,
-            partition_rules,
-            ctxt.pull["base"]["ref"],
-        )
+        convoy = cls(ctxt.repository, ctxt.pull["base"]["ref"])
         await convoy.load_from_redis()
         return convoy
 
@@ -77,8 +68,8 @@ class Convoy:
             str,
             partr_config.PartitionRuleName | None,
         ] = collections.OrderedDict()
-        if self.partition_rules:
-            for part_rule in self.partition_rules:
+        if self.repository.mergify_config["partition_rules"]:
+            for part_rule in self.repository.mergify_config["partition_rules"]:
                 query[
                     f"{self.repository.repo['id']}~{self.ref}~{part_rule.name}"
                 ] = part_rule.name
@@ -96,7 +87,7 @@ class Convoy:
 
         # NOTE(Greesb): Default partition retrocompatibility, remove once
         # all trains have been saved with the new default partition name.
-        if not self.partition_rules:
+        if not self.repository.mergify_config["partition_rules"]:
             # raw_trains[0] = partition_name set to None
             # raw_trains[1] = partition_name set to partr_config.DEFAULT_PARTITION_NAME
             if raw_trains[0] is not None and raw_trains[1] is not None:
@@ -132,7 +123,10 @@ class Convoy:
         raw_trains: abc.Mapping[partr_config.PartitionRuleName, bytes | None],
     ) -> None:
         self._trains = []
-        partition_names = [part_rule.name for part_rule in self.partition_rules]
+        partition_names = [
+            part_rule.name
+            for part_rule in self.repository.mergify_config["partition_rules"]
+        ]
         if not partition_names:
             partition_names = [partr_config.DEFAULT_PARTITION_NAME]
 
@@ -180,8 +174,6 @@ class Convoy:
     ) -> None:
         await self.force_remove_pull(
             self.repository,
-            self.queue_rules,
-            self.partition_rules,
             pull_number,
             signal_trigger,
             queue_utils.BaseBranchChanged(),
@@ -194,15 +186,13 @@ class Convoy:
     async def force_remove_pull(
         cls,
         repository: context.Repository,
-        queue_rules: qr_config.QueueRules,
-        partition_rules: partr_config.PartitionRules,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
         # FIXME(jd): This should accept only BaseDequeueReason
         dequeue_reason: queue_utils.BaseQueueCancelReason,
         exclude_ref: github_types.GitHubRefType | None = None,
     ) -> None:
-        async for convoy in cls.iter_convoys(repository, queue_rules, partition_rules):
+        async for convoy in cls.iter_convoys(repository):
             if exclude_ref is not None and exclude_ref == convoy.ref:
                 continue
             for train in convoy.iter_trains():
@@ -219,8 +209,6 @@ class Convoy:
         # (base branch of a PR can be changed when editing the title)
         await self.force_remove_pull(
             self.repository,
-            self.queue_rules,
-            self.partition_rules,
             ctxt.pull["number"],
             signal_trigger,
             queue_utils.BaseBranchChanged(),
@@ -270,7 +258,6 @@ class Convoy:
                 queue_freeze.name: queue_freeze
                 async for queue_freeze in freeze.QueueFreeze.get_all(
                     self.repository,
-                    self.queue_rules,
                 )
             }
 
@@ -278,7 +265,7 @@ class Convoy:
 
             # NOTE(sileht): queue_rules are always ordered by priority
             ongoing_freeze = None
-            for queue_rule in self.queue_rules:
+            for queue_rule in self.repository.mergify_config["queue_rules"]:
                 # If the queue is not freeze we pick the nearest queue
                 new_freeze = queue_freezes.get(queue_rule.name, ongoing_freeze)
                 self._frozen_queues[queue_rule.name] = new_freeze
@@ -605,11 +592,7 @@ class Convoy:
                 )
                 continue
 
-            # FIXME(sileht): drop this and use the repository.mergify_config directly everywhere
-            queue_rules = repository.mergify_config["queue_rules"]
-            partition_rules = repository.mergify_config["partition_rules"]
-
-            conv = cls(repository, queue_rules, partition_rules, ref)
+            conv = cls(repository, ref)
             await conv.load_from_bytes(convoy_raw)
             for train in conv.iter_trains():
                 await train.refresh()
@@ -618,8 +601,6 @@ class Convoy:
     async def iter_convoys(
         cls,
         repository: context.Repository,
-        queue_rules: qr_config.QueueRules,
-        partition_rules: partr_config.PartitionRules,
         ref: github_types.GitHubRefType | None = None,
     ) -> abc.AsyncIterator[Convoy]:
         trains_by_convoy = await cls._get_raw_trains_by_convoy(repository.installation)
@@ -627,7 +608,7 @@ class Convoy:
             if repo_id != repository.repo["id"]:
                 continue
             if ref is None or ref == convoy_ref:
-                conv = cls(repository, queue_rules, partition_rules, convoy_ref)
+                conv = cls(repository, convoy_ref)
                 await conv.load_from_bytes(convoy_raw)
                 yield conv
 

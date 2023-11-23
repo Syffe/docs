@@ -38,7 +38,6 @@ from mergify_engine.queue.merge_train import types as merge_train_types
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
-from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
@@ -129,9 +128,7 @@ class QueueExecutor(
     actions.ActionExecutor["QueueAction", "QueueExecutorConfig"],
     merge_base.MergeUtilsMixin,
 ):
-    queue_rule: qr_config.QueueRule
-    queue_rules: qr_config.QueueRules
-    partition_rules: partr_config.PartitionRules
+    queue_rule: qr_config.QueueRule = dataclasses.field(init=False, repr=False)
 
     DEQUEUE_DOCUMENTATION = f"""
 You can take a look at `{constants.MERGE_QUEUE_SUMMARY_NAME}` check runs for more details.
@@ -152,6 +149,18 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ctxt: context.Context,
         rule: prr_config.EvaluatedPullRequestRule,
     ) -> QueueExecutor:
+        if (
+            action.config["name"] is not None
+            and ctxt.repository.mergify_config["queue_rules"].get(action.config["name"])
+            is None
+        ):
+            raise actions.InvalidDynamicActionConfiguration(
+                rule,
+                action,
+                f"`{action.config['name']}` queue not found",
+                "",
+            )
+
         return cls(
             ctxt,
             rule,
@@ -169,10 +178,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     "autosquash": action.config["autosquash"],
                 },
             ),
-            action.queue_rule,
-            action.queue_rules,
-            action.partition_rules,
         )
+
+    @property
+    def queue_rules(self) -> qr_config.QueueRules:
+        return self.ctxt.repository.mergify_config["queue_rules"]
+
+    @property
+    def partition_rules(self) -> partr_config.PartitionRules:
+        return self.ctxt.repository.mergify_config["partition_rules"]
 
     async def _queue_branch_merge_pull_request(
         self,
@@ -481,11 +495,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
             await self.reembark_pull_request_if_possible()
 
-        convoy = await merge_train.Convoy.from_context(
-            self.ctxt,
-            self.queue_rules,
-            self.partition_rules,
-        )
+        convoy = await merge_train.Convoy.from_context(self.ctxt)
         partition_names = (
             await self.partition_rules.get_evaluated_partition_names_from_context(
                 self.ctxt,
@@ -716,11 +726,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
             await self.reembark_pull_request_if_possible()
 
-        convoy = await merge_train.Convoy.from_context(
-            self.ctxt,
-            self.queue_rules,
-            self.partition_rules,
-        )
+        convoy = await merge_train.Convoy.from_context(self.ctxt)
 
         partition_names = (
             await self.partition_rules.get_evaluated_partition_names_from_context(
@@ -1391,28 +1397,11 @@ class QueueAction(actions.Action):
 
     required_feature_for_command = subscription.Features.MERGE_QUEUE
 
-    # NOTE(sileht): set by validate_config()
-    partition_rules: partr_config.PartitionRules = dataclasses.field(
-        init=False,
-        repr=False,
-    )
-    queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
-    queue_rule: qr_config.QueueRule = dataclasses.field(init=False, repr=False)
-
     def __post_init__(self, raw_config_: RawConfigT | None) -> None:
         super().__post_init__(raw_config_)
         # NOTE(lecrepont01): `method` is deprecated but still accepted see validator
         if "method" in self.config:
             self.config["merge_method"] = self.config.pop("method")
-
-    def validate_config(self, mergify_config: mergify_conf.MergifyConfig) -> None:
-        self.queue_rules = mergify_config["queue_rules"]
-        self.partition_rules = mergify_config["partition_rules"]
-        if (
-            self.config["name"] is not None
-            and mergify_config["queue_rules"].get(self.config["name"]) is None
-        ):
-            raise voluptuous.error.Invalid(f"`{self.config['name']}` queue not found")
 
     @staticmethod
     def command_to_config(command_arguments: str) -> dict[str, typing.Any]:
@@ -1447,7 +1436,6 @@ class QueueAction(actions.Action):
 
         if queue_conditions := await conditions.get_queue_conditions(
             ctxt,
-            self.queue_rules,
             self.config["name"],
         ):
             conditions_requirements.append(queue_conditions)

@@ -11,6 +11,7 @@ import respx
 import sqlalchemy.ext.asyncio
 import voluptuous
 
+from mergify_engine import actions
 from mergify_engine import condition_value_querier
 from mergify_engine import context
 from mergify_engine import date
@@ -2155,7 +2156,9 @@ pull_request_rules:
     )
 
 
-async def test_action_queue_with_no_default_queue() -> None:
+async def test_action_queue_with_no_default_queue(
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
@@ -2173,10 +2176,12 @@ pull_request_rules:
             """,
     )
 
-    with pytest.raises(mergify_conf.InvalidRules) as e:
-        await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
+    with pytest.raises(actions.InvalidDynamicActionConfiguration) as e:
+        await config["pull_request_rules"].get_pull_request_rules_evaluator(ctxt)
 
-    assert str(e.value.error) == "`missing` queue not found"
+    assert str(e.value.reason) == "`missing` queue not found"
 
 
 async def test_default_with_no_pull_requests_rules() -> None:

@@ -3,7 +3,6 @@ import typing
 from unittest import mock
 
 import pytest
-import voluptuous
 
 from mergify_engine import context
 from mergify_engine import github_types
@@ -13,7 +12,6 @@ from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
-from mergify_engine.rules.config import queue_rules as qr_config
 
 
 @pytest.fixture(autouse=True)
@@ -163,22 +161,16 @@ partition_rules:
       - label=projectC
 """
 
-QUEUE_RULES = voluptuous.Schema(qr_config.QueueRulesSchema)(
-    rules.YamlSchema(MERGIFY_CONFIG)["queue_rules"],
-)
-PARTITION_RULES = voluptuous.Schema(partr_config.PartitionRulesSchema)(
-    rules.YamlSchema(MERGIFY_CONFIG)["partition_rules"],
-)
-
 
 @pytest.fixture
 def convoy(
     repository: context.Repository,
 ) -> merge_train.Convoy:
+    repository._caches.mergify_config.set(
+        rules.UserConfigurationSchema(rules.YamlSchema(MERGIFY_CONFIG)),
+    )
     return merge_train.Convoy(
         repository,
-        QUEUE_RULES,
-        PARTITION_RULES,
         github_types.GitHubRefType("main"),
     )
 

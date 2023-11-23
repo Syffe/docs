@@ -76,9 +76,7 @@ async def create_queue_freeze(
     queue_freeze_payload: QueueFreezePayload,
     queue_rule: security.QueueRuleByNameFromPath,
     authentication_actor: security.AuthenticatedActor,
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
-    partition_rules: security.PartitionRules,
+    repository_ctxt: security.RepositoryWithConfig,
 ) -> QueueFreezeResponse:
     if queue_freeze_payload.reason == "":
         queue_freeze_payload.reason = "No freeze reason was specified."
@@ -142,7 +140,7 @@ async def create_queue_freeze(
             "Update queue freeze",
         )
 
-    await queue_freeze.save(queue_rules, partition_rules)
+    await queue_freeze.save()
     return QueueFreezeResponse(
         queue_freezes=[
             QueueFreeze(
@@ -171,17 +169,15 @@ async def create_queue_freeze(
 )
 async def delete_queue_freeze(
     authentication_actor: security.AuthenticatedActor,
-    repository_ctxt: security.Repository,
+    repository_ctxt: security.RepositoryWithConfig,
     queue_rule: security.QueueRuleByNameFromPath,
-    queue_rules: security.QueueRules,
-    partition_rules: security.PartitionRules,
 ) -> fastapi.Response:
     queue_freeze = freeze.QueueFreeze(
         repository=repository_ctxt,
         queue_rule=queue_rule,
         name=queue_rule.name,
     )
-    if not await queue_freeze.delete(queue_rules, partition_rules):
+    if not await queue_freeze.delete():
         raise fastapi.HTTPException(
             status_code=404,
             detail=f'The queue "{queue_rule.name}" is not currently frozen.',
@@ -216,7 +212,7 @@ async def delete_queue_freeze(
     },
 )
 async def get_queue_freeze(
-    repository_ctxt: security.Repository,
+    repository_ctxt: security.RepositoryWithConfig,
     queue_rule: security.QueueRuleByNameFromPath,
 ) -> QueueFreezeResponse:
     queue_freeze = await freeze.QueueFreeze.get(repository_ctxt, queue_rule)
@@ -249,8 +245,7 @@ async def get_queue_freeze(
     },
 )
 async def get_list_queue_freeze(
-    repository_ctxt: security.Repository,
-    queue_rules: security.QueueRules,
+    repository_ctxt: security.RepositoryWithConfig,
 ) -> QueueFreezeResponse:
     return QueueFreezeResponse(
         queue_freezes=[
@@ -260,9 +255,6 @@ async def get_list_queue_freeze(
                 freeze_date=queue_freeze.freeze_date,
                 cascading=queue_freeze.cascading,
             )
-            async for queue_freeze in freeze.QueueFreeze.get_all(
-                repository_ctxt,
-                queue_rules,
-            )
+            async for queue_freeze in freeze.QueueFreeze.get_all(repository_ctxt)
         ],
     )

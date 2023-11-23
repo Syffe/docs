@@ -358,6 +358,11 @@ class TestQueueCISummary(base.FunctionalTestBase):
 
     async def test_invalid_config_html_escape(self) -> None:
         rules = {
+            "queue_rules": [
+                {
+                    "name": "no <i>manual</i> merge",
+                },
+            ],
             "pull_request_rules": [
                 {
                     "name": "no <i>manual</i> merge",
@@ -377,5 +382,6 @@ class TestQueueCISummary(base.FunctionalTestBase):
         assert summary is not None
         assert summary["output"] is not None
         assert (
-            summary["output"]["summary"] == "`not <h1>exists</h1> !!` queue not found"
+            summary["output"]["summary"]
+            == "In the rule `no <i>manual</i> merge`, the action `queue` configuration is invalid:\n`not <h1>exists</h1> !!` queue not found\n\n"
         )

@@ -167,13 +167,7 @@ class BasePullRequest:
         from mergify_engine.queue import merge_train
         from mergify_engine.queue.merge_train import train_car_state as tcs
 
-        queue_rules = ctxt.repository.mergify_config["queue_rules"]
-        partition_rules = ctxt.repository.mergify_config["partition_rules"]
-        convoy = await merge_train.Convoy.from_context(
-            ctxt,
-            queue_rules,
-            partition_rules,
-        )
+        convoy = await merge_train.Convoy.from_context(ctxt)
 
         if name == "queue-name":
             embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])
@@ -231,9 +225,9 @@ class BasePullRequest:
             return date.RelativeDatetime(started_at)
 
         if name == "queue-partition-name" or name == "partition-name":
-            return await partition_rules.get_evaluated_partition_names_from_context(
-                ctxt,
-            )
+            return await ctxt.repository.mergify_config[
+                "partition_rules"
+            ].get_evaluated_partition_names_from_context(ctxt)
 
         # NOTE(Syffe): this attribute in only used for merge-conditions internally. Because at this point
         # we want only the partitions the PR is currently queued in. Whereas with "queue-partition-name" and
