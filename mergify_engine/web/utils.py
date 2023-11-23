@@ -37,7 +37,7 @@ PostgresText = typing.Annotated[
 
 def setup_exception_handlers(app: fastapi.FastAPI) -> None:
     @app.exception_handler(sqlalchemy.exc.DBAPIError)
-    async def postgres_errors(
+    def postgres_errors(
         request: requests.Request,
         exc: sqlalchemy.exc.DBAPIError,
     ) -> responses.Response:
@@ -47,7 +47,7 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
             return responses.Response(status_code=503)
         raise exc
 
-    async def redis_errors(
+    def redis_errors(
         request: requests.Request,
         exc: redis_exceptions.ConnectionError | redis_exceptions.TimeoutError,
     ) -> responses.Response:
@@ -59,7 +59,7 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
     app.exception_handler(redis_exceptions.TimeoutError)(redis_errors)
 
     @app.exception_handler(engine_exceptions.RateLimited)
-    async def rate_limited_handler(
+    def rate_limited_handler(
         request: requests.Request,
         exc: engine_exceptions.RateLimited,
     ) -> responses.JSONResponse:
@@ -69,7 +69,7 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
         )
 
     @app.exception_handler(engine_exceptions.MergifyNotInstalled)
-    async def mergify_not_installed_handler(
+    def mergify_not_installed_handler(
         request: requests.Request,
         exc: engine_exceptions.MergifyNotInstalled,
     ) -> responses.JSONResponse:
@@ -81,7 +81,7 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
         )
 
     @app.exception_handler(pagination.InvalidCursor)
-    async def pagination_handler(
+    def pagination_handler(
         request: requests.Request,
         exc: pagination.InvalidCursor,
     ) -> responses.JSONResponse:
