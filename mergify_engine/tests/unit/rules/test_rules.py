@@ -2790,3 +2790,45 @@ async def test_default_queue_rules() -> None:
         extends_only_config_file,
     )
     assert len(extended_config["queue_rules"].rules) == 1
+
+
+async def test_invalid_extended_configuration_already_loaded() -> None:
+    empty_config_file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path=github_types.GitHubFilePath("whatever"),
+        decoded_content=":",
+        encoding="base64",
+    )
+    extends_only_config_file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path=github_types.GitHubFilePath("whatever"),
+        decoded_content="extends: foobar",
+        encoding="base64",
+    )
+
+    installation = mock.Mock()
+    extends_repository_ctxt = mock.Mock(
+        installation=installation,
+        repo={"id": 4321},
+        is_mergify_installed=mock.AsyncMock(return_value={"installed": True}),
+        get_mergify_config_file=mock.AsyncMock(return_value=empty_config_file),
+        load_mergify_config=mock.AsyncMock(
+            side_effect=context.ConfigurationFileAlreadyLoaded(
+                mergify_conf.InvalidRules("whatever", "here.yml"),
+            ),
+        ),
+    )
+    repository_ctxt = mock.Mock(installation=installation, repo={"id": 1234})
+    installation.get_repository_by_name = mock.AsyncMock(
+        return_value=extends_repository_ctxt,
+    )
+
+    with pytest.raises(mergify_conf.InvalidRules):
+        await mergify_conf.get_mergify_config_from_file(
+            repository_ctxt,
+            extends_only_config_file,
+        )

@@ -7,6 +7,7 @@ import typing
 
 import voluptuous
 
+from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import rules
@@ -17,7 +18,6 @@ from mergify_engine.clients import http
 if typing.TYPE_CHECKING:
     from collections import abc
 
-    from mergify_engine import context
     from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config
     from mergify_engine.rules.config import queue_rules as qr_config
@@ -287,8 +287,11 @@ async def get_mergify_extended_config(
             error_path,
         )
 
-    await extended_repository_ctxt.load_mergify_config(
-        allow_extend=False,
-    )
+    try:
+        await extended_repository_ctxt.load_mergify_config(
+            allow_extend=False,
+        )
+    except context.ConfigurationFileAlreadyLoaded as e:
+        e.reraise_configuration_error()
 
     return extended_repository_ctxt.mergify_config
