@@ -313,10 +313,8 @@ async def get_pull_request_summary(
         github_types.GitHubPullRequestNumber,
         fastapi.Path(description="The pull request number"),
     ],
-    repository: security.Repository,
+    repository: security.RepositoryWithConfig,
 ) -> PullRequestSummaryResponse:
-    config = await repository.get_mergify_config()
-
     try:
         ctxt = await repository.get_pull_request_context(
             github_types.GitHubPullRequestNumber(number),
@@ -325,7 +323,7 @@ async def get_pull_request_summary(
         raise fastapi.HTTPException(status_code=e.status_code, detail=e.message)
 
     try:
-        prr_evaluator = await config[
+        prr_evaluator = await repository.mergify_config[
             "pull_request_rules"
         ].get_pull_request_rules_evaluator(ctxt)
     except actions_mod.InvalidDynamicActionConfiguration as e:
@@ -339,7 +337,9 @@ async def get_pull_request_summary(
         ]
         raise fastapi.HTTPException(status_code=422, detail=detail)
 
-    qr_evaluator = await config["queue_rules"].get_queue_rules_evaluator(ctxt)
+    qr_evaluator = await repository.mergify_config[
+        "queue_rules"
+    ].get_queue_rules_evaluator(ctxt)
 
     return PullRequestSummaryResponse.from_configuration_evaluators(
         prr_evaluator=prr_evaluator,

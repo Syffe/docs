@@ -189,9 +189,12 @@ async def report(
         print(f"Config filename: {config_file['path']}")
         print(config_file["decoded_content"])
         try:
-            mergify_config = await repository.get_mergify_config()
+            await repository.load_mergify_config()
         except mergify_conf.InvalidRules as e:  # pragma: no cover
             print(f"configuration is invalid {e!s}")
+
+        # FIXME(sileht): drop this and use the repository.mergify_config directly everywhere
+        mergify_config = repository.mergify_config
 
     if pull_number is None:
         if mergify_config is None:

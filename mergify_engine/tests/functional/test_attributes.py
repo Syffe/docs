@@ -332,6 +332,7 @@ class TestAttributes(base.FunctionalTestBase):
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
         assert comment["comment"]["body"] == "draft pr"
 
+        await self.reload_repository_ctxt_configuration()
         ctxt = context.Context(self.repository_ctxt, pr)
 
         # Test underscore/dash attributes
@@ -1223,6 +1224,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         pr_labeled = await self.add_label(pr["number"], "automerge")
         await self.run_engine()
 
+        await self.reload_repository_ctxt_configuration()
         ctxt = context.Context(self.repository_ctxt, pr_labeled["pull_request"])
         assert ctxt.get_depends_on() == [pr1["number"], pr2["number"], 9999999]
         assert await condition_value_querier.PullRequest(ctxt)._get_consolidated_data(

@@ -167,9 +167,8 @@ class BasePullRequest:
         from mergify_engine.queue import merge_train
         from mergify_engine.queue.merge_train import train_car_state as tcs
 
-        mergify_config = await ctxt.repository.get_mergify_config()
-        queue_rules = mergify_config["queue_rules"]
-        partition_rules = mergify_config["partition_rules"]
+        queue_rules = ctxt.repository.mergify_config["queue_rules"]
+        partition_rules = ctxt.repository.mergify_config["partition_rules"]
         convoy = await merge_train.Convoy.from_context(
             ctxt,
             queue_rules,

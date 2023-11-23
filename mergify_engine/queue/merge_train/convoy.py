@@ -9,6 +9,7 @@ import daiquiri
 from ddtrace import tracer
 
 from mergify_engine import check_api
+from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import github_types
 from mergify_engine import queue
@@ -22,7 +23,6 @@ from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
-    from mergify_engine import context
     from mergify_engine.queue import freeze
     from mergify_engine.queue.merge_train import train_car as tc_import
     from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -590,7 +590,10 @@ class Convoy:
                 continue
 
             try:
-                mergify_config = await repository.get_mergify_config()
+                try:
+                    await repository.load_mergify_config()
+                except context.ConfigurationFileAlreadyLoaded as e:
+                    e.reraise_configuration_error()
             except mergify_conf.InvalidRules as e:  # pragma: no cover
                 LOG.warning(
                     "convoy can't be refreshed, the mergify configuration is invalid",
@@ -602,8 +605,9 @@ class Convoy:
                 )
                 continue
 
-            queue_rules = mergify_config["queue_rules"]
-            partition_rules = mergify_config["partition_rules"]
+            # FIXME(sileht): drop this and use the repository.mergify_config directly everywhere
+            queue_rules = repository.mergify_config["queue_rules"]
+            partition_rules = repository.mergify_config["partition_rules"]
 
             conv = cls(repository, queue_rules, partition_rules, ref)
             await conv.load_from_bytes(convoy_raw)

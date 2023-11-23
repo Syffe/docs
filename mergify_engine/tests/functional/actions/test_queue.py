@@ -170,7 +170,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
         body = f"Awesome body\nDepends-On: #{p1['number']}\n"
         p2 = await self.create_pr(message=body)
@@ -254,7 +254,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
         body = f"Awesome body\nDepends-On: #{p1['number']}\n"
         p2 = await self.create_pr(message=body)
@@ -344,7 +344,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         pr = await self.create_pr()
         await self.add_label(pr["number"], "queue")
@@ -403,7 +403,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
         body = f"Awesome body\nDepends-On: #{p1['number']}\n"
         p2 = await self.create_pr(message=body)
@@ -455,7 +455,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
         body = f"Awesome body\nDepends-On: #{p1['number']}\n"
         p2 = await self.create_pr(message=body)
@@ -532,7 +532,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")
@@ -588,7 +588,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")
@@ -637,7 +637,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")
@@ -681,7 +681,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(files={"test/toto.txt": "toto"})
         await self.add_label(p1["number"], "queue")
@@ -732,7 +732,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(files={"test/toto.txt": "toto"})
         await self.add_label(p1["number"], "queue")
@@ -773,7 +773,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(files={"test/toto.txt": "toto"})
         await self.add_label(p1["number"], "queue")
@@ -830,7 +830,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(files={"test/toto.txt": "toto"})
         await self.add_label(p1["number"], "queue")
@@ -881,7 +881,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         # p1 is rebased and merged after p2
         p1 = await self.create_pr(files={"test/first.txt": "1"})
@@ -951,7 +951,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         # p1 is rebased and merged after p2
         p1 = await self.create_pr(files={"test/first.txt": "1"})
@@ -1024,7 +1024,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")
@@ -1069,7 +1069,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         # run engine with pending check
         p = await self.create_pr()
@@ -1127,7 +1127,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p = await self.create_pr()
         await self.create_status(p, "continuous-integration/fake-ci-queue")
@@ -1205,7 +1205,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -1292,7 +1292,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p = await self.create_pr()
         await self.run_engine()
@@ -1370,7 +1370,7 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -1450,7 +1450,7 @@ class TestQueueAction(base.FunctionalTestBase):
             "restrictions": None,
             "enforce_admins": False,
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         p1 = await self.create_pr()
@@ -1535,7 +1535,7 @@ class TestQueueAction(base.FunctionalTestBase):
             "restrictions": None,
             "enforce_admins": False,
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         p1 = await self.create_pr()
@@ -1621,7 +1621,7 @@ class TestQueueAction(base.FunctionalTestBase):
             "restrictions": None,
             "enforce_admins": False,
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         p1 = await self.create_pr()
@@ -1686,7 +1686,7 @@ class TestQueueAction(base.FunctionalTestBase):
             "restrictions": None,
             "enforce_admins": False,
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         p1 = await self.create_pr()
@@ -1733,7 +1733,7 @@ class TestQueueAction(base.FunctionalTestBase):
             "restrictions": None,
             "enforce_admins": False,
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         p1 = await self.create_pr()
@@ -1835,7 +1835,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
@@ -1939,7 +1939,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
@@ -1987,7 +1987,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(as_="admin")
         p2 = await self.create_pr(as_="admin", two_commits=True)
@@ -2162,7 +2162,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(as_="admin")
 
@@ -2281,7 +2281,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p = await self.create_pr()
 
@@ -2341,7 +2341,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -2521,7 +2521,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
@@ -2603,7 +2603,7 @@ class TestQueueAction(base.FunctionalTestBase):
         self,
         rules: dict[str, typing.Any],
     ) -> None:
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -2728,7 +2728,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
@@ -2840,7 +2840,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -2919,7 +2919,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         # Create 2 PR and put them in a queue
         p1 = await self.create_pr(as_="admin")
@@ -3152,7 +3152,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(as_="admin")
         p2 = await self.create_pr(as_="admin")
@@ -3245,7 +3245,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
@@ -3431,7 +3431,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
@@ -3568,7 +3568,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -3691,7 +3691,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
@@ -3819,7 +3819,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -4000,7 +4000,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
@@ -4181,7 +4181,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -4281,7 +4281,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules_config))
+        await self.setup_repo(yaml.dump(rules_config), preload_configuration=True)
 
         p1 = await self.create_pr()
         await self.run_engine()
@@ -4344,7 +4344,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules_config))
+        await self.setup_repo(yaml.dump(rules_config), preload_configuration=True)
 
         p1 = await self.create_pr()
         await self.create_status(p1)
@@ -4442,7 +4442,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules_config))
+        await self.setup_repo(yaml.dump(rules_config), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -4535,7 +4535,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules_config))
+        await self.setup_repo(yaml.dump(rules_config), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -4634,7 +4634,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules_config))
+        await self.setup_repo(yaml.dump(rules_config), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -4713,7 +4713,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules_config))
+        await self.setup_repo(yaml.dump(rules_config), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -4819,7 +4819,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -4859,7 +4859,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p = await self.create_pr()
 
@@ -4901,7 +4901,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(as_="admin")
 
@@ -4947,7 +4947,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(as_="admin")
 
@@ -4993,7 +4993,7 @@ previous_failed_batches:
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         protection = {
             "required_status_checks": {
@@ -5056,7 +5056,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
@@ -5166,7 +5166,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -5237,7 +5237,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -5403,7 +5403,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -5543,7 +5543,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -5665,7 +5665,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         await self.create_pr()
         await self.run_engine()
@@ -5713,7 +5713,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -5822,7 +5822,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr(files={"conflicts": "well"})
         p2 = await self.create_pr(files={"conflicts": "boom"})
         p3 = await self.create_pr()
@@ -5927,7 +5927,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr(as_="admin", files={"conflicts": "well"})
         p2 = await self.create_pr(as_="admin", files={"conflicts": "boom"})
         p3 = await self.create_pr(as_="admin")
@@ -6017,7 +6017,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(as_="admin")
 
@@ -6122,7 +6122,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(as_="admin")
         p2 = await self.create_pr(as_="admin")
@@ -6290,7 +6290,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -6447,7 +6447,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         # put 3 PRs in queue
         p1 = await self.create_pr()
@@ -6632,7 +6632,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -6891,7 +6891,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(as_="admin")
         await self.create_status(p1)
@@ -7055,7 +7055,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -7140,7 +7140,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -7219,7 +7219,7 @@ previous_failed_batches:
             ],
         }
         with time_travel("2021-05-30T10:00:00", tick=True):
-            await self.setup_repo(yaml.dump(config))
+            await self.setup_repo(yaml.dump(config), preload_configuration=True)
 
             p1 = await self.create_pr()
 
@@ -7318,7 +7318,7 @@ previous_failed_batches:
             ],
         }
         with time_travel("2021-05-30T10:00:00", tick=True):
-            await self.setup_repo(yaml.dump(config))
+            await self.setup_repo(yaml.dump(config), preload_configuration=True)
 
             p1 = await self.create_pr()
 
@@ -7418,7 +7418,7 @@ previous_failed_batches:
             ],
         }
         with time_travel("2021-05-30T10:00:00", tick=True):
-            await self.setup_repo(yaml.dump(config))
+            await self.setup_repo(yaml.dump(config), preload_configuration=True)
 
             p1 = await self.create_pr()
 
@@ -7496,7 +7496,7 @@ previous_failed_batches:
 
         start_date = datetime.datetime(2021, 5, 30, 20, tzinfo=date.UTC)
         with time_travel(start_date, tick=True):
-            await self.setup_repo(yaml.dump(config))
+            await self.setup_repo(yaml.dump(config), preload_configuration=True)
 
             p1 = await self.create_pr()
 
@@ -7591,7 +7591,7 @@ previous_failed_batches:
         }
 
         with time_travel("2021-05-30T20:00:00", tick=True):
-            await self.setup_repo(yaml.dump(config))
+            await self.setup_repo(yaml.dump(config), preload_configuration=True)
 
             p1 = await self.create_pr()
 
@@ -7654,7 +7654,7 @@ previous_failed_batches:
             ],
         }
         with time_travel("2023-06-30T15:00:00", tick=True):
-            await self.setup_repo(yaml.dump(config))
+            await self.setup_repo(yaml.dump(config), preload_configuration=True)
 
             r = await self.admin_app.put(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
@@ -7717,7 +7717,7 @@ previous_failed_batches:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         protection = {
             "required_status_checks": {
@@ -7791,7 +7791,7 @@ previous_failed_batches:
         self,
         rules: dict[str, typing.Any],
     ) -> None:
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         protection = {
             "required_status_checks": {
@@ -7948,7 +7948,7 @@ pull_request_rules:
         name: default
         update_method: rebase
 """
-        await self.setup_repo(rules)
+        await self.setup_repo(rules, preload_configuration=True)
 
         protection = {
             "required_status_checks": {
@@ -8042,7 +8042,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         # Put a PR in queue
         p1 = await self.create_pr()
@@ -8115,7 +8115,11 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules), test_branches=[featureA])
+        await self.setup_repo(
+            yaml.dump(rules),
+            test_branches=[featureA],
+            preload_configuration=True,
+        )
 
         await self.create_pr(base=featureA)
         await self.create_pr(base=featureA)
@@ -8126,8 +8130,8 @@ pull_request_rules:
             q
             async for convoy in merge_train.Convoy.iter_convoys(
                 self.repository_ctxt,
-                await self.get_queue_rules(),
-                await self.get_partition_rules(),
+                self.get_queue_rules(),
+                self.get_partition_rules(),
             )
             for q in convoy.iter_trains()
         ]
@@ -8146,8 +8150,8 @@ pull_request_rules:
             q
             async for convoy in merge_train.Convoy.iter_convoys(
                 self.repository_ctxt,
-                await self.get_queue_rules(),
-                await self.get_partition_rules(),
+                self.get_queue_rules(),
+                self.get_partition_rules(),
             )
             for q in convoy.iter_trains()
         ]
@@ -8185,7 +8189,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -8258,7 +8262,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
 
@@ -8301,7 +8305,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
 
@@ -8344,7 +8348,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
 
@@ -8382,7 +8386,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
 
@@ -8419,7 +8423,7 @@ pull_request_rules:
         method: squash
 """
 
-        await self.setup_repo(rules)
+        await self.setup_repo(rules, preload_configuration=True)
 
         p1 = await self.create_pr()
         await self.create_review(p1["number"])
@@ -8531,7 +8535,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
 
         p2 = await self.create_pr()
@@ -8578,7 +8582,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -8669,7 +8673,7 @@ pull_request_rules:
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -8764,7 +8768,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1, p2 = await self.create_prs_with_conflicts()
 
@@ -8836,7 +8840,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1, p2 = await self.create_prs_with_conflicts()
 
@@ -8891,7 +8895,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2, p3 = await self.create_prs_with_conflicts()
@@ -8966,7 +8970,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         await self.create_pr()
         p = await self.create_pr()
@@ -9008,7 +9012,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         pr = await self.create_pr()
 
         await self.add_label(pr["number"], "queue")
@@ -9108,7 +9112,7 @@ pull_request_rules:
         }
         start_date = datetime.datetime(2023, 9, 28, 16, tzinfo=datetime.UTC)
         with time_travel(start_date, tick=True):
-            await self.setup_repo(yaml.dump(rules))
+            await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
             p1 = await self.create_pr()
 
@@ -9197,7 +9201,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -9269,7 +9273,7 @@ pull_request_rules:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         # Allow merge
         pull = await self.create_pr()

@@ -1219,18 +1219,12 @@ async def test_extends_without_database_cache(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     # Config extension containing default values to assert the extension worked
-    mergify_config_extension = mergify_conf.MergifyConfig(
-        {
-            "extends": None,
-            "pull_request_rules": prr_config.PullRequestRules([]),
-            "queue_rules": qr_config.QueueRules([]),
-            "partition_rules": partr_config.PartitionRules([]),
-            "defaults": mergify_conf.Defaults({"actions": {"hello": {}}}),
-            "commands_restrictions": {},
-            "raw_config": {},
-            "_checks_to_retry_on_failure": {},
-        },
-    )
+    mergify_config_extension = """
+defaults:
+  actions:
+    comment:
+      message: foobar
+"""
 
     respx_mock.get("repos/Mergifyio/.github").respond(
         200,
@@ -1245,20 +1239,27 @@ async def test_extends_without_database_cache(
     )
     respx_mock.get("repos/Mergifyio/.github/installation").respond(200)
 
-    with mock.patch.object(
-        context.Repository,
-        "get_mergify_config",
-        mock.AsyncMock(return_value=mergify_config_extension),
-    ):
-        config = await mergify_conf.get_mergify_config_from_dict(
-            fake_repository,
-            {"extends": github_types.GitHubRepositoryName(".github")},
-            "",
-        )
+    respx_mock.get("repos/Mergifyio/.github/contents/.mergify.yml").respond(
+        200,
+        json=github_types.GitHubContentFile(  # type: ignore[arg-type]
+            {
+                "type": "file",
+                "sha": github_types.SHAType("whatever"),
+                "path": github_types.GitHubFilePath(".mergify.yml"),
+                "encoding": "base64",
+                "content": encodebytes(mergify_config_extension.encode()).decode(),
+            },
+        ),
+    )
+    config = await mergify_conf.get_mergify_config_from_dict(
+        fake_repository,
+        {"extends": github_types.GitHubRepositoryName(".github")},
+        "",
+    )
 
     # Configuration has been extended and have defaults from the extension
     assert config["extends"] == ".github"
-    assert config["defaults"] == {"actions": {"hello": {}}}
+    assert config["defaults"] == {"actions": {"comment": {"message": "foobar"}}}
     result = await db.scalars(sqlalchemy.select(github_repository.GitHubRepository))
     repos = list(result)
     assert len(repos) == 1
@@ -1294,36 +1295,35 @@ async def test_extends_with_database_cache(
         json.dumps({"installed": True, "error": None}),
     )
 
-    # Config extension containing default values to assert the extension worked
-    mergify_config_extension = mergify_conf.MergifyConfig(
-        {
-            "extends": None,
-            "pull_request_rules": prr_config.PullRequestRules([]),
-            "queue_rules": qr_config.QueueRules([]),
-            "partition_rules": partr_config.PartitionRules([]),
-            "defaults": mergify_conf.Defaults({"actions": {"hello": {}}}),
-            "commands_restrictions": {},
-            "raw_config": {},
-            "_checks_to_retry_on_failure": {},
-        },
+    mergify_config_extension = """
+defaults:
+  actions:
+    comment:
+      message: foobar
+"""
+    respx_mock.get("repos/Mergifyio/.github/contents/.mergify.yml").respond(
+        200,
+        json=github_types.GitHubContentFile(  # type: ignore[arg-type]
+            {
+                "type": "file",
+                "sha": github_types.SHAType("whatever"),
+                "path": github_types.GitHubFilePath(".mergify.yml"),
+                "encoding": "base64",
+                "content": encodebytes(mergify_config_extension.encode()).decode(),
+            },
+        ),
     )
 
-    with mock.patch.object(
-        context.Repository,
-        "get_mergify_config",
-        mock.AsyncMock(return_value=mergify_config_extension),
-    ):
-        config = await mergify_conf.get_mergify_config_from_dict(
-            fake_repository,
-            {"extends": github_types.GitHubRepositoryName(".github")},
-            "",
-        )
+    config = await mergify_conf.get_mergify_config_from_dict(
+        fake_repository,
+        {"extends": github_types.GitHubRepositoryName(".github")},
+        "",
+    )
 
-    # No HTTP request to GH
-    respx_mock.calls.assert_not_called()
-    # Configuration has been extended and have defaults from the extension
+    # Configuration has been extended and have defaults from the extension, with no
+    # API calls to get the repository and the installation
     assert config["extends"] == ".github"
-    assert config["defaults"] == {"actions": {"hello": {}}}
+    assert config["defaults"] == {"actions": {"comment": {"message": "foobar"}}}
 
 
 def test_user_binary_file() -> None:
@@ -2776,7 +2776,9 @@ async def test_default_queue_rules() -> None:
         installation=installation,
         repo={"id": 4321},
         is_mergify_installed=mock.AsyncMock(return_value={"installed": True}),
-        get_mergify_config=mock.AsyncMock(return_value=empty_config),
+        mergify_config=empty_config,
+        get_mergify_config_file=mock.AsyncMock(return_value=extends_only_config_file),
+        load_mergify_config=mock.AsyncMock(),
     )
     repository_ctxt = mock.Mock(installation=installation, repo={"id": 1234})
     installation.get_repository_by_name = mock.AsyncMock(

@@ -83,9 +83,7 @@ async def test_flaky_check_get_consolidate_data(
     repo = mock.Mock()
     repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
     repo.installation.client.items = mock.MagicMock(__aiter__=[])
-    repo.get_mergify_config = mock.AsyncMock(
-        return_value=rules.UserConfigurationSchema(mergify_conf),
-    )
+    repo.mergify_config = rules.UserConfigurationSchema(mergify_conf)
     ctxt = context.Context(repo, a_pull_request)
 
     summary_check = github_types.CachedGitHubCheckRun(

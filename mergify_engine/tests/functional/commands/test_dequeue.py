@@ -30,7 +30,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         await self.run_engine()
@@ -192,7 +192,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(
             files={
@@ -256,7 +256,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(
             files={
@@ -334,7 +334,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(
             files={
@@ -400,7 +400,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         await self.create_comment_as_admin(p1["number"], "@mergifyio queue")

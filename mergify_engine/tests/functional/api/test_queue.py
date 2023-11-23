@@ -80,7 +80,10 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(invalid_rules), forward_to_engine=True)
+        await self.setup_repo(
+            yaml.dump(invalid_rules),
+            forward_to_engine=True,
+        )
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
@@ -197,7 +200,11 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules), forward_to_engine=True)
+        await self.setup_repo(
+            yaml.dump(rules),
+            forward_to_engine=True,
+            preload_configuration=True,
+        )
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
@@ -302,7 +309,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -407,7 +414,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         # Tuesday
         with time_travel("2023-01-10T14:00:00", tick=True):
@@ -575,7 +582,7 @@ class TestQueueApi(base.FunctionalTestBase):
             stat = await web_stats_utils.get_queue_checks_duration(
                 session,
                 self.repository_ctxt,
-                await self.get_partition_rules(),
+                self.get_partition_rules(),
                 queue_names=(),
                 partition_names=(),
             )
@@ -608,7 +615,7 @@ class TestQueueApi(base.FunctionalTestBase):
         }
         start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
         with time_travel(start_date, tick=True):
-            await self.setup_repo(yaml.dump(rules))
+            await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
             p1 = await self.create_pr()
             p2 = await self.create_pr()
@@ -703,7 +710,7 @@ class TestQueueApi(base.FunctionalTestBase):
         }
         start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
         with time_travel(start_date, tick=True):
-            await self.setup_repo(yaml.dump(rules))
+            await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
             p1 = await self.create_pr()
             p2 = await self.create_pr()
@@ -819,7 +826,7 @@ class TestQueueApi(base.FunctionalTestBase):
         }
         start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
         with time_travel(start_date, tick=True):
-            await self.setup_repo(yaml.dump(rules))
+            await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
             p1 = await self.create_pr()
             p2 = await self.create_pr()
@@ -953,7 +960,7 @@ class TestQueueApi(base.FunctionalTestBase):
         }
         start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
         with time_travel(start_date, tick=True):
-            await self.setup_repo(yaml.dump(rules))
+            await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
             p1 = await self.create_pr()
             p2 = await self.create_pr()
@@ -1106,7 +1113,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -1183,7 +1190,7 @@ class TestQueueApi(base.FunctionalTestBase):
         # Friday, 15:00 UTC
         start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.UTC)
         with time_travel(start_date, tick=True):
-            await self.setup_repo(yaml.dump(rules))
+            await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
             p1 = await self.create_pr()
             p2 = await self.create_pr()
@@ -1274,7 +1281,7 @@ class TestQueueApi(base.FunctionalTestBase):
         # Friday, 15:00 UTC
         start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.UTC)
         with time_travel(start_date, tick=True):
-            await self.setup_repo(yaml.dump(rules))
+            await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
             p1 = await self.create_pr()
             p2 = await self.create_pr()
@@ -1342,7 +1349,7 @@ class TestQueueApi(base.FunctionalTestBase):
         # Friday, 15:00 UTC
         start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.UTC)
         with time_travel(start_date, tick=True):
-            await self.setup_repo(yaml.dump(rules))
+            await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
             p1 = await self.create_pr()
             p2 = await self.create_pr()
@@ -1421,7 +1428,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
 
@@ -1516,7 +1523,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr(
             files={

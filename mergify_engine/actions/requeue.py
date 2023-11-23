@@ -62,10 +62,9 @@ class RequeueExecutor(
                 summary="",
             )
 
-        mergify_config = await self.ctxt.repository.get_mergify_config()
         has_queue_action_in_prr = any(
             "queue" in prr.actions.keys()
-            for prr in mergify_config["pull_request_rules"]
+            for prr in self.ctxt.repository.mergify_config["pull_request_rules"]
         )
 
         # If the config has a `queue` action in the pull_request_rules

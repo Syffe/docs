@@ -97,7 +97,7 @@ class TestQueuePause(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         r = await self._create_queue_pause(pause_payload=None, expected_status_code=422)
         assert r.json() == {
@@ -192,7 +192,7 @@ class TestQueuePause(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
         p2 = await self.create_pr()
 
@@ -410,7 +410,7 @@ class TestQueuePause(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
         p2 = await self.create_pr()
         p3 = await self.create_pr()
@@ -610,7 +610,7 @@ class TestQueuePause(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
         p2 = await self.create_pr()
         p3 = await self.create_pr()
@@ -811,7 +811,7 @@ class TestQueuePause(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         pause_payload = {"reason": "test pause reason"}
         r = await self._create_queue_pause(
@@ -917,7 +917,7 @@ class TestQueuePause(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         r = await self._delete_queue_pause(expected_status_code=404)
         assert r.json() == {
@@ -974,7 +974,7 @@ class TestQueuePause(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         r = await self._create_queue_pause(
             pause_payload={"reason": "test pause reason"},
@@ -1089,7 +1089,7 @@ class TestQueuePause(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         r = await self._get_queue_pause(expected_status_code=404)
         assert r.json() == {
@@ -1146,7 +1146,7 @@ class TestQueuePause(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         r = await self._create_queue_pause(
             pause_payload={"reason": "test pause reason"},
         )
@@ -1195,7 +1195,7 @@ class TestQueuePause(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         r = await self._create_queue_pause(
             pause_payload={"reason": "test pause reason"},

@@ -1447,6 +1447,7 @@ class QueueAction(actions.Action):
 
         if queue_conditions := await conditions.get_queue_conditions(
             ctxt,
+            self.queue_rules,
             self.config["name"],
         ):
             conditions_requirements.append(queue_conditions)

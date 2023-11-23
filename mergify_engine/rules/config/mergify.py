@@ -7,7 +7,6 @@ import typing
 
 import voluptuous
 
-from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import rules
@@ -278,12 +277,8 @@ async def get_mergify_extended_config(
             error_path,
         )
 
-    try:
-        return await extended_repository_ctxt.get_mergify_config(
-            allow_extend=False,
-            allow_empty_configuration=False,
-        )
-    except exceptions.MergifyConfigFileEmpty:
+    config_file = await extended_repository_ctxt.get_mergify_config_file()
+    if config_file is None:
         raise InvalidRules(
             voluptuous.Invalid(
                 f"Extended configuration repository `{extended_path}` doesn't have a Mergify configuration file.",
@@ -291,3 +286,9 @@ async def get_mergify_extended_config(
             ),
             error_path,
         )
+
+    await extended_repository_ctxt.load_mergify_config(
+        allow_extend=False,
+    )
+
+    return extended_repository_ctxt.mergify_config

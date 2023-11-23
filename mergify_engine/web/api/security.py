@@ -404,6 +404,25 @@ Repository = typing.Annotated[
 ]
 
 
+async def get_repository_context_with_config(
+    repository_ctxt: Repository,
+) -> context.Repository:
+    try:
+        await repository_ctxt.load_mergify_config()
+    except mergify_conf.InvalidRules:
+        raise fastapi.HTTPException(
+            status_code=422,
+            detail="The configuration file is invalid.",
+        )
+    return repository_ctxt
+
+
+RepositoryWithConfig = typing.Annotated[
+    context.Repository,
+    fastapi.Depends(get_repository_context_with_config),
+]
+
+
 async def check_logged_user_has_write_access(
     application: LoggedApplication,
     logged_user: LoggedUser,
@@ -461,15 +480,10 @@ async def check_subscription_feature_merge_queue_stats(
     )
 
 
-async def get_queue_rules(repository_ctxt: Repository) -> qr_config.QueueRules:
-    try:
-        mergify_config = await repository_ctxt.get_mergify_config()
-    except mergify_conf.InvalidRules:
-        raise fastapi.HTTPException(
-            status_code=422,
-            detail="The configuration file is invalid.",
-        )
-    return mergify_config["queue_rules"]
+async def get_queue_rules(
+    repository_ctxt: RepositoryWithConfig,
+) -> qr_config.QueueRules:
+    return repository_ctxt.mergify_config["queue_rules"]
 
 
 QueueRules = typing.Annotated[qr_config.QueueRules, fastapi.Depends(get_queue_rules)]
@@ -526,18 +540,9 @@ OptionalBranchFromQuery = typing.Annotated[
 
 
 async def get_partition_rules(
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        get_repository_context,
-    ),
+    repository_ctxt: RepositoryWithConfig,
 ) -> partr_config.PartitionRules:
-    try:
-        mergify_config = await repository_ctxt.get_mergify_config()
-    except mergify_conf.InvalidRules:
-        raise fastapi.HTTPException(
-            status_code=422,
-            detail="The configuration file is invalid.",
-        )
-    return mergify_config["partition_rules"]
+    return repository_ctxt.mergify_config["partition_rules"]
 
 
 PartitionRules = typing.Annotated[

@@ -34,6 +34,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
                     "merge_conditions": [
                         "check-success=continuous-integration/fake-ci",
                     ],
+                    "speculative_checks": 5,
                 },
             ],
             "pull_request_rules": [
@@ -46,7 +47,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(config))
+        await self.setup_repo(yaml.dump(config), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -187,7 +188,7 @@ pull_requests:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(config))
+        await self.setup_repo(yaml.dump(config), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
@@ -306,7 +307,7 @@ pull_requests:
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(config))
+        await self.setup_repo(yaml.dump(config), preload_configuration=True)
 
         p = await self.create_pr()
 
@@ -385,7 +386,11 @@ pull_requests:
         )
 
     async def test_create_pull_conflicts(self) -> None:
-        await self.setup_repo(yaml.dump({}), files={"conflicts": "foobar"})
+        await self.setup_repo(
+            yaml.dump({}),
+            files={"conflicts": "foobar"},
+            preload_configuration=True,
+        )
 
         p = await self.create_pr(files={"conflicts": "well"})
         p1 = await self.create_pr()
@@ -501,7 +506,7 @@ pull_requests:
         start_date = datetime.datetime(2022, 11, 4, 18, tzinfo=datetime.UTC)
 
         with time_travel(start_date, tick=True):
-            await self.setup_repo(yaml.dump(rules))
+            await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
             p1 = await self.create_pr()
             p2 = await self.create_pr(two_commits=True)

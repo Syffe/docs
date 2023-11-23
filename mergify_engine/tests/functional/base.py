@@ -840,6 +840,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.redis_links.flushall()
         await self.redis_links.shutdown_all()
 
+    async def reload_repository_ctxt_configuration(self) -> None:
+        self.repository_ctxt._caches.mergify_config_file.delete()
+        self.repository_ctxt._caches.mergify_config.delete()
+        await self.repository_ctxt.load_mergify_config()
+
     async def update_delete_branch_on_merge(self, teardown: bool = False) -> None:
         for marker in self.pytestmark:  # type: ignore[attr-defined]
             if marker.name == "delete_branch_on_merge":
@@ -1079,6 +1084,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         test_branches: abc.Iterable[str] | None = None,
         files: dict[str, str] | None = None,
         forward_to_engine: bool = False,
+        preload_configuration: bool = False,
     ) -> None:
         if self.git.repository is None:
             raise RuntimeError("self.git.init() not called, tmp dir empty")
@@ -1129,6 +1135,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.git("push", "--quiet", "origin", *branches_to_push)
         for _ in branches_to_push:
             await self.wait_for("push", {}, forward_to_engine=forward_to_engine)
+
+        if preload_configuration:
+            await self.reload_repository_ctxt_configuration()
 
     def get_full_branch_name(self, name: str | None = None) -> str:
         if name is not None:
@@ -2307,21 +2316,21 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             )
         ]
 
-    async def get_queue_rule(self, name: str) -> qr_config.QueueRule:
-        config = await self.repository_ctxt.get_mergify_config()
-        return config["queue_rules"][qr_config.QueueName(name)]
+    def get_queue_rule(self, name: str) -> qr_config.QueueRule:
+        return self.repository_ctxt.mergify_config["queue_rules"][
+            qr_config.QueueName(name)
+        ]
 
-    async def get_queue_rules(self) -> qr_config.QueueRules:
-        config = await self.repository_ctxt.get_mergify_config()
-        return config["queue_rules"]
+    def get_queue_rules(self) -> qr_config.QueueRules:
+        return self.repository_ctxt.mergify_config["queue_rules"]
 
-    async def get_partition_rule(self, name: str) -> partr_config.PartitionRule:
-        config = await self.repository_ctxt.get_mergify_config()
-        return config["partition_rules"][partr_config.PartitionRuleName(name)]
+    def get_partition_rule(self, name: str) -> partr_config.PartitionRule:
+        return self.repository_ctxt.mergify_config["partition_rules"][
+            partr_config.PartitionRuleName(name)
+        ]
 
-    async def get_partition_rules(self) -> partr_config.PartitionRules:
-        config = await self.repository_ctxt.get_mergify_config()
-        return config["partition_rules"]
+    def get_partition_rules(self) -> partr_config.PartitionRules:
+        return self.repository_ctxt.mergify_config["partition_rules"]
 
     async def get_train(
         self,
@@ -2329,8 +2338,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     ) -> merge_train.Train:
         convoy = merge_train.Convoy(
             repository=self.repository_ctxt,
-            queue_rules=await self.get_queue_rules(),
-            partition_rules=await self.get_partition_rules(),
+            queue_rules=self.get_queue_rules(),
+            partition_rules=self.get_partition_rules(),
             ref=self.main_branch_name,
         )
         train = merge_train.Train(convoy=convoy, partition_name=partition_name)
@@ -2340,8 +2349,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     async def get_convoy(self) -> merge_train.Convoy:
         convoy = merge_train.Convoy(
             repository=self.repository_ctxt,
-            queue_rules=await self.get_queue_rules(),
-            partition_rules=await self.get_partition_rules(),
+            queue_rules=self.get_queue_rules(),
+            partition_rules=self.get_partition_rules(),
             ref=self.main_branch_name,
         )
         await convoy.load_from_redis()

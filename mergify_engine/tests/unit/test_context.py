@@ -978,9 +978,7 @@ async def test_check_runs_ordering(
 ) -> None:
     repo = mock.Mock()
     repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
-    repo.get_mergify_config = mock.AsyncMock(
-        return_value=rules.UserConfigurationSchema({}),
-    )
+    repo.mergify_config = rules.UserConfigurationSchema({})
     repo.installation.client.items = mock.MagicMock(__aiter__=[])
     ctxt = context.Context(repo, a_pull_request)
     with mock.patch(
@@ -1685,30 +1683,7 @@ Co-Authored-By: {{ co_author.name }} <{{ co_author.email }}>
 
 async def test_queue_attributes(context_getter: conftest.ContextGetterFixture) -> None:
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-
-    async def client_item(
-        url: str,
-        *args: typing.Any,
-        **kwargs: typing.Any,
-    ) -> typing.Any:
-        if url == "/repos/Mergifyio/mergify-engine/contents/.mergify.yml":
-            return github_types.GitHubContentFile(
-                {
-                    "content": "",
-                    "type": "file",
-                    "path": github_types.GitHubFilePath(".mergify.yml"),
-                    "sha": github_types.SHAType(
-                        "8ac2d8f970ab504e4d65351b10a2b5d8480bc38a",
-                    ),
-                    "encoding": "base64",
-                },
-            )
-
-        raise RuntimeError(f"url not mocked: {url}")
-
-    client = mock.Mock()
-    client.item.side_effect = client_item
-    ctxt.repository.installation.client = client
+    ctxt.repository._caches.mergify_config.set(rules.UserConfigurationSchema({}))
     some_date = date.utcnow()
 
     pull_request = condition_value_querier.PullRequest(ctxt)

@@ -5,7 +5,6 @@ import dataclasses
 import fastapi
 import pydantic
 
-from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 from mergify_engine.web.api.queues import types
@@ -37,22 +36,14 @@ class QueuesConfig:
     },
 )
 async def repository_queues_configuration(
-    repository_ctxt: security.Repository,
+    repository_ctxt: security.RepositoryWithConfig,
 ) -> QueuesConfig:
-    try:
-        config = await repository_ctxt.get_mergify_config()
-    except mergify_conf.InvalidRules:
-        raise fastapi.HTTPException(
-            status_code=422,
-            detail="The configuration file is invalid.",
-        )
-
     return QueuesConfig(
         [
             types.QueueRule(
                 config=rule.config,
                 name=rule.name,
             )
-            for rule in config["queue_rules"]
+            for rule in repository_ctxt.mergify_config["queue_rules"]
         ],
     )

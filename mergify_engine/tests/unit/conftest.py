@@ -10,7 +10,6 @@ import jinja2
 import jinja2.sandbox
 import pytest
 import respx
-import voluptuous
 
 from mergify_engine import condition_value_querier
 from mergify_engine import context
@@ -22,11 +21,12 @@ from mergify_engine import rules
 from mergify_engine import subscription
 from mergify_engine.clients import github
 from mergify_engine.queue import merge_train
-from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
 
-MERGIFY_CONFIG = """
+MERGIFY_CONFIG = rules.UserConfigurationSchema(
+    rules.YamlSchema(
+        """
 queue_rules:
   - name: default
     merge_conditions: []
@@ -39,14 +39,11 @@ partition_rules:
   - name: projectB
     conditions:
       - label=projectB
-"""
-
-QUEUE_RULES = voluptuous.Schema(qr_config.QueueRulesSchema)(
-    rules.YamlSchema(MERGIFY_CONFIG)["queue_rules"],
+""",
+    ),
 )
-PARTITION_RULES = voluptuous.Schema(partr_config.PartitionRulesSchema)(
-    rules.YamlSchema(MERGIFY_CONFIG)["partition_rules"],
-)
+QUEUE_RULES = MERGIFY_CONFIG["queue_rules"]
+PARTITION_RULES = MERGIFY_CONFIG["partition_rules"]
 
 
 def get_pull_queue_config(
@@ -259,6 +256,7 @@ ContextGetterFixture = abc.Callable[
 
 @pytest.fixture
 def context_getter(fake_repository: context.Repository) -> ContextGetterFixture:
+    fake_repository._caches.mergify_config.set(MERGIFY_CONFIG)
     return functools.partial(build_fake_context, repository=fake_repository)
 
 

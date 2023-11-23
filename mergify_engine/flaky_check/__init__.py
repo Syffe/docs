@@ -36,7 +36,7 @@ async def get_checks_to_rerun(
     repository: context.Repository,
     checks: list[github_types.CachedGitHubCheckRun],
 ) -> list[CheckToRerunResult]:
-    flaky_conf = (await repository.get_mergify_config())["_checks_to_retry_on_failure"]
+    flaky_conf = repository.mergify_config["_checks_to_retry_on_failure"]
 
     checks_to_rerun = []
 

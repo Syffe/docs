@@ -41,14 +41,13 @@ MergifyConfigYaml = typing.Annotated[
 class SimulatorPayload(pydantic.BaseModel):
     mergify_yml: MergifyConfigYaml
 
-    async def get_config(
+    async def load_config(
         self,
         repository_ctxt: context.Repository,
-    ) -> mergify_conf.MergifyConfig:
+    ) -> None:
         try:
-            return await mergify_conf.get_mergify_config_from_file(
-                repository_ctxt,
-                context.MergifyConfigFile(
+            await repository_ctxt.load_mergify_config(
+                config_file=context.MergifyConfigFile(
                     {
                         "type": "file",
                         "content": "whatever",
@@ -95,7 +94,7 @@ async def simulator_pull(
     repository_ctxt: security.Repository,
     number: typing.Annotated[int, fastapi.Path(description="The pull request number")],
 ) -> SimulatorResponse:
-    config = await body.get_config(repository_ctxt)
+    await body.load_config(repository_ctxt)
     try:
         ctxt = await repository_ctxt.get_pull_request_context(
             github_types.GitHubPullRequestNumber(number),
@@ -104,7 +103,9 @@ async def simulator_pull(
         raise fastapi.HTTPException(status_code=e.status_code, detail=e.message)
     ctxt.sources = [{"event_type": "mergify-simulator", "data": [], "timestamp": ""}]  # type: ignore[typeddict-item]
     try:
-        match = await config["pull_request_rules"].get_pull_request_rules_evaluator(
+        match = await repository_ctxt.mergify_config[
+            "pull_request_rules"
+        ].get_pull_request_rules_evaluator(
             ctxt,
         )
     except actions_mod.InvalidDynamicActionConfiguration as e:
@@ -113,7 +114,7 @@ async def simulator_pull(
     else:
         title, summary = await actions_runner.gen_summary(
             ctxt,
-            config["pull_request_rules"],
+            repository_ctxt.mergify_config["pull_request_rules"],
             match,
             display_action_configs=True,
         )
@@ -135,7 +136,7 @@ async def simulator_repo(
     body: SimulatorPayload,
     repository_ctxt: security.Repository,
 ) -> SimulatorResponse:
-    await body.get_config(repository_ctxt)
+    await body.load_config(repository_ctxt)
     return SimulatorResponse(
         title="The configuration is valid",
         summary="",
@@ -170,7 +171,7 @@ async def repository_configuration_simulator(
     body: SimulatorPayload,
     repository_ctxt: security.Repository,
 ) -> RepositoryConfigurationSimulatorResponse:
-    await body.get_config(repository_ctxt)
+    await body.load_config(repository_ctxt)
     return RepositoryConfigurationSimulatorResponse(
         message="The configuration is valid",
     )
@@ -245,8 +246,7 @@ async def pull_request_configuration_simulator(
         fastapi.Path(description="The pull request number"),
     ],
 ) -> PullRequestConfigurationSimulatorResponse:
-    config = await body.get_config(repository_ctxt)
-
+    await body.load_config(repository_ctxt)
     try:
         ctxt = await repository_ctxt.get_pull_request_context(
             github_types.GitHubPullRequestNumber(number),
@@ -256,7 +256,7 @@ async def pull_request_configuration_simulator(
     ctxt.sources = [{"event_type": "mergify-simulator", "data": [], "timestamp": ""}]  # type: ignore[typeddict-item]
 
     try:
-        prr_evaluator = await config[
+        prr_evaluator = await repository_ctxt.mergify_config[
             "pull_request_rules"
         ].get_pull_request_rules_evaluator(ctxt)
     except actions_mod.InvalidDynamicActionConfiguration as e:
@@ -270,7 +270,9 @@ async def pull_request_configuration_simulator(
         ]
         raise fastapi.HTTPException(status_code=422, detail=detail)
 
-    qr_evaluator = await config["queue_rules"].get_queue_rules_evaluator(ctxt)
+    qr_evaluator = await repository_ctxt.mergify_config[
+        "queue_rules"
+    ].get_queue_rules_evaluator(ctxt)
 
     return PullRequestConfigurationSimulatorResponse.from_configuration_evaluators(
         message="The configuration is valid",

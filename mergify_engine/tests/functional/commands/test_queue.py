@@ -180,7 +180,7 @@ class TestQueueCommand(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
@@ -357,7 +357,7 @@ class TestQueueCommand(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p = await self.create_pr()
 
@@ -488,7 +488,7 @@ class TestQueueCommand(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         pr = await self.create_pr()
         await self.create_comment_as_admin(pr["number"], "@mergifyio queue default")
@@ -578,7 +578,7 @@ class TestQueueCommand(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         pr = await self.create_pr()
         await self.run_engine()
@@ -646,7 +646,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         assert "Waiting for conditions to match" in first_response_again["body"]
 
     async def test_queue_command_unqueue_pr_after_ci_failure(self) -> None:
-        await self.setup_repo()
+        await self.setup_repo(preload_configuration=True)
 
         protection = {
             "required_status_checks": {

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 from collections import abc
+import contextlib
 import dataclasses
 import datetime
 import functools
@@ -51,6 +52,15 @@ WARNED_ABOUT_SHA_COLLISION_EXPIRATION = 60 * 60 * 24 * 7  # 7 days
 
 class MergifyConfigFile(github_types.GitHubContentFile):
     decoded_content: str
+
+
+@dataclasses.dataclass
+class ConfigurationFileAlreadyLoaded(Exception):
+    mergify_config: mergify_conf.MergifyConfig | Exception
+
+    def reraise_configuration_error(self) -> None:
+        if isinstance(self.mergify_config, Exception):
+            raise self.mergify_config
 
 
 def content_file_to_config_file(
@@ -428,33 +438,31 @@ class Repository:
     def clear_caches(self) -> None:
         self._caches = RepositoryCaches()
 
-    @tracer.wrap("get_mergify_config")
-    async def get_mergify_config(
+    async def load_mergify_config(
         self,
         allow_extend: bool = True,
-        allow_empty_configuration: bool = True,
-    ) -> mergify_conf.MergifyConfig:
+        config_file: MergifyConfigFile | None = None,
+    ) -> None:
         # Circular import
         from mergify_engine.rules.config import mergify as mergify_conf
 
         mergify_config_or_exception = self._caches.mergify_config.get()
         if mergify_config_or_exception is not cache.Unset:
-            if isinstance(mergify_config_or_exception, Exception):
-                raise mergify_config_or_exception
-            return mergify_config_or_exception
+            raise ConfigurationFileAlreadyLoaded(mergify_config_or_exception)
 
-        config_file = await self.get_mergify_config_file()
         if config_file is None:
-            if not allow_empty_configuration:
-                raise exceptions.MergifyConfigFileEmpty()
-
-            config_file = DEFAULT_CONFIG_FILE
+            config_file = await self.get_mergify_config_file()
+            if config_file is None:
+                config_file = DEFAULT_CONFIG_FILE
 
         # BRANCH CONFIGURATION CHECKING
         try:
             mergify_config = await mergify_conf.get_mergify_config_from_file(
                 self,
                 config_file,
+                # FIXME(sileht): this is buggy by design, we have no idea if the cached version
+                # has extends extended or not... By chance, the repository pointed by `extends`
+                # does not use `extends` itself...
                 allow_extend=allow_extend,
             )
         except Exception as e:
@@ -469,7 +477,34 @@ class Repository:
             builtin_mergify_config["pull_request_rules"].rules,
         )
         self._caches.mergify_config.set(mergify_config)
-        return mergify_config
+
+    @contextlib.contextmanager
+    def temporary_configuration(
+        self,
+        config: mergify_conf.MergifyConfig,
+    ) -> abc.Generator[None, None, None]:
+        real_config = self._caches.mergify_config.get()
+        self._caches.mergify_config.set(config)
+        try:
+            yield
+        finally:
+            if real_config is cache.Unset:
+                self._caches.mergify_config.delete()
+            else:
+                self._caches.mergify_config.set(real_config)
+
+    @property
+    def mergify_config(self) -> mergify_conf.MergifyConfig:
+        mergify_config_or_exception = self._caches.mergify_config.get()
+        if mergify_config_or_exception is cache.Unset:
+            raise RuntimeError(
+                "no mergify configuration has been loaded into the repository context",
+            )
+        if isinstance(mergify_config_or_exception, Exception):
+            raise RuntimeError(
+                "Trying to use the Mergify configuration after a loading failure",
+            )
+        return mergify_config_or_exception
 
     async def get_mergify_config_file(self) -> MergifyConfigFile | None:
         mergify_config_file = self._caches.mergify_config_file.get()
@@ -1394,9 +1429,8 @@ class Context:
         # Circular import
         from mergify_engine.queue import merge_train
 
-        mergify_config = await self.repository.get_mergify_config()
-        queue_rules = mergify_config["queue_rules"]
-        partition_rules = mergify_config["partition_rules"]
+        queue_rules = self.repository.mergify_config["queue_rules"]
+        partition_rules = self.repository.mergify_config["partition_rules"]
         convoy = await merge_train.Convoy.from_context(
             self,
             queue_rules,

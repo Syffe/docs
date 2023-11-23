@@ -676,9 +676,6 @@ did not find expected alphabetic or numeric character
         mergify_config = {"extends": ".github"}
 
         await self.setup_repo(yaml.dump(mergify_config))
-        p = await self.create_pr()
-        await self.add_label(p["number"], "comment")
-
         real_client_get = github.AsyncGitHubClient.get
 
         async def mocked_client_get(self, url, *args, **kwargs):  # type: ignore[no-untyped-def]
@@ -692,13 +689,10 @@ did not find expected alphabetic or numeric character
             return await real_client_get(self, url, *args, **kwargs)
 
         with mock.patch.object(github.AsyncGitHubClient, "get", mocked_client_get):
-            await self.run_engine()
+            await self.repository_ctxt.load_mergify_config()
 
-            ctxt = context.Context(self.repository_ctxt, p, [])
-            config = await ctxt.repository.get_mergify_config()
-
-        assert len(config["queue_rules"]) == 1
-        assert len(config["pull_request_rules"].rules) == 2
+        assert len(self.repository_ctxt.mergify_config["queue_rules"]) == 1
+        assert len(self.repository_ctxt.mergify_config["pull_request_rules"].rules) == 2
 
         # Make sure the installation status is stored in redis
         cache_value = await self.redis_links.cache.get(
@@ -765,8 +759,6 @@ did not find expected alphabetic or numeric character
         }
 
         await self.setup_repo(yaml.dump(mergify_config))
-        p = await self.create_pr()
-        await self.add_label(p["number"], "comment")
 
         real_client_get = github.AsyncGitHubClient.get
 
@@ -782,25 +774,28 @@ did not find expected alphabetic or numeric character
 
         with mock.patch.object(github.AsyncGitHubClient, "get", mocked_client_get):
             await self.run_engine()
-            ctxt = context.Context(self.repository_ctxt, p, [])
-            config = await ctxt.repository.get_mergify_config()
+            await self.repository_ctxt.load_mergify_config()
 
-        assert len(config["queue_rules"].rules) == 2
-        # One from default config, one from extends, one from this repo
-        assert len(config["pull_request_rules"].rules) == 3
-        assert len(config["commands_restrictions"]) == 10
+        assert len(self.repository_ctxt.mergify_config["queue_rules"].rules) == 2
+        # One from default self.repository_ctxt.mergify_config, one from extends, one from this repo
+        assert len(self.repository_ctxt.mergify_config["pull_request_rules"].rules) == 3
+        assert len(self.repository_ctxt.mergify_config["commands_restrictions"]) == 10
 
-        rule = config["pull_request_rules"].rules[0].conditions.condition.conditions[0]
+        rule = (
+            self.repository_ctxt.mergify_config["pull_request_rules"]
+            .rules[0]
+            .conditions.condition.conditions[0]
+        )
         assert isinstance(rule, rules.conditions.RuleCondition)
         assert str(rule) == "base=new_rule"
 
-        rule = config["queue_rules"][
+        rule = self.repository_ctxt.mergify_config["queue_rules"][
             qr_config.QueueName("new_rule")
         ].merge_conditions.condition.conditions[0]
         assert isinstance(rule, rules.conditions.RuleCondition)
         assert str(rule) == "schedule: MON-FRI 08:00-17:00"
 
-        rule = config["commands_restrictions"]["copy"][
+        rule = self.repository_ctxt.mergify_config["commands_restrictions"]["copy"][
             "conditions"
         ].condition.conditions[0]
         assert isinstance(rule, rules.conditions.RuleCondition)

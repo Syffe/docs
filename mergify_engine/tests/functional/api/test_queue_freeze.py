@@ -61,7 +61,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         r = await self._create_queue_freeze(
             queue_name="default",
@@ -169,7 +169,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
@@ -191,7 +191,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("default"),
+            self.get_queue_rule("default"),
         )
         assert queue_freeze_data_default is not None
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -347,7 +347,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         queue_name = "default"
         freeze_payload = {"reason": "test freeze reason"}
@@ -368,7 +368,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("default"),
+            self.get_queue_rule("default"),
         )
 
         assert queue_freeze_data_default is not None
@@ -471,7 +471,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         queue_name = "false_queue_name"
         r = await self._delete_queue_freeze(
@@ -539,7 +539,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         queue_name = "default"
         r = await self._create_queue_freeze(
@@ -559,7 +559,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule(queue_name),
+            self.get_queue_rule(queue_name),
         )
         assert queue_freeze_data_default
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -595,7 +595,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule(queue_name),
+            self.get_queue_rule(queue_name),
         )
         assert queue_freeze_data_default is None
 
@@ -672,7 +672,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         r = await self._get_queue_freeze(
             queue_name="false_queue_name",
             expected_status_code=404,
@@ -732,7 +732,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         queue_name = "default"
         r = await self._create_queue_freeze(
             queue_name=queue_name,
@@ -751,7 +751,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("default"),
+            self.get_queue_rule("default"),
         )
         assert queue_freeze_data_default
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -818,7 +818,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         freeze_payload = {"reason": "test freeze reason"}
         r = await self._create_queue_freeze(
@@ -916,7 +916,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         await self._create_queue_freeze(
             queue_name="default",
@@ -1005,7 +1005,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         await self._create_queue_freeze(
             queue_name="default",
@@ -1097,7 +1097,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
@@ -1122,7 +1122,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("default"),
+            self.get_queue_rule("default"),
         )
         assert queue_freeze_data_default is not None
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -1327,7 +1327,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         queue_name = "default"
         r = await self._create_queue_freeze(
@@ -1350,7 +1350,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("default"),
+            self.get_queue_rule("default"),
         )
 
         assert queue_freeze_data_default is not None
@@ -1425,7 +1425,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
         p2 = await self.create_pr()
 
@@ -1453,7 +1453,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("default"),
+            self.get_queue_rule("default"),
         )
         assert queue_freeze_data_default is not None
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -1478,7 +1478,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_urgent = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("urgent"),
+            self.get_queue_rule("urgent"),
         )
         assert queue_freeze_data_urgent is not None
         assert queue_freeze_data_urgent.reason == "urgent test freeze reason"
@@ -1528,7 +1528,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_urgent = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("urgent"),
+            self.get_queue_rule("urgent"),
         )
         assert queue_freeze_data_urgent is None
 
@@ -1664,7 +1664,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
         p1 = await self.create_pr()
 
         await self.add_label(p1["number"], "queue-low")
@@ -1689,7 +1689,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("default"),
+            self.get_queue_rule("default"),
         )
         assert queue_freeze_data_default is not None
         assert queue_freeze_data_default.reason == "test freeze reason"
@@ -1714,7 +1714,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_urgent = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("urgent"),
+            self.get_queue_rule("urgent"),
         )
         assert queue_freeze_data_urgent is not None
         assert queue_freeze_data_urgent.reason == "urgent test freeze reason"
@@ -1747,7 +1747,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         queue_freeze_data_urgent = await freeze.QueueFreeze.get(
             self.repository_ctxt,
-            await self.get_queue_rule("default"),
+            self.get_queue_rule("default"),
         )
         assert queue_freeze_data_urgent is None
 

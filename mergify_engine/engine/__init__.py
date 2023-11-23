@@ -141,14 +141,17 @@ async def _check_configuration_changes(
         return True
 
     try:
-        mergify_config = await mergify_conf.get_mergify_config_from_file(
+        tmp_mergify_config = await mergify_conf.get_mergify_config_from_file(
             ctxt.repository,
-            context.content_file_to_config_file(config_content),
+            config_file=context.content_file_to_config_file(config_content),
         )
         # Evaluate rules to find dynamic errors in actions config
-        await mergify_config["pull_request_rules"].get_pull_request_rules_evaluator(
-            ctxt,
-        )
+        with ctxt.repository.temporary_configuration(tmp_mergify_config):
+            await ctxt.repository.mergify_config[
+                "pull_request_rules"
+            ].get_pull_request_rules_evaluator(
+                ctxt,
+            )
     except (mergify_conf.InvalidRules, actions.InvalidDynamicActionConfiguration) as e:
         # Not configured, post status check with the error message
         await check_api.set_check_run(
@@ -416,7 +419,10 @@ async def run(
 
     # BRANCH CONFIGURATION CHECKING
     try:
-        mergify_config = await ctxt.repository.get_mergify_config()
+        try:
+            await ctxt.repository.load_mergify_config()
+        except context.ConfigurationFileAlreadyLoaded as e:
+            e.reraise_configuration_error()
     except mergify_conf.InvalidRules as e:  # pragma: no cover
         ctxt.log.info(
             "The Mergify configuration is invalid",
@@ -435,6 +441,9 @@ async def run(
                         annotations=e.get_annotations(e.filename),
                     )
         return None
+
+    # FIXME(sileht): drop this and use the repository.mergify_config directly everywhere
+    mergify_config = ctxt.repository.mergify_config
 
     if not ctxt.pull["locked"]:
         ctxt.log.debug("engine run pending commands")

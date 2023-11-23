@@ -27,6 +27,7 @@ from mergify_engine.rules import parser
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.rules.config import queue_rules as qr_config
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -629,12 +630,11 @@ def get_merge_after_condition(ctxt: context.Context) -> RuleConditionNode | None
 
 async def get_queue_conditions(
     ctxt: context.Context,
+    queue_rules: qr_config.QueueRules,
     for_queue_name: str | None = None,
 ) -> RuleConditionNode | None:
-    mergify_config = await ctxt.repository.get_mergify_config()
-
     queue_conditions: dict[str, RuleConditionNode] = {}
-    for rule in mergify_config["queue_rules"]:
+    for rule in queue_rules:
         if for_queue_name is not None and rule.name != for_queue_name:
             continue
 
