@@ -503,7 +503,7 @@ class Repository:
         if isinstance(mergify_config_or_exception, Exception):
             raise RuntimeError(
                 "Trying to use the Mergify configuration after a loading failure",
-            )
+            ) from mergify_config_or_exception
         return mergify_config_or_exception
 
     async def get_mergify_config_file(self) -> MergifyConfigFile | None:
