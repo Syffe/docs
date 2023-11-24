@@ -87,6 +87,13 @@ class RegexToolbox:
     )
     TIMESTAMP_PATTERN: str = r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(-\d{2}:\d{2}|\.\d*Z))|(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2},\d*\s)"
     COLOR_PATTERN: str = r"(\[\d+[;mGK])(([\d+\s])([mGK]))*|\x1B"
+    SPECIAL_CHARACTERS_PATTERN: str = r"━{1,}|•\s|={3,}|--{2,}|_{3,}|\*{2,}"
+    # NOTE(Syffe): In this regex, the order of each pattern is important.
+    # Because the regex anchors at the beginning of the string, if we detect a single space (\s)
+    # it will be subbed directly, and thus because of the OR clause, the regex will not go check for
+    # the special lines characters. This is why the special line characters are checked before the
+    # single space pattern.
+    START_OF_LINE_PATTERN: str = r"^(\s*[^└|^┌|^├]──*|\s)"
 
     # REGEX LISTS
     SEARCH_REGEXES: tuple[str, str] = (
@@ -94,6 +101,11 @@ class RegexToolbox:
         RESOLVING_DELTAS_PATTERN,
     )
     SUB_REGEXES: tuple[str, str] = (TIMESTAMP_PATTERN, COLOR_PATTERN)
+    GPT_SUB_REGEXES: tuple[str, str, str] = (
+        TIMESTAMP_PATTERN,
+        COLOR_PATTERN,
+        SPECIAL_CHARACTERS_PATTERN,
+    )
 
     # COMPILED REGEX LISTS
     COMPILED_SEARCH_REGEXES: typing.Pattern[str] = re.compile(
@@ -106,12 +118,33 @@ class RegexToolbox:
         re.IGNORECASE | re.VERBOSE,
     )
 
+    COMPILED_GPT_SUB_REGEXES: typing.Pattern[str] = re.compile(
+        r"|".join(GPT_SUB_REGEXES),
+        re.IGNORECASE | re.VERBOSE,
+    )
+
+    # NOTE(Syffe): Because regexes that checks beginning of string are anchored at
+    # the beginning of the string, we can't execute them with the regular sequence
+    # matching regexes. This is why they are executed separately.
+    COMPILED_START_OF_LINE_REGEX: typing.Pattern[str] = re.compile(
+        START_OF_LINE_PATTERN,
+        re.IGNORECASE | re.VERBOSE,
+    )
+
     @classmethod
     def apply_regex(cls, raw_log_line: str) -> str:
         if cls.COMPILED_SEARCH_REGEXES.search(raw_log_line):
             return ""
 
         return cls.COMPILED_SUB_REGEXES.sub("", raw_log_line)
+
+    @classmethod
+    def apply_gpt_regex(cls, raw_log_line: str) -> str:
+        if cls.COMPILED_SEARCH_REGEXES.search(raw_log_line):
+            return ""
+
+        line = cls.COMPILED_GPT_SUB_REGEXES.sub("", raw_log_line)
+        return cls.COMPILED_START_OF_LINE_REGEX.sub("", line)
 
 
 class GeneralCleaningToolbox:
@@ -220,6 +253,15 @@ class LogCleaner:
             self.log_tags,
             clean_non_alphanumeric,
         )
+
+    def gpt_clean_line(
+        self,
+        raw_log_line: str,
+    ) -> str:
+        line = self.regex_toolbox.apply_gpt_regex(raw_log_line)
+        if not line:
+            return line
+        return self.general_cleaning_toolbox.clean_number_inside_brackets(line.rstrip())
 
     def apply_log_tags(self, raw_log: str) -> None:
         if re.search("npm run build", raw_log):

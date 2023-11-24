@@ -1,0 +1,15 @@
+##[group]Run heroku git:remote --app mergify-test-events-forwarder
+heroku git:remote --app mergify-test-events-forwarder
+heroku config:set POETRY_VERSION=$(awk -F'==' '{print $2}' requirements-poetry.txt)
+heroku config:set DISABLE_POETRY_CREATE_RUNTIME_FILE=1
+git push heroku main
+shell: /usr/bin/bash -e {0}
+##[endgroup]
+ ›   Warning: Our terms of service have changed:
+ ›   https://dashboard.heroku.com/terms-of-service
+set git remote heroku to https://git.heroku.com/mergify-test-events-forwarder.git
+Setting POETRY_VERSION and restarting mergify-test-events-forwarder... !
+ ▸    You do not have permission to manage config vars on
+ ▸    mergify-test-events-forwarder. You need to have the deploy or operate
+ ▸    permission on this app.
+##[error]Process completed with exit code 1.

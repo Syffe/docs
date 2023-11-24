@@ -8,8 +8,16 @@ import pytest
 from mergify_engine.log_embedder import log_cleaner
 
 
+CleanerModeT = typing.Literal["basic", "gpt"]
+
 LOG_INPUT_LIBRARY_PATH = "mergify_engine/tests/unit/log_embedder/log_cleaner_input"
 LOG_OUTPUT_LIBRARY_PATH = "mergify_engine/tests/unit/log_embedder/log_cleaner_output"
+GPT_LOG_INPUT_LIBRARY_PATH = (
+    "mergify_engine/tests/unit/log_embedder/gpt_log_cleaner_input"
+)
+GPT_LOG_OUTPUT_LIBRARY_PATH = (
+    "mergify_engine/tests/unit/log_embedder/gpt_log_cleaner_output"
+)
 
 TEST_LOGS_FILEPATH_DICT = {
     filename: (
@@ -19,12 +27,23 @@ TEST_LOGS_FILEPATH_DICT = {
     for filename in os.listdir(LOG_INPUT_LIBRARY_PATH)
 }
 
+TEST_GPT_LOGS_FILEPATH_DICT = {
+    filename: (
+        os.path.join(GPT_LOG_INPUT_LIBRARY_PATH, filename),
+        os.path.join(GPT_LOG_OUTPUT_LIBRARY_PATH, filename),
+    )
+    for filename in os.listdir(GPT_LOG_INPUT_LIBRARY_PATH)
+}
 
-def get_cleaned_log(input_file: typing.TextIO) -> str:
+
+def get_cleaned_log(input_file: typing.TextIO, mode: CleanerModeT = "basic") -> str:
     cleaner = log_cleaner.LogCleaner()
     cleaned_lines = []
     for line in input_file:
-        cleaned_line = cleaner.clean_line(line)
+        if mode == "gpt":
+            cleaned_line = cleaner.gpt_clean_line(line)
+        else:
+            cleaned_line = cleaner.clean_line(line)
         if cleaned_line:
             cleaned_lines.append(cleaned_line)
 
@@ -42,6 +61,35 @@ def record_log_cleaner_output() -> None:
         ) as output_file:
             log_output = get_cleaned_log(input_file)
             output_file.write(log_output)
+
+
+def record_gpt_log_cleaner_output() -> None:
+    for log_filename in os.listdir(GPT_LOG_INPUT_LIBRARY_PATH):
+        with open(
+            f"{GPT_LOG_INPUT_LIBRARY_PATH}/{log_filename}",
+            encoding="utf-8",
+        ) as input_file, open(
+            f"{GPT_LOG_OUTPUT_LIBRARY_PATH}/{log_filename}",
+            "w",
+        ) as output_file:
+            log_output = get_cleaned_log(input_file, mode="gpt")
+            output_file.write(log_output)
+
+
+@pytest.mark.parametrize(
+    "input_log_filepath, output_log_filepath",
+    list(TEST_GPT_LOGS_FILEPATH_DICT.values()),
+)
+def test_gpt_log_cleaner_output(
+    input_log_filepath: str,
+    output_log_filepath: str,
+) -> None:
+    with open(input_log_filepath, encoding="utf-8") as log_input_file, open(
+        output_log_filepath,
+    ) as log_output_file:
+        expected_log_output = log_output_file.read()
+        log_output = get_cleaned_log(log_input_file, mode="gpt")
+        assert log_output == expected_log_output
 
 
 @pytest.mark.parametrize(
