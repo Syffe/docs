@@ -2,8 +2,10 @@ import base64
 import dataclasses
 import enum
 import importlib.resources  # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
+import json
 import typing
 
+from httpx_sse import aconnect_sse
 import numpy as np
 import numpy.typing as npt
 import tiktoken
@@ -96,9 +98,10 @@ class ChatCompletionJson(typing.TypedDict, total=False):
     response_format: ChatCompletionResponseFormat
     seed: int | None
     temperature: float | None
+    stream: bool
 
 
-class ChatCompletionChoice(typing.TypedDict):
+class ChatCompletionChoice(typing.TypedDict, total=False):
     index: int
     message: ChatCompletionMessage
     finish_reason: ChatCompletionFinishReason
@@ -107,6 +110,22 @@ class ChatCompletionChoice(typing.TypedDict):
 class ChatCompletionObject(typing.TypedDict):
     model: str
     choices: list[ChatCompletionChoice]
+
+
+class ChatCompletionChunkDelta(typing.TypedDict):
+    role: ChatCompletionRole
+    content: str | None
+
+
+class ChatCompletionChunkChoice(typing.TypedDict):
+    index: int
+    delta: ChatCompletionChunkDelta
+    finish_reason: ChatCompletionFinishReason | None
+
+
+class ChatCompletionChunkObject(typing.TypedDict):
+    model: str
+    choices: list[ChatCompletionChunkChoice]
 
 
 @dataclasses.dataclass
@@ -166,12 +185,54 @@ class OpenAIClient(http.AsyncClient):
         self,
         query: ChatCompletionQuery,
     ) -> ChatCompletionObject:
-        response = await self.post(
-            "chat/completions",
-            json=query.json(),
-        )
+        payload = query.json()
+        payload["stream"] = True
 
-        return typing.cast(ChatCompletionObject, response.json())
+        async with aconnect_sse(
+            self,
+            "POST",
+            "chat/completions",
+            json=payload,
+        ) as event_source:
+            response = None
+            async for event in event_source.aiter_sse():
+                if event.data == "[DONE]":
+                    break
+
+                data = typing.cast(ChatCompletionChunkObject, json.loads(event.data))
+                choice = data["choices"][0]
+                if response is None:
+                    new_choice = ChatCompletionChoice(
+                        index=choice["index"],
+                        message=ChatCompletionMessage(
+                            role=choice["delta"]["role"],
+                            content=choice["delta"]["content"] or "",
+                        ),
+                    )
+                    if choice["finish_reason"]:
+                        new_choice["finish_reason"] = choice["finish_reason"]
+                    response = ChatCompletionObject(
+                        model=data["model"],
+                        choices=[new_choice],
+                    )
+                else:
+                    # NOTE(Kontrolix): Mypy smoke too much weed so we have to type
+                    # ignore [unreachable]
+                    if choice["finish_reason"]:  # type: ignore[unreachable]
+                        response["choices"][0]["finish_reason"] = choice[
+                            "finish_reason"
+                        ]
+                    if choice["delta"]:
+                        response["choices"][0]["message"]["content"] += (
+                            choice["delta"]["content"] or ""
+                        )
+            else:
+                raise OpenAiException("Did not reached [DONE] while reading the stream")
+
+        # NOTE(Kontrolix): This test is mainly here to please mypy
+        if response is None:
+            raise OpenAiException("No data were streamed")
+        return response
 
     async def get_embedding(
         self,

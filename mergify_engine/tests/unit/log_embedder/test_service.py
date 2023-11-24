@@ -1,5 +1,6 @@
 import datetime
 import io
+import json
 import os
 import re
 import typing
@@ -98,39 +99,43 @@ async def test_embed_logs_on_controlled_data(
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
         },
     )
+
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": [
+                                {
+                                    "problem_type": "Toto title",
+                                    "language": "Python",
+                                    "filename": "toto.py",
+                                    "lineno": null,
+                                    "error": "Exception",
+                                    "test_framework": "pytest",
+                                    "stack_trace": ""
+                                }
+                            ]
+                        }""",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
+    }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
     ).respond(
         200,
-        json={
-            "id": "chatcmpl-123",
-            "object": "chat.completion",
-            "created": 1677652288,
-            "model": "gpt-3.5-turbo-0613",
-            "choices": [
-                {
-                    "index": 0,
-                    "message": {
-                        "role": "assistant",
-                        "content": """{
-                                        "failures": [
-                                            {
-                                                "problem_type": "Toto title",
-                                                "language": "Python",
-                                                "filename": "toto.py",
-                                                "lineno": null,
-                                                "error": "Exception",
-                                                "test_framework": "pytest",
-                                                "stack_trace": ""
-                                            }
-                                        ]
-                                    }""",
-                    },
-                    "finish_reason": "stop",
-                },
-            ],
-            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
-        },
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
     )
 
     # NOTE(Kontrolix): Reduce batch size to speed up test
@@ -268,39 +273,43 @@ async def test_embed_logs_on_various_data(
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
         },
     )
+
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": [
+                                {
+                                    "problem_type": "Toto title",
+                                    "language": "Python",
+                                    "filename": "toto.py",
+                                    "lineno": null,
+                                    "error": "Exception",
+                                    "test_framework": "pytest",
+                                    "stack_trace": ""
+                                }
+                            ]
+                        }""",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
+    }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
     ).respond(
         200,
-        json={
-            "id": "chatcmpl-123",
-            "object": "chat.completion",
-            "created": 1677652288,
-            "model": "gpt-3.5-turbo-0613",
-            "choices": [
-                {
-                    "index": 0,
-                    "message": {
-                        "role": "assistant",
-                        "content": """{
-    "failures": [
-        {
-            "problem_type": "Toto title",
-            "language": "Python",
-            "filename": "toto.py",
-            "lineno": null,
-            "error": "Exception",
-            "test_framework": "pytest",
-            "stack_trace": ""
-        }
-    ]
-}""",
-                    },
-                    "finish_reason": "stop",
-                },
-            ],
-            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
-        },
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
     )
 
     respx_mock.get(
@@ -484,74 +493,42 @@ async def test_workflow_job_log_life_cycle(
         f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job3.workflow_run_id}/attempts/{job3.run_attempt}/logs",
     ).respond(500)
 
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": [
+                                {
+                                    "problem_type": "Toto title",
+                                    "language": "Python",
+                                    "filename": "toto.py",
+                                    "lineno": null,
+                                    "error": "Exception",
+                                    "test_framework": "pytest",
+                                    "stack_trace": ""
+                                }
+                            ]
+                        }""",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
+    }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
     ).respond(
         200,
-        json={
-            "id": "chatcmpl-123",
-            "object": "chat.completion",
-            "created": 1677652288,
-            "model": "gpt-3.5-turbo-0613",
-            "choices": [
-                {
-                    "index": 0,
-                    "message": {
-                        "role": "assistant",
-                        "content": """{
-    "failures": [
-        {
-            "problem_type": "Toto title",
-            "language": "Python",
-            "filename": "toto.py",
-            "lineno": null,
-            "error": "Exception",
-            "test_framework": "pytest",
-            "stack_trace": ""
-        }
-    ]
-}""",
-                    },
-                    "finish_reason": "stop",
-                },
-            ],
-            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
-        },
-    )
-
-    respx_mock.post(
-        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-    ).respond(
-        200,
-        json={
-            "id": "chatcmpl-123",
-            "object": "chat.completion",
-            "created": 1677652288,
-            "model": "gpt-3.5-turbo-0613",
-            "choices": [
-                {
-                    "index": 0,
-                    "message": {
-                        "role": "assistant",
-                        "content": """{
-    "failures": [
-        {
-            "problem_type": "Toto title",
-            "language": "Python",
-            "filename": "toto.py",
-            "lineno": null,
-            "error": "Exception",
-            "test_framework": "pytest",
-            "stack_trace": ""
-        }
-    ]
-}""",
-                    },
-                    "finish_reason": "stop",
-                },
-            ],
-            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
-        },
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
     )
 
     monkeypatch.setattr(settings, "LOG_EMBEDDER_ENABLED_ORGS", [owner.login])
@@ -668,40 +645,45 @@ async def test_workflow_job_from_real_life(
             "usage": {"prompt_tokens": 2, "total_tokens": 2},
         },
     )
+
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": [
+                                {
+                                    "problem_type": "Toto title",
+                                    "language": "Python",
+                                    "filename": "toto.py",
+                                    "lineno": null,
+                                    "error": "Exception",
+                                    "test_framework": "pytest",
+                                    "stack_trace": ""
+                                }
+                            ]
+                        }""",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
+    }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
     ).respond(
         200,
-        json={
-            "id": "chatcmpl-123",
-            "object": "chat.completion",
-            "created": 1677652288,
-            "model": "gpt-3.5-turbo-0613",
-            "choices": [
-                {
-                    "index": 0,
-                    "message": {
-                        "role": "assistant",
-                        "content": """{
-    "failures": [
-        {
-            "problem_type": "Toto title",
-            "language": "Python",
-            "filename": "toto.py",
-            "lineno": null,
-            "error": "Exception",
-            "test_framework": "pytest",
-            "stack_trace": ""
-        }
-    ]
-}""",
-                    },
-                    "finish_reason": "stop",
-                },
-            ],
-            "usage": {"prompt_tokens": 9, "completion_tokens": 12, "total_tokens": 21},
-        },
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
     )
+
     respx_mock.get(
         f"{settings.GITHUB_REST_API_URL}/repos/{owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs",
     ).respond(

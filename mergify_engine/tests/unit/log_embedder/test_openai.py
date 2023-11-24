@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import pytest
 import respx
@@ -53,27 +55,29 @@ async def test_openai_chat_completion_models_order() -> None:
 async def test_get_chat_completion(
     respx_mock: respx.MockRouter,
 ) -> None:
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {"prompt_tokens": 8, "completion_tokens": 9, "total_tokens": 17},
+    }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
     ).respond(
         200,
-        json={
-            "id": "chatcmpl-7tAj9cUlsxgQOtD6ojRq24bPrljzs",
-            "object": "chat.completion",
-            "created": 1693383631,
-            "model": "gpt-3.5-turbo-0613",
-            "choices": [
-                {
-                    "index": 0,
-                    "message": {
-                        "role": "assistant",
-                        "content": "Hello! How can I assist you today?",
-                    },
-                    "finish_reason": "stop",
-                },
-            ],
-            "usage": {"prompt_tokens": 8, "completion_tokens": 9, "total_tokens": 17},
-        },
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
     )
 
     async with openai_api.OpenAIClient() as client:

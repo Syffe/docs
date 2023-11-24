@@ -615,7 +615,4 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     == """TypeError: Cannot read properties of undefined (reading 'id') at eval (eval at callAsyncFunction (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15143:16), <anonymous>:15:31) at processTicksAndRejections (node:internal/process/task_queues:96:5) at async main (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15236:20)"""
                 )
                 assert metadata.error == "TypeError"
-                assert (
-                    metadata.problem_type
-                    == "Attempting to access a property of an undefined object"
-                )
+                assert metadata.problem_type == "Accessing property of undefined object"

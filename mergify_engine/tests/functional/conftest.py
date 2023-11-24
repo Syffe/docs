@@ -683,3 +683,49 @@ def mock_vcr_stubs_httpx_stubs_from_serialized_response() -> (
         new=_from_serialized_response,
     ):
         yield
+
+
+@pytest.fixture(autouse=True)
+def mock_vcr_stubs_httpx_stubs_async_vcr_send() -> abc.Generator[None, None, None]:
+    # NOTE(Kontrolix): Import here to avoid mess up this test
+    # `test_command_queue_infinite_loop_bug`, I don'tknow why
+    import vcr.stubs.httpx_stubs
+
+    async def _async_vcr_send(  # type: ignore[no-untyped-def]
+        cassette,
+        real_send,
+        *args,
+        **kwargs,
+    ):
+        vcr_request, response = vcr.stubs.httpx_stubs._shared_vcr_send(
+            cassette,
+            real_send,
+            *args,
+            **kwargs,
+        )
+        if response:
+            # add cookies from response to session cookie store
+            args[0].cookies.extract_cookies(response)
+            return response
+
+        real_response = await real_send(*args, **kwargs)
+
+        try:
+            return vcr.stubs.httpx_stubs._record_responses(
+                cassette,
+                vcr_request,
+                real_response,
+            )
+        except httpx.ResponseNotRead:
+            await real_response.aread()
+            return vcr.stubs.httpx_stubs._record_responses(
+                cassette,
+                vcr_request,
+                real_response,
+            )
+
+    with mock.patch(
+        "vcr.stubs.httpx_stubs._async_vcr_send",
+        new=_async_vcr_send,
+    ):
+        yield
