@@ -70,6 +70,8 @@ FAKE_HMAC = utils.compute_hmac(
     settings.GITHUB_WEBHOOK_SECRET.get_secret_value(),
 )
 
+real_consume_method = stream.Processor.consume
+
 
 class MergeQueueCarMatcher(typing.NamedTuple):
     user_pull_request_numbers: list[github_types.GitHubPullRequestNumber]
@@ -763,33 +765,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self._event_reader.drain()
 
         # Track when worker work
-        real_consume_method = stream.Processor.consume
-
         self.worker_concurrency_works = 0
-
-        async def tracked_consume(
-            inner_self: stream.Processor,
-            bucket_org_key: stream_lua.BucketOrgKeyType,
-            owner_id: github_types.GitHubAccountIdType,
-            owner_login_for_tracing: github_types.GitHubLoginForTracing,
-        ) -> None:
-            self.worker_concurrency_works += 1
-            try:
-                await real_consume_method(
-                    inner_self,
-                    bucket_org_key,
-                    owner_id,
-                    owner_login_for_tracing,
-                )
-            finally:
-                self.worker_concurrency_works -= 1
-
-        stream.Processor.consume = tracked_consume  # type: ignore[assignment]
-
-        def cleanup_consume() -> None:
-            stream.Processor.consume = real_consume_method  # type: ignore[method-assign]
-
-        self.addCleanup(cleanup_consume)
 
         await self.update_delete_branch_on_merge()
 
@@ -964,33 +940,57 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     async def run_full_engine(self) -> None:
         LOG.log(42, "RUNNING FULL ENGINE")
 
-        w = manager.ServiceManager(
-            worker_idle_time=self.WORKER_IDLE_TIME,
-            enabled_services={
-                "shared-workers-spawner",
-                "dedicated-workers-spawner",
-                "delayed-refresh",
-                "gitter",
-            },
-            delayed_refresh_idle_time=0.01,
-            dedicated_workers_spawner_idle_time=0.01,
-            dedicated_workers_cache_syncer_idle_time=0.01,
-            retry_handled_exception_forever=False,
-            gitter_concurrent_jobs=1,
-            ci_event_processing_idle_time=0.01,
-        )
-        await w.start()
-        gitter_serv = w.get_service(gitter_service.GitterService)
-        assert gitter_serv is not None
+        async def mocked_tracked_consume(
+            inner_self: stream.Processor,
+            bucket_org_key: stream_lua.BucketOrgKeyType,
+            owner_id: github_types.GitHubAccountIdType,
+            owner_login_for_tracing: github_types.GitHubLoginForTracing,
+        ) -> None:
+            self.worker_concurrency_works += 1
+            try:
+                await real_consume_method(
+                    inner_self,
+                    bucket_org_key,
+                    owner_id,
+                    owner_login_for_tracing,
+                )
+            finally:
+                self.worker_concurrency_works -= 1
 
-        while (
-            (await w._redis_links.stream.zcard("streams")) > 0
-            or self.worker_concurrency_works > 0
-            or len(gitter_serv._jobs) > 0
-            or len(await delayed_refresh.get_list_of_refresh_to_send(self.redis_links))
-            > 0
+        with mock.patch.object(
+            stream.Processor,
+            "consume",
+            mocked_tracked_consume,
         ):
-            await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
+            w = manager.ServiceManager(
+                worker_idle_time=self.WORKER_IDLE_TIME,
+                enabled_services={
+                    "shared-workers-spawner",
+                    "dedicated-workers-spawner",
+                    "delayed-refresh",
+                    "gitter",
+                },
+                delayed_refresh_idle_time=0.01,
+                dedicated_workers_spawner_idle_time=0.01,
+                dedicated_workers_cache_syncer_idle_time=0.01,
+                retry_handled_exception_forever=False,
+                gitter_concurrent_jobs=1,
+                ci_event_processing_idle_time=0.01,
+            )
+            await w.start()
+            gitter_serv = w.get_service(gitter_service.GitterService)
+            assert gitter_serv is not None
+
+            while (
+                (await w._redis_links.stream.zcard("streams")) > 0
+                or self.worker_concurrency_works > 0
+                or len(gitter_serv._jobs) > 0
+                or len(
+                    await delayed_refresh.get_list_of_refresh_to_send(self.redis_links),
+                )
+                > 0
+            ):
+                await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
 
         w.stop()
         await w.wait_shutdown_complete()
