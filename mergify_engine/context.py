@@ -38,13 +38,13 @@ from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
+from mergify_engine.rules.config import mergify as mergify_conf
 
 
 if typing.TYPE_CHECKING:
     import logging
 
     from mergify_engine.models import github as gh_models
-    from mergify_engine.rules.config import mergify as mergify_conf
 
 SUMMARY_SHA_EXPIRATION = 60 * 60 * 24 * 31 * 1  # 1 Month
 WARNED_ABOUT_SHA_COLLISION_EXPIRATION = 60 * 60 * 24 * 7  # 7 days
@@ -56,10 +56,10 @@ class MergifyConfigFile(github_types.GitHubContentFile):
 
 @dataclasses.dataclass
 class ConfigurationFileAlreadyLoaded(Exception):
-    mergify_config: mergify_conf.MergifyConfig | Exception
+    mergify_config: mergify_conf.MergifyConfig | mergify_conf.InvalidRules
 
     def reraise_configuration_error(self) -> None:
-        if isinstance(self.mergify_config, Exception):
+        if isinstance(self.mergify_config, mergify_conf.InvalidRules):
             raise self.mergify_config
 
 
@@ -310,7 +310,7 @@ class RepositoryCaches:
         MergifyConfigFile | None
     ] = dataclasses.field(default_factory=cache.SingleCache)
     mergify_config: cache.SingleCache[
-        mergify_conf.MergifyConfig | Exception
+        mergify_conf.MergifyConfig | mergify_conf.InvalidRules
     ] = dataclasses.field(default_factory=cache.SingleCache)
     branches: cache.Cache[
         github_types.GitHubRefType,
@@ -460,7 +460,7 @@ class Repository:
                 self,
                 config_file,
             )
-        except Exception as e:
+        except mergify_conf.InvalidRules as e:
             self._caches.mergify_config.set(e)
             raise
 
@@ -495,7 +495,7 @@ class Repository:
             raise RuntimeError(
                 "no mergify configuration has been loaded into the repository context",
             )
-        if isinstance(mergify_config_or_exception, Exception):
+        if isinstance(mergify_config_or_exception, mergify_conf.InvalidRules):
             raise RuntimeError(
                 "Trying to use the Mergify configuration after a loading failure",
             ) from mergify_config_or_exception
