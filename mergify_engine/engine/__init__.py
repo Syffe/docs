@@ -442,12 +442,9 @@ async def run(
                     )
         return None
 
-    # FIXME(sileht): drop this and use the repository.mergify_config directly everywhere
-    mergify_config = ctxt.repository.mergify_config
-
     if not ctxt.pull["locked"]:
         ctxt.log.debug("engine run pending commands")
-        await commands_runner.run_commands_tasks(ctxt, mergify_config)
+        await commands_runner.run_commands_tasks(ctxt, ctxt.repository.mergify_config)
 
     summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
 
