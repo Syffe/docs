@@ -220,7 +220,8 @@ jobs:
             --store-durations \
             --durations-path engine-ci-test-durations \
             --splitting-algorithm=least_duration \
-            --reruns 3 --only-rerun MissingEventTimeout
+            --reruns 3 --only-rerun MissingEventTimeout \
+            mergify_engine/tests
         # yamllint enable rule:line-length
 
       - name: Store test durations
