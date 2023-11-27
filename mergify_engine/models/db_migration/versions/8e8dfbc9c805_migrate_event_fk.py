@@ -67,35 +67,47 @@ async def migrate_data(
     else:
         session = conn
 
+    total = 0
     for checks_evt in (
         event_check_start,
         event_check_end,
     ):
-        spec_check_pull_request_alias = spec_check_pull_request.alias()
-
+        # subquery to get the batches of objects that need to be updated
         subquery = (
-            sqlalchemy.select(spec_check_pull_request_alias.c.id)
-            .where(spec_check_pull_request_alias.c.event_id.is_(None))
-            .limit(BATCH_UPDATE_SIZE)
-        )
-
-        update_stmt = (
-            sqlalchemy.update(spec_check_pull_request)
-            .where(
-                spec_check_pull_request.c.id.in_(subquery),
+            sqlalchemy.select(spec_check_pull_request.c.id)
+            .join(
+                checks_evt,
                 spec_check_pull_request.c.id
                 == checks_evt.c.speculative_check_pull_request_id,
             )
-            .values(event_id=checks_evt.c.id)
-            .returning(spec_check_pull_request.c.id)
+            .where(spec_check_pull_request.c.event_id.is_(None))
+            .limit(BATCH_UPDATE_SIZE)
         )
+        to_update_spec_checks_ids = (await session.execute(subquery)).scalars().all()
 
-        returned = BATCH_UPDATE_SIZE
-        while returned == BATCH_UPDATE_SIZE:
-            results = await session.execute(update_stmt)
-            returned = results.rowcount  # type: ignore[attr-defined]
+        while len(to_update_spec_checks_ids) != 0:
+            # update the rows by batches
+            update_stmt = (
+                sqlalchemy.update(spec_check_pull_request)
+                .where(
+                    spec_check_pull_request.c.id.in_(to_update_spec_checks_ids),
+                    spec_check_pull_request.c.id
+                    == checks_evt.c.speculative_check_pull_request_id,
+                )
+                .values(event_id=checks_evt.c.id)
+            )
+
+            await session.execute(update_stmt)
+
             if manual:
                 await session.commit()
+
+            total += len(to_update_spec_checks_ids)
+            to_update_spec_checks_ids = (
+                (await session.execute(subquery)).scalars().all()
+            )
+
+    print(f"total rows updated: {total}")
 
 
 def upgrade() -> None:
