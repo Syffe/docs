@@ -10,6 +10,7 @@ import os
 
 import alembic.operations
 import sqlalchemy
+from sqlalchemy import func
 import sqlalchemy.ext.asyncio
 
 
@@ -50,9 +51,9 @@ spec_check_pull_request = sqlalchemy.sql.table(
 
 async def migrate_data(
     conn: sqlalchemy.ext.asyncio.AsyncConnection | sqlalchemy.ext.asyncio.AsyncSession,
-    force: bool = False,
+    manual: bool = False,
 ) -> None:
-    if not force and os.getenv("MERGIFYENGINE_SAAS_MODE"):
+    if not manual and os.getenv("MERGIFYENGINE_SAAS_MODE"):
         print(
             "This must be a manual data migration for SaaS. "
             "Please run it directly on server with cmd `mergify-database-update`.",
@@ -93,6 +94,8 @@ async def migrate_data(
         while returned == BATCH_UPDATE_SIZE:
             results = await session.execute(update_stmt)
             returned = results.rowcount  # type: ignore[attr-defined]
+            if manual:
+                await session.commit()
 
 
 def upgrade() -> None:
@@ -115,10 +118,20 @@ async def manual_run() -> None:
 
     database.init_sqlalchemy("migration_script")
     async with database.create_session() as session:
-        await migrate_data(session, force=True)
+        await migrate_data(session, manual=True)
+
+    # test the expected result
+    async with database.create_session() as session:
+        count = await session.execute(
+            sqlalchemy.select(func.count())
+            .select_from(spec_check_pull_request)
+            .where(spec_check_pull_request.c.event_id.is_(None)),
+        )
+    if count.scalar() != 0:
+        raise RuntimeError("Failed to migrate all data")
 
 
 if __name__ == "__main__":
-    print("Data migration started...")
+    print("* Data migration started...")
     asyncio.run(manual_run())
-    print("Migration done")
+    print("* Migration successful")
