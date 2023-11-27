@@ -38,8 +38,12 @@ def sentry_before_send(
 ) -> dict[str, typing.Any] | None:
     # NOTE(sileht): malicious user can craft a traceparent header with an invalid version, this is logged as an exception
     # by ddtrace
-    if "received invalid w3c traceparent:" in event.get("message", ""):
-        return None
+    for message in (
+        "received invalid w3c traceparent:",
+        "Caught handled exception, but response already started.",
+    ):
+        if message in event.get("message", ""):
+            return None
     return event
 
 
