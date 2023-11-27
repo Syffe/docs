@@ -663,6 +663,10 @@ class EventActionQueueChecksStart(Event):
         sqlalchemy.DateTime(timezone=True),
         anonymizer_config="anon.dnoise(queued_at, ''2 days'')",
     )
+    speculative_check_pull_request_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("speculative_check_pull_request.id", ondelete="CASCADE"),
+        anonymizer_config=None,
+    )
     start_reason: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( words := 7)",
@@ -670,11 +674,7 @@ class EventActionQueueChecksStart(Event):
     )
     speculative_check_pull_request: orm.Mapped[
         events_metadata.SpeculativeCheckPullRequest
-    ] = orm.relationship(
-        lazy="joined",
-        single_parent=True,
-        cascade="all, delete-orphan",
-    )
+    ] = orm.relationship(lazy="joined")
 
     @classmethod
     async def create(
@@ -697,7 +697,7 @@ class EventActionQueueChecksStart(Event):
             **metadata.pop("speculative_check_pull_request"),
         )
 
-        return cls(
+        event = cls(
             repository=repository_obj,
             pull_request=pull_request,
             base_ref=base_ref,
@@ -705,6 +705,14 @@ class EventActionQueueChecksStart(Event):
             speculative_check_pull_request=speculative_check_pull_request,
             **metadata,
         )
+
+        # FIXME(charly/leo): remove me once data has been migrated
+        session.add(event)
+        await session.flush()
+        await session.refresh(event)
+        speculative_check_pull_request.event_id = event.id
+
+        return event
 
 
 class EventActionQueueChecksEnd(Event):
@@ -760,13 +768,13 @@ class EventActionQueueChecksEnd(Event):
         anonymizer_config="anon.random_in_enum(abort_status)",
     )
 
+    speculative_check_pull_request_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("speculative_check_pull_request.id"),
+        anonymizer_config=None,
+    )
     speculative_check_pull_request: orm.Mapped[
         events_metadata.SpeculativeCheckPullRequest
-    ] = orm.relationship(
-        lazy="joined",
-        single_parent=True,
-        cascade="all, delete-orphan",
-    )
+    ] = orm.relationship(lazy="joined")
 
     @classmethod
     async def create(
@@ -789,7 +797,7 @@ class EventActionQueueChecksEnd(Event):
             **metadata.pop("speculative_check_pull_request"),
         )
 
-        return cls(
+        event = cls(
             repository=repository_obj,
             pull_request=pull_request,
             base_ref=base_ref,
@@ -797,6 +805,14 @@ class EventActionQueueChecksEnd(Event):
             speculative_check_pull_request=speculative_check_pull_request,
             **metadata,
         )
+
+        # FIXME(charly/leo): remove me once data has been migrated
+        session.add(event)
+        await session.flush()
+        await session.refresh(event)
+        speculative_check_pull_request.event_id = event.id
+
+        return event
 
 
 class EventActionRequestReviews(Event):

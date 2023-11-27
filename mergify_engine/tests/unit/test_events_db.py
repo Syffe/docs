@@ -18,7 +18,6 @@ from mergify_engine import models
 from mergify_engine import signals
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_model
-from mergify_engine.models import events_metadata as evt_meta_model
 from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
 from mergify_engine.tests.tardis import time_travel
@@ -477,6 +476,7 @@ async def test_event_action_queue_checks_start_consistency(
     assert event.queue_name == "default"
     assert event.queued_at == anys.ANY_AWARE_DATETIME
     assert event.start_reason == "first time checking"
+    assert event.speculative_check_pull_request_id == 1
     spec_check_pr = event.speculative_check_pull_request
     assert spec_check_pr is not None
     assert spec_check_pr.number == 123
@@ -542,6 +542,7 @@ async def test_event_action_queue_checks_end_consistency(
     assert event.abort_code == "PR_DEQUEUED"
     assert event.abort_reason == "Pull request has been dequeued."
     assert event.abort_status == "DEFINITIVE"
+    assert event.speculative_check_pull_request_id == 1
     spec_check_pr = event.speculative_check_pull_request
     assert spec_check_pr is not None
     assert spec_check_pr.number == 456
@@ -864,54 +865,3 @@ async def test_event_cascading_delete(
     )
     with pytest.raises(sqlalchemy.exc.NoResultFound):
         await db.get_one(evt_model.EventActionAssign, {"id": event.id})
-
-
-async def test_delete_event_is_cascading(
-    db: sqlalchemy.ext.asyncio.AsyncSession,
-    fake_repository: context.Repository,
-) -> None:
-    unsuccessful_check = checks.QueueCheck.Serialized(
-        {
-            "name": "ruff",
-            "description": "Syntax check",
-            "state": "failure",
-            "url": None,
-            "avatar_url": "some_url",
-        },
-    )
-
-    await insert_event(
-        fake_repository,
-        "action.queue.checks_start",
-        signals.EventQueueChecksStartMetadata(
-            {
-                "branch": "fix_hyperdrive_trigger",
-                "partition_name": partition_rules.DEFAULT_PARTITION_NAME,
-                "position": 3,
-                "queue_name": "default",
-                "queued_at": date.utcnow(),
-                "start_reason": "first time checking",
-                "speculative_check_pull_request": {
-                    "number": 123,
-                    "in_place": True,
-                    "checks_timed_out": False,
-                    "checks_conclusion": "failure",
-                    "checks_started_at": date.utcnow(),
-                    "checks_ended_at": date.utcnow(),
-                    "unsuccessful_checks": [unsuccessful_check],
-                },
-            },
-        ),
-    )
-
-    stmt = sqlalchemy.delete(evt_model.Event).where(evt_model.Event.id == 1)
-    await db.execute(stmt)
-    await db.commit()
-
-    async def assert_deleted(model: typing.Any) -> None:
-        res = await db.execute(sqlalchemy.select(func.count()).select_from(model))
-        assert res.scalar_one() == 0
-
-    await assert_deleted(evt_model.Event)
-    await assert_deleted(evt_model.EventActionQueueChecksStart)
-    await assert_deleted(evt_meta_model.SpeculativeCheckPullRequest)

@@ -65,9 +65,9 @@ class SpeculativeCheckPullRequest(models.Base):
             "''url'', ''avatar_url''])"
         ),
     )
-    event_id: orm.Mapped[int] = orm.mapped_column(
+    # FIXME(charly/leo): set not nullable FK once data has been migrated
+    event_id: orm.Mapped[int | None] = orm.mapped_column(
         sqlalchemy.Integer,
-        sqlalchemy.ForeignKey("event.id", ondelete="CASCADE"),
         anonymizer_config=None,
     )
 
