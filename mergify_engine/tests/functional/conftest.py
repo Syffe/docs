@@ -445,7 +445,7 @@ def unittest_asyncio_glue(
 
 
 @pytest.fixture
-async def web_client_as_admin(
+def web_client_as_admin(
     web_client: httpx.AsyncClient,
     shadow_office: SubscriptionFixture,
 ) -> httpx.AsyncClient:
@@ -500,7 +500,7 @@ class wait_rate_limit(tenacity.wait.wait_base):
 
 
 @contextlib.asynccontextmanager
-async def _request_with_secondatary_rate_limit() -> abc.AsyncIterator[None]:
+async def _request_with_secondary_rate_limit() -> abc.AsyncIterator[None]:
     try:
         yield
     except (
@@ -574,7 +574,7 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
                             await stack.enter_async_context(_request_sync_lock())
 
                         await stack.enter_async_context(
-                            _request_with_secondatary_rate_limit(),
+                            _request_with_secondary_rate_limit(),
                         )
 
                         response = await real_request(self, method, *args, **kwargs)

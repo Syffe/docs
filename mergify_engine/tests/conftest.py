@@ -284,21 +284,21 @@ async def redis_links(
 
 
 @pytest.fixture()
-async def redis_cache(
+def redis_cache(
     redis_links: redis_utils.RedisLinks,
 ) -> redis_utils.RedisCache:
     return redis_links.cache
 
 
 @pytest.fixture()
-async def redis_stream(
+def redis_stream(
     redis_links: redis_utils.RedisLinks,
 ) -> redis_utils.RedisStream:
     return redis_links.stream
 
 
 @pytest.fixture()
-async def redis_stats(
+def redis_stats(
     redis_links: redis_utils.RedisLinks,
 ) -> redis_utils.RedisStats:
     return redis_links.stats
