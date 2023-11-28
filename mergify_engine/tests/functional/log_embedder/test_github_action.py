@@ -251,6 +251,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 in "".join(log)
             )
 
+    @pytest.mark.usefixtures("prepare_google_cloud_storage_setup")
     async def test_log_embedding(self) -> None:
         job_event, pr = await self.run_github_action(
             steps=[

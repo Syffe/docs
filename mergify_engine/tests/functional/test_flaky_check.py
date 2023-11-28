@@ -20,6 +20,7 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
     def add_monkeypatch(self, monkeypatch: pytest.MonkeyPatch) -> None:
         self.monkeypatch = monkeypatch
 
+    @pytest.mark.usefixtures("prepare_google_cloud_storage_setup")
     async def test_rerun_on_known_flaky(self) -> None:
         ci = {
             "name": "Continuous Integration",

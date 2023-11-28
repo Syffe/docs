@@ -169,7 +169,7 @@ def get_worker_id_as_int(worker_id: str) -> int:
     return int(worker_id.replace("gw", ""))
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session")
 def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
     worker_id_int = get_worker_id_as_int(worker_id)
     # Need to have different database for each tests to avoid breaking
@@ -189,7 +189,7 @@ def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
         yield
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session")
 def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
     worker_id_int = get_worker_id_as_int(worker_id)
     db_name = f"postgres{worker_id_int}"
@@ -270,7 +270,7 @@ async def populated_db(
     yield db
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 async def redis_links(
     mock_redis_db_values: typing.Any,
 ) -> abc.AsyncGenerator[redis_utils.RedisLinks, None]:
@@ -435,7 +435,7 @@ def pytest_configure(config: pytest.Config) -> None:
         logging_plugin.report_handler.setFormatter(logs.CUSTOM_FORMATTER)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def prepare_google_cloud_storage_setup(
     monkeypatch: pytest.MonkeyPatch,
 ) -> typing.Generator[None, None, None]:
