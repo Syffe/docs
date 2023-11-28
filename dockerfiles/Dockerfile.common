@@ -34,7 +34,9 @@ RUN python3 -m pip install --no-cache-dir -r requirements-poetry.txt && \
     poetry install --only main --sync --no-root
 
 COPY . /app
-RUN poetry install --only main --sync
+RUN poetry install --only main --sync && \
+    python3 -m compileall -j 10 -f -b /app/mergify_engine && \
+    find mergify_engine/ -name '*.py' -delete
 
 ### BASE RUNNER ###
 FROM python-base as system-base
