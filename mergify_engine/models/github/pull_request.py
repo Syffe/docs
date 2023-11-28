@@ -10,6 +10,7 @@ from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.hybrid
 
+from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.clients import github
@@ -248,13 +249,15 @@ class PullRequest(models.Base):
                     ),
                 )
             ]
-        except http.HTTPNotFound as e:
-            LOG.warning(
-                "Skipping commit update for pull request %i because we can't query it's commits",
-                pull_request_id,
-                exc=str(e),
-            )
-            return
+        except Exception as e:
+            if isinstance(e, http.HTTPNotFound) or exceptions.should_be_ignored(e):
+                LOG.warning(
+                    "Skipping commit update for pull request %i because we can't query it's commits",
+                    pull_request_id,
+                    exc_info=True,
+                )
+                return
+            raise
 
         for commit in new_commits:
             try:
