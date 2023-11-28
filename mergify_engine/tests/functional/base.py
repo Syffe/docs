@@ -1598,7 +1598,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     @staticmethod
     def _extract_test_id_from_pull_request_for_check_run(
         pull: github_types.GitHubPullRequest,
-    ) -> str | None:
+    ) -> str:
         branch = pull["head"]["ref"]
         # eg: refs/heads/20221003073120/test_retrieve_unresolved_threads/integration/pr1
         tmp = branch.replace("refs/heads/", "")
