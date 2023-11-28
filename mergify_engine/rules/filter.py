@@ -217,21 +217,16 @@ class Filter(typing.Generic[FilterResultT]):
         obj: GetAttrObjectT,
         attribute_name: str,
     ) -> list[typing.Any]:
-        if attribute_name.startswith(self.LENGTH_OPERATOR):
-            try:
-                return await self._get_attribute_values(
-                    obj,
-                    attribute_name,
-                    _format_attribute_value,
-                )
-            except UnknownAttribute:
-                return await self._get_attribute_values(obj, attribute_name[1:], len)
-        else:
+        try:
             return await self._get_attribute_values(
                 obj,
                 attribute_name,
                 _format_attribute_value,
             )
+        except UnknownAttribute:
+            if attribute_name.startswith(self.LENGTH_OPERATOR):
+                return await self._get_attribute_values(obj, attribute_name[1:], len)
+            raise
 
     def build_evaluator(
         self,
