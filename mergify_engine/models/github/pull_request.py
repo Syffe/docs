@@ -2,7 +2,9 @@ from collections import abc
 import datetime
 import typing
 
+import daiquiri
 import pydantic
+import pydantic_core
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
@@ -13,6 +15,9 @@ from mergify_engine import models
 from mergify_engine.clients import github
 from mergify_engine.models.github import account as gh_account_model
 from mergify_engine.models.github import pull_request_commit as pr_commit_model
+
+
+LOG = daiquiri.getLogger(__name__)
 
 
 class PullRequest(models.Base):
@@ -241,6 +246,17 @@ class PullRequest(models.Base):
                 ),
             )
         ]
+
+        for commit in new_commits:
+            try:
+                pr_commit_model.PullRequestCommit.type_adapter.validate_python(commit)
+            except pydantic_core.ValidationError:
+                LOG.warning(
+                    "Skipping commit insert/update for pull_request %i because one of its commit can't be validated by pydantic",
+                    pull_request_id,
+                    commit=commit,
+                )
+                return
 
         new_commits_head_shas = [commit["sha"] for commit in new_commits]
 
