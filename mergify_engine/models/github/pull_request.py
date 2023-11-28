@@ -65,6 +65,7 @@ class PullRequest(models.Base):
     )
     number: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.BigInteger,
+        index=True,
         anonymizer_config="anon.random_int_between(1,100000)",
     )
     title: orm.Mapped[str] = orm.mapped_column(
