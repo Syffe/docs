@@ -113,21 +113,21 @@ async def test_can_repo_use_pull_requests_in_pg(
         "mergify_engine.settings.GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS",
         new_callable=mock.PropertyMock(return_value=["OneAccount"]),
     ):
-        assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["OneRepo"],
             ),
         )
-        assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_owner=github_types.GitHubLogin("OneAccount"),
         )
 
-        assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["colliding_repo_1"],
             ),
         )
-        assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_owner=github_types.GitHubLogin("colliding-account-1"),
         )
 
@@ -135,21 +135,21 @@ async def test_can_repo_use_pull_requests_in_pg(
         "mergify_engine.settings.GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS",
         new_callable=mock.PropertyMock(return_value=["*"]),
     ):
-        assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["OneRepo"],
             ),
         )
-        assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_owner=github_types.GitHubLogin("OneAccount"),
         )
 
-        assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["colliding_repo_1"],
             ),
         )
-        assert await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_owner=github_types.GitHubLogin("colliding-account-1"),
         )
 
@@ -157,27 +157,28 @@ async def test_can_repo_use_pull_requests_in_pg(
         "mergify_engine.settings.GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS",
         new_callable=mock.PropertyMock(return_value=[]),
     ):
-        assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["OneRepo"],
             ),
         )
-        assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_owner=github_types.GitHubLogin("OneAccount"),
         )
 
-        assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["colliding_repo_1"],
             ),
         )
-        assert not await pull_request_getter._can_repo_use_pull_requests_in_pg(
+        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
             repo_owner=github_types.GitHubLogin("colliding-account-1"),
         )
 
 
 async def test_same_pull_request_number_in_multiple_repo(
     db: sqlalchemy.ext.asyncio.AsyncSession,
+    mock_gh_pull_request_commits_insert_in_pg: None,
 ) -> None:
     pr_number = github_types.GitHubPullRequestNumber(123)
 

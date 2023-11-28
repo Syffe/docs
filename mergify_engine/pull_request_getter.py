@@ -16,7 +16,7 @@ LOG = daiquiri.getLogger(__name__)
 
 # No typing overload for this function so we can pass both at the same time
 # and let the function decide which one to use.
-async def _can_repo_use_pull_requests_in_pg(
+async def can_repo_use_pull_requests_in_pg(
     repo_id: github_types.GitHubRepositoryIdType | None = None,
     repo_owner: github_types.GitHubLogin | None = None,
 ) -> bool:
@@ -28,7 +28,7 @@ async def _can_repo_use_pull_requests_in_pg(
 
     if repo_id is None and repo_owner is None:
         raise RuntimeError(
-            "`_can_repo_use_pull_requests_in_pg` needs to have either `repo_id`  or `repo_owner` specified",
+            "`can_repo_use_pull_requests_in_pg` needs to have either `repo_id`  or `repo_owner` specified",
         )
 
     if not repo_owner:
@@ -131,7 +131,10 @@ async def get_pull_request(
     force_new: bool = False,
     **client_kwargs: typing.Any,
 ) -> github_types.GitHubPullRequest:
-    if not force_new and await _can_repo_use_pull_requests_in_pg(repo_id, repo_owner):
+    if not force_new and await can_repo_use_pull_requests_in_pg(
+        repo_id,
+        repo_owner,
+    ):
         if repo_id:
             pull_from_db = await _find_pull_in_db(pull_number, repo_id=repo_id)
         elif repo_owner and repo_name:

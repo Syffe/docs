@@ -38,6 +38,7 @@ from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
+from mergify_engine.models.github import pull_request_commit as prcommit_model
 from mergify_engine.rules.config import mergify as mergify_conf
 
 
@@ -2098,23 +2099,52 @@ class Context:
             self._caches.reviews.set(reviews)
         return reviews
 
+    async def _commits_from_db(self) -> list[github_types.CachedGitHubBranchCommit]:
+        async with database.create_session() as session:
+            db_commits_as_dicts = (
+                await prcommit_model.PullRequestCommit.get_pull_request_commits(
+                    session,
+                    self.pull["id"],
+                    self.pull["head"]["sha"],
+                    self.repository.repo["id"],
+                )
+            )
+
+        return [
+            github_types.to_cached_github_branch_commit(commit)
+            for commit in db_commits_as_dicts
+        ]
+
+    async def _commits_from_http(self) -> list[github_types.CachedGitHubBranchCommit]:
+        return [
+            github_types.to_cached_github_branch_commit(commit)
+            async for commit in typing.cast(
+                abc.AsyncIterable[github_types.GitHubBranchCommit],
+                self.client.items(
+                    f"{self.base_url}/pulls/{self.pull['number']}/commits",
+                    resource_name="commits",
+                    page_limit=5,
+                ),
+            )
+        ]
+
     @property
     async def commits(self) -> list[github_types.CachedGitHubBranchCommit]:
         commits = self._caches.commits.get()
         if commits is cache.Unset:
-            commits = [
-                github_types.to_cached_github_branch_commit(commit)
-                async for commit in typing.cast(
-                    abc.AsyncIterable[github_types.GitHubBranchCommit],
-                    self.client.items(
-                        f"{self.base_url}/pulls/{self.pull['number']}/commits",
-                        resource_name="commits",
-                        page_limit=5,
-                    ),
-                )
-            ]
+            # Use pull request commits from db only if the pull request is already in db
+            commits = []
+            if await pull_request_getter.can_repo_use_pull_requests_in_pg(
+                repo_owner=self.repository.repo["owner"]["login"],
+            ):
+                commits = await self._commits_from_db()
+
+            if not commits:
+                commits = await self._commits_from_http()
+
             if len(commits) >= 250:
                 self.log.warning("more than 250 commits found, is_behind maybe wrong")
+
             self._caches.commits.set(commits)
         return commits
 

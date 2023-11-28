@@ -1,3 +1,4 @@
+from collections import abc
 import datetime
 import typing
 
@@ -5,10 +6,13 @@ import pydantic
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
+import sqlalchemy.ext.hybrid
 
 from mergify_engine import github_types
 from mergify_engine import models
+from mergify_engine.clients import github
 from mergify_engine.models.github import account as gh_account_model
+from mergify_engine.models.github import pull_request_commit as pr_commit_model
 
 
 class PullRequest(models.Base):
@@ -209,6 +213,51 @@ class PullRequest(models.Base):
         sqlalchemy.BigInteger,
         anonymizer_config="anon.random_int_between(1,100000)",
     )
+    head_commits: orm.Mapped[
+        list[pr_commit_model.PullRequestCommit]
+    ] = orm.relationship(lazy="raise_on_sql", back_populates="pull_request")
+
+    @classmethod
+    async def _update_commits(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        pull_request_id: int,
+        pull_number: int,
+        repo_owner: github_types.GitHubLogin,
+        repo_name: github_types.GitHubRepositoryName,
+    ) -> None:
+        installation = await github.get_installation_from_login(repo_owner)
+        auth = github.GitHubAppInstallationAuth(installation)
+        client = github.AsyncGitHubInstallationClient(auth=auth)
+
+        new_commits = [
+            commit
+            async for commit in typing.cast(
+                abc.AsyncIterable[github_types.GitHubBranchCommit],
+                client.items(
+                    f"/repos/{repo_owner}/{repo_name}/pulls/{pull_number}/commits",
+                    resource_name="commits",
+                    page_limit=10,
+                ),
+            )
+        ]
+
+        new_commits_head_shas = [commit["sha"] for commit in new_commits]
+
+        await session.execute(
+            sqlalchemy.delete(pr_commit_model.PullRequestCommit).where(
+                PullRequest.id == pr_commit_model.PullRequestCommit.pull_request_id,
+                pr_commit_model.PullRequestCommit.sha.notin_(new_commits_head_shas),
+            ),
+        )
+
+        for commit_index, commit in enumerate(new_commits):
+            await pr_commit_model.PullRequestCommit.insert_or_update(
+                session,
+                commit,
+                pull_request_id,
+                commit_index,
+            )
 
     @classmethod
     async def insert_or_update(
@@ -216,6 +265,15 @@ class PullRequest(models.Base):
         session: sqlalchemy.ext.asyncio.AsyncSession,
         data: github_types.GitHubPullRequest,
     ) -> None:
+        fetch_new_commits = not (
+            await session.scalar(
+                sqlalchemy.select(cls).where(
+                    cls.id == data["id"],
+                    cls.head["sha"].astext == data["head"]["sha"],
+                ),
+            )
+        )
+
         validated_data = cls.type_adapter.validate_python(data)
         # Copy the validated_data in a more generic dict in order to manipulate
         # more easily.
@@ -281,6 +339,15 @@ class PullRequest(models.Base):
                 ),
             ),
         )
+
+        if fetch_new_commits:
+            await cls._update_commits(
+                session,
+                pull_obj.id,
+                pull_obj.number,
+                pull_obj.base["user"]["login"],
+                pull_obj.base["repo"]["name"],
+            )
 
     def as_github_dict(self) -> github_types.GitHubPullRequest:
         return typing.cast(github_types.GitHubPullRequest, super().as_github_dict())

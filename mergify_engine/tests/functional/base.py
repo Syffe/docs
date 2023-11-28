@@ -2452,6 +2452,39 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.wait_for("push", {"ref": f"refs/heads/{destination_branch}"})
         return head_sha
 
+    async def change_pull_request_commit_sha(
+        self,
+        pull_request: github_types.GitHubPullRequest,
+        commit_sha: str,
+    ) -> github_types.GitHubEventPullRequest:
+        await self.git("fetch", "origin", pull_request["head"]["ref"])
+        await self.git(
+            "checkout",
+            "-b",
+            "hellothere",
+            f"origin/{pull_request['head']['ref']}",
+        )
+        await self.git("commit", "--no-edit", f"--fixup=reword:{commit_sha}")
+        await self.git(
+            "rebase",
+            "--interactive",
+            "--autosquash",
+            self.main_branch_name,
+            _env={"GIT_SEQUENCE_EDITOR": ":", "EDITOR": ":"},
+        )
+        await self.git(
+            "push",
+            "--force",
+            "--quiet",
+            "origin",
+            f"hellothere:{pull_request['head']['ref']}",
+        )
+        await self.wait_for(
+            "push",
+            {"ref": f"refs/heads/{pull_request['head']['ref']}"},
+        )
+        return await self.wait_for_pull_request("synchronize", pull_request["number"])
+
     @staticmethod
     async def assert_check_run(
         ctxt: context.Context,

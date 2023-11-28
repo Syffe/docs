@@ -20,6 +20,7 @@ from mergify_engine import redis_utils
 from mergify_engine import rules
 from mergify_engine import subscription
 from mergify_engine.clients import github
+from mergify_engine.models.github import pull_request as gh_pg_model
 from mergify_engine.queue import merge_train
 from mergify_engine.rules.config import queue_rules as qr_config
 
@@ -492,3 +493,12 @@ def a_pull_request() -> github_types.GitHubPullRequest:
             "body": None,
         },
     )
+
+
+@pytest.fixture
+def mock_gh_pull_request_commits_insert_in_pg() -> abc.Generator[None, None, None]:
+    with mock.patch.object(
+        gh_pg_model.PullRequest,
+        "_update_commits",
+    ):
+        yield
