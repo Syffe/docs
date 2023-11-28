@@ -801,6 +801,7 @@
         "require_branch_protection": {
           "type": "boolean",
           "default": true,
+          "deprecated": true,
           "description": "Whether branch protections are required for queueing pull requests."
         },
         "merge_conditions": {
