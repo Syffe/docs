@@ -44,13 +44,6 @@ class GitHubCheckRunParameters(typing.TypedDict, total=False):
     details_url: str
 
 
-class Status(enum.Enum):
-    # TODO(sileht): Since we have mypy, this enum is a bit useless, we can replace it
-    # with github_types.GitHubCheckRunStatus
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-
-
 @json.register_enum_type
 class Conclusion(enum.Enum):
     PENDING = None
@@ -221,10 +214,11 @@ async def set_check_run(
     skip_cache: bool = False,
     details_url: str | None = None,
 ) -> github_types.CachedGitHubCheckRun:
+    status: github_types.GitHubCheckRunStatus
     if result.conclusion is Conclusion.PENDING:
-        status = Status.IN_PROGRESS
+        status = "in_progress"
     else:
-        status = Status.COMPLETED
+        status = "completed"
 
     started_at = (result.started_at or date.utcnow()).isoformat()
 
@@ -232,7 +226,7 @@ async def set_check_run(
         {
             "name": name,
             "head_sha": ctxt.pull["head"]["sha"],
-            "status": typing.cast(github_types.GitHubCheckRunStatus, status.value),
+            "status": status,
             "started_at": typing.cast(github_types.ISODateTimeType, started_at),
             "details_url": details_url or f"{ctxt.pull['html_url']}/checks",
             "output": {
@@ -261,7 +255,7 @@ async def set_check_run(
     if external_id:
         post_parameters["external_id"] = external_id
 
-    if status is Status.COMPLETED:
+    if status == "completed":
         ended_at = (result.ended_at or date.utcnow()).isoformat()
         post_parameters["conclusion"] = result.conclusion.value
         post_parameters["completed_at"] = typing.cast(
@@ -300,9 +294,7 @@ async def set_check_run(
             ),
         )
 
-    if not checks or (
-        Status(checks[0]["status"]) == Status.COMPLETED and status == Status.IN_PROGRESS
-    ):
+    if not checks or (checks[0]["status"] == "completed" and status == "in_progress"):
         # NOTE(sileht): First time we see it, or the previous one have been completed and
         # now go back to in_progress. Since GitHub doesn't allow to change status of
         # completed check-runs, we have to create a new one.

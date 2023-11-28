@@ -534,7 +534,7 @@ async def create_initial_summary(
         post_parameters = {
             "name": constants.SUMMARY_NAME,
             "head_sha": event["pull_request"]["head"]["sha"],
-            "status": check_api.Status.IN_PROGRESS.value,
+            "status": "in_progress",
             "started_at": date.utcnow().isoformat(),
             "details_url": dashboard.get_eventlogs_url(
                 owner["login"],
