@@ -13,6 +13,7 @@ import sqlalchemy.ext.hybrid
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.clients import github
+from mergify_engine.clients import http
 from mergify_engine.models.github import account as gh_account_model
 from mergify_engine.models.github import pull_request_commit as pr_commit_model
 
@@ -235,17 +236,25 @@ class PullRequest(models.Base):
         auth = github.GitHubAppInstallationAuth(installation)
         client = github.AsyncGitHubInstallationClient(auth=auth)
 
-        new_commits = [
-            commit
-            async for commit in typing.cast(
-                abc.AsyncIterable[github_types.GitHubBranchCommit],
-                client.items(
-                    f"/repos/{repo_owner}/{repo_name}/pulls/{pull_number}/commits",
-                    resource_name="commits",
-                    page_limit=10,
-                ),
+        try:
+            new_commits = [
+                commit
+                async for commit in typing.cast(
+                    abc.AsyncIterable[github_types.GitHubBranchCommit],
+                    client.items(
+                        f"/repos/{repo_owner}/{repo_name}/pulls/{pull_number}/commits",
+                        resource_name="commits",
+                        page_limit=10,
+                    ),
+                )
+            ]
+        except http.HTTPNotFound as e:
+            LOG.warning(
+                "Skipping commit update for pull request %i because we can't query it's commits",
+                pull_request_id,
+                exc=str(e),
             )
-        ]
+            return
 
         for commit in new_commits:
             try:
@@ -361,7 +370,7 @@ class PullRequest(models.Base):
                 session,
                 pull_obj.id,
                 pull_obj.number,
-                pull_obj.base["user"]["login"],
+                pull_obj.base["repo"]["owner"]["login"],
                 pull_obj.base["repo"]["name"],
             )
 

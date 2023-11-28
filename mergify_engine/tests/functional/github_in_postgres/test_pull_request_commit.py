@@ -12,6 +12,29 @@ from mergify_engine.tests.functional import base
 
 
 class TestGitHubPullRequestCommitInPg(base.FunctionalTestBase):
+    async def test_pull_request_commits_from_fork(self) -> None:
+        await self.setup_repo()
+
+        await self.create_pr(as_="fork")
+        await self.run_engine({"github-in-postgres"})
+
+        async with database.create_session() as session:
+            pulls_in_db = (
+                (
+                    await session.scalars(
+                        sqlalchemy.select(gh_pull_request_mod.PullRequest).options(
+                            orm.joinedload(
+                                gh_pull_request_mod.PullRequest.head_commits,
+                            ),
+                        ),
+                    )
+                )
+                .unique()
+                .all()
+            )
+            assert len(pulls_in_db) == 1
+            assert len(pulls_in_db[0].head_commits) == 1
+
     async def test_pull_request_commits_stored(self) -> None:
         await self.setup_repo()
 
