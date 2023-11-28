@@ -34,7 +34,7 @@ async def test_saas_proxy_saas_mode_true(
         200,
         json={
             "id": 1234,
-            "account": user.as_github_dict(),
+            "account": user.to_github_account(),
             "suspended_at": None,
         },
     )
@@ -95,7 +95,7 @@ async def test_saas_proxy_saas_mode_false(
         200,
         json={
             "id": 1234,
-            "account": user.as_github_dict(),
+            "account": user.to_github_account(),
             "suspended_at": None,
         },
     )
@@ -142,7 +142,7 @@ async def test_saas_subscription_with_saas_mode_true(
         200,
         json={
             "id": 1234,
-            "account": user.as_github_dict(),
+            "account": user.to_github_account(),
             "suspended_at": None,
         },
     )
@@ -217,7 +217,7 @@ async def test_saas_subscription_with_saas_mode_false(
         200,
         json={
             "id": 1234,
-            "account": user.as_github_dict(),
+            "account": user.to_github_account(),
             "suspended_at": None,
         },
     )
@@ -358,7 +358,7 @@ async def test_saas_proxy_redirect(
         200,
         json={
             "id": 1234,
-            "account": user.as_github_dict(),
+            "account": user.to_github_account(),
             "suspended_at": None,
         },
     )

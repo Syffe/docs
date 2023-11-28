@@ -31,7 +31,7 @@ async def test_applications_life_cycle(
         200,
         json={
             "id": 1234,
-            "account": user.as_github_dict(),
+            "account": user.to_github_account(),
             "suspended_at": None,
         },
     )
@@ -215,7 +215,7 @@ async def test_applications_limit(
         200,
         json={
             "id": 1234,
-            "account": user.as_github_dict(),
+            "account": user.to_github_account(),
             "suspended_at": None,
         },
     )
@@ -360,7 +360,7 @@ async def test_applications_bad_body(
         200,
         json={
             "id": 1234,
-            "account": user.as_github_dict(),
+            "account": user.to_github_account(),
             "suspended_at": None,
         },
     )
