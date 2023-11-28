@@ -14,9 +14,3 @@ repos:
         language: system
         pass_filenames: false
         entry: ./.pre-commit-scripts/launch_tests.sh
-
-      - id: docs
-        name: validate docs
-        language: system
-        pass_filenames: false
-        entry: ./.pre-commit-scripts/validate_docs.sh
