@@ -190,7 +190,7 @@ def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
 
 
 @pytest.fixture(scope="session")
-def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
+def mock_postgres_db_value(worker_id: str) -> abc.Generator[str, None, None]:
     worker_id_int = get_worker_id_as_int(worker_id)
     db_name = f"postgres{worker_id_int}"
     mocked_url, mocked_url_without_db_name = test_utils.create_database_url(db_name)
@@ -202,10 +202,15 @@ def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
     loop.run_until_complete(
         test_utils.create_database(mocked_url_without_db_name.geturl(), db_name),
     )
-    loop.close()
 
     with mock.patch.object(settings, "DATABASE_URL", mocked_url):
-        yield
+        database.init_sqlalchemy("test")
+        loop.run_until_complete(manage.create_all())
+        if database.APP_STATE is not None:
+            loop.run_until_complete(database.APP_STATE["engine"].dispose())
+            database.APP_STATE = None
+        loop.close()
+        yield db_name
 
 
 @pytest.fixture(autouse=True)
@@ -224,23 +229,29 @@ async def reset_database_state() -> abc.AsyncGenerator[None, None]:
 
 
 @pytest.fixture
-async def database_cleanup(
+def setup_database(
+    mock_postgres_db_value: str,
     reset_database_state: None,
-) -> abc.AsyncGenerator[None, None]:
-    try:
+) -> abc.Generator[None, None, None]:
+    db_name = f"postgres{uuid.uuid4().hex}"
+    mocked_url, mocked_url_without_db_name = test_utils.create_database_url(db_name)
+
+    # We need to manually run the coroutine in an event loop because
+    # pytest-asyncio has its own `event_loop` fixture that is function scoped and
+    # in autouse (session scope fixture cannot require function scoped fixture)
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    loop.run_until_complete(
+        test_utils.create_database(
+            mocked_url_without_db_name.geturl(),
+            db_name,
+            mock_postgres_db_value,
+        ),
+    )
+    loop.close()
+
+    with mock.patch.object(settings, "DATABASE_URL", mocked_url):
+        database.init_sqlalchemy("test")
         yield
-    finally:
-        await manage.drop_all()
-
-
-@pytest.fixture
-async def setup_database(
-    database_cleanup: None,
-    mock_postgres_db_value: None,
-) -> abc.AsyncGenerator[None, None]:
-    database.init_sqlalchemy("test")
-    await manage.create_all()
-    yield
 
 
 @pytest.fixture

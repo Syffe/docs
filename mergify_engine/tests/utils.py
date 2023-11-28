@@ -49,15 +49,24 @@ def create_database_url(db_name: str) -> tuple[types.PostgresDSN, types.Postgres
     return mocked_url, mocked_url_without_db_name
 
 
-async def create_database(db_url: str, db_name: str) -> None:
+async def create_database(
+    db_url: str,
+    db_name: str,
+    template: str | None = None,
+) -> None:
     engine = sqlalchemy.ext.asyncio.create_async_engine(db_url)
     try:
         engine_no_transaction = engine.execution_options(isolation_level="AUTOCOMMIT")
         async with engine_no_transaction.connect() as conn:
             # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
             await conn.execute(sqlalchemy.text(f"DROP DATABASE IF EXISTS {db_name}"))
-            # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-            await conn.execute(sqlalchemy.text(f"CREATE DATABASE {db_name}"))
+            template_cmd = ""
+            if template is not None:
+                template_cmd = f" TEMPLATE {template}"
+            await conn.execute(
+                # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+                sqlalchemy.text(f"CREATE DATABASE {db_name}{template_cmd}"),
+            )
     finally:
         await engine.dispose()
 
