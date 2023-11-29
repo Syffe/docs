@@ -84,7 +84,7 @@ asgi-lifespan = "^2.1.0"
 filelock = "^3.13.1"
 poethepoet = "^0.24.4"
 pytest-rerunfailures = "^13.0"
-ruff = "^0.1.5"
+ruff = "^0.1.6"
 click = "^8.1.7"
 pytest-flakefinder = "^1.1.0"
 

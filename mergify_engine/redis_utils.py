@@ -8,8 +8,8 @@ import uuid
 
 import daiquiri
 import ddtrace
-from redis.asyncio import retry
 import redis.asyncio as redispy
+from redis.asyncio import retry
 
 from mergify_engine import date
 from mergify_engine import service
