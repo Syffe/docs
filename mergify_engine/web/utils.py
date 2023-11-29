@@ -90,6 +90,16 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
             content={"message": "Invalid cursor", "cursor": exc.cursor},
         )
 
+    @app.exception_handler(requests.ClientDisconnect)
+    def client_disconnected(
+        request: requests.Request,
+        exc: requests.ClientDisconnect,
+    ) -> responses.PlainTextResponse:
+        return responses.PlainTextResponse(
+            status_code=503,
+            content="Client disconnected",
+        )
+
 
 def serialize_query_parameters(val: typing.Any) -> typing.Any:
     if isinstance(val, dict):
