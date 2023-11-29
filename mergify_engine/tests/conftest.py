@@ -138,12 +138,6 @@ def setup_logging(
         assert [] == messages
 
 
-@pytest.fixture(autouse=True)
-def setup_new_event_loop(event_loop: asyncio.BaseEventLoop) -> None:
-    # ensure each tests have a fresh event loop
-    pass
-
-
 @pytest.fixture(autouse=True, scope="session")
 def enable_api() -> None:
     settings.API_ENABLE = True

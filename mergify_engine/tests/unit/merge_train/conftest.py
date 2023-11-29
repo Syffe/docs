@@ -1,4 +1,5 @@
 import base64
+from collections import abc
 import typing
 from unittest import mock
 
@@ -8,6 +9,7 @@ from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import rules
+from mergify_engine import signals
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -17,6 +19,14 @@ from mergify_engine.rules.config import pull_request_rules as prr_config
 @pytest.fixture(autouse=True)
 def setup_fake_mergify_bot_user(fake_mergify_bot: None) -> None:
     pass
+
+
+@pytest.fixture(autouse=True, scope="package")
+def mock_signals() -> abc.Generator[None, None, None]:
+    # We don't check signal sending in this folder, so we can just mock
+    # it to not have to initialize the database.
+    with mock.patch.object(signals, "send"):
+        yield
 
 
 MERGIFY_CONFIG = """

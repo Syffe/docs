@@ -1,4 +1,3 @@
-from collections import abc
 import datetime
 from unittest import mock
 
@@ -13,7 +12,6 @@ from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import queue
 from mergify_engine import rules
-from mergify_engine import signals
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -24,14 +22,6 @@ from mergify_engine.tests.unit.merge_train import conftest as mt_conftest
 
 
 UNQUEUE_REASON_DEQUEUED = queue_utils.PrDequeued(123, "whatever")
-
-
-@pytest.fixture(autouse=True)
-def mock_signals() -> abc.Generator[None, None, None]:
-    # We don't check signal sending here, so we can just mock
-    # it to not have to initialize the database.
-    with mock.patch.object(signals, "send"):
-        yield
 
 
 async def test_train_inplace_with_speculative_checks_out_of_date(
