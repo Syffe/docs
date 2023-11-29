@@ -106,7 +106,7 @@ class Gitter:
 
     async def init(self) -> None:
         # TODO(sileht): use aiofiles instead of thread
-        self.tmp = await asyncio.to_thread(tempfile.mkdtemp, prefix="mergify-gitter")  # type: ignore[arg-type]
+        self.tmp = await asyncio.to_thread(tempfile.mkdtemp, prefix="mergify-gitter")
         if self.tmp is None:
             raise RuntimeError("mkdtemp failed")
         self.repository = os.path.join(self.tmp, "repository")
