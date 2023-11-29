@@ -57,7 +57,7 @@ class PullRequestCommit(models.Base):
     parents: orm.Mapped[
         list[github_types.GitHubBranchCommitParent]
     ] = orm.mapped_column(
-        sqlalchemy.ARRAY(postgresql.JSONB, dimensions=1),
+        postgresql.ARRAY(postgresql.JSONB, dimensions=1),
         anonymizer_config="custom_masks.json_obj_array(0, 3, ARRAY['sha'])",
     )
     commit: orm.Mapped[github_types.GitHubBranchCommitCommit] = orm.mapped_column(

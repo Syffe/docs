@@ -170,11 +170,11 @@ class EventActionAssign(Event):
     )
 
     added: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
         anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
     )
     removed: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
         anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
     )
 
@@ -293,7 +293,7 @@ class EventActionDismissReviews(Event):
         anonymizer_config=None,
     )
     users: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
         anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
     )
 
@@ -352,11 +352,11 @@ class EventActionLabel(Event):
         anonymizer_config=None,
     )
     added: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
         anonymizer_config="custom_masks.lorem_ipsum_array(1, 2, 7)",
     )
     removed: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
         anonymizer_config="custom_masks.lorem_ipsum_array(1, 2, 7)",
     )
 
@@ -463,7 +463,7 @@ class EventActionQueueMerged(Event):
     partition_names: orm.Mapped[
         list[partition_rules.PartitionRuleName]
     ] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
         anonymizer_config="custom_masks.lorem_ipsum_array(1, 2, 7)",
     )
 
@@ -813,11 +813,11 @@ class EventActionRequestReviews(Event):
     )
 
     reviewers: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
         anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 8)",
     )
     team_reviewers: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
         anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 8)",
     )
 

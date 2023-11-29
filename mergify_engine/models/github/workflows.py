@@ -11,6 +11,7 @@ import numpy.typing as npt  # noqa: TCH002
 from pgvector.sqlalchemy import Vector  # type: ignore
 import sqlalchemy
 from sqlalchemy import orm
+from sqlalchemy.dialects import postgresql
 import sqlalchemy.exc
 import sqlalchemy.ext.asyncio
 import sqlalchemy.ext.hybrid
@@ -197,7 +198,7 @@ class WorkflowJobColumnMixin:
         anonymizer_config="anon.random_in_enum(conclusion)",
     )
     labels: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
         anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
     )
 
