@@ -209,10 +209,7 @@ class EventQueueChecksStartMetadata(EventMetadata, total=False):
 
 
 class Actor(typing_extensions.TypedDict):
-    type: typing.Literal[
-        "user",
-        "application",
-    ] | enumerations.GithubAuthenticatedActorType
+    type: typing.Literal["user", "application"]
     id: int
     name: str
 

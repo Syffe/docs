@@ -903,17 +903,7 @@ class EventQueueFreezeCreate(Event):
         anonymizer_config="anon.random_int_between(0,1)",
     )
 
-    # FIXME(charly): remove me in favor of created_by JSON
-    created_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
-        anonymizer_config=None,
-    )
-    _created_by: orm.Mapped[
-        events_metadata.GithubAuthenticatedActor
-    ] = orm.relationship(
-        lazy="joined",
-    )
-    created_by: orm.Mapped[github.Actor | None] = orm.mapped_column(
+    created_by: orm.Mapped[github.Actor] = orm.mapped_column(
         postgresql.JSONB,
         anonymizer_config="custom_masks.jsonb_obj(3, 3, ARRAY[''text''])",
     )
@@ -936,10 +926,6 @@ class EventQueueFreezeCreate(Event):
 
         metadata = typing.cast(signals.EventQueueFreezeCreateMetadata, metadata.copy())
         created_by = metadata.pop("created_by")
-        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
-            session,
-            created_by,
-        )
 
         return cls(
             repository=repository_obj,
@@ -947,7 +933,6 @@ class EventQueueFreezeCreate(Event):
             base_ref=base_ref,
             trigger=trigger,
             created_by=created_by,
-            _created_by=actor,
             **metadata,
         )
 
@@ -976,17 +961,7 @@ class EventQueueFreezeUpdate(Event):
         anonymizer_config="anon.random_int_between(0,1)",
     )
 
-    # FIXME(charly): remove me in favor of updated_by JSON
-    updated_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
-        anonymizer_config=None,
-    )
-    _updated_by: orm.Mapped[
-        events_metadata.GithubAuthenticatedActor
-    ] = orm.relationship(
-        lazy="joined",
-    )
-    updated_by: orm.Mapped[github.Actor | None] = orm.mapped_column(
+    updated_by: orm.Mapped[github.Actor] = orm.mapped_column(
         postgresql.JSONB,
         anonymizer_config="custom_masks.jsonb_obj(3, 3, ARRAY[''text''])",
     )
@@ -1009,17 +984,12 @@ class EventQueueFreezeUpdate(Event):
 
         metadata = typing.cast(signals.EventQueueFreezeUpdateMetadata, metadata.copy())
         updated_by = metadata.pop("updated_by")
-        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
-            session,
-            updated_by,
-        )
 
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
             base_ref=base_ref,
             trigger=trigger,
-            _updated_by=actor,
             updated_by=updated_by,
             **metadata,
         )
@@ -1041,17 +1011,7 @@ class EventQueueFreezeDelete(Event):
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
 
-    # FIXME(charly): remove me in favor of deleted_by JSON
-    deleted_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
-        anonymizer_config=None,
-    )
-    _deleted_by: orm.Mapped[
-        events_metadata.GithubAuthenticatedActor
-    ] = orm.relationship(
-        lazy="joined",
-    )
-    deleted_by: orm.Mapped[github.Actor | None] = orm.mapped_column(
+    deleted_by: orm.Mapped[github.Actor] = orm.mapped_column(
         postgresql.JSONB,
         anonymizer_config="custom_masks.jsonb_obj(3, 3, ARRAY[''text''])",
     )
@@ -1074,17 +1034,12 @@ class EventQueueFreezeDelete(Event):
 
         metadata = typing.cast(signals.EventQueueFreezeDeleteMetadata, metadata.copy())
         deleted_by = metadata.pop("deleted_by")
-        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
-            session,
-            deleted_by,
-        )
 
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
             base_ref=base_ref,
             trigger=trigger,
-            _deleted_by=actor,
             deleted_by=deleted_by,
             **metadata,
         )
@@ -1106,17 +1061,7 @@ class EventQueuePauseCreate(Event):
         anonymizer_config="anon.lorem_ipsum( words := 7 )",
     )
 
-    # FIXME(charly): remove me in favor of created_by JSON
-    created_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
-        anonymizer_config=None,
-    )
-    _created_by: orm.Mapped[
-        events_metadata.GithubAuthenticatedActor
-    ] = orm.relationship(
-        lazy="joined",
-    )
-    created_by: orm.Mapped[github.Actor | None] = orm.mapped_column(
+    created_by: orm.Mapped[github.Actor] = orm.mapped_column(
         postgresql.JSONB,
         anonymizer_config="custom_masks.jsonb_obj(3, 3, ARRAY[''text''])",
     )
@@ -1139,17 +1084,12 @@ class EventQueuePauseCreate(Event):
 
         metadata = typing.cast(signals.EventQueuePauseCreateMetadata, metadata.copy())
         created_by = metadata.pop("created_by")
-        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
-            session,
-            created_by,
-        )
 
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
             base_ref=base_ref,
             trigger=trigger,
-            _created_by=actor,
             created_by=created_by,
             **metadata,
         )
@@ -1171,17 +1111,7 @@ class EventQueuePauseUpdate(Event):
         anonymizer_config="anon.lorem_ipsum( words := 7 )",
     )
 
-    # FIXME(charly): remove me in favor of updated_by JSON
-    updated_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
-        anonymizer_config=None,
-    )
-    _updated_by: orm.Mapped[
-        events_metadata.GithubAuthenticatedActor
-    ] = orm.relationship(
-        lazy="joined",
-    )
-    updated_by: orm.Mapped[github.Actor | None] = orm.mapped_column(
+    updated_by: orm.Mapped[github.Actor] = orm.mapped_column(
         postgresql.JSONB,
         anonymizer_config="custom_masks.jsonb_obj(3, 3, ARRAY[''text''])",
     )
@@ -1204,17 +1134,12 @@ class EventQueuePauseUpdate(Event):
 
         metadata = typing.cast(signals.EventQueuePauseUpdateMetadata, metadata.copy())
         updated_by = metadata.pop("updated_by")
-        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
-            session,
-            updated_by,
-        )
 
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
             base_ref=base_ref,
             trigger=trigger,
-            _updated_by=actor,
             updated_by=updated_by,
             **metadata,
         )
@@ -1232,17 +1157,7 @@ class EventQueuePauseDelete(Event):
         anonymizer_config=None,
     )
 
-    # FIXME(charly): remove me in favor of deleted_by JSON
-    deleted_by_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_authenticated_actor.id"),
-        anonymizer_config=None,
-    )
-    _deleted_by: orm.Mapped[
-        events_metadata.GithubAuthenticatedActor
-    ] = orm.relationship(
-        lazy="joined",
-    )
-    deleted_by: orm.Mapped[github.Actor | None] = orm.mapped_column(
+    deleted_by: orm.Mapped[github.Actor] = orm.mapped_column(
         postgresql.JSONB,
         anonymizer_config="custom_masks.jsonb_obj(3, 3, ARRAY[''text''])",
     )
@@ -1265,17 +1180,12 @@ class EventQueuePauseDelete(Event):
 
         metadata = typing.cast(signals.EventQueuePauseDeleteMetadata, metadata.copy())
         deleted_by = metadata.pop("deleted_by")
-        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
-            session,
-            deleted_by,
-        )
 
         return cls(
             repository=repository_obj,
             pull_request=pull_request,
             base_ref=base_ref,
             trigger=trigger,
-            _deleted_by=actor,
             deleted_by=deleted_by,
             **metadata,
         )

@@ -71,12 +71,6 @@ class ReviewType(str, enum.Enum):
     COMMENT = "COMMENT"
 
 
-# FIXME(charly): remove me once events_metadata.GithubAuthenticatedActor is removed
-class GithubAuthenticatedActorType(str, enum.Enum):
-    USER = "user"
-    APPLICATION = "application"
-
-
 class QueueChecksAbortCode(str, enum.Enum):
     PR_DEQUEUED = "PR_DEQUEUED"
     PR_AHEAD_DEQUEUED = "PR_AHEAD_DEQUEUED"
