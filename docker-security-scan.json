@@ -1936,6 +1936,38 @@
     "Severity": "MEDIUM"
   },
   {
+    "VulnerabilityID": "CVE-2023-47038",
+    "PkgName": "libperl5.32",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
+    "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
+    "Severity": "HIGH"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-47038",
+    "PkgName": "perl",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
+    "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
+    "Severity": "HIGH"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-47038",
+    "PkgName": "perl-base",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
+    "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
+    "Severity": "HIGH"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-47038",
+    "PkgName": "perl-modules-5.32",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
+    "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
+    "Severity": "HIGH"
+  },
+  {
     "VulnerabilityID": "CVE-2023-4806",
     "PkgName": "libc-bin",
     "Status": "affected",
