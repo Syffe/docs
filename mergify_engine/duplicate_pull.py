@@ -358,7 +358,7 @@ async def prepare_branch(
             f"Git reported the following error:\n```\n{e.output}\n```\n",
         )
     except gitter.GitFatalError as e:
-        raise DuplicateUnexpectedError(
+        raise DuplicateFailed(
             f"Git reported the following error:\n```\n{e.output}\n```\n",
         )
     except gitter.GitError as e:  # pragma: no cover
