@@ -31,10 +31,7 @@ from mergify_engine.tests.openai_embedding_dataset import (
 )
 
 
-GHA_CI_LOGS_ZIP_DIRECTORY = os.path.join(
-    os.path.dirname(__file__),
-    "gha-ci-logs-examples",
-)
+GHA_CI_LOGS_ZIP_DIRECTORY = "zfixtures/unit/log_embedder/gha-ci-logs-examples"
 GHA_CI_LOGS_ZIP_BUFFER = io.BytesIO()
 
 with zipfile.ZipFile(GHA_CI_LOGS_ZIP_BUFFER, "w") as zip_object:

@@ -111,7 +111,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.14.0
         with:
           scan-type: fs
-          scan-ref: ./zfixtures
+          scan-ref: ./zfixtures/cassettes
           trivy-config: ./.github/trivy.yaml
 
   postgresql-anonymizer:

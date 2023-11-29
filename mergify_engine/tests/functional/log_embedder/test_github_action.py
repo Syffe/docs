@@ -32,13 +32,11 @@ from mergify_engine.worker.manager import ServicesSet
 
 LOG = daiquiri.getLogger(__name__)
 
-PATH_INPUT_JOBS_JSON = os.path.join(
-    os.path.dirname(__file__),
-    "raw_logs/unsorted_logs/input_jobs_json",
+PATH_INPUT_JOBS_JSON = (
+    "zfixtures/functional/log_embedder/raw_logs/unsorted_logs/input_jobs_json"
 )
-PATH_INPUT_RAW_LOG_TXT = os.path.join(
-    os.path.dirname(__file__),
-    "raw_logs/unsorted_logs/input_raw_logs_txt",
+PATH_INPUT_RAW_LOG_TXT = (
+    "zfixtures/functional/log_embedder/raw_logs/unsorted_logs/input_raw_logs_txt"
 )
 
 JOB_IDS_BY_ISSUE: dict[int, list[int]] = {

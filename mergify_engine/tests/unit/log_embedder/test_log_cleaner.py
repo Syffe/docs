@@ -10,14 +10,10 @@ from mergify_engine.log_embedder import log_cleaner
 
 CleanerModeT = typing.Literal["basic", "gpt"]
 
-LOG_INPUT_LIBRARY_PATH = "mergify_engine/tests/unit/log_embedder/log_cleaner_input"
-LOG_OUTPUT_LIBRARY_PATH = "mergify_engine/tests/unit/log_embedder/log_cleaner_output"
-GPT_LOG_INPUT_LIBRARY_PATH = (
-    "mergify_engine/tests/unit/log_embedder/gpt_log_cleaner_input"
-)
-GPT_LOG_OUTPUT_LIBRARY_PATH = (
-    "mergify_engine/tests/unit/log_embedder/gpt_log_cleaner_output"
-)
+LOG_INPUT_LIBRARY_PATH = "zfixtures/unit/log_embedder/log_cleaner_input"
+LOG_OUTPUT_LIBRARY_PATH = "zfixtures/unit/log_embedder/log_cleaner_output"
+GPT_LOG_INPUT_LIBRARY_PATH = "zfixtures/unit/log_embedder/gpt_log_cleaner_input"
+GPT_LOG_OUTPUT_LIBRARY_PATH = "zfixtures/unit/log_embedder/gpt_log_cleaner_output"
 
 TEST_LOGS_FILEPATH_DICT = {
     filename: (
