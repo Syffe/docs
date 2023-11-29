@@ -33,7 +33,10 @@ RUN python3 -m pip install --no-cache-dir -r requirements-poetry.txt && \
     poetry config virtualenvs.options.no-setuptools true && \
     poetry install --only main --sync --no-root
 
-COPY . /app
+COPY tools/import-checks.sh /app/tools/
+COPY mergify_engine /app/mergify_engine
+COPY datadog /app/datadog
+COPY datadog-wrapper.sh /app/
 RUN poetry install --only main --sync && \
     python3 -m compileall -f -j 10 -b /app/mergify_engine && \
     find /app/mergify_engine -name '*.py' -and -not -path '/app/mergify_engine/models/db_migration/versions/*.py' -delete
@@ -83,7 +86,6 @@ RUN test -n "$PYTHON_VERSION" && test -n "$MERGIFYENGINE_SHA"
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 COPY --from=python-builder /app /app
-COPY ./.profile.d /app/.profile.d
 WORKDIR /app
 ENV VIRTUAL_ENV=/app/.venv
 ENV PYTHONUNBUFFERED=1

@@ -4,6 +4,7 @@ FROM runner-tagged as saas-web
 ENV DD_EXTRA_TAGS=service:engine-web
 COPY datadog/conf.d/engine-web-process.yaml /etc/datadog-agent/conf.d/process.d/conf.yaml
 COPY datadog/conf.d/engine-web.yaml /etc/datadog-agent/conf.d/engine-web.d/conf.yaml
+COPY dockerfiles/.profile.d /app/.profile.d
 ENV PORT=8002
 EXPOSE $PORT
 USER mergify
@@ -16,5 +17,6 @@ ENV DD_EXTRA_TAGS=service:engine-worker
 COPY datadog/conf.d/engine-worker-process.yaml /etc/datadog-agent/conf.d/process.d/conf.yaml
 COPY datadog/conf.d/engine-worker.yaml /etc/datadog-agent/conf.d/engine-worker.d/conf.yaml
 COPY dockerfiles/saas-worker.sh /
+COPY dockerfiles/.profile.d /app/.profile.d
 USER mergify
 CMD ["/datadog-wrapper.sh", "/saas-worker.sh"]
