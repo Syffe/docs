@@ -71,6 +71,7 @@ class ReviewType(str, enum.Enum):
     COMMENT = "COMMENT"
 
 
+# FIXME(charly): remove me once events_metadata.GithubAuthenticatedActor is removed
 class GithubAuthenticatedActorType(str, enum.Enum):
     USER = "user"
     APPLICATION = "application"

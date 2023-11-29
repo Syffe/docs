@@ -73,6 +73,7 @@ class SpeculativeCheckPullRequest(models.Base):
 
 
 class GithubAuthenticatedActor(models.Base):
+    # FIXME(charly): remove me once Queue freeze/pause events don't use it anymore
     __tablename__ = "github_authenticated_actor"
 
     id: orm.Mapped[int] = orm.mapped_column(

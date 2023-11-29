@@ -624,9 +624,10 @@ async def test_event_queue_freeze_create_consistency(
     assert event.queue_name == "hotfix"
     assert event.reason == "Incident in production"
     assert event.cascading is True
-    assert event.created_by.id == 123456
-    assert event.created_by.type == "user"
-    assert event.created_by.name == "krilin"
+    assert event._created_by.id == 123456
+    assert event._created_by.type == "user"
+    assert event._created_by.name == "krilin"
+    assert event.created_by == {"id": 123456, "type": "user", "name": "krilin"}
 
 
 async def test_event_queue_freeze_update_consistency(
@@ -653,9 +654,10 @@ async def test_event_queue_freeze_update_consistency(
     assert event.queue_name == "hotfix"
     assert event.reason == "Incident in production"
     assert event.cascading is True
-    assert event.updated_by.id == 567
-    assert event.updated_by.type == "user"
-    assert event.updated_by.name == "sangoku"
+    assert event._updated_by.id == 567
+    assert event._updated_by.type == "user"
+    assert event._updated_by.name == "sangoku"
+    assert event.updated_by == {"id": 567, "type": "user", "name": "sangoku"}
 
 
 async def test_event_queue_freeze_delete_consistency(
@@ -678,9 +680,10 @@ async def test_event_queue_freeze_delete_consistency(
     event = await db.scalar(sqlalchemy.select(evt_model.EventQueueFreezeDelete))
     assert event is not None
     assert event.queue_name == "hotfix"
-    assert event.deleted_by.id == 454
-    assert event.deleted_by.type == "user"
-    assert event.deleted_by.name == "freezer"
+    assert event._deleted_by.id == 454
+    assert event._deleted_by.type == "user"
+    assert event._deleted_by.name == "freezer"
+    assert event.deleted_by == {"id": 454, "type": "user", "name": "freezer"}
 
 
 async def test_event_queue_pause_create_consistency(
@@ -703,9 +706,10 @@ async def test_event_queue_pause_create_consistency(
     event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseCreate))
     assert event is not None
     assert event.reason == "Incident in production"
-    assert event.created_by.id == 145
-    assert event.created_by.type == "user"
-    assert event.created_by.name == "vegeta"
+    assert event._created_by.id == 145
+    assert event._created_by.type == "user"
+    assert event._created_by.name == "vegeta"
+    assert event.created_by == {"id": 145, "type": "user", "name": "vegeta"}
 
 
 async def test_event_queue_pause_update_consistency(
@@ -728,9 +732,10 @@ async def test_event_queue_pause_update_consistency(
     event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseUpdate))
     assert event is not None
     assert event.reason == "Incident in production"
-    assert event.updated_by.id == 145
-    assert event.updated_by.type == "user"
-    assert event.updated_by.name == "sangohan"
+    assert event._updated_by.id == 145
+    assert event._updated_by.type == "user"
+    assert event._updated_by.name == "sangohan"
+    assert event.updated_by == {"id": 145, "type": "user", "name": "sangohan"}
 
 
 async def test_event_queue_pause_delete_consistency(
@@ -749,9 +754,10 @@ async def test_event_queue_pause_delete_consistency(
     await assert_base_event(db, fake_repository)
     event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseDelete))
     assert event is not None
-    assert event.deleted_by.id == 987
-    assert event.deleted_by.type == "user"
-    assert event.deleted_by.name == "cell"
+    assert event._deleted_by.id == 987
+    assert event._deleted_by.type == "user"
+    assert event._deleted_by.name == "cell"
+    assert event.deleted_by == {"id": 987, "type": "user", "name": "cell"}
 
 
 def test_all_known_events_supported() -> None:
