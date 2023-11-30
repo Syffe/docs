@@ -2380,19 +2380,16 @@ class TestQueueAction(base.FunctionalTestBase):
             "events": [
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.merge",
                     "type": "action.merge",
                     "metadata": {"branch": self.main_branch_name},
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: Merge",
                 },
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.leave",
                     "type": "action.queue.leave",
                     "metadata": {
                         "branch": self.main_branch_name,
@@ -2410,13 +2407,11 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: Merge",
                 },
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.checks_end",
                     "type": "action.queue.checks_end",
                     "metadata": {
                         "abort_code": "PR_DEQUEUED",
@@ -2443,13 +2438,11 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "merge queue internal",
                 },
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.checks_start",
                     "type": "action.queue.checks_start",
                     "metadata": {
                         "branch": self.main_branch_name,
@@ -2471,13 +2464,11 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "merge queue internal",
                 },
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.enter",
                     "type": "action.queue.enter",
                     "metadata": {
                         "branch": self.main_branch_name,
@@ -2489,7 +2480,6 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: Queue",
                 },
@@ -3008,7 +2998,6 @@ class TestQueueAction(base.FunctionalTestBase):
             "events": [
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.merged",
                     "type": "action.queue.merged",
                     "metadata": {
                         "branch": self.main_branch_name,
@@ -3019,13 +3008,11 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: default merge",
                 },
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.leave",
                     "type": "action.queue.leave",
                     "metadata": {
                         "branch": self.main_branch_name,
@@ -3042,13 +3029,11 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: default merge",
                 },
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.checks_end",
                     "type": "action.queue.checks_end",
                     "metadata": {
                         "abort_code": None,
@@ -3073,13 +3058,11 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "merge queue internal",
                 },
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.checks_start",
                     "type": "action.queue.checks_start",
                     "metadata": {
                         "branch": self.main_branch_name,
@@ -3101,13 +3084,11 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "merge queue internal",
                 },
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.enter",
                     "type": "action.queue.enter",
                     "metadata": {
                         "branch": self.main_branch_name,
@@ -3119,7 +3100,6 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: default merge",
                 },
@@ -3340,7 +3320,6 @@ class TestQueueAction(base.FunctionalTestBase):
             "events": [
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.leave",
                     "type": "action.queue.leave",
                     "metadata": {
                         "merged": False,
@@ -3358,13 +3337,11 @@ class TestQueueAction(base.FunctionalTestBase):
                     "repository": p1["base"]["repo"]["full_name"],
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: default merge",
                 },
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.checks_end",
                     "type": "action.queue.checks_end",
                     "metadata": {
                         "abort_reason": anys.AnySearch(
@@ -3396,7 +3373,6 @@ class TestQueueAction(base.FunctionalTestBase):
                     "repository": p1["base"]["repo"]["full_name"],
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "merge queue internal",
                 },
@@ -4393,7 +4369,7 @@ previous_failed_batches:
         assert r.status_code == 200
         response = r.json()
         for event in response["events"]:
-            if event["event"] == "action.queue.checks_end":
+            if event["type"] == "action.queue.checks_end":
                 assert expected_reason in event["metadata"]["abort_reason"]
                 return
         else:
@@ -4759,12 +4735,12 @@ previous_failed_batches:
 
         # Unexpected change detected
         for event in response["events"]:
-            if event["event"] == "action.queue.checks_end":
+            if event["type"] == "action.queue.checks_end":
                 assert (
                     f"Unexpected queue change: the updated pull request #{p1['number']} has been manually updated"
                     in event["metadata"]["abort_reason"]
                 )
-                timestamp_checks_end = event["timestamp"]
+                timestamp_checks_end = event["received_at"]
                 break
         else:
             raise AssertionError("Event action.queue.checks_end not found")
@@ -4772,10 +4748,10 @@ previous_failed_batches:
         # Pr is sliced from queue to be updated
         assert timestamp_checks_end is not None
         for event in response["events"]:
-            if event["event"] == "action.queue.leave":
-                assert event["timestamp"] > timestamp_checks_end
+            if event["type"] == "action.queue.leave":
+                assert event["received_at"] > timestamp_checks_end
                 assert event["pull_request"] == p1["number"]
-                timestamp_queue_leave = event["timestamp"]
+                timestamp_queue_leave = event["received_at"]
                 break
         else:
             raise AssertionError("Event action.queue.leave not found")
@@ -4783,8 +4759,8 @@ previous_failed_batches:
         # Pr is updated and requeued
         assert timestamp_queue_leave is not None
         for event in response["events"]:
-            if event["event"] == "action.queue.enter":
-                assert event["timestamp"] > timestamp_queue_leave
+            if event["type"] == "action.queue.enter":
+                assert event["received_at"] > timestamp_queue_leave
                 assert event["pull_request"] == p1["number"]
                 break
         else:
@@ -5360,7 +5336,6 @@ previous_failed_batches:
             "events": [
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.queue.merged",
                     "type": "action.queue.merged",
                     "metadata": {
                         "branch": self.main_branch_name,
@@ -5371,7 +5346,6 @@ previous_failed_batches:
                     "pull_request": p1["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: Queue",
                 },
@@ -8803,7 +8777,7 @@ pull_request_rules:
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events?per_page=5",
         )
         assert len(r.json()["events"]) == 3
-        assert r.json()["events"][1]["event"] == "action.queue.leave"
+        assert r.json()["events"][1]["type"] == "action.queue.leave"
         assert r.json()["events"][1]["metadata"]["reason"] == (
             "The pull request conflicts with the base branch"
         )

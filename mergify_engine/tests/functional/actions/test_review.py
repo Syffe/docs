@@ -182,9 +182,7 @@ Unknown pull request attribute: hello
                     "repository": p["base"]["repo"]["full_name"],
                     "pull_request": p["number"],
                     "base_ref": self.main_branch_name,
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
-                    "event": "action.review",
                     "type": "action.review",
                     "metadata": {
                         "message": "WTF?",
@@ -198,9 +196,7 @@ Unknown pull request attribute: hello
                     "repository": p["base"]["repo"]["full_name"],
                     "pull_request": p["number"],
                     "base_ref": self.main_branch_name,
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
-                    "event": "action.review",
                     "type": "action.review",
                     "metadata": {
                         "message": None,

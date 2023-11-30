@@ -87,7 +87,6 @@ class TestPostCheckAction(base.FunctionalTestBase):
             "events": [
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.post_check",
                     "type": "action.post_check",
                     "metadata": {
                         "conclusion": "success",
@@ -104,7 +103,6 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     "repository": match_p["base"]["repo"]["full_name"],
                     "pull_request": match_p["number"],
                     "base_ref": self.main_branch_name,
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: body need sentry ticket",
                 },
@@ -122,7 +120,6 @@ class TestPostCheckAction(base.FunctionalTestBase):
             "events": [
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.post_check",
                     "type": "action.post_check",
                     "metadata": {
                         "conclusion": "failure",
@@ -139,7 +136,6 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     "repository": unmatch_p["base"]["repo"]["full_name"],
                     "pull_request": unmatch_p["number"],
                     "base_ref": self.main_branch_name,
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: body need sentry ticket",
                 },
@@ -170,7 +166,6 @@ class TestPostCheckAction(base.FunctionalTestBase):
             "events": [
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.post_check",
                     "type": "action.post_check",
                     "metadata": {
                         "conclusion": "failure",
@@ -187,13 +182,11 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     "pull_request": match_p["number"],
                     "base_ref": self.main_branch_name,
                     "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: body need sentry ticket",
                 },
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.post_check",
                     "type": "action.post_check",
                     "metadata": {
                         "conclusion": "success",
@@ -210,7 +203,6 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     "repository": match_p["base"]["repo"]["full_name"],
                     "pull_request": match_p["number"],
                     "base_ref": self.main_branch_name,
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: body need sentry ticket",
                 },
@@ -343,7 +335,6 @@ class TestPostCheckAction(base.FunctionalTestBase):
             "events": [
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.post_check",
                     "type": "action.post_check",
                     "metadata": {
                         "conclusion": "failure",
@@ -360,7 +351,6 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     "repository": unmatch_p["base"]["repo"]["full_name"],
                     "pull_request": unmatch_p["number"],
                     "base_ref": self.main_branch_name,
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: body need sentry ticket",
                 },

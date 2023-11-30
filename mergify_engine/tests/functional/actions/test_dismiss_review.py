@@ -177,9 +177,7 @@ Unknown pull request attribute: Loser
                     "repository": p["base"]["repo"]["full_name"],
                     "pull_request": p["number"],
                     "base_ref": self.main_branch_name,
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
-                    "event": "action.dismiss_reviews",
                     "type": "action.dismiss_reviews",
                     "metadata": {
                         "users": ["mergify-test1"],
@@ -191,9 +189,7 @@ Unknown pull request attribute: Loser
                     "repository": p["base"]["repo"]["full_name"],
                     "pull_request": p["number"],
                     "base_ref": self.main_branch_name,
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
-                    "event": "action.dismiss_reviews",
                     "type": "action.dismiss_reviews",
                     "metadata": {
                         "users": ["mergify-test1"],

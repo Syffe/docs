@@ -72,9 +72,7 @@ def format_event_item_response(event: evt_models.Event) -> dict[str, typing.Any]
     # NOTE(lecrepont01): duplicate fields (MRGFY-2555)
     result: dict[str, typing.Any] = {
         "id": event.id,
-        "event": event.type.value,
         "type": event.type.value,
-        "timestamp": event.received_at,
         "received_at": event.received_at,
         "trigger": event.trigger,
         "pull_request": event.pull_request,

@@ -22,7 +22,6 @@ LOG = daiquiri.getLogger(__name__)
 class EventBase(typing_extensions.TypedDict):
     id: int
     received_at: datetime.datetime
-    timestamp: datetime.datetime
     trigger: str
     repository: str
     pull_request: int | None
@@ -38,187 +37,155 @@ class EventBaseNoMetadata(EventBase):
 
 
 class EventAssign(EventBase):
-    event: typing.Literal["action.assign"]
     type: typing.Literal["action.assign"]
     metadata: signals.EventAssignMetadata
 
 
 class EventBackport(EventBase):
-    event: typing.Literal["action.backport"]
     type: typing.Literal["action.backport"]
     metadata: signals.EventCopyMetadata
 
 
 class EventClose(EventBase):
-    event: typing.Literal["action.close"]
     type: typing.Literal["action.close"]
     metadata: signals.EventCloseMetadata
 
 
 class EventComment(EventBase):
-    event: typing.Literal["action.comment"]
     type: typing.Literal["action.comment"]
     metadata: signals.EventCommentMetadata
 
 
 class EventCopy(EventBase):
-    event: typing.Literal["action.copy"]
     type: typing.Literal["action.copy"]
     metadata: signals.EventCopyMetadata
 
 
 class EventEdit(EventBase):
-    event: typing.Literal["action.edit"]
     type: typing.Literal["action.edit"]
     metadata: signals.EventEditMetadata
 
 
 class EventDeleteHeadBranch(EventBase):
-    event: typing.Literal["action.delete_head_branch"]
     type: typing.Literal["action.delete_head_branch"]
     metadata: signals.EventDeleteHeadBranchMetadata
 
 
 class EventDismissReviews(EventBase):
-    event: typing.Literal["action.dismiss_reviews"]
     type: typing.Literal["action.dismiss_reviews"]
     metadata: signals.EventDismissReviewsMetadata
 
 
 class EventLabel(EventBase):
-    event: typing.Literal["action.label"]
     type: typing.Literal["action.label"]
     metadata: signals.EventLabelMetadata
 
 
 class EventMerge(EventBase):
-    event: typing.Literal["action.merge"]
     type: typing.Literal["action.merge"]
     metadata: signals.EventMergeMetadata
 
 
 class EventPostCheck(EventBase):
-    event: typing.Literal["action.post_check"]
     type: typing.Literal["action.post_check"]
     metadata: signals.EventPostCheckMetadata
 
 
 class EventGithubActions(EventBase):
-    event: typing.Literal["action.github_actions"]
     type: typing.Literal["action.github_actions"]
     metadata: signals.EventGithubActionsMetadata
 
 
 class EventQueueEnter(EventBase):
-    event: typing.Literal["action.queue.enter"]
     type: typing.Literal["action.queue.enter"]
     metadata: signals.EventQueueEnterMetadata
 
 
 class EventQueueLeave(EventBase):
-    event: typing.Literal["action.queue.leave"]
     type: typing.Literal["action.queue.leave"]
     metadata: signals.EventQueueLeaveMetadata
 
 
 class EventQueueChange(EventBase):
-    event: typing.Literal["action.queue.change"]
     type: typing.Literal["action.queue.change"]
     metadata: signals.EventQueueChangeMetadata
 
 
 class EventQueueChecksStart(EventBase):
-    event: typing.Literal["action.queue.checks_start"]
     type: typing.Literal["action.queue.checks_start"]
     metadata: signals.EventQueueChecksStartMetadata
 
 
 class EventQueueChecksEnd(EventBase):
-    event: typing.Literal["action.queue.checks_end"]
     type: typing.Literal["action.queue.checks_end"]
     metadata: signals.EventQueueChecksEndMetadata
 
 
 class EventQueueMerged(EventBase):
-    event: typing.Literal["action.queue.merged"]
     type: typing.Literal["action.queue.merged"]
     metadata: signals.EventQueueMergedMetadata
 
 
 class EventRebase(EventBaseNoMetadata):
-    event: typing.Literal["action.rebase"]
     type: typing.Literal["action.rebase"]
 
 
 class EventRefresh(EventBaseNoMetadata):
-    event: typing.Literal["action.refresh"]
     type: typing.Literal["action.refresh"]
 
 
 class EventRequeue(EventBaseNoMetadata):
-    event: typing.Literal["action.requeue"]
     type: typing.Literal["action.requeue"]
 
 
 class EventRequestReviews(EventBase):
-    event: typing.Literal["action.request_reviews"]
     type: typing.Literal["action.request_reviews"]
     metadata: signals.EventRequestReviewsMetadata
 
 
 class EventReview(EventBase):
-    event: typing.Literal["action.review"]
     type: typing.Literal["action.review"]
     metadata: signals.EventReviewMetadata
 
 
 class EventSquash(EventBaseNoMetadata):
-    event: typing.Literal["action.squash"]
     type: typing.Literal["action.squash"]
 
 
 class EventUnqueue(EventBaseNoMetadata):
-    event: typing.Literal["action.unqueue"]
     type: typing.Literal["action.unqueue"]
 
 
 class EventUpdate(EventBaseNoMetadata):
-    event: typing.Literal["action.update"]
     type: typing.Literal["action.update"]
 
 
 class EventQueueFreezeCreate(EventBase):
-    event: typing.Literal["queue.freeze.create"]
     type: typing.Literal["queue.freeze.create"]
     metadata: signals.EventQueueFreezeCreateMetadata
 
 
 class EventQueueFreezeUpdate(EventBase):
-    event: typing.Literal["queue.freeze.update"]
     type: typing.Literal["queue.freeze.update"]
     metadata: signals.EventQueueFreezeUpdateMetadata
 
 
 class EventQueueFreezeDelete(EventBase):
-    event: typing.Literal["queue.freeze.delete"]
     type: typing.Literal["queue.freeze.delete"]
     metadata: signals.EventQueueFreezeDeleteMetadata
 
 
 class EventQueuePauseCreate(EventBase):
-    event: typing.Literal["queue.pause.create"]
     type: typing.Literal["queue.pause.create"]
     metadata: signals.EventQueuePauseCreateMetadata
 
 
 class EventQueuePauseUpdate(EventBase):
-    event: typing.Literal["queue.pause.update"]
     type: typing.Literal["queue.pause.update"]
     metadata: signals.EventQueuePauseUpdateMetadata
 
 
 class EventQueuePauseDelete(EventBase):
-    event: typing.Literal["queue.pause.delete"]
     type: typing.Literal["queue.pause.delete"]
     metadata: signals.EventQueuePauseDeleteMetadata
 
@@ -261,7 +228,7 @@ Event = (
 SUPPORTED_EVENT_NAMES = list(
     itertools.chain(
         *[
-            evt.__annotations__["event"].__args__
+            evt.__annotations__["type"].__args__
             for evt in Event.__args__  # type: ignore[attr-defined]
         ],
     ),
@@ -269,7 +236,6 @@ SUPPORTED_EVENT_NAMES = list(
 
 
 class GenericEvent(EventBase):
-    event: signals.EventName
     type: signals.EventName
     metadata: signals.EventMetadata
 

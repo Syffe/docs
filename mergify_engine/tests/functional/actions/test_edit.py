@@ -45,12 +45,10 @@ class TestEditAction(base.FunctionalTestBase):
             "events": [
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.edit",
                     "type": "action.edit",
                     "pull_request": p["number"],
                     "base_ref": self.main_branch_name,
                     "metadata": {"draft": True},
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: convert Pull Request to Draft",
                     "repository": p_updated["pull_request"]["base"]["repo"][
@@ -97,12 +95,10 @@ class TestEditAction(base.FunctionalTestBase):
             "events": [
                 {
                     "id": anys.ANY_INT,
-                    "event": "action.edit",
                     "type": "action.edit",
                     "pull_request": p["number"],
                     "base_ref": self.main_branch_name,
                     "metadata": {"draft": False},
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: Remove Draft from Pull Request",
                     "repository": p_updated["pull_request"]["base"]["repo"][

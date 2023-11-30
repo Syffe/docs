@@ -96,12 +96,10 @@ async def test_api_response(
             {
                 "id": 3,
                 "received_at": "2023-08-22T10:00:00Z",
-                "timestamp": "2023-08-22T10:00:00Z",
                 "trigger": "Rule: some other rule",
                 "repository": "Mergifyio/mergify-engine",
                 "pull_request": 2,
                 "base_ref": "stable",
-                "event": "action.merge",
                 "type": "action.merge",
                 "metadata": {"branch": "merge_branch"},
             },
@@ -160,12 +158,10 @@ async def test_api_response(
             {
                 "id": 4,
                 "received_at": anys.ANY_DATETIME_STR,
-                "timestamp": anys.ANY_DATETIME_STR,
                 "trigger": "whatever",
                 "repository": "Mergifyio/mergify-engine",
                 "pull_request": None,
                 "base_ref": "feature_branch",
-                "event": "action.queue.checks_end",
                 "type": "action.queue.checks_end",
                 "metadata": {
                     "aborted": True,
@@ -225,12 +221,10 @@ async def test_api_response(
             {
                 "id": 5,
                 "received_at": anys.ANY_DATETIME_STR,
-                "timestamp": anys.ANY_DATETIME_STR,
                 "trigger": "whatever",
                 "repository": "Mergifyio/mergify-engine",
                 "pull_request": None,
                 "base_ref": "main",
-                "event": "queue.pause.create",
                 "type": "queue.pause.create",
                 "metadata": {
                     "reason": "Incident in production",
@@ -267,12 +261,10 @@ async def test_api_response(
             {
                 "id": 6,
                 "received_at": anys.ANY_DATETIME_STR,
-                "timestamp": anys.ANY_DATETIME_STR,
                 "trigger": "whatever",
                 "repository": "Mergifyio/mergify-engine",
                 "pull_request": None,
                 "base_ref": "main",
-                "event": "action.review",
                 "type": "action.review",
                 "metadata": {
                     "review_type": "APPROVE",
