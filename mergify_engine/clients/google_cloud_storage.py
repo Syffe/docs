@@ -28,11 +28,3 @@ class GoogleCloudStorageClient(storage.Client):  # type: ignore[misc]
     async def upload(self, bucket_name: str, path: str, content: bytes) -> None:
         # Google Client is not async and not thread safe, so we isolate it in a thread
         await asyncio.to_thread(self._sync_upload, bucket_name, path, content)
-
-    def _sync_download(self, bucket_name: str, path: str) -> storage.Blob | None:
-        bucket = self.bucket(bucket_name)
-        return bucket.get_blob(path)
-
-    async def download(self, bucket_name: str, path: str) -> storage.Blob | None:
-        # Google Client is not async and not thread safe, so we isolate it in a thread
-        return await asyncio.to_thread(self._sync_download, bucket_name, path)

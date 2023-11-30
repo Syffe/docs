@@ -307,11 +307,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 gcs_client = google_cloud_storage.GoogleCloudStorageClient(
                     settings.LOG_EMBEDDER_GCS_CREDENTIALS,
                 )
-
-                log_lines = await gha_embedder.get_log_lines(gcs_client, job)
-
                 async with openai_api.OpenAIClient() as openai_client:
-                    await gha_embedder.embed_log(openai_client, job, log_lines)
+                    await gha_embedder.embed_log(openai_client, gcs_client, job)
 
             await session.commit()
 
@@ -329,10 +326,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         assert job.failed_step_number == 4
         assert job.failed_step_name == 'Failure step with *"/\\<>:|? in the title ❌'
         assert job.log_embedding is not None
-        assert job.log_status is gh_models.WorkflowJobLogStatus.DOWNLOADED
-        assert (
-            job.log_embedding_status is gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
-        )
+        assert job.log_status is gh_models.WorkflowJobLogStatus.EMBEDDED
 
         assert np.array_equal(
             job.log_embedding,
@@ -531,9 +525,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
                     job.log_embedding = embedding
                     job.embedded_log = truncated_log
-                    job.log_embedding_status = (
-                        gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
-                    )
+                    job.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
 
                     await ci_issue.link_job_to_ci_issue(session, job)
 
@@ -569,31 +561,41 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             ) as job_json_file:
                 job_json = json.load(job_json_file)
 
-            job_json.update(
-                {
-                    "name": job_json["github_name"],
-                    "run_id": job_json["workflow_run_id"],
-                    "conclusion": "failure",
-                },
-            )
-            job = await gh_models.WorkflowJob.insert(
-                session,
-                job_json,
-                job_json["repository"],
-            )
-
-            with open(
-                f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
-            ) as log_file:
-                log_lines = log_file.readlines()
-
-            async with openai_api.OpenAIClient() as openai_client:
-                await github_action.extract_data_from_log(
-                    openai_client,
-                    session,
-                    job,
-                    log_lines,
+                job_json.update(
+                    {
+                        "name": job_json["github_name"],
+                        "run_id": job_json["workflow_run_id"],
+                        "conclusion": "failure",
+                    },
                 )
+                job = await gh_models.WorkflowJob.insert(
+                    session,
+                    job_json,
+                    job_json["repository"],
+                )
+
+                with open(
+                    f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
+                ) as log_file:
+                    (
+                        tokens,
+                        truncated_log,
+                    ) = await github_action.get_tokenized_cleaned_log(
+                        log_file.readlines(),
+                    )
+
+                job.embedded_log = truncated_log
+                job.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
+                job.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+
+                async with openai_api.OpenAIClient() as openai_client:
+                    await github_action.extract_data_from_log(
+                        openai_client,
+                        session,
+                        job,
+                    )
+
+                await ci_issue.link_job_to_ci_issue(session, job)
 
             await session.commit()
             session.expunge_all()
@@ -609,10 +611,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 assert metadata.lineno == "15"
                 assert (
                     metadata.stack_trace
-                    == """TypeError: Cannot read properties of undefined (reading 'id')\n   at eval (eval at callAsyncFunction (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15143:16), <anonymous>:15:31)\n   at processTicksAndRejections (node:internal/process/task_queues:96:5)\n   at async main (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15236:20)"""
+                    == """TypeError: Cannot read properties of undefined (reading 'id') at eval (eval at callAsyncFunction (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15143:16), <anonymous>:15:31) at processTicksAndRejections (node:internal/process/task_queues:96:5) at async main (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15236:20)"""
                 )
-                assert (
-                    metadata.error
-                    == "TypeError: Cannot read properties of undefined (reading 'id')"
-                )
+                assert metadata.error == "TypeError"
                 assert metadata.problem_type == "Accessing property of undefined object"

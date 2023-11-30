@@ -9,11 +9,6 @@ MAX_TOKENS_EMBEDDED_LOG = (
     - github_action.EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
 )
 
-MAX_CHAT_COMPLETION_TOKENS = (
-    openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
-    - github_action.EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
-)
-
 
 @pytest.mark.parametrize(
     "raw_log,expected_length,expected_cleaned_log,expected_embedded_log",
@@ -72,38 +67,3 @@ async def test_get_tokenized_cleaned_log(
     assert openai_api.TIKTOKEN_ENCODING.decode(tokens) == expected_cleaned_log
     assert len(truncated_log) == len(expected_embedded_log)
     assert truncated_log == expected_embedded_log
-
-
-@pytest.mark.parametrize(
-    "raw_log_lines, expected_cleaned_log, cleaned_log_token_size",
-    [
-        (["hello\n"], "hello", 1),
-        (
-            ["hello\n"] * MAX_CHAT_COMPLETION_TOKENS,
-            # NOTE(Kontrolix): Divide by 2 because 'hello\n' is 2 token
-            "\n".join(["hello"] * int(MAX_TOKENS_EMBEDDED_LOG / 2)),
-            # NOTE(Kontrolix): minus 1 because we haven't an '\n' at the end of the log
-            MAX_CHAT_COMPLETION_TOKENS - 1,
-        ),
-        (
-            ["Tokens that will be removed at the beginning"]
-            + (["hello\n"] * MAX_CHAT_COMPLETION_TOKENS),
-            # NOTE(Kontrolix): Divide by 2 because 'hello\n' is 2 token
-            "\n".join(["hello"] * int(MAX_TOKENS_EMBEDDED_LOG / 2)),
-            # NOTE(Kontrolix): minus 1 because we haven't an '\n' at the end of the log
-            MAX_CHAT_COMPLETION_TOKENS - 1,
-        ),
-    ],
-    ids=["one_token_string", "max_input_token_string", "too_long_input_token_string"],
-)
-async def test_get_cleaned_log(
-    raw_log_lines: list[str],
-    expected_cleaned_log: str,
-    cleaned_log_token_size: int,
-) -> None:
-    cleaned_log = github_action.get_cleaned_log(raw_log_lines)
-
-    assert expected_cleaned_log == cleaned_log
-    assert (
-        len(openai_api.TIKTOKEN_ENCODING.encode(cleaned_log)) == cleaned_log_token_size
-    )
