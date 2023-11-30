@@ -2032,7 +2032,8 @@
     "PkgName": "libgnutls30",
     "Status": "affected",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-5981",
-    "Title": "[ttiming side-channel inside RSA-PSK key exchange]",
-    "Severity": "MEDIUM"
+    "Title": "gnutls: timing side-channel in the RSA-PSK authentication",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-11-28T12:15:00Z"
   }
 ]
