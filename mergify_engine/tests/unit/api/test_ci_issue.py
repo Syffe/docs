@@ -471,8 +471,16 @@ async def test_api_ci_issue_put_ci_issues(
 
     assert response.status_code == 200, response.text
 
+    # Resolved issues are filtered out by default
     response = await web_client.get(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues",
+        follow_redirects=False,
+    )
+
+    assert response.json() == {"issues": []}
+
+    response = await web_client.get(
+        "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?status=resolved&status=unresolved",
         follow_redirects=False,
     )
 

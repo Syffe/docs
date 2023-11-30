@@ -56,6 +56,7 @@ async def query_issues(
     session: database.Session,
     repository_id: github_types.GitHubRepositoryIdType,
     issue_id: int | None = None,
+    statuses: tuple[CiIssueStatus, ...] | None = None,
 ) -> OrderedDict[int, CiIssueResponse]:
     stmt = (
         sqlalchemy.select(
@@ -87,6 +88,8 @@ async def query_issues(
 
     if issue_id is not None:
         stmt = stmt.where(CiIssue.id == issue_id)
+    if statuses is not None:
+        stmt = stmt.where(CiIssue.status.in_(statuses))
 
     # NOTE(Kontrolix): We use an OrderedDict here to be sure to keep the sorting of
     # the SQL query
@@ -134,9 +137,17 @@ async def query_issues(
 async def get_ci_issues(
     session: database.Session,
     repository_ctxt: security.Repository,
+    status: typing.Annotated[
+        tuple[CiIssueStatus, ...],
+        fastapi.Query(description="CI issue status"),
+    ] = (CiIssueStatus.UNRESOLVED,),
 ) -> CiIssuesResponse:
     return CiIssuesResponse(
-        issues=list((await query_issues(session, repository_ctxt.repo["id"])).values()),
+        issues=list(
+            (
+                await query_issues(session, repository_ctxt.repo["id"], statuses=status)
+            ).values(),
+        ),
     )
 
 
@@ -186,7 +197,11 @@ async def get_ci_issue(
         fastapi.Path(description="The ID of the CI Issue"),
     ],
 ) -> CiIssueResponse:
-    reponses = await query_issues(session, repository_ctxt.repo["id"], ci_issue_id)
+    reponses = await query_issues(
+        session,
+        repository_ctxt.repo["id"],
+        issue_id=ci_issue_id,
+    )
     if len(reponses) == 0:
         raise fastapi.HTTPException(404)
     return reponses[ci_issue_id]
