@@ -4,6 +4,7 @@ import datetime
 import importlib.metadata
 import logging
 import typing
+import uuid
 
 import daiquiri
 import typing_extensions
@@ -210,7 +211,7 @@ class EventQueueChecksStartMetadata(EventMetadata, total=False):
 
 class Actor(typing_extensions.TypedDict):
     type: typing.Literal["user", "application"]
-    id: int
+    id: int | uuid.UUID
     name: str
 
 

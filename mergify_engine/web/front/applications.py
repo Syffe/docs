@@ -15,7 +15,7 @@ from mergify_engine.web.front import security
 
 @pydantic.dataclasses.dataclass
 class ApplicationJSON:
-    id: int
+    id: pydantic.UUID4
     name: str
     created_at: str
     created_by: github_types.GitHubAccount | None
@@ -169,13 +169,12 @@ async def create_application(
 )
 async def update_application(
     github_account_id: security.GitHubAccountId,
-    application_id: int,
+    application_id: pydantic.UUID4,
     json: ApplicationBody,
     session: database.Session,
 ) -> ApplicationJSON:
     result = await session.execute(
         sqlalchemy.select(application_keys.ApplicationKey)
-        .join(application_keys.ApplicationKey.github_account)
         .where(application_keys.ApplicationKey.id == application_id)
         .where(application_keys.ApplicationKey.github_account_id == github_account_id),
     )
@@ -208,7 +207,7 @@ async def update_application(
 )
 async def delete_application(
     github_account_id: security.GitHubAccountId,
-    application_id: int,
+    application_id: pydantic.UUID4,
     session: database.Session,
 ) -> fastapi.responses.Response:
     result = await session.execute(

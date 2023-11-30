@@ -16,6 +16,7 @@ from mergify_engine import subscription
 from mergify_engine import yaml
 from mergify_engine.models import events as evt_models
 from mergify_engine.rules.config import partition_rules as partr_config
+from mergify_engine.tests import utils as test_utils
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
 
@@ -474,7 +475,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "metadata": {
                     "queue_name": "default",
                     "deleted_by": {
-                        "id": 0,
+                        "id": test_utils.ANY_UUID4,
                         "name": "on-premise-app-from-env",
                         "type": "application",
                     },
@@ -493,7 +494,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "reason": "test updated freeze reason",
                     "cascading": False,
                     "updated_by": {
-                        "id": 0,
+                        "id": test_utils.ANY_UUID4,
                         "name": "on-premise-app-from-env",
                         "type": "application",
                     },
@@ -541,7 +542,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "reason": "test freeze reason",
                     "cascading": True,
                     "created_by": {
-                        "id": 0,
+                        "id": test_utils.ANY_UUID4,
                         "name": "on-premise-app-from-env",
                         "type": "application",
                     },

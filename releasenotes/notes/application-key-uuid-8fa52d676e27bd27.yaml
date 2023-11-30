@@ -1,0 +1,5 @@
+---
+security:
+  - |
+    Application key is now an UUID in order to avoid resource enumeration
+    security issues.

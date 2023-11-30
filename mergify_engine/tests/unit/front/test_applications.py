@@ -12,6 +12,7 @@ from mergify_engine.config import types
 from mergify_engine.models import application_keys
 from mergify_engine.models import github as gh_models
 from mergify_engine.tests import conftest
+from mergify_engine.tests import utils
 
 
 async def test_applications_life_cycle(
@@ -49,7 +50,7 @@ async def test_applications_life_cycle(
     )
     assert resp.status_code == 200
     create_data = resp.json()
-    assert create_data["id"] == 1
+    assert create_data["id"] == utils.ANY_UUID4
     assert create_data["name"] == "my first app"
     assert create_data["created_at"] is not None
     assert create_data["created_by"] is not None
@@ -67,7 +68,7 @@ async def test_applications_life_cycle(
     assert resp.status_code == 200
     assert resp.json() == {
         "account_scope": {"id": 424242, "login": "user1"},
-        "id": 1,
+        "id": utils.ANY_UUID4,
         "name": "my first app",
     }
 
@@ -77,7 +78,7 @@ async def test_applications_life_cycle(
     )
     assert resp.status_code == 200
     create2_data = resp.json()
-    assert create2_data["id"] == 2
+    assert create2_data["id"] == utils.ANY_UUID4
     assert create2_data["name"] == "my second app"
     assert create2_data["created_at"] is not None
     assert create2_data["created_by"] is not None
@@ -91,7 +92,7 @@ async def test_applications_life_cycle(
     )
     assert resp.status_code == 200
     update_data = resp.json()
-    assert update_data["id"] == 2
+    assert update_data["id"] == utils.ANY_UUID4
     assert update_data["name"] == "new name"
     assert update_data["created_at"] is not None
     assert update_data["created_by"] is not None
@@ -263,6 +264,7 @@ async def test_applications_limit(
         resp = await web_client.delete(
             f"/front/github-account/424242/applications/{list_data['applications'][i]['id']}",
         )
+        assert resp.status_code == 204, resp.text
 
     resp = await web_client.get("/front/github-account/424242/applications")
     assert resp.status_code == 200
@@ -314,7 +316,7 @@ async def test_create_application_for_orgs(
     )
     assert resp.status_code == 200
     create_data = resp.json()
-    assert create_data["id"] == 1
+    assert create_data["id"] == utils.ANY_UUID4
     assert create_data["name"] == "my first app"
     assert create_data["created_at"] is not None
     assert create_data["created_by"] is not None
@@ -332,7 +334,7 @@ async def test_create_application_for_orgs(
     assert resp.status_code == 200
     assert resp.json() == {
         "account_scope": {"id": 1234, "login": "org1"},
-        "id": 1,
+        "id": utils.ANY_UUID4,
         "name": "my first app",
     }
 
@@ -412,7 +414,7 @@ async def test_applications_bad_body(
     ]
 
     resp = await web_client.patch(
-        "/front/github-account/424242/applications/123",
+        "/front/github-account/424242/applications/e155518c-ca1b-443c-9be9-fe90fdab7345",
         json={"name": "no" * 500},
     )
     assert resp.status_code == 422
@@ -427,7 +429,7 @@ async def test_applications_bad_body(
     ]
 
     resp = await web_client.patch(
-        "/front/github-account/424242/applications/123",
+        "/front/github-account/424242/applications/e155518c-ca1b-443c-9be9-fe90fdab7345",
         json={"name": ""},
     )
     assert resp.status_code == 422
@@ -443,7 +445,7 @@ async def test_applications_bad_body(
 
     # TODO(sileht): it would be better to raise a 422 instead of ignoring the attribute.
     resp = await web_client.patch(
-        "/front/github-account/424242/applications/123",
+        "/front/github-account/424242/applications/e155518c-ca1b-443c-9be9-fe90fdab7345",
         json={"name": "hellothere", "noway": "azerty"},
     )
     assert resp.status_code == 404
@@ -579,7 +581,7 @@ async def test_application_tokens_via_env(
     assert resp.status_code == 200
     assert resp.json() == {
         "account_scope": {"id": 12345, "login": "login1"},
-        "id": 0,
+        "id": utils.ANY_UUID4,
         "name": "on-premise-app-from-env",
     }
 
@@ -590,6 +592,6 @@ async def test_application_tokens_via_env(
     assert resp.status_code == 200
     assert resp.json() == {
         "account_scope": {"id": 67891, "login": "login2"},
-        "id": 0,
+        "id": utils.ANY_UUID4,
         "name": "on-premise-app-from-env",
     }

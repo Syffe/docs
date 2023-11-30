@@ -1,7 +1,10 @@
 from collections import abc
 import dataclasses
 import datetime
+import functools
+import json
 import typing
+import uuid
 
 import ddtrace
 import fastapi
@@ -87,6 +90,11 @@ def init_sqlalchemy(service_name: str) -> None:
         max_overflow=-1,
         # Ensure old pooled connection still works
         pool_pre_ping=True,
+        json_serializer=functools.partial(json.dumps, cls=DatabaseJSONEncoder),
+        json_deserializer=functools.partial(
+            json.loads,
+            object_hook=decode_database_json,
+        ),
     )
     ddtrace.Pin.override(async_engine.sync_engine, service="engine-db")
 
@@ -147,3 +155,20 @@ Session = typing.Annotated[
     sqlalchemy.ext.asyncio.AsyncSession,
     fastapi.Depends(get_session),
 ]
+
+
+class DatabaseJSONEncoder(json.JSONEncoder):
+    def default(self, value: typing.Any) -> typing.Any:
+        if isinstance(value, uuid.UUID):
+            return {
+                "__pytype__": "uuid.UUID",
+                "value": value.hex,
+            }
+
+        return super().default(value)
+
+
+def decode_database_json(value: dict[typing.Any, typing.Any]) -> typing.Any:
+    if value.get("__pytype__") == "uuid.UUID":
+        return uuid.UUID(value["value"])
+    return value

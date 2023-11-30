@@ -1,6 +1,7 @@
 import random
 import typing
 from unittest import mock
+import uuid
 
 import anys
 import pytest
@@ -612,7 +613,7 @@ async def test_event_queue_freeze_create_consistency(
                 "queue_name": "hotfix",
                 "reason": "Incident in production",
                 "cascading": True,
-                "created_by": {"id": 123456, "type": "user", "name": "krilin"},
+                "created_by": {"id": uuid.uuid4(), "type": "user", "name": "krilin"},
             },
         ),
         pull_request=None,
@@ -624,7 +625,11 @@ async def test_event_queue_freeze_create_consistency(
     assert event.queue_name == "hotfix"
     assert event.reason == "Incident in production"
     assert event.cascading is True
-    assert event.created_by == {"id": 123456, "type": "user", "name": "krilin"}
+    assert event.created_by == {
+        "id": anys.AnyInstance(uuid.UUID),
+        "type": "user",
+        "name": "krilin",
+    }
 
 
 async def test_event_queue_freeze_update_consistency(

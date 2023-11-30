@@ -1,6 +1,7 @@
 from collections import abc
 import datetime
 import typing
+import uuid
 
 import daiquiri
 import fastapi
@@ -120,7 +121,7 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
             data = settings.APPLICATION_APIKEYS.get(api_access_key)
             if data and data["api_secret_key"] == api_secret_key:
                 app = application_keys.ApplicationKey(
-                    id=0,
+                    id=uuid.uuid4(),
                     name="on-premise-app-from-env",
                     api_access_key=api_access_key,
                     api_secret_key=api_secret_key,

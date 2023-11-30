@@ -26,6 +26,10 @@ from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 
 
+if typing.TYPE_CHECKING:
+    import uuid
+
+
 RATE_LIMIT_THRESHOLD = 20
 LOGGING_REQUESTS_THRESHOLD = 40
 LOGGING_REQUESTS_THRESHOLD_ABSOLUTE = 400
@@ -76,7 +80,7 @@ class InstallationInaccessible(Exception):
 
 class Actor(typing_extensions.TypedDict):
     type: typing.Literal["user", "application"]
-    id: int
+    id: int | uuid.UUID
     name: str
 
 

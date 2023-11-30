@@ -22,7 +22,7 @@ class ApplicationAccountScope(typing_extensions.TypedDict):
 
 @pydantic.dataclasses.dataclass
 class ApplicationResponse:
-    id: int
+    id: pydantic.UUID4
     name: str
     account_scope: ApplicationAccountScope
 
@@ -42,7 +42,7 @@ router = fastapi.APIRouter(tags=["applications"])
             "content": {
                 "application/json": {
                     "example": {
-                        "id": 123456,
+                        "id": "e155518c-ca1b-443c-9be9-fe90fdab7345",
                         "name": "an application name",
                         "account_scope": {
                             "id": 123456,

@@ -2,6 +2,7 @@ import httpx
 import pytest
 
 from mergify_engine import settings
+from mergify_engine.tests import utils
 from mergify_engine.tests.functional import conftest as func_conftest
 
 
@@ -16,7 +17,7 @@ async def test_api_application(
     )
     assert r.status_code == 200, r.text
     assert r.json() == {
-        "id": 0,
+        "id": utils.ANY_UUID4,
         "name": "on-premise-app-from-env",
         "account_scope": {
             "id": settings.TESTING_ORGANIZATION_ID,

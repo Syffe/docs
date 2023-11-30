@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime  # noqa: TCH003
 import typing
+import uuid  # noqa: TCH003
 
 from alembic_utils import pg_function
 from alembic_utils import pg_trigger
@@ -30,14 +31,6 @@ class ApplicationKeyLimitReached(database.CustomPostgresException):
 class ApplicationKey(models.Base):
     __tablename__ = "application"
     __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ("id", "name")
-
-    id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer,
-        primary_key=True,
-        nullable=False,
-        autoincrement=True,
-        anonymizer_config=None,
-    )
 
     name: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.String(255),
@@ -91,6 +84,13 @@ class ApplicationKey(models.Base):
         server_default=sqlalchemy.func.now(),
         nullable=False,
         anonymizer_config="anon.dnoise(created_at, ''2 days'')",
+    )
+
+    id: orm.Mapped[uuid.UUID] = orm.mapped_column(
+        sqlalchemy.Uuid,
+        primary_key=True,
+        server_default=sqlalchemy.text("gen_random_uuid()"),
+        anonymizer_config=None,
     )
 
     @staticmethod

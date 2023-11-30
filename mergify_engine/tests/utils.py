@@ -7,6 +7,7 @@ import threading
 import typing
 from unittest import mock
 
+import anys
 import click.testing
 import sqlalchemy
 import sqlalchemy.ext.asyncio
@@ -28,6 +29,10 @@ if typing.TYPE_CHECKING:
 
     from mergify_engine.config import types
     from mergify_engine.tests import conftest
+
+ANY_UUID4 = anys.AnyMatch(
+    r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+)
 
 
 async def load_mergify_config(content: str) -> mergify_conf.MergifyConfig:
