@@ -6,6 +6,7 @@ from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.xdist_group(group="delete_branch_on_merge")
 @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 @pytest.mark.delete_branch_on_merge(False)
 class TestDeleteHeadBranchAction(base.FunctionalTestBase):

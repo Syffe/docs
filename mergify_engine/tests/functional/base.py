@@ -829,6 +829,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 else:
                     await self._set_delete_branch_on_merge(*marker.args)
 
+                break
+
     async def _set_delete_branch_on_merge(self, value: bool) -> None:
         r = await self.repository_ctxt.installation.client.patch(
             self.repository_ctxt.base_url,

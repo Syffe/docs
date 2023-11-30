@@ -57,7 +57,7 @@ PYTEST_TIMEOUT = "3600"
 [tool.poe.tasks.record-parallel]
 deps = ["setup"]
 help = "Record test suite fixtures in parallel"
-cmd = "./tools/run-tests.sh pytest -vv --timeout_method thread -n auto mergify_engine/tests/functional"
+cmd = "./tools/run-tests.sh pytest -vv --timeout_method thread -n auto --dist=loadgroup mergify_engine/tests/functional"
 [tool.poe.tasks.record-parallel.env]
 MERGIFYENGINE_TEST_SETTINGS = "test.env"
 MERGIFYENGINE_TESTING_RECORD = "1"

@@ -5,6 +5,7 @@ from mergify_engine import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.xdist_group(group="delete_branch_on_merge")
 @pytest.mark.subscription(
     subscription.Features.WORKFLOW_AUTOMATION,
     subscription.Features.MERGE_QUEUE,
