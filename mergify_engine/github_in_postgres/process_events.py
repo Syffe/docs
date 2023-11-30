@@ -3,6 +3,7 @@ import msgpack
 import pydantic_core
 
 from mergify_engine import database
+from mergify_engine import exceptions
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.models import github as gh_models
@@ -50,7 +51,12 @@ async def store_redis_events_in_pg(redis_links: redis_utils.RedisLinks) -> None:
             continue
 
         async with database.create_session() as session:
-            await model.insert_or_update(session, typed_event_data)
-            await session.commit()
+            try:
+                await model.insert_or_update(session, typed_event_data)
+            except exceptions.MergifyNotInstalled:
+                # We don't care Mergify has been uninstalled just drop the event
+                pass
+            else:
+                await session.commit()
 
         await redis_links.stream.xdel("github_in_postgres", event_id)
