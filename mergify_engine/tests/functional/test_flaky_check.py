@@ -116,7 +116,7 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
                 .values(
                     embedded_log="Awesome log",
                     log_embedding=np.array(list(map(np.float32, [1] * 1536))),
-                    log_status=gh_models.WorkflowJobLogStatus.EMBEDDED,
+                    log_embedding_status=gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 )
                 .where(
                     gh_models.WorkflowJob.conclusion

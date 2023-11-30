@@ -66,17 +66,6 @@ Logs:
     response_format="json_object",
 )
 
-# NOTE(Kontrolix): This date is the date we merged https://github.com/Mergifyio/engine/pull/8919
-LOG_METADATA_MERGED_TIME = datetime.datetime(
-    2023,
-    11,
-    22,
-    14,
-    15,
-    00,
-    tzinfo=datetime.UTC,
-)
-
 
 @dataclasses.dataclass
 class UnexpectedLogEmbedderError(Exception):
@@ -94,31 +83,34 @@ class ExtractedDataObject(typing.TypedDict):
     stack_trace: str | None
 
 
-async def embed_log(
-    openai_client: openai_api.OpenAIClient,
-    gcs_client: google_cloud_storage.GoogleCloudStorageClient | None,
+async def get_log_lines(
+    gcs_client: google_cloud_storage.GoogleCloudStorageClient,
     job: gh_models.WorkflowJob,
-) -> None:
-    try:
-        if job.failed_step_number is None:
-            log_lines = await download_failure_annotations(job)
-        else:
-            log_lines = await download_failed_step_log(job)
-    except http.HTTPStatusError as e:
-        if e.response.status_code in (410, 404):
-            job.log_status = gh_models.WorkflowJobLogStatus.GONE
-            return
-        raise
+) -> list[str]:
+    log_lines = None
 
-    tokens, truncated_log = await get_tokenized_cleaned_log(log_lines)
+    log = await gcs_client.download(
+        settings.LOG_EMBEDDER_GCS_BUCKET,
+        f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
+    )
+    if log is not None:
+        log_lines = (
+            codecs.decode(log.download_as_bytes(), encoding="zlib")
+            .decode()
+            .splitlines()
+        )
 
-    embedding = await openai_client.get_embedding(tokens)
+    if log_lines is None:
+        try:
+            if job.failed_step_number is None:
+                log_lines = await download_failure_annotations(job)
+            else:
+                log_lines = await download_failed_step_log(job)
+        except http.HTTPStatusError as e:
+            if e.response.status_code in (410, 404):
+                job.log_status = gh_models.WorkflowJobLogStatus.GONE
+            raise
 
-    job.log_embedding = embedding
-    job.embedded_log = truncated_log
-    job.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
-
-    if gcs_client is not None:
         await gcs_client.upload(
             settings.LOG_EMBEDDER_GCS_BUCKET,
             f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
@@ -129,6 +121,30 @@ async def embed_log(
             f"{job.repository.owner.id}/{job.repository.id}/{job.id}/jobs.json",
             json.dumps(job.as_github_dict()).encode("utf-8"),
         )
+
+        job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
+
+    if log_lines == []:
+        raise UnexpectedLogEmbedderError(
+            "log-embedder: log file is empty",
+            log_extras=job.as_log_extras(),
+        )
+
+    return log_lines
+
+
+async def embed_log(
+    openai_client: openai_api.OpenAIClient,
+    job: gh_models.WorkflowJob,
+    log_lines: list[str],
+) -> None:
+    tokens, truncated_log = await get_tokenized_cleaned_log(log_lines)
+
+    embedding = await openai_client.get_embedding(tokens)
+
+    job.log_embedding = embedding
+    job.embedded_log = truncated_log
+    job.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
 
 def get_lines_from_zip(
@@ -259,13 +275,13 @@ async def extract_data_from_log(
     openai_client: openai_api.OpenAIClient,
     session: sqlalchemy.ext.asyncio.AsyncSession,
     job: gh_models.WorkflowJob,
+    log_lines: list[str],
 ) -> None:
-    if job.embedded_log is None:
-        raise RuntimeError("extract_data_from_log called with job.embedded_log=None")
+    cleaned_log = get_cleaned_log(log_lines)
 
     query = openai_api.ChatCompletionQuery(
         role=EXTRACT_DATA_QUERY_TEMPLATE.role,
-        content=f"{EXTRACT_DATA_QUERY_TEMPLATE.content}{job.embedded_log}",
+        content=f"{EXTRACT_DATA_QUERY_TEMPLATE.content}{cleaned_log}",
         answer_size=EXTRACT_DATA_QUERY_TEMPLATE.answer_size,
         seed=EXTRACT_DATA_QUERY_TEMPLATE.seed,
         temperature=EXTRACT_DATA_QUERY_TEMPLATE.temperature,
@@ -284,14 +300,63 @@ async def extract_data_from_log(
     extracted_data: list[ExtractedDataObject] = json.loads(chat_response)["failures"]
 
     for data in extracted_data:
-        log_metadata = gh_models.WorkflowJobLogMetadata(workflow_job_id=job.id, **data)
+        log_metadata = gh_models.WorkflowJobLogMetadata(
+            workflow_job_id=job.id,
+            **data,
+        )
         session.add(log_metadata)
         job.log_metadata.append(log_metadata)
+
+    job.log_metadata_extracting_status = (
+        gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED
+    )
+
+
+def get_cleaned_log(log_lines: list[str]) -> str:
+    cleaner = log_cleaner.LogCleaner()
+
+    max_chat_completion_tokens = (
+        openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
+        - EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
+    )
+
+    cleaned_lines: list[str] = []
+
+    total_tokens = 0
+    for line in reversed(log_lines):
+        if not line:
+            continue
+
+        cleaned_line = cleaner.gpt_clean_line(line)
+
+        if not cleaned_line:
+            continue
+
+        tokenized_cleaned_line = openai_api.TIKTOKEN_ENCODING.encode(cleaned_line)
+
+        total_tokens += len(tokenized_cleaned_line)
+
+        if total_tokens <= max_chat_completion_tokens:
+            cleaned_lines.insert(0, cleaned_line)
+
+        # NOTE(Kontrolix): Add 1 for the `\n` that will links lines
+        total_tokens += 1
+
+        if total_tokens >= max_chat_completion_tokens:
+            break
+
+    return "\n".join(cleaned_lines)
 
 
 @contextlib.contextmanager
 def log_exception_and_maybe_retry(
     job: gh_models.WorkflowJob,
+    status_field: str,
+    retry_after_fields: str,
+    attempts_field: str,
+    error_enum: type[gh_models.WorkflowJobLogEmbeddingStatus]
+    | type[gh_models.WorkflowJobLogMetadataExtractingStatus]
+    | type[gh_models.WorkflowJobLogStatus],
 ) -> abc.Generator[None, None, None]:
     try:
         yield
@@ -301,7 +366,8 @@ def log_exception_and_maybe_retry(
             log_extras.update(exc.log_extras)
 
         if exceptions.should_be_ignored(exc):
-            job.log_status = gh_models.WorkflowJobLogStatus.ERROR
+            setattr(job, status_field, error_enum.ERROR)
+
             LOG.warning(
                 "log-embedder: failed with a fatal error",
                 exc_info=True,
@@ -323,11 +389,12 @@ def log_exception_and_maybe_retry(
             # TODO(sileht): Maybe replace me by a exponential backoff + 1 hours limit
             retry_in = datetime.timedelta(minutes=10)
 
-        job.log_embedding_retry_after = date.utcnow() + retry_in
-        job.log_embedding_attempts += 1
+        setattr(job, retry_after_fields, date.utcnow() + retry_in)
+        setattr(job, attempts_field, getattr(job, attempts_field) + 1)
 
-        if job.log_embedding_attempts >= LOG_EMBEDDER_MAX_ATTEMPTS:
-            job.log_status = gh_models.WorkflowJobLogStatus.ERROR
+        if getattr(job, attempts_field) >= LOG_EMBEDDER_MAX_ATTEMPTS:
+            setattr(job, status_field, error_enum.ERROR)
+
             LOG.error(
                 "log-embedder: too many unexpected failures, giving up",
                 exc_info=True,
@@ -346,11 +413,99 @@ def log_exception_and_maybe_retry(
         )
 
 
-@tracer.wrap("embed-logs")
-async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
-    if not settings.LOG_EMBEDDER_ENABLED_ORGS:
-        return False
+async def embed_logs_with_log_embedding(
+    redis_links: redis_utils.RedisLinks,
+    gcs_client: google_cloud_storage.GoogleCloudStorageClient,
+) -> bool:
+    wjob = orm.aliased(gh_models.WorkflowJob, name="wjob")
 
+    async with database.create_session() as session:
+        stmt = (
+            sqlalchemy.select(wjob)
+            .options(orm.joinedload(wjob.ci_issue))
+            .join(gh_models.GitHubRepository)
+            .join(
+                gh_models.GitHubAccount,
+                sqlalchemy.and_(
+                    gh_models.GitHubRepository.owner_id == gh_models.GitHubAccount.id,
+                    gh_models.GitHubAccount.login.in_(
+                        settings.LOG_EMBEDDER_ENABLED_ORGS,
+                    ),
+                ),
+            )
+            .where(
+                wjob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
+                sqlalchemy.or_(
+                    wjob.log_embedding_retry_after.is_(None),
+                    wjob.log_embedding_retry_after <= date.utcnow(),
+                ),
+                wjob.failed_step_number.is_not(None),
+                wjob.log_embedding_status
+                != gh_models.WorkflowJobLogEmbeddingStatus.ERROR,
+                wjob.log_status.notin_(
+                    (
+                        gh_models.WorkflowJobLogStatus.GONE,
+                        gh_models.WorkflowJobLogStatus.ERROR,
+                    ),
+                ),
+                sqlalchemy.or_(
+                    wjob.log_embedding.is_(None),
+                    wjob.ci_issue_id.is_(None),
+                ),
+            )
+            .order_by(wjob.completed_at.asc())
+            .limit(LOG_EMBEDDER_JOBS_BATCH_SIZE)
+        )
+
+        jobs = (await session.scalars(stmt)).all()
+
+        LOG.info("log-embedder: %d jobs to embed", len(jobs), request=str(stmt))
+
+        async with openai_api.OpenAIClient() as openai_client:
+            refresh_ready_job_ids = []
+            for job in jobs:
+                log_lines = None
+                with log_exception_and_maybe_retry(
+                    job,
+                    "log_status",
+                    "log_downloading_retry_after",
+                    "log_downloading_attempts",
+                    gh_models.WorkflowJobLogStatus,
+                ):
+                    log_lines = await get_log_lines(gcs_client, job)
+
+                if log_lines:
+                    with log_exception_and_maybe_retry(
+                        job,
+                        "log_embedding_status",
+                        "log_embedding_retry_after",
+                        "log_embedding_attempts",
+                        gh_models.WorkflowJobLogEmbeddingStatus,
+                    ):
+                        if job.log_embedding is None:
+                            await embed_log(openai_client, job, log_lines)
+
+                        if (
+                            job.log_embedding_status
+                            == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
+                            and job.ci_issue_id is None
+                        ):
+                            await CiIssue.link_job_to_ci_issue(session, job)
+                            refresh_ready_job_ids.append(job.id)
+
+                await session.commit()
+
+        await session.commit()
+
+        await flaky_check.send_pull_refresh_for_jobs(redis_links, refresh_ready_job_ids)
+
+        return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
+
+
+async def embed_logs_with_extracted_metdata(
+    redis_links: redis_utils.RedisLinks,
+    gcs_client: google_cloud_storage.GoogleCloudStorageClient,
+) -> bool:
     wjob = orm.aliased(gh_models.WorkflowJob, name="wjob")
 
     async with database.create_session() as session:
@@ -370,10 +525,12 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
             .where(
                 wjob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
                 sqlalchemy.or_(
-                    wjob.log_embedding_retry_after.is_(None),
-                    wjob.log_embedding_retry_after <= date.utcnow(),
+                    wjob.log_metadata_extracting_retry_after.is_(None),
+                    wjob.log_metadata_extracting_retry_after <= date.utcnow(),
                 ),
                 wjob.failed_step_number.is_not(None),
+                wjob.log_metadata_extracting_status
+                != gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
                 wjob.log_status.notin_(
                     (
                         gh_models.WorkflowJobLogStatus.GONE,
@@ -381,14 +538,8 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
                     ),
                 ),
                 sqlalchemy.or_(
-                    wjob.log_embedding.is_(None),
-                    wjob.ci_issue_id.is_(None),
-                    wjob.ci_issue.has(CiIssue.name.is_(None)),
                     sqlalchemy.and_(
                         ~wjob.log_metadata.any(),
-                        # NOTE(Kontrolix): Adding a filter on completed_at to avoid
-                        # trying to extract metadata on all previous embedded jobs
-                        wjob.completed_at > LOG_METADATA_MERGED_TIME,
                     ),
                 ),
             )
@@ -398,41 +549,68 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
 
         jobs = (await session.scalars(stmt)).unique().all()
 
-        LOG.info("log-embedder: %d jobs to embed", len(jobs), request=str(stmt))
-
-        gcs_client = (
-            None
-            if settings.LOG_EMBEDDER_GCS_CREDENTIALS is None
-            else google_cloud_storage.GoogleCloudStorageClient(
-                settings.LOG_EMBEDDER_GCS_CREDENTIALS,
-            )
+        LOG.info(
+            "log-embedder: %d jobs to extract metadata",
+            len(jobs),
+            request=str(stmt),
         )
+
         async with openai_api.OpenAIClient() as openai_client:
-            refresh_ready_job_ids = []
             for job in jobs:
-                with log_exception_and_maybe_retry(job):
-                    if job.log_embedding is None:
-                        await embed_log(openai_client, gcs_client, job)
+                log_lines = None
+                with log_exception_and_maybe_retry(
+                    job,
+                    "log_status",
+                    "log_downloading_retry_after",
+                    "log_downloading_attempts",
+                    gh_models.WorkflowJobLogStatus,
+                ):
+                    log_lines = await get_log_lines(gcs_client, job)
 
-                    if job.embedded_log is not None:
-                        await extract_data_from_log(openai_client, session, job)
-                        if job.ci_issue is not None and job.ci_issue.name is None:
-                            job.ci_issue.name = job.log_metadata[0].problem_type
-
-                    if (
-                        job.log_status == gh_models.WorkflowJobLogStatus.EMBEDDED
-                        and job.ci_issue_id is None
+                if log_lines:
+                    with log_exception_and_maybe_retry(
+                        job,
+                        "log_metadata_extracting_status",
+                        "log_metadata_extracting_retry_after",
+                        "log_metadata_extracting_attempts",
+                        gh_models.WorkflowJobLogMetadataExtractingStatus,
                     ):
-                        await CiIssue.link_job_to_ci_issue(session, job)
-                        if job.ci_issue is not None and job.ci_issue.name is None:
-                            job.ci_issue.name = job.log_metadata[0].problem_type
-
-                        refresh_ready_job_ids.append(job.id)
+                        await extract_data_from_log(
+                            openai_client,
+                            session,
+                            job,
+                            log_lines,
+                        )
 
                 await session.commit()
 
         await session.commit()
 
-        await flaky_check.send_pull_refresh_for_jobs(redis_links, refresh_ready_job_ids)
+        # FIXME(Kontrolix): For now, flacky_check is link to ci_issue when it will be link
+        # to ci_issue_gpt adapte this method. I keep it here to not forget.
+        # await flaky_check.send_pull_refresh_for_jobs(redis_links, refresh_ready_job_ids)
 
         return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
+
+
+@tracer.wrap("embed-logs")
+async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
+    if not settings.LOG_EMBEDDER_ENABLED_ORGS:
+        return False
+
+    gcs_client = google_cloud_storage.GoogleCloudStorageClient(
+        settings.LOG_EMBEDDER_GCS_CREDENTIALS,
+    )
+
+    return any(
+        (
+            await embed_logs_with_extracted_metdata(
+                redis_links,
+                gcs_client,
+            ),
+            await embed_logs_with_log_embedding(
+                redis_links,
+                gcs_client,
+            ),
+        ),
+    )
