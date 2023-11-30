@@ -1,4 +1,5 @@
 import datetime
+import math
 import statistics
 import typing
 
@@ -62,8 +63,8 @@ async def get_queue_checks_end_events(
     repository_ctxt: context.Repository,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
-    start_at: TimestampNotInFuture | None = None,
-    end_at: TimestampNotInFuture | None = None,
+    start_at: TimestampNotInFuture,
+    end_at: TimestampNotInFuture,
     branch: str | None = None,
 ) -> sqlalchemy.ScalarResult[evt_models.EventActionQueueChecksEnd]:
     model = evt_models.EventActionQueueChecksEnd
@@ -99,6 +100,16 @@ async def get_queue_checks_duration(
     end_at: TimestampNotInFuture | None = None,
     branch: str | None = None,
 ) -> web_stat_types.ChecksDurationResponse:
+    if end_at is None:
+        end_at = TimestampNotInFuture(
+            math.ceil(date.utcnow().timestamp()),
+        )
+
+    if start_at is None:
+        start_at = TimestampNotInFuture(
+            end_at - datetime.timedelta(days=1).total_seconds(),
+        )
+
     events = await get_queue_checks_end_events(
         session=session,
         repository_ctxt=repository_ctxt,
@@ -143,11 +154,21 @@ async def get_queue_check_durations_per_partition_queue_branch(
     partition_names: tuple[partr_config.PartitionRuleName, ...],
     queue_names: tuple[qr_config.QueueName, ...],
 ) -> QueueChecksDurationsPerPartitionQueueBranchT:
+    # Only compute it on the last 7 days
+    end_at = TimestampNotInFuture(
+        math.ceil(date.utcnow().timestamp()),
+    )
+    start_at = TimestampNotInFuture(
+        end_at - datetime.timedelta(days=7).total_seconds(),
+    )
+
     events = await get_queue_checks_end_events(
         session,
         repository_ctxt,
         queue_names,
         partition_names,
+        start_at,
+        end_at,
     )
 
     stats: QueueChecksDurationsPerPartitionQueueBranchT = {}
