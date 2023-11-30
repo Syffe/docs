@@ -10,6 +10,7 @@ from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine.models import github as gh_models
 from mergify_engine.models.ci_issue import CiIssue
+from mergify_engine.models.ci_issue import CiIssueStatus
 from mergify_engine.models.views.workflows import FlakyStatus
 from mergify_engine.models.views.workflows import WorkflowJobEnhanced
 from mergify_engine.web import api
@@ -34,6 +35,7 @@ class CiIssueResponse:
     short_id: str
     name: str
     job_name: str
+    status: CiIssueStatus
     events: list[CiIssueEvent] = dataclasses.field(
         metadata={"description": "Event link to this CiIssue"},
     )
@@ -46,6 +48,10 @@ class CiIssuesResponse:
     )
 
 
+class CiIssueBody(pydantic.BaseModel):
+    status: CiIssueStatus
+
+
 async def query_issues(
     session: database.Session,
     repository_id: github_types.GitHubRepositoryIdType,
@@ -56,6 +62,7 @@ async def query_issues(
             CiIssue.id,
             CiIssue.short_id,
             CiIssue.name,
+            CiIssue.status,
             WorkflowJobEnhanced.id.label("job_id"),
             WorkflowJobEnhanced.name_without_matrix.label("job_name"),
             WorkflowJobEnhanced.workflow_run_id,
@@ -93,6 +100,7 @@ async def query_issues(
                 short_id=result.short_id,
                 name=result.name or f"Failure of {result.job_name}",
                 job_name=result.job_name,
+                status=result.status,
                 events=[],
             )
             reponses[result.id] = reponse
@@ -132,6 +140,33 @@ async def get_ci_issues(
     )
 
 
+@router.patch(
+    "/repos/{owner}/{repository}/ci_issues",
+    summary="Partially update CI issues",
+    description="Update some properties of several CI issues",
+    include_in_schema=False,
+    responses={
+        **api.default_responses,  # type: ignore
+    },
+)
+async def patch_ci_issues(
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    ci_issue_ids: typing.Annotated[
+        list[int],
+        fastapi.Query(description="IDs of CI Issues", default_factory=list, alias="id"),
+    ],
+    json: CiIssueBody,
+) -> None:
+    stmt = (
+        sqlalchemy.update(CiIssue)
+        .values(status=json.status)
+        .where(CiIssue.id.in_(ci_issue_ids))
+    )
+    await session.execute(stmt)
+    await session.commit()
+
+
 @router.get(
     "/repos/{owner}/{repository}/ci_issues/{ci_issue_id}",
     summary="Get a CI issue",
@@ -155,6 +190,39 @@ async def get_ci_issue(
     if len(reponses) == 0:
         raise fastapi.HTTPException(404)
     return reponses[ci_issue_id]
+
+
+@router.patch(
+    "/repos/{owner}/{repository}/ci_issues/{ci_issue_id}",
+    summary="Partially update a CI issue",
+    description="Update some properties of a CI issue",
+    include_in_schema=False,
+    responses={
+        **api.default_responses,  # type: ignore
+        404: {"description": "CI issue not found"},
+    },
+)
+async def patch_ci_issue(
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    ci_issue_id: typing.Annotated[
+        int,
+        fastapi.Path(description="The ID of the CI Issue"),
+    ],
+    json: CiIssueBody,
+) -> None:
+    stmt = (
+        sqlalchemy.update(CiIssue)
+        .values(status=json.status)
+        .where(CiIssue.id == ci_issue_id)
+        .returning(CiIssue.id)
+    )
+    result = await session.execute(stmt)
+    await session.commit()
+
+    updated_ci_issue_id = result.scalar_one_or_none()
+    if updated_ci_issue_id is None:
+        raise fastapi.HTTPException(404)
 
 
 @pydantic.dataclasses.dataclass

@@ -328,18 +328,13 @@ class TestGhaFailedJobsLinkToCissueDataset(DbPopulator):
     @classmethod
     async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
         await cls.load(session, {"TestApiGhaFailedJobsDataset"})
-        for ref in [
-            "OneAccount/OneRepo/flaky_failed_job_attempt_2",
-            "OneAccount/OneRepo/failed_job_with_flaky_nghb",
-            "OneAccount/OneRepo/failed_job_with_no_flaky_nghb",
-            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb",
-        ]:
-            job = (
-                await session.execute(
-                    sqlalchemy.select(gh_models.WorkflowJob).where(
-                        gh_models.WorkflowJob.id == DbPopulator.internal_ref[ref],
-                    ),
-                )
-            ).scalar_one()
-
+        jobs = await session.scalars(
+            sqlalchemy.select(gh_models.WorkflowJob).where(
+                gh_models.WorkflowJob.conclusion
+                == gh_models.WorkflowJobConclusion.FAILURE,
+                gh_models.WorkflowJob.log_embedding.isnot(None),
+                gh_models.WorkflowJob.ci_issue_id.is_(None),
+            ),
+        )
+        for job in jobs:
             await CiIssue.link_job_to_ci_issue(session, job)

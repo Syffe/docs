@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import enum
 import typing
 
 import sqlalchemy
@@ -15,6 +16,11 @@ from mergify_engine.models.github import repository as gh_repository
 
 
 COSINE_SIMILARITY_THRESHOLD = 0.97
+
+
+class CiIssueStatus(enum.Enum):
+    UNRESOLVED = "unresolved"
+    RESOLVED = "resolved"
 
 
 class CiIssueCounter(models.Base):
@@ -89,6 +95,12 @@ class CiIssue(models.Base):
         "WorkflowJob",
         back_populates="ci_issue",
         lazy="raise_on_sql",
+    )
+
+    status: orm.Mapped[CiIssueStatus] = orm.mapped_column(
+        sqlalchemy.Enum(CiIssueStatus),
+        server_default=CiIssueStatus.UNRESOLVED.name,
+        anonymizer_config="anon.random_in_enum(status)",
     )
 
     @classmethod
