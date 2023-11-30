@@ -156,6 +156,17 @@ class Event(models.Base):
             )
         ).all()
 
+    @classmethod
+    async def delete_outdated(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        retention_time: datetime.timedelta,
+    ) -> None:
+        stmt = sqlalchemy.delete(cls).where(
+            (date.utcnow() - cls.received_at) > retention_time,
+        )
+        await session.execute(stmt)
+
 
 class EventActionAssign(Event):
     __tablename__ = "event_action_assign"

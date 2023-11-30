@@ -152,3 +152,12 @@ async def get(
         cursor_prev=cursor_prev,
         cursor_next=cursor_next,
     )
+
+
+async def delete_outdated_events() -> None:
+    async with database.create_session() as session:
+        await evt_models.Event.delete_outdated(
+            session,
+            retention_time=database.CLIENT_DATA_RETENTION_TIME,
+        )
+        await session.commit()

@@ -2867,6 +2867,7 @@ async def test_task_stop_ordering(
         "event-forwarder",
         "delayed-refresh",
         "github-in-postgres",
+        "postgres-cleaner",
     }
 
 
@@ -3044,3 +3045,21 @@ def test_extract_app_from_status(
     expected_app_name: str,
 ) -> None:
     assert stream._extract_app_from_status_event(status_event) == expected_app_name
+
+
+async def test_postgres_cleaner_service_sleep_before(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        manager.ServiceManager,
+        "_mandatory_services",
+        {},
+    )
+
+    worker = manager.ServiceManager(enabled_services={"postgres-cleaner"})
+
+    await worker.start()
+    service = worker._services[0]
+    assert service.sleep_before_task  # type: ignore[attr-defined]
+    assert service.main_task.sleep_before  # type: ignore[attr-defined]
+    await worker._shutdown()

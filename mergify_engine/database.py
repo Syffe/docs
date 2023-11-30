@@ -1,5 +1,6 @@
 from collections import abc
 import dataclasses
+import datetime
 import typing
 
 import ddtrace
@@ -11,6 +12,9 @@ import sqlalchemy.orm
 import tenacity
 
 from mergify_engine import settings
+
+
+CLIENT_DATA_RETENTION_TIME: datetime.timedelta = datetime.timedelta(days=90)
 
 
 AsyncSessionMaker = typing.NewType(

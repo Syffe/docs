@@ -25,6 +25,7 @@ class TaskRetriedForever:
     func: TaskRetriedForeverFuncT
     sleep_time: float
     must_shutdown_first: bool = False
+    sleep_before: bool = False
     shutdown_requested: asyncio.Event = dataclasses.field(
         init=False,
         default_factory=asyncio.Event,
@@ -43,6 +44,11 @@ class TaskRetriedForever:
     def _exited(self, fut: asyncio.Future[None]) -> None:
         LOG.info("%s task exited", self.name)
 
+    async def _sleep(self) -> None:
+        with contextlib.suppress(asyncio.TimeoutError):
+            async with asyncio.timeout(self.sleep_time):
+                await self.shutdown_requested.wait()
+
     async def loop_and_sleep_forever(
         self,
         name: str,
@@ -51,6 +57,9 @@ class TaskRetriedForever:
     ) -> None:
         logs.WORKER_TASK.set(name)
         with sentry_sdk.Hub(sentry_sdk.Hub.current):
+            if self.sleep_before:
+                await self._sleep()
+
             while not self.shutdown_requested.is_set():
                 try:
                     await func()
@@ -82,9 +91,7 @@ class TaskRetriedForever:
 
                     continue
 
-                with contextlib.suppress(asyncio.TimeoutError):
-                    async with asyncio.timeout(self.sleep_time):
-                        await self.shutdown_requested.wait()
+                await self._sleep()
 
 
 @dataclasses.dataclass
@@ -96,6 +103,8 @@ class SimpleService:
 
     main_task: TaskRetriedForever = dataclasses.field(init=False)
     main_task_must_shutdown_first: typing.ClassVar[bool] = False
+
+    sleep_before_task: typing.ClassVar[bool] = False
 
     def __init_subclass__(cls, **kwargs: typing.Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -113,6 +122,7 @@ class SimpleService:
             func=traced_work,
             sleep_time=self.idle_time,
             must_shutdown_first=self.main_task_must_shutdown_first,
+            sleep_before=self.sleep_before_task,
         )
 
     @property

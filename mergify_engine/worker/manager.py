@@ -77,6 +77,7 @@ ServiceNameT = typing.Literal[
     "dedicated-workers-cache-syncer",
     "event-forwarder",
     "github-in-postgres",
+    "postgres-cleaner",
 ]
 ServiceNamesT = set[ServiceNameT]
 AVAILABLE_WORKER_SERVICES = set(ServiceNameT.__dict__["__args__"])
@@ -137,6 +138,9 @@ class ServiceManager:
 
     # GitHubInPostgresService
     github_in_postgres_idle_time: float = 5
+
+    # PostgresCleanerService
+    postgres_cleaner_idle_time: float = 6 * 60 * 60
 
     # LogEmbedderProcessingService
     log_embedder_idle_time: float = 60

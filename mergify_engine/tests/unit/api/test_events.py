@@ -7,6 +7,7 @@ import pytest
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
+from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import events as evt_utils
 from mergify_engine import github_types
@@ -16,11 +17,12 @@ from mergify_engine.models.github import repository as github_repository
 from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
 from mergify_engine.tests import conftest as tests_conftest
+from mergify_engine.tests.tardis import time_travel
 from mergify_engine.tests.unit.api import conftest as tests_api_conftest
 
 
 MAIN_TIMESTAMP = datetime.datetime.fromisoformat("2023-08-22T10:00:00+00:00")
-LATER_TIMESTAMP = datetime.datetime.fromisoformat("2022-08-22T12:00:00+00:00")
+LATER_TIMESTAMP = datetime.datetime.fromisoformat("2023-08-22T12:00:00+00:00")
 
 
 @pytest.fixture
@@ -456,3 +458,28 @@ async def test_api_cursor_invalid(
         headers={"Authorization": api_token.api_token},
     )
     assert response.status_code == 200
+
+
+@time_travel(LATER_TIMESTAMP)
+async def test_delete_outdated_events(
+    monkeypatch: pytest.MonkeyPatch,
+    web_client: tests_conftest.CustomTestClient,
+    api_token: tests_api_conftest.TokenUserRepo,
+    insert_data: None,
+) -> None:
+    monkeypatch.setattr(
+        database,
+        "CLIENT_DATA_RETENTION_TIME",
+        datetime.timedelta(hours=1),
+    )
+
+    await evt_utils.delete_outdated_events()
+
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/logs",
+        headers={"Authorization": api_token.api_token},
+    )
+    r = response.json()
+    assert r["total"] is None
+    assert r["size"] == 1
+    assert {e["type"] for e in r["events"]} == {"action.queue.enter"}
