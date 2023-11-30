@@ -162,7 +162,19 @@ class WorkflowJobLogStatus(enum.Enum):
     UNKNOWN = "unknown"
     GONE = "gone"
     ERROR = "error"
+    DOWNLOADED = "downloaded"
+
+
+class WorkflowJobLogEmbeddingStatus(enum.Enum):
+    UNKNOWN = "unknown"
+    ERROR = "error"
     EMBEDDED = "embedded"
+
+
+class WorkflowJobLogMetadataExtractingStatus(enum.Enum):
+    UNKNOWN = "unknown"
+    ERROR = "error"
+    EXTRACTED = "extracted"
 
 
 class WorkflowJobFailedStep(typing.TypedDict):
@@ -242,7 +254,7 @@ class WorkflowJobColumnMixin:
 
     log_status: orm.Mapped[WorkflowJobLogStatus] = orm.mapped_column(
         sqlalchemy.Enum(WorkflowJobLogStatus),
-        server_default="UNKNOWN",
+        server_default=WorkflowJobLogStatus.UNKNOWN.name,
         anonymizer_config=None,
     )
     log_embedding_attempts: orm.Mapped[int] = orm.mapped_column(
@@ -269,6 +281,40 @@ class WorkflowJobColumnMixin:
     @orm.declared_attr
     def ci_issue(self) -> orm.Mapped[CiIssue]:
         return orm.relationship(lazy="raise_on_sql")
+
+    log_downloading_attempts: orm.Mapped[int] = orm.mapped_column(
+        server_default="0",
+        anonymizer_config=None,
+    )
+    log_downloading_retry_after: orm.Mapped[
+        datetime.datetime | None
+    ] = orm.mapped_column(
+        nullable=True,
+        anonymizer_config=None,
+    )
+
+    log_embedding_status: orm.Mapped[WorkflowJobLogEmbeddingStatus] = orm.mapped_column(
+        sqlalchemy.Enum(WorkflowJobLogEmbeddingStatus),
+        server_default=WorkflowJobLogEmbeddingStatus.UNKNOWN.name,
+        anonymizer_config=None,
+    )
+    log_metadata_extracting_attempts: orm.Mapped[int] = orm.mapped_column(
+        server_default="0",
+        anonymizer_config=None,
+    )
+    log_metadata_extracting_retry_after: orm.Mapped[
+        datetime.datetime | None
+    ] = orm.mapped_column(
+        nullable=True,
+        anonymizer_config=None,
+    )
+    log_metadata_extracting_status: orm.Mapped[
+        WorkflowJobLogMetadataExtractingStatus
+    ] = orm.mapped_column(
+        sqlalchemy.Enum(WorkflowJobLogMetadataExtractingStatus),
+        server_default=WorkflowJobLogMetadataExtractingStatus.UNKNOWN.name,
+        anonymizer_config=None,
+    )
 
 
 class WorkflowJob(models.Base, WorkflowJobColumnMixin):
@@ -311,9 +357,9 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
         sqlalchemy.schema.CheckConstraint(
             """
             (
-                log_status = 'EMBEDDED' AND log_embedding IS NOT NULL AND embedded_log IS NOT NULL
+                log_embedding_status = 'EMBEDDED' AND log_embedding IS NOT NULL
             ) OR (
-                log_status != 'EMBEDDED' AND log_embedding IS NULL AND embedded_log IS NULL
+                log_embedding_status != 'EMBEDDED' AND log_embedding IS NULL
             )
             """,
             name="embedding_linked_columns",
@@ -326,6 +372,15 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
             )
             """,
             name="embedding_retries",
+        ),
+        sqlalchemy.schema.CheckConstraint(
+            """
+            log_metadata_extracting_attempts >= 0 AND (
+                ( log_metadata_extracting_attempts = 0 AND log_metadata_extracting_retry_after IS NULL )
+                OR ( log_metadata_extracting_attempts > 0 AND log_metadata_extracting_retry_after IS NOT NULL)
+            )
+            """,
+            name="metadata_extracting_retries",
         ),
     )
 
@@ -382,8 +437,12 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
                 "started_at": self.started_at,
                 "completed_at": self.completed_at,
                 "log_status": self.log_status,
+                "log_embedding_status": self.log_embedding_status,
                 "log_embedding_attempts": self.log_embedding_attempts,
                 "log_embedding_retry_after": self.log_embedding_retry_after,
+                "log_metadata_extracting_status": self.log_metadata_extracting_status,
+                "log_metadata_extracting_attempts": self.log_metadata_extracting_attempts,
+                "log_metadata_extracting_retry_after": self.log_metadata_extracting_retry_after,
             },
         }
 

@@ -102,8 +102,8 @@ async def test_link_job_to_ci_issue(
             sqlalchemy.select(sqlalchemy.func.count())
             .select_from(gh_models.WorkflowJob)
             .where(
-                gh_models.WorkflowJob.log_status
-                == gh_models.WorkflowJobLogStatus.EMBEDDED,
+                gh_models.WorkflowJob.log_embedding_status
+                == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 gh_models.WorkflowJob.ci_issue_id.is_(None),
             ),
         )
@@ -117,7 +117,8 @@ async def test_link_job_to_ci_issue(
 
     for embedded_job in await populated_db.scalars(
         sqlalchemy.select(gh_models.WorkflowJob).where(
-            gh_models.WorkflowJob.log_status == gh_models.WorkflowJobLogStatus.EMBEDDED,
+            gh_models.WorkflowJob.log_embedding_status
+            == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
         ),
     ):
         await CiIssue.link_job_to_ci_issue(populated_db, embedded_job)
@@ -127,8 +128,8 @@ async def test_link_job_to_ci_issue(
             sqlalchemy.select(sqlalchemy.func.count())
             .select_from(gh_models.WorkflowJob)
             .where(
-                gh_models.WorkflowJob.log_status
-                == gh_models.WorkflowJobLogStatus.EMBEDDED,
+                gh_models.WorkflowJob.log_embedding_status
+                == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 gh_models.WorkflowJob.ci_issue_id.is_(None),
             ),
         )

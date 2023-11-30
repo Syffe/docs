@@ -67,7 +67,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
 
         job1.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
         job1.embedded_log = "Some logs"
-        job1.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+        job1.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
         cls.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"] = job1.id
 
@@ -106,7 +106,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
 
         job2.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
         job2.embedded_log = "Some logs"
-        job2.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+        job2.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
         cls.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_2"] = job2.id
 
@@ -180,7 +180,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
 
         job3.log_embedding = np.array(list(map(np.float32, ([1] * 1535) + [-1])))
         job3.embedded_log = "Some similar logs"
-        job3.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+        job3.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
         cls.internal_ref["OneAccount/OneRepo/failed_job_with_flaky_nghb"] = job3.id
 
@@ -223,7 +223,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
 
         job4.log_embedding = np.array(list(map(np.float32, [-1] * 1536)))
         job4.embedded_log = "Some different logs"
-        job4.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+        job4.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
         cls.internal_ref["OneAccount/OneRepo/failed_job_with_no_flaky_nghb"] = job4.id
 
@@ -278,7 +278,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
 
         job5.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
         job5.embedded_log = "Some logs"
-        job5.log_status = gh_models.WorkflowJobLogStatus.EMBEDDED
+        job5.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
         cls.internal_ref[
             "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"
