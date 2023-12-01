@@ -508,7 +508,7 @@ async def embed_logs_with_log_embedding(
         return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
 
 
-async def embed_logs_with_extracted_metdata(
+async def embed_logs_with_extracted_metadata(
     redis_links: redis_utils.RedisLinks,
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
 ) -> bool:
@@ -612,7 +612,7 @@ async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
 
     return any(
         (
-            await embed_logs_with_extracted_metdata(
+            await embed_logs_with_extracted_metadata(
                 redis_links,
                 gcs_client,
             ),
