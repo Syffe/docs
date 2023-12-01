@@ -1,20 +1,17 @@
+import datetime
 import typing
 
 import annotated_types
-import daiquiri
 import fastapi
 import pydantic
 
 from mergify_engine import database
 from mergify_engine import eventlogs
-from mergify_engine import events
 from mergify_engine import github_types
 from mergify_engine import pagination
+from mergify_engine.models import enumerations
 from mergify_engine.web import api
 from mergify_engine.web.api import security
-
-
-LOG = daiquiri.getLogger(__name__)
 
 
 router = fastapi.APIRouter(
@@ -25,28 +22,21 @@ router = fastapi.APIRouter(
 )
 
 
-Event = typing.Annotated[
-    eventlogs.Event,
-    pydantic.Field(discriminator="type"),
-]
-
-
-class EventLogsResponse(pagination.PageResponse[Event]):
+class EventsResponse(pagination.PageResponse[eventlogs.Event]):
     items_key: typing.ClassVar[str] = "events"
-    events: list[Event] = pydantic.Field(
+    events: list[eventlogs.Event] = pydantic.Field(
         json_schema_extra={
             "metadata": {
-                "description": "The list of events of a pull request",
+                "description": "The list of events",
             },
         },
     )
 
 
 @router.get(
-    "/repos/{owner}/{repository}/pulls/{pull}/events",
-    summary="Get the events log of a pull request",
-    description="Get the events log of the requested pull request",
-    deprecated=True,
+    "/repos/{owner}/{repository}/logs",
+    summary="Get the events log",
+    description="Get the events logs of the requested repository",
     responses={
         **api.default_responses,  # type: ignore
         200: {
@@ -65,50 +55,50 @@ class EventLogsResponse(pagination.PageResponse[Event]):
         },
     },
 )
-async def get_pull_request_eventlogs(
+async def get_repository_events(
     session: database.Session,
-    repository_ctxt: security.Repository,
-    pull: typing.Annotated[
-        github_types.GitHubPullRequestNumber,
-        fastapi.Path(description="Pull request number"),
+    repository: security.Repository,
+    page: pagination.CurrentPage,
+    pull_request: typing.Annotated[
+        github_types.GitHubPullRequestNumber | None,
+        fastapi.Query(description="Get the events for the specified pull request"),
         annotated_types.Ge(1),
         annotated_types.Lt(security.PG_INT_MAX),
-    ],
-    current_page: pagination.CurrentPage,
-) -> EventLogsResponse:
-    page = await events.get(session, current_page, repository_ctxt, pull)
+    ] = None,
+    base_ref: typing.Annotated[
+        github_types.GitHubRefType | None,
+        fastapi.Query(description="Get events for PRs to the given base ref"),
+    ] = None,
+    event_type: typing.Annotated[
+        list[enumerations.EventType] | None,
+        fastapi.Query(description="The specific types of events to select"),
+    ] = None,
+    received_from: typing.Annotated[
+        datetime.datetime | None,
+        fastapi.Query(description="Get the events received from this date"),
+    ] = None,
+    received_to: typing.Annotated[
+        datetime.datetime | None,
+        fastapi.Query(description="Get the events received until this date"),
+    ] = None,
+) -> EventsResponse:
+    page_response = await eventlogs.get(
+        session,
+        page,
+        repository,
+        pull_request,
+        base_ref,
+        event_type,
+        received_from,
+        received_to,
+    )
 
-    return EventLogsResponse(page)  # type: ignore[misc, call-arg]
-
-
-@router.get(
-    "/repos/{owner}/{repository}/events",
-    summary="Get the events log of a repository",
-    description="Get the events log of the requested repository",
-    deprecated=True,
-    responses={
-        **api.default_responses,  # type: ignore
-        200: {
-            "headers": pagination.LinkHeader,
+    return EventsResponse(  # type: ignore[call-arg]
+        page=page_response,
+        query_parameters={
+            "pull_request": pull_request,
+            "event_type": event_type,
+            "received_from": received_from,
+            "received_to": received_to,
         },
-    },
-    # NOTE(lecrepont01): remove with old API deprecation and MRGFY-2849
-    openapi_extra={
-        "responses": {
-            "200": {
-                "description": "Successful Response.\n\n"
-                "**Important note**: response attributes `events[].timestamp` and "
-                "`events[].event` are deprecated and being replaced by `events[].received_at` and "
-                "`events[].type` respectively. Please use those instead.",
-            },
-        },
-    },
-)
-async def get_repository_eventlogs(
-    session: database.Session,
-    repository_ctxt: security.Repository,
-    current_page: pagination.CurrentPage,
-) -> EventLogsResponse:
-    page = await events.get(session, current_page, repository_ctxt)
-
-    return EventLogsResponse(page)  # type: ignore[misc, call-arg]
+    )

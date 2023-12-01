@@ -13,7 +13,6 @@ import sqlalchemy.ext.asyncio
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import eventlogs
-from mergify_engine import events as evt_utils
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine import signals
@@ -34,7 +33,7 @@ async def insert_event(
     if pull_request is not None:
         pull_request = github_types.GitHubPullRequestNumber(random.randint(1, 100))
 
-    await evt_utils.insert(
+    await eventlogs.insert(
         event=event,
         repository=fake_repository.repo,
         pull_request=pull_request,
@@ -62,8 +61,8 @@ async def assert_base_event(
 
 
 async def test_event_not_supported(fake_repository: context.Repository) -> None:
-    with pytest.raises(evt_utils.EventNotHandled) as e:
-        await evt_utils.insert(
+    with pytest.raises(eventlogs.EventNotHandled) as e:
+        await eventlogs.insert(
             event="event.not.supported",  # type: ignore [arg-type]
             repository=fake_repository.repo,
             pull_request=github_types.GitHubPullRequestNumber(random.randint(1, 100)),
@@ -750,7 +749,7 @@ async def test_event_queue_pause_delete_consistency(
 def test_all_known_events_supported() -> None:
     known_evt_names = set(eventlogs.SUPPORTED_EVENT_NAMES)
 
-    known_evt_models = set(evt_utils.EVENT_NAME_TO_MODEL)
+    known_evt_models = set(eventlogs.EVENT_NAME_TO_MODEL)
     assert known_evt_names == known_evt_models
 
     known_evt_enum_types = {

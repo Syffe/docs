@@ -9,7 +9,7 @@ import sqlalchemy.ext.asyncio
 from mergify_engine import context
 from mergify_engine import database
 from mergify_engine import date
-from mergify_engine import events as evt_utils
+from mergify_engine import eventlogs
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.models import events as event_models
@@ -30,7 +30,7 @@ async def insert_data(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     fake_repository: context.Repository,
 ) -> None:
-    # add events manually instead of evt_utils.insert() to set a mocked timestamp
+    # add events manually instead of eventlogs.insert() to set a mocked timestamp
     repo = await github_repository.GitHubRepository.get_or_create(
         db,
         fake_repository.repo,
@@ -106,7 +106,7 @@ async def test_api_response(
         ],
     }
 
-    await evt_utils.insert(
+    await eventlogs.insert(
         "action.queue.checks_end",
         fake_repository.repo,
         pull_request=None,
@@ -195,7 +195,7 @@ async def test_api_response(
         ],
     }
 
-    await evt_utils.insert(
+    await eventlogs.insert(
         "queue.pause.create",
         fake_repository.repo,
         pull_request=None,
@@ -234,7 +234,7 @@ async def test_api_response(
         ],
     }
 
-    await evt_utils.insert(
+    await eventlogs.insert(
         "action.review",
         fake_repository.repo,
         pull_request=None,
@@ -336,7 +336,7 @@ async def test_api_cursor_pg(
     api_token: tests_api_conftest.TokenUserRepo,
 ) -> None:
     for _ in range(6):
-        await evt_utils.insert(
+        await eventlogs.insert(
             event="action.assign",
             repository=fake_repository.repo,
             pull_request=github_types.GitHubPullRequestNumber(1),
@@ -465,7 +465,7 @@ async def test_delete_outdated_events(
         datetime.timedelta(hours=1),
     )
 
-    await evt_utils.delete_outdated_events()
+    await eventlogs.delete_outdated_events()
 
     response = await web_client.get(
         "/v1/repos/Mergifyio/engine/logs",

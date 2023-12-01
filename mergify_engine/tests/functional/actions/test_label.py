@@ -56,7 +56,7 @@ class TestLabelAction(base.FunctionalTestBase):
         )
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -126,7 +126,7 @@ class TestLabelAction(base.FunctionalTestBase):
         )
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -157,7 +157,7 @@ class TestLabelAction(base.FunctionalTestBase):
         self.assertEqual([], p_updated["pull_request"]["labels"])
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -219,7 +219,7 @@ class TestLabelAction(base.FunctionalTestBase):
         self.assertEqual([], p_updated["pull_request"]["labels"])
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {

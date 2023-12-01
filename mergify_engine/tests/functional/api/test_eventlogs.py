@@ -150,7 +150,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         ]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -161,7 +161,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p2['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -172,7 +172,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -184,7 +184,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         # pagination
         r_pagination = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events?per_page=2",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?per_page=2",
         )
         assert r_pagination.status_code == 200
         assert r_pagination.json() == {
@@ -609,7 +609,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         ]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -620,7 +620,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -643,7 +643,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "gogogo",
         )
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/123/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request=123",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -768,7 +768,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         await self.wait_for_pull_request("closed")
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_1['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr_1['number']}",
         )
 
         # assert first PR has no unsuccessful checks
@@ -778,7 +778,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         )
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_2['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr_2['number']}",
         )
 
         # assert second PR has unsuccessful checks reported from the draft PR failing CIs
@@ -899,7 +899,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         await self.wait_for_pull_request("closed")
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_1['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr_1['number']}",
         )
         self.assert_unsuccessful_checks(
             events=r.json()["events"],
@@ -1034,7 +1034,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         await self.wait_for_pull_request("closed")
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_1['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr_1['number']}",
         )
 
         # assert first PR has no unsuccessful checks
@@ -1044,7 +1044,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         )
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_2['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr_2['number']}",
         )
 
         # assert second PR has unsuccessful checks reported from the draft PR failing CIs
@@ -1131,7 +1131,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         await self.run_engine()
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr['number']}",
         )
         self.assert_unsuccessful_checks(
             events=r.json()["events"],
@@ -1203,7 +1203,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 await self.run_full_engine()
 
                 r = await self.admin_app.get(
-                    f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr['number']}/events",
+                    f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr['number']}",
                 )
                 self.assert_unsuccessful_checks(
                     events=r.json()["events"],

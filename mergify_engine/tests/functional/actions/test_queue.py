@@ -2373,7 +2373,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # Check event logs
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=5",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=5",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -2991,7 +2991,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # Check event logs
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=5",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=5",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -3313,7 +3313,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=2",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=2",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -4364,7 +4364,7 @@ previous_failed_batches:
         expected_reason: str,
     ) -> None:
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_number}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr_number}",
         )
         assert r.status_code == 200
         response = r.json()
@@ -4726,7 +4726,7 @@ previous_failed_batches:
         await self.run_engine()
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}",
         )
         assert r.status_code == 200
         response = r.json()
@@ -5329,7 +5329,7 @@ previous_failed_batches:
 
         # Check event logs
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=1",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=1",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -8774,7 +8774,7 @@ pull_request_rules:
 
         # Check event logs
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events?per_page=5",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p2['number']}&per_page=5",
         )
         assert len(r.json()["events"]) == 3
         assert r.json()["events"][1]["type"] == "action.queue.leave"

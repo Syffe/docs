@@ -70,7 +70,7 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
 
         # Check event logs
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events?per_page=5",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p2['number']}&per_page=5",
         )
         assert len(r.json()["events"]) == 1
         assert r.json()["events"][0]["metadata"]["branch"] == second_branch

@@ -70,10 +70,10 @@ LinkHeader = {
     "Link": {
         "description": "Pagination links (rfc5988)",
         "example": """
-Link: <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/events?cursor=def&per_page=20>; rel="next",
-  <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/events?cursor=xyz&per_page=20>; rel="last",
-  <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/events?cursor=abc&per_page=20>; rel="first",
-  <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/events?cursor=abc&per_page=20>; rel="prev"
+Link: <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/logs?cursor=def&per_page=20>; rel="next",
+  <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/logs?cursor=xyz&per_page=20>; rel="last",
+  <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/logs?cursor=abc&per_page=20>; rel="first",
+  <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/logs?cursor=abc&per_page=20>; rel="prev"
 """.strip(),
         "schema": {"type": "string"},
     },

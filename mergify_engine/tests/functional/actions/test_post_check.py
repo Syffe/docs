@@ -80,7 +80,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "'body need sentry ticket' failed" == unmatch_check["output"]["title"]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{match_p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={match_p['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -113,7 +113,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         }
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{unmatch_p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={unmatch_p['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -159,7 +159,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "failure" == match_check["conclusion"]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{match_p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={match_p['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -328,7 +328,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "'body need sentry ticket' failed" == unmatch_check["output"]["title"]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{unmatch_p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={unmatch_p['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
