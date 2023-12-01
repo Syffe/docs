@@ -298,9 +298,14 @@ async def extract_data_from_log(
             log_extras={"chat_completion": chat_completion},
         )
 
-    extracted_data: list[ExtractedDataObject] = json.loads(chat_response)["failures"]
+    extracted_data: list[ExtractedDataObject | None] = json.loads(chat_response)[
+        "failures"
+    ]
 
     for data in extracted_data:
+        # NOTE(Kontrolix): It means that ChatGPT found no error
+        if data is None:
+            continue
         log_metadata = gh_models.WorkflowJobLogMetadata(
             workflow_job_id=job.id,
             **data,
@@ -541,6 +546,8 @@ async def embed_logs_with_extracted_metdata(
                 sqlalchemy.or_(
                     sqlalchemy.and_(
                         ~wjob.log_metadata.any(),
+                        wjob.log_metadata_extracting_status
+                        != gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
                     ),
                 ),
             )
