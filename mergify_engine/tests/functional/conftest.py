@@ -6,6 +6,7 @@ import dataclasses
 import datetime
 import json
 import os
+import pathlib
 import shutil
 import tempfile
 import typing
@@ -13,10 +14,13 @@ from unittest import mock
 
 import filelock
 import httpx
+import msgpack
 import pytest
 import tenacity
 import vcr
+import vcr.persisters.filesystem
 import vcr.request
+import vcr.serialize
 import vcr.stubs.urllib3_stubs
 
 from mergify_engine import database
@@ -86,6 +90,49 @@ class RecordConfigType(typing.TypedDict):
 class SubscriptionFixture(typing.NamedTuple):
     api_key_admin: str
     subscription: subscription.Subscription
+
+
+class CustomVCRPersister:
+    @classmethod
+    def load_cassette(cls, cassette_path: str, serializer: str) -> typing.Any:
+        _cassette_path = pathlib.Path(cassette_path)
+        if not _cassette_path.is_file():
+            raise vcr.persisters.filesystem.CassetteNotFoundError()
+        try:
+            with _cassette_path.open("rb") as f:
+                data = f.read()
+        except UnicodeDecodeError as err:
+            raise vcr.persisters.filesystem.CassetteDecodeError(
+                "Can't read Cassette, Encoding is broken",
+            ) from err
+
+        return vcr.serialize.deserialize(data, serializer)
+
+    @staticmethod
+    def save_cassette(
+        cassette_path: str,
+        cassette_dict: dict[str, typing.Any],
+        serializer: str,
+    ) -> None:
+        data = vcr.serialize.serialize(cassette_dict, serializer)
+        cassette_path_p = pathlib.Path(cassette_path)
+
+        cassette_folder = cassette_path_p.parent
+        if not cassette_folder.exists():
+            cassette_folder.mkdir(parents=True)
+
+        with cassette_path_p.open("wb") as f:
+            f.write(data)
+
+
+class MsgPackSerializer:
+    @staticmethod
+    def deserialize(cassette: bytes) -> typing.Any:
+        return msgpack.unpackb(cassette)
+
+    @staticmethod
+    def serialize(cassette_dict: typing.Any) -> typing.Any:
+        return msgpack.packb(cassette_dict)
 
 
 def get_all_subscription_features() -> frozenset[subscription.Features]:
@@ -332,6 +379,7 @@ async def recorder(
         ignored_host.append("api.openai.com")
 
     recorder = vcr.VCR(
+        serializer="msgpack",
         cassette_library_dir=cassette_library_dir,
         record_mode="all" if settings.TESTING_RECORD else "none",
         match_on=["method", "uri"],
@@ -347,6 +395,8 @@ async def recorder(
         before_record_response=pyvcr_response_filter,
         before_record_request=pyvcr_request_filter,
     )
+    recorder.register_serializer("msgpack", MsgPackSerializer)
+    recorder.register_persister(CustomVCRPersister)
 
     if settings.TESTING_RECORD:
         github.CachedToken.STORAGE = {}
@@ -368,7 +418,7 @@ async def recorder(
         request.addfinalizer(patcher.stop)
 
     # Let's start recording
-    cassette = recorder.use_cassette("http.yaml")
+    cassette = recorder.use_cassette("http.msgpack")
     cassette.__enter__()
     request.addfinalizer(cassette.__exit__)
     record_config_file = os.path.join(cassette_library_dir, "config.json")
