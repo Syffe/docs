@@ -27,16 +27,16 @@ async def _do_squash(
     user: github_user.GitHubUser,
     squash_message: str,
 ) -> None:
+    if ctxt.pull["head"]["repo"] is None:
+        raise SquashFailure(
+            f"The head repository of {ctxt.pull['base']['label']} has been deleted.",
+        )
+
     head_branch = ctxt.pull["head"]["ref"]
     base_branch = ctxt.pull["base"]["ref"]
     tmp_branch = "squashed-head-branch"
 
     git = gitter.Gitter(ctxt.log)
-
-    if ctxt.pull["head"]["repo"] is None:
-        raise SquashFailure(
-            f"The head repository of {ctxt.pull['base']['label']} has been deleted.",
-        )
 
     try:
         await git.init()
