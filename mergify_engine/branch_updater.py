@@ -110,89 +110,86 @@ async def _do_rebase(
 
     head_branch = ctxt.pull["head"]["ref"]
     base_branch = ctxt.pull["base"]["ref"]
-    git = gitter.Gitter(ctxt.log)
-    try:
-        await git.init()
-        await git.configure(ctxt.repository.installation.redis.cache, committer)
+    async with gitter.Gitter(ctxt.log) as git:
+        try:
+            await git.configure(ctxt.repository.installation.redis.cache, committer)
 
-        await git.setup_remote(
-            "origin",
-            ctxt.pull["head"]["repo"],
-            user.oauth_access_token,
-            "",
-        )
-        await git.setup_remote(
-            "upstream",
-            ctxt.pull["base"]["repo"],
-            user.oauth_access_token,
-            "",
-        )
-
-        await git.fetch("origin", head_branch)
-        await git("checkout", "-q", "-b", head_branch, f"origin/{head_branch}")
-
-        await git("fetch", "--quiet", "upstream", base_branch)
-
-        if autosquash:
-            await git(
-                "rebase",
-                "--interactive",
-                "--autosquash",
-                f"upstream/{base_branch}",
-                _env={"GIT_SEQUENCE_EDITOR": ":", "EDITOR": ":"},
+            await git.setup_remote(
+                "origin",
+                ctxt.pull["head"]["repo"],
+                user.oauth_access_token,
+                "",
             )
-        else:
-            await git("rebase", f"upstream/{base_branch}")
+            await git.setup_remote(
+                "upstream",
+                ctxt.pull["base"]["repo"],
+                user.oauth_access_token,
+                "",
+            )
 
-        await git("push", "--verbose", "origin", head_branch, "--force-with-lease")
+            await git.fetch("origin", head_branch)
+            await git("checkout", "-q", "-b", head_branch, f"origin/{head_branch}")
 
-        expected_sha = (await git("rev-parse", head_branch)).strip()
-        if expected_sha:
-            level = logging.INFO
-        else:
-            level = logging.ERROR
-        ctxt.log.log(level, "pull request rebased", new_head_sha=expected_sha)
-        # NOTE(sileht): We store this for Context.has_been_synchronized_by_user()
-        await ctxt.redis.cache.setex(
-            f"branch-update-{expected_sha}",
-            60 * 60,
-            expected_sha,
-        )
-    except gitter.GitMergifyNamespaceConflict as e:
-        raise BranchUpdateFailure(
-            "`Mergify uses `mergify/...` namespace for creating temporary branches. "
-            "A branch of your repository is conflicting with this namespace\n"
-            f"```\n{e.output}\n```\n",
-        )
-    except gitter.GitAuthenticationFailure:
-        raise
-    except gitter.GitErrorRetriable as e:
-        raise BranchUpdateNeedRetry(
-            f"Git reported the following error:\n```\n{e.output}\n```\n",
-        )
-    except gitter.GitFatalError as e:
-        raise BranchUpdateFailure(
-            f"Git reported the following error:\n```\n{e.output}\n```\n",
-        )
-    except gitter.GitError as e:
-        for message, out_exception in GIT_MESSAGE_TO_EXCEPTION.items():
-            if message in e.output:
-                raise out_exception(
-                    f"Git reported the following error:\n```\n{e.output}\n```\n",
+            await git("fetch", "--quiet", "upstream", base_branch)
+
+            if autosquash:
+                await git(
+                    "rebase",
+                    "--interactive",
+                    "--autosquash",
+                    f"upstream/{base_branch}",
+                    _env={"GIT_SEQUENCE_EDITOR": ":", "EDITOR": ":"},
                 )
+            else:
+                await git("rebase", f"upstream/{base_branch}")
 
-        ctxt.log.error(
-            "update branch failed",
-            output=e.output,
-            returncode=e.returncode,
-            exc_info=True,
-        )
-        raise BranchUpdateFailure("Git reported an unexpected error while rebasing")
-    except Exception:  # pragma: no cover
-        ctxt.log.error("update branch failed", exc_info=True)
-        raise BranchUpdateFailure("Git reported an unknown error while rebasing")
-    finally:
-        await git.cleanup()
+            await git("push", "--verbose", "origin", head_branch, "--force-with-lease")
+
+            expected_sha = (await git("rev-parse", head_branch)).strip()
+            if expected_sha:
+                level = logging.INFO
+            else:
+                level = logging.ERROR
+            ctxt.log.log(level, "pull request rebased", new_head_sha=expected_sha)
+            # NOTE(sileht): We store this for Context.has_been_synchronized_by_user()
+            await ctxt.redis.cache.setex(
+                f"branch-update-{expected_sha}",
+                60 * 60,
+                expected_sha,
+            )
+        except gitter.GitMergifyNamespaceConflict as e:
+            raise BranchUpdateFailure(
+                "`Mergify uses `mergify/...` namespace for creating temporary branches. "
+                "A branch of your repository is conflicting with this namespace\n"
+                f"```\n{e.output}\n```\n",
+            )
+        except gitter.GitAuthenticationFailure:
+            raise
+        except gitter.GitErrorRetriable as e:
+            raise BranchUpdateNeedRetry(
+                f"Git reported the following error:\n```\n{e.output}\n```\n",
+            )
+        except gitter.GitFatalError as e:
+            raise BranchUpdateFailure(
+                f"Git reported the following error:\n```\n{e.output}\n```\n",
+            )
+        except gitter.GitError as e:
+            for message, out_exception in GIT_MESSAGE_TO_EXCEPTION.items():
+                if message in e.output:
+                    raise out_exception(
+                        f"Git reported the following error:\n```\n{e.output}\n```\n",
+                    )
+
+            ctxt.log.error(
+                "update branch failed",
+                output=e.output,
+                returncode=e.returncode,
+                exc_info=True,
+            )
+            raise BranchUpdateFailure("Git reported an unexpected error while rebasing")
+        except Exception:  # pragma: no cover
+            ctxt.log.error("update branch failed", exc_info=True)
+            raise BranchUpdateFailure("Git reported an unknown error while rebasing")
 
 
 async def update_with_api(

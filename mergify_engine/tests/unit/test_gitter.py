@@ -11,9 +11,7 @@ async def test_gitter(
     monkeypatch: pytest.MonkeyPatch,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
-    git = gitter.Gitter(mock.Mock())
-    try:
-        await git.init()
+    async with gitter.Gitter(mock.Mock()) as git:
         await git.configure(redis_links.cache)
         await git.add_cred("foo", "bar", "https://github.com")
 
@@ -33,9 +31,7 @@ async def test_gitter(
         await git("commit", "-m", "Initial commit", "-a", "--no-edit")
 
         assert os.path.exists(f"{git.repository}/.git")
-    finally:
-        await git.cleanup()
-        assert not os.path.exists(f"{git.repository}/.git")
+    assert not os.path.exists(f"{git.repository}/.git")
 
 
 @pytest.mark.parametrize(

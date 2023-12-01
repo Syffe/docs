@@ -8,6 +8,7 @@ import re
 import shutil
 import sys
 import tempfile
+import types
 import typing
 import urllib.parse
 
@@ -103,6 +104,10 @@ class Gitter:
         init=False,
         default=datetime.timedelta(minutes=10).total_seconds(),
     )
+
+    async def __aenter__(self) -> "Gitter":
+        await self.init()
+        return self
 
     async def init(self) -> None:
         # TODO(sileht): use aiofiles instead of thread
@@ -243,6 +248,14 @@ class Gitter:
             and "[rejected]" in message
             and "(stale info)" in message
         )
+
+    async def __aexit__(
+        self,
+        exc_type: type[Exception] | None,
+        exc_value: Exception | None,
+        traceback: types.TracebackType | None,
+    ) -> None:
+        await self.cleanup()
 
     async def cleanup(self) -> None:
         if self.tmp is None:

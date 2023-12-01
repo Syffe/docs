@@ -36,84 +36,79 @@ async def _do_squash(
     base_branch = ctxt.pull["base"]["ref"]
     tmp_branch = "squashed-head-branch"
 
-    git = gitter.Gitter(ctxt.log)
+    async with gitter.Gitter(ctxt.log) as git:
+        try:
+            await git.configure(ctxt.repository.installation.redis.cache, user)
 
-    try:
-        await git.init()
+            await git.setup_remote(
+                "origin",
+                ctxt.pull["head"]["repo"],
+                user.oauth_access_token,
+                "",
+            )
+            await git.setup_remote(
+                "upstream",
+                ctxt.pull["base"]["repo"],
+                user.oauth_access_token,
+                "",
+            )
 
-        await git.configure(ctxt.repository.installation.redis.cache, user)
+            await git.fetch("origin", head_branch)
+            await git.fetch("upstream", base_branch)
+            await git("checkout", "-q", "-b", tmp_branch, f"upstream/{base_branch}")
 
-        await git.setup_remote(
-            "origin",
-            ctxt.pull["head"]["repo"],
-            user.oauth_access_token,
-            "",
-        )
-        await git.setup_remote(
-            "upstream",
-            ctxt.pull["base"]["repo"],
-            user.oauth_access_token,
-            "",
-        )
+            await git("merge", "--squash", "--no-edit", f"origin/{head_branch}")
+            await git("commit", "-m", squash_message)
 
-        await git.fetch("origin", head_branch)
-        await git.fetch("upstream", base_branch)
-        await git("checkout", "-q", "-b", tmp_branch, f"upstream/{base_branch}")
+            await git(
+                "push",
+                "--verbose",
+                "origin",
+                f"{tmp_branch}:{head_branch}",
+                "--force-with-lease",
+            )
 
-        await git("merge", "--squash", "--no-edit", f"origin/{head_branch}")
-        await git("commit", "-m", squash_message)
+            expected_sha = (await git("log", "-1", "--format=%H")).strip()
+            # NOTE(sileht): We store this for dismissal action
+            # FIXME(sileht): use a more generic name for the key
+            await ctxt.redis.cache.setex(
+                f"branch-update-{expected_sha}",
+                60 * 60,
+                expected_sha,
+            )
+        except gitter.GitMergifyNamespaceConflict as e:
+            raise SquashFailure(
+                "`Mergify uses `mergify/...` namespace for creating temporary branches. "
+                "A branch of your repository is conflicting with this namespace\n"
+                f"```\n{e.output}\n```\n",
+            )
+        except gitter.GitAuthenticationFailure:
+            raise
+        except gitter.GitErrorRetriable as e:
+            raise SquashNeedRetry(
+                f"Git reported the following error:\n```\n{e.output}\n```\n",
+            )
+        except gitter.GitFatalError as e:
+            raise SquashFailure(
+                f"Git reported the following error:\n```\n{e.output}\n```\n",
+            )
+        except gitter.GitError as e:
+            for message, out_exception in GIT_MESSAGE_TO_EXCEPTION.items():
+                if message in e.output:
+                    raise out_exception(
+                        f"Git reported the following error:\n```\n{e.output}\n```\n",
+                    )
 
-        await git(
-            "push",
-            "--verbose",
-            "origin",
-            f"{tmp_branch}:{head_branch}",
-            "--force-with-lease",
-        )
-
-        expected_sha = (await git("log", "-1", "--format=%H")).strip()
-        # NOTE(sileht): We store this for dismissal action
-        # FIXME(sileht): use a more generic name for the key
-        await ctxt.redis.cache.setex(
-            f"branch-update-{expected_sha}",
-            60 * 60,
-            expected_sha,
-        )
-    except gitter.GitMergifyNamespaceConflict as e:
-        raise SquashFailure(
-            "`Mergify uses `mergify/...` namespace for creating temporary branches. "
-            "A branch of your repository is conflicting with this namespace\n"
-            f"```\n{e.output}\n```\n",
-        )
-    except gitter.GitAuthenticationFailure:
-        raise
-    except gitter.GitErrorRetriable as e:
-        raise SquashNeedRetry(
-            f"Git reported the following error:\n```\n{e.output}\n```\n",
-        )
-    except gitter.GitFatalError as e:
-        raise SquashFailure(
-            f"Git reported the following error:\n```\n{e.output}\n```\n",
-        )
-    except gitter.GitError as e:
-        for message, out_exception in GIT_MESSAGE_TO_EXCEPTION.items():
-            if message in e.output:
-                raise out_exception(
-                    f"Git reported the following error:\n```\n{e.output}\n```\n",
-                )
-
-        ctxt.log.error(
-            "squash failed",
-            output=e.output,
-            returncode=e.returncode,
-            exc_info=True,
-        )
-        raise SquashFailure("")
-    except Exception:  # pragma: no cover
-        ctxt.log.error("squash failed", exc_info=True)
-        raise SquashFailure("")
-    finally:
-        await git.cleanup()
+            ctxt.log.error(
+                "squash failed",
+                output=e.output,
+                returncode=e.returncode,
+                exc_info=True,
+            )
+            raise SquashFailure("")
+        except Exception:  # pragma: no cover
+            ctxt.log.error("squash failed", exc_info=True)
+            raise SquashFailure("")
 
 
 async def squash(

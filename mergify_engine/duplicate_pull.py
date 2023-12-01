@@ -273,109 +273,103 @@ async def prepare_branch(
     # TODO(sileht): This can be done with the GitHub API only I think:
     # An example:
     # https://github.com/shiqiyang-okta/ghpick/blob/master/ghpick/cherry.py
-    git = gitter.Gitter(logger)
-    try:
-        await git.init()
+    async with gitter.Gitter(logger) as git:
+        try:
+            if on_behalf is None:
+                async with github.AsyncGitHubInstallationClient(auth) as client:
+                    token = await client.get_access_token()
+                await git.configure(redis)
+                username = "x-access-token"
+                password = token
+            else:
+                await git.configure(redis, on_behalf)
+                username = on_behalf.oauth_access_token
+                password = ""  # nosec
 
-        if on_behalf is None:
-            async with github.AsyncGitHubInstallationClient(auth) as client:
-                token = await client.get_access_token()
-            await git.configure(redis)
-            username = "x-access-token"
-            password = token
-        else:
-            await git.configure(redis, on_behalf)
-            username = on_behalf.oauth_access_token
-            password = ""  # nosec
+            await git.setup_remote("origin", pull["base"]["repo"], username, password)
 
-        await git.setup_remote("origin", pull["base"]["repo"], username, password)
+            await git.fetch("origin", f"pull/{pull['number']}/head")
+            await git.fetch("origin", pull["base"]["ref"])
+            await git.fetch("origin", branch_name)
+            await git(
+                "checkout",
+                "--quiet",
+                "-b",
+                destination_branch,
+                f"origin/{branch_name}",
+            )
 
-        await git.fetch("origin", f"pull/{pull['number']}/head")
-        await git.fetch("origin", pull["base"]["ref"])
-        await git.fetch("origin", branch_name)
-        await git(
-            "checkout",
-            "--quiet",
-            "-b",
-            destination_branch,
-            f"origin/{branch_name}",
-        )
+            for commit in commits_to_cherry_pick:
+                # FIXME(sileht): GitHub does not allow to fetch only one commit
+                # So we have to fetch the branch since the commit date ...
+                # git("fetch", "origin", "%s:refs/remotes/origin/%s-commit" %
+                #    (commit["sha"], commit["sha"])
+                #    )
+                # last_commit_date = commit["commit"]["committer"]["date"]
+                # git("fetch", "origin", ctxt.pull["base"]["ref"],
+                #    "--shallow-since='%s'" % last_commit_date)
+                try:
+                    await git("cherry-pick", "-x", commit.sha)
+                except (
+                    gitter.GitAuthenticationFailure,
+                    gitter.GitErrorRetriable,
+                    gitter.GitFatalError,
+                ):
+                    raise
+                except gitter.GitError as e:  # pragma: no cover
+                    if "The previous cherry-pick is now empty," in e.output:
+                        await git("cherry-pick", "--skip")
+                        continue
 
-        for commit in commits_to_cherry_pick:
-            # FIXME(sileht): GitHub does not allow to fetch only one commit
-            # So we have to fetch the branch since the commit date ...
-            # git("fetch", "origin", "%s:refs/remotes/origin/%s-commit" %
-            #    (commit["sha"], commit["sha"])
-            #    )
-            # last_commit_date = commit["commit"]["committer"]["date"]
-            # git("fetch", "origin", ctxt.pull["base"]["ref"],
-            #    "--shallow-since='%s'" % last_commit_date)
-            try:
-                await git("cherry-pick", "-x", commit.sha)
-            except (
-                gitter.GitAuthenticationFailure,
-                gitter.GitErrorRetriable,
-                gitter.GitFatalError,
-            ):
-                raise
-            except gitter.GitError as e:  # pragma: no cover
-                if "The previous cherry-pick is now empty," in e.output:
-                    await git("cherry-pick", "--skip")
-                    continue
+                    for message in GIT_MESSAGE_TO_EXCEPTION.keys():
+                        if message in e.output:
+                            raise
 
-                for message in GIT_MESSAGE_TO_EXCEPTION.keys():
-                    if message in e.output:
-                        raise
+                    logger.info("fail to cherry-pick %s: %s", commit.sha, e.output)
+                    output = await git("status")
+                    cherry_pick_error += f"Cherry-pick of {commit.sha} has failed:\n```\n{output}```\n\n\n"
+                    if not ignore_conflicts:
+                        raise DuplicateFailedConflicts(cherry_pick_error)
+                    await git("add", "*", _env={"GIT_NOGLOB_PATHSPECS": "0"})
+                    await git("commit", "-a", "--no-edit", "--allow-empty")
 
-                logger.info("fail to cherry-pick %s: %s", commit.sha, e.output)
-                output = await git("status")
-                cherry_pick_error += (
-                    f"Cherry-pick of {commit.sha} has failed:\n```\n{output}```\n\n\n"
+            await git("push", "origin", destination_branch)
+        except gitter.GitMergifyNamespaceConflict as e:
+            raise DuplicateFailed(
+                "`Mergify uses `mergify/...` namespace for creating temporary branches. "
+                "A branch of your repository is conflicting with this namespace\n"
+                f"```\n{e.output}\n```\n",
+            )
+        except gitter.GitAuthenticationFailure as e:
+            if on_behalf is None:
+                # Need to get a new token
+                raise DuplicateNeedRetry(
+                    f"Git reported the following error:\n```\n{e.output}\n```\n",
                 )
-                if not ignore_conflicts:
-                    raise DuplicateFailedConflicts(cherry_pick_error)
-                await git("add", "*", _env={"GIT_NOGLOB_PATHSPECS": "0"})
-                await git("commit", "-a", "--no-edit", "--allow-empty")
-
-        await git("push", "origin", destination_branch)
-    except gitter.GitMergifyNamespaceConflict as e:
-        raise DuplicateFailed(
-            "`Mergify uses `mergify/...` namespace for creating temporary branches. "
-            "A branch of your repository is conflicting with this namespace\n"
-            f"```\n{e.output}\n```\n",
-        )
-    except gitter.GitAuthenticationFailure as e:
-        if on_behalf is None:
-            # Need to get a new token
+            raise DuplicateUnexpectedError(
+                f"Git reported the following error:\n```\n{e.output}\n```\n",
+            )
+        except gitter.GitErrorRetriable as e:
             raise DuplicateNeedRetry(
                 f"Git reported the following error:\n```\n{e.output}\n```\n",
             )
-        raise DuplicateUnexpectedError(
-            f"Git reported the following error:\n```\n{e.output}\n```\n",
-        )
-    except gitter.GitErrorRetriable as e:
-        raise DuplicateNeedRetry(
-            f"Git reported the following error:\n```\n{e.output}\n```\n",
-        )
-    except gitter.GitFatalError as e:
-        raise DuplicateFailed(
-            f"Git reported the following error:\n```\n{e.output}\n```\n",
-        )
-    except gitter.GitError as e:  # pragma: no cover
-        for message, out_exception in GIT_MESSAGE_TO_EXCEPTION.items():
-            if message in e.output:
-                raise out_exception(
-                    f"Git reported the following error:\n```\n{e.output}\n```\n",
-                )
-        logger.error(
-            "duplicate pull failed",
-            output=e.output,
-            returncode=e.returncode,
-            exc_info=True,
-        )
-        raise DuplicateUnexpectedError(e.output)
-    finally:
-        await git.cleanup()
+        except gitter.GitFatalError as e:
+            raise DuplicateFailed(
+                f"Git reported the following error:\n```\n{e.output}\n```\n",
+            )
+        except gitter.GitError as e:  # pragma: no cover
+            for message, out_exception in GIT_MESSAGE_TO_EXCEPTION.items():
+                if message in e.output:
+                    raise out_exception(
+                        f"Git reported the following error:\n```\n{e.output}\n```\n",
+                    )
+            logger.error(
+                "duplicate pull failed",
+                output=e.output,
+                returncode=e.returncode,
+                exc_info=True,
+            )
+            raise DuplicateUnexpectedError(e.output)
 
     if cherry_pick_error:
         cherry_pick_error += (
