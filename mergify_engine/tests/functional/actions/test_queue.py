@@ -9346,6 +9346,10 @@ class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
         )
 
 
+@pytest.mark.skipif(
+    not settings.GITHUB_URL.startswith("https://github.com"),
+    reason="too slow to be ran in daily rerecording",
+)
 class TestQueueActionWithPgEventsIngestion(TestQueueAction):
     async def run_engine(
         self,
