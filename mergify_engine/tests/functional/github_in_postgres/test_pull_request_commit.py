@@ -36,6 +36,8 @@ class TestGitHubPullRequestCommitInPg(base.FunctionalTestBase):
             assert len(pulls_in_db[0].head_commits) == 1
 
     async def test_pull_request_commits_stored(self) -> None:
+        # This test method also tests that the head sha history (`head_sha_history`) of a pull
+        # request is properyl updated.
         await self.setup_repo()
 
         p1 = await self.create_pr()
@@ -49,6 +51,9 @@ class TestGitHubPullRequestCommitInPg(base.FunctionalTestBase):
                             orm.joinedload(
                                 gh_pull_request_mod.PullRequest.head_commits,
                             ),
+                            orm.joinedload(
+                                gh_pull_request_mod.PullRequest.head_sha_history,
+                            ),
                         ),
                     )
                 )
@@ -58,6 +63,8 @@ class TestGitHubPullRequestCommitInPg(base.FunctionalTestBase):
             assert len(pulls_in_db) == 1
             assert len(pulls_in_db[0].head_commits) == 1
             first_commit_sha = pulls_in_db[0].head_commits[0].sha
+            assert len(pulls_in_db[0].head_sha_history) == 1
+            assert pulls_in_db[0].head_sha_history[0].head_sha == p1["head"]["sha"]
 
         ctxt = context.Context(self.repository_ctxt, p1, [])
         with mock.patch.object(
@@ -80,6 +87,9 @@ class TestGitHubPullRequestCommitInPg(base.FunctionalTestBase):
                             orm.joinedload(
                                 gh_pull_request_mod.PullRequest.head_commits,
                             ),
+                            orm.joinedload(
+                                gh_pull_request_mod.PullRequest.head_sha_history,
+                            ),
                         ),
                     )
                 )
@@ -90,6 +100,12 @@ class TestGitHubPullRequestCommitInPg(base.FunctionalTestBase):
             assert len(pulls_in_db[0].head_commits) == 2
             new_head_commits_sha = [comm.sha for comm in pulls_in_db[0].head_commits]
             assert first_commit_sha in new_head_commits_sha
+
+            assert len(pulls_in_db[0].head_sha_history) == 2
+            assert (
+                pulls_in_db[0].head_sha_history[1].head_sha
+                == p1_updated["pull_request"]["head"]["sha"]
+            )
 
         ctxt = context.Context(self.repository_ctxt, p1_updated["pull_request"], [])
         with mock.patch.object(
@@ -110,7 +126,7 @@ class TestGitHubPullRequestCommitInPg(base.FunctionalTestBase):
         ):
             await self.run_engine({"github-in-postgres"})
 
-        await self.change_pull_request_commit_sha(
+        p1_updated_bis = await self.change_pull_request_commit_sha(
             p1_updated["pull_request"],
             first_commit_sha,
         )
@@ -123,6 +139,9 @@ class TestGitHubPullRequestCommitInPg(base.FunctionalTestBase):
                             orm.joinedload(
                                 gh_pull_request_mod.PullRequest.head_commits,
                             ),
+                            orm.joinedload(
+                                gh_pull_request_mod.PullRequest.head_sha_history,
+                            ),
                         ),
                     )
                 )
@@ -134,3 +153,9 @@ class TestGitHubPullRequestCommitInPg(base.FunctionalTestBase):
             assert [
                 comm.sha for comm in pulls_in_db[0].head_commits
             ] != new_head_commits_sha
+
+            assert len(pulls_in_db[0].head_sha_history) == 3
+            assert (
+                pulls_in_db[0].head_sha_history[2].head_sha
+                == p1_updated_bis["pull_request"]["head"]["sha"]
+            )

@@ -6,10 +6,12 @@ import daiquiri
 import pydantic
 import pydantic_core
 import sqlalchemy
+from sqlalchemy import func
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.hybrid
 
+from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import models
@@ -224,6 +226,11 @@ class PullRequest(models.Base):
         list[pr_commit_model.PullRequestCommit]
     ] = orm.relationship(lazy="raise_on_sql", back_populates="pull_request")
 
+    head_sha_history: orm.Mapped[list["PullRequestHeadShaHistory"]] = orm.relationship(
+        lazy="raise_on_sql",
+        back_populates="pull_request",
+    )
+
     @classmethod
     async def _update_commits(
         cls,
@@ -293,7 +300,7 @@ class PullRequest(models.Base):
         session: sqlalchemy.ext.asyncio.AsyncSession,
         data: github_types.GitHubPullRequest,
     ) -> None:
-        fetch_new_commits = not (
+        pr_synchronized_or_open = not (
             await session.scalar(
                 sqlalchemy.select(cls).where(
                     cls.id == data["id"],
@@ -368,7 +375,13 @@ class PullRequest(models.Base):
             ),
         )
 
-        if fetch_new_commits:
+        if pr_synchronized_or_open:
+            new_head_sha = PullRequestHeadShaHistory(
+                head_sha=pull_obj.head["sha"],
+                pull_request_id=pull_obj.id,
+            )
+            session.add(new_head_sha)
+
             await cls._update_commits(
                 session,
                 pull_obj.id,
@@ -476,4 +489,32 @@ class PullRequestForCiEventProcessing(models.Base):
     state: orm.Mapped[github_types.GitHubPullRequestState] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
+    )
+
+
+class PullRequestHeadShaHistory(models.Base):
+    __tablename__ = "pull_request_head_sha_history"
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.BigInteger,
+        primary_key=True,
+        autoincrement=True,
+        anonymizer_config=None,
+    )
+    head_sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
+    )
+    timestamp: orm.Mapped[datetime.datetime] = orm.mapped_column(
+        sqlalchemy.DateTime(timezone=True),
+        server_default=func.now(),
+        default=date.utcnow,
+        anonymizer_config="anon.dnoise(timestamp, ''2 days'')",
+    )
+    pull_request_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("pull_request.id"),
+        anonymizer_config=None,
+    )
+    pull_request: orm.Mapped[PullRequest] = orm.relationship(
+        back_populates="head_sha_history",
     )
