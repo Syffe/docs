@@ -395,16 +395,23 @@ class CustomTestClient(httpx.AsyncClient):
         assert resp.status_code == 204
 
 
+@pytest.fixture(scope="session")
+def web_server_app() -> abc.Generator[fastapi.FastAPI, None, None]:
+    with mock.patch.object(
+        settings,
+        "HTTP_CF_TO_MERGIFY_HOSTS",
+        ["*"],
+    ), mock.patch.object(settings, "HTTP_TO_HTTPS_REDIRECT", False):
+        app = web_root.create_app(debug=True)
+        yield app
+
+
 @pytest.fixture
 async def web_server(
-    monkeypatch: pytest.MonkeyPatch,
+    web_server_app: fastapi.FastAPI,
 ) -> abc.AsyncGenerator[fastapi.FastAPI, None]:
-    monkeypatch.setattr(settings, "HTTP_CF_TO_MERGIFY_HOSTS", ["*"])
-    monkeypatch.setattr(settings, "HTTP_TO_HTTPS_REDIRECT", False)
-    app = web_root.create_app(debug=True)
-
-    async with asgi_lifespan.LifespanManager(app):
-        yield app
+    async with asgi_lifespan.LifespanManager(web_server_app):
+        yield web_server_app
 
 
 @pytest.fixture
@@ -414,6 +421,27 @@ async def web_client(
     async with CustomTestClient(app=web_server) as client:
         client.get_front_app().include_router(log_as_router, prefix="/for-testing")
         yield client
+
+
+@pytest.fixture
+async def web_client_with_fresh_web_app() -> (
+    abc.AsyncGenerator[httpx.AsyncClient, None]
+):
+    # Some tests (like `test_react_static_files`) need to mock stuff
+    # used during the creation of the web app.
+    with mock.patch.object(
+        settings,
+        "HTTP_CF_TO_MERGIFY_HOSTS",
+        ["*"],
+    ), mock.patch.object(settings, "HTTP_TO_HTTPS_REDIRECT", False):
+        fastapi_app = web_root.create_app(debug=True)
+        async with asgi_lifespan.LifespanManager(fastapi_app):
+            async with CustomTestClient(app=fastapi_app) as client:
+                client.get_front_app().include_router(
+                    log_as_router,
+                    prefix="/for-testing",
+                )
+                yield client
 
 
 @pytest.fixture
