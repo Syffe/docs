@@ -571,6 +571,25 @@ async def test_embed_logs_on_various_data(
             },
             [],
         ),
+        (
+            {
+                "mock_log": "mock_log_downloaded",
+                "mock_embedding": "mock_embedding_embedded",
+                "mock_extracting": "mock_extracting_metadata_none_failures",
+                "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
+                "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+                "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
+            },
+            {
+                "mock_log": None,
+                "mock_embedding": None,
+                "mock_extracting": None,
+                "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
+                "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+                "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
+            },
+            [],
+        ),
     ),
 )
 @pytest.mark.usefixtures("prepare_google_cloud_storage_setup")
@@ -810,6 +829,39 @@ async def test_workflow_job_log_life_cycle(
                             "content": """
                                 {
                                     "failures": [null]
+                                }""",
+                        },
+                        "finish_reason": "stop",
+                    },
+                ],
+                "usage": {
+                    "prompt_tokens": 9,
+                    "completion_tokens": 12,
+                    "total_tokens": 21,
+                },
+            }
+            respx_mock.post(
+                f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+            ).respond(
+                200,
+                content_type="text/event-stream",
+                content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
+            )
+
+        if mocking_info["mock_extracting"] == "mock_extracting_metadata_none_failures":
+            json_response = {
+                "id": "chatcmpl-123",
+                "object": "chat.completion",
+                "created": 1677652288,
+                "model": "gpt-3.5-turbo-0613",
+                "choices": [
+                    {
+                        "index": 0,
+                        "delta": {
+                            "role": "assistant",
+                            "content": """
+                                {
+                                    "failures": null
                                 }""",
                         },
                         "finish_reason": "stop",

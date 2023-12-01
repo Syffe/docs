@@ -298,14 +298,15 @@ async def extract_data_from_log(
             log_extras={"chat_completion": chat_completion},
         )
 
-    extracted_data: list[ExtractedDataObject | None] = json.loads(chat_response)[
-        "failures"
-    ]
+    extracted_data: list[ExtractedDataObject] = json.loads(chat_response)["failures"]
+
+    # FIXME(Kontrolix): It means that ChatGPT found no error, for now I have no better
+    # solution than push the error under the carpet. But we will have to improve
+    # the prompt or the cleaner or the model we use ...
+    if extracted_data is None or extracted_data == [None]:
+        extracted_data = []
 
     for data in extracted_data:
-        # NOTE(Kontrolix): It means that ChatGPT found no error
-        if data is None:
-            continue
         log_metadata = gh_models.WorkflowJobLogMetadata(
             workflow_job_id=job.id,
             **data,
