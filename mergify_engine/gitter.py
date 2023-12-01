@@ -121,44 +121,48 @@ class Gitter:
 
     async def init(self) -> None:
         self.tmp = await self._td.__aenter__()
-        if self.tmp is None:
-            # This is to please mypy only as it never returns None
-            raise RuntimeError("Unable to create temporary directory?")
-        self.repository = os.path.join(self.tmp, "repository")
-        await aiofiles.os.mkdir(self.repository)
+        try:
+            if self.tmp is None:
+                # This is to please mypy only as it never returns None
+                raise RuntimeError("Unable to create temporary directory?")
+            self.repository = os.path.join(self.tmp, "repository")
+            await aiofiles.os.mkdir(self.repository)
 
-        self.env = {
-            "GIT_TERMINAL_PROMPT": "0",
-            "GIT_CONFIG_NOSYSTEM": "1",
-            "GIT_NOGLOB_PATHSPECS": "1",
-            "GIT_PROTOCOL_FROM_USER": "0",
-            "GIT_ALLOW_PROTOCOL": "https",
-            "PATH": os.environ["PATH"],
-            "HOME": self.tmp,
-            "TMPDIR": self.tmp,
-            "LANG": "C.UTF-8",
-        }
-        version = await self("version")
-        self.log("git directory created", path=self.tmp, version=version)
-        await self("init", "--initial-branch=tmp-mergify-trunk")
-        # NOTE(sileht): Bump the repository format. This ensures required
-        # extensions (promisor, partialclonefilter) are present in git cli and
-        # raise an error if not. Avoiding git cli to fallback to full clone
-        # behavior for us.
-        await self("config", "core.repositoryformatversion", "1")
-        # Disable gc since this is a thrown-away repository
-        await self("config", "gc.auto", "0")
-        # Use one git cache daemon per Gitter
-        await self("config", "credential.useHttpPath", "true")
-        await self(
-            "config",
-            "credential.helper",
-            f"cache --timeout=300 --socket={self.tmp}/.git-creds-socket",
-        )
-        # Setting the number of checkout workers to 0 will use as many workers
-        # as there are logical cores on the machine.
-        # https://git-scm.com/docs/git-config#Documentation/git-config.txt-checkoutworkers
-        await self("config", "checkout.workers", "0")
+            self.env = {
+                "GIT_TERMINAL_PROMPT": "0",
+                "GIT_CONFIG_NOSYSTEM": "1",
+                "GIT_NOGLOB_PATHSPECS": "1",
+                "GIT_PROTOCOL_FROM_USER": "0",
+                "GIT_ALLOW_PROTOCOL": "https",
+                "PATH": os.environ["PATH"],
+                "HOME": self.tmp,
+                "TMPDIR": self.tmp,
+                "LANG": "C.UTF-8",
+            }
+            version = await self("version")
+            self.log("git directory created", path=self.tmp, version=version)
+            await self("init", "--initial-branch=tmp-mergify-trunk")
+            # NOTE(sileht): Bump the repository format. This ensures required
+            # extensions (promisor, partialclonefilter) are present in git cli and
+            # raise an error if not. Avoiding git cli to fallback to full clone
+            # behavior for us.
+            await self("config", "core.repositoryformatversion", "1")
+            # Disable gc since this is a thrown-away repository
+            await self("config", "gc.auto", "0")
+            # Use one git cache daemon per Gitter
+            await self("config", "credential.useHttpPath", "true")
+            await self(
+                "config",
+                "credential.helper",
+                f"cache --timeout=300 --socket={self.tmp}/.git-creds-socket",
+            )
+            # Setting the number of checkout workers to 0 will use as many workers
+            # as there are logical cores on the machine.
+            # https://git-scm.com/docs/git-config#Documentation/git-config.txt-checkoutworkers
+            await self("config", "checkout.workers", "0")
+        except Exception:
+            await self._cleanup_tmp()
+            raise
 
     def log(self, message: str, level: int = logging.INFO, **extra: typing.Any) -> None:
         self._log_level = max(level, self._log_level)
@@ -258,6 +262,17 @@ class Gitter:
             and "(stale info)" in message
         )
 
+    async def _cleanup_tmp(self) -> None:
+        ongoing_exc_type, ongoing_exc_value, ongoing_tb = sys.exc_info()
+        try:
+            await self._td.__aexit__(
+                ongoing_exc_type,
+                ongoing_exc_value,
+                ongoing_tb,
+            )
+        except OSError:
+            self.log("git temporary directory cleanup fail.")
+
     async def __aexit__(
         self,
         exc_type: type[Exception] | None,
@@ -279,15 +294,7 @@ class Gitter:
             except GitError:  # pragma: no cover
                 self.log("git credential-cache exit fail", level=logging.ERROR)
 
-            ongoing_exc_type, ongoing_exc_value, ongoing_tb = sys.exc_info()
-            try:
-                await self._td.__aexit__(
-                    ongoing_exc_type,
-                    ongoing_exc_value,
-                    ongoing_tb,
-                )
-            except OSError:
-                self.log("git temporary directory cleanup fail.")
+            await self._cleanup_tmp()
         finally:
             self.logger.log(self._log_level, "gitter messages", messages=self._messages)
 

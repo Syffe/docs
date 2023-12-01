@@ -33,6 +33,18 @@ async def test_gitter(
     assert not os.path.exists(f"{git.repository}/.git")
 
 
+async def test_gitter_init_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    monkeypatch.delenv("PATH")
+    git = gitter.Gitter(mock.Mock())
+    with pytest.raises(KeyError):
+        await git.init()
+    assert git.tmp is not None
+    assert not os.path.exists(git.tmp)
+
+
 @pytest.mark.parametrize(
     "stdout, exception, exc_message",
     (
