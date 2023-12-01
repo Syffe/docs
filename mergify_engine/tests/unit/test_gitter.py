@@ -8,7 +8,6 @@ from mergify_engine import redis_utils
 
 
 async def test_gitter(
-    monkeypatch: pytest.MonkeyPatch,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     async with gitter.Gitter(mock.Mock()) as git:
