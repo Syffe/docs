@@ -3850,6 +3850,17 @@ files = [
 ]
 
 [[package]]
+name = "types-aiofiles"
+version = "23.2.0.0"
+description = "Typing stubs for aiofiles"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-aiofiles-23.2.0.0.tar.gz", hash = "sha256:b6a7127bd232e0802532837b84140b1cd5df19ee60bea3a5699720d2b583361b"},
+    {file = "types_aiofiles-23.2.0.0-py3-none-any.whl", hash = "sha256:5d6719e8148cb2a9c4ea46dad86d50d3b675c46a940adca698533a8d2216d53d"},
+]
+
+[[package]]
 name = "types-first"
 version = "2.0.5.2"
 description = "Typing stubs for first"
@@ -4478,4 +4489,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "b8e9880f42befbafbb19c2a0d16be82f5e1c6b327d690ab103caf21693e53117"
+content-hash = "354767bbaf4675efa668ee6e22903d7337e1f43916ea9e8b38b19be6f510525a"

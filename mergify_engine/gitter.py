@@ -5,12 +5,12 @@ import datetime
 import logging
 import os
 import re
-import shutil
 import sys
-import tempfile
 import types
 import typing
 import urllib.parse
+
+import aiofiles.tempfile
 
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -99,6 +99,15 @@ class Gitter:
         default_factory=list,
     )
     _log_level: int = logging.INFO
+    _td: aiofiles.tempfile.AiofilesContextManagerTempDir[
+        None,
+        None,
+        aiofiles.tempfile.temptypes.AsyncTemporaryDirectory,
+    ] = dataclasses.field(
+        default_factory=lambda: aiofiles.tempfile.TemporaryDirectory(
+            prefix="mergify-gitter",
+        ),
+    )
 
     GIT_COMMAND_TIMEOUT: float = dataclasses.field(
         init=False,
@@ -110,10 +119,10 @@ class Gitter:
         return self
 
     async def init(self) -> None:
-        # TODO(sileht): use aiofiles instead of thread
-        self.tmp = await asyncio.to_thread(tempfile.mkdtemp, prefix="mergify-gitter")
+        self.tmp = await self._td.__aenter__()
         if self.tmp is None:
-            raise RuntimeError("mkdtemp failed")
+            # This is to please mypy only as it never returns None
+            raise RuntimeError("Unable to create temporary directory?")
         self.repository = os.path.join(self.tmp, "repository")
         # TODO(sileht): use aiofiles instead of thread
         await asyncio.to_thread(os.mkdir, self.repository)
@@ -258,9 +267,6 @@ class Gitter:
         await self.cleanup()
 
     async def cleanup(self) -> None:
-        if self.tmp is None:
-            return
-
         self.log(f"cleaning: {self.tmp}")
 
         try:
@@ -272,11 +278,14 @@ class Gitter:
                 )
             except GitError:  # pragma: no cover
                 self.log("git credential-cache exit fail", level=logging.ERROR)
-            # TODO(sileht): use aiofiles instead of thread
 
-            ongoing_exc_type, ongoing_exc_value, _ = sys.exc_info()
+            ongoing_exc_type, ongoing_exc_value, ongoing_tb = sys.exc_info()
             try:
-                await asyncio.to_thread(shutil.rmtree, self.tmp)
+                await self._td.__aexit__(
+                    ongoing_exc_type,
+                    ongoing_exc_value,
+                    ongoing_tb,
+                )
             except OSError:
                 self.log("git temporary directory cleanup fail.")
         finally:
