@@ -65,6 +65,7 @@ queue_rules:
                       - "#approved-reviews-by>=1"
       - label=hotfix
       - "#changes-requested-reviews-by=0"
+      - "#review-threads-unresolved=0"
       - "#review-requested=0"
     merge_conditions:
       - and: *CheckRuns
