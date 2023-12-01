@@ -86,7 +86,7 @@ class ExtractedDataObject(typing.TypedDict):
 async def get_log_lines(
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
     job: gh_models.WorkflowJob,
-) -> list[str]:
+) -> list[str] | None:
     log_lines = None
 
     log = await gcs_client.download(
@@ -109,6 +109,7 @@ async def get_log_lines(
         except http.HTTPStatusError as e:
             if e.response.status_code in (410, 404):
                 job.log_status = gh_models.WorkflowJobLogStatus.GONE
+                return None
             raise
 
         await gcs_client.upload(

@@ -430,7 +430,7 @@ async def test_embed_logs_on_various_data(
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
             },
-            ["log-embedder: unexpected failure, retrying later"],
+            [],
         ),
         (
             {

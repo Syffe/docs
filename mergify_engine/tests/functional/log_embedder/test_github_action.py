@@ -310,8 +310,9 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
                 log_lines = await gha_embedder.get_log_lines(gcs_client, job)
 
-                async with openai_api.OpenAIClient() as openai_client:
-                    await gha_embedder.embed_log(openai_client, job, log_lines)
+                if log_lines is not None:
+                    async with openai_api.OpenAIClient() as openai_client:
+                        await gha_embedder.embed_log(openai_client, job, log_lines)
 
             await session.commit()
 
