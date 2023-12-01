@@ -57,9 +57,6 @@ google-cloud-storage = "^2.13.0"
 httpx-sse = "^0.3.1"
 
 [tool.poetry.group.dev.dependencies]
-sphinx = "^7.2.6"
-sphinxcontrib-spelling = "^8.0.0"
-sphinxcontrib-jquery = "^4.1"
 respx = "^0.20.2"
 semgrep = "^1.51.0"
 types-first = "^2.0.5"
