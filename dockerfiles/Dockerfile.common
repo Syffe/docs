@@ -37,9 +37,7 @@ COPY tools/import-checks.sh /app/tools/
 COPY mergify_engine /app/mergify_engine
 COPY datadog /app/datadog
 COPY datadog-wrapper.sh /app/
-RUN poetry install --only main --sync && \
-    python3 -m compileall -f -j 10 -b /app/mergify_engine && \
-    find /app/mergify_engine -name '*.py' -and -not -path '/app/mergify_engine/models/db_migration/versions/*.py' -delete
+RUN poetry install --only main --sync
 
 ### BASE RUNNER ###
 FROM python-base as system-base
