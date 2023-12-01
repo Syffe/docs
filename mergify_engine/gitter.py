@@ -10,6 +10,7 @@ import types
 import typing
 import urllib.parse
 
+import aiofiles.os
 import aiofiles.tempfile
 
 from mergify_engine import github_types
@@ -124,8 +125,7 @@ class Gitter:
             # This is to please mypy only as it never returns None
             raise RuntimeError("Unable to create temporary directory?")
         self.repository = os.path.join(self.tmp, "repository")
-        # TODO(sileht): use aiofiles instead of thread
-        await asyncio.to_thread(os.mkdir, self.repository)
+        await aiofiles.os.mkdir(self.repository)
 
         self.env = {
             "GIT_TERMINAL_PROMPT": "0",
