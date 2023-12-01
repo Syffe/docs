@@ -465,11 +465,11 @@ QueueRulesSchema = voluptuous.All(
                 ): voluptuous.Any("queue", "merge", "none"),
                 voluptuous.Required("speculative_checks", default=1): voluptuous.All(
                     int,
-                    voluptuous.Range(min=1, max=20),
+                    voluptuous.Range(min=1, max=128),
                 ),
                 voluptuous.Required("batch_size", default=1): voluptuous.All(
                     int,
-                    voluptuous.Range(min=1, max=20),
+                    voluptuous.Range(min=1, max=128),
                 ),
                 voluptuous.Required(
                     "batch_max_wait_time",
