@@ -128,9 +128,6 @@ class RedisLinks:
     connection_pool_cls: type[
         redispy.connection.ConnectionPool
     ] = redispy.connection.ConnectionPool
-    connection_pool_kwargs: dict[str, typing.Any] = dataclasses.field(
-        default_factory=dict,
-    )
 
     # NOTE(sileht): This is used, only to limit connection on webserver side.
     # The worker open only one connection per asyncio tasks per worker.
@@ -230,7 +227,7 @@ class RedisLinks:
         max_connections: int | None = None,
         redis_connect_func: redispy.connection.ConnectCallbackT | None = None,
     ) -> redispy.Redis[bytes]:
-        options: dict[str, typing.Any] = self.connection_pool_kwargs.copy()
+        options: dict[str, typing.Any] = {}
 
         if settings.REDIS_SSL_VERIFY_MODE_CERT_NONE and url.scheme == "rediss":
             options["ssl_check_hostname"] = False
