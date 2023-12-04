@@ -1911,8 +1911,12 @@
   },
   {
     "VulnerabilityID": "CVE-2023-44487",
+    "VendorIDs": [
+      "DSA-5570-1"
+    ],
     "PkgName": "libnghttp2-14",
-    "Status": "affected",
+    "FixedVersion": "1.43.0-1+deb11u1",
+    "Status": "fixed",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-44487",
     "Title": "HTTP/2: Multiple HTTP/2 enabled web servers are vulnerable to a DDoS attack (Rapid Reset Attack)",
