@@ -53,6 +53,8 @@ class Event(models.Base):
         server_default=func.now(),
         default=date.utcnow,
         anonymizer_config="anon.dnoise(received_at, ''2 days'')",
+        # NOTE(sileht): Required by delete_outdated()
+        index=True,
     )
     pull_request: orm.Mapped[int | None] = orm.mapped_column(
         sqlalchemy.Integer,
