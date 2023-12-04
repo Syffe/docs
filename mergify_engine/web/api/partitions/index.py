@@ -13,6 +13,7 @@ from mergify_engine.web.api import security
 from mergify_engine.web.api.queues import estimated_time_to_merge
 from mergify_engine.web.api.queues import types as queue_types
 from mergify_engine.web.api.queues.index import BriefMergeabilityCheck
+from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 router = fastapi.APIRouter(
@@ -88,16 +89,30 @@ async def repository_partitions(
     session: database.Session,
     repository_ctxt: security.RepositoryWithConfig,
 ) -> list[BranchPartitions]:
+    queue_rules = repository_ctxt.mergify_config["queue_rules"]
+    queue_names = tuple(rule.name for rule in queue_rules)
+
+    partition_rules = repository_ctxt.mergify_config["partition_rules"]
+    if partition_rules:
+        partition_names = tuple(rule.name for rule in partition_rules)
+    else:
+        partition_names = (partr_config.DEFAULT_PARTITION_NAME,)
+
+    stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
+        session,
+        repository_ctxt,
+        partition_names,
+        queue_names,
+    )
+
     partition_list = []
 
-    async for convoy in merge_train.Convoy.iter_convoys(
-        repository_ctxt,
-    ):
+    async for convoy in merge_train.Convoy.iter_convoys(repository_ctxt):
         branch_partitions = BranchPartitions(branch_name=convoy.ref, partitions={})
 
-        for rule in repository_ctxt.mergify_config["partition_rules"]:
+        for rule in partition_rules:
             branch_partitions.partitions.setdefault(rule.name, [])
-        if not repository_ctxt.mergify_config["partition_rules"]:
+        if not partition_rules:
             branch_partitions.partitions.setdefault(
                 partr_config.DEFAULT_PARTITION_NAME,
                 [],
@@ -112,9 +127,7 @@ async def repository_partitions(
                 train._iter_embarked_pulls(),
             ):
                 try:
-                    queue_rule = repository_ctxt.mergify_config["queue_rules"][
-                        embarked_pull.config["name"]
-                    ]
+                    queue_rule = queue_rules[embarked_pull.config["name"]]
                 except KeyError:
                     # This car is going to be deleted so skip it
                     continue
@@ -133,11 +146,11 @@ async def repository_partitions(
 
                 previous_eta = (
                     estimated_time_of_merge
-                ) = await estimated_time_to_merge.get_estimation(
-                    session,
+                ) = await estimated_time_to_merge.get_estimation_from_stats(
                     train,
                     embarked_pull,
                     position - previous_queue_idx,
+                    stats,
                     car,
                     previous_eta,
                     previous_car,
