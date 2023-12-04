@@ -224,7 +224,7 @@ class RedisLinks:
         return RedisCache(client)
 
     def redis_from_url(
-        self,  # FIXME(sileht): mypy is lost if the method is static...
+        self,
         name: str,
         url: config_types.RedisDSN,
         max_connections: int | None = None,
