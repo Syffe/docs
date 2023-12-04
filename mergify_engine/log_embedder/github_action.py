@@ -4,6 +4,7 @@ import contextlib
 import dataclasses
 import datetime
 import io
+import json
 import re
 import typing
 import zipfile
@@ -19,7 +20,7 @@ from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import flaky_check
 from mergify_engine import github_types
-from mergify_engine import json
+from mergify_engine import json as mergify_json
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.clients import github
@@ -38,26 +39,25 @@ WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP = re.compile(r"[\*\"/\\<>:|\?]")
 LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 LOG_EMBEDDER_MAX_ATTEMPTS = 30
 
+JSON_STRUCTURE = {
+    "problem_type": "What is the root cause",
+    "language": "The programming language of the program that produces these logs",
+    "filename": "The filename where the error was raised.",
+    "lineno": "The line number where the error was raised",
+    "error": "The precise error type",
+    "test_framework": "The framework that was running when the error was raised",
+    "stack_trace": "The stack trace of the error",
+}
+
 EXTRACT_DATA_QUERY_TEMPLATE = openai_api.ChatCompletionQuery(
     role="user",
-    content="""Analyze the program logs I will provide you and identify the root cause of the program's failure.
+    content=f"""Analyze the program logs I will provide you and identify the root cause of the program's failure.
 Your response must be an array of json object matching the following json structure.
 If you find only one failure, add only one object to the array.
 If you identify multiple source of failure, add multiple objects in the array.
 If you don't find the requested information, don't speculate, fill the field with json `null` value.
-JSON response structure:
-{"failures: [{json object}]"}
-JSON object structure:
-{
-"problem_type": "What is the root cause",
-"language": "The programming language of the program that produces these logs",
-"filename": "The filename where the error was raised.",
-"lineno": "The line number where the error was raised",
-"error": "The precise error type",
-"test_framework": "The framework that was running when the error was raised"
-"stack_trace: "The stack trace of the error",
-}
-
+JSON response structure: {{"failures: [{{json object}}]"}}
+JSON object structure: {json.dumps(JSON_STRUCTURE)}
 Logs:
 """,
     answer_size=500,
@@ -120,7 +120,7 @@ async def get_log_lines(
         await gcs_client.upload(
             settings.LOG_EMBEDDER_GCS_BUCKET,
             f"{job.repository.owner.id}/{job.repository.id}/{job.id}/jobs.json",
-            json.dumps(job.as_github_dict()).encode("utf-8"),
+            mergify_json.dumps(job.as_github_dict()).encode("utf-8"),
         )
 
         job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
@@ -290,7 +290,8 @@ async def extract_data_from_log(
     )
 
     chat_completion = await openai_client.get_chat_completion(query)
-    chat_response = chat_completion["choices"][0].get("message", {}).get("content")
+    choice = chat_completion["choices"][0]
+    chat_response = choice.get("message", {}).get("content")
 
     if not chat_response:
         raise UnexpectedLogEmbedderError(
@@ -298,9 +299,20 @@ async def extract_data_from_log(
             log_extras={"chat_completion": chat_completion},
         )
 
-    extracted_data: list[ExtractedDataObject] = json.loads(chat_response)["failures"]
+    try:
+        extracted_data: list[ExtractedDataObject] = json.loads(chat_response)[
+            "failures"
+        ]
+    except json.JSONDecodeError:
+        if choice["finish_reason"] == openai_api.ChatCompletionFinishReason.length:
+            # FIXME(Kontrolix): It means that GPT responde with a too long response,
+            # for now I have no better solution than push the error under the carpet.
+            # But we will have to improve the prompt or the cleaner or the model we use ...
+            extracted_data = []
+        else:
+            raise
 
-    # FIXME(Kontrolix): It means that ChatGPT found no error, for now I have no better
+    # FIXME(Kontrolix): It means that GPT found no error, for now I have no better
     # solution than push the error under the carpet. But we will have to improve
     # the prompt or the cleaner or the model we use ...
     if extracted_data is None or extracted_data == [None]:

@@ -610,7 +610,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 assert metadata.lineno == "15"
                 assert (
                     metadata.stack_trace
-                    == """TypeError: Cannot read properties of undefined (reading 'id')\n   at eval (eval at callAsyncFunction (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15143:16), <anonymous>:15:31)\n   at processTicksAndRejections (node:internal/process/task_queues:96:5)\n   at async main (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15236:20)"""
+                    == """TypeError: Cannot read properties of undefined (reading 'id')\n    at eval (eval at callAsyncFunction (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15143:16), <anonymous>:15:31)\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)\n    at async main (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15236:20)"""
                 )
                 assert (
                     metadata.error
