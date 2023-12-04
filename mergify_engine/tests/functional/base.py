@@ -979,23 +979,26 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 gitter_concurrent_jobs=1,
                 ci_event_processing_idle_time=0.01,
             )
-            await w.start()
-            gitter_serv = w.get_service(gitter_service.GitterService)
-            assert gitter_serv is not None
+            try:
+                await w.start()
+                gitter_serv = w.get_service(gitter_service.GitterService)
+                assert gitter_serv is not None
 
-            while (
-                (await w._redis_links.stream.zcard("streams")) > 0
-                or self.worker_concurrency_works > 0
-                or len(gitter_serv._jobs) > 0
-                or len(
-                    await delayed_refresh.get_list_of_refresh_to_send(self.redis_links),
-                )
-                > 0
-            ):
-                await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
-
-        w.stop()
-        await w.wait_shutdown_complete()
+                while (
+                    (await w._redis_links.stream.zcard("streams")) > 0
+                    or self.worker_concurrency_works > 0
+                    or len(gitter_serv._jobs) > 0
+                    or len(
+                        await delayed_refresh.get_list_of_refresh_to_send(
+                            self.redis_links,
+                        ),
+                    )
+                    > 0
+                ):
+                    await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
+            finally:
+                w.stop()
+                await w.wait_shutdown_complete()
 
     async def run_engine(
         self,
@@ -1048,17 +1051,18 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 await github_event_processing.store_redis_events_in_pg(self.redis_links)
             LOG.info("github-in-postgres finished")
 
-        while (await self.redis_links.stream.zcard("streams")) > 0:
-            await shared_service.shared_stream_worker_task(0)
-            await dedicated_service.dedicated_stream_worker_task(
-                settings.TESTING_ORGANIZATION_ID,
+        try:
+            while (await self.redis_links.stream.zcard("streams")) > 0:
+                await shared_service.shared_stream_worker_task(0)
+                await dedicated_service.dedicated_stream_worker_task(
+                    settings.TESTING_ORGANIZATION_ID,
+                )
+                while not gitter_serv._queue.empty():
+                    await gitter_serv._gitter_worker("gitter-worker-0")
+        finally:
+            await task.stop_and_wait(
+                list(itertools.chain.from_iterable([s.tasks for s in services])),
             )
-            while not gitter_serv._queue.empty():
-                await gitter_serv._gitter_worker("gitter-worker-0")
-
-        await task.stop_and_wait(
-            list(itertools.chain.from_iterable([s.tasks for s in services])),
-        )
 
         if additionnal_services and "ci-event-processing" in additionnal_services:
             LOG.info("Running ci-event-processing")
