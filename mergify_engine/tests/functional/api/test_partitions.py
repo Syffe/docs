@@ -7,6 +7,7 @@ from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.tests.tardis import time_travel
 
 
@@ -627,17 +628,17 @@ class TestPartitionsApi(base.FunctionalTestBase):
                 [
                     {
                         "event_type": "pull_request",
-                        "payload": {
-                            "number": p1["number"],
-                            "pull_request": {"merged": True},
-                        },
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            pr_number=p1["number"],
+                            merged=True,
+                        ),
                     },
                     {
                         "event_type": "pull_request",
-                        "payload": {
-                            "number": p2["number"],
-                            "pull_request": {"merged": True},
-                        },
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            pr_number=p2["number"],
+                            merged=True,
+                        ),
                     },
                 ],
             )
@@ -663,24 +664,24 @@ class TestPartitionsApi(base.FunctionalTestBase):
                 [
                     {
                         "event_type": "pull_request",
-                        "payload": {
-                            "number": p1_low["number"],
-                            "pull_request": {"merged": True},
-                        },
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            pr_number=p1_low["number"],
+                            merged=True,
+                        ),
                     },
                     {
                         "event_type": "pull_request",
-                        "payload": {
-                            "number": p2_low["number"],
-                            "pull_request": {"merged": True},
-                        },
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            pr_number=p2_low["number"],
+                            merged=True,
+                        ),
                     },
                     {
                         "event_type": "pull_request",
-                        "payload": {
-                            "number": p3_low["number"],
-                            "pull_request": {"merged": True},
-                        },
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            pr_number=p3_low["number"],
+                            merged=True,
+                        ),
                     },
                 ],
             )
@@ -808,24 +809,24 @@ class TestPartitionsApi(base.FunctionalTestBase):
                 [
                     {
                         "event_type": "pull_request",
-                        "payload": {
-                            "number": p1["number"],
-                            "pull_request": {"merged": True},
-                        },
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            pr_number=p1["number"],
+                            merged=True,
+                        ),
                     },
                     {
                         "event_type": "pull_request",
-                        "payload": {
-                            "number": p2["number"],
-                            "pull_request": {"merged": True},
-                        },
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            pr_number=p2["number"],
+                            merged=True,
+                        ),
                     },
                     {
                         "event_type": "pull_request",
-                        "payload": {
-                            "number": p3["number"],
-                            "pull_request": {"merged": True},
-                        },
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            pr_number=p3["number"],
+                            merged=True,
+                        ),
                     },
                 ],
             )

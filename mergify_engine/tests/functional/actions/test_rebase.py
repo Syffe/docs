@@ -31,7 +31,7 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         await self.git("commit", "--no-edit", "-m", "commit ahead")
         await self.git("push", "--quiet", "origin", self.main_branch_name)
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         await self.run_engine()
         p_updated = await self.wait_for_pull_request("synchronize")

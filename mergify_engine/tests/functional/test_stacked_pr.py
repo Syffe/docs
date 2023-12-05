@@ -3,6 +3,7 @@ import yaml
 
 from mergify_engine import subscription
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import utils as tests_utils
 
 
 @pytest.mark.xdist_group(group="delete_branch_on_merge")
@@ -63,7 +64,9 @@ class TestStackedPr(base.FunctionalTestBase):
             [
                 {
                     "event_type": "push",
-                    "payload": {"ref": f"refs/heads/{branch_to_push}"},
+                    "payload": tests_utils.get_push_event_payload(
+                        branch_name=branch_to_push,
+                    ),
                 }
                 for branch_to_push in branches_to_push
             ],

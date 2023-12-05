@@ -253,7 +253,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         p2_closed = await self.wait_for_pull_request("closed", pr_number=p2["number"])
         assert p2_closed["pull_request"]["merged"]
 
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         check_run_p2 = await self.wait_for_check_run(

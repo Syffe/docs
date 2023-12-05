@@ -545,7 +545,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                 "origin",
                 f"random:{self.main_branch_name}",
             )
-            await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+            await self.wait_for_push(branch_name=self.main_branch_name)
             await self.run_engine()
             self.assertEqual(3, reset_mock.call_count)
 
@@ -618,7 +618,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                 "origin",
                 f"random:{self.main_branch_name}",
             )
-            await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+            await self.wait_for_push(branch_name=self.main_branch_name)
             await self.run_engine()
 
             self.assertEqual(2, reset_mock.call_count)
@@ -1863,7 +1863,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
 
         p2 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
         await self.merge_pull(p2["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         # draft_pr_p1 should be closed and reopened and be part of partition

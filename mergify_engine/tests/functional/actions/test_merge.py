@@ -176,7 +176,7 @@ class TestMergeAction(base.FunctionalTestBase):
         # set admin bot account
         p2 = await self.create_pr(files={".mergify.yml": yaml.dump(updated_rules)})
         await self.merge_pull_as_admin(p2["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
         p = await self.get_pull(p["number"])
         await self.create_status(p, "continuous-integration/fake-ci-queue")

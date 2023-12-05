@@ -35,7 +35,7 @@ class TestUpdateActionWithoutBot(base.FunctionalTestBase):
         await self.run_engine()
         p1_updated = await self.wait_for_pull_request("closed")
         assert p1_updated["pull_request"]["merged"]
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         await self.wait_for("pull_request", {"action": "synchronize"})
@@ -75,7 +75,7 @@ class TestUpdateActionWithoutBot(base.FunctionalTestBase):
         p1_updated = await self.wait_for_pull_request("closed")
         assert p1_updated["pull_request"]["merged"]
 
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         await self.wait_for("pull_request", {"action": "synchronize"})
@@ -170,7 +170,7 @@ class TestUpdateActionWithBot(base.FunctionalTestBase):
         p1_updated = await self.wait_for_pull_request("closed")
         assert p1_updated["pull_request"]["merged"]
 
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         await self.wait_for("pull_request", {"action": "synchronize"})

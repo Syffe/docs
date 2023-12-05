@@ -533,7 +533,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         p1 = await self.create_pr(files={"TESTING": "p1"})
         p2 = await self.create_pr(files={"TESTING": "p2"})
         await self.merge_pull(p1["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         # Wait a bit than GitHub refresh the mergeable_state before running the
         # engine
@@ -561,7 +561,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         p1 = await self.create_pr(files={"TESTING": "p1"})
         p2 = await self.create_pr(files={"TESTING": "p2"}, draft=True)
         await self.merge_pull(p1["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         # Wait a bit than GitHub refresh the mergeable_state before running the
         # engine
@@ -729,7 +729,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         ] = f"base={self.main_branch_name}"
         p_config = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
         await self.merge_pull(p_config["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         await self.run_engine()
         comment = await self.wait_for_issue_comment(str(p["number"]), "created")

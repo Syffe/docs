@@ -94,7 +94,7 @@ class TestBranchProtection(base.FunctionalTestBase):
         draft_pr = await self.wait_for_pull_request("opened")
         await self.create_status(draft_pr["pull_request"])
         await self.run_engine()
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         for _ in (p1, p2):
@@ -277,7 +277,7 @@ class TestBranchProtection(base.FunctionalTestBase):
         # pr2 should be merged because not created by a bot
         await self.wait_for_pull_request("synchronize", pr2["number"])
         await self.wait_for_pull_request("closed", pr2["number"], merged=True)
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         # Pull changes for pr4 to be uptodate
         await self.git("pull")

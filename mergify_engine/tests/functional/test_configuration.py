@@ -270,7 +270,7 @@ did not find expected alphabetic or numeric character
         await self.git("add", "random")
         await self.git("commit", "--no-edit", "-m", "random update")
         await self.git("push", "--quiet", "origin", self.main_branch_name)
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         cached_config_file = await self.repository_ctxt.get_cached_config_file()
@@ -283,7 +283,7 @@ did not find expected alphabetic or numeric character
         await self.git("add", ".mergify.yml")
         await self.git("commit", "--no-edit", "-m", "conf update")
         await self.git("push", "--quiet", "origin", self.main_branch_name)
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         cached_config_file = await self.repository_ctxt.get_cached_config_file()
@@ -441,7 +441,7 @@ did not find expected alphabetic or numeric character
 
         p_change_config = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
         await self.merge_pull(p_change_config["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         ctxt = context.Context(self.repository_ctxt, p, [])

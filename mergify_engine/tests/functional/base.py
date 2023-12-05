@@ -49,6 +49,7 @@ from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import conftest as func_conftest
 from mergify_engine.tests.functional import event_reader
+from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.worker import dedicated_workers_cache_syncer_service
 from mergify_engine.worker import dedicated_workers_spawner_service
 from mergify_engine.worker import gitter_service
@@ -524,6 +525,20 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     async def receive_and_forward_all_events_to_engine(self) -> None:
         return await self._event_reader.receive_and_forward_all_events_to_engine()
 
+    async def wait_for_push(
+        self,
+        ref: str | None = None,
+        branch_name: str | None = None,
+    ) -> github_types.GitHubEventPush:
+        payload = tests_utils.get_push_event_payload(ref=ref, branch_name=branch_name)
+        return typing.cast(
+            github_types.GitHubEventPush,
+            await self.wait_for(
+                "push",
+                payload,
+            ),
+        )
+
     async def wait_for_pull_request(
         self,
         action: github_types.GitHubEventPullRequestActionType | None = None,
@@ -531,16 +546,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         merged: bool | None = None,
         forward_to_engine: bool = True,
     ) -> github_types.GitHubEventPullRequest:
-        wait_for_payload: dict[
-            str,
-            typing.Any,
-        ] = {}
-        if action is not None:
-            wait_for_payload["action"] = action
-        if pr_number is not None:
-            wait_for_payload["number"] = pr_number
-        if merged is not None:
-            wait_for_payload["pull_request"] = {"merged": merged}
+        wait_for_payload = tests_utils.get_pull_request_event_payload(
+            action=action,
+            pr_number=pr_number,
+            merged=merged,
+        )
 
         return typing.cast(
             github_types.GitHubEventPullRequest,
@@ -556,9 +566,10 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         test_id: str,
         action: github_types.GitHubEventIssueCommentActionType,
     ) -> github_types.GitHubEventIssueComment:
+        wait_for_payload = tests_utils.get_issue_comment_event_payload(action)
         return typing.cast(
             github_types.GitHubEventIssueComment,
-            await self.wait_for("issue_comment", {"action": action}, test_id=test_id),
+            await self.wait_for("issue_comment", wait_for_payload, test_id=test_id),
         )
 
     async def wait_for_check_run(
@@ -568,22 +579,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         conclusion: github_types.GitHubCheckRunConclusion | None = None,
         name: str | None = None,
     ) -> github_types.GitHubEventCheckRun:
-        if not action and not status and not conclusion and not name:
-            raise RuntimeError(
-                "Need at least one of `action`, `status`, `conclusion` or `name` when waiting for `check_run` event",
-            )
-
-        wait_for_payload: dict[str, typing.Any] = {}
-        if action:
-            wait_for_payload["action"] = action
-        if status or conclusion or name:
-            wait_for_payload["check_run"] = {}
-            if status:
-                wait_for_payload["check_run"]["status"] = status
-            if conclusion:
-                wait_for_payload["check_run"]["conclusion"] = conclusion
-            if name:
-                wait_for_payload["check_run"]["name"] = name
+        wait_for_payload = tests_utils.get_check_run_event_payload(
+            action=action,
+            status=status,
+            conclusion=conclusion,
+            name=name,
+        )
 
         return typing.cast(
             github_types.GitHubEventCheckRun,
@@ -597,9 +598,13 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self,
         state: github_types.GitHubEventReviewStateType,
     ) -> github_types.GitHubEventPullRequestReview:
+        wait_for_payload = tests_utils.get_pull_request_review_event_payload(
+            state=state,
+        )
+
         return typing.cast(
             github_types.GitHubEventPullRequestReview,
-            await self.wait_for("pull_request_review", {"review": {"state": state}}),
+            await self.wait_for("pull_request_review", wait_for_payload),
         )
 
     async def run_full_engine(self) -> None:
@@ -1123,7 +1128,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 "body": title,
             },
         )
-        await self.wait_for("pull_request", {"action": "opened"})
+        await self.wait_for_pull_request("opened")
         pr2 = typing.cast(github_types.GitHubPullRequest, resp.json())
 
         return pr1, pr2
@@ -1172,7 +1177,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.git(*args)
 
         await self.git("push", "--quiet", "origin", pr["head"]["ref"])
-        await self.wait_for("push", {"ref": f"refs/heads/{pr['head']['ref']}"})
+        await self.wait_for_push(branch_name=pr["head"]["ref"])
         await self.wait_for_pull_request("synchronize", pr["number"])
 
         commits = await self.get_commits(pr["number"])
@@ -1238,28 +1243,38 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         conclusion: github_types.GitHubCheckRunConclusion = "success",
         external_id: str | None = None,
     ) -> github_types.GitHubEventCheckRun:
-        payload: dict[str, typing.Any] = {"name": name, "head_sha": pull["head"]["sha"]}
-        wait_payload: dict[str, typing.Any] = {"name": name}
+        http_payload: dict[str, typing.Any] = {
+            "name": name,
+            "head_sha": pull["head"]["sha"],
+        }
 
         if conclusion is None:
-            payload["status"] = wait_payload["status"] = "in_progress"
+            wait_payload = tests_utils.get_check_run_event_payload(
+                name=name,
+                status="in_progress",
+            )
+            http_payload["status"] = "in_progress"
         else:
-            payload["conclusion"] = conclusion
-            wait_payload.update({"status": "completed", "conclusion": conclusion})
+            wait_payload = tests_utils.get_check_run_event_payload(
+                name=name,
+                conclusion=conclusion,
+                status="completed",
+            )
+            http_payload["conclusion"] = conclusion
 
         if external_id:
-            payload["external_id"] = external_id
+            http_payload["external_id"] = external_id
 
         await self.client_integration.post(
             f"{self.url_origin}/check-runs",
-            json=payload,
+            json=http_payload,
         )
 
         return typing.cast(
             github_types.GitHubEventCheckRun,
             await self.wait_for(
                 "check_run",
-                {"check_run": wait_payload},
+                wait_payload,
                 test_id=self._extract_test_id_from_pull_request_for_check_run(pull),
             ),
         )
@@ -1293,13 +1308,20 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         conclusion: github_types.GitHubCheckRunConclusion = "success",
     ) -> github_types.GitHubEventCheckRun:
         payload: dict[str, typing.Any] = {"head_sha": pull["head"]["sha"]}
-        wait_payload: dict[str, typing.Any] = {"id": check_id}
 
         if conclusion is None:
-            payload["status"] = wait_payload["status"] = "in_progress"
+            wait_payload = tests_utils.get_check_run_event_payload(
+                check_id=check_id,
+                status="in_progress",
+            )
+            payload["status"] = "in_progress"
         else:
+            wait_payload = tests_utils.get_check_run_event_payload(
+                check_id=check_id,
+                status="completed",
+                conclusion=conclusion,
+            )
             payload["conclusion"] = conclusion
-            wait_payload.update({"status": "completed", "conclusion": conclusion})
 
         await self.client_integration.patch(
             f"{self.url_origin}/check-runs/{check_id}",
@@ -1310,7 +1332,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             github_types.GitHubEventCheckRun,
             await self.wait_for(
                 "check_run",
-                {"check_run": wait_payload},
+                wait_payload,
             ),
         )
 
@@ -1330,7 +1352,10 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             json={"event": event, "body": f"event: {event}"},
             oauth_token=oauth_token,
         )
-        await self.wait_for("pull_request_review", {"action": "submitted"})
+        await self.wait_for(
+            "pull_request_review",
+            tests_utils.get_pull_request_review_event_payload(action="submitted"),
+        )
 
     async def get_review_requests(
         self,
@@ -1377,7 +1402,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             f"{self.url_origin}/issues/{pull_number}/comments",
             json={"body": message},
         )
-        await self.wait_for("issue_comment", {"action": "created"}, test_id=pull_number)
+        await self.wait_for_issue_comment(str(pull_number), "created")
         return typing.cast(int, response.json()["id"])
 
     async def create_comment_as_fork(
@@ -1402,7 +1427,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     ) -> int:
         comment_id = await self.create_comment(pull_number, command, as_=as_)
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"}, test_id=pull_number)
+        await self.wait_for_issue_comment(str(pull_number), "created")
         await self.run_engine()
         return comment_id
 
@@ -1576,7 +1601,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             f"{self.url_origin}/issues/{pull_number}/assignees",
             json={"assignees": [assignee]},
         )
-        await self.wait_for("pull_request", {"action": "assigned"})
+        await self.wait_for_pull_request("assigned")
 
     async def send_refresh(
         self,
@@ -1621,7 +1646,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.client_integration.delete(
             f"{self.url_origin}/issues/{pull_number}/labels/{label}",
         )
-        await self.wait_for("pull_request", {"action": "unlabeled"})
+        await self.wait_for_pull_request("unlabeled")
 
     async def get_graphql_repository_id(
         self,
@@ -2118,7 +2143,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             (await self.git("log", "-1", "--format=%H")).strip(),
         )
         await self.git("push", "--quiet", "origin", f"random:{destination_branch}")
-        await self.wait_for("push", {"ref": f"refs/heads/{destination_branch}"})
+        await self.wait_for_push(branch_name=destination_branch)
         return head_sha
 
     async def change_pull_request_commit_sha(

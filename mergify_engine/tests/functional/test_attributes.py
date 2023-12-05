@@ -70,7 +70,7 @@ class TestAttributes(base.FunctionalTestBase):
             pr_force_rebase = await self.create_pr()
 
             await self.merge_pull(pr_force_rebase["number"])
-            await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+            await self.wait_for_push(branch_name=self.main_branch_name)
 
             await self.run_full_engine()
             pr_queue = await self.wait_for_pull_request("opened")
@@ -223,7 +223,7 @@ class TestAttributes(base.FunctionalTestBase):
 
         pr_force_rebase = await self.create_pr(two_commits=True)
         await self.merge_pull_as_admin(pr_force_rebase["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         await self.run_engine()
 
@@ -258,7 +258,7 @@ class TestAttributes(base.FunctionalTestBase):
 
         pr_force_rebase = await self.create_pr(two_commits=True)
         await self.merge_pull_as_admin(pr_force_rebase["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         await self.git("reset", "--hard", "HEAD^^")
         p = await self.create_pr(git_tree_ready=True)

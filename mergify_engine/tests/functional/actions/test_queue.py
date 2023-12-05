@@ -32,6 +32,7 @@ from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.tests.tardis import time_travel
 from mergify_engine.worker import manager
 from mergify_engine.worker import stream as stream_worker
@@ -1333,7 +1334,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr(files={".mergify.yml": yaml.dump(updated_rules)})
         await self.merge_pull(p2["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         p = await self.get_pull(p["number"])
@@ -1764,7 +1765,7 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force p1 to be rebased
         p2 = await self.create_pr()
         p2_merged = await self.merge_pull_as_admin(p2["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         await self.wait_for_pull_request("synchronize", p1["number"])
@@ -1789,7 +1790,7 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force p1 to be rebased a second time
         p3 = await self.create_pr()
         p3_merged = await self.merge_pull_as_admin(p3["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         await self.wait_for_pull_request("synchronize", p1["number"])
@@ -2869,7 +2870,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for_pull_request("closed", tmp_pull["number"])
         p1_merged = await self.wait_for_pull_request("closed", p1["number"])
 
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         await self.assert_merge_queue_contents(q, None, [])
         # ensure the MERGE QUEUE SUMMARY succeed
@@ -3447,10 +3448,17 @@ class TestQueueAction(base.FunctionalTestBase):
 
         events = await self.wait_for_all(
             [
-                {"event_type": "pull_request", "payload": {"action": "opened"}},
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="opened",
+                    ),
+                },
                 {
                     "event_type": "issue_comment",
-                    "payload": {"action": "created"},
+                    "payload": tests_utils.get_issue_comment_event_payload(
+                        action="created",
+                    ),
                     "test_id": p1["number"],
                 },
             ],
@@ -3890,7 +3898,7 @@ previous_failed_batches:
         p1_merged = await self.wait_for_pull_request("closed", p1["number"])
         assert p1_merged["pull_request"]["merged"]
 
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         tmp_pull_2 = await self.wait_for_pull_request("opened")
 
@@ -3924,11 +3932,17 @@ previous_failed_batches:
             [
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": tmp_pull["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_pull["number"],
+                    ),
                 },
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": tmp_pull_2["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_pull_2["number"],
+                    ),
                 },
             ],
         )
@@ -4072,23 +4086,38 @@ previous_failed_batches:
             [
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": p1["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p1["number"],
+                    ),
                 },
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": p2["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p2["number"],
+                    ),
                 },
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": tmp_pull_1["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_pull_1["number"],
+                    ),
                 },
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": tmp_pull_3["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_pull_3["number"],
+                    ),
                 },
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": tmp_pull_4["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_pull_4["number"],
+                    ),
                 },
             ],
         )
@@ -4118,15 +4147,24 @@ previous_failed_batches:
             [
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": tmp_pull_6["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_pull_6["number"],
+                    ),
                 },
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": p4["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p4["number"],
+                    ),
                 },
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": p5["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p5["number"],
+                    ),
                 },
             ],
         )
@@ -4555,7 +4593,7 @@ previous_failed_batches:
         await self.git("add", "random_file.txt")
         await self.git("commit", "--no-edit", "-m", "random update")
         await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         r = await self.admin_app.delete(
@@ -4644,7 +4682,7 @@ previous_failed_batches:
         await self.git("add", "random_file.txt")
         await self.git("commit", "--no-edit", "-m", "random update")
         await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         await self.assert_api_checks_end_reason(
@@ -4718,7 +4756,7 @@ previous_failed_batches:
         await self.git("add", "random_file.txt")
         await self.git("commit", "--no-edit", "-m", "random update")
         await self.git("push", "--quiet", "origin", f"my_pr_branch:{p1['head']['ref']}")
-        await self.wait_for("push", {"ref": f"refs/heads/{p1['head']['ref']}"})
+        await self.wait_for_push(branch_name=p1["head"]["ref"])
         await self.run_engine()
 
         await self.wait_for("pull_request", {"action": "synchronize"})
@@ -4800,7 +4838,7 @@ previous_failed_batches:
         p1 = await self.create_pr()
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
@@ -4886,7 +4924,7 @@ previous_failed_batches:
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
-        event = await self.wait_for("push", {"ref": f"refs/heads/{p1['head']['ref']}"})
+        event = await self.wait_for_push(branch_name=p1["head"]["ref"])
         push_event = typing.cast(github_types.GitHubEventPush, event)
 
         assert (
@@ -4932,7 +4970,7 @@ previous_failed_batches:
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
-        event = await self.wait_for("push", {"ref": f"refs/heads/{p1['head']['ref']}"})
+        event = await self.wait_for_push(branch_name=p1["head"]["ref"])
         push_event = typing.cast(github_types.GitHubEventPush, event)
         assert (
             f"Merge branch '{self.main_branch_name}' into {p1['head']['ref']}"
@@ -5256,7 +5294,7 @@ previous_failed_batches:
         # Merge p1
         await self.create_status(tmp_mq_p1["pull_request"])
         await self.run_engine()
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
         for p in (p1, p2, p3):
             await self.wait_for("pull_request", {"action": "closed"})
@@ -5273,7 +5311,7 @@ previous_failed_batches:
         # merge the second one
         await self.create_status(tmp_mq_p2["pull_request"])
         await self.run_engine()
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
         assert (await self.get_pull(p4["number"]))["merged"]
@@ -5312,7 +5350,7 @@ previous_failed_batches:
         # merge the third one
         await self.create_status(tmp_mq_p3["pull_request"])
         await self.run_engine()
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
         assert (await self.get_pull(p5["number"]))["merged"]
 
@@ -5430,7 +5468,7 @@ previous_failed_batches:
         # Merge p1
         await self.create_status(tmp_mq_p1["pull_request"])
         await self.run_engine()
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
         pulls = await self.get_pulls()
         assert len(pulls) == 3
@@ -5596,7 +5634,7 @@ previous_failed_batches:
         await self.create_status(tmp_mq_p1)
         await self.run_engine()
 
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         pulls = await self.get_pulls()
@@ -5763,7 +5801,7 @@ previous_failed_batches:
         # Merge p2
         await self.create_status(tmp_mq_p2_bis)
         await self.run_engine()
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         # Only p1 is still there and the queue is empty
@@ -5850,27 +5888,32 @@ previous_failed_batches:
             [
                 {
                     "event_type": "pull_request",
-                    "payload": {"action": "closed", "number": tmp_mq_pr["number"]},
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_mq_pr["number"],
+                    ),
                 },
                 {
                     "event_type": "pull_request",
-                    "payload": {
-                        "action": "closed",
-                        "number": p1["number"],
-                        "pull_request": {"merged": True},
-                    },
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p1["number"],
+                        merged=True,
+                    ),
                 },
                 {
                     "event_type": "pull_request",
-                    "payload": {
-                        "action": "closed",
-                        "number": p3["number"],
-                        "pull_request": {"merged": True},
-                    },
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p3["number"],
+                        merged=True,
+                    ),
                 },
                 {
                     "event_type": "push",
-                    "payload": {"ref": f"refs/heads/{self.main_branch_name}"},
+                    "payload": tests_utils.get_push_event_payload(
+                        branch_name=self.main_branch_name,
+                    ),
                 },
             ],
         )
@@ -6314,7 +6357,7 @@ previous_failed_batches:
         p_merged_in_meantime = (await self.merge_pull(p_merged_in_meantime["number"]))[
             "pull_request"
         ]
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         await self.run_engine()
 
@@ -6809,7 +6852,7 @@ previous_failed_batches:
         p3 = await self.get_pull(p3["number"])
         assert p3["merged"]
 
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         # ensure p1 and p2 are back in queue
@@ -7084,7 +7127,7 @@ previous_failed_batches:
         await self.create_status(p1, context="very-long-ci")
         await self.run_engine()
 
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_push(branch_name=self.main_branch_name)
 
         pulls = await self.get_pulls()
         assert len(pulls) == 0
@@ -8517,16 +8560,18 @@ pull_request_rules:
             [
                 {
                     "event_type": "issue_comment",
-                    "payload": {"action": "created"},
+                    "payload": tests_utils.get_issue_comment_event_payload(
+                        action="created",
+                    ),
                     "test_id": p1["number"],
                 },
                 {
                     "event_type": "pull_request",
-                    "payload": {
-                        "action": "closed",
-                        "number": p1["number"],
-                        "pull_request": {"merged": True},
-                    },
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p1["number"],
+                        merged=True,
+                    ),
                 },
             ],
         )
@@ -8567,23 +8612,25 @@ pull_request_rules:
             [
                 {
                     "event_type": "issue_comment",
-                    "payload": {"action": "created"},
+                    "payload": tests_utils.get_issue_comment_event_payload(
+                        action="created",
+                    ),
                     "test_id": p1["number"],
                 },
                 {
                     "event_type": "issue_comment",
-                    "payload": {"action": "created"},
+                    "payload": tests_utils.get_issue_comment_event_payload(
+                        action="created",
+                    ),
                     "test_id": p1["number"],
                 },
                 {
                     "event_type": "check_run",
-                    "payload": {
-                        "check_run": {
-                            "name": "Queue: Embarked in merge queue",
-                            "status": "completed",
-                            "conclusion": "cancelled",
-                        },
-                    },
+                    "payload": tests_utils.get_check_run_event_payload(
+                        name="Queue: Embarked in merge queue",
+                        status="completed",
+                        conclusion="cancelled",
+                    ),
                 },
             ],
         )
