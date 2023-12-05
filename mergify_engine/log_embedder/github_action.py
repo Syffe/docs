@@ -96,47 +96,66 @@ class UnableToRetrieveLog(Exception):
     job: gh_models.WorkflowJob
 
 
+async def fetch_and_store_log(
+    gcs_client: google_cloud_storage.GoogleCloudStorageClient,
+    job: gh_models.WorkflowJob,
+) -> list[str]:
+    """Fetch and store original log from GitHub
+
+    Returns a list of log lines."""
+    if job.failed_step_number is None:
+        try:
+            log_lines = await download_failure_annotations(job)
+        except UnableToRetrieveLog:
+            job.log_status = gh_models.WorkflowJobLogStatus.GONE
+            raise
+        log_content = "".join(log_lines).encode()
+    else:
+        try:
+            zipped_logs_content = await download_failed_logs(job)
+        except UnableToRetrieveLog:
+            job.log_status = gh_models.WorkflowJobLogStatus.GONE
+            raise
+
+        log_content = get_step_log_from_zipped_content(zipped_logs_content, job)
+        log_lines = log_content.decode().splitlines()
+
+    await gcs_client.upload(
+        settings.LOG_EMBEDDER_GCS_BUCKET,
+        f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
+        _encode_log(log_content),
+    )
+    await gcs_client.upload(
+        settings.LOG_EMBEDDER_GCS_BUCKET,
+        f"{job.repository.owner.id}/{job.repository.id}/{job.id}/jobs.json",
+        mergify_json.dumps(job.as_github_dict()).encode("utf-8"),
+    )
+
+    job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
+
+    return log_lines
+
+
 async def get_log_lines(
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
     job: gh_models.WorkflowJob,
 ) -> list[str]:
-    log = await gcs_client.download(
-        settings.LOG_EMBEDDER_GCS_BUCKET,
-        f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
-    )
-
-    if log is None:
-        if job.failed_step_number is None:
-            try:
-                log_lines = await download_failure_annotations(job)
-            except UnableToRetrieveLog:
-                job.log_status = gh_models.WorkflowJobLogStatus.GONE
-                raise
-            log_content = "".join(log_lines).encode()
-        else:
-            try:
-                zipped_logs_content = await download_failed_logs(job)
-            except UnableToRetrieveLog:
-                job.log_status = gh_models.WorkflowJobLogStatus.GONE
-                raise
-
-            log_content = get_step_log_from_zipped_content(zipped_logs_content, job)
-            log_lines = log_content.decode().splitlines()
-
-        await gcs_client.upload(
+    if job.log_status == gh_models.WorkflowJobLogStatus.DOWNLOADED:
+        log = await gcs_client.download(
             settings.LOG_EMBEDDER_GCS_BUCKET,
             f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
-            _encode_log(log_content),
-        )
-        await gcs_client.upload(
-            settings.LOG_EMBEDDER_GCS_BUCKET,
-            f"{job.repository.owner.id}/{job.repository.id}/{job.id}/jobs.json",
-            mergify_json.dumps(job.as_github_dict()).encode("utf-8"),
         )
 
-        job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
+        if log is None:
+            LOG.error(
+                "Downloaded log is missing from bucket, re-downloading",
+                **job.as_log_extras(),
+            )
+            log_lines = await fetch_and_store_log(gcs_client, job)
+        else:
+            log_lines = _decode_log(log.download_as_bytes()).decode().splitlines()
     else:
-        log_lines = _decode_log(log.download_as_bytes()).decode().splitlines()
+        log_lines = await fetch_and_store_log(gcs_client, job)
 
     if log_lines == []:
         raise UnexpectedLogEmbedderError(
