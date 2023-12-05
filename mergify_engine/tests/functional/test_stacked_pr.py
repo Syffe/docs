@@ -58,8 +58,16 @@ class TestStackedPr(base.FunctionalTestBase):
             await self.git("branch", head_ref, base_ref)
             branches_to_push.append(head_ref)
         await self.git("push", "--quiet", "origin", *branches_to_push)
-        for _ in branches_to_push:
-            await self.wait_for("push", {})
+
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "push",
+                    "payload": {"ref": f"refs/heads/{branch_to_push}"},
+                }
+                for branch_to_push in branches_to_push
+            ],
+        )
 
         # Create PRs
         pr_a = await self.create_pr(
