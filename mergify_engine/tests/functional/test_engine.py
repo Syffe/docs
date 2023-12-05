@@ -508,7 +508,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
 
 
-{utils.get_mergify_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running": True}))}"""
+{utils.serialize_hidden_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running": True}))}"""
             == comment["comment"]["body"]
         )
 

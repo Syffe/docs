@@ -13,7 +13,6 @@ import first
 import tenacity
 
 from mergify_engine import condition_value_querier
-from mergify_engine import constants
 from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import github_types
@@ -1367,7 +1366,8 @@ class Train:
         if for_queue_pull_request:
             # FIXME(sileht): This should be on top of the description in case
             # of the summary is truncated
-            description += utils.get_mergify_payload(constants.MERGE_QUEUE_BODY_INFO)
+            payload = queue_utils.HiddenQueuePullRequestTag({"merge-queue-pr": True})
+            description += utils.serialize_hidden_payload(payload)
         return description
 
     async def get_pull_summary(

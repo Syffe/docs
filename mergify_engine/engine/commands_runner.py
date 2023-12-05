@@ -80,7 +80,7 @@ class NotACommand(Exception):
     message: str
 
 
-class CommandPayloadBase(utils.MergifyCommentHiddenPayload):
+class CommandPayloadBase(utils.MergifyHiddenPayload):
     command: str
     conclusion: str
     action_is_running: bool
@@ -136,7 +136,7 @@ def prepare_message(
 
 """
 
-    message += utils.get_mergify_payload(payload)
+    message += utils.serialize_hidden_payload(payload)
     return message
 
 
@@ -232,12 +232,12 @@ def extract_command_state(
     if comment["user"]["id"] != mergify_bot["id"]:
         raise NoCommandStateFound()
 
-    payload = typing.cast(
-        CommandPayload,
-        utils.get_hidden_payload_from_comment_body(comment["body"]),
-    )
-
-    if not payload:
+    try:
+        payload = typing.cast(
+            CommandPayload,
+            utils.deserialize_hidden_payload(comment["body"]),
+        )
+    except utils.MergifyHiddenPayloadNotFound:
         raise NoCommandStateFound()
 
     if (

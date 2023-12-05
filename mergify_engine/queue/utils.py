@@ -220,6 +220,17 @@ class BranchUpdateFailed(BaseDequeueReason):
     ] = "BRANCH_UPDATE_FAILED"
 
 
+_HiddenQueuePullRequestTag = typing.TypedDict(
+    "_HiddenQueuePullRequestTag",
+    {"merge-queue-pr": bool},
+    total=False,
+)
+
+
+class HiddenQueuePullRequestTag(utils.MergifyHiddenPayload, _HiddenQueuePullRequestTag):
+    pass
+
+
 def is_merge_queue_pr(pull: github_types.GitHubPullRequest) -> bool:
     return (
         pull["title"].startswith("merge queue:")
@@ -237,8 +248,14 @@ def is_pr_body_a_merge_queue_pr(pull_request_body: str | None) -> bool:
     if pull_request_body is None:
         return False
 
-    payload = utils.get_hidden_payload_from_comment_body(pull_request_body)
-    if payload is None:
+    try:
+        payload = typing.cast(
+            HiddenQueuePullRequestTag,
+            utils.deserialize_hidden_payload(
+                pull_request_body,
+            ),
+        )
+    except utils.MergifyHiddenPayloadNotFound:
         return False
 
     return payload.get("merge-queue-pr", False)

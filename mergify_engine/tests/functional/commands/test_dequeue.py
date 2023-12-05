@@ -77,7 +77,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
 
 
 
-{utils.get_mergify_payload(commands_runner.CommandPayload({"command": "requeue", "conclusion": "neutral", "action_is_running": True}))}"""
+{utils.serialize_hidden_payload(commands_runner.CommandPayload({"command": "requeue", "conclusion": "neutral", "action_is_running": True}))}"""
         )
 
         check = first(

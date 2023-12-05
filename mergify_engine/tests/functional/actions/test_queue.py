@@ -5183,7 +5183,7 @@ previous_failed_batches:
 
 
 
-{utils.get_mergify_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running":  True}))}"""
+{utils.serialize_hidden_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running":  True}))}"""
             == comments[-1]["body"]
         )
 

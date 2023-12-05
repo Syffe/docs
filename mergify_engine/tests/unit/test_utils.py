@@ -207,11 +207,15 @@ def test_split_list() -> None:
     ]
 
 
+class CustomHiddenPayload(utils.MergifyHiddenPayload):
+    field: bool
+
+
 def test_payload_dumper() -> None:
-    expected_data = utils.MergifyCommentHiddenPayload({"merge-queue-pr": True})
-    payload = utils.get_mergify_payload(expected_data)
+    expected_data = CustomHiddenPayload({"field": True})
+    payload = utils.serialize_hidden_payload(expected_data)
     message = f"somecontent\n{payload}\nwhatever"
-    data = utils.get_hidden_payload_from_comment_body(message)
+    data = utils.deserialize_hidden_payload(message)
     assert data == expected_data
 
 

@@ -189,31 +189,32 @@ def split_list(remaining: list[_T], part: int) -> abc.Generator[list[_T], None, 
         remaining = remaining[size:]
 
 
-MergifyCommentHiddenPayload = typing.TypedDict(
-    "MergifyCommentHiddenPayload",
-    {"merge-queue-pr": bool},
-    total=False,
-)
+class MergifyHiddenPayload(typing.TypedDict):
+    pass
 
 
-def get_hidden_payload_from_comment_body(
+class MergifyHiddenPayloadNotFound(Exception):
+    pass
+
+
+def deserialize_hidden_payload(
     comment_body: str,
-) -> MergifyCommentHiddenPayload | None:
+) -> MergifyHiddenPayload:
     payload_match = MERGIFY_COMMENT_PAYLOAD_MATCHER.search(comment_body)
 
     if payload_match is None:
-        return None
+        raise MergifyHiddenPayloadNotFound
 
     try:
-        payload: MergifyCommentHiddenPayload = json.loads(payload_match[1])
+        payload: MergifyHiddenPayload = json.loads(payload_match[1])
     except Exception:
-        LOG.error("Unable to load comment payload: '%s'", payload_match[1])
-        return None
+        LOG.error("MergifyHiddenPayload is invalid: '%s'", payload_match[1])
+        raise MergifyHiddenPayloadNotFound
 
     return payload
 
 
-def get_mergify_payload(json_payload: MergifyCommentHiddenPayload) -> str:
+def serialize_hidden_payload(json_payload: MergifyHiddenPayload) -> str:
     return f"""<!---
 {MERGIFY_COMMENT_PAYLOAD_STR_PREFIX}
 {json.dumps(json_payload)}
