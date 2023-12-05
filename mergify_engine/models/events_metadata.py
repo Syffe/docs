@@ -66,5 +66,6 @@ class SpeculativeCheckPullRequest(models.Base):
     event_id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.Integer,
         sqlalchemy.ForeignKey("event.id", ondelete="CASCADE"),
+        index=True,
         anonymizer_config=None,
     )

@@ -33,6 +33,15 @@ class Event(models.Base):
         "polymorphic_identity": "event.base",
     }
     __repr_attributes__: typing.ClassVar[tuple[str, ...]] = ("id", "type")
+    __table_args__ = (
+        sqlalchemy.Index("event_repository_id_type_idx", "repository_id", "type"),
+        sqlalchemy.Index(
+            "event_repository_id_type_received_at_idx",
+            "repository_id",
+            "type",
+            "received_at",
+        ),
+    )
 
     id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.BigInteger,
@@ -69,6 +78,7 @@ class Event(models.Base):
     repository_id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.ForeignKey("github_repository.id"),
         anonymizer_config=None,
+        index=True,
     )
     repository: orm.Mapped[github_repository.GitHubRepository] = orm.relationship(
         lazy="joined",
