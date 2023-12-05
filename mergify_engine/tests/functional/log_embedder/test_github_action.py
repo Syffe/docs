@@ -15,7 +15,6 @@ from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.clients import google_cloud_storage
-from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import github_action as gha_embedder
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import github as gh_models
@@ -123,7 +122,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 f"I will fail on sha {pr['head']['sha']} run_attempt:{run_attempt}"
             ).encode()
             log = await gha_embedder.download_failed_logs(job)
-            assert expected_log in github_action.get_step_log_from_zipped_content(
+            assert expected_log in gha_embedder.get_step_log_from_zipped_content(
                 log,
                 job,
             )
@@ -247,7 +246,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
             assert (
                 f"I will fail on sha {pr['head']['sha']} version: {job.matrix}".encode()
-                in github_action.get_step_log_from_zipped_content(log, job)
+                in gha_embedder.get_step_log_from_zipped_content(log, job)
             )
 
     @pytest.mark.usefixtures("prepare_google_cloud_storage_setup")
@@ -519,7 +518,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                         (
                             tokens,
                             truncated_log,
-                        ) = await github_action.get_tokenized_cleaned_log(
+                        ) = await gha_embedder.get_tokenized_cleaned_log(
                             log_file.readlines(),
                         )
                     async with openai_api.OpenAIClient() as openai_client:
@@ -584,7 +583,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 log_lines = log_file.readlines()
 
             async with openai_api.OpenAIClient() as openai_client:
-                await github_action.extract_data_from_log(
+                await gha_embedder.extract_data_from_log(
                     openai_client,
                     session,
                     job,
