@@ -1,8 +1,6 @@
-import io
 import json
 import os
 import typing
-import zipfile
 
 import daiquiri
 import numpy as np
@@ -123,9 +121,12 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
             expected_log = (
                 f"I will fail on sha {pr['head']['sha']} run_attempt:{run_attempt}"
+            ).encode()
+            log = await gha_embedder.download_failed_logs(job)
+            assert expected_log in github_action.get_step_log_from_zipped_content(
+                log,
+                job,
             )
-            log = await gha_embedder.download_failed_step_log(job)
-            assert expected_log in "".join(log)
 
         await download_and_check_log(job_event, 1)
 
@@ -242,11 +243,11 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             assert job.failed_step_number == 2
             assert job.failed_step_name == "the matrix"
 
-            log = await gha_embedder.download_failed_step_log(job)
+            log = await gha_embedder.download_failed_logs(job)
 
             assert (
-                f"I will fail on sha {pr['head']['sha']} version: {job.matrix}"
-                in "".join(log)
+                f"I will fail on sha {pr['head']['sha']} version: {job.matrix}".encode()
+                in github_action.get_step_log_from_zipped_content(log, job)
             )
 
     @pytest.mark.usefixtures("prepare_google_cloud_storage_setup")
@@ -310,9 +311,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
                 log_lines = await gha_embedder.get_log_lines(gcs_client, job)
 
-                if log_lines is not None:
-                    async with openai_api.OpenAIClient() as openai_client:
-                        await gha_embedder.embed_log(openai_client, job, log_lines)
+                async with openai_api.OpenAIClient() as openai_client:
+                    await gha_embedder.embed_log(openai_client, job, log_lines)
 
             await session.commit()
 
@@ -410,14 +410,9 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             job.failed_step_number = n + 2
             job.failed_step_name = step["name"]
 
-            assert (
-                len(
-                    gha_embedder.get_lines_from_zip(
-                        zipfile.ZipFile(io.BytesIO(resp.content)),
-                        job,
-                    ),
-                )
-                > 0
+            assert gha_embedder.get_step_log_from_zipped_content(
+                resp.content,
+                job,
             )
 
     async def test_log_embedding_matrix(self) -> None:

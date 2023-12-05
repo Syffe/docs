@@ -15,6 +15,11 @@ MAX_CHAT_COMPLETION_TOKENS = (
 )
 
 
+def test_encode_decode_log() -> None:
+    log = b"hello\nworld"
+    assert github_action._decode_log(github_action._encode_log(log)) == log
+
+
 @pytest.mark.parametrize(
     "raw_log,expected_length,expected_cleaned_log,expected_embedded_log",
     [

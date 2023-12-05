@@ -83,39 +83,50 @@ class ExtractedDataObject(typing.TypedDict):
     stack_trace: str | None
 
 
+def _encode_log(log: bytes) -> bytes:
+    return codecs.encode(log, encoding="zlib")
+
+
+def _decode_log(log: bytes) -> bytes:
+    return codecs.decode(log, encoding="zlib")
+
+
+@dataclasses.dataclass
+class UnableToRetrieveLog(Exception):
+    job: gh_models.WorkflowJob
+
+
 async def get_log_lines(
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
     job: gh_models.WorkflowJob,
-) -> list[str] | None:
-    log_lines = None
-
+) -> list[str]:
     log = await gcs_client.download(
         settings.LOG_EMBEDDER_GCS_BUCKET,
         f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
     )
-    if log is not None:
-        log_lines = (
-            codecs.decode(log.download_as_bytes(), encoding="zlib")
-            .decode()
-            .splitlines()
-        )
 
-    if log_lines is None:
-        try:
-            if job.failed_step_number is None:
+    if log is None:
+        if job.failed_step_number is None:
+            try:
                 log_lines = await download_failure_annotations(job)
-            else:
-                log_lines = await download_failed_step_log(job)
-        except http.HTTPStatusError as e:
-            if e.response.status_code in (410, 404):
+            except UnableToRetrieveLog:
                 job.log_status = gh_models.WorkflowJobLogStatus.GONE
-                return None
-            raise
+                raise
+            log_content = "".join(log_lines).encode()
+        else:
+            try:
+                zipped_logs_content = await download_failed_logs(job)
+            except UnableToRetrieveLog:
+                job.log_status = gh_models.WorkflowJobLogStatus.GONE
+                raise
+
+            log_content = get_step_log_from_zipped_content(zipped_logs_content, job)
+            log_lines = log_content.decode().splitlines()
 
         await gcs_client.upload(
             settings.LOG_EMBEDDER_GCS_BUCKET,
             f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
-            codecs.encode("".join(log_lines).encode(), encoding="zlib"),
+            _encode_log(log_content),
         )
         await gcs_client.upload(
             settings.LOG_EMBEDDER_GCS_BUCKET,
@@ -124,6 +135,8 @@ async def get_log_lines(
         )
 
         job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
+    else:
+        log_lines = _decode_log(log.download_as_bytes()).decode().splitlines()
 
     if log_lines == []:
         raise UnexpectedLogEmbedderError(
@@ -148,23 +161,29 @@ async def embed_log(
     job.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
 
-def get_lines_from_zip(
-    zip_file: zipfile.ZipFile,
+def get_step_log_from_zipped_content(
+    zipped_log_content: bytes,
     job: gh_models.WorkflowJob,
-) -> list[str]:
+) -> bytes:
     if job.failed_step_number is None:
         raise RuntimeError(
-            "get_lines_from_zip() called on a job without failed_step_number",
+            "get_step_log_from_zipped_content() called on a job without failed_step_number",
         )
 
     cleaned_job_name = WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP.sub("", job.github_name)
 
-    for i in zip_file.infolist():
-        if not i.filename.startswith(f"{cleaned_job_name}/{job.failed_step_number}_"):
-            continue
+    with io.BytesIO() as zip_data:
+        zip_data.write(zipped_log_content)
 
-        with zip_file.open(i.filename) as log_file:
-            return [line.decode() for line in log_file.readlines()]
+        with zipfile.ZipFile(zip_data, "r") as zip_file:
+            for i in zip_file.infolist():
+                if not i.filename.startswith(
+                    f"{cleaned_job_name}/{job.failed_step_number}_",
+                ):
+                    continue
+
+                with zip_file.open(i.filename) as log_file:
+                    return log_file.read()
 
     raise UnexpectedLogEmbedderError(
         "log-embedder: job log not found in zip file",
@@ -172,20 +191,22 @@ def get_lines_from_zip(
     )
 
 
-async def download_failed_step_log(job: gh_models.WorkflowJob) -> list[str]:
+async def download_failed_logs(job: gh_models.WorkflowJob) -> bytes:
     repo = job.repository
 
     installation_json = await github.get_installation_from_login(repo.owner.login)
 
-    with io.BytesIO() as zip_data:
-        async with github.aget_client(installation_json) as client:
+    async with github.aget_client(installation_json) as client:
+        try:
             resp = await client.get(
                 f"/repos/{repo.owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs",
             )
-            zip_data.write(resp.content)
+        except http.HTTPStatusError as e:
+            if e.response.status_code in (410, 404):
+                raise UnableToRetrieveLog(job)
+            raise
 
-        with zipfile.ZipFile(zip_data, "r") as zip_file:
-            return get_lines_from_zip(zip_file, job)
+        return resp.content
 
 
 async def download_failure_annotations(job: gh_models.WorkflowJob) -> list[str]:
@@ -193,9 +214,14 @@ async def download_failure_annotations(job: gh_models.WorkflowJob) -> list[str]:
 
     installation_json = await github.get_installation_from_login(repo.owner.login)
     async with github.aget_client(installation_json) as client:
-        resp = await client.get(
-            f"/repos/{repo.owner.login}/{repo.name}/check-runs/{job.id}/annotations",
-        )
+        try:
+            resp = await client.get(
+                f"/repos/{repo.owner.login}/{repo.name}/check-runs/{job.id}/annotations",
+            )
+        except http.HTTPStatusError as e:
+            if e.response.status_code in (410, 404):
+                raise UnableToRetrieveLog(job)
+            raise
 
         annotations = []
         for annotation in typing.cast(list[github_types.GitHubAnnotation], resp.json()):
@@ -483,7 +509,6 @@ async def embed_logs_with_log_embedding(
         async with openai_api.OpenAIClient() as openai_client:
             refresh_ready_job_ids = []
             for job in jobs:
-                log_lines = None
                 with log_exception_and_maybe_retry(
                     job,
                     "log_status",
@@ -491,9 +516,11 @@ async def embed_logs_with_log_embedding(
                     "log_downloading_attempts",
                     gh_models.WorkflowJobLogStatus,
                 ):
-                    log_lines = await get_log_lines(gcs_client, job)
+                    try:
+                        log_lines = await get_log_lines(gcs_client, job)
+                    except UnableToRetrieveLog:
+                        continue
 
-                if log_lines:
                     with log_exception_and_maybe_retry(
                         job,
                         "log_embedding_status",
@@ -578,7 +605,6 @@ async def embed_logs_with_extracted_metadata(
 
         async with openai_api.OpenAIClient() as openai_client:
             for job in jobs:
-                log_lines = None
                 with log_exception_and_maybe_retry(
                     job,
                     "log_status",
@@ -586,9 +612,11 @@ async def embed_logs_with_extracted_metadata(
                     "log_downloading_attempts",
                     gh_models.WorkflowJobLogStatus,
                 ):
-                    log_lines = await get_log_lines(gcs_client, job)
+                    try:
+                        log_lines = await get_log_lines(gcs_client, job)
+                    except UnableToRetrieveLog:
+                        continue
 
-                if log_lines:
                     with log_exception_and_maybe_retry(
                         job,
                         "log_metadata_extracting_status",
