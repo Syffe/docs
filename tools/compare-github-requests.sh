@@ -15,7 +15,11 @@ for file in $files; do
     test=${file#zfixtures/cassettes/}
     test=${test%/http.msgpack}
     test=${test//\//::}
-    before=$(git cat-file blob $git_ref:$file | count_requests)
+    if git cat-file blob "$git_ref:$file" &> /dev/null; then
+        before=$(git cat-file blob $git_ref:$file | count_requests)
+    else
+        before=0;
+    fi
     after=$(cat $file | count_requests)
     echo "$test: $before -> $after ($(($after-$before))) requests to github"
 done
