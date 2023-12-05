@@ -7,6 +7,7 @@ from mergify_engine import yaml
 from mergify_engine.queue import merge_train
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.functional import conftest
+from mergify_engine.tests.functional import event_reader
 
 
 class TestQueueCommand(base.FunctionalTestBase):
@@ -551,7 +552,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         # not be queued in "specialq"
         with pytest.raises(
             (
-                base.MissingEventTimeout,
+                event_reader.MissingEventTimeout,
                 conftest.ShutUpVcrCannotOverwriteExistingCassetteException,
             ),
         ):
