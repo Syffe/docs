@@ -578,12 +578,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         status: github_types.GitHubCheckRunStatus | None = None,
         conclusion: github_types.GitHubCheckRunConclusion | None = None,
         name: str | None = None,
+        pr_number: github_types.GitHubPullRequestNumber | None = None,
     ) -> github_types.GitHubEventCheckRun:
         wait_for_payload = tests_utils.get_check_run_event_payload(
             action=action,
             status=status,
             conclusion=conclusion,
             name=name,
+            pr_number=pr_number,
         )
 
         return typing.cast(

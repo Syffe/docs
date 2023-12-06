@@ -1,5 +1,7 @@
 import typing
 
+import anys
+
 from mergify_engine import github_types
 
 
@@ -59,6 +61,7 @@ def get_check_run_event_payload(
     conclusion: github_types.GitHubCheckRunConclusion | None = None,
     name: str | None = None,
     check_id: int | None = None,
+    pr_number: github_types.GitHubPullRequestNumber | None = None,
 ) -> dict[str, typing.Any]:
     payload: dict[str, typing.Any] = {}
 
@@ -75,6 +78,11 @@ def get_check_run_event_payload(
             payload["check_run"]["conclusion"] = conclusion
         if name:
             payload["check_run"]["name"] = name
+
+    if pr_number:
+        payload["pull_requests"] = anys.AnyContains(
+            anys.AnyWithEntries({"number": pr_number}),
+        )
 
     return payload
 

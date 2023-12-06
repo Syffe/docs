@@ -22,6 +22,18 @@ FAKE_HMAC = utils.compute_hmac(
 )
 
 
+def _match(data: github_types.GitHubEvent, expected_data: typing.Any) -> bool:
+    if isinstance(expected_data, dict):
+        for key, expected in expected_data.items():
+            if key not in data:
+                return False
+            if not _match(data[key], expected):  # type: ignore[literal-required]
+                return False
+        return True
+
+    return bool(data == expected_data)
+
+
 class MissingEventTimeout(Exception):
     def __init__(
         self,
@@ -139,7 +151,7 @@ class EventReader:
         max_idx_stop = -1
         for idx, event in enumerate(self._events_already_received):
             for expected_event_data in expected_events:
-                if event["type"] == expected_event_data["event_type"] and self._match(
+                if event["type"] == expected_event_data["event_type"] and _match(
                     event["payload"],
                     expected_event_data["payload"],
                 ):
@@ -193,7 +205,7 @@ class EventReader:
                 continue
 
             for expected_event_data in expected_events:
-                if event["type"] == expected_event_data["event_type"] and self._match(
+                if event["type"] == expected_event_data["event_type"] and _match(
                     event["payload"],
                     expected_event_data["payload"],
                 ):
@@ -257,17 +269,6 @@ class EventReader:
             await asyncio.sleep(self.EVENTS_POLLING_INTERVAL_SECONDS)
 
         LOG.log(42, "DONE RECEIVING AND FORWARDING EVENTS TO ENGINE")
-
-    def _match(self, data: github_types.GitHubEvent, expected_data: typing.Any) -> bool:
-        if isinstance(expected_data, dict):
-            for key, expected in expected_data.items():
-                if key not in data:
-                    return False
-                if not self._match(data[key], expected):  # type: ignore[literal-required]
-                    return False
-            return True
-
-        return bool(data == expected_data)
 
     async def _get_events(self, test_id: str | None = None) -> list[ForwardedEvent]:
         # NOTE(sileht): we use a counter to make each call unique in cassettes
