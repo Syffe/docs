@@ -349,7 +349,7 @@ async def repository_queue_pull_request(
 
     stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
         session,
-        repository_ctxt,
+        repository_ctxt.repo["id"],
         partition_rules.names,
         queue_rules.names,
     )

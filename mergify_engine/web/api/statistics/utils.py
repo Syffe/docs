@@ -7,9 +7,9 @@ import pydantic
 import pydantic_core
 import sqlalchemy
 
-from mergify_engine import context
 from mergify_engine import database
 from mergify_engine import date
+from mergify_engine import github_types
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_models
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -60,7 +60,7 @@ class TimestampNotInFuture(int):
 
 async def get_queue_checks_end_events(
     session: database.Session,
-    repository_ctxt: context.Repository,
+    repository_id: github_types.GitHubRepositoryIdType,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
     start_at: TimestampNotInFuture,
@@ -70,7 +70,7 @@ async def get_queue_checks_end_events(
     model = evt_models.EventActionQueueChecksEnd
 
     query_filter = {
-        model.repository_id == repository_ctxt.repo["id"],
+        model.repository_id == repository_id,
         model.type == enumerations.EventType.ActionQueueChecksEnd,
         model.aborted.is_(False),
         model.received_at >= get_oldest_datetime(),
@@ -90,7 +90,7 @@ async def get_queue_checks_end_events(
 
 async def get_queue_checks_duration(
     session: database.Session,
-    repository_ctxt: context.Repository,
+    repository_id: github_types.GitHubRepositoryIdType,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
     start_at: TimestampNotInFuture | None = None,
@@ -109,7 +109,7 @@ async def get_queue_checks_duration(
 
     events = await get_queue_checks_end_events(
         session=session,
-        repository_ctxt=repository_ctxt,
+        repository_id=repository_id,
         queue_names=queue_names,
         partition_names=partition_names,
         start_at=start_at,
@@ -147,7 +147,7 @@ QueueChecksDurationsPerPartitionQueueBranchT = dict[
 
 async def get_queue_check_durations_per_partition_queue_branch(
     session: database.Session,
-    repository_ctxt: context.Repository,
+    repository_id: github_types.GitHubRepositoryIdType,
     partition_names: tuple[partr_config.PartitionRuleName, ...],
     queue_names: tuple[qr_config.QueueName, ...],
 ) -> QueueChecksDurationsPerPartitionQueueBranchT:
@@ -161,7 +161,7 @@ async def get_queue_check_durations_per_partition_queue_branch(
 
     events = await get_queue_checks_end_events(
         session,
-        repository_ctxt,
+        repository_id,
         queue_names,
         partition_names,
         start_at,

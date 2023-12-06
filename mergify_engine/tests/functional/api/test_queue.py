@@ -581,7 +581,7 @@ class TestQueueApi(base.FunctionalTestBase):
         async with database.create_session() as session:
             stat = await web_stats_utils.get_queue_checks_duration(
                 session,
-                self.repository_ctxt,
+                self.repository_ctxt.repo["id"],
                 queue_names=(),
                 partition_names=(),
             )

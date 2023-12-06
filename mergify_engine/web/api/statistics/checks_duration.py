@@ -43,7 +43,7 @@ async def get_checks_duration_stats_endpoint(
         )
     return await web_stat_utils.get_queue_checks_duration(
         session=session,
-        repository_ctxt=repository_ctxt,
+        repository_id=repository_ctxt.repo["id"],
         queue_names=(queue_name,),
         partition_names=(partr_config.DEFAULT_PARTITION_NAME,),
         start_at=start_at,
@@ -87,7 +87,7 @@ async def get_checks_duration_stats_partition_endpoint(
         )
     return await web_stat_utils.get_queue_checks_duration(
         session=session,
-        repository_ctxt=repository_ctxt,
+        repository_id=repository_ctxt.repo["id"],
         queue_names=(queue_name,),
         partition_names=(partition_name,),
         start_at=start_at,

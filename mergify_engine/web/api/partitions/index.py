@@ -94,7 +94,7 @@ async def repository_partitions(
 
     stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
         session,
-        repository_ctxt,
+        repository_ctxt.repo["id"],
         partition_rules.names,
         queue_rules.names,
     )
@@ -199,7 +199,7 @@ async def repository_partitions_branch(
 
     stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
         session,
-        repository_ctxt,
+        repository_ctxt.repo["id"],
         partition_rules.names,
         queue_rules.names,
     )
@@ -277,7 +277,7 @@ async def repository_partition_branch(
 
     stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
         session,
-        repository_ctxt,
+        repository_ctxt.repo["id"],
         partition_rules.names,
         queue_rules.names,
     )
