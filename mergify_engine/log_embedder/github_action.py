@@ -116,7 +116,11 @@ async def fetch_and_store_log(
                 job.log_status = gh_models.WorkflowJobLogStatus.GONE
                 raise
 
-            log_content = get_step_log_from_zipped_content(zipped_logs_content, job)
+            log_content = get_step_log_from_zipped_content(
+                zipped_logs_content,
+                job.github_name,
+                job.failed_step_number,
+            )
             log_lines = log_content.decode().splitlines()
 
     await gcs_client.upload(
@@ -181,14 +185,10 @@ async def embed_log(
 
 def get_step_log_from_zipped_content(
     zipped_log_content: bytes,
-    job: gh_models.WorkflowJob,
+    github_name: str,
+    failed_step_number: int,
 ) -> bytes:
-    if job.failed_step_number is None:
-        raise RuntimeError(
-            "get_step_log_from_zipped_content() called on a job without failed_step_number",
-        )
-
-    cleaned_job_name = WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP.sub("", job.github_name)
+    cleaned_job_name = WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP.sub("", github_name)
 
     with io.BytesIO() as zip_data:
         zip_data.write(zipped_log_content)
@@ -196,7 +196,7 @@ def get_step_log_from_zipped_content(
         with zipfile.ZipFile(zip_data, "r") as zip_file:
             for i in zip_file.infolist():
                 if not i.filename.startswith(
-                    f"{cleaned_job_name}/{job.failed_step_number}_",
+                    f"{cleaned_job_name}/{failed_step_number}_",
                 ):
                     continue
 

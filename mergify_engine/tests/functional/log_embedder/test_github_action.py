@@ -123,9 +123,11 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             ).encode()
 
             log = await job.download_failed_logs(self.client_integration)
+            assert isinstance(job.failed_step_number, int)
             assert expected_log in gha_embedder.get_step_log_from_zipped_content(
                 log,
-                job,
+                job.github_name,
+                job.failed_step_number,
             )
 
         await download_and_check_log(job_event, 1)
@@ -247,7 +249,11 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
             assert (
                 f"I will fail on sha {pr['head']['sha']} version: {job.matrix}".encode()
-                in gha_embedder.get_step_log_from_zipped_content(log, job)
+                in gha_embedder.get_step_log_from_zipped_content(
+                    log,
+                    job.github_name,
+                    job.failed_step_number,
+                )
             )
 
     @pytest.mark.usefixtures("prepare_google_cloud_storage_setup")
@@ -412,7 +418,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
             assert gha_embedder.get_step_log_from_zipped_content(
                 resp.content,
-                job,
+                job.github_name,
+                job.failed_step_number,
             )
 
     async def test_log_embedding_matrix(self) -> None:
