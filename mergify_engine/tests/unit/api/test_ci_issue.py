@@ -87,6 +87,8 @@ async def test_api_ci_issue_get_ci_issues(
                 "status": "unresolved",
             },
         ],
+        "per_page": 10,
+        "size": 2,
     }
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
@@ -122,6 +124,8 @@ async def test_api_ci_issue_get_ci_issues(
                 "status": "unresolved",
             },
         ],
+        "per_page": 10,
+        "size": 1,
     }
 
 
@@ -459,6 +463,8 @@ async def test_api_ci_issue_put_ci_issues(
                 "events": anys.ANY_LIST,
             },
         ],
+        "per_page": 10,
+        "size": 2,
     }
     issue1 = response.json()["issues"][0]["id"]
     issue2 = response.json()["issues"][1]["id"]
@@ -477,7 +483,7 @@ async def test_api_ci_issue_put_ci_issues(
         follow_redirects=False,
     )
 
-    assert response.json() == {"issues": []}
+    assert response.json() == {"issues": [], "per_page": 10, "size": 0}
 
     response = await web_client.get(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?status=resolved&status=unresolved",
@@ -503,4 +509,62 @@ async def test_api_ci_issue_put_ci_issues(
                 "events": anys.ANY_LIST,
             },
         ],
+        "per_page": 10,
+        "size": 2,
     }
+
+
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueDataset")
+async def test_api_ci_issue_get_ci_issues_pagination(
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+) -> None:
+    await populated_db.commit()
+    await tests_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock,
+        populated_db,
+        web_client,
+        "OneAccount/OneRepo",
+    )
+
+    # Get the first page
+    first_page = await web_client.get(
+        "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?per_page=1",
+        follow_redirects=False,
+    )
+
+    assert first_page.status_code == 200, first_page.text
+    assert len(first_page.json()["issues"]) == 1
+    assert "next" in first_page.links
+
+    # Going to the second page
+    second_page = await web_client.get(
+        first_page.links["next"]["url"],
+        follow_redirects=False,
+    )
+
+    assert second_page.status_code == 200, second_page.text
+    assert len(second_page.json()["issues"]) == 1
+    assert "prev" in second_page.links
+
+    first_page_issue_ids = {i["id"] for i in first_page.json()["issues"]}
+    second_page_issue_ids = {i["id"] for i in second_page.json()["issues"]}
+    assert first_page_issue_ids != second_page_issue_ids
+
+    # Going back to the first page
+    first_page_again = await web_client.get(
+        second_page.links["prev"]["url"],
+        follow_redirects=False,
+    )
+
+    assert first_page_again.status_code == 200, first_page_again.text
+    assert len(first_page_again.json()["issues"]) == 1
+    assert first_page_issue_ids == {i["id"] for i in first_page_again.json()["issues"]}
+
+    # Invalid cursor
+    response = await web_client.get(
+        "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?per_page=2&cursor=INVALID_CURSOR",
+    )
+    assert response.status_code == 422
+    assert response.json() == {"message": "Invalid cursor", "cursor": "INVALID_CURSOR"}
