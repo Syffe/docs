@@ -1,3 +1,4 @@
+from collections import abc
 import datetime
 import typing
 
@@ -38,6 +39,7 @@ class Base(orm.DeclarativeBase):
     def _as_dict(
         self,
         included_columns_attribute: str | None = None,
+        value_transformer: abc.Callable[[typing.Any], typing.Any] | None = None,
     ) -> ORMObjectAsDict:
         if included_columns_attribute is None:
             included_columns = None
@@ -55,19 +57,34 @@ class Base(orm.DeclarativeBase):
             value = getattr(self, name)
             if value is not None and name in inspector.relationships:
                 if isinstance(value, list):
-                    value = [v._as_dict(included_columns_attribute) for v in value]
+                    value = [
+                        v._as_dict(included_columns_attribute, value_transformer)
+                        for v in value
+                    ]
                 else:
-                    value = value._as_dict(included_columns_attribute)
-            elif isinstance(value, datetime.datetime):
-                # Replace the +00:00 with Z to be iso with GitHub's way of returning iso dates
-                value = value.isoformat().replace("+00:00", "Z")
+                    value = value._as_dict(
+                        included_columns_attribute,
+                        value_transformer,
+                    )
+            elif value_transformer is not None:
+                value = value_transformer(value)
 
             result[name] = value
 
         return result  # type: ignore [return-value]
 
+    @staticmethod
+    def _as_github_dict_value_transformer(value: typing.Any) -> typing.Any:
+        if isinstance(value, datetime.datetime):
+            # Replace the +00:00 with Z to be iso with GitHub's way of returning iso dates
+            return value.isoformat().replace("+00:00", "Z")
+        return value
+
     def as_github_dict(self) -> ORMObjectAsDict:
-        return self._as_dict("__github_attributes__")
+        return self._as_dict(
+            "__github_attributes__",
+            self._as_github_dict_value_transformer,
+        )
 
     @classmethod
     async def total(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> int:
