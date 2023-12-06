@@ -78,7 +78,7 @@ class MergeUtilsMixin:
                 "failed to merge after %s refresh attempts",
                 e.max_attempts,
                 abort_message=abort_message,
-                is_conflicting=ctxt.is_conflicting,
+                is_conflicting=await ctxt.is_conflicting(),
                 curl=await exception.to_curl() if exception else None,
             )
             return check_api.Result(
@@ -91,7 +91,7 @@ class MergeUtilsMixin:
             "%s, retrying",
             abort_message,
             abort_message=abort_message,
-            is_conflicting=ctxt.is_conflicting,
+            is_conflicting=await ctxt.is_conflicting(),
             curl=await exception.to_curl() if exception else None,
         )
         return await pending_result_builder(ctxt)
