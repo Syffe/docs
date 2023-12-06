@@ -18,37 +18,49 @@ instances:
         query: >
           SELECT
             count(*),
-            log_embedding IS NULL AS log_embedding_need_update,
-            embedded_log IS NULL  AS embedded_log_need_update,
-            ci_issue_id IS NULL AS not_linked_to_ci_issue
-          FROM gha_workflow_job
-            JOIN github_repository
-              ON gha_workflow_job.repository_id = github_repository.id
-            JOIN github_account
-              ON github_repository.owner_id = github_account.id
+            log_status,
+            log_embedding_status,
+            log_metadata_extracting_status,
+            EXISTS(
+              SELECT
+                1
+              FROM
+                gha_workflow_job_log_metadata
+              WHERE
+                workflow_job_id = gha_workflow_job.id
+            ) has_metadata,
+            EXISTS(
+              SELECT
+                1
+              FROM
+                gha_workflow_job_log_metadata
+                JOIN ci_issue_gpt ON ci_issue_gpt.id = gha_workflow_job_log_metadata.ci_issue_id
+              WHERE
+                workflow_job_id = gha_workflow_job.id
+            ) has_ci_issue_gpt
+          FROM
+            gha_workflow_job
+            JOIN github_repository ON gha_workflow_job.repository_id = github_repository.id
+            JOIN github_account ON github_repository.owner_id = github_account.id
           WHERE
-              gha_workflow_job.conclusion = 'FAILURE'
-              AND gha_workflow_job.failed_step_number is not NULL
-              AND log_status not in ('GONE', 'ERROR')
-              AND github_account.login in (<LOG_EMBEDDER_MONITORED_ACCOUNTS>)
+            gha_workflow_job.conclusion = 'FAILURE'
+            AND github_account.login in (< LOG_EMBEDDER_MONITORED_ACCOUNTS >)
           GROUP BY
-            log_embedding IS NULL,
-            embedded_log IS NULL,
-            ci_issue_id IS NULL
-          ;
+            log_embedding_status,
+            log_status,
+            log_metadata_extracting_status,
+            has_metadata,
+            has_ci_issue_gpt;
         columns:
           - name: workflow-job.count
             type: gauge
-          - name: log-embedding-need-update
+          - name: log-status
             type: tag
-          - name: embedded-log-need-update
+          - name: log-embedding-status
             type: tag
-          - name: not-linked-to-ci-issue
+          - name: log-metadata-extracting-status
             type: tag
-      - metric_prefix: engine.db
-        query: SELECT count(*), name IS NULL FROM ci_issue group by name IS NULL ;
-        columns:
-          - name: ci-issue.count
-            type: gauge
-          - name: name-is-null
+          - name: has-metadata
+            type: tag
+          - name: has-ci-issue-gpt
             type: tag
