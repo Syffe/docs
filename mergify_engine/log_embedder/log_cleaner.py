@@ -150,7 +150,7 @@ class RegexToolbox:
 class GeneralCleaningToolbox:
     @staticmethod
     def lower_case(log_line: str) -> str:
-        return log_line.lower().strip()
+        return log_line.lower()
 
     @staticmethod
     def clean_stopwords(log_line: str) -> str:
