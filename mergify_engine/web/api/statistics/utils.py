@@ -74,6 +74,8 @@ async def get_queue_checks_end_events(
         model.type == enumerations.EventType.ActionQueueChecksEnd,
         model.aborted.is_(False),
         model.received_at >= get_oldest_datetime(),
+        model.received_at >= date.fromtimestamp(start_at),
+        model.received_at <= date.fromtimestamp(end_at),
     }
     if partition_names:
         query_filter.add(model.partition_name.in_(partition_names))
@@ -81,11 +83,6 @@ async def get_queue_checks_end_events(
         query_filter.add(model.queue_name.in_(queue_names))
     if branch is not None:
         query_filter.add(model.branch == branch)
-
-    if start_at is not None:
-        query_filter.add(model.received_at >= date.fromtimestamp(start_at))
-    if end_at is not None:
-        query_filter.add(model.received_at <= date.fromtimestamp(end_at))
 
     stmt = sqlalchemy.select(model).where(*query_filter).order_by(model.id.asc())
     return await session.scalars(stmt)
