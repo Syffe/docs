@@ -285,6 +285,10 @@ class QueueRules:
                         f"disallow_checks_interruption_from_queues contains an unkown queue: {name}",
                     )
 
+    @property
+    def names(self) -> tuple[QueueName, ...]:
+        return tuple(rule.name for rule in self.rules)
+
     async def queue_conditions_exists(self) -> bool:
         for rule in self.rules:
             if rule.queue_conditions.condition.conditions:

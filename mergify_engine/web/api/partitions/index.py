@@ -90,19 +90,13 @@ async def repository_partitions(
     repository_ctxt: security.RepositoryWithConfig,
 ) -> list[BranchPartitions]:
     queue_rules = repository_ctxt.mergify_config["queue_rules"]
-    queue_names = tuple(rule.name for rule in queue_rules)
-
     partition_rules = repository_ctxt.mergify_config["partition_rules"]
-    if partition_rules:
-        partition_names = tuple(rule.name for rule in partition_rules)
-    else:
-        partition_names = (partr_config.DEFAULT_PARTITION_NAME,)
 
     stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
         session,
         repository_ctxt,
-        partition_names,
-        queue_names,
+        partition_rules.names,
+        queue_rules.names,
     )
 
     partition_list = []
@@ -194,17 +188,23 @@ async def repository_partitions_branch(
     branch_name: security.BranchFromPath,
     repository_ctxt: security.RepositoryWithConfig,
 ) -> BranchPartitions:
-    branch_partitions = BranchPartitions(branch_name=branch_name, partitions={})
-
     convoy = merge_train.Convoy(
         repository_ctxt,
         branch_name,
     )
     await convoy.load_from_redis()
 
-    partition_rules = repository_ctxt.mergify_config["partition_rules"]
     queue_rules = repository_ctxt.mergify_config["queue_rules"]
+    partition_rules = repository_ctxt.mergify_config["partition_rules"]
 
+    stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
+        session,
+        repository_ctxt,
+        partition_rules.names,
+        queue_rules.names,
+    )
+
+    branch_partitions = BranchPartitions(branch_name=branch_name, partitions={})
     for rule in partition_rules:
         branch_partitions.partitions.setdefault(rule.name, [])
     if not partition_rules:
@@ -221,11 +221,11 @@ async def repository_partitions_branch(
 
             previous_eta = (
                 estimated_time_of_merge
-            ) = await estimated_time_to_merge.get_estimation(
-                session,
+            ) = await estimated_time_to_merge.get_estimation_from_stats(
                 train,
                 embarked_pull,
                 position,
+                stats,
                 car,
                 previous_eta,
             )
@@ -275,6 +275,13 @@ async def repository_partition_branch(
             detail=f"Partition `{partition_name}` does not exist",
         )
 
+    stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
+        session,
+        repository_ctxt,
+        partition_rules.names,
+        queue_rules.names,
+    )
+
     partition = Partition(pull_requests=[])
     convoy = merge_train.Convoy(
         repository_ctxt,
@@ -297,11 +304,11 @@ async def repository_partition_branch(
 
             previous_eta = (
                 estimated_time_of_merge
-            ) = await estimated_time_to_merge.get_estimation(
-                session,
+            ) = await estimated_time_to_merge.get_estimation_from_stats(
                 train,
                 embarked_pull,
                 position,
+                stats,
                 car,
                 previous_eta,
                 previous_car,

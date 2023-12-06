@@ -317,17 +317,12 @@ async def repository_queues(
 ) -> Queues:
     partition_rules = repository_ctxt.mergify_config["partition_rules"]
     queue_rules = repository_ctxt.mergify_config["queue_rules"]
-    queue_names = tuple(rule.name for rule in queue_rules)
-    if partition_rules:
-        partition_names = tuple(rule.name for rule in partition_rules)
-    else:
-        partition_names = (partr_config.DEFAULT_PARTITION_NAME,)
 
     stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
         session,
         repository_ctxt,
-        partition_names,
-        queue_names,
+        partition_rules.names,
+        queue_rules.names,
     )
 
     queues = Queues(queues=[])

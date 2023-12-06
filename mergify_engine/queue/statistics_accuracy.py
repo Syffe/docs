@@ -11,6 +11,7 @@ from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.web.api.queues import estimated_time_to_merge as eta_queues_api
+from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 if typing.TYPE_CHECKING:
@@ -71,6 +72,18 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
         pull_request_number: github_types.GitHubPullRequestNumber,
         metadata: signals.EventMetadata,
     ) -> None:
+        partition_rules = repository.mergify_config["partition_rules"]
+        queue_rules = repository.mergify_config["queue_rules"]
+
+        stats = (
+            await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
+                session,
+                repository,
+                partition_rules.names,
+                queue_rules.names,
+            )
+        )
+
         metadata = typing.cast(signals.EventQueueChecksStartMetadata, metadata)
         convoy = merge_train.Convoy(
             repository,
@@ -117,11 +130,11 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
                         previous_pr_data = json.loads(raw_previous_pr_data)
                         previous_eta = previous_pr_data["eta"]
 
-            eta = await eta_queues_api.get_estimation(
-                session,
+            eta = await eta_queues_api.get_estimation_from_stats(
                 train,
                 embarked_pull,
                 position,
+                stats,
                 car,
                 previous_eta,
             )

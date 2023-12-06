@@ -153,17 +153,11 @@ async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
     queue_rules = repository_ctxt.mergify_config["queue_rules"]
     partition_rules = repository_ctxt.mergify_config["partition_rules"]
 
-    queue_names = tuple(rule.name for rule in queue_rules)
-    if partition_rules:
-        partition_names = tuple(rule.name for rule in partition_rules)
-    else:
-        partition_names = (partr_config.DEFAULT_PARTITION_NAME,)
-
     events = await get_queue_leave_events(
         session=session,
         repository_ctxt=repository_ctxt,
-        queue_names=queue_names,
-        partition_names=partition_names,
+        queue_names=queue_rules.names,
+        partition_names=partition_rules.names,
         at=at,
         branch=branch,
     )
@@ -184,10 +178,10 @@ async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
         )
 
     result: list[TimeToMergePerPartition] = []
-    for part_name in partition_names:
+    for part_name in partition_rules.names:
         queues: list[TimeToMergePerQueue] = []
         ttm_queues = data.get(part_name, {})
-        for queue_name in queue_names:
+        for queue_name in queue_rules.names:
             if queue_name in ttm_queues:
                 ttm_data = web_stat_types.TimeToMergeResponse(
                     mean=statistics.fmean(ttm_queues[queue_name]),

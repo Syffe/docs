@@ -112,6 +112,13 @@ class PartitionRules:
                 return rule
         raise KeyError(f"{key} not found")
 
+    @property
+    def names(self) -> tuple[PartitionRuleName, ...]:
+        if self.rules:
+            return tuple(rule.name for rule in self.rules)
+
+        return (DEFAULT_PARTITION_NAME,)
+
     async def get_evaluated_partition_names_from_context(
         self,
         ctxt: context.Context,

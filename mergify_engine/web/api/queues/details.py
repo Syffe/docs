@@ -18,6 +18,7 @@ from mergify_engine.web import api
 from mergify_engine.web.api import security
 from mergify_engine.web.api.queues import estimated_time_to_merge
 from mergify_engine.web.api.queues import types
+from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 TRAIN_CAR_CHECKS_TYPE_MAPPING: dict[
@@ -320,6 +321,16 @@ async def repository_queue_pull_request(
     repository_ctxt: security.RepositoryWithConfig,
     queue_rule: security.QueueRuleByNameFromPath,
 ) -> EnhancedPullRequestQueued:
+    partition_rules = repository_ctxt.mergify_config["partition_rules"]
+    queue_rules = repository_ctxt.mergify_config["queue_rules"]
+
+    stats = await web_stat_utils.get_queue_check_durations_per_partition_queue_branch(
+        session,
+        repository_ctxt,
+        partition_rules.names,
+        queue_rules.names,
+    )
+
     async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt,
     ):
@@ -334,12 +345,14 @@ async def repository_queue_pull_request(
                     continue
 
                 mergeability_check = MergeabilityCheck.from_train_car(car)
-                estimated_time_of_merge = await estimated_time_to_merge.get_estimation(
-                    session,
-                    train,
-                    embarked_pull,
-                    position,
-                    car,
+                estimated_time_of_merge = (
+                    await estimated_time_to_merge.get_estimation_from_stats(
+                        train,
+                        embarked_pull,
+                        position,
+                        stats,
+                        car,
+                    )
                 )
 
                 if car is not None:

@@ -4,16 +4,15 @@ import datetime
 import statistics
 import typing
 
-from mergify_engine import database
 from mergify_engine import date
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions as rules_conditions
-from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine.rules.config import queue_rules as qr_config
+    from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 async def get_estimation_from_stats(
@@ -43,37 +42,6 @@ async def get_estimation_from_stats(
         embarked_pull_position,
         train.convoy.repository.mergify_config["queue_rules"][queue_name].config,
         median,
-        car,
-        previous_eta,
-        previous_car,
-    )
-
-
-async def get_estimation(
-    session: database.Session,
-    train: merge_train.Train,
-    embarked_pull: merge_train.EmbarkedPull,
-    embarked_pull_position: int,
-    car: merge_train.TrainCar | None,
-    previous_eta: datetime.datetime | None = None,
-    previous_car: merge_train.TrainCar | None = None,
-) -> datetime.datetime | None:
-    queue_name = embarked_pull.config["name"]
-    if await train.convoy.is_queue_frozen(queue_name):
-        return None
-
-    queue_checks_duration_stats = await web_stat_utils.get_queue_checks_duration(
-        session=session,
-        repository_ctxt=train.convoy.repository,
-        queue_names=(queue_name,),
-        partition_names=(train.partition_name,),
-        branch=train.convoy.ref,
-    )
-    return await compute_estimation(
-        embarked_pull,
-        embarked_pull_position,
-        train.convoy.repository.mergify_config["queue_rules"][queue_name].config,
-        queue_checks_duration_stats["median"],
         car,
         previous_eta,
         previous_car,
