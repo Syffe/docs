@@ -5,11 +5,9 @@ import typing
 import fastapi
 import pydantic
 import sqlalchemy
-from sqlalchemy import orm
 
 from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import pagination
 from mergify_engine.models import github as gh_models
 from mergify_engine.models.ci_issue import CiIssue
 from mergify_engine.models.ci_issue import CiIssueStatus
@@ -43,8 +41,8 @@ class CiIssueResponse:
     )
 
 
-class CiIssuesResponse(pagination.PageResponse[CiIssueResponse]):
-    items_key: typing.ClassVar[str] = "issues"
+@pydantic.dataclasses.dataclass
+class CiIssuesResponse:
     issues: list[CiIssueResponse] = dataclasses.field(
         metadata={"description": "List of CiIssue"},
     )
@@ -57,51 +55,15 @@ class CiIssueBody(pydantic.BaseModel):
 async def query_issues(
     session: database.Session,
     repository_id: github_types.GitHubRepositoryIdType,
-    limit: int,
     issue_id: int | None = None,
     statuses: tuple[CiIssueStatus, ...] | None = None,
-    cursor: pagination.Cursor | None = None,
-) -> list[CiIssueResponse]:
-    if cursor is None:
-        cursor = pagination.Cursor("")
-
-    # NOTE(charly): subquery to filter and limit issues, for pagination mainly
-    filtered_issues = (
-        sqlalchemy.select(CiIssue)
-        .where(CiIssue.repository_id == repository_id)
-        .order_by(
-            CiIssue.id.desc() if cursor.forward else CiIssue.id.asc(),
-        )
-        .limit(limit)
-    )
-
-    if issue_id is not None:
-        filtered_issues = filtered_issues.where(CiIssue.id == issue_id)
-    if statuses is not None:
-        filtered_issues = filtered_issues.where(CiIssue.status.in_(statuses))
-    if cursor.value:
-        try:
-            cursor_issue_id = int(cursor.value)
-        except ValueError:
-            raise pagination.InvalidCursor(cursor)
-
-        if cursor.forward:
-            filtered_issues = filtered_issues.where(CiIssue.id < cursor_issue_id)
-        else:
-            filtered_issues = filtered_issues.where(CiIssue.id > cursor_issue_id)
-
-    issues_subq = orm.aliased(
-        CiIssue,
-        filtered_issues.subquery(),
-        name="filtered_issues",
-    )
-
+) -> OrderedDict[int, CiIssueResponse]:
     stmt = (
         sqlalchemy.select(
-            issues_subq.id,
-            issues_subq.short_id,
-            issues_subq.name,
-            issues_subq.status,
+            CiIssue.id,
+            CiIssue.short_id,
+            CiIssue.name,
+            CiIssue.status,
             WorkflowJobEnhanced.id.label("job_id"),
             WorkflowJobEnhanced.name_without_matrix.label("job_name"),
             WorkflowJobEnhanced.workflow_run_id,
@@ -111,17 +73,23 @@ async def query_issues(
         )
         .join(
             gh_models.GitHubRepository,
-            gh_models.GitHubRepository.id == issues_subq.repository_id,
+            gh_models.GitHubRepository.id == CiIssue.repository_id,
         )
         .join(
             WorkflowJobEnhanced,
             sqlalchemy.and_(
-                WorkflowJobEnhanced.ci_issue_id == issues_subq.id,
-                WorkflowJobEnhanced.repository_id == issues_subq.repository_id,
+                WorkflowJobEnhanced.ci_issue_id == CiIssue.id,
+                WorkflowJobEnhanced.repository_id == CiIssue.repository_id,
             ),
         )
-        .order_by(WorkflowJobEnhanced.started_at.desc())
+        .where(CiIssue.repository_id == repository_id)
+        .order_by(sqlalchemy.desc(WorkflowJobEnhanced.started_at))
     )
+
+    if issue_id is not None:
+        stmt = stmt.where(CiIssue.id == issue_id)
+    if statuses is not None:
+        stmt = stmt.where(CiIssue.status.in_(statuses))
 
     # NOTE(Kontrolix): We use an OrderedDict here to be sure to keep the sorting of
     # the SQL query
@@ -153,7 +121,7 @@ async def query_issues(
     if issue_id is not None and len(reponses) > 1:
         raise RuntimeError("This should never happens")
 
-    return list(reponses.values())
+    return reponses
 
 
 @router.get(
@@ -169,30 +137,18 @@ async def query_issues(
 async def get_ci_issues(
     session: database.Session,
     repository_ctxt: security.Repository,
-    page: pagination.CurrentPage,
     status: typing.Annotated[
         tuple[CiIssueStatus, ...],
         fastapi.Query(description="CI issue status"),
     ] = (CiIssueStatus.UNRESOLVED,),
 ) -> CiIssuesResponse:
-    issues = await query_issues(
-        session,
-        repository_ctxt.repo["id"],
-        limit=page.per_page,
-        statuses=status,
-        cursor=page.cursor,
+    return CiIssuesResponse(
+        issues=list(
+            (
+                await query_issues(session, repository_ctxt.repo["id"], statuses=status)
+            ).values(),
+        ),
     )
-
-    first_issue_id = issues[0].id if issues else None
-    last_issue_id = issues[-1].id if issues else None
-
-    page_response: pagination.Page[CiIssueResponse] = pagination.Page(
-        items=issues,
-        current=page,
-        cursor_prev=page.cursor.previous(first_issue_id, last_issue_id),
-        cursor_next=page.cursor.next(first_issue_id, last_issue_id),
-    )
-    return CiIssuesResponse(page=page_response)  # type: ignore[call-arg]
 
 
 @router.patch(
@@ -244,12 +200,11 @@ async def get_ci_issue(
     reponses = await query_issues(
         session,
         repository_ctxt.repo["id"],
-        limit=1,
         issue_id=ci_issue_id,
     )
     if len(reponses) == 0:
         raise fastapi.HTTPException(404)
-    return reponses[0]
+    return reponses[ci_issue_id]
 
 
 @router.patch(
