@@ -2072,13 +2072,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         if not expected_waiting_pulls:
             return []
 
-        waiting_pulls = []
-        for embarked_pull in q._iter_embarked_pulls():
-            if (
-                embarked_pull.embarked_pull.user_pull_request_number
-                in expected_waiting_pulls
-            ):
-                waiting_pulls.append(embarked_pull.embarked_pull)
+        waiting_pulls = [
+            embarked_pull.embarked_pull
+            for embarked_pull in q._iter_embarked_pulls()
+            if embarked_pull.embarked_pull.user_pull_request_number
+            in expected_waiting_pulls
+        ]
         return [
             wp.user_pull_request_number
             for wp in sorted(

@@ -94,9 +94,9 @@ async def get_time_to_merge_from_partitions_and_queues(
         branch=branch,
     )
 
-    qstats: list[float] = []
-    for event in events.all():
-        qstats.append(get_time_to_merge_from_event(event))
+    qstats: list[float] = [
+        get_time_to_merge_from_event(event) for event in events.all()
+    ]
 
     if qstats:
         return web_stat_types.TimeToMergeResponse(

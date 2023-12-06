@@ -1379,7 +1379,7 @@ class Context:
             )
             review_threads = []
             async for response in responses:
-                for _current_query, current_response in response.items():
+                for current_response in response.values():
                     for thread in current_response["pullRequest"]["reviewThreads"][
                         "edges"
                     ]:

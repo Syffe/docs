@@ -134,11 +134,10 @@ def create_session() -> sqlalchemy.ext.asyncio.AsyncSession:
 def tenacity_retry_on_pk_integrity_error(
     models: tuple[type[sqlalchemy.orm.decl_api.DeclarativeBase], ...],
 ) -> tenacity.AsyncRetrying:
-    matches = []
-    for model in models:
-        matches.append(
-            f'\\(psycopg.errors.UniqueViolation\\) duplicate key value violates unique constraint "{model.__table__.primary_key.name}"',  # type: ignore[attr-defined]
-        )
+    matches = [
+        f'\\(psycopg.errors.UniqueViolation\\) duplicate key value violates unique constraint "{model.__table__.primary_key.name}"'  # type: ignore[attr-defined]
+        for model in models
+    ]
     return tenacity.AsyncRetrying(
         retry=tenacity.retry_if_exception_message(match="|".join(matches)),
     )

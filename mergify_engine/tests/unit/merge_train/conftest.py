@@ -300,13 +300,11 @@ def monkeypatched_traincar(monkeypatch: pytest.MonkeyPatch) -> None:
 def get_train_cars_content(
     train: merge_train.Train,
 ) -> list[list[github_types.GitHubPullRequestNumber]]:
-    cars = []
-    for car in train._cars:
-        cars.append(
-            car.parent_pull_request_numbers
-            + [ep.user_pull_request_number for ep in car.still_queued_embarked_pulls],
-        )
-    return cars
+    return [
+        car.parent_pull_request_numbers
+        + [ep.user_pull_request_number for ep in car.still_queued_embarked_pulls]
+        for car in train._cars
+    ]
 
 
 def get_convoy_train_cars_content(
@@ -317,10 +315,10 @@ def get_convoy_train_cars_content(
         list[list[github_types.GitHubPullRequestNumber]],
     ]
 ]:
-    content = []
-    for train in convoy.iter_trains():
-        content.append((train.partition_name, get_train_cars_content(train)))
-    return content
+    return [
+        (train.partition_name, get_train_cars_content(train))
+        for train in convoy.iter_trains()
+    ]
 
 
 def get_train_waiting_pulls_content(
@@ -338,7 +336,7 @@ def get_convoy_trains_waiting_pulls_content(
         list[github_types.GitHubPullRequestNumber],
     ]
 ]:
-    content = []
-    for train in convoy.iter_trains():
-        content.append((train.partition_name, get_train_waiting_pulls_content(train)))
-    return content
+    return [
+        (train.partition_name, get_train_waiting_pulls_content(train))
+        for train in convoy.iter_trains()
+    ]
