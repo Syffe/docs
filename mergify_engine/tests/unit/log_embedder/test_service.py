@@ -997,9 +997,9 @@ async def test_workflow_job_log_life_cycle(
         (
             "front (format:check)",
             4,
-            gh_models.WorkflowJobLogStatus.ERROR,
-            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
         ),
         (
             "job_toto",

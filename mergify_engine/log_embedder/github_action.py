@@ -154,19 +154,11 @@ async def get_log_lines(
                 "Downloaded log is missing from bucket, re-downloading",
                 **job.as_log_extras(),
             )
-            log_lines = await fetch_and_store_log(gcs_client, job)
-        else:
-            log_lines = _decode_log(log.download_as_bytes()).decode().splitlines()
-    else:
-        log_lines = await fetch_and_store_log(gcs_client, job)
+            return await fetch_and_store_log(gcs_client, job)
 
-    if log_lines == []:
-        raise UnexpectedLogEmbedderError(
-            "log-embedder: log file is empty",
-            log_extras=job.as_log_extras(),
-        )
+        return _decode_log(log.download_as_bytes()).decode().splitlines()
 
-    return log_lines
+    return await fetch_and_store_log(gcs_client, job)
 
 
 async def embed_log(
