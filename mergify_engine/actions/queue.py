@@ -679,7 +679,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     ) -> None:
         pull_request_rule_has_unmatched = (
             result.conclusion == check_api.Conclusion.CANCELLED
-            and result.title == "The pull request rule doesn't match anymore"
+            and result.title == actions.CANCELLED_CHECK_REPORT.title
         )
         # NOTE(sileht): The PR has been checked successfully but the
         # final merge fail, we must erase the queue summary conclusion,
@@ -764,7 +764,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if cancel_query_result.should_be_cancelled:
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
-                "The pull request rule doesn't match anymore",
+                actions.CANCELLED_CHECK_REPORT.title,
                 cancel_query_result.summary,
             )
             dequeue_reason = await self.get_dequeue_reason_from_action_result(result)
@@ -1069,7 +1069,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             summary = f"""The following conditions don't match anymore:
 {rule.conditions.get_unmatched_summary()}"""
         else:
-            summary = "This action has been cancelled."
+            summary = actions.CANCELLED_CHECK_REPORT.summary
 
         return QueueCancellationQueryResult(should_be_cancelled, summary)
 
