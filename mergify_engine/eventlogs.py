@@ -431,11 +431,10 @@ async def get(
     received_from: datetime.datetime | None = None,
     received_to: datetime.datetime | None = None,
 ) -> pagination.Page[EventField]:
-    backward = page.cursor is not None and page.cursor.startswith("-")
-    results = await evt_models.Event.get(
+    events = await evt_models.Event.get(
         session,
-        page,
-        backward,
+        page.cursor,
+        page.per_page,
         repository,
         pull_request,
         base_ref,
@@ -443,31 +442,23 @@ async def get(
         received_from,
         received_to,
     )
+    first_event_id = events[0].id if events else None
+    last_event_id = events[-1].id if events else None
 
-    if results and backward:
-        cursor_next = f"-{results[0].id}"
-        cursor_prev = f"+{results[-1].id}" if not page.cursor == "-" else None
-    elif results:
-        cursor_next = f"+{results[-1].id}"
-        cursor_prev = f"-{results[0].id}" if page.cursor else None
-    else:
-        cursor_next = None
-        cursor_prev = None
-
-    events_list: list[Event] = []
-    for raw in results:
+    casted_events: list[Event] = []
+    for raw in events:
         event = typing.cast(GenericEvent, format_event_item_response(raw))
         try:
-            events_list.append(cast_event_item(event))
+            casted_events.append(cast_event_item(event))
         except UnsupportedEvent as err:
             LOG.error(err.message, event=err.event)
 
     return pagination.Page(
-        items=events_list,
+        items=casted_events,
         current=page,
         total=None,
-        cursor_prev=cursor_prev,
-        cursor_next=cursor_next,
+        cursor_prev=page.cursor.previous(first_event_id, last_event_id),
+        cursor_next=page.cursor.next(first_event_id, last_event_id),
     )
 
 

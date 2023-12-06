@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime  # noqa: TCH003
-import re
 import typing
 
 import sqlalchemy
@@ -117,8 +116,8 @@ class Event(models.Base):
     async def get(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        page: pagination.CurrentPage,
-        backward: bool,
+        cursor: pagination.Cursor,
+        limit: int,
         repository_ctxt: context.Repository,
         pull_request: github_types.GitHubPullRequestNumber | None,
         base_ref: github_types.GitHubRefType | None,
@@ -141,20 +140,22 @@ class Event(models.Base):
             else None,
         }
 
-        cursor = page.cursor
-        if cursor and cursor != "-":
-            if (cursor_idx := re.fullmatch(r"[+-](\d+)", cursor)) is None:
+        if cursor.value:
+            try:
+                event_id = int(cursor.value)
+            except ValueError:
                 raise pagination.InvalidCursor(cursor)
-            if backward:
-                filter_dict.update({"cursor": cls.id > int(cursor_idx.group(1))})
+
+            if cursor.forward:
+                filter_dict.update({"cursor": cls.id < event_id})
             else:
-                filter_dict.update({"cursor": cls.id < int(cursor_idx.group(1))})
+                filter_dict.update({"cursor": cls.id > event_id})
 
         subquery = (
             sqlalchemy.select(cls)
             .where(*[f for f in filter_dict.values() if f is not None])
-            .limit(page.per_page)
-            .order_by(cls.id.asc() if backward else cls.id.desc())
+            .limit(limit)
+            .order_by(cls.id.desc() if cursor.forward else cls.id.asc())
         ).subquery()
         events_aliased = orm.aliased(cls, subquery)
 
