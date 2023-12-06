@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import datetime  # noqa: TCH003
 import enum
 import re
@@ -19,6 +20,8 @@ import sqlalchemy.ext.hybrid
 from mergify_engine import constants
 from mergify_engine import github_types
 from mergify_engine import models
+from mergify_engine.clients import github
+from mergify_engine.clients import http
 from mergify_engine.flaky_check.utils import NeedRerunStatus
 from mergify_engine.models.github import account as gh_account
 from mergify_engine.models.github import repository as gh_repository
@@ -566,6 +569,47 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
 
     def as_github_dict(self) -> GitHubWorkflowJobDict:
         return typing.cast(GitHubWorkflowJobDict, super().as_github_dict())
+
+    @dataclasses.dataclass
+    class UnableToRetrieveLog(Exception):
+        job: WorkflowJob
+
+    async def download_failure_annotations(
+        self,
+        client: github.AsyncGitHubClient,
+    ) -> list[str]:
+        try:
+            resp = await client.get(
+                f"/repos/{self.repository.owner.login}/{self.repository.name}/check-runs/{self.id}/annotations",
+            )
+        except http.HTTPStatusError as e:
+            if e.response.status_code in (410, 404):
+                raise self.UnableToRetrieveLog(self)
+            raise
+
+        return [
+            annotation["message"]
+            for annotation in typing.cast(
+                list[github_types.GitHubAnnotation],
+                resp.json(),
+            )
+            if annotation["annotation_level"] == "failure"
+        ]
+
+    async def download_failed_logs(
+        self,
+        client: github.AsyncGitHubClient,
+    ) -> bytes:
+        try:
+            resp = await client.get(
+                f"/repos/{self.repository.owner.login}/{self.repository.name}/actions/runs/{self.workflow_run_id}/attempts/{self.run_attempt}/logs",
+            )
+        except http.HTTPStatusError as e:
+            if e.response.status_code in (410, 404):
+                raise self.UnableToRetrieveLog(self)
+            raise
+
+        return resp.content
 
 
 class WorkflowJobLogMetadata(models.Base):

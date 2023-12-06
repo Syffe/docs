@@ -19,7 +19,6 @@ from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import flaky_check
-from mergify_engine import github_types
 from mergify_engine import json as mergify_json
 from mergify_engine import redis_utils
 from mergify_engine import settings
@@ -91,11 +90,6 @@ def _decode_log(log: bytes) -> bytes:
     return codecs.decode(log, encoding="zlib")
 
 
-@dataclasses.dataclass
-class UnableToRetrieveLog(Exception):
-    job: gh_models.WorkflowJob
-
-
 async def fetch_and_store_log(
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
     job: gh_models.WorkflowJob,
@@ -103,22 +97,27 @@ async def fetch_and_store_log(
     """Fetch and store original log from GitHub
 
     Returns a list of log lines."""
-    if job.failed_step_number is None:
-        try:
-            log_lines = await download_failure_annotations(job)
-        except UnableToRetrieveLog:
-            job.log_status = gh_models.WorkflowJobLogStatus.GONE
-            raise
-        log_content = "".join(log_lines).encode()
-    else:
-        try:
-            zipped_logs_content = await download_failed_logs(job)
-        except UnableToRetrieveLog:
-            job.log_status = gh_models.WorkflowJobLogStatus.GONE
-            raise
+    installation = await github.get_installation_from_login(
+        job.repository.owner.login,
+    )
 
-        log_content = get_step_log_from_zipped_content(zipped_logs_content, job)
-        log_lines = log_content.decode().splitlines()
+    async with github.aget_client(installation) as client:
+        if job.failed_step_number is None:
+            try:
+                log_lines = await job.download_failure_annotations(client)
+            except gh_models.WorkflowJob.UnableToRetrieveLog:
+                job.log_status = gh_models.WorkflowJobLogStatus.GONE
+                raise
+            log_content = "".join(log_lines).encode()
+        else:
+            try:
+                zipped_logs_content = await job.download_failed_logs(client)
+            except gh_models.WorkflowJob.UnableToRetrieveLog:
+                job.log_status = gh_models.WorkflowJobLogStatus.GONE
+                raise
+
+            log_content = get_step_log_from_zipped_content(zipped_logs_content, job)
+            log_lines = log_content.decode().splitlines()
 
     await gcs_client.upload(
         settings.LOG_EMBEDDER_GCS_BUCKET,
@@ -208,57 +207,6 @@ def get_step_log_from_zipped_content(
         "log-embedder: job log not found in zip file",
         log_extras={"files": [i.filename for i in zip_file.infolist()]},
     )
-
-
-async def download_failed_logs(job: gh_models.WorkflowJob) -> bytes:
-    repo = job.repository
-
-    installation_json = await github.get_installation_from_login(repo.owner.login)
-
-    async with github.aget_client(installation_json) as client:
-        try:
-            resp = await client.get(
-                f"/repos/{repo.owner.login}/{repo.name}/actions/runs/{job.workflow_run_id}/attempts/{job.run_attempt}/logs",
-            )
-        except http.HTTPStatusError as e:
-            if e.response.status_code in (410, 404):
-                raise UnableToRetrieveLog(job)
-            raise
-
-        return resp.content
-
-
-async def download_failure_annotations(job: gh_models.WorkflowJob) -> list[str]:
-    repo = job.repository
-
-    installation_json = await github.get_installation_from_login(repo.owner.login)
-    async with github.aget_client(installation_json) as client:
-        try:
-            resp = await client.get(
-                f"/repos/{repo.owner.login}/{repo.name}/check-runs/{job.id}/annotations",
-            )
-        except http.HTTPStatusError as e:
-            if e.response.status_code in (410, 404):
-                raise UnableToRetrieveLog(job)
-            raise
-
-        annotations = []
-        for annotation in typing.cast(list[github_types.GitHubAnnotation], resp.json()):
-            if annotation["annotation_level"] == "failure":
-                annotations.append(annotation["message"])
-
-        if not annotations:
-            raise UnexpectedLogEmbedderError(
-                "log-embedder: No failure annotation found",
-                log_extras={
-                    "workflow_run_id": job.workflow_run_id,
-                    "job_id": job.id,
-                    "gh_owner": repo.owner.login,
-                    "gh_repo": repo.name,
-                },
-            )
-
-        return annotations
 
 
 async def get_tokenized_cleaned_log(
@@ -537,7 +485,7 @@ async def embed_logs_with_log_embedding(
                 ):
                     try:
                         log_lines = await get_log_lines(gcs_client, job)
-                    except UnableToRetrieveLog:
+                    except gh_models.WorkflowJob.UnableToRetrieveLog:
                         continue
 
                     with log_exception_and_maybe_retry(
@@ -633,7 +581,7 @@ async def embed_logs_with_extracted_metadata(
                 ):
                     try:
                         log_lines = await get_log_lines(gcs_client, job)
-                    except UnableToRetrieveLog:
+                    except gh_models.WorkflowJob.UnableToRetrieveLog:
                         continue
 
                     with log_exception_and_maybe_retry(

@@ -121,7 +121,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             expected_log = (
                 f"I will fail on sha {pr['head']['sha']} run_attempt:{run_attempt}"
             ).encode()
-            log = await gha_embedder.download_failed_logs(job)
+
+            log = await job.download_failed_logs(self.client_integration)
             assert expected_log in gha_embedder.get_step_log_from_zipped_content(
                 log,
                 job,
@@ -195,7 +196,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         assert job.failed_step_name is None
         assert job.steps == []
 
-        log = await gha_embedder.download_failure_annotations(job)
+        log = await job.download_failure_annotations(self.client_integration)
 
         assert [
             f"The run was canceled by @{self.installation_ctxt.installation['app_slug']}.",
@@ -242,7 +243,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             assert job.failed_step_number == 2
             assert job.failed_step_name == "the matrix"
 
-            log = await gha_embedder.download_failed_logs(job)
+            log = await job.download_failed_logs(self.client_integration)
 
             assert (
                 f"I will fail on sha {pr['head']['sha']} version: {job.matrix}".encode()
