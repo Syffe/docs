@@ -1047,7 +1047,6 @@ class TestAttributes(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         await self.push_file("CODEOWNERS", "*.py @mergify-test1")
-        await self.run_engine()
 
         await self.branch_protection_protect(
             self.main_branch_name,
@@ -1063,15 +1062,18 @@ class TestAttributes(base.FunctionalTestBase):
         )
 
         pr = await self.create_pr(files={"test.py": "ok"})
-        pr_updated = await self.wait_for_pull_request("review_requested")
-
-        assert len(pr_updated["pull_request"]["requested_reviewers"]) == 1
-        assert (
-            pr_updated["pull_request"]["requested_reviewers"][0]["login"]
-            == "mergify-test1"
-        )
-
         await self.run_engine()
+
+        if len(pr["requested_reviewers"]) > 0:
+            assert len(pr["requested_reviewers"]) == 1
+            assert pr["requested_reviewers"][0]["login"] == "mergify-test1"
+        else:
+            pr_updated = await self.wait_for_pull_request("review_requested")
+            assert len(pr_updated["pull_request"]["requested_reviewers"]) == 1
+            assert (
+                pr_updated["pull_request"]["requested_reviewers"][0]["login"]
+                == "mergify-test1"
+            )
 
         comment_1 = await self.wait_for_issue_comment(str(pr["number"]), "created")
         assert comment_1["comment"]["body"] == "review-required"
