@@ -2487,7 +2487,6 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "per_page": 5,
             "size": 5,
-            "total": None,
         }
 
     async def test_basic_queue(self) -> None:
@@ -3107,7 +3106,6 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "per_page": 5,
             "size": 5,
-            "total": None,
         }
 
     async def test_unqueue_rule_unmatches(self) -> None:
@@ -3380,7 +3378,6 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "per_page": 2,
             "size": 2,
-            "total": None,
         }
 
     async def test_unqueue_command_with_batch_requeue(self) -> None:
@@ -5390,7 +5387,6 @@ previous_failed_batches:
             ],
             "per_page": 1,
             "size": 1,
-            "total": None,
         }
 
     async def test_ongoing_train_basic(self) -> None:

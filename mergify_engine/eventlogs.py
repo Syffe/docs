@@ -456,7 +456,6 @@ async def get(
     return pagination.Page(
         items=casted_events,
         current=page,
-        total=None,
         cursor_prev=page.cursor.previous(first_event_id, last_event_id),
         cursor_next=page.cursor.next(first_event_id, last_event_id),
     )

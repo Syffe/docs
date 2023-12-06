@@ -91,7 +91,6 @@ async def test_api_response(
     assert response.json() == {
         "size": 1,
         "per_page": 1,
-        "total": None,
         "events": [
             {
                 "id": 3,
@@ -153,7 +152,6 @@ async def test_api_response(
     assert response.json() == {
         "size": 1,
         "per_page": 1,
-        "total": None,
         "events": [
             {
                 "id": 4,
@@ -216,7 +214,6 @@ async def test_api_response(
     assert response.json() == {
         "size": 1,
         "per_page": 1,
-        "total": None,
         "events": [
             {
                 "id": 5,
@@ -256,7 +253,6 @@ async def test_api_response(
     assert response.json() == {
         "size": 1,
         "per_page": 1,
-        "total": None,
         "events": [
             {
                 "id": 6,
@@ -287,7 +283,6 @@ async def test_api_query_params(
         headers={"Authorization": api_token.api_token},
     )
     r = response.json()
-    assert r["total"] is None
     assert r["size"] == 2
     assert {e["type"] for e in r["events"]} == {"action.comment", "action.queue.enter"}
 
@@ -297,7 +292,6 @@ async def test_api_query_params(
         headers={"Authorization": api_token.api_token},
     )
     r = response.json()
-    assert r["total"] is None
     assert r["size"] == 2
     assert {e["type"] for e in r["events"]} == {"action.queue.enter", "action.merge"}
 
@@ -472,6 +466,5 @@ async def test_delete_outdated_events(
         headers={"Authorization": api_token.api_token},
     )
     r = response.json()
-    assert r["total"] is None
     assert r["size"] == 1
     assert {e["type"] for e in r["events"]} == {"action.queue.enter"}

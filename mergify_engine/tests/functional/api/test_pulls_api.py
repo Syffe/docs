@@ -37,7 +37,6 @@ class TestPullsApi(base.FunctionalTestBase):
         assert resp.json() == {
             "size": 1,
             "per_page": 10,
-            "total": 1,
             "pull_requests": [expected_pull],
         }
 

@@ -172,7 +172,6 @@ async def get_pull_requests(
     response_page: pagination.Page[github_types.GitHubPullRequest] = pagination.Page(
         items=matching_pulls,
         current=current_page,
-        total=len(matching_pulls),
         cursor_next=None if reached_last_page else f"{page}-{nb_pulls_on_github}",
     )
 

@@ -94,7 +94,6 @@ class TestLabelAction(base.FunctionalTestBase):
             ],
             "per_page": 10,
             "size": 2,
-            "total": None,
         }
 
     async def test_label_empty(self) -> None:
@@ -133,7 +132,6 @@ class TestLabelAction(base.FunctionalTestBase):
             "events": [],
             "per_page": 10,
             "size": 0,
-            "total": None,
         }
 
     async def test_label_remove_all(self) -> None:
@@ -177,7 +175,6 @@ class TestLabelAction(base.FunctionalTestBase):
             ],
             "per_page": 10,
             "size": 1,
-            "total": None,
         }
 
     async def test_label_toggle(self) -> None:
@@ -251,7 +248,6 @@ class TestLabelAction(base.FunctionalTestBase):
             ],
             "per_page": 10,
             "size": 2,
-            "total": None,
         }
 
     async def test_label_template(self) -> None:

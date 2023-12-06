@@ -109,7 +109,6 @@ CurrentPage = typing.Annotated[_CurrentPage, fastapi.Depends(get_current_page)]
 class Page(typing.Generic[T]):
     items: list[T]
     current: CurrentPage
-    total: int | None = dataclasses.field(default=0)
     cursor_prev: str | None = dataclasses.field(default=None)
     cursor_next: str | None = dataclasses.field(default=None)
     cursor_first: str = dataclasses.field(default="")
@@ -153,13 +152,6 @@ class PageResponse(pydantic.BaseModel, typing.Generic[T]):
             },
         },
     )
-    total: int | None = pydantic.Field(
-        json_schema_extra={
-            "metadata": {
-                "description": "The total number of items",
-            },
-        },
-    )
 
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
@@ -174,7 +166,6 @@ class PageResponse(pydantic.BaseModel, typing.Generic[T]):
             self.items_key: page.items,
             "size": page.size,
             "per_page": page.current.per_page,
-            "total": page.total,
         }
 
         super().__init__(**kwargs)

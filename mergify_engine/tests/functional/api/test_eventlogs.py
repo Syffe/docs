@@ -157,7 +157,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": p1_expected_events,
             "per_page": 10,
             "size": 4,
-            "total": None,
         }
 
         r = await self.admin_app.get(
@@ -168,7 +167,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": p2_expected_events,
             "per_page": 10,
             "size": 3,
-            "total": None,
         }
 
         r = await self.admin_app.get(
@@ -179,7 +177,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": p2_expected_events + p1_expected_events,
             "per_page": 10,
             "size": 7,
-            "total": None,
         }
 
         # pagination
@@ -191,7 +188,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": p2_expected_events[:2],
             "per_page": 2,
             "size": 2,
-            "total": None,
         }
 
         # first page
@@ -203,7 +199,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": p2_expected_events[:2],
             "per_page": 2,
             "size": 2,
-            "total": None,
         }
         # next page
         r_next = await self.admin_app.get(
@@ -214,7 +209,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": [p2_expected_events[2], p1_expected_events[0]],
             "per_page": 2,
             "size": 2,
-            "total": None,
         }
         # next next
         r_next_next = await self.admin_app.get(
@@ -225,7 +219,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": p1_expected_events[1:3],
             "per_page": 2,
             "size": 2,
-            "total": None,
         }
         # prev
         r_prev = await self.admin_app.get(
@@ -236,7 +229,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": p2_expected_events[:2],
             "per_page": 2,
             "size": 2,
-            "total": None,
         }
 
         # last
@@ -248,7 +240,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": p1_expected_events[-2:],
             "per_page": 2,
             "size": 2,
-            "total": None,
         }
 
     async def test_freeze_eventlogs(self) -> None:
@@ -616,7 +607,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": p1_expected_events,
             "per_page": 10,
             "size": 5,
-            "total": None,
         }
 
         r = await self.admin_app.get(
@@ -627,7 +617,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": repo_expected_events,
             "per_page": 10,
             "size": 9,
-            "total": None,
         }
 
     async def test_incomplete_eventlogs_metadata(self) -> None:
@@ -650,7 +639,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "events": [],
             "per_page": 10,
             "size": 0,
-            "total": None,
         }
 
     @staticmethod
