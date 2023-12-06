@@ -50,7 +50,7 @@ async def test_event_classifier(
     mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache)
 
     expected_event_classes = {
-        "workflow_run.completed.json": github_events.CIEventToProcess,
+        "workflow_run.completed.json": github_events.EventToIgnore,
         "workflow_job.completed.json": github_events.CIEventToProcess,
         "workflow_run.in_progress.json": github_events.EventToIgnore,
         "workflow_job.in_progress.json": github_events.EventToIgnore,

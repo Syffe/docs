@@ -433,9 +433,10 @@ async def event_classifier(
         "member",
         "membership",
         "organization",
+        "repository",
         "team",
         "team_add",
-        "repository",
+        "workflow_run",
     ):
         return EventToIgnore(event_type, event_id, event, f"{event_type} event")
 
