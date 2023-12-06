@@ -23,8 +23,8 @@ from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_api
+from mergify_engine.models import ci_issue
 from mergify_engine.models import github as gh_models
-from mergify_engine.models.ci_issue import CiIssue
 from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATASET
 from mergify_engine.tests.openai_embedding_dataset import (
     OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT,
@@ -212,8 +212,13 @@ async def test_embed_logs_on_controlled_data(
         gh_models.WorkflowJob,
         jobs[0].id,
         options=[
-            orm.joinedload(gh_models.WorkflowJob.ci_issue).selectinload(CiIssue.jobs),
+            orm.joinedload(gh_models.WorkflowJob.ci_issue).selectinload(
+                ci_issue.CiIssue.jobs,
+            ),
             orm.joinedload(gh_models.WorkflowJob.log_metadata),
+            orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt).selectinload(
+                ci_issue.CiIssueGPT.jobs,
+            ),
         ],
     )
 
@@ -233,7 +238,11 @@ async def test_embed_logs_on_controlled_data(
     assert a_job.ci_issue_id is not None
     assert a_job.ci_issue.name is None
     assert len(a_job.ci_issue.jobs) == 3
+
     assert len(a_job.log_metadata) == 1
+    assert len(a_job.ci_issues_gpt) == 1
+    assert a_job.ci_issues_gpt[0].name == "Toto title"
+    assert len(a_job.ci_issues_gpt[0].jobs) == 3
 
 
 @pytest.mark.populated_db_datasets("WorkflowJob")

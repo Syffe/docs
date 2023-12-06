@@ -17,8 +17,8 @@ from mergify_engine import settings
 from mergify_engine.clients import google_cloud_storage
 from mergify_engine.log_embedder import github_action as gha_embedder
 from mergify_engine.log_embedder import openai_api
+from mergify_engine.models import ci_issue
 from mergify_engine.models import github as gh_models
-from mergify_engine.models.ci_issue import CiIssue as ci_issue
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATASET
 from mergify_engine.tests.openai_embedding_dataset import (
@@ -63,6 +63,49 @@ JOB_IDS_BY_ISSUE: dict[int, list[int]] = {
     22: [17959931265],
     23: [17963656086],
     24: [17890395377, 17890410390, 17890412896],
+}
+
+# NOTE(Kontrolix): This is the current result of grouping, NOT the expectation.
+# it's there to have a reference of the current accuracy of the grouping and to be able
+# to control accuracy variations.
+JOB_IDS_BY_ISSUE_GPT: dict[int, list[int]] = {
+    1: [17901126470, 17901839885],
+    2: [17962371786, 17962438196],
+    3: [17889769992],
+    4: [17890012842],
+    5: [17865682999],
+    6: [17892796183],
+    7: [17892931465],
+    8: [17901659641],
+    9: [17901659641],
+    10: [17901659641],
+    11: [17921959372, 17925396037],
+    12: [17925396037],
+    13: [17949965633],
+    14: [17952684380],
+    15: [17953176262, 17953176746, 17953198682, 17953198783, 17953364603, 17953417253],
+    16: [17956712782],
+    17: [17956714438],
+    18: [17957050782, 17957055281],
+    19: [17865016836],
+    20: [17901359458],
+    21: [17901360892],
+    22: [17901361506],
+    23: [17901361849],
+    24: [17951738999],
+    25: [17952831249, 17954365579],
+    26: [17952831249, 17954365579, 17960638740],
+    27: [17954365579, 17960638740],
+    28: [17954365579],
+    29: [17955513710, 17960638740],
+    30: [17955513710, 17960638740],
+    31: [17959931265],
+    32: [17963656086],
+    33: [17963656086],
+    34: [17963656086],
+    35: [17963656086],
+    36: [17890395377, 17890412896],
+    37: [17890410390],
 }
 
 
@@ -538,7 +581,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                         gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
                     )
 
-                    await ci_issue.link_job_to_ci_issue(session, job)
+                    await ci_issue.CiIssue.link_job_to_ci_issue(session, job)
 
                     jobs_to_compare.append(job)
                     job_ids_to_compare.append(job.id)
@@ -553,7 +596,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     job.id,
                     options=[
                         orm.joinedload(gh_models.WorkflowJob.ci_issue).selectinload(
-                            ci_issue.jobs,
+                            ci_issue.CiIssue.jobs,
                         ),
                     ],
                 )
@@ -561,6 +604,75 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 assert JOB_IDS_BY_ISSUE[job_with_issue.ci_issue_id] == [
                     job.id for job in job_with_issue.ci_issue.jobs
                 ]
+
+    @pytest.mark.make_real_openai_calls()
+    async def test_ci_issue_gpt_grouping_accuracy(
+        self,
+    ) -> None:
+        jobs_to_compare = []
+        job_ids_to_compare = []
+
+        async with database.create_session() as session:
+            # loop the job files and fill the DB
+            # NOTE(Syffe): we sort here since depending on the OS the order of the files might not be the same
+            for job_json_filename in sorted(os.listdir(PATH_INPUT_JOBS_JSON)):
+                with open(
+                    f"{PATH_INPUT_JOBS_JSON}/{job_json_filename}",
+                ) as job_json_file:
+                    job_json = json.load(job_json_file)
+
+                    job_json.update(
+                        {
+                            "name": job_json["github_name"],
+                            "run_id": job_json["workflow_run_id"],
+                            "conclusion": "failure",
+                        },
+                    )
+                    job = await gh_models.WorkflowJob.insert(
+                        session,
+                        job_json,
+                        job_json["repository"],
+                    )
+
+                    with open(
+                        f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
+                    ) as log_file:
+                        log_lines = log_file.readlines()
+
+                    async with openai_api.OpenAIClient() as openai_client:
+                        await gha_embedder.extract_data_from_log(
+                            openai_client,
+                            session,
+                            job,
+                            log_lines,
+                        )
+                    job.log_metadata_extracting_status = (
+                        gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED
+                    )
+
+                    await ci_issue.CiIssueGPT.link_job_to_ci_issues(session, job)
+
+                    jobs_to_compare.append(job)
+                    job_ids_to_compare.append(job.id)
+
+            await session.commit()
+            session.expunge_all()
+
+            issues = (
+                (
+                    await session.execute(
+                        sqlalchemy.select(ci_issue.CiIssueGPT).options(
+                            orm.joinedload(ci_issue.CiIssueGPT.jobs),
+                        ),
+                    )
+                )
+                .unique()
+                .scalars()
+            )
+
+            assert JOB_IDS_BY_ISSUE_GPT == {
+                issue.id: [job.id for job in issue.jobs] for issue in issues
+            }
 
     @pytest.mark.make_real_openai_calls()
     async def test_extract_data_from_log(

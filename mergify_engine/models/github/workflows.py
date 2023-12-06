@@ -28,7 +28,7 @@ from mergify_engine.models.github import repository as gh_repository
 
 
 if typing.TYPE_CHECKING:
-    from mergify_engine.models.ci_issue import CiIssue
+    from mergify_engine.models import ci_issue as ci_issue_model
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -282,8 +282,8 @@ class WorkflowJobColumnMixin:
     )
 
     @orm.declared_attr
-    def ci_issue(self) -> orm.Mapped[CiIssue]:
-        return orm.relationship(lazy="raise_on_sql")
+    def ci_issue(self) -> orm.Mapped[ci_issue_model.CiIssue]:
+        return orm.relationship("CiIssue", lazy="raise_on_sql")
 
     log_downloading_attempts: orm.Mapped[int] = orm.mapped_column(
         server_default="0",
@@ -399,6 +399,14 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
         lazy="raise_on_sql",
     )
 
+    ci_issues_gpt: orm.Mapped[list[ci_issue_model.CiIssueGPT]] = orm.relationship(
+        "CiIssueGPT",
+        lazy="raise_on_sql",
+        back_populates="jobs",
+        secondary="gha_workflow_job_log_metadata",
+        viewonly=True,
+    )
+
     @sqlalchemy.ext.hybrid.hybrid_property
     def github_name(self) -> str:
         if self.matrix is not None:
@@ -477,6 +485,7 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
                 failed_step_name=failed_step["name"] if failed_step else None,
                 # FIXME(sileht): future events will  head_sha events always set
                 head_sha=workflow_job_data.get("head_sha", ""),
+                ci_issues_gpt=[],
             )
             session.add(job)
 
@@ -628,6 +637,8 @@ class WorkflowJobLogMetadata(models.Base):
     )
 
     workflow_job: orm.Mapped[WorkflowJob] = orm.relationship(
+        "WorkflowJob",
+        back_populates="log_metadata",
         lazy="joined",
     )
 
@@ -644,3 +655,8 @@ class WorkflowJobLogMetadata(models.Base):
     test_framework: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
 
     stack_trace: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
+
+    ci_issue_id: orm.Mapped[int | None] = orm.mapped_column(
+        sqlalchemy.ForeignKey("ci_issue_gpt.id"),
+        anonymizer_config=None,
+    )

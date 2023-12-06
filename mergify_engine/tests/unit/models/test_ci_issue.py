@@ -5,8 +5,8 @@ import sqlalchemy.exc
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
+from mergify_engine.models import ci_issue
 from mergify_engine.models import github as gh_models
-from mergify_engine.models.ci_issue import CiIssue
 from mergify_engine.tests.db_populator import DbPopulator
 
 
@@ -14,7 +14,7 @@ from mergify_engine.tests.db_populator import DbPopulator
 async def test_ci_issue_compute_short_id(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
-    issue = await CiIssue.insert(
+    issue = await ci_issue.CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
             DbPopulator.internal_ref["OneRepo"],
@@ -23,7 +23,7 @@ async def test_ci_issue_compute_short_id(
 
     assert issue.short_id == "ONEREPO-1"
 
-    issue = await CiIssue.insert(
+    issue = await ci_issue.CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
             DbPopulator.internal_ref["OneRepo"],
@@ -32,7 +32,7 @@ async def test_ci_issue_compute_short_id(
 
     assert issue.short_id == "ONEREPO-2"
 
-    issue = await CiIssue.insert(
+    issue = await ci_issue.CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
             DbPopulator.internal_ref["colliding_repo_1"],
@@ -41,7 +41,7 @@ async def test_ci_issue_compute_short_id(
 
     assert issue.short_id == "COLLIDING_REPO_NAME-1"
 
-    issue = await CiIssue.insert(
+    issue = await ci_issue.CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
             DbPopulator.internal_ref["OneRepo"],
@@ -55,7 +55,7 @@ async def test_ci_issue_compute_short_id(
 async def test_ci_issue_short_id_unicity(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
-    issue = await CiIssue.insert(
+    issue = await ci_issue.CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
             DbPopulator.internal_ref["OneRepo"],
@@ -64,7 +64,7 @@ async def test_ci_issue_short_id_unicity(
 
     assert issue.short_id_suffix == 1
 
-    issue = await CiIssue.insert(
+    issue = await ci_issue.CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
             DbPopulator.internal_ref["colliding_repo_1"],
@@ -73,7 +73,7 @@ async def test_ci_issue_short_id_unicity(
 
     assert issue.short_id_suffix == 1
 
-    issue = await CiIssue.insert(
+    issue = await ci_issue.CiIssue.insert(
         populated_db,
         repository_id=github_types.GitHubRepositoryIdType(
             DbPopulator.internal_ref["OneRepo"],
@@ -111,7 +111,7 @@ async def test_link_job_to_ci_issue(
 
     assert (
         await populated_db.execute(
-            sqlalchemy.select(sqlalchemy.func.count()).select_from(CiIssue),
+            sqlalchemy.select(sqlalchemy.func.count()).select_from(ci_issue.CiIssue),
         )
     ).scalar_one() == 0
 
@@ -121,7 +121,7 @@ async def test_link_job_to_ci_issue(
             == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
         ),
     ):
-        await CiIssue.link_job_to_ci_issue(populated_db, embedded_job)
+        await ci_issue.CiIssue.link_job_to_ci_issue(populated_db, embedded_job)
 
     assert (
         await populated_db.execute(
@@ -137,7 +137,7 @@ async def test_link_job_to_ci_issue(
 
     assert (
         await populated_db.execute(
-            sqlalchemy.select(sqlalchemy.func.count()).select_from(CiIssue),
+            sqlalchemy.select(sqlalchemy.func.count()).select_from(ci_issue.CiIssue),
         )
     ).scalar_one() == 3
 
@@ -167,7 +167,7 @@ async def test_link_job_to_ci_issue(
             DbPopulator.internal_ref[internal_ref_job],
             options=[
                 orm.joinedload(gh_models.WorkflowJob.ci_issue).selectinload(
-                    CiIssue.jobs,
+                    ci_issue.CiIssue.jobs,
                 ),
             ],
         )
@@ -175,5 +175,95 @@ async def test_link_job_to_ci_issue(
         assert ref_job.ci_issue is not None
 
         assert [job.id for job in ref_job.ci_issue.jobs if job.id != ref_job.id] == [
+            DbPopulator.internal_ref[nghb_job] for nghb_job in internal_ref_nghb_jobs
+        ]
+
+
+@pytest.mark.populated_db_datasets("TestApiGhaFailedJobsDataset")
+async def test_link_job_to_ci_issues_gpt(
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+) -> None:
+    count_job_ready_with_no_ci_issues_stmt = (
+        sqlalchemy.select(sqlalchemy.func.count())
+        .select_from(gh_models.WorkflowJob)
+        .where(
+            gh_models.WorkflowJob.log_metadata.any(),
+            ~gh_models.WorkflowJob.ci_issues_gpt.any(),
+        )
+    )
+    assert (
+        await populated_db.execute(count_job_ready_with_no_ci_issues_stmt)
+    ).scalar_one() == 5
+
+    count_ci_issue_created_stmt = sqlalchemy.select(
+        sqlalchemy.func.count(),
+    ).select_from(ci_issue.CiIssueGPT)
+
+    assert (await populated_db.execute(count_ci_issue_created_stmt)).scalar_one() == 0
+
+    for job in (
+        (
+            await populated_db.execute(
+                sqlalchemy.select(gh_models.WorkflowJob)
+                .options(
+                    orm.joinedload(gh_models.WorkflowJob.log_metadata),
+                    orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt),
+                )
+                .where(
+                    gh_models.WorkflowJob.log_metadata.any(),
+                ),
+            )
+        )
+        .unique()
+        .scalars()
+    ):
+        await ci_issue.CiIssueGPT.link_job_to_ci_issues(populated_db, job)
+
+    assert (
+        await populated_db.execute(count_job_ready_with_no_ci_issues_stmt)
+    ).scalar_one() == 0
+    await populated_db.commit()
+    assert (await populated_db.execute(count_ci_issue_created_stmt)).scalar_one() == 4
+    populated_db.expunge_all()
+
+    params: list[tuple[int, list[str]]] = [
+        (
+            1,
+            [
+                "OneAccount/OneRepo/flaky_failed_job_attempt_1",
+                "OneAccount/OneRepo/flaky_failed_job_attempt_2",
+                "OneAccount/OneRepo/failed_job_with_flaky_nghb",
+            ],
+        ),
+        (
+            2,
+            ["OneAccount/OneRepo/failed_job_with_no_flaky_nghb"],
+        ),
+        (
+            3,
+            ["colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"],
+        ),
+        (
+            4,
+            ["OneAccount/OneRepo/failed_job_with_flaky_nghb"],
+        ),
+    ]
+
+    for issue_id, internal_ref_nghb_jobs in params:
+        issue = (
+            (
+                await populated_db.execute(
+                    sqlalchemy.select(ci_issue.CiIssueGPT)
+                    .options(orm.joinedload(ci_issue.CiIssueGPT.jobs))
+                    .where(ci_issue.CiIssueGPT.id == issue_id),
+                )
+            )
+            .unique()
+            .scalar_one()
+        )
+
+        assert issue.jobs is not None
+
+        assert [job.id for job in issue.jobs] == [
             DbPopulator.internal_ref[nghb_job] for nghb_job in internal_ref_nghb_jobs
         ]

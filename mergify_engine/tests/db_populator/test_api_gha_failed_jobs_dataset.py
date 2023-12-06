@@ -69,6 +69,19 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job1.embedded_log = "Some logs"
         job1.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
+        session.add(
+            gh_models.WorkflowJobLogMetadata(
+                workflow_job_id=job1.id,
+                problem_type="Error on test: my_awesome_test",
+                language="Python",
+                filename="test.py",
+                lineno="325",
+                error="AssertionError: True is False",
+                test_framework="pytest",
+                stack_trace="some traceback",
+            ),
+        )
+
         cls.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"] = job1.id
 
         # Another failed job
@@ -107,6 +120,19 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job2.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
         job2.embedded_log = "Some logs"
         job2.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
+
+        session.add(
+            gh_models.WorkflowJobLogMetadata(
+                workflow_job_id=job2.id,
+                problem_type="Error on test: my_awesome_test",
+                language="Python",
+                filename="test.py",
+                lineno="325",
+                error="AssertionError: True is False",
+                test_framework="pytest",
+                stack_trace="some traceback",
+            ),
+        )
 
         cls.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_2"] = job2.id
 
@@ -182,6 +208,31 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job3.embedded_log = "Some similar logs"
         job3.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
+        session.add(
+            gh_models.WorkflowJobLogMetadata(
+                workflow_job_id=job3.id,
+                problem_type="Error on test: my_awesome_test",
+                language="Python",
+                filename="test.py",
+                lineno="325",
+                error="AssertionError: True is False",
+                test_framework="pytest",
+                stack_trace="some traceback",
+            ),
+        )
+        session.add(
+            gh_models.WorkflowJobLogMetadata(
+                workflow_job_id=job3.id,
+                problem_type="Error on test: my_fucking_awesome_test",
+                language="Python",
+                filename="test.py",
+                lineno="455",
+                error="AssertionError: 3 == 0",
+                test_framework="pytest",
+                stack_trace="some other traceback",
+            ),
+        )
+
         cls.internal_ref["OneAccount/OneRepo/failed_job_with_flaky_nghb"] = job3.id
 
         # Failed job completly different to the job1
@@ -224,6 +275,19 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job4.log_embedding = np.array(list(map(np.float32, [-1] * 1536)))
         job4.embedded_log = "Some different logs"
         job4.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
+
+        session.add(
+            gh_models.WorkflowJobLogMetadata(
+                workflow_job_id=job4.id,
+                problem_type="Error on test: my_cypress_test",
+                language="JavaScript",
+                filename="test.js",
+                lineno="15",
+                error="Some Js error",
+                test_framework="Cypress",
+                stack_trace="",
+            ),
+        )
 
         cls.internal_ref["OneAccount/OneRepo/failed_job_with_no_flaky_nghb"] = job4.id
 
@@ -279,6 +343,19 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job5.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
         job5.embedded_log = "Some logs"
         job5.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
+
+        session.add(
+            gh_models.WorkflowJobLogMetadata(
+                workflow_job_id=job5.id,
+                problem_type="Error on test: my_awesome_test",
+                language="Python",
+                filename="test.py",
+                lineno="325",
+                error="AssertionError: True is False",
+                test_framework="pytest",
+                stack_trace="some traceback",
+            ),
+        )
 
         cls.internal_ref[
             "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"

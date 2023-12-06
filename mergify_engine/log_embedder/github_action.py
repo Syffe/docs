@@ -27,8 +27,8 @@ from mergify_engine.clients import google_cloud_storage
 from mergify_engine.clients import http
 from mergify_engine.log_embedder import log_cleaner
 from mergify_engine.log_embedder import openai_api
+from mergify_engine.models import ci_issue
 from mergify_engine.models import github as gh_models
-from mergify_engine.models.ci_issue import CiIssue
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -495,7 +495,7 @@ async def embed_logs_with_log_embedding(
                             == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
                             and job.ci_issue_id is None
                         ):
-                            await CiIssue.link_job_to_ci_issue(session, job)
+                            await ci_issue.CiIssue.link_job_to_ci_issue(session, job)
                             refresh_ready_job_ids.append(job.id)
 
                 await session.commit()
@@ -516,7 +516,10 @@ async def embed_logs_with_extracted_metadata(
     async with database.create_session() as session:
         stmt = (
             sqlalchemy.select(wjob)
-            .options(orm.joinedload(wjob.ci_issue), orm.joinedload(wjob.log_metadata))
+            .options(
+                orm.joinedload(wjob.ci_issues_gpt),
+                orm.joinedload(wjob.log_metadata),
+            )
             .join(gh_models.GitHubRepository)
             .join(
                 gh_models.GitHubAccount,
@@ -547,6 +550,11 @@ async def embed_logs_with_extracted_metadata(
                         ~wjob.log_metadata.any(),
                         wjob.log_metadata_extracting_status
                         != gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
+                    ),
+                    sqlalchemy.and_(
+                        ~wjob.ci_issues_gpt.any(),
+                        wjob.log_metadata_extracting_status
+                        == gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
                     ),
                 ),
             )
@@ -589,6 +597,14 @@ async def embed_logs_with_extracted_metadata(
                             job,
                             log_lines,
                         )
+
+                    if (
+                        job.log_metadata_extracting_status
+                        == gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED
+                        and job.log_metadata
+                        and not job.ci_issues_gpt
+                    ):
+                        await ci_issue.CiIssueGPT.link_job_to_ci_issues(session, job)
 
                 await session.commit()
 
