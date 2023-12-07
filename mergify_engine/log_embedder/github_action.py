@@ -454,7 +454,7 @@ async def embed_logs_with_log_embedding(
 
         jobs = (await session.scalars(stmt)).all()
 
-        LOG.info("log-embedder: %d jobs to embed", len(jobs), request=str(stmt))
+        LOG.info("log-embedder: %d jobs to embed", len(jobs))
 
         async with openai_api.OpenAIClient() as openai_client:
             refresh_ready_job_ids = []
@@ -572,7 +572,6 @@ async def embed_logs_with_extracted_metadata(
         LOG.info(
             "log-embedder: %d jobs to extract metadata",
             len(jobs),
-            request=str(stmt),
         )
 
         async with openai_api.OpenAIClient() as openai_client:
