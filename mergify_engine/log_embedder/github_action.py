@@ -1,4 +1,3 @@
-import codecs
 import dataclasses
 import datetime
 import io
@@ -23,6 +22,7 @@ from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.clients import google_cloud_storage
 from mergify_engine.clients import http
+from mergify_engine.log_embedder import log as logm
 from mergify_engine.log_embedder import log_cleaner
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import ci_issue
@@ -85,18 +85,10 @@ class ExtractedDataObject(typing.TypedDict):
     stack_trace: str | None
 
 
-def _encode_log(log: bytes) -> bytes:
-    return codecs.encode(log, encoding="zlib")
-
-
-def _decode_log(log: bytes) -> bytes:
-    return codecs.decode(log, encoding="zlib")
-
-
 async def fetch_and_store_log(
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
     job: gh_models.WorkflowJob,
-) -> str:
+) -> logm.Log:
     """Fetch and store original log from GitHub
 
     Returns a list of log lines."""
@@ -106,22 +98,21 @@ async def fetch_and_store_log(
 
     async with github.aget_client(installation) as client:
         if job.failed_step_number is None:
-            log_lines = await job.download_failure_annotations(client)
-            log_content = "".join(log_lines)
-            log_content_b = log_content.encode()
+            log = logm.Log.from_lines(await job.download_failure_annotations(client))
         else:
             zipped_logs_content = await job.download_failed_logs(client)
-            log_content_b = get_step_log_from_zipped_content(
-                zipped_logs_content,
-                job.github_name,
-                job.failed_step_number,
+            log = logm.Log.from_bytes(
+                get_step_log_from_zipped_content(
+                    zipped_logs_content,
+                    job.github_name,
+                    job.failed_step_number,
+                ),
             )
-            log_content = log_content_b.decode()
 
     await gcs_client.upload(
         settings.LOG_EMBEDDER_GCS_BUCKET,
         f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
-        _encode_log(log_content_b),
+        log.encode(),
     )
     await gcs_client.upload(
         settings.LOG_EMBEDDER_GCS_BUCKET,
@@ -131,20 +122,13 @@ async def fetch_and_store_log(
 
     job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
 
-    return log_content
-
-
-async def get_log_lines(
-    gcs_client: google_cloud_storage.GoogleCloudStorageClient,
-    job: gh_models.WorkflowJob,
-) -> list[str]:
-    return (await get_log(gcs_client, job)).splitlines()
+    return log
 
 
 async def get_log(
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
     job: gh_models.WorkflowJob,
-) -> str:
+) -> logm.Log:
     if job.log_status == gh_models.WorkflowJobLogStatus.DOWNLOADED:
         log = await gcs_client.download(
             settings.LOG_EMBEDDER_GCS_BUCKET,
@@ -158,7 +142,7 @@ async def get_log(
             )
             return await fetch_and_store_log(gcs_client, job)
 
-        return _decode_log(log.download_as_bytes()).decode()
+        return logm.Log.decode(log.download_as_bytes())
 
     return await fetch_and_store_log(gcs_client, job)
 
@@ -457,7 +441,7 @@ async def embed_logs_with_log_embedding(
             refresh_ready_job_ids = []
             for job in jobs:
                 try:
-                    log_content = await get_log(gcs_client, job)
+                    log = await get_log(gcs_client, job)
                 except gh_models.WorkflowJob.UnableToRetrieveLog:
                     job.log_status = gh_models.WorkflowJobLogStatus.GONE
                     await session.commit()
@@ -481,7 +465,7 @@ async def embed_logs_with_log_embedding(
                     == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN
                 ):
                     try:
-                        await embed_log(openai_client, job, log_content)
+                        await embed_log(openai_client, job, log.content)
                     except Exception as e:
                         retry = log_exception_and_maybe_retry(
                             e,
@@ -574,7 +558,7 @@ async def embed_logs_with_extracted_metadata(
         async with openai_api.OpenAIClient() as openai_client:
             for job in jobs:
                 try:
-                    log_lines = await get_log_lines(gcs_client, job)
+                    log = await get_log(gcs_client, job)
                 except gh_models.WorkflowJob.UnableToRetrieveLog:
                     job.log_status = gh_models.WorkflowJobLogStatus.GONE
                     await session.commit()
@@ -601,7 +585,7 @@ async def embed_logs_with_extracted_metadata(
                             openai_client,
                             session,
                             job,
-                            log_lines,
+                            log.lines,
                         )
                     except Exception as e:
                         retry = log_exception_and_maybe_retry(

@@ -358,10 +358,10 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     settings.LOG_EMBEDDER_GCS_CREDENTIALS,
                 )
 
-                log_content = await gha_embedder.get_log(gcs_client, job)
+                log = await gha_embedder.get_log(gcs_client, job)
 
                 async with openai_api.OpenAIClient() as openai_client:
-                    await gha_embedder.embed_log(openai_client, job, log_content)
+                    await gha_embedder.embed_log(openai_client, job, log.content)
 
             await session.commit()
 
