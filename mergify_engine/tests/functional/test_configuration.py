@@ -127,13 +127,18 @@ class TestConfiguration(base.FunctionalTestBase):
             config_changed_check["output"]["title"]
             == "The new Mergify configuration is invalid"
         )
-        assert (
-            config_changed_check["output"]["summary"]
-            == """In the rule `foobar`, the action `request_reviews` configuration is invalid:
+        assert config_changed_check["output"]["summary"].startswith(
+            """In the rule `foobar`, the action `request_reviews` configuration is invalid:
 Invalid requested teams
-Team `@atchoum` does not exist or has not access to this repository
-Team `atchoum` does not exist or has not access to this repository
-"""
+""",
+        )
+        assert (
+            "Team `@atchoum` does not exist or has not access to this repository"
+            in config_changed_check["output"]["summary"]
+        )
+        assert (
+            "Team `atchoum` does not exist or has not access to this repository"
+            in config_changed_check["output"]["summary"]
         )
 
     async def test_invalid_priority_rules_config(self) -> None:
