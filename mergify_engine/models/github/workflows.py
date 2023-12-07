@@ -18,6 +18,7 @@ import sqlalchemy.ext.asyncio
 import sqlalchemy.ext.hybrid
 
 from mergify_engine import constants
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.clients import github
@@ -207,6 +208,7 @@ class WorkflowJobColumnMixin:
     completed_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime(timezone=True),
         anonymizer_config="anon.dnoise(completed_at, ''1 hour'')",
+        index=True,
     )
     conclusion: orm.Mapped[WorkflowJobConclusion] = orm.mapped_column(
         sqlalchemy.Enum(WorkflowJobConclusion),
@@ -579,6 +581,18 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
     def as_github_dict(self) -> GitHubWorkflowJobDict:
         return typing.cast(GitHubWorkflowJobDict, super().as_github_dict())
 
+    @classmethod
+    async def delete_outdated(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        retention_time: datetime.timedelta,
+    ) -> None:
+        await session.execute(
+            sqlalchemy.delete(cls).where(
+                (date.utcnow() - cls.completed_at) > retention_time,
+            ),
+        )
+
     @dataclasses.dataclass
     class UnableToRetrieveLog(Exception):
         job: WorkflowJob
@@ -631,7 +645,7 @@ class WorkflowJobLogMetadata(models.Base):
     )
 
     workflow_job_id: orm.Mapped[WorkflowJob] = orm.mapped_column(
-        sqlalchemy.ForeignKey("gha_workflow_job.id"),
+        sqlalchemy.ForeignKey("gha_workflow_job.id", ondelete="CASCADE"),
         anonymizer_config=None,
         index=True,
     )

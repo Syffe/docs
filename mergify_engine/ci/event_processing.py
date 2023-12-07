@@ -136,3 +136,12 @@ async def _process_workflow_job_event(
                     await session.commit()
 
     await redis_links.stream.xdel("gha_workflow_job", stream_event_id)
+
+
+async def delete_outdated_workflow_jobs() -> None:
+    async with database.create_session() as session:
+        await gh_models.WorkflowJob.delete_outdated(
+            session,
+            retention_time=database.CLIENT_DATA_RETENTION_TIME,
+        )
+        await session.commit()

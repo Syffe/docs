@@ -1,15 +1,23 @@
+import datetime
 import typing
 
 import msgpack
 import pytest
 import sqlalchemy
+from sqlalchemy import func
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import database
 from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.ci import event_processing
 from mergify_engine.models import github as gh_models
+from mergify_engine.tests.tardis import time_travel
+
+
+MAIN_TIMESTAMP = "2023-05-11T12:40:28Z"
+LATER_TIMESTAMP = "2024-08-22T12:00:00+00:00"
 
 
 @pytest.fixture()
@@ -174,3 +182,85 @@ async def test_process_event_stream_broken_workflow_job(
     assert len(workflow_jobs) == 0
     stream_events = await redis_links.stream.xrange("gha_workflow_job")
     assert len(stream_events) == 0
+
+
+@time_travel(datetime.datetime.fromisoformat(LATER_TIMESTAMP))
+async def test_delete_workflow_job(
+    monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
+) -> None:
+    monkeypatch.setattr(
+        database,
+        "CLIENT_DATA_RETENTION_TIME",
+        datetime.timedelta(hours=1),
+    )
+
+    outdated_job_slim_event = sample_ci_events_to_process[
+        "workflow_job.completed_failure.json"
+    ].slim_event
+    outdated_job_slim_event["workflow_job"]["completed_at"] = MAIN_TIMESTAMP
+
+    outdated_job_stream_event = {
+        "event_type": "workflow_job",
+        "data": msgpack.packb(outdated_job_slim_event),
+    }
+
+    await redis_links.stream.xadd(
+        "gha_workflow_job",
+        fields=outdated_job_stream_event,  # type: ignore[arg-type]
+    )
+    await event_processing.process_event_streams(redis_links)
+
+    outdated_log_metadata = gh_models.WorkflowJobLogMetadata(
+        workflow_job_id=outdated_job_slim_event["workflow_job"]["id"],
+    )
+    db.add(outdated_log_metadata)
+
+    # we create a non-outdated job to check it will not be deleted
+    job_slim_event = outdated_job_slim_event
+    job_slim_event["workflow_job"]["id"] = 13403749846
+    job_slim_event["workflow_job"]["completed_at"] = LATER_TIMESTAMP
+    job_stream_event = {
+        "event_type": "workflow_job",
+        "data": msgpack.packb(job_slim_event),
+    }
+
+    await redis_links.stream.xadd(
+        "gha_workflow_job",
+        fields=job_stream_event,  # type: ignore[arg-type]
+    )
+    await event_processing.process_event_streams(redis_links)
+
+    log_metadata = gh_models.WorkflowJobLogMetadata(
+        workflow_job_id=job_slim_event["workflow_job"]["id"],
+    )
+    db.add(log_metadata)
+    await db.commit()
+
+    result = await db.execute(
+        sqlalchemy.select(func.count()).select_from(gh_models.WorkflowJob),
+    )
+    assert result.scalar() == 2
+
+    result = await db.execute(
+        sqlalchemy.select(func.count()).select_from(gh_models.WorkflowJobLogMetadata),
+    )
+    assert result.scalar() == 2
+
+    await event_processing.delete_outdated_workflow_jobs()
+
+    result = await db.execute(
+        sqlalchemy.select(func.count()).select_from(gh_models.WorkflowJob),
+    )
+    assert result.scalar() == 1
+
+    result = await db.execute(
+        sqlalchemy.select(func.count()).select_from(gh_models.WorkflowJobLogMetadata),
+    )
+    assert result.scalar() == 1
+
+    job = await db.scalar(sqlalchemy.select(gh_models.WorkflowJob))
+    assert job is not None
+    assert job.id == 13403749846
