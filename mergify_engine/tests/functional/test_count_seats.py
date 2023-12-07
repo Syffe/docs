@@ -32,7 +32,6 @@ class TestCountSeats(base.FunctionalTestBase):
             "SUBSCRIPTION_TOKEN",
             pydantic.SecretStr("something"),
         )
-        return
 
     async def _prepare_repo(self) -> count_seats.Seats:
         await self.setup_repo()

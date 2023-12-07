@@ -20,7 +20,7 @@ def httpx_to_fastapi_headers(
     for key, value in headers.items():
         if key in HEADERS_TO_FORWARD:
             if key in HEADERS_TO_REWRITE and rewrite_url is not None:
-                value = value.replace(*rewrite_url)
+                value = value.replace(*rewrite_url)  # noqa: PLW2901
             yield key, value
 
 

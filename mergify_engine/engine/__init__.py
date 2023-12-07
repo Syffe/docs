@@ -385,19 +385,18 @@ async def run(
                     ctxt.pull["base"]["repo"]["owner"]["login"],
                 ),
             )
-    else:
-        if not ctxt.subscription.has_feature(subscription.Features.PUBLIC_REPOSITORY):
-            ctxt.log.debug(
-                "mergify disabled: public repository",
-                reason=ctxt.subscription.reason,
-            )
-            return check_api.Result(
-                check_api.Conclusion.FAILURE,
-                title="Cannot use Mergify on a public repository",
-                summary=ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"],
-                ),
-            )
+    elif not ctxt.subscription.has_feature(subscription.Features.PUBLIC_REPOSITORY):
+        ctxt.log.debug(
+            "mergify disabled: public repository",
+            reason=ctxt.subscription.reason,
+        )
+        return check_api.Result(
+            check_api.Conclusion.FAILURE,
+            title="Cannot use Mergify on a public repository",
+            summary=ctxt.subscription.missing_feature_reason(
+                ctxt.pull["base"]["repo"]["owner"]["login"],
+            ),
+        )
 
     config_file = await ctxt.repository.get_mergify_config_file()
 

@@ -4,7 +4,7 @@ import json
 import os
 import pathlib
 import re
-import urllib.request as request
+from urllib import request
 
 
 RUNTIME_TXT_FILE = pathlib.Path(os.path.dirname(__file__)) / ".." / "runtime.txt"

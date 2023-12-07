@@ -124,7 +124,7 @@ def _test_nested_variable(
 
         for idx, elem in enumerate(expected_nested_variable):
             if isinstance(elem, dict) and "__array_idx" in elem:
-                idx = elem.pop("__array_idx")
+                idx = elem.pop("__array_idx")  # noqa: PLW2901
 
             _test_nested_variable(
                 real_nested_variable[idx],

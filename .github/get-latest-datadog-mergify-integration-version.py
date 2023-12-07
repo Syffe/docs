@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import re
-import urllib.request as request
+from urllib import request
 
 
 VERSIONS_RE = re.compile(r"href=[\"']datadog_mergify-([\d\.]+)-py3-none-any.whl")

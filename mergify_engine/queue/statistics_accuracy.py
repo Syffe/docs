@@ -102,16 +102,13 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
                 # If queue is in position>0, retrieve eta of previous PR
                 prev_pr_number = None
                 found = False
-                for car in train._cars:
-                    for embarked_pull in car.still_queued_embarked_pulls:
-                        if (
-                            embarked_pull.user_pull_request_number
-                            == pull_request_number
-                        ):
+                for train_car in train._cars:
+                    for ep in train_car.still_queued_embarked_pulls:
+                        if ep.user_pull_request_number == pull_request_number:
                             found = True
                             break
 
-                        prev_pr_number = embarked_pull.user_pull_request_number
+                        prev_pr_number = ep.user_pull_request_number
 
                     if found:
                         break

@@ -83,7 +83,7 @@ async def stream_reschedule_now(owner_id: str) -> int:
             click.echo(f"Stream for {expected_bucket} rescheduled now")
             await redis_links.shutdown_all()
             return 0
-    else:
-        click.echo(f"Stream for {expected_bucket} not found")
-        await redis_links.shutdown_all()
-        return 1
+
+    click.echo(f"Stream for {expected_bucket} not found")
+    await redis_links.shutdown_all()
+    return 1

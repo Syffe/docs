@@ -4407,8 +4407,8 @@ previous_failed_batches:
             if event["type"] == "action.queue.checks_end":
                 assert expected_reason in event["metadata"]["abort_reason"]
                 return
-        else:
-            pytest.fail("No action.queue.checks_end event found")
+
+        pytest.fail("No action.queue.checks_end event found")
 
     async def assert_api_checks_start_reason(
         self,

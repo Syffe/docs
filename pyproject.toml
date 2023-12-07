@@ -195,7 +195,7 @@ select = [
  "C4", "T10", "ISC", "ICN", "BLE",
  "G", "RSE", "TID", "TRY", "PLE", "UP",
  "RUF", "RET", "DTZ", "TCH", "COM",
- "PERF", "PT",
+ "PERF", "PT", "PL",
  # FIXME(sileht): very interresting, but require easy manual code change
  # "ARG",
  # FIXME(sileht): doctring/rst-docstring like
@@ -203,6 +203,20 @@ select = [
 ]
 
 ignore = [
+    # NOTE(Greesb): Magic value used in comparison
+    # Interesting but will require a refactor, and will need to be ignored
+    # in tests
+    "PLR2004",
+    # NOTE(Greesb): Too many return, branches, arguments, statements, boolean expression, positional arguments.
+    # Interesting but will require a big refactor
+    "PLR0911", "PLR0912", "PLR0913","PLR0915", "PLR0916", "PLR0917",
+    # NOTE(Greesb): global variables related stuff, we need those global variables
+    "PLW0602", "PLW0603",
+    # NOTE(Greesb): subprocess.run without explicit check argument
+    "PLW1510",
+    # NOTE(Greesb): continue not supported inside finally clause
+    # only useful for python < 3.8
+    "PLE0116",
     # NOTE(Greesb): raises an error if we use tuple instead of list for
     # parametrize arguments, not really useful.
     "PT007",

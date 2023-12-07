@@ -309,7 +309,10 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             "Required conditions for merge:\n\n- [ ] `status-success=continuous-integration/fake-ci`"
             in check_run_p1["check_run"]["output"]["summary"]
         )
-        assert "Check-runs and statuses of the embarked pull request"
+        assert (
+            "Check-runs and statuses of the embarked pull request"
+            in check_run_p1["check_run"]["output"]["summary"]
+        )
 
     async def test_multi_partition_pull_request_reporting_when_pr_in_several_partitions(
         self,
@@ -388,7 +391,10 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             "Required conditions for merge:\n\n- [ ] `status-success=continuous-integration/fake-ci`"
             in check_run_p1["check_run"]["output"]["summary"]
         )
-        assert "Check-runs and statuses of the embarked pull request"
+        assert (
+            "Check-runs and statuses of the embarked pull request"
+            in check_run_p1["check_run"]["output"]["summary"]
+        )
 
     async def test_no_partition_reset_after_pr_manual_merge_have_reset_one_partition(
         self,

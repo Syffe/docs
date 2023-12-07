@@ -224,7 +224,7 @@ class BasePullRequest:
                 return started_at
             return date.RelativeDatetime(started_at)
 
-        if name == "queue-partition-name" or name == "partition-name":
+        if name in ("queue-partition-name", "partition-name"):
             return await ctxt.repository.mergify_config[
                 "partition_rules"
             ].get_evaluated_partition_names_from_context(ctxt)
@@ -863,7 +863,7 @@ class QueuePullRequest(BasePullRequest):
     async def __getattr__(self, name: str) -> PullRequestAttributeType:
         fancy_name = name.replace("_", "-")
         if fancy_name in self.QUEUE_ATTRIBUTES:
-            if fancy_name == "queue-partition-name" or fancy_name == "partition-name":
+            if fancy_name in ("queue-partition-name", "partition-name"):
                 fancy_name = "current-partition-name"
             return await self._get_consolidated_data(self.queue_context, fancy_name)
         return await self._get_consolidated_data(self.context, fancy_name)

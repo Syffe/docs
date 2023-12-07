@@ -109,7 +109,7 @@ async def render_users_template(ctxt: context.Context, users: list[str]) -> set[
     pull_attrs = condition_value_querier.PullRequest(ctxt)
     for user in set(users):
         try:
-            user = await pull_attrs.render_template(user)
+            user = await pull_attrs.render_template(user)  # noqa: PLW2901
         except condition_value_querier.RenderTemplateFailure:
             # NOTE: this should never happen since
             # the template is validated when parsing the config 🤷

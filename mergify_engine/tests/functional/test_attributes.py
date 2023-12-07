@@ -905,7 +905,7 @@ class TestAttributes(base.FunctionalTestBase):
         assert "much originality" == review_threads[3]["body"]
         assert "Don't like this line too much either" == review_threads[2]["body"]
         assert "How original" == review_threads[1]["body"]
-        assert "why are you still writing `foo` here ?", review_threads[0]["body"]
+        assert "why are you still writing `foo` here ?" == review_threads[0]["body"]
 
     async def test_retrieve_resolved_and_unresolved_threads(self) -> None:
         rules = {

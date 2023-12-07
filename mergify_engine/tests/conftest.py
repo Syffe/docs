@@ -374,8 +374,8 @@ class CustomTestClient(httpx.AsyncClient):
         for route in web_app.routes:
             if isinstance(route, starlette.routing.Mount) and route.path == "/front":
                 return typing.cast(fastapi.FastAPI, route.app)
-        else:
-            raise RuntimeError("/front app not found")
+
+        raise RuntimeError("/front app not found")
 
     async def log_as(self, user_id: int) -> None:
         resp = await self.post(f"/front/for-testing/log-as/{user_id}")

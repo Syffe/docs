@@ -1,7 +1,7 @@
 import enum
 
 import sqlalchemy
-import sqlalchemy.orm as orm
+from sqlalchemy import orm
 
 from mergify_engine import models
 from mergify_engine.models.github import workflows as wf

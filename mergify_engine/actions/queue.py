@@ -1091,29 +1091,28 @@ Then, re-embark the pull request into the merge queue by posting the comment
             if not embarked_pulls:
                 ctxt.log.error("expected queued pull request not found in queue")
                 title = "The pull request is queued to be merged"
-            else:
-                if len(embarked_pulls) == 1:
-                    _ord = utils.to_ordinal_numeric(embarked_pulls[0].position + 1)
-                    title = f"The pull request is the {_ord} in the "
+            elif len(embarked_pulls) == 1:
+                _ord = utils.to_ordinal_numeric(embarked_pulls[0].position + 1)
+                title = f"The pull request is the {_ord} in the "
 
-                    if (
-                        embarked_pulls[0].partition_name
-                        == partr_config.DEFAULT_PARTITION_NAME
-                    ):
-                        title += "queue"
-                    else:
-                        title += f"`{embarked_pulls[0].partition_name}` partition queue"
-
-                    title += " to be merged"
+                if (
+                    embarked_pulls[0].partition_name
+                    == partr_config.DEFAULT_PARTITION_NAME
+                ):
+                    title += "queue"
                 else:
-                    positions = [
-                        f"{utils.to_ordinal_numeric(ep.position + 1)} in {ep.partition_name}"
-                        for ep in embarked_pulls
-                    ]
-                    title = (
-                        "The pull request is queued in the following partitions to be merged: "
-                        f"{', '.join(positions)}"
-                    )
+                    title += f"`{embarked_pulls[0].partition_name}` partition queue"
+
+                title += " to be merged"
+            else:
+                positions = [
+                    f"{utils.to_ordinal_numeric(ep.position + 1)} in {ep.partition_name}"
+                    for ep in embarked_pulls
+                ]
+                title = (
+                    "The pull request is queued in the following partitions to be merged: "
+                    f"{', '.join(positions)}"
+                )
 
         summary = await convoy.get_pull_summary(
             ctxt,

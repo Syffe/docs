@@ -362,19 +362,18 @@ class Processor:
                             owner_id,
                         )
                         return
-                else:
-                    if self.dedicated_owner_id is not None:
-                        # Drop this worker
-                        LOG.info(
-                            "dedicated worker got an event for shared worker, removing org from Redis dedicated workers set",
-                            owner_id=owner_id,
-                            owner_login=owner_login_for_tracing,
-                        )
-                        await self.redis_links.stream.srem(
-                            DEDICATED_WORKERS_KEY,
-                            owner_id,
-                        )
-                        return
+                elif self.dedicated_owner_id is not None:
+                    # Drop this worker
+                    LOG.info(
+                        "dedicated worker got an event for shared worker, removing org from Redis dedicated workers set",
+                        owner_id=owner_id,
+                        owner_login=owner_login_for_tracing,
+                    )
+                    await self.redis_links.stream.srem(
+                        DEDICATED_WORKERS_KEY,
+                        owner_id,
+                    )
+                    return
 
                 installation_raw = await github.get_installation_from_account_id(
                     owner_id,

@@ -2,8 +2,8 @@ import anys
 import pytest
 import respx
 import sqlalchemy
+from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
-import sqlalchemy.orm as orm
 
 from mergify_engine.models import github as gh_models
 from mergify_engine.tests import conftest

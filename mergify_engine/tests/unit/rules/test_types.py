@@ -162,8 +162,7 @@ def test_jinja2_template_with_all_attributes(
     context_attributes_var: str,
 ) -> None:
     for attr in getattr(condition_value_querier.PullRequest, context_attributes_var):
-        attr = attr.replace("-", "_")
-        tmpl_attr = tmpl.format(attr=attr)
+        tmpl_attr = tmpl.format(attr=attr.replace("-", "_"))
 
         value = types_dummy_context.DUMMY_PR.render_template(tmpl_attr, None)
         assert value == expectation
