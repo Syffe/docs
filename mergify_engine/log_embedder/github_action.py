@@ -1,6 +1,4 @@
 import codecs
-from collections import abc
-import contextlib
 import dataclasses
 import datetime
 import io
@@ -108,20 +106,11 @@ async def fetch_and_store_log(
 
     async with github.aget_client(installation) as client:
         if job.failed_step_number is None:
-            try:
-                log_lines = await job.download_failure_annotations(client)
-            except gh_models.WorkflowJob.UnableToRetrieveLog:
-                job.log_status = gh_models.WorkflowJobLogStatus.GONE
-                raise
+            log_lines = await job.download_failure_annotations(client)
             log_content = "".join(log_lines)
             log_content_b = log_content.encode()
         else:
-            try:
-                zipped_logs_content = await job.download_failed_logs(client)
-            except gh_models.WorkflowJob.UnableToRetrieveLog:
-                job.log_status = gh_models.WorkflowJobLogStatus.GONE
-                raise
-
+            zipped_logs_content = await job.download_failed_logs(client)
             log_content_b = get_step_log_from_zipped_content(
                 zipped_logs_content,
                 job.github_name,
@@ -208,6 +197,7 @@ def get_step_log_from_zipped_content(
                 with zip_file.open(i.filename) as log_file:
                     return log_file.read()
 
+    # FIXME(sileht): We should mark the job as ERROR instead of retrying
     raise UnexpectedLogEmbedderError(
         "log-embedder: job log not found in zip file",
         log_extras={"files": [i.filename for i in zip_file.infolist()]},
@@ -286,6 +276,7 @@ async def extract_data_from_log(
     chat_response = choice.get("message", {}).get("content")
 
     if not chat_response:
+        # FIXME(sileht): We should mark the job as ERROR instead of retrying
         raise UnexpectedLogEmbedderError(
             "ChatGPT returned no extracted data for the job log",
             log_extras={"chat_completion": chat_completion},
@@ -300,6 +291,7 @@ async def extract_data_from_log(
             # FIXME(Kontrolix): It means that GPT responde with a too long response,
             # for now I have no better solution than push the error under the carpet.
             # But we will have to improve the prompt or the cleaner or the model we use ...
+            # FIXME(sileht): We should mark the job as ERROR, not DOWNLOADED in such case
             extracted_data = []
         else:
             raise
@@ -307,6 +299,7 @@ async def extract_data_from_log(
     # FIXME(Kontrolix): It means that GPT found no error, for now I have no better
     # solution than push the error under the carpet. But we will have to improve
     # the prompt or the cleaner or the model we use ...
+    # FIXME(sileht): We should mark the job as ERROR, not DOWNLOADED in such case
     if extracted_data is None or extracted_data == [None]:
         extracted_data = []
 
@@ -359,69 +352,60 @@ def get_cleaned_log(log_lines: list[str]) -> str:
     return "\n".join(cleaned_lines)
 
 
-@contextlib.contextmanager
+@dataclasses.dataclass
+class Retry:
+    at: datetime.datetime
+
+
 def log_exception_and_maybe_retry(
-    job: gh_models.WorkflowJob,
-    status_field: str,
-    retry_after_fields: str,
-    attempts_field: str,
-    error_enum: type[gh_models.WorkflowJobLogEmbeddingStatus]
-    | type[gh_models.WorkflowJobLogMetadataExtractingStatus]
-    | type[gh_models.WorkflowJobLogStatus],
-) -> abc.Generator[None, None, None]:
-    try:
-        yield
-    except Exception as exc:
-        log_extras = job.as_log_extras()
-        if isinstance(exc, UnexpectedLogEmbedderError):
-            log_extras.update(exc.log_extras)
+    exc: Exception,
+    attempts: int,
+    log_extras: dict[str, typing.Any],
+) -> Retry | None:
+    if isinstance(exc, UnexpectedLogEmbedderError):
+        log_extras.update(exc.log_extras)
 
-        if exceptions.should_be_ignored(exc):
-            setattr(job, status_field, error_enum.ERROR)
+    if exceptions.should_be_ignored(exc):
+        LOG.warning(
+            "log-embedder: failed with a fatal error",
+            exc_info=True,
+            **log_extras,
+        )
+        return None
 
-            LOG.warning(
-                "log-embedder: failed with a fatal error",
-                exc_info=True,
-                **log_extras,
-            )
-            return
+    if attempts >= LOG_EMBEDDER_MAX_ATTEMPTS:
+        LOG.error(
+            "log-embedder: too many unexpected failures, giving up",
+            exc_info=True,
+            **log_extras,
+        )
+        return None
 
-        if (
-            isinstance(exc, http.RequestError)
-            and exc.request.url == openai_api.OPENAI_API_BASE_URL
-        ):
-            # NOTE(sileht): This cost money so we don't want to retry too often
-            base_retry_min = 10
-        else:
-            base_retry_min = 1
+    if (
+        isinstance(exc, http.RequestError)
+        and exc.request.url == openai_api.OPENAI_API_BASE_URL
+    ):
+        # NOTE(sileht): This cost money so we don't want to retry too often
+        base_retry_min = 10
+    else:
+        base_retry_min = 1
 
-        retry_in = exceptions.need_retry_in(exc, base_retry_min=base_retry_min)
-        if retry_in is None:
-            # TODO(sileht): Maybe replace me by a exponential backoff + 1 hours limit
-            retry_in = datetime.timedelta(minutes=10)
+    retry_in = exceptions.need_retry_in(exc, base_retry_min=base_retry_min)
+    if retry_in is None:
+        # TODO(sileht): Maybe replace me by a exponential backoff + 1 hours limit
+        retry_in = datetime.timedelta(minutes=10)
 
-        setattr(job, retry_after_fields, date.utcnow() + retry_in)
-        setattr(job, attempts_field, getattr(job, attempts_field) + 1)
+    retry_at = date.utcnow() + retry_in
 
-        if getattr(job, attempts_field) >= LOG_EMBEDDER_MAX_ATTEMPTS:
-            setattr(job, status_field, error_enum.ERROR)
-
-            LOG.error(
-                "log-embedder: too many unexpected failures, giving up",
-                exc_info=True,
-                **log_extras,
-            )
-            return
-
-        if isinstance(exc, http.RequestError | http.HTTPServerSideError):
-            # We don't want to log anything related to network and HTTP server side error
-            return
-
+    # We don't want to log anything related to network and HTTP server side error
+    if not isinstance(exc, http.RequestError | http.HTTPServerSideError):
         LOG.error(
             "log-embedder: unexpected failure, retrying later",
             exc_info=True,
             **log_extras,
         )
+
+    return Retry(at=retry_at)
 
 
 async def embed_logs_with_log_embedding(
@@ -475,39 +459,53 @@ async def embed_logs_with_log_embedding(
         async with openai_api.OpenAIClient() as openai_client:
             refresh_ready_job_ids = []
             for job in jobs:
-                with log_exception_and_maybe_retry(
-                    job,
-                    "log_status",
-                    "log_downloading_retry_after",
-                    "log_downloading_attempts",
-                    gh_models.WorkflowJobLogStatus,
+                try:
+                    log_lines = await get_log_lines(gcs_client, job)
+                except gh_models.WorkflowJob.UnableToRetrieveLog:
+                    job.log_status = gh_models.WorkflowJobLogStatus.GONE
+                    await session.commit()
+                    continue
+                except Exception as e:
+                    retry = log_exception_and_maybe_retry(
+                        e,
+                        job.log_downloading_attempts + 1,
+                        job.as_log_extras(),
+                    )
+                    if retry is None:
+                        job.log_status = gh_models.WorkflowJobLogStatus.ERROR
+                    else:
+                        job.log_downloading_attempts += 1
+                        job.log_downloading_retry_after = retry.at
+                    await session.commit()
+                    continue
+
+                if (
+                    job.log_embedding_status
+                    == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN
                 ):
                     try:
-                        log_lines = await get_log_lines(gcs_client, job)
-                    except gh_models.WorkflowJob.UnableToRetrieveLog:
+                        await embed_log(openai_client, job, log_lines)
+                    except Exception as e:
+                        retry = log_exception_and_maybe_retry(
+                            e,
+                            job.log_embedding_attempts + 1,
+                            job.as_log_extras(),
+                        )
+                        if retry is None:
+                            job.log_embedding_status = (
+                                gh_models.WorkflowJobLogEmbeddingStatus.ERROR
+                            )
+                        else:
+                            job.log_embedding_attempts += 1
+                            job.log_embedding_retry_after = retry.at
+                        await session.commit()
                         continue
 
-                    with log_exception_and_maybe_retry(
-                        job,
-                        "log_embedding_status",
-                        "log_embedding_retry_after",
-                        "log_embedding_attempts",
-                        gh_models.WorkflowJobLogEmbeddingStatus,
-                    ):
-                        if job.log_embedding is None:
-                            await embed_log(openai_client, job, log_lines)
-
-                        if (
-                            job.log_embedding_status
-                            == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
-                            and job.ci_issue_id is None
-                        ):
-                            await ci_issue.CiIssue.link_job_to_ci_issue(session, job)
-                            refresh_ready_job_ids.append(job.id)
+                if job.ci_issue_id is None:
+                    await ci_issue.CiIssue.link_job_to_ci_issue(session, job)
+                    refresh_ready_job_ids.append(job.id)
 
                 await session.commit()
-
-        await session.commit()
 
         await flaky_check.send_pull_refresh_for_jobs(redis_links, refresh_ready_job_ids)
 
@@ -579,43 +577,59 @@ async def embed_logs_with_extracted_metadata(
 
         async with openai_api.OpenAIClient() as openai_client:
             for job in jobs:
-                with log_exception_and_maybe_retry(
-                    job,
-                    "log_status",
-                    "log_downloading_retry_after",
-                    "log_downloading_attempts",
-                    gh_models.WorkflowJobLogStatus,
+                try:
+                    log_lines = await get_log_lines(gcs_client, job)
+                except gh_models.WorkflowJob.UnableToRetrieveLog:
+                    job.log_status = gh_models.WorkflowJobLogStatus.GONE
+                    await session.commit()
+                    continue
+                except Exception as e:
+                    retry = log_exception_and_maybe_retry(
+                        e,
+                        job.log_downloading_attempts + 1,
+                        job.as_log_extras(),
+                    )
+                    if retry is None:
+                        job.log_status = gh_models.WorkflowJobLogStatus.ERROR
+                    else:
+                        job.log_downloading_attempts += 1
+                        job.log_downloading_retry_after = retry.at
+                    await session.commit()
+                    continue
+
+                if job.log_metadata_extracting_status == (
+                    gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN
                 ):
                     try:
-                        log_lines = await get_log_lines(gcs_client, job)
-                    except gh_models.WorkflowJob.UnableToRetrieveLog:
-                        continue
-
-                    with log_exception_and_maybe_retry(
-                        job,
-                        "log_metadata_extracting_status",
-                        "log_metadata_extracting_retry_after",
-                        "log_metadata_extracting_attempts",
-                        gh_models.WorkflowJobLogMetadataExtractingStatus,
-                    ):
                         await extract_data_from_log(
                             openai_client,
                             session,
                             job,
                             log_lines,
                         )
+                    except Exception as e:
+                        retry = log_exception_and_maybe_retry(
+                            e,
+                            job.log_metadata_extracting_attempts + 1,
+                            job.as_log_extras(),
+                        )
+                        if retry is None:
+                            job.log_metadata_extracting_status = (
+                                gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR
+                            )
+                        else:
+                            job.log_metadata_extracting_attempts += 1
+                            job.log_metadata_extracting_retry_after = retry.at
+                        await session.commit()
+                        continue
 
-                    if (
-                        job.log_metadata_extracting_status
-                        == gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED
-                        and job.log_metadata
-                        and not job.ci_issues_gpt
-                    ):
-                        await ci_issue.CiIssueGPT.link_job_to_ci_issues(session, job)
+                # FIXME(sileht): it does not make sense to check log_metadata is empty when
+                # the status is DOWNLOADED... but now we have the DB with not log_metadata
+                # but with status set as DOWNLOADED...
+                if job.log_metadata and not job.ci_issues_gpt:
+                    await ci_issue.CiIssueGPT.link_job_to_ci_issues(session, job)
 
                 await session.commit()
-
-        await session.commit()
 
         # FIXME(Kontrolix): For now, flacky_check is link to ci_issue when it will be link
         # to ci_issue_gpt adapte this method. I keep it here to not forget.
