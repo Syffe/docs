@@ -321,11 +321,6 @@ async def extract_data_from_log(
 def get_cleaned_log(log_lines: list[str]) -> str:
     cleaner = log_cleaner.LogCleaner()
 
-    max_chat_completion_tokens = (
-        openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
-        - EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
-    )
-
     cleaned_lines: list[str] = []
 
     total_tokens = 0
@@ -342,13 +337,13 @@ def get_cleaned_log(log_lines: list[str]) -> str:
 
         total_tokens += len(tokenized_cleaned_line)
 
-        if total_tokens <= max_chat_completion_tokens:
+        if total_tokens <= MAX_CHAT_COMPLETION_TOKENS:
             cleaned_lines.insert(0, cleaned_line)
 
         # NOTE(Kontrolix): Add 1 for the `\n` that will links lines
         total_tokens += 1
 
-        if total_tokens >= max_chat_completion_tokens:
+        if total_tokens >= MAX_CHAT_COMPLETION_TOKENS:
             break
 
     return "\n".join(cleaned_lines)
