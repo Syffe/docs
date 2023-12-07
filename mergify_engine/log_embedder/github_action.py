@@ -166,9 +166,9 @@ async def get_log(
 async def embed_log(
     openai_client: openai_api.OpenAIClient,
     job: gh_models.WorkflowJob,
-    log_lines: list[str],
+    log_content: str,
 ) -> None:
-    tokens, truncated_log = await get_tokenized_cleaned_log(log_lines)
+    tokens, truncated_log = await get_tokenized_cleaned_log(log_content)
 
     embedding = await openai_client.get_embedding(tokens)
 
@@ -205,16 +205,18 @@ def get_step_log_from_zipped_content(
 
 
 async def get_tokenized_cleaned_log(
-    log_lines: list[str],
+    log_content: str,
 ) -> tuple[list[int], str]:
     cleaner = log_cleaner.LogCleaner()
 
     cleaned_tokens: list[int] = []
-    truncated_log = ""
+    truncated_log_lines: list[str] = []
     truncated_log_ready = False
     truncated_log_tokens_length = 0
 
-    cleaner.apply_log_tags("\n".join(log_lines))
+    cleaner.apply_log_tags(log_content)
+
+    log_lines = log_content.splitlines()
 
     for line in reversed(log_lines):
         if not line:
@@ -222,7 +224,7 @@ async def get_tokenized_cleaned_log(
 
         cleaned_line = cleaner.clean_line(line)
         # Start feeding truncated_log only on first non empty line
-        if not cleaned_line and not truncated_log:
+        if not cleaned_line and not truncated_log_lines:
             continue
 
         if not truncated_log_ready:
@@ -232,7 +234,7 @@ async def get_tokenized_cleaned_log(
             )
 
             if next_truncated_log_tokens_length <= MAX_CHAT_COMPLETION_TOKENS:
-                truncated_log = line + truncated_log
+                truncated_log_lines.insert(0, line)
                 truncated_log_tokens_length = next_truncated_log_tokens_length
 
             if truncated_log_tokens_length >= MAX_CHAT_COMPLETION_TOKENS:
@@ -251,7 +253,7 @@ async def get_tokenized_cleaned_log(
         if total_tokens >= openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN:
             break
 
-    return cleaned_tokens, truncated_log
+    return cleaned_tokens, "\n".join(truncated_log_lines)
 
 
 async def extract_data_from_log(
@@ -460,7 +462,7 @@ async def embed_logs_with_log_embedding(
             refresh_ready_job_ids = []
             for job in jobs:
                 try:
-                    log_lines = await get_log_lines(gcs_client, job)
+                    log_content = await get_log(gcs_client, job)
                 except gh_models.WorkflowJob.UnableToRetrieveLog:
                     job.log_status = gh_models.WorkflowJobLogStatus.GONE
                     await session.commit()
@@ -484,7 +486,7 @@ async def embed_logs_with_log_embedding(
                     == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN
                 ):
                     try:
-                        await embed_log(openai_client, job, log_lines)
+                        await embed_log(openai_client, job, log_content)
                     except Exception as e:
                         retry = log_exception_and_maybe_retry(
                             e,

@@ -15,38 +15,32 @@ def test_encode_decode_log() -> None:
 @pytest.mark.parametrize(
     ("raw_log", "expected_length", "expected_cleaned_log", "expected_embedded_log"),
     [
-        (["hello\n"], 1, "hello", "hello\n"),
+        ("hello\n", 1, "hello", "hello"),
         (
-            ["hello\n"] * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
+            "hello\n" * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
             openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
-            "hello" * (openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN),
-            # NOTE(sileht): 'hello\n' it's two token and we can't go over the bigger chat model
-            "hello\n" * int(MAX_TOKENS_EMBEDDED_LOG / 2),
+            "hello" * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
+            ("hello\n" * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN)[:-1],
         ),
         (
-            (["hello\n"] * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN)
-            + [
-                "before the end\n",
-                "extra token at the end",
-            ],
+            ("hello\n" * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN)
+            # NOTE(Kontrolix): When this part is cleaned, it uses 4 tokens
+            + "before the end\nextra token at the end",
             openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
-            # NOTE(Kontrolix): When this part is cleaned, it leaves 4 tokens
             ("hello" * (openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 4))
             + "endextra token end",
             (
-                # NOTE(sileht): 'hello\n' it's two token and we can't go over the bigger chat model
-                "hello\n" * (int((MAX_TOKENS_EMBEDDED_LOG - 9) / 2))
-                # 9 tokens
+                "hello\n" * (openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 4)
                 + "before the end\nextra token at the end"
             ),
         ),
         (
             # more is removed by LogCleaner, this ensures we remove end of files
             # from emebedded_log and log_embedding
-            ["hello\n", "more\n", "more\n", "more\n"],
+            "hello\nmore\nmore\nmore\n",
             1,
             "hello",
-            "hello\n",
+            "hello",
         ),
     ],
     ids=[
@@ -57,7 +51,7 @@ def test_encode_decode_log() -> None:
     ],
 )
 async def test_get_tokenized_cleaned_log(
-    raw_log: list[str],
+    raw_log: str,
     expected_length: int,
     expected_cleaned_log: str,
     expected_embedded_log: str,
