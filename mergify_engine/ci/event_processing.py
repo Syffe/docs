@@ -38,7 +38,7 @@ async def _process_workflow_run_stream(redis_links: redis_utils.RedisLinks) -> N
                 return
 
             log_level = (
-                logging.ERROR if exceptions.need_retry(e) is None else logging.INFO
+                logging.ERROR if exceptions.need_retry_in(e) is None else logging.INFO
             )
             LOG.log(
                 log_level,
@@ -94,7 +94,7 @@ async def _process_workflow_job_stream(redis_links: redis_utils.RedisLinks) -> N
                 return
 
             log_level = (
-                logging.ERROR if exceptions.need_retry(e) is None else logging.INFO
+                logging.ERROR if exceptions.need_retry_in(e) is None else logging.INFO
             )
             LOG.log(
                 log_level,

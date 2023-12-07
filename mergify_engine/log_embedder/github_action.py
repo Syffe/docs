@@ -391,11 +391,11 @@ def log_exception_and_maybe_retry(
             and exc.request.url == openai_api.OPENAI_API_BASE_URL
         ):
             # NOTE(sileht): This cost money so we don't want to retry too often
-            base_retry_in = 10
+            base_retry_min = 10
         else:
-            base_retry_in = 1
+            base_retry_min = 1
 
-        retry_in = exceptions.need_retry(exc, base_retry_in=base_retry_in)
+        retry_in = exceptions.need_retry_in(exc, base_retry_min=base_retry_min)
         if retry_in is None:
             # TODO(sileht): Maybe replace me by a exponential backoff + 1 hours limit
             retry_in = datetime.timedelta(minutes=10)

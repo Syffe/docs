@@ -310,7 +310,7 @@ class Processor:
                 await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_org_key)
                 raise OrgBucketRetry(bucket_org_key, 0, retry_at)
 
-            backoff = exceptions.need_retry(e)
+            backoff = exceptions.need_retry_in(e)
             if backoff is None:
                 # NOTE(sileht): This is our fault, so retry until we fix the bug but
                 # without increasing the attempts

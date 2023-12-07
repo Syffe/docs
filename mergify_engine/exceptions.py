@@ -108,10 +108,17 @@ def should_be_ignored(exception: Exception) -> bool:
     return False
 
 
-def need_retry(
+def need_retry_in(
     exception: Exception,
-    base_retry_in: int = 1,
+    base_retry_min: int = 1,
 ) -> datetime.timedelta | None:  # pragma: no cover
+    """Returns when to retry an exception in the future.
+
+    Returns None for no retry.
+
+    :param exception: The exception to retry.
+    :param base_retry_min: Base of number of minutes to start retrying.
+    """
     # circular import
     from mergify_engine.clients import github
 
@@ -129,31 +136,31 @@ def need_retry(
     ):
         # NOTE(sileht): We already retry locally with urllib3, so if we get there, GitHub
         # is in a really bad shape...
-        return datetime.timedelta(minutes=base_retry_in)
+        return datetime.timedelta(minutes=base_retry_min)
 
     # NOTE(sileht): Most of the times token are just temporary invalid, Why ?
     # no idea, ask GitHub...
     if isinstance(exception, http.HTTPClientSideError):
         # Bad creds or token expired, we can't really known
         if exception.response.status_code == 401:
-            return datetime.timedelta(minutes=base_retry_in)
+            return datetime.timedelta(minutes=base_retry_min)
 
         # Rate limit or abuse detection mechanism, futures events will be rate limited
         # correctly by mergify_engine.utils.GitHub()
         if exception.response.status_code == 403:
-            return datetime.timedelta(minutes=base_retry_in * 3)
+            return datetime.timedelta(minutes=base_retry_min * 3)
 
     if isinstance(exception, redis_exceptions.ResponseError):
         # Redis script bug or OOM
-        return datetime.timedelta(minutes=base_retry_in)
+        return datetime.timedelta(minutes=base_retry_min)
 
     if isinstance(exception, redis_exceptions.ConnectionError):
         # Redis down
-        return datetime.timedelta(minutes=base_retry_in)
+        return datetime.timedelta(minutes=base_retry_min)
 
     if isinstance(exception, sqlalchemy.exc.DatabaseError):
         # Postgres down
-        return datetime.timedelta(minutes=base_retry_in)
+        return datetime.timedelta(minutes=base_retry_min)
 
     return None
 
@@ -170,7 +177,7 @@ def log_and_ignore_exception(
             try:
                 await func(*args, **kwargs)
             except Exception as exc:
-                if should_be_ignored(exc) or need_retry(exc):
+                if should_be_ignored(exc) or need_retry_in(exc):
                     level = logging.WARN
                 else:
                     level = logging.ERROR

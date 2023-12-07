@@ -627,7 +627,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     queue_pause,
                 )
         except Exception as e:
-            if not exceptions.need_retry(e):
+            if not exceptions.need_retry_in(e):
                 await convoy.remove_pull(
                     self.ctxt.pull["number"],
                     self.rule.get_signal_trigger(),

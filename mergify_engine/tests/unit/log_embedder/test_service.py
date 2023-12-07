@@ -397,7 +397,7 @@ async def test_embed_logs_on_various_data(
 )
 @mock.patch.object(
     exceptions,
-    "need_retry",
+    "need_retry_in",
     return_value=datetime.timedelta(seconds=-60),
 )
 @pytest.mark.parametrize(

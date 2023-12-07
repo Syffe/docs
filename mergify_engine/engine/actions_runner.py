@@ -329,7 +329,7 @@ async def exec_action(
         # Forward those to worker
         if (
             exceptions.should_be_ignored(e)
-            or exceptions.need_retry(e)
+            or exceptions.need_retry_in(e)
             or isinstance(e, exceptions.UnprocessablePullRequest)
         ):
             raise
@@ -567,7 +567,7 @@ async def run_actions(
                             check_name,
                             exc_info=True,
                         )
-                    elif exceptions.need_retry(e):
+                    elif exceptions.need_retry_in(e):
                         raise
                     else:
                         ctxt.log.error(

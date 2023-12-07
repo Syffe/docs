@@ -158,7 +158,7 @@ class SubscriptionBase(abstract.ABC):
                 db_sub = await cls._retrieve_subscription_from_db(redis, owner_id)
             except Exception as exc:
                 if cached_sub is not None and (
-                    exceptions.should_be_ignored(exc) or exceptions.need_retry(exc)
+                    exceptions.should_be_ignored(exc) or exceptions.need_retry_in(exc)
                 ):
                     # NOTE(charly): Shadow Office is temporary unavailable,
                     # renew the cache validity and return it, instead of

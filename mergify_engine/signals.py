@@ -653,7 +653,9 @@ async def send(
                 trigger,
             )
         except Exception as e:
-            if exceptions.need_retry(e) is not None or exceptions.should_be_ignored(e):
+            if exceptions.need_retry_in(e) is not None or exceptions.should_be_ignored(
+                e,
+            ):
                 level = logging.WARNING
             else:
                 level = logging.ERROR
