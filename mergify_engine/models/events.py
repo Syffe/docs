@@ -19,6 +19,7 @@ from mergify_engine.models import enumerations
 from mergify_engine.models import events_metadata
 from mergify_engine.models.github import repository as github_repository
 from mergify_engine.rules.config import partition_rules  # noqa: TCH001
+from mergify_engine.rules.config import queue_rules as qr_config  # noqa: TCH001
 
 
 if typing.TYPE_CHECKING:
@@ -436,7 +437,7 @@ class EventActionQueueEnter(Event):
         primary_key=True,
         anonymizer_config=None,
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(
+    queue_name: orm.Mapped[qr_config.QueueName] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
@@ -476,7 +477,7 @@ class EventActionQueueMerged(Event):
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(
+    queue_name: orm.Mapped[qr_config.QueueName] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
@@ -503,7 +504,7 @@ class EventActionQueueLeave(Event):
         primary_key=True,
         anonymizer_config=None,
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(
+    queue_name: orm.Mapped[qr_config.QueueName] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
@@ -555,7 +556,7 @@ class EventActionQueueChange(Event):
         primary_key=True,
         anonymizer_config=None,
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(
+    queue_name: orm.Mapped[qr_config.QueueName] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
@@ -680,7 +681,7 @@ class EventActionQueueChecksStart(Event):
         sqlalchemy.Integer,
         anonymizer_config="anon.random_int_between(0, 50)",
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(
+    queue_name: orm.Mapped[qr_config.QueueName] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
@@ -757,7 +758,7 @@ class EventActionQueueChecksEnd(Event):
         sqlalchemy.Integer,
         anonymizer_config="anon.random_int_between(0, 50)",
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(
+    queue_name: orm.Mapped[qr_config.QueueName] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
@@ -914,7 +915,7 @@ class EventQueueFreezeCreate(Event):
         primary_key=True,
         anonymizer_config=None,
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(
+    queue_name: orm.Mapped[qr_config.QueueName] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
@@ -972,7 +973,7 @@ class EventQueueFreezeUpdate(Event):
         primary_key=True,
         anonymizer_config=None,
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(
+    queue_name: orm.Mapped[qr_config.QueueName] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
@@ -1030,7 +1031,7 @@ class EventQueueFreezeDelete(Event):
         primary_key=True,
         anonymizer_config=None,
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(
+    queue_name: orm.Mapped[qr_config.QueueName] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
