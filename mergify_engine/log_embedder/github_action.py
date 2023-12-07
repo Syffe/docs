@@ -65,6 +65,11 @@ Logs:
     response_format="json_object",
 )
 
+MAX_CHAT_COMPLETION_TOKENS = (
+    openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
+    - EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
+)
+
 
 @dataclasses.dataclass
 class UnexpectedLogEmbedderError(Exception):
@@ -214,12 +219,6 @@ async def get_tokenized_cleaned_log(
 ) -> tuple[list[int], str]:
     cleaner = log_cleaner.LogCleaner()
 
-    max_embedding_tokens = openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
-    max_chat_completion_tokens = (
-        openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
-        - EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
-    )
-
     cleaned_tokens: list[int] = []
     truncated_log = ""
     truncated_log_ready = False
@@ -242,11 +241,11 @@ async def get_tokenized_cleaned_log(
                 truncated_log_tokens_length + nb_tokens_in_line
             )
 
-            if next_truncated_log_tokens_length <= max_chat_completion_tokens:
+            if next_truncated_log_tokens_length <= MAX_CHAT_COMPLETION_TOKENS:
                 truncated_log = line + truncated_log
                 truncated_log_tokens_length = next_truncated_log_tokens_length
 
-            if truncated_log_tokens_length >= max_chat_completion_tokens:
+            if truncated_log_tokens_length >= MAX_CHAT_COMPLETION_TOKENS:
                 truncated_log_ready = True
 
         if not cleaned_line:
@@ -256,10 +255,10 @@ async def get_tokenized_cleaned_log(
 
         total_tokens = len(tokenized_cleaned_line) + len(cleaned_tokens)
 
-        if total_tokens <= max_embedding_tokens:
+        if total_tokens <= openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN:
             cleaned_tokens = tokenized_cleaned_line + cleaned_tokens
 
-        if total_tokens >= max_embedding_tokens:
+        if total_tokens >= openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN:
             break
 
     return cleaned_tokens, truncated_log

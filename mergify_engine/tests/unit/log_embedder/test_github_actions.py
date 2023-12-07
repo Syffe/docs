@@ -4,15 +4,7 @@ from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_api
 
 
-MAX_TOKENS_EMBEDDED_LOG = (
-    openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
-    - github_action.EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
-)
-
-MAX_CHAT_COMPLETION_TOKENS = (
-    openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
-    - github_action.EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
-)
+MAX_TOKENS_EMBEDDED_LOG = github_action.MAX_CHAT_COMPLETION_TOKENS
 
 
 def test_encode_decode_log() -> None:
@@ -84,19 +76,19 @@ async def test_get_tokenized_cleaned_log(
     [
         (["hello\n"], "hello", 1),
         (
-            ["hello\n"] * MAX_CHAT_COMPLETION_TOKENS,
+            ["hello\n"] * github_action.MAX_CHAT_COMPLETION_TOKENS,
             # NOTE(Kontrolix): Divide by 2 because 'hello\n' is 2 token
             "\n".join(["hello"] * int(MAX_TOKENS_EMBEDDED_LOG / 2)),
             # NOTE(Kontrolix): minus 1 because we haven't an '\n' at the end of the log
-            MAX_CHAT_COMPLETION_TOKENS - 1,
+            github_action.MAX_CHAT_COMPLETION_TOKENS - 1,
         ),
         (
             ["Tokens that will be removed at the beginning"]
-            + (["hello\n"] * MAX_CHAT_COMPLETION_TOKENS),
+            + (["hello\n"] * github_action.MAX_CHAT_COMPLETION_TOKENS),
             # NOTE(Kontrolix): Divide by 2 because 'hello\n' is 2 token
             "\n".join(["hello"] * int(MAX_TOKENS_EMBEDDED_LOG / 2)),
             # NOTE(Kontrolix): minus 1 because we haven't an '\n' at the end of the log
-            MAX_CHAT_COMPLETION_TOKENS - 1,
+            github_action.MAX_CHAT_COMPLETION_TOKENS - 1,
         ),
     ],
     ids=["one_token_string", "max_input_token_string", "too_long_input_token_string"],
