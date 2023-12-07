@@ -44,7 +44,7 @@ instances:
             JOIN github_account ON github_repository.owner_id = github_account.id
           WHERE
             gha_workflow_job.conclusion = 'FAILURE'
-            AND github_account.login in (< LOG_EMBEDDER_MONITORED_ACCOUNTS >)
+            AND github_account.login in (<LOG_EMBEDDER_MONITORED_ACCOUNTS>)
           GROUP BY
             log_embedding_status,
             log_status,
