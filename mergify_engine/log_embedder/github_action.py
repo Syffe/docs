@@ -93,7 +93,7 @@ def _decode_log(log: bytes) -> bytes:
 async def fetch_and_store_log(
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
     job: gh_models.WorkflowJob,
-) -> list[str]:
+) -> str:
     """Fetch and store original log from GitHub
 
     Returns a list of log lines."""
@@ -108,7 +108,8 @@ async def fetch_and_store_log(
             except gh_models.WorkflowJob.UnableToRetrieveLog:
                 job.log_status = gh_models.WorkflowJobLogStatus.GONE
                 raise
-            log_content = "".join(log_lines).encode()
+            log_content = "".join(log_lines)
+            log_content_b = log_content.encode()
         else:
             try:
                 zipped_logs_content = await job.download_failed_logs(client)
@@ -116,17 +117,17 @@ async def fetch_and_store_log(
                 job.log_status = gh_models.WorkflowJobLogStatus.GONE
                 raise
 
-            log_content = get_step_log_from_zipped_content(
+            log_content_b = get_step_log_from_zipped_content(
                 zipped_logs_content,
                 job.github_name,
                 job.failed_step_number,
             )
-            log_lines = log_content.decode().splitlines()
+            log_content = log_content_b.decode()
 
     await gcs_client.upload(
         settings.LOG_EMBEDDER_GCS_BUCKET,
         f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
-        _encode_log(log_content),
+        _encode_log(log_content_b),
     )
     await gcs_client.upload(
         settings.LOG_EMBEDDER_GCS_BUCKET,
@@ -136,13 +137,20 @@ async def fetch_and_store_log(
 
     job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
 
-    return log_lines
+    return log_content
 
 
 async def get_log_lines(
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
     job: gh_models.WorkflowJob,
 ) -> list[str]:
+    return (await get_log(gcs_client, job)).splitlines()
+
+
+async def get_log(
+    gcs_client: google_cloud_storage.GoogleCloudStorageClient,
+    job: gh_models.WorkflowJob,
+) -> str:
     if job.log_status == gh_models.WorkflowJobLogStatus.DOWNLOADED:
         log = await gcs_client.download(
             settings.LOG_EMBEDDER_GCS_BUCKET,
@@ -156,7 +164,7 @@ async def get_log_lines(
             )
             return await fetch_and_store_log(gcs_client, job)
 
-        return _decode_log(log.download_as_bytes()).decode().splitlines()
+        return _decode_log(log.download_as_bytes()).decode()
 
     return await fetch_and_store_log(gcs_client, job)
 
