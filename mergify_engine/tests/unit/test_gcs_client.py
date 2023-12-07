@@ -2,7 +2,7 @@ from mergify_engine import settings
 from mergify_engine.clients import google_cloud_storage
 
 
-async def test_gcs_upload(prepare_google_cloud_storage_setup: None) -> None:
+async def test_gcs_upload(_prepare_google_cloud_storage_setup: None) -> None:
     client = google_cloud_storage.GoogleCloudStorageClient(
         settings.LOG_EMBEDDER_GCS_CREDENTIALS,
     )

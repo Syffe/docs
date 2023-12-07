@@ -8,7 +8,7 @@ from mergify_engine.tests.functional import utils as tests_utils
 
 
 @pytest.mark.parametrize(
-    "data,expected_data,should_match",
+    ("data", "expected_data", "should_match"),
     (
         (
             {

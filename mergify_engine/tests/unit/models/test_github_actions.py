@@ -8,7 +8,7 @@ from mergify_engine.tests.db_populator import DbPopulator
 
 
 @pytest.mark.parametrize(
-    "input_name,expected_name,expected_matrix",
+    ("input_name", "expected_name", "expected_matrix"),
     [
         ("job-name", "job-name", None),
         ("job-name (lvl1)", "job-name", "lvl1"),
@@ -28,7 +28,13 @@ async def test_get_job_name_and_matrix(
 
 
 @pytest.mark.parametrize(
-    "job_ref, max_rerun, first_rerun_needed, second_rerun_needed, final_rerun_needed",
+    (
+        "job_ref",
+        "max_rerun",
+        "first_rerun_needed",
+        "second_rerun_needed",
+        "final_rerun_needed",
+    ),
     [
         (
             "OneAccount/OneRepo/failed_job_with_flaky_nghb",

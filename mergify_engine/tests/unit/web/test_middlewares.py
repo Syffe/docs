@@ -101,7 +101,7 @@ async def test_http_redirect_to_https(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.ignored_logging_errors("request")
 @pytest.mark.parametrize(
-    "status_code,log_level",
+    ("status_code", "log_level"),
     ((0, logging.ERROR), (200, logging.INFO)),
 )
 async def test_logging_middleware(

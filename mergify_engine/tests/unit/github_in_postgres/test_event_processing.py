@@ -49,7 +49,7 @@ async def test_event_with_nul_bytes_in_body(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     context_getter: conftest.ContextGetterFixture,
-    mock_gh_pull_request_commits_insert_in_pg: None,
+    _mock_gh_pull_request_commits_insert_in_pg: None,
 ) -> None:
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(123))
 

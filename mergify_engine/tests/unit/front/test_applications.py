@@ -459,7 +459,7 @@ async def test_applications_bad_body(
 
 
 @pytest.mark.parametrize(
-    "role, status_code",
+    ("role", "status_code"),
     (("admin", 200), ("member", 403), (None, 403)),
 )
 async def test_applications_permissions_for_orgs(

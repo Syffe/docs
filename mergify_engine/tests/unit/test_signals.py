@@ -11,7 +11,7 @@ from mergify_engine.tests.unit import conftest
 async def test_signals(
     context_getter: conftest.ContextGetterFixture,
     request: pytest.FixtureRequest,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     signals.register()
     request.addfinalizer(signals.unregister)
@@ -40,7 +40,7 @@ async def test_signals(
 async def test_copy_signal(
     context_getter: conftest.ContextGetterFixture,
     request: pytest.FixtureRequest,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     signals.register()
     request.addfinalizer(signals.unregister)
@@ -71,7 +71,7 @@ async def test_copy_signal(
 async def test_datadog(
     context_getter: conftest.ContextGetterFixture,
     request: pytest.FixtureRequest,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     signals.register()
     request.addfinalizer(signals.unregister)

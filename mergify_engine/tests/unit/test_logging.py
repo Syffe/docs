@@ -11,8 +11,8 @@ import pytest
 from mergify_engine import logs
 
 
-@pytest.fixture
-def enable_tracer() -> abc.Generator[None, None, None]:
+@pytest.fixture()
+def _enable_tracer() -> abc.Generator[None, None, None]:
     enabled = tracer.enabled
     with mock.patch.object(tracer._writer, "flush_queue"), mock.patch.object(
         tracer._writer,
@@ -28,7 +28,7 @@ def enable_tracer() -> abc.Generator[None, None, None]:
 def test_logging(
     monkeypatch: pytest.MonkeyPatch,
     request: pytest.FixtureRequest,
-    enable_tracer: typing.Literal[None],
+    _enable_tracer: typing.Literal[None],
 ) -> None:
     monkeypatch.setenv("HEROKU_RELEASE_VERSION", "v1234")
 

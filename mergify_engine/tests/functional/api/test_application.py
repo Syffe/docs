@@ -6,7 +6,7 @@ from mergify_engine.tests import utils
 from mergify_engine.tests.functional import conftest as func_conftest
 
 
-@pytest.mark.recorder
+@pytest.mark.recorder()
 async def test_api_application(
     web_client: httpx.AsyncClient,
     shadow_office: func_conftest.SubscriptionFixture,

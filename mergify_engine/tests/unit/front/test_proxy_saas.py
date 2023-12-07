@@ -318,7 +318,7 @@ async def test_saas_intercom_with_saas_mode_true(
 
 
 @pytest.mark.parametrize(
-    "url, proxied_url, proxy_location, expected_location",
+    ("url", "proxied_url", "proxy_location", "expected_location"),
     (
         (
             "/front/proxy/saas/github-account/42/stripe-customer-portal",

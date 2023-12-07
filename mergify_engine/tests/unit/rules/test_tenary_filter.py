@@ -4,7 +4,7 @@ from mergify_engine.rules import filter
 
 
 @pytest.mark.parametrize(
-    "value, expected",
+    ("value", "expected"),
     (
         (True, False),
         (False, True),
@@ -22,7 +22,7 @@ async def test_operator_negate(
 
 
 @pytest.mark.parametrize(
-    "values, expected",
+    ("values", "expected"),
     (
         ([], False),
         ([False, False], False),
@@ -84,7 +84,7 @@ async def test_operator_any(
 
 
 @pytest.mark.parametrize(
-    "values, expected",
+    ("values", "expected"),
     (
         ([], True),
         ([False, False], False),

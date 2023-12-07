@@ -4,7 +4,7 @@ from mergify_engine.github_types import GitHubRepositoryPermission
 
 
 @pytest.mark.parametrize(
-    "permission,expected_permissions",
+    ("permission", "expected_permissions"),
     [
         (
             GitHubRepositoryPermission.ADMIN,

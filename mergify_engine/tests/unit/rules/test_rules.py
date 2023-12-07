@@ -141,7 +141,7 @@ def test_pull_request_rule(valid: typing.Any) -> None:
 
 
 @pytest.mark.parametrize(
-    "invalid,error",
+    ("invalid", "error"),
     (
         (
             {
@@ -819,28 +819,28 @@ async def test_get_mergify_config_invalid(
     invalid: str,
     fake_repository: context.Repository,
 ) -> None:
+    async def item(
+        *args: typing.Any,
+        **kwargs: typing.Any,
+    ) -> github_types.GitHubContentFile:
+        return github_types.GitHubContentFile(
+            {
+                "content": encodebytes(invalid.encode()).decode(),
+                "path": github_types.GitHubFilePath(".mergify.yml"),
+                "type": "file",
+                "sha": github_types.SHAType("azertyu"),
+                "encoding": "base64",
+            },
+        )
+
+    client = mock.Mock()
+    client.item.return_value = item()
+    fake_repository.installation.client = client
+
+    config_file = await fake_repository.get_mergify_config_file()
+    assert config_file is not None
+
     with pytest.raises(mergify_conf.InvalidRules):
-
-        async def item(
-            *args: typing.Any,
-            **kwargs: typing.Any,
-        ) -> github_types.GitHubContentFile:
-            return github_types.GitHubContentFile(
-                {
-                    "content": encodebytes(invalid.encode()).decode(),
-                    "path": github_types.GitHubFilePath(".mergify.yml"),
-                    "type": "file",
-                    "sha": github_types.SHAType("azertyu"),
-                    "encoding": "base64",
-                },
-            )
-
-        client = mock.Mock()
-        client.item.return_value = item()
-        fake_repository.installation.client = client
-
-        config_file = await fake_repository.get_mergify_config_file()
-        assert config_file is not None
         await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), config_file)
 
 
@@ -1344,7 +1344,7 @@ unacceptable character #x0004: control characters are not allowed
 
 
 @pytest.mark.parametrize(
-    "invalid,match",
+    ("invalid", "match"),
     (
         (
             {"name": "hello", "conditions": ["this is wrong"], "actions": {}},
@@ -2509,7 +2509,7 @@ Attribute only allowed in commands_restrictions section
 
 
 @pytest.mark.parametrize(
-    "condition,pull_request,expected_match,expected_related_checks",
+    ("condition", "pull_request", "expected_match", "expected_related_checks"),
     [
         pytest.param(
             conditions.RuleCondition.from_string("check-success=ci-1"),
@@ -2619,7 +2619,7 @@ def _dt(at: str) -> datetime.datetime:
 
 
 @pytest.mark.parametrize(
-    "condition,pull_request,expected_match,expected_next_evaluation_at",
+    ("condition", "pull_request", "expected_match", "expected_next_evaluation_at"),
     [
         pytest.param(
             conditions.RuleCondition.from_string(
@@ -2673,7 +2673,7 @@ def test_rule_condition_value() -> None:
 
 
 @pytest.mark.parametrize(
-    "condition,expected_operator",
+    ("condition", "expected_operator"),
     (
         (conditions.RuleCondition.from_string("base=main"), "="),
         (conditions.RuleCondition.from_string("base==main"), "="),
@@ -2690,7 +2690,7 @@ def test_rule_condition_operator(
 
 
 @pytest.mark.parametrize(
-    "configuration,expected_error",
+    ("configuration", "expected_error"),
     (
         (
             """

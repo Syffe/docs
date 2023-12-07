@@ -152,7 +152,7 @@ async def test_subscription_db_unavailable(
         )
         with pytest.raises(http.HTTPServiceUnavailable):
             await subscription.Subscription.get_subscription(redis_cache, owner_id)
-            retrieve_subscription_from_db_mock.assert_called_once()
+        retrieve_subscription_from_db_mock.assert_called_once()
 
         # no cache, but db -> got db sub
         retrieve_subscription_from_db_mock.reset_mock()

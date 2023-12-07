@@ -162,12 +162,12 @@ def extract_subscription_marker_features(
     return frozenset(DEFAULT_SUBSCRIPTION_FEATURES + marker.args)
 
 
-@pytest.fixture
+@pytest.fixture()
 async def shadow_office(
     monkeypatch: pytest.MonkeyPatch,
     redis_cache: redis_utils.RedisCache,
     request: pytest.FixtureRequest,
-    setup_database: None,
+    _setup_database: None,
 ) -> SubscriptionFixture:
     is_functionaltest_class = request.cls is not None
     marker = request.node.get_closest_marker("subscription")
@@ -486,15 +486,15 @@ async def recorder(
         return RecorderFixture(recorder_config, recorder)
 
 
-@pytest.fixture
-def unittest_asyncio_glue(
+@pytest.fixture()
+def _unittest_asyncio_glue(
     request: pytest.FixtureRequest,
     event_loop: asyncio.AbstractEventLoop,
 ) -> None:
     request.cls.pytest_event_loop = event_loop
 
 
-@pytest.fixture
+@pytest.fixture()
 def web_client_as_admin(
     web_client: httpx.AsyncClient,
     shadow_office: SubscriptionFixture,
@@ -503,8 +503,8 @@ def web_client_as_admin(
     return web_client
 
 
-@pytest.fixture
-def unittest_glue(
+@pytest.fixture()
+def _unittest_glue(
     shadow_office: SubscriptionFixture,
     web_client: httpx.AsyncClient,
     web_client_as_admin: httpx.AsyncClient,
@@ -594,7 +594,7 @@ async def _request_sync_lock() -> abc.AsyncIterator[None]:
 
 
 @pytest.fixture(autouse=True, scope="module")
-def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
+def _mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
     # When running tests in parallel, we need to mock the requests function
     # to add a delay between requests creating content to avoid hitting the secondary rate limit.
     # https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
@@ -638,7 +638,7 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
 
 
 @pytest.fixture(autouse=True)
-def mock_vcr_stubs_httpx_stubs_to_serialized_response() -> (
+def _mock_vcr_stubs_httpx_stubs_to_serialized_response() -> (
     abc.Generator[None, None, None]
 ):
     """
@@ -671,7 +671,7 @@ def mock_vcr_stubs_httpx_stubs_to_serialized_response() -> (
 
 
 @pytest.fixture(autouse=True)
-def mock_vcr_stubs_httpx_stubs_from_serialized_response() -> (
+def _mock_vcr_stubs_httpx_stubs_from_serialized_response() -> (
     abc.Generator[None, None, None]
 ):
     """
@@ -722,7 +722,7 @@ def mock_vcr_stubs_httpx_stubs_from_serialized_response() -> (
 
 
 @pytest.fixture(autouse=True)
-def mock_vcr_stubs_httpx_stubs_async_vcr_send() -> abc.Generator[None, None, None]:
+def _mock_vcr_stubs_httpx_stubs_async_vcr_send() -> abc.Generator[None, None, None]:
     # NOTE(Kontrolix): Import here to avoid mess up this test
     # `test_command_queue_infinite_loop_bug`, I don'tknow why
     import vcr.stubs.httpx_stubs

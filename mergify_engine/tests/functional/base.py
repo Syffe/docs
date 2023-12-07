@@ -184,7 +184,7 @@ class GitterRecorder(gitter.Gitter):
             self.save_records()
 
 
-@pytest.mark.usefixtures("unittest_asyncio_glue")
+@pytest.mark.usefixtures("_unittest_asyncio_glue")
 class IsolatedAsyncioTestCaseWithPytestAsyncioGlue(unittest.IsolatedAsyncioTestCase):
     def _setupAsyncioRunner(self) -> None:
         # NOTE(sileht): py311 unittest internal interface
@@ -200,7 +200,7 @@ class IsolatedAsyncioTestCaseWithPytestAsyncioGlue(unittest.IsolatedAsyncioTestC
         pass
 
 
-@pytest.mark.usefixtures("unittest_glue")
+@pytest.mark.usefixtures("_unittest_glue")
 class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     # Compat mypy/pytest fixtures
     app: httpx.AsyncClient
@@ -2098,7 +2098,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             expected_waiting_pulls = []
 
         await q.test_helper_load_from_redis()
-        self.assertEqual(q._current_base_sha, expected_base_sha)
+        assert q._current_base_sha == expected_base_sha
 
         pulls_in_queue = await q.get_pulls()
         expected_waiting_pulls_ordered_by_priority = (

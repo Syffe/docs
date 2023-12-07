@@ -5,11 +5,11 @@ from mergify_engine.tests import utils
 from mergify_engine.tests.functional import conftest as func_conftest
 
 
-@pytest.mark.recorder
+@pytest.mark.recorder()
 def test_clear_subscription_cache(
     shadow_office: func_conftest.SubscriptionFixture,
     recorder: func_conftest.RecorderFixture,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     result = utils.test_console_scripts(
         admin_cli.admin_cli,

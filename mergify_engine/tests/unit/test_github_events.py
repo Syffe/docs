@@ -20,7 +20,7 @@ for filename in os.listdir(_EVENT_DIR):
         GITHUB_SAMPLE_EVENTS[filename] = (event_type, json.load(event))
 
 
-@pytest.mark.parametrize("event_type, event", list(GITHUB_SAMPLE_EVENTS.values()))
+@pytest.mark.parametrize(("event_type", "event"), list(GITHUB_SAMPLE_EVENTS.values()))
 @mock.patch("mergify_engine.worker_pusher.push")
 async def test_filter_and_dispatch(
     worker_push: mock.Mock,
@@ -38,9 +38,11 @@ async def test_filter_and_dispatch(
             event,
         )
     except github_events.IgnoredEvent as e:
-        assert e.event_type == event_type
-        assert e.event_id == event_id
-        assert isinstance(e.reason, str)
+        # Not all events are supposed to raise an error, so the
+        # PT017 is useless here.
+        assert e.event_type == event_type  # noqa: PT017
+        assert e.event_id == event_id  # noqa: PT017
+        assert isinstance(e.reason, str)  # noqa: PT017
 
 
 async def test_event_classifier(

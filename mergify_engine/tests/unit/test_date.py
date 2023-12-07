@@ -11,7 +11,7 @@ TZ_PARIS = zoneinfo.ZoneInfo("Europe/Paris")
 
 
 @pytest.mark.parametrize(
-    "value, expected",
+    ("value", "expected"),
     (
         (
             "2021-06-01",
@@ -52,7 +52,7 @@ def test_fromisoformat(value: str, expected: datetime.datetime) -> None:
 
 
 @pytest.mark.parametrize(
-    "dt,expected_string",
+    ("dt", "expected_string"),
     [
         (
             datetime.datetime(2021, 6, 1, tzinfo=date.UTC),
@@ -125,7 +125,7 @@ def test_time_compare() -> None:
 
 
 @pytest.mark.parametrize(
-    "dow,expected_int",
+    ("dow", "expected_int"),
     [
         ("MON", 1),
         ("wed", 3),
@@ -145,7 +145,7 @@ def test_day_of_week_from_string(dow: str, expected_int: int) -> None:
 
 
 @pytest.mark.parametrize(
-    "string,expected_value",
+    ("string", "expected_value"),
     [
         ("7 days ago", "2021-09-15T08:00:05"),
         ("7 days 2:05 ago", "2021-09-15T05:55:05"),
@@ -164,7 +164,7 @@ def test_relative_datetime_without_timezone() -> None:
 
 
 @pytest.mark.parametrize(
-    "time,expected_hour,expected_minute,expected_tzinfo",
+    ("time", "expected_hour", "expected_minute", "expected_tzinfo"),
     [
         ("10:00", 10, 0, date.UTC),
         ("11:22[Europe/Paris]", 11, 22, zoneinfo.ZoneInfo("Europe/Paris")),
@@ -183,7 +183,7 @@ def test_time_from_string(
 
 
 @pytest.mark.parametrize(
-    "date_type,value,expected_message",
+    ("date_type", "value", "expected_message"),
     [
         (date.Time, "10:20[Invalid]", "Invalid timezone"),
         (date.Time, "36:20", "Hour must be between 0 and 23"),
@@ -206,7 +206,7 @@ def test_invalid_date_string(
 
 
 @pytest.mark.parametrize(
-    "value,expected_interval",
+    ("value", "expected_interval"),
     [
         ("1 days", datetime.timedelta(days=1)),
         ("1 day", datetime.timedelta(days=1)),
@@ -277,7 +277,15 @@ def test_interval_from_string(
 
 
 @pytest.mark.parametrize(
-    "time_to_check,begin_hour,begin_minute,end_hour,end_minute,strict,result",
+    (
+        "time_to_check",
+        "begin_hour",
+        "begin_minute",
+        "end_hour",
+        "end_minute",
+        "strict",
+        "result",
+    ),
     (
         (
             datetime.datetime(2022, 1, 1, 20, 10, 1, tzinfo=date.UTC),
@@ -357,7 +365,7 @@ def test_datetime_inside_time_range(
 
 
 @pytest.mark.parametrize(
-    "schedule,from_time,expected",
+    ("schedule", "from_time", "expected"),
     (
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
@@ -496,7 +504,7 @@ def test_schedule_next_datetime(
 
 
 @pytest.mark.parametrize(
-    "schedule1,schedule2",
+    ("schedule1", "schedule2"),
     (
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
@@ -531,7 +539,7 @@ def test_schedule_equality(schedule1: date.Schedule, schedule2: date.Schedule) -
 
 
 @pytest.mark.parametrize(
-    "schedule1,schedule2",
+    ("schedule1", "schedule2"),
     (
         (
             date.Schedule.from_string("MON-FRI"),
@@ -571,7 +579,7 @@ def test_schedule_equality_after_clear_cache() -> None:
 
 
 @pytest.mark.parametrize(
-    "schedule,date_to_test,expected",
+    ("schedule", "date_to_test", "expected"),
     (
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
@@ -955,7 +963,7 @@ def test_datetimerange_as_github_date_query() -> None:
 
 
 @pytest.mark.parametrize(
-    "isoformat_datetime,expected_datetime",
+    ("isoformat_datetime", "expected_datetime"),
     (
         (
             "2023-07-13",
@@ -1013,7 +1021,7 @@ def test_fromisoformat_with_zoneinfo_invalid(isoformat_datetime: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "isoformat_dtr,expected_dtr",
+    ("isoformat_dtr", "expected_dtr"),
     (
         (
             "2007-03-01T13:00/2008-05-11T15:30",
@@ -1084,7 +1092,7 @@ def test_datetimerange_fromisoformat_with_zoneinfo_invalid(isoformat_dtr: str) -
 
 
 @pytest.mark.parametrize(
-    "actual,other",
+    ("actual", "other"),
     (
         (
             date.DateTimeRange.fromisoformat_with_zoneinfo(
@@ -1113,7 +1121,7 @@ def test_datetimerange_equality(actual: date.DateTimeRange, other: object) -> No
 
 
 @pytest.mark.parametrize(
-    "actual,other",
+    ("actual", "other"),
     (
         (
             date.DateTimeRange.fromisoformat_with_zoneinfo(
@@ -1150,7 +1158,7 @@ def test_datetimerange_inequality(actual: date.DateTimeRange, other: object) -> 
 
 
 @pytest.mark.parametrize(
-    "current_date,months,years,expected_date",
+    ("current_date", "months", "years", "expected_date"),
     (
         (
             "2023-10-16",
@@ -1234,7 +1242,7 @@ def test_relativedelta(
 
 
 @pytest.mark.parametrize(
-    "to_parse,target",
+    ("to_parse", "target"),
     (
         (
             "XXXX-XX-12T12:12:12",

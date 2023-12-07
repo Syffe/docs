@@ -573,7 +573,7 @@ footer
 
 
 @pytest.mark.parametrize(
-    "merge_after_str,expected_out",
+    ("merge_after_str", "expected_out"),
     (
         (
             "Merge-After: 2023-01-18",
@@ -1258,7 +1258,7 @@ async def test_reviews_filtering(
 
 
 @pytest.mark.parametrize(
-    "commit_msg,dependabot_properties",
+    ("commit_msg", "dependabot_properties"),
     [
         (
             """

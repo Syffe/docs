@@ -4,7 +4,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 
 
-@pytest.fixture
+@pytest.fixture()
 def fake_pull_request() -> github_types.GitHubPullRequest:
     user = github_types.GitHubAccount(
         login=github_types.GitHubLogin("god"),

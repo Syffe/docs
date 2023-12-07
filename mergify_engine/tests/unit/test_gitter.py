@@ -46,7 +46,7 @@ async def test_gitter_init_fails(
 
 
 @pytest.mark.parametrize(
-    "stdout, exception, exc_message",
+    ("stdout", "exception", "exc_message"),
     (
         (
             """To https://github.com/owner/repo

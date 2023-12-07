@@ -39,7 +39,8 @@ PG_INT_MAX = (2**31) - 1
 def NoStartingEndingHyphen(v: str) -> str:
     # FIXME(sileht): pydantic does not support look-ahead/look-behind regex
     # so we can't check for starting and ending hyphen with a readable regex
-    assert not (v.startswith("-") or v.endswith("-"))
+    assert not v.startswith("-")
+    assert not v.endswith("-")
     return v
 
 

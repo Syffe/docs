@@ -48,7 +48,7 @@ def _run_migration_scripts(url: config_types.PostgresDSN) -> None:
             _run_alembic("check")
 
 
-def test_migration(setup_database: None, tmp_path: pathlib.Path) -> None:
+def test_migration(_setup_database: None, tmp_path: pathlib.Path) -> None:
     # We need to manually run the coroutine in an event loop because
     # pytest-asyncio has its own `event_loop` fixture that is function scoped
     # and in autouse (session scope fixture cannot require function scoped
@@ -181,7 +181,7 @@ def test_relational_model_as_dict() -> None:
     )
 
 
-async def test_get_or_create_on_conflict(setup_database: None) -> None:
+async def test_get_or_create_on_conflict(_setup_database: None) -> None:
     account = github_types.GitHubAccount(
         {
             "id": github_types.GitHubAccountIdType(1),

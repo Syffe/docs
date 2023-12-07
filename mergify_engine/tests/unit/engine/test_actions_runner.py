@@ -20,7 +20,7 @@ from mergify_engine.tests.unit import conftest
     mock.AsyncMock(return_value=None),
 )
 @pytest.mark.parametrize(
-    "merged_by,merged_by_id,raw_config,result",
+    ("merged_by", "merged_by_id", "raw_config", "result"),
     [
         (
             None,
@@ -156,7 +156,7 @@ async def test_get_already_merged_summary_without_rules(
 
 
 @pytest.mark.parametrize(
-    "config_key,config_value,expected_value",
+    ("config_key", "config_value", "expected_value"),
     [
         (
             "bot_account",

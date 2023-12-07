@@ -69,7 +69,7 @@ def get_pull_queue_config(
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def fake_subscription(
     redis_cache: redis_utils.RedisCache,
     request: pytest.FixtureRequest,
@@ -98,7 +98,7 @@ def fake_subscription(
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def fake_repository(
     redis_links: redis_utils.RedisLinks,
     fake_subscription: subscription.Subscription,
@@ -147,7 +147,7 @@ def fake_repository(
     return context.Repository(installation, gh_repo)
 
 
-@pytest.fixture
+@pytest.fixture()
 def fake_convoy(fake_repository: context.Repository) -> merge_train.Convoy:
     return merge_train.Convoy(
         fake_repository,
@@ -253,13 +253,13 @@ ContextGetterFixture = abc.Callable[
 ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def context_getter(fake_repository: context.Repository) -> ContextGetterFixture:
     fake_repository._caches.mergify_config.set(MERGIFY_CONFIG)
     return functools.partial(build_fake_context, repository=fake_repository)
 
 
-@pytest.fixture
+@pytest.fixture()
 async def jinja_environment() -> jinja2.sandbox.SandboxedEnvironment:
     return jinja2.sandbox.SandboxedEnvironment(
         undefined=jinja2.StrictUndefined,
@@ -307,7 +307,7 @@ class FakePullRequest(condition_value_querier.BasePullRequest):
 
 
 @pytest.fixture(autouse=True)
-def respx_configuration(
+def _respx_configuration(
     respx_mock: respx.MockRouter,
 ) -> abc.Generator[None, None, None]:
     # This ensures 0 real httpx called is done
@@ -317,7 +317,7 @@ def respx_configuration(
 
 
 @pytest.fixture(autouse=True)
-def fake_github_app_info() -> abc.Generator[None, None, None]:
+def _fake_github_app_info() -> abc.Generator[None, None, None]:
     app = github_types.GitHubApp(
         {
             "id": 0,
@@ -349,14 +349,14 @@ def fake_github_app_info() -> abc.Generator[None, None, None]:
         yield
 
 
-@pytest.fixture
+@pytest.fixture()
 async def fake_mergify_bot(
     redis_links: redis_utils.RedisLinks,
 ) -> github_types.GitHubAccount:
     return await github.GitHubAppInfo.get_bot(redis_links.cache)
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_events() -> dict[str, tuple[github_types.GitHubEventType, typing.Any]]:
     events = {}
     event_dir = os.path.join(os.path.dirname(__file__), "events")
@@ -369,7 +369,7 @@ def sample_events() -> dict[str, tuple[github_types.GitHubEventType, typing.Any]
     return events
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_ci_events_to_process(
     sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
 ) -> dict[str, github_events.CIEventToProcess]:
@@ -383,15 +383,15 @@ def sample_ci_events_to_process(
 
 
 @pytest.fixture(autouse=True)
-async def clear_redis_database_between_tests(
+async def _clear_redis_database_between_tests(
     redis_links: redis_utils.RedisLinks,
-) -> abc.AsyncGenerator[None, None]:
+) -> None:
     # No need to do anything else, the code in `redis_links` fixture
     # already cleans everything
-    yield
+    return
 
 
-@pytest.fixture
+@pytest.fixture()
 def a_pull_request() -> github_types.GitHubPullRequest:
     gh_owner = github_types.GitHubAccount(
         {
@@ -495,8 +495,8 @@ def a_pull_request() -> github_types.GitHubPullRequest:
     )
 
 
-@pytest.fixture
-def mock_gh_pull_request_commits_insert_in_pg() -> abc.Generator[None, None, None]:
+@pytest.fixture()
+def _mock_gh_pull_request_commits_insert_in_pg() -> abc.Generator[None, None, None]:
     with mock.patch.object(
         gh_pg_model.PullRequest,
         "_update_commits",

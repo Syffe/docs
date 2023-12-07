@@ -24,7 +24,7 @@ def test_strip_url_credentials(
 
 
 @pytest.mark.parametrize(
-    "config_value,expected_hostname,expected_port",
+    ("config_value", "expected_hostname", "expected_port"),
     (
         (False, None, None),
         (True, "127.0.0.1", 10518),
@@ -36,7 +36,7 @@ def test_datadog_logger(
     config_value: str | bool,
     expected_hostname: str | None,
     expected_port: int | None,
-    logging_reset: None,
+    _logging_reset: None,
 ) -> None:
     if isinstance(config_value, bool):
         monkeypatch.setattr(settings, "LOG_DATADOG", config_value)

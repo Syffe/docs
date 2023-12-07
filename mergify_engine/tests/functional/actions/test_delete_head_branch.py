@@ -60,13 +60,13 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         await self.run_engine()
 
         pulls = await self.get_pulls(params={"state": "all"})
-        self.assertEqual(4, len(pulls))
+        assert 4 == len(pulls)
 
         branches = await self.get_branches()
-        self.assertEqual(3, len(branches))
-        self.assertEqual(self.main_branch_name, branches[0]["name"])
-        self.assertEqual(third_branch, branches[1]["name"])
-        self.assertEqual(fourth_branch, branches[2]["name"])
+        assert 3 == len(branches)
+        assert self.main_branch_name == branches[0]["name"]
+        assert third_branch == branches[1]["name"]
+        assert fourth_branch == branches[2]["name"]
 
         # Check event logs
         r = await self.admin_app.get(

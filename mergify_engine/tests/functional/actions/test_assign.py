@@ -24,9 +24,8 @@ class TestAssignAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p_updated = await self.wait_for_pull_request("assigned")
-        self.assertEqual(
-            sorted(["mergify-test1"]),
-            sorted(user["login"] for user in p_updated["pull_request"]["assignees"]),
+        assert sorted(["mergify-test1"]) == sorted(
+            user["login"] for user in p_updated["pull_request"]["assignees"]
         )
 
         await self.client_integration.request(
@@ -39,9 +38,8 @@ class TestAssignAction(base.FunctionalTestBase):
 
         await self.run_engine()
         p_updated = await self.wait_for_pull_request("assigned")
-        self.assertEqual(
-            sorted(["mergify-test1"]),
-            sorted(user["login"] for user in p_updated["pull_request"]["assignees"]),
+        assert sorted(["mergify-test1"]) == sorted(
+            user["login"] for user in p_updated["pull_request"]["assignees"]
         )
 
     async def test_assign_with_add_users(self) -> None:
@@ -61,9 +59,8 @@ class TestAssignAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p = await self.wait_for_pull_request("assigned")
-        self.assertEqual(
-            sorted(["mergify-test1"]),
-            sorted(user["login"] for user in p["pull_request"]["assignees"]),
+        assert sorted(["mergify-test1"]) == sorted(
+            user["login"] for user in p["pull_request"]["assignees"]
         )
 
     async def test_assign_valid_template(self) -> None:
@@ -84,9 +81,8 @@ class TestAssignAction(base.FunctionalTestBase):
 
         p = await self.wait_for_pull_request("assigned")
 
-        self.assertEqual(
-            sorted(["mergify-test2"]),
-            sorted(user["login"] for user in p["pull_request"]["assignees"]),
+        assert sorted(["mergify-test2"]) == sorted(
+            user["login"] for user in p["pull_request"]["assignees"]
         )
 
     async def test_unassign_valid_template(self) -> None:
@@ -128,9 +124,8 @@ class TestAssignAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p = await self.get_pull(p["number"])
-        self.assertEqual(
-            sorted(["mergify-test1"]),
-            sorted(user["login"] for user in p["assignees"]),
+        assert sorted(["mergify-test1"]) == sorted(
+            user["login"] for user in p["assignees"]
         )
 
     async def test_remove_assignee(self) -> None:
@@ -151,4 +146,4 @@ class TestAssignAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p_updated = await self.wait_for_pull_request("unassigned")
-        self.assertEqual([], p_updated["pull_request"]["assignees"])
+        assert [] == p_updated["pull_request"]["assignees"]

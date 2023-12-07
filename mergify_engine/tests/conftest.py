@@ -91,7 +91,7 @@ original_os_environ = os.environ.copy()
 # mergify_engine.cli:setup() sanitize the environment variables
 # so this fixtures always restore the previous environment variables
 @pytest.fixture(autouse=True)
-def original_environment_variables(
+def _original_environment_variables(
     monkeypatch: pytest.MonkeyPatch,
 ) -> abc.Generator[None, None, None]:
     current = os.environ.copy()
@@ -105,7 +105,7 @@ def original_environment_variables(
 
 
 @pytest.fixture(autouse=True)
-def setup_logging(
+def _setup_logging(
     request: pytest.FixtureRequest,
     caplog: pytest.LogCaptureFixture,
 ) -> abc.Generator[None, None, None]:
@@ -139,17 +139,17 @@ def setup_logging(
 
 
 @pytest.fixture(autouse=True, scope="session")
-def enable_api() -> None:
+def _enable_api() -> None:
     settings.API_ENABLE = True
 
 
 @pytest.fixture(autouse=True, scope="session")
-def enable_ci_dump_ingestion() -> None:
+def _enable_ci_dump_ingestion() -> None:
     settings.CI_EVENT_INGESTION = True
 
 
 @pytest.fixture(autouse=True, scope="session")
-def enable_github_in_postgres_event_ingestion() -> None:
+def _enable_github_in_postgres_event_ingestion() -> None:
     settings.GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS = (
         config_types.StrListFromStrWithComma([settings.TESTING_ORGANIZATION_NAME])
     )
@@ -164,7 +164,7 @@ def get_worker_id_as_int(worker_id: str) -> int:
 
 
 @pytest.fixture(scope="session")
-def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
+def _mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
     worker_id_int = get_worker_id_as_int(worker_id)
     # Need to have different database for each tests to avoid breaking
     # everything in other tests.
@@ -208,12 +208,12 @@ def mock_postgres_db_value(worker_id: str) -> abc.Generator[str, None, None]:
 
 
 @pytest.fixture(autouse=True)
-def check_database_state_is_reseted() -> None:
+def _check_database_state_is_reseted() -> None:
     assert database.APP_STATE is None
 
 
-@pytest.fixture
-async def reset_database_state() -> abc.AsyncGenerator[None, None]:
+@pytest.fixture()
+async def _reset_database_state() -> abc.AsyncGenerator[None, None]:
     try:
         yield
     finally:
@@ -222,10 +222,10 @@ async def reset_database_state() -> abc.AsyncGenerator[None, None]:
             database.APP_STATE = None
 
 
-@pytest.fixture
-def setup_database(
+@pytest.fixture()
+def _setup_database(
     mock_postgres_db_value: str,
-    reset_database_state: None,
+    _reset_database_state: None,
 ) -> abc.Generator[None, None, None]:
     db_name = f"postgres{uuid.uuid4().hex}"
     mocked_url, mocked_url_without_db_name = test_utils.create_database_url(db_name)
@@ -248,9 +248,9 @@ def setup_database(
         yield
 
 
-@pytest.fixture
+@pytest.fixture()
 async def db(
-    setup_database: None,
+    _setup_database: None,
 ) -> abc.AsyncGenerator[sqlalchemy.ext.asyncio.AsyncSession, None]:
     async with database.create_session() as session:
         yield session
@@ -259,11 +259,11 @@ async def db(
         DbPopulator.internal_ref = {}
 
 
-@pytest.fixture
+@pytest.fixture()
 async def populated_db(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     request: pytest.FixtureRequest,
-) -> abc.AsyncGenerator[sqlalchemy.ext.asyncio.AsyncSession, None]:
+) -> sqlalchemy.ext.asyncio.AsyncSession:
     if "populated_db_datasets" in request.keywords:
         datasets = request.keywords["populated_db_datasets"].args
     else:
@@ -272,12 +272,12 @@ async def populated_db(
         )
 
     await DbPopulator.load(db, datasets)
-    yield db
+    return db
 
 
-@pytest.fixture
+@pytest.fixture()
 async def redis_links(
-    mock_redis_db_values: typing.Any,
+    _mock_redis_db_values: typing.Any,
 ) -> abc.AsyncGenerator[redis_utils.RedisLinks, None]:
     links = redis_utils.RedisLinks(name="global-fixture")
     await links.flushall()
@@ -310,7 +310,7 @@ def redis_stats(
 
 
 @pytest.fixture(autouse=True)
-def reset_app_tokens_storage(monkeypatch: pytest.MonkeyPatch) -> None:
+def _reset_app_tokens_storage(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(github.CachedToken, "STORAGE", {})
 
 
@@ -406,7 +406,7 @@ def web_server_app() -> abc.Generator[fastapi.FastAPI, None, None]:
         yield app
 
 
-@pytest.fixture
+@pytest.fixture()
 async def web_server(
     web_server_app: fastapi.FastAPI,
 ) -> abc.AsyncGenerator[fastapi.FastAPI, None]:
@@ -414,7 +414,7 @@ async def web_server(
         yield web_server_app
 
 
-@pytest.fixture
+@pytest.fixture()
 async def web_client(
     web_server: fastapi.FastAPI,
 ) -> abc.AsyncGenerator[httpx.AsyncClient, None]:
@@ -423,7 +423,7 @@ async def web_client(
         yield client
 
 
-@pytest.fixture
+@pytest.fixture()
 async def web_client_with_fresh_web_app() -> (
     abc.AsyncGenerator[httpx.AsyncClient, None]
 ):
@@ -444,8 +444,8 @@ async def web_client_with_fresh_web_app() -> (
                 yield client
 
 
-@pytest.fixture
-def logging_reset() -> abc.Generator[None, None, None]:
+@pytest.fixture()
+def _logging_reset() -> abc.Generator[None, None, None]:
     root_logger = logging.getLogger()
     saved_loggers = root_logger.manager.loggerDict
     saved_handlers = root_logger.handlers
@@ -468,8 +468,8 @@ def pytest_configure(config: pytest.Config) -> None:
         logging_plugin.report_handler.setFormatter(logs.CUSTOM_FORMATTER)
 
 
-@pytest.fixture
-def prepare_google_cloud_storage_setup(
+@pytest.fixture()
+def _prepare_google_cloud_storage_setup(
     monkeypatch: pytest.MonkeyPatch,
 ) -> typing.Generator[None, None, None]:
     bucket_name = f"bucket-{uuid.uuid4()}"

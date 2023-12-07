@@ -90,7 +90,7 @@ def test_github_login_ok(login: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "login,error",
+    ("login", "error"),
     (
         ("-foobar", "GitHub login contains invalid characters: -foobar"),
         ("foobaz-", "GitHub login contains invalid characters: foobaz-"),
@@ -106,7 +106,7 @@ def test_github_login_nok(login: str, error: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "login,org,slug",
+    ("login", "org", "slug"),
     (
         ("foobar", None, "foobar"),
         ("foobaz", None, "foobaz"),
@@ -127,7 +127,7 @@ def test_github_team_ok(login: str, org: str, slug: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "login,error",
+    ("login", "error"),
     (
         ("-foobar", "GitHub team contains invalid characters"),
         ("/-foobar", "A GitHub organization cannot be an empty string"),
@@ -148,7 +148,7 @@ def test_github_team_nok(login: str, error: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "tmpl, expectation, context_attributes_var",
+    ("tmpl", "expectation", "context_attributes_var"),
     [
         ("{{{{ {attr} }}}}", "False", "BOOLEAN_ATTRIBUTES"),
         ("{{{{ {attr}|replace('foo', 'bar') }}}}", "", "STRING_ATTRIBUTES"),

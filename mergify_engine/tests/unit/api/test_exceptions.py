@@ -13,7 +13,7 @@ from mergify_engine.web import root as web_root
 
 
 @pytest.fixture(autouse=True)
-def endpoint_with_testing_router(web_server: fastapi.FastAPI) -> None:
+def _endpoint_with_testing_router(web_server: fastapi.FastAPI) -> None:
     router = fastapi.APIRouter()
 
     @router.get(

@@ -16,8 +16,8 @@ def test_encrypt() -> None:
     assert x == crypto.decrypt(crypto.encrypt(crypto.decrypt(crypto.encrypt(x))))
 
 
-@pytest.fixture
-def cleanup_secrets() -> abc.Generator[None, None, None]:
+@pytest.fixture()
+def _cleanup_secrets() -> abc.Generator[None, None, None]:
     current_secret = settings.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value()
     try:
         yield
@@ -29,7 +29,7 @@ def cleanup_secrets() -> abc.Generator[None, None, None]:
         importlib.reload(crypto)  # type: ignore[unreachable]
 
 
-def test_key_rotation(cleanup_secrets: None) -> None:
+def test_key_rotation(_cleanup_secrets: None) -> None:
     x = "this is an amazing string, right? 🙄".encode()
 
     with mock.patch.object(

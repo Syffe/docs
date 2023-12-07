@@ -11,8 +11,8 @@ MODULE_DIRECTORY_PATH = os.path.dirname(__file__)
 FAKE_REACT_BUILD_DIR = os.path.abspath(f"{MODULE_DIRECTORY_PATH}/fake-build")
 
 
-@pytest.fixture
-def set_dashboard_ui_static_files_directory(
+@pytest.fixture()
+def _set_dashboard_ui_static_files_directory(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # NOTE(sileht): must be done before `create_app` is called
@@ -24,7 +24,7 @@ def set_dashboard_ui_static_files_directory(
 
 
 async def test_react_static_files(
-    set_dashboard_ui_static_files_directory: None,
+    _set_dashboard_ui_static_files_directory: None,
     web_client_with_fresh_web_app: conftest.CustomTestClient,
 ) -> None:
     # NOTE(sileht): httpx remove the .., we want to keep them for the test

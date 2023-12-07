@@ -84,7 +84,7 @@ class DummyMetaDataset(DbPopulator):
 
 
 @pytest.mark.parametrize(
-    "dataset, expected_accounts, expected_repos",
+    ("dataset", "expected_accounts", "expected_repos"),
     [
         ({"DummyDataset"}, ["account_dds"], ["dds_repo1", "dds_repo2"]),
         ({"AnotherDummyDataset"}, ["account_adds"], ["adds_repo1", "adds_repo2"]),

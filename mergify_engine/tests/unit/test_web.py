@@ -19,7 +19,7 @@ with open(os.path.join(os.path.dirname(__file__), "events", "pull_request.json")
 
 
 @pytest.mark.parametrize(
-    "event,event_type,status_code,reason",
+    ("event", "event_type", "status_code", "reason"),
     (
         (
             {

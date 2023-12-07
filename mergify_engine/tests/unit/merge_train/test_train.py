@@ -1978,7 +1978,7 @@ async def test_train_load_from_redis_with_None_partition_name(
 
 
 @pytest.mark.parametrize(
-    "config_name, failure_count",
+    ("config_name", "failure_count"),
     (
         ("2x8-batch-max-failure-2", 2),
         ("2x8-batch-max-failure-0", 0),

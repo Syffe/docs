@@ -40,9 +40,8 @@ class TestLabelAction(base.FunctionalTestBase):
 
         await self.wait_for("pull_request", {"action": "labeled"})
         p_updated = await self.wait_for_pull_request("unlabeled")
-        self.assertEqual(
-            sorted(["unstable", "foobar", "vEcToR"]),
-            sorted(label["name"] for label in p_updated["pull_request"]["labels"]),
+        assert sorted(["unstable", "foobar", "vEcToR"]) == sorted(
+            label["name"] for label in p_updated["pull_request"]["labels"]
         )
 
         # Ensure it's idempotent
@@ -50,9 +49,8 @@ class TestLabelAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p_updated = await self.wait_for_pull_request("labeled")
-        self.assertEqual(
-            sorted(["unstable", "foobar", "vEcToR"]),
-            sorted(label["name"] for label in p_updated["pull_request"]["labels"]),
+        assert sorted(["unstable", "foobar", "vEcToR"]) == sorted(
+            label["name"] for label in p_updated["pull_request"]["labels"]
         )
 
         r = await self.admin_app.get(
@@ -119,10 +117,7 @@ class TestLabelAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p = await self.get_pull(p["number"])
-        self.assertEqual(
-            sorted(["stable"]),
-            sorted(label["name"] for label in p["labels"]),
-        )
+        assert sorted(["stable"]) == sorted(label["name"] for label in p["labels"])
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p['number']}",
@@ -152,7 +147,7 @@ class TestLabelAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p_updated = await self.wait_for_pull_request("unlabeled")
-        self.assertEqual([], p_updated["pull_request"]["labels"])
+        assert [] == p_updated["pull_request"]["labels"]
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p['number']}",
@@ -204,16 +199,15 @@ class TestLabelAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p_updated = await self.wait_for_pull_request("labeled")
-        self.assertEqual(
-            ["CI:fail"],
-            [label["name"] for label in p_updated["pull_request"]["labels"]],
-        )
+        assert ["CI:fail"] == [
+            label["name"] for label in p_updated["pull_request"]["labels"]
+        ]
 
         await self.create_status(p_updated["pull_request"])
         await self.run_engine()
 
         p_updated = await self.wait_for_pull_request("unlabeled")
-        self.assertEqual([], p_updated["pull_request"]["labels"])
+        assert [] == p_updated["pull_request"]["labels"]
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p['number']}",
@@ -271,10 +265,9 @@ class TestLabelAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p_updated = await self.wait_for_pull_request("labeled")
-        self.assertEqual(
-            [f"branch:{self.main_branch_name}"],
-            [label["name"] for label in p_updated["pull_request"]["labels"]],
-        )
+        assert [f"branch:{self.main_branch_name}"] == [
+            label["name"] for label in p_updated["pull_request"]["labels"]
+        ]
 
     async def _test_label_invalid_template(
         self,

@@ -22,7 +22,7 @@ class ResponseTest:
 
 
 @pytest.fixture(autouse=True)
-def create_testing_router(web_server: fastapi.FastAPI) -> None:
+def _create_testing_router(web_server: fastapi.FastAPI) -> None:
     router = fastapi.APIRouter()
 
     @router.get(
@@ -53,7 +53,7 @@ async def test_api_auth_unknown_path(
     assert r.json() == {"detail": "Not Found"}
 
 
-@pytest.mark.recorder
+@pytest.mark.recorder()
 async def test_api_auth_scoped(
     web_client: httpx.AsyncClient,
     shadow_office: func_conftest.SubscriptionFixture,
@@ -75,7 +75,7 @@ async def test_api_auth_scoped(
     assert r.json()["user_login"] == recorder.config["organization_name"]
 
 
-@pytest.mark.recorder
+@pytest.mark.recorder()
 async def test_api_auth_invalid_token(
     web_client: httpx.AsyncClient,
     shadow_office: func_conftest.SubscriptionFixture,
@@ -114,7 +114,7 @@ async def test_api_auth_invalid_token(
     assert r.json() == {"detail": "Forbidden"}
 
 
-@pytest.mark.recorder
+@pytest.mark.recorder()
 async def test_api_auth_no_token(
     web_client: httpx.AsyncClient,
     shadow_office: func_conftest.SubscriptionFixture,
@@ -127,7 +127,7 @@ async def test_api_auth_no_token(
     assert r.json() == {"detail": "Forbidden"}
 
 
-@pytest.mark.recorder
+@pytest.mark.recorder()
 async def test_api_repository_auth_cached(
     web_client: httpx.AsyncClient,
     shadow_office: func_conftest.SubscriptionFixture,

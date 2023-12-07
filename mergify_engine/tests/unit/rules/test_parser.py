@@ -17,7 +17,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
 
 
 @pytest.mark.parametrize(
-    "line, result",
+    ("line", "result"),
     (
         (
             "schedule!=Mon-Fri 12:00-23:59[Europe/Paris]",
@@ -246,10 +246,6 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
         (
             f"closed-at<={now.isoformat()}",
             {"<=": ("closed-at", now)},
-        ),
-        (
-            f"merged-at<={now.isoformat()}",
-            {"<=": ("merged-at", now)},
         ),
         (
             f"queued-at<={now.isoformat()}",
@@ -502,7 +498,7 @@ async def AsyncProperty(value: str) -> str:
 
 
 @pytest.mark.parametrize(
-    "condition,expected_attribute,expected_operator,expected_rendering",
+    ("condition", "expected_attribute", "expected_operator", "expected_rendering"),
     (
         ("sender={{ author }}", "sender", "=", "foo"),
         ("body='hello {{ author }}'", "body", "=", "hello foo"),
@@ -525,7 +521,7 @@ async def test_parse_jinja_template(
 
 
 @pytest.mark.parametrize(
-    "line, expected_error",
+    ("line", "expected_error"),
     (
         ("arf", "Invalid attribute"),
         ("-heyo", "Invalid attribute"),
@@ -598,7 +594,7 @@ def test_parse_invalid(line: str, expected_error: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "line, expected_error",
+    ("line", "expected_error"),
     (
         ("sender=foobar", "Attribute only allowed in commands_restrictions section"),
         (
@@ -619,7 +615,7 @@ def test_is_github_team_name() -> None:
 
 
 @pytest.mark.parametrize(
-    ("value",),
+    "value",
     (("@foo/bar/baz",), ("@foo@bar",), ("@foo bar",), ("@é",)),
 )
 def test_validate_github_team_name(value: str) -> None:
@@ -631,7 +627,7 @@ def test_validate_github_team_name(value: str) -> None:
 
 
 @pytest.mark.parametrize(
-    ("value",),
+    "value",
     (("@foo",), ("foo/bar",), ("foo bar",), ("é",)),
 )
 def test_validate_github_login(value: str) -> None:

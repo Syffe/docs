@@ -10,7 +10,7 @@ from mergify_engine.rules import conditions as rule_conditions
 
 
 @pytest.mark.parametrize(
-    "condition,expected_markdown",
+    ("condition", "expected_markdown"),
     (
         (
             rule_conditions.QueueConditionEvaluationResult(

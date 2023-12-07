@@ -1,5 +1,4 @@
 import argparse
-from collections import abc
 import io
 import operator
 import time
@@ -24,16 +23,16 @@ LOG = daiquiri.getLogger(__name__)
 
 class TestCountSeats(base.FunctionalTestBase):
     @pytest.fixture(autouse=True)
-    def prepare_fixture(
+    def _prepare_fixture(
         self,
         monkeypatch: pytest.MonkeyPatch,
-    ) -> abc.Generator[None, None, None]:
+    ) -> None:
         monkeypatch.setattr(
             settings,
             "SUBSCRIPTION_TOKEN",
             pydantic.SecretStr("something"),
         )
-        yield
+        return
 
     async def _prepare_repo(self) -> count_seats.Seats:
         await self.setup_repo()
@@ -176,11 +175,13 @@ class TestCountSeats(base.FunctionalTestBase):
         assert len(active_users) == 2
         user_admin, timestamp_admin = active_users[0]
         user_fork, timestamp_fork = active_users[1]
-        assert timestamp_admin <= now and timestamp_admin > now - 60
+        assert timestamp_admin <= now
+        assert timestamp_admin > now - 60
         assert (
             user_admin == f"{settings.TESTING_MERGIFY_TEST_1_ID}~mergify-test1".encode()
         )
-        assert timestamp_fork <= now and timestamp_fork > now - 60
+        assert timestamp_fork <= now
+        assert timestamp_fork > now - 60
         assert (
             user_fork == f"{settings.TESTING_MERGIFY_TEST_2_ID}~mergify-test2".encode()
         )

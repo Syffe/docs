@@ -8,7 +8,7 @@ from mergify_engine.queue import freeze
 
 
 @pytest.mark.parametrize(
-    "name,reason,cascading",
+    ("name", "reason", "cascading"),
     (
         (
             "default",
@@ -56,7 +56,7 @@ def test_queue_freeze_deserialize(
 
 
 @pytest.mark.parametrize(
-    "name,reason,cascading",
+    ("name", "reason", "cascading"),
     (
         (
             "default",

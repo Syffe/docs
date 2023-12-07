@@ -89,7 +89,7 @@ for filename in os.listdir(_EVENT_DIR):
 
 
 @time_travel("2011-11-11")
-@pytest.mark.parametrize("event_type, event", list(GITHUB_SAMPLE_EVENTS.values()))
+@pytest.mark.parametrize(("event_type", "event"), list(GITHUB_SAMPLE_EVENTS.values()))
 async def test_store_active_users(
     event_type: str,
     event: github_types.GitHubEvent,
@@ -143,7 +143,7 @@ async def test_store_active_users(
 
 
 @time_travel("2011-11-11")
-@pytest.mark.parametrize("event_type, event", list(GITHUB_SAMPLE_EVENTS.values()))
+@pytest.mark.parametrize(("event_type", "event"), list(GITHUB_SAMPLE_EVENTS.values()))
 async def test_get_usage_count_seats(
     web_client: httpx.AsyncClient,
     event_type: str,
@@ -228,7 +228,7 @@ async def test_get_usage_count_seats(
 async def test_get_usage_last_seen(
     context_getter: conftest.ContextGetterFixture,
     web_client: httpx.AsyncClient,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     ctxt = await context_getter(number=1)
 

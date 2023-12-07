@@ -17,7 +17,13 @@ from mergify_engine.flaky_check.utils import NeedRerunStatus
     new_callable=mock.AsyncMock,
 )
 @pytest.mark.parametrize(
-    "mergify_conf, mock_is_gha_job_rerun_needed_value, pending_checks, failure_cheks, flaky_checks_to_rerun",
+    (
+        "mergify_conf",
+        "mock_is_gha_job_rerun_needed_value",
+        "pending_checks",
+        "failure_cheks",
+        "flaky_checks_to_rerun",
+    ),
     [
         (
             {"_checks_to_retry_on_failure": {"unit-test": 3}},

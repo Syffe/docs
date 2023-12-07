@@ -69,7 +69,7 @@ async def test_new_user(
 
 
 @pytest.mark.parametrize(
-    "query_string, status_code, redirect_url, has_repositories",
+    ("query_string", "status_code", "redirect_url", "has_repositories"),
     (
         (
             "setup_action=install&installation_id=123",

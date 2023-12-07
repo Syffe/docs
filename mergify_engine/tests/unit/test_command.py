@@ -177,7 +177,7 @@ def create_fake_installation_client(
 
 @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 @pytest.mark.parametrize(
-    "user_id,permission,comment,result",
+    ("user_id", "permission", "comment", "result"),
     [
         (
             666,
@@ -212,12 +212,6 @@ def create_fake_installation_client(
         (
             666,
             "admin",
-            "@mergifyio something",
-            commands_runner.UNKNOWN_COMMAND_MESSAGE,
-        ),
-        (
-            666,
-            "write",
             "@mergifyio something",
             commands_runner.UNKNOWN_COMMAND_MESSAGE,
         ),
@@ -465,7 +459,7 @@ DO NOT EDIT
 
 @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 @pytest.mark.parametrize(
-    "command_restriction,user_permission,is_command_allowed",
+    ("command_restriction", "user_permission", "is_command_allowed"),
     [
         ("sender-permission=admin", "admin", True),
         ("sender-permission=admin", "write", False),

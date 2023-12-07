@@ -15,7 +15,7 @@ async def test_fixture_web_client(
     assert r.status_code == 404
 
 
-@pytest.mark.recorder
+@pytest.mark.recorder()
 async def test_fixture_recorder() -> None:
     async with github.AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
         r = await client.get("/app")

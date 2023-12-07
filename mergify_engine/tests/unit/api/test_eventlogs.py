@@ -25,8 +25,8 @@ MAIN_TIMESTAMP = datetime.datetime.fromisoformat("2023-08-22T10:00:00+00:00")
 LATER_TIMESTAMP = datetime.datetime.fromisoformat("2023-08-22T12:00:00+00:00")
 
 
-@pytest.fixture
-async def insert_data(
+@pytest.fixture()
+async def _insert_data(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     fake_repository: context.Repository,
 ) -> None:
@@ -82,7 +82,7 @@ async def test_api_response(
     fake_repository: context.Repository,
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
-    insert_data: None,
+    _insert_data: None,
 ) -> None:
     response = await web_client.get(
         "/v1/repos/Mergifyio/engine/logs?per_page=1",
@@ -275,7 +275,7 @@ async def test_api_response(
 async def test_api_query_params(
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
-    insert_data: None,
+    _insert_data: None,
 ) -> None:
     # pull_request qp
     response = await web_client.get(
@@ -451,7 +451,7 @@ async def test_delete_outdated_events(
     monkeypatch: pytest.MonkeyPatch,
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
-    insert_data: None,
+    _insert_data: None,
 ) -> None:
     monkeypatch.setattr(
         database,

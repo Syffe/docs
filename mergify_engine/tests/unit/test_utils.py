@@ -15,7 +15,7 @@ from mergify_engine.web import utils as web_utils
 
 
 @pytest.mark.parametrize(
-    "position, length,placeholder,expected",
+    ("position", "length", "placeholder", "expected"),
     (
         ("end", 0, "", ""),
         ("end", 1, "", "h"),
@@ -104,7 +104,10 @@ def test_unicode_truncate(
 ) -> None:
     s = "hé ho! how are you√2?"
     if expected is None:
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError,
+            match="`placeholder` length must be greater or equal to `length`",
+        ):
             utils.unicode_truncate(s, length, placeholder, position)
     else:
         result = utils.unicode_truncate(s, length, placeholder, position)
@@ -149,12 +152,15 @@ def test_get_random_choices() -> None:
     assert utils.get_random_choices(2, choices, 2) == {"jd", "foobar"}
     assert utils.get_random_choices(4, choices, 2) == {"jd", "foobar"}
     assert utils.get_random_choices(0, choices, 3) == {"jd", "sileht", "foobar"}
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="k cannot be greater than the population size",
+    ):
         assert utils.get_random_choices(4, choices, 4) == {"jd", "sileht"}
 
 
 def test_to_ordinal_numeric() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="number must be positive"):
         utils.to_ordinal_numeric(-1)
 
     assert utils.to_ordinal_numeric(0) == "0th"
@@ -227,7 +233,7 @@ def test_get_retention_minid() -> None:
 
 
 @pytest.mark.parametrize(
-    "string,expected",
+    ("string", "expected"),
     (
         ("n", False),
         ("no", False),
@@ -247,12 +253,12 @@ def test_strtobool(string: str, expected: bool) -> None:
 
 
 def test_strtobool_exc() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Could not convert 'test' to boolean"):
         utils.strtobool("test")
 
 
 @pytest.mark.parametrize(
-    "string,expected",
+    ("string", "expected"),
     (
         ("<!-- test1 -->", "test1"),
         ("<!-- test2      -->", "test2"),
@@ -290,7 +296,6 @@ def test_url_parser_with_repo_ok(url: str) -> None:
     "url",
     [
         "https://github.com/mergifyio/mergify-engine/pull/123",
-        "https://github.com/mergifyio/mergify-engine/pull/123#",
         "https://github.com/mergifyio/mergify-engine/pull/123#",
         "https://github.com/mergifyio/mergify-engine/pull/123#42",
         "https://github.com/mergifyio/mergify-engine/pull/123?foo=345",
@@ -338,7 +343,7 @@ def test_url_parser_with_branch_ok(url: str) -> None:
     ],
 )
 def test_url_parser_fail(url: str) -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         utils.github_url_parser(url)
 
 

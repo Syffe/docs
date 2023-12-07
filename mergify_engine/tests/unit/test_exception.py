@@ -14,9 +14,7 @@ def test_exception_ip_forbidden() -> None:
         },
         request=httpx.Request(method="GET", url="http://example.Com"),
     )
-    try:
+    with pytest.raises(http.HTTPForbidden) as exc:
         http.raise_for_status(response)
-    except Exception as exc:
-        assert exceptions.should_be_ignored(exc)
-    else:
-        pytest.fail("Exception not raised")
+
+    assert exceptions.should_be_ignored(exc.value)

@@ -12,7 +12,7 @@ from mergify_engine.ci import event_processing
 from mergify_engine.models import github as gh_models
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_ci_events_to_process(
     sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
 ) -> dict[str, github_events.CIEventToProcess]:
@@ -65,7 +65,13 @@ async def test_process_event_stream_workflow_run(
 
 
 @pytest.mark.parametrize(
-    "event_file_name, conclusion, failed_step_number, failed_step_name, nb_steps",
+    (
+        "event_file_name",
+        "conclusion",
+        "failed_step_number",
+        "failed_step_name",
+        "nb_steps",
+    ),
     (
         (
             "workflow_job.completed_failure.json",

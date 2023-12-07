@@ -141,16 +141,16 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             ],
         )
 
-        with self.assertRaises(live_resolvers.LiveResolutionFailure):
+        with pytest.raises(live_resolvers.LiveResolutionFailure):
             await live_resolvers.teams(self.repository_ctxt, ["@unknown/team"])
 
-        with self.assertRaises(live_resolvers.LiveResolutionFailure):
+        with pytest.raises(live_resolvers.LiveResolutionFailure):
             await live_resolvers.teams(
                 self.repository_ctxt,
                 ["@mergifyio-testing/not-exists"],
             )
 
-        with self.assertRaises(live_resolvers.LiveResolutionFailure):
+        with pytest.raises(live_resolvers.LiveResolutionFailure):
             await live_resolvers.teams(
                 self.repository_ctxt,
                 ["@invalid/team/break-here"],

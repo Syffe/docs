@@ -17,7 +17,7 @@ class TokenUserRepo(typing.NamedTuple):
     repo: github_types.GitHubRepository
 
 
-@pytest.fixture
+@pytest.fixture()
 async def api_token(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     web_client: conftest.CustomTestClient,

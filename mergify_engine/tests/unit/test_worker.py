@@ -126,12 +126,12 @@ async def just_run_once(
     await func()
 
 
-@pytest.fixture
+@pytest.fixture()
 def stream_processor(redis_links: redis_utils.RedisLinks) -> stream.Processor:
     return stream.Processor(redis_links, "shared-0", None, stream.OwnerLoginsCache())
 
 
-@pytest.fixture
+@pytest.fixture()
 def fake_installation() -> context.Installation:
     return context.Installation(FAKE_INSTALLATION, {}, None, None, {})  # type: ignore[arg-type]
 
@@ -237,7 +237,7 @@ async def test_worker_legacy_push(
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -348,7 +348,7 @@ async def test_worker_with_waiting_tasks(
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -580,7 +580,7 @@ async def test_worker_with_one_task(
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
@@ -1630,7 +1630,7 @@ async def test_stream_processor_ignore_503(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -2274,7 +2274,7 @@ def test_worker_start_all_tasks(
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
-    reset_database_state: None,
+    _reset_database_state: None,
 ) -> None:
     loop_and_sleep_forever.side_effect = just_run_once
 
@@ -2315,7 +2315,7 @@ def test_worker_start_just_shared(
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
-    reset_database_state: None,
+    _reset_database_state: None,
 ) -> None:
     loop_and_sleep_forever.side_effect = just_run_once
 
@@ -2356,7 +2356,7 @@ def test_worker_start_except_shared(
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
-    reset_database_state: None,
+    _reset_database_state: None,
 ) -> None:
     loop_and_sleep_forever.side_effect = just_run_once
 
@@ -2505,7 +2505,7 @@ async def test_stream_processor_ignoring_error_422(
 
 
 @pytest.mark.parametrize(
-    "priority,timestamp",
+    ("priority", "timestamp"),
     (
         (worker_pusher.Priority.immediate, "2020-01-12T22:42:00"),
         (worker_pusher.Priority.high, "2020-01-14T20:02:03"),
@@ -2689,7 +2689,7 @@ async def test_start_stop_cycle(
     redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     w = manager.ServiceManager(
         shared_stream_tasks_per_process=3,
@@ -2872,7 +2872,7 @@ async def test_task_stop_ordering(
 
 
 @pytest.mark.parametrize(
-    "status_event,expected_app_name",
+    ("status_event", "expected_app_name"),
     (
         ({}, "unknown"),
         (

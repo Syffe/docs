@@ -757,7 +757,7 @@ def test_merge_raw_override_and_new_rules() -> None:
 
 
 @pytest.mark.parametrize(
-    "extended_defaults, dest_defaults, expected_result",
+    ("extended_defaults", "dest_defaults", "expected_result"),
     [
         (
             {"actions": {"copy": {"labels": ["copied"], "bot_account": "Autobot"}}},

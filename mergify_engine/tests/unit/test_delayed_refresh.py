@@ -13,7 +13,7 @@ from mergify_engine.tests.unit import conftest
 
 @time_travel("2021-09-22T08:00:05Z")
 @pytest.mark.parametrize(
-    "pull, expected_refresh",
+    ("pull", "expected_refresh"),
     (
         ({}, datetime.datetime(2021, 9, 22, 15, 0, 1, tzinfo=datetime.UTC)),
         ({"closed_at": "2021-09-10T08:00:05Z"}, None),
@@ -62,7 +62,7 @@ pull_request_rules:
 
 
 @pytest.mark.parametrize(
-    "start_datetime, expected_refresh",
+    ("start_datetime", "expected_refresh"),
     (
         # [Europe/Paris] == UTC+2
         # This is a Monday
@@ -135,7 +135,7 @@ pull_request_rules:
 
 
 @pytest.mark.parametrize(
-    "start_datetime, pull, expected_refresh",
+    ("start_datetime", "pull", "expected_refresh"),
     (
         # [Europe/Madrid] == UTC+2
         # This is a Monday

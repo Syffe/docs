@@ -36,7 +36,7 @@ class TestMergeAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
 
         p = await self.get_pull(p["number"])
-        self.assertEqual(True, p["merged"])
+        assert True is p["merged"]
         assert p["merged_by"]
         assert self.RECORD_CONFIG["app_user_id"] == p["merged_by"]["id"]
 
@@ -58,7 +58,7 @@ class TestMergeAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
 
         p = await self.get_pull(p["number"])
-        self.assertEqual(True, p["merged"])
+        assert True is p["merged"]
         assert p["merged_by"]
         assert "mergify-test4" == p["merged_by"]["login"]
 
@@ -460,7 +460,7 @@ class TestMergeAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
 
         p = await self.get_pull(p["number"])
-        self.assertEqual(True, p["merged"])
+        assert True is p["merged"]
         assert p["merge_commit_sha"]
         c = await self.get_commit(p["merge_commit_sha"])
         assert (
@@ -492,7 +492,7 @@ superRP!
         await self.wait_for("pull_request", {"action": "closed"})
 
         p2 = await self.get_pull(p["number"])
-        self.assertEqual(True, p2["merged"])
+        assert True is p2["merged"]
         assert p2["merge_commit_sha"]
         p3 = await self.get_commit(p2["merge_commit_sha"])
         assert (

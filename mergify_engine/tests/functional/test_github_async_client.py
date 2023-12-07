@@ -1,3 +1,5 @@
+import pytest
+
 from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.clients import github
@@ -38,7 +40,7 @@ class TestGitHubClient(base.FunctionalTestBase):
                 params={"base": self.main_branch_name},
             )
         ]
-        self.assertEqual(2, len(pulls))
+        assert 2 == len(pulls)
 
         pulls = [
             p
@@ -49,7 +51,7 @@ class TestGitHubClient(base.FunctionalTestBase):
                 page_limit=5,
             )
         ]
-        self.assertEqual(2, len(pulls))
+        assert 2 == len(pulls)
 
         pulls = [
             p
@@ -60,7 +62,7 @@ class TestGitHubClient(base.FunctionalTestBase):
                 page_limit=5,
             )
         ]
-        self.assertEqual(1, len(pulls))
+        assert 1 == len(pulls)
 
         pulls = [
             p
@@ -71,7 +73,7 @@ class TestGitHubClient(base.FunctionalTestBase):
                 page_limit=5,
             )
         ]
-        self.assertEqual(1, len(pulls))
+        assert 1 == len(pulls)
 
         pulls = [
             p
@@ -82,18 +84,18 @@ class TestGitHubClient(base.FunctionalTestBase):
                 page_limit=5,
             )
         ]
-        self.assertEqual(0, len(pulls))
+        assert 0 == len(pulls)
 
         pull = await client.item(f"{url}/{p1['number']}")
-        self.assertEqual(p1["number"], pull["number"])
+        assert p1["number"] == pull["number"]
 
         pull = await client.item(f"{url}/{p2['number']}")
-        self.assertEqual(p2["number"], pull["number"])
+        assert p2["number"] == pull["number"]
 
-        with self.assertRaises(http.HTTPStatusError) as ctxt:
+        with pytest.raises(http.HTTPStatusError) as ctxt:
             await client.item(f"{url}/10000000000")
 
-        self.assertEqual(404, ctxt.exception.response.status_code)
+        assert 404 == ctxt.value.response.status_code
 
     async def test_github_async_client_with_owner_id(self) -> None:
         rules = {
@@ -118,4 +120,4 @@ class TestGitHubClient(base.FunctionalTestBase):
                 params={"base": self.main_branch_name},
             )
         ]
-        self.assertEqual(1, len(pulls))
+        assert 1 == len(pulls)

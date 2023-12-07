@@ -21,7 +21,7 @@ def test_encode_decode_log() -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_log,expected_length,expected_cleaned_log,expected_embedded_log",
+    ("raw_log", "expected_length", "expected_cleaned_log", "expected_embedded_log"),
     [
         (["hello\n"], 1, "hello", "hello\n"),
         (
@@ -80,7 +80,7 @@ async def test_get_tokenized_cleaned_log(
 
 
 @pytest.mark.parametrize(
-    "raw_log_lines, expected_cleaned_log, cleaned_log_token_size",
+    ("raw_log_lines", "expected_cleaned_log", "cleaned_log_token_size"),
     [
         (["hello\n"], "hello", 1),
         (

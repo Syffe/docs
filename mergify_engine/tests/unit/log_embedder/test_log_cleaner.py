@@ -73,7 +73,7 @@ def record_gpt_log_cleaner_output() -> None:
 
 
 @pytest.mark.parametrize(
-    "input_log_filepath, output_log_filepath",
+    ("input_log_filepath", "output_log_filepath"),
     list(TEST_GPT_LOGS_FILEPATH_DICT.values()),
 )
 def test_gpt_log_cleaner_output(
@@ -89,7 +89,7 @@ def test_gpt_log_cleaner_output(
 
 
 @pytest.mark.parametrize(
-    "input_log_filepath, output_log_filepath",
+    ("input_log_filepath", "output_log_filepath"),
     list(TEST_LOGS_FILEPATH_DICT.values()),
 )
 def test_log_cleaner_output(input_log_filepath: str, output_log_filepath: str) -> None:
@@ -106,7 +106,7 @@ def is_regex_found(search: Match[str] | None) -> bool:
 
 
 @pytest.mark.parametrize(
-    "raw_log,expected_result",
+    ("raw_log", "expected_result"),
     [
         # drop deltas resolving lines
         (
@@ -134,7 +134,7 @@ def test_resolving_deltas_lines(raw_log: str, expected_result: bool) -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_log,expected_result",
+    ("raw_log", "expected_result"),
     [
         # drop objects handling lines
         ("remote: Compressing objects:  73% (93/127) toto tutu", True),
@@ -157,7 +157,6 @@ def test_resolving_deltas_lines(raw_log: str, expected_result: bool) -> None:
             False,
         ),
         ("2023-04-25T07:49:01.5394728Z Resolving deltas:  31% (26790/84650)", False),
-        ("2023-04-25T07:49:01.5394728Z Resolving deltas:  31% (26790/84650)", False),
         (
             "2023-04-25T07:49:14.5441296Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/5770/merge",
             False,
@@ -171,7 +170,7 @@ def test_clean_manipulating_objects_lines(raw_log: str, expected_result: bool) -
 
 
 @pytest.mark.parametrize(
-    "raw_log,cleaned_log",
+    ("raw_log", "cleaned_log"),
     [
         # clean timestamps
         ("2021-05-11T14:16:48.7222537Z toto", " toto"),
@@ -194,7 +193,7 @@ def test_clean_timestamps(raw_log: str, cleaned_log: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_log,cleaned_log",
+    ("raw_log", "cleaned_log"),
     [
         # remove colors
         ("tutu [32msuccess[0m toto", "tutu success toto"),
@@ -213,7 +212,7 @@ def test_clean_colors(raw_log: str, cleaned_log: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_log,cleaned_log",
+    ("raw_log", "cleaned_log"),
     [
         # lower casing
         ("ToToTuTu", "tototutu"),
@@ -235,7 +234,7 @@ def test_lower_case(raw_log: str, cleaned_log: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_log,cleaned_log",
+    ("raw_log", "cleaned_log"),
     [
         # stripping
         ("  toto          ", "toto"),
@@ -256,7 +255,7 @@ def test_stripping(raw_log: str, cleaned_log: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_log,cleaned_log",
+    ("raw_log", "cleaned_log"),
     [
         # replace accents
         ("éèàùôî", "eeauoi"),
@@ -276,7 +275,7 @@ def test_special_characters(raw_log: str, cleaned_log: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_log,cleaned_log",
+    ("raw_log", "cleaned_log"),
     [
         # space reduction
         ("hello       world", "hello world"),
@@ -297,7 +296,7 @@ def test_space_reduction(raw_log: str, cleaned_log: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_log,cleaned_log",
+    ("raw_log", "cleaned_log"),
     [
         # drop one-letter words
         ("hello ab ty a 1 world 1 2 3", "hello ab ty world"),
@@ -320,7 +319,7 @@ def test_clean_one_letter_words(raw_log: str, cleaned_log: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_log,cleaned_log",
+    ("raw_log", "cleaned_log"),
     [
         # drop one-letter words
         (
@@ -351,7 +350,7 @@ def test_clean_stopwords(raw_log: str, cleaned_log: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_log,cleaned_log",
+    ("raw_log", "cleaned_log"),
     [
         # drop non-alphanumeric characters
         ("toto ? tutu, tata; for frodo!!!", "toto   tutu  tata  for frodo"),

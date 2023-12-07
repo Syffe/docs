@@ -18,7 +18,7 @@ from mergify_engine.tests.unit import conftest
     mock.AsyncMock(return_value=None),
 )
 @pytest.mark.parametrize(
-    "labels,expected_priority",
+    ("labels", "expected_priority"),
     (
         (["queue-bar"], 2000),
         (["queue-foo"], 12000),

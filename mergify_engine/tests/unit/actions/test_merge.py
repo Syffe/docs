@@ -14,7 +14,7 @@ from mergify_engine.tests.unit import conftest
 
 
 @pytest.mark.parametrize(
-    "body, title, message, template",
+    ("body", "title", "message", "template"),
     [
         (
             """Hello world

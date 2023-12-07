@@ -221,16 +221,16 @@ async def test_invalid_arguments() -> None:
 
 
 @pytest.mark.parametrize(
-    "_filter",
+    "filter_",
     (filter.BinaryFilter, filter.NearDatetimeFilter, filter.IncompleteChecksFilter),
 )
-async def test_str(_filter: filter.Filter[typing.Any]) -> None:
-    assert "foo~=^f" == str(_filter({"~=": ("foo", "^f")}))
-    assert "-foo=1" == str(_filter({"-": {"=": ("foo", 1)}}))
-    assert "foo" == str(_filter({"=": ("foo", True)}))
-    assert "-bar" == str(_filter({"=": ("bar", False)}))
+async def test_str(filter_: filter.Filter[typing.Any]) -> None:
+    assert "foo~=^f" == str(filter_({"~=": ("foo", "^f")}))
+    assert "-foo=1" == str(filter_({"-": {"=": ("foo", 1)}}))
+    assert "foo" == str(filter_({"=": ("foo", True)}))
+    assert "-bar" == str(filter_({"=": ("bar", False)}))
     with pytest.raises(filter.InvalidOperator):
-        str(_filter({">=": ("bar", False)}))
+        str(filter_({">=": ("bar", False)}))
 
 
 def dtime(day: int) -> datetime.datetime:
@@ -622,7 +622,15 @@ async def test_current_datetime_range(condition: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "condition,time_travel_before_range,time_travel_inside_range,time_travel_after_range,next_refresh_before_range,next_refresh_inside_range,next_refresh_after_range",
+    (
+        "condition",
+        "time_travel_before_range",
+        "time_travel_inside_range",
+        "time_travel_after_range",
+        "next_refresh_before_range",
+        "next_refresh_inside_range",
+        "next_refresh_after_range",
+    ),
     (
         (
             "current-datetime=XXXX-07-14T00:00/XXXX-07-14T23:59[Europe/Paris]",
@@ -934,7 +942,7 @@ async def test_schedule_neardatetime_filter() -> None:
 
 
 @pytest.mark.parametrize(
-    "tree,pull_request,expected_values,expected_filtered_values",
+    ("tree", "pull_request", "expected_values", "expected_filtered_values"),
     [
         pytest.param(
             parser.parse("check-success=ci-1"),

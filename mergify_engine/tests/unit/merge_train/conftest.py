@@ -17,12 +17,12 @@ from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 @pytest.fixture(autouse=True)
-def setup_fake_mergify_bot_user(fake_mergify_bot: None) -> None:
+def _setup_fake_mergify_bot_user(fake_mergify_bot: None) -> None:
     pass
 
 
 @pytest.fixture(autouse=True, scope="package")
-def mock_signals() -> abc.Generator[None, None, None]:
+def _mock_signals() -> abc.Generator[None, None, None]:
     # We don't check signal sending in this folder, so we can just mock
     # it to not have to initialize the database.
     with mock.patch.object(signals, "send"):
@@ -172,7 +172,7 @@ partition_rules:
 """
 
 
-@pytest.fixture
+@pytest.fixture()
 def convoy(
     repository: context.Repository,
 ) -> merge_train.Convoy:
@@ -185,7 +185,7 @@ def convoy(
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def fake_client() -> mock.Mock:
     branch = {"commit": {"sha": "sha1"}}
 
@@ -221,7 +221,7 @@ def fake_client() -> mock.Mock:
     return client
 
 
-@pytest.fixture
+@pytest.fixture()
 def repository(
     fake_repository: context.Repository,
     fake_client: mock.Mock,
@@ -231,7 +231,7 @@ def repository(
 
 
 @pytest.fixture(autouse=True)
-def autoload_redis(redis_cache: redis_utils.RedisCache) -> None:
+def _autoload_redis(redis_cache: redis_utils.RedisCache) -> None:
     # Just always load redis_cache to load all redis scripts
     pass
 
@@ -277,7 +277,7 @@ async def fake_train_car_end_checking(
 
 
 @pytest.fixture(autouse=True)
-def monkeypatched_traincar(monkeypatch: pytest.MonkeyPatch) -> None:
+def _monkeypatched_traincar(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         "mergify_engine.queue.merge_train.TrainCar.start_checking_inplace",
         fake_train_car_start_checking_inplace,

@@ -44,7 +44,7 @@ GHA_CI_LOGS_ZIP_BUFFER.seek(0)
 GHA_CI_LOGS_ZIP = GHA_CI_LOGS_ZIP_BUFFER.read()
 
 
-@pytest.mark.usefixtures("prepare_google_cloud_storage_setup")
+@pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
 async def test_embed_logs_on_controlled_data(
     respx_mock: respx.MockRouter,
     db: sqlalchemy.ext.asyncio.AsyncSession,
@@ -246,7 +246,7 @@ async def test_embed_logs_on_controlled_data(
 
 
 @pytest.mark.populated_db_datasets("WorkflowJob")
-@pytest.mark.usefixtures("prepare_google_cloud_storage_setup")
+@pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
 async def test_embed_logs_on_various_data(
     respx_mock: respx.MockRouter,
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
@@ -401,7 +401,7 @@ async def test_embed_logs_on_various_data(
     return_value=datetime.timedelta(seconds=-60),
 )
 @pytest.mark.parametrize(
-    "first_try, second_try, log_errors",
+    ("first_try", "second_try", "log_errors"),
     (
         (
             {
@@ -620,7 +620,7 @@ async def test_embed_logs_on_various_data(
         ),
     ),
 )
-@pytest.mark.usefixtures("prepare_google_cloud_storage_setup")
+@pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
 async def test_workflow_job_log_life_cycle(
     _: None,
     db: sqlalchemy.ext.asyncio.AsyncSession,
@@ -994,7 +994,7 @@ async def test_workflow_job_log_life_cycle(
     "log-embedder: too many unexpected failures, giving up",
 )
 @pytest.mark.parametrize(
-    "job_name, step, log_status, embedding_status, metadata_status",
+    ("job_name", "step", "log_status", "embedding_status", "metadata_status"),
     (
         (
             "job_toto",
@@ -1020,7 +1020,7 @@ async def test_workflow_job_log_life_cycle(
     ),
     ids=("simple", "special chars in name", "huge logs"),
 )
-@pytest.mark.usefixtures("prepare_google_cloud_storage_setup")
+@pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
 async def test_workflow_job_from_real_life(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,

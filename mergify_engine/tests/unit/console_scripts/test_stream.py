@@ -13,7 +13,7 @@ from mergify_engine.tests import utils
 
 async def test_stream_status(
     redis_links: redis_utils.RedisLinks,
-    setup_database: None,
+    _setup_database: None,
 ) -> None:
     for installation_id in range(8):
         for pull_number in range(2):

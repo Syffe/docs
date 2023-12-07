@@ -9,7 +9,7 @@ from mergify_engine.tests.unit import conftest
 
 
 @pytest.mark.parametrize(
-    "config, ignored",
+    ("config", "ignored"),
     (
         (
             """

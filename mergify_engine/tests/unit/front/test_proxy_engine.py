@@ -108,7 +108,7 @@ queue_rules:
 
 
 @pytest.mark.parametrize(
-    "private_repository,permission,expected_status_code",
+    ("private_repository", "permission", "expected_status_code"),
     (
         (True, "write", 200),
         (True, "read", 200),
@@ -148,7 +148,7 @@ async def test_engine_proxy_get_queue_freeze(
 
 
 @pytest.mark.parametrize(
-    "private_repository,permission,expected_status_code",
+    ("private_repository", "permission", "expected_status_code"),
     (
         (True, "write", 200),
         (True, "read", 403),
@@ -189,7 +189,7 @@ async def test_engine_proxy_update_queue_freeze(
 
 
 @pytest.mark.parametrize(
-    "permission,expected_status_code,expected_json",
+    ("permission", "expected_status_code", "expected_json"),
     (
         ("write", 404, {"detail": 'The queue "main" is not currently frozen.'}),
         ("read", 403, {"detail": "Forbidden"}),

@@ -9,22 +9,22 @@ from mergify_engine import config
 from mergify_engine.config import types
 
 
-@pytest.fixture
-def unset_testing_env(
+@pytest.fixture()
+def _unset_testing_env(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setitem(config.EngineSettings.model_config, "env_file", None)
 
     # NOTE(sileht): we can't use monkeypatch.delenv here because it doesn't
-    # work well with original_environment_variables() fixture
-    # We don't need to restore the env variables because the original_environment_variables() already does it.
+    # work well with _original_environment_variables() fixture
+    # We don't need to restore the env variables because the _original_environment_variables() already does it.
     for env in list(os.environ.keys()):
         if env.startswith("MERGIFYENGINE"):
             del os.environ[env]
 
 
 def test_defaults(
-    unset_testing_env: None,
+    _unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # defaults (if not mandatory)
@@ -99,7 +99,7 @@ def test_defaults(
 
 
 def test_all_sets(
-    unset_testing_env: None,
+    _unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path_factory: pytest.TempPathFactory,
 ) -> None:
@@ -299,7 +299,7 @@ def test_all_sets(
 
 
 def test_legacy_env_sets(
-    unset_testing_env: None,
+    _unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT", "secret")
@@ -362,7 +362,7 @@ def test_legacy_env_sets(
     ("MERGIFYENGINE_BASE_URL", "MERGIFYENGINE_DASHBOARD_UI_FRONT_BASE_URL"),
 )
 def test_legacy_dashboard_urls(
-    unset_testing_env: None,
+    _unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
     env_var: str,
 ) -> None:
@@ -382,7 +382,7 @@ def test_legacy_dashboard_urls(
 
 
 @pytest.mark.parametrize(
-    "value, expected",
+    ("value", "expected"),
     (
         ("10", 10),
         ("1000", 1000),
@@ -460,7 +460,7 @@ def test_database_url_replace(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.parametrize(
-    "env,expected",
+    ("env", "expected"),
     (
         (
             # nosemgrep: generic.secrets.security.detected-username-and-password-in-uri.detected-username-and-password-in-uri

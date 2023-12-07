@@ -37,7 +37,7 @@ class TestRebaseAction(base.FunctionalTestBase):
         p_updated = await self.wait_for_pull_request("synchronize")
         final_sha = p_updated["pull_request"]["head"]["sha"]
 
-        self.assertNotEqual(pr_initial_sha, final_sha)
+        assert pr_initial_sha != final_sha
 
     async def test_rebase_on_closed_pr_deleted_branch(self) -> None:
         rules = {

@@ -26,7 +26,7 @@ def pull_request_rule_from_list(lst: typing.Any) -> prr_config.PullRequestRules:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def fake_client() -> mock.Mock:
     async def items_call(
         url: str,
@@ -287,7 +287,7 @@ def fake_client() -> mock.Mock:
 
 
 @pytest.mark.parametrize(
-    "conditions,conclusion",
+    ("conditions", "conclusion"),
     (
         (
             ["title=awesome", "check-neutral:neutral", "check-success:success"],

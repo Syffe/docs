@@ -169,7 +169,7 @@ Unknown pull request attribute: hello
         await self.create_comment(p["number"], "@mergifyio refresh")
         await self.run_engine()
         reviews = await self.get_reviews(p["number"])
-        self.assertEqual(2, len(reviews))
+        assert 2 == len(reviews)
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p['number']}",

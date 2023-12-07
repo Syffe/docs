@@ -201,12 +201,13 @@ async def test_team_permissions_missing(
     ctxt.repository.installation.client = client
     with pytest.raises(actions.InvalidDynamicActionConfiguration) as excinfo:
         await action.load_context(ctxt, mock.Mock())
-        assert excinfo.value.reason == "Invalid requested teams"
-        for error in (
-            "Team `foobar` does not exist or has not access to this repository",
-            "Team `@other/foobaz` is not part of the organization `Mergifyio`",
-        ):
-            assert error in excinfo.value.details
+
+    assert excinfo.value.reason == "Invalid requested teams"
+    for error in (
+        "Team `foobar` does not exist or has not access to this repository",
+        "Team `@other/foobaz` is not part of the organization `Mergifyio`",
+    ):
+        assert error in excinfo.value.details
 
 
 async def test_team_permissions_ok(
