@@ -19,6 +19,7 @@ from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.models.github import account as gh_account_model
 from mergify_engine.models.github import pull_request_commit as pr_commit_model
+from mergify_engine.models.github import repository as gh_repository_model
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -231,6 +232,18 @@ class PullRequest(models.Base):
         back_populates="pull_request",
     )
 
+    base_repository_id: orm.Mapped[
+        github_types.GitHubRepositoryIdType | None
+    ] = orm.mapped_column(
+        sqlalchemy.ForeignKey("github_repository.id"),
+        anonymizer_config=None,
+    )
+    base_repository: orm.Mapped[
+        gh_repository_model.GitHubRepository
+    ] = orm.relationship(
+        lazy="raise_on_sql",
+    )
+
     @classmethod
     async def _update_commits(
         cls,
@@ -322,6 +335,13 @@ class PullRequest(models.Base):
             data_for_obj["body"] = data_for_obj["body"].replace("\x00", "")
 
         await gh_account_model.GitHubAccount.create_or_update(session, user)
+
+        data_for_obj[
+            "base_repository"
+        ] = await gh_repository_model.GitHubRepository.get_or_create(
+            session,
+            data["base"]["repo"],
+        )
 
         assignees = data_for_obj.pop("assignees")
         requested_reviewers = data_for_obj.pop("requested_reviewers")

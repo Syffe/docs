@@ -55,6 +55,7 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
                     "default": anys.ANY_BOOL,
                 },
             ]
+            assert pulls_in_db[0].base_repository_id == p1["base"]["repo"]["id"]
 
         p1_with_review_req = await self.create_review_request(
             p1["number"],
@@ -75,6 +76,7 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
             ).all()
             assert len(pulls_in_db) == 1
             assert pulls_in_db[0].as_github_dict() == p1_typing_validated
+            assert pulls_in_db[0].base_repository_id == p1["base"]["repo"]["id"]
 
             assert isinstance(
                 pulls_in_db[0].requested_reviewers[0],
