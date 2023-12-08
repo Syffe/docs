@@ -1,13 +1,14 @@
 import codecs
+from collections import abc
 import dataclasses
-import enum
 import re
 import typing
 
+from mergify_engine.log_embedder import log_cleaner
+from mergify_engine.log_embedder import log_tag
 
-class LogTag(enum.Enum):
-    NPM = "npm"
-    CYPRESS = "cypress"
+
+LOG_CLEANER = log_cleaner.LogCleaner()
 
 
 @dataclasses.dataclass
@@ -19,18 +20,18 @@ class Log:
         repr=False,
     )
     _bytes: bytes | None = dataclasses.field(default=None, compare=False, repr=False)
-    _tags: list[LogTag] | None = None
+    _tags: list[log_tag.LogTag] | None = None
 
     @property
-    def tags(self) -> list[LogTag]:
+    def tags(self) -> list[log_tag.LogTag]:
         if self._tags is None:
             self._tags = []
 
             if re.search("npm run build", self.content):
-                self._tags.append(LogTag.NPM)
+                self._tags.append(log_tag.LogTag.NPM)
 
             if re.search(r"cypress:|\(run starting\)", self.content):
-                self._tags.append(LogTag.CYPRESS)
+                self._tags.append(log_tag.LogTag.CYPRESS)
 
         return self._tags
 
@@ -88,3 +89,7 @@ class Log:
     @classmethod
     def decode(cls, content: bytes) -> "Log":
         return cls.from_bytes(codecs.decode(content, encoding="zlib"))
+
+    def iter_gpt_cleaned_log_lines_reverse(self) -> abc.Generator[str, None, None]:
+        for line in reversed(self.lines):
+            yield LOG_CLEANER.gpt_clean_line(line)

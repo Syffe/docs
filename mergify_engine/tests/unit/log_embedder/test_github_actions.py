@@ -90,7 +90,7 @@ async def test_get_cleaned_log(
     expected_cleaned_log: str,
     cleaned_log_token_size: int,
 ) -> None:
-    cleaned_log = github_action.get_cleaned_log(raw_log_lines)
+    cleaned_log = github_action.get_cleaned_log(logm.Log.from_lines(raw_log_lines))
 
     assert expected_cleaned_log == cleaned_log
     assert (

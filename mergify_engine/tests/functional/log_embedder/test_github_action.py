@@ -638,14 +638,16 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     with open(
                         f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
                     ) as log_file:
-                        log_lines = log_file.readlines()
+                        log_content = log_file.read()
+
+                    log = logm.Log.from_content(log_content)
 
                     async with openai_api.OpenAIClient() as openai_client:
                         await gha_embedder.extract_data_from_log(
                             openai_client,
                             session,
                             job,
-                            log_lines,
+                            log,
                         )
                     job.log_metadata_extracting_status = (
                         gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED
@@ -701,14 +703,16 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             with open(
                 f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
             ) as log_file:
-                log_lines = log_file.readlines()
+                log_content = log_file.read()
+
+            log = logm.Log.from_content(log_content)
 
             async with openai_api.OpenAIClient() as openai_client:
                 await gha_embedder.extract_data_from_log(
                     openai_client,
                     session,
                     job,
-                    log_lines,
+                    log,
                 )
 
             await session.commit()

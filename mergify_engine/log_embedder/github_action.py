@@ -240,9 +240,9 @@ async def extract_data_from_log(
     openai_client: openai_api.OpenAIClient,
     session: sqlalchemy.ext.asyncio.AsyncSession,
     job: gh_models.WorkflowJob,
-    log_lines: list[str],
+    log: logm.Log,
 ) -> None:
-    cleaned_log = get_cleaned_log(log_lines)
+    cleaned_log = get_cleaned_log(log)
 
     query = openai_api.ChatCompletionQuery(
         role=EXTRACT_DATA_QUERY_TEMPLATE.role,
@@ -298,18 +298,11 @@ async def extract_data_from_log(
     )
 
 
-def get_cleaned_log(log_lines: list[str]) -> str:
-    cleaner = log_cleaner.LogCleaner()
-
+def get_cleaned_log(log: logm.Log) -> str:
     cleaned_lines: list[str] = []
 
     total_tokens = 0
-    for line in reversed(log_lines):
-        if not line:
-            continue
-
-        cleaned_line = cleaner.gpt_clean_line(line)
-
+    for cleaned_line in log.iter_gpt_cleaned_log_lines_reverse():
         if not cleaned_line:
             continue
 
@@ -581,7 +574,7 @@ async def embed_logs_with_extracted_metadata(
                             openai_client,
                             session,
                             job,
-                            log.lines,
+                            log,
                         )
                     except Exception as e:
                         retry = log_exception_and_maybe_retry(

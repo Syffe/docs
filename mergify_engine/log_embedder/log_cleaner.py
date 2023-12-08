@@ -4,7 +4,7 @@ import typing
 
 import unidecode
 
-from mergify_engine.log_embedder import log as logm
+from mergify_engine.log_embedder import log_tag
 from mergify_engine.log_embedder import utils
 
 
@@ -203,16 +203,16 @@ class GeneralCleaningToolbox:
     def apply_general_cleaning(
         cls,
         log_line: str,
-        log_tags: list[logm.LogTag],
+        log_tags: list[log_tag.LogTag],
         clean_non_alphanumeric: bool,
     ) -> str:
         for clean_fn in cls.clean_functions:
             log_line = clean_fn(log_line)
 
-        if logm.LogTag.NPM in log_tags:
+        if log_tag.LogTag.NPM in log_tags:
             log_line = cls.clean_npm_verbosity(log_line)
 
-        if logm.LogTag.CYPRESS in log_tags:
+        if log_tag.LogTag.CYPRESS in log_tags:
             log_line = cls.clean_cypress_verbosity(log_line)
 
         if clean_non_alphanumeric:
@@ -235,7 +235,7 @@ class LogCleaner:
     def clean_line(
         self,
         raw_log_line: str,
-        tags: list[logm.LogTag],
+        tags: list[log_tag.LogTag],
         clean_non_alphanumeric: bool = False,
     ) -> str:
         # REGEX CLEANING
