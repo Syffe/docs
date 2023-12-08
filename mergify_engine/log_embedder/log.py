@@ -1,6 +1,13 @@
 import codecs
 import dataclasses
+import enum
+import re
 import typing
+
+
+class LogTag(enum.Enum):
+    NPM = "npm"
+    CYPRESS = "cypress"
 
 
 @dataclasses.dataclass
@@ -12,6 +19,20 @@ class Log:
         repr=False,
     )
     _bytes: bytes | None = dataclasses.field(default=None, compare=False, repr=False)
+    _tags: list[LogTag] | None = None
+
+    @property
+    def tags(self) -> list[LogTag]:
+        if self._tags is None:
+            self._tags = []
+
+            if re.search("npm run build", self.content):
+                self._tags.append(LogTag.NPM)
+
+            if re.search(r"cypress:|\(run starting\)", self.content):
+                self._tags.append(LogTag.CYPRESS)
+
+        return self._tags
 
     def __eq__(self, other: typing.Any) -> bool:
         return isinstance(other, Log) and self.content == other.content

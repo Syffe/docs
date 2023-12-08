@@ -1,10 +1,10 @@
 import dataclasses
-import enum
 import re
 import typing
 
 import unidecode
 
+from mergify_engine.log_embedder import log as logm
 from mergify_engine.log_embedder import utils
 
 
@@ -72,11 +72,6 @@ NPM_PATTERNS = [
     "##[group]run",
     "[command]/",
 ]
-
-
-class LogTags(enum.Enum):
-    NPM = "npm"
-    CYPRESS = "cypress"
 
 
 class RegexToolbox:
@@ -208,16 +203,16 @@ class GeneralCleaningToolbox:
     def apply_general_cleaning(
         cls,
         log_line: str,
-        log_tags: list[LogTags],
+        log_tags: list[logm.LogTag],
         clean_non_alphanumeric: bool,
     ) -> str:
         for clean_fn in cls.clean_functions:
             log_line = clean_fn(log_line)
 
-        if LogTags.NPM in log_tags:
+        if logm.LogTag.NPM in log_tags:
             log_line = cls.clean_npm_verbosity(log_line)
 
-        if LogTags.CYPRESS in log_tags:
+        if logm.LogTag.CYPRESS in log_tags:
             log_line = cls.clean_cypress_verbosity(log_line)
 
         if clean_non_alphanumeric:
@@ -236,11 +231,11 @@ class LogCleaner:
         default_factory=GeneralCleaningToolbox,
         repr=False,
     )
-    log_tags: list[LogTags] = dataclasses.field(default_factory=list)
 
     def clean_line(
         self,
         raw_log_line: str,
+        tags: list[logm.LogTag],
         clean_non_alphanumeric: bool = False,
     ) -> str:
         # REGEX CLEANING
@@ -250,7 +245,7 @@ class LogCleaner:
         # GENERAL CLEANING
         return self.general_cleaning_toolbox.apply_general_cleaning(
             line,
-            self.log_tags,
+            tags,
             clean_non_alphanumeric,
         )
 
@@ -262,10 +257,3 @@ class LogCleaner:
         if not line:
             return line
         return self.general_cleaning_toolbox.clean_number_inside_brackets(line.rstrip())
-
-    def apply_log_tags(self, raw_log: str) -> None:
-        if re.search("npm run build", raw_log):
-            self.log_tags.append(LogTags.NPM)
-
-        if re.search(r"cypress:|\(run starting\)", raw_log):
-            self.log_tags.append(LogTags.CYPRESS)

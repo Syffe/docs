@@ -198,13 +198,11 @@ async def get_tokenized_cleaned_log(
     truncated_log_ready = False
     truncated_log_tokens_length = 0
 
-    cleaner.apply_log_tags(log.content)
-
     for line in reversed(log.lines):
         if not line:
             continue
 
-        cleaned_line = cleaner.clean_line(line)
+        cleaned_line = cleaner.clean_line(line, log.tags)
         # Start feeding truncated_log only on first non empty line
         if not cleaned_line and not truncated_log_lines:
             continue

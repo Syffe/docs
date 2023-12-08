@@ -39,7 +39,7 @@ def get_cleaned_log(input_file: typing.TextIO, mode: CleanerModeT = "basic") -> 
         if mode == "gpt":
             cleaned_line = cleaner.gpt_clean_line(line)
         else:
-            cleaned_line = cleaner.clean_line(line)
+            cleaned_line = cleaner.clean_line(line, [])
         if cleaned_line:
             cleaned_lines.append(cleaned_line)
 
@@ -251,7 +251,7 @@ def test_lower_case(raw_log: str, cleaned_log: str) -> None:
 )
 def test_stripping(raw_log: str, cleaned_log: str) -> None:
     cleaner = log_cleaner.LogCleaner()
-    assert cleaner.clean_line(raw_log) == cleaned_log
+    assert cleaner.clean_line(raw_log, []) == cleaned_log
 
 
 @pytest.mark.parametrize(
