@@ -150,9 +150,9 @@ async def get_log(
 async def embed_log(
     openai_client: openai_api.OpenAIClient,
     job: gh_models.WorkflowJob,
-    log_content: str,
+    log: logm.Log,
 ) -> None:
-    tokens, truncated_log = await get_tokenized_cleaned_log(log_content)
+    tokens, truncated_log = await get_tokenized_cleaned_log(log)
 
     embedding = await openai_client.get_embedding(tokens)
 
@@ -189,7 +189,7 @@ def get_step_log_from_zipped_content(
 
 
 async def get_tokenized_cleaned_log(
-    log_content: str,
+    log: logm.Log,
 ) -> tuple[list[int], str]:
     cleaner = log_cleaner.LogCleaner()
 
@@ -198,11 +198,9 @@ async def get_tokenized_cleaned_log(
     truncated_log_ready = False
     truncated_log_tokens_length = 0
 
-    cleaner.apply_log_tags(log_content)
+    cleaner.apply_log_tags(log.content)
 
-    log_lines = log_content.splitlines()
-
-    for line in reversed(log_lines):
+    for line in reversed(log.lines):
         if not line:
             continue
 
@@ -465,7 +463,7 @@ async def embed_logs_with_log_embedding(
                     == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN
                 ):
                     try:
-                        await embed_log(openai_client, job, log.content)
+                        await embed_log(openai_client, job, log)
                     except Exception as e:
                         retry = log_exception_and_maybe_retry(
                             e,

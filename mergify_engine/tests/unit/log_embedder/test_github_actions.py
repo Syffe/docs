@@ -1,6 +1,7 @@
 import pytest
 
 from mergify_engine.log_embedder import github_action
+from mergify_engine.log_embedder import log as logm
 from mergify_engine.log_embedder import openai_api
 
 
@@ -51,7 +52,9 @@ async def test_get_tokenized_cleaned_log(
     expected_cleaned_log: str,
     expected_embedded_log: str,
 ) -> None:
-    tokens, truncated_log = await github_action.get_tokenized_cleaned_log(raw_log)
+    tokens, truncated_log = await github_action.get_tokenized_cleaned_log(
+        logm.Log.from_content(raw_log),
+    )
 
     assert len(tokens) == expected_length
 

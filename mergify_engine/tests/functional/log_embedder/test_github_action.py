@@ -16,6 +16,7 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.clients import google_cloud_storage
 from mergify_engine.log_embedder import github_action as gha_embedder
+from mergify_engine.log_embedder import log as logm
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import ci_issue
 from mergify_engine.models import github as gh_models
@@ -361,7 +362,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 log = await gha_embedder.get_log(gcs_client, job)
 
                 async with openai_api.OpenAIClient() as openai_client:
-                    await gha_embedder.embed_log(openai_client, job, log.content)
+                    await gha_embedder.embed_log(openai_client, job, log)
 
             await session.commit()
 
@@ -570,7 +571,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                             tokens,
                             truncated_log,
                         ) = await gha_embedder.get_tokenized_cleaned_log(
-                            log_file.read(),
+                            logm.Log.from_content(log_file.read()),
                         )
                     async with openai_api.OpenAIClient() as openai_client:
                         embedding = await openai_client.get_embedding(tokens)
