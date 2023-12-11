@@ -36,6 +36,7 @@ def devtools() -> None:
 
 # NOTE(sileht): ensure click found all commands
 from mergify_engine.console_scripts import account_suspend  # noqa: E402,F401
+from mergify_engine.console_scripts import connectivity_check  # noqa: E402,F401
 from mergify_engine.console_scripts import debug  # noqa: E402,F401
 from mergify_engine.console_scripts import merge_queue  # noqa: E402,F401
 from mergify_engine.console_scripts import openapi_spec_generator  # noqa: E402,F401

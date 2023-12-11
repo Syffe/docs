@@ -1,7 +1,14 @@
+import re
 from unittest import mock
 
+import pytest
+import respx
+
+from mergify_engine import settings
+from mergify_engine.config import types
 from mergify_engine.console_scripts import account_suspend
 from mergify_engine.console_scripts import admin_cli
+from mergify_engine.console_scripts import connectivity_check
 from mergify_engine.tests import utils
 
 
@@ -19,3 +26,30 @@ def test_admin_unsuspend(suspended: mock.Mock, _setup_database: None) -> None:
     assert result.exit_code == 0
     assert result.output == "Account `foobar` unsuspended\n"
     assert suspended.mock_calls == [mock.call("DELETE", "foobar")]
+
+
+def test_check_connectivity(
+    _setup_database: None,
+    respx_mock: respx.MockRouter,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        settings,
+        "ENV_CACHE_URL",
+        types.RedisDSN.parse("redis://not-exists.localhost:12345"),
+    )
+    monkeypatch.setattr(connectivity_check, "TIMEOUT", 0.1)
+    respx_mock.get("/app").respond(401)
+
+    result = utils.test_console_scripts(admin_cli.admin_cli, ["connectivity-check"])
+    assert result.exit_code == 0, result.output
+    assert re.match(
+        r"""Redis: failed to connect
+> Error .*not-exists\.localhost:12345.*
+Postgres: connected
+GitHub server: failed to connect
+> 401 Client Error: Unauthorized for url `https://api\.github\.com/app`
+> Details: <empty-response>
+""",
+        result.output,
+    )
