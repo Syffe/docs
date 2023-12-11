@@ -152,7 +152,7 @@ async def test_get_already_merged_summary_without_rules(
 
     config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
     match = await config["pull_request_rules"].get_pull_request_rules_evaluator(ctxt)
-    assert "" == await actions_runner.get_already_merged_summary(ctxt, match)
+    assert await actions_runner.get_already_merged_summary(ctxt, match) == ""
 
 
 @pytest.mark.parametrize(

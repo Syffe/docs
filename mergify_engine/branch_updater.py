@@ -146,10 +146,7 @@ async def _do_rebase(
             await git("push", "--verbose", "origin", head_branch, "--force-with-lease")
 
             expected_sha = (await git("rev-parse", head_branch)).strip()
-            if expected_sha:
-                level = logging.INFO
-            else:
-                level = logging.ERROR
+            level = logging.INFO if expected_sha else logging.ERROR
             ctxt.log.log(level, "pull request rebased", new_head_sha=expected_sha)
             # NOTE(sileht): We store this for Context.has_been_synchronized_by_user()
             await ctxt.redis.cache.setex(
@@ -199,10 +196,7 @@ async def update_with_api(
     ctxt.log.info("updating base branch with api")
     pre_update_check(ctxt)
 
-    if on_behalf is None:
-        oauth_token = None
-    else:
-        oauth_token = on_behalf.oauth_access_token
+    oauth_token = None if on_behalf is None else on_behalf.oauth_access_token
 
     try:
         await ctxt.client.put(

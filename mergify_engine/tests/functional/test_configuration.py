@@ -191,8 +191,8 @@ Invalid requested teams
         )
 
         assert (
-            "The current Mergify configuration is invalid"
-            == check_run["check_run"]["output"]["title"]
+            check_run["check_run"]["output"]["title"]
+            == "The current Mergify configuration is invalid"
         )
 
     async def test_invalid_yaml_configuration_in_repository(self) -> None:
@@ -550,8 +550,8 @@ did not find expected alphabetic or numeric character
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            "no rules configured, just listening for commands"
-            == summary["output"]["title"]
+            summary["output"]["title"]
+            == "no rules configured, just listening for commands"
         )
 
     async def test_configuration_moved(self) -> None:
@@ -619,8 +619,8 @@ did not find expected alphabetic or numeric character
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            "Multiple Mergify configurations have been found in the repository"
-            == summary["output"]["title"]
+            summary["output"]["title"]
+            == "Multiple Mergify configurations have been found in the repository"
         )
         assert ".mergify.yml" in summary["output"]["summary"]
         assert ".github/mergify.yml" in summary["output"]["summary"]
@@ -635,8 +635,8 @@ did not find expected alphabetic or numeric character
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            "no rules configured, just listening for commands"
-            == summary["output"]["title"]
+            summary["output"]["title"]
+            == "no rules configured, just listening for commands"
         )
 
     async def test_merge_with_not_merged_attribute(self) -> None:
@@ -663,8 +663,8 @@ did not find expected alphabetic or numeric character
         for check in await ctxt.pull_check_runs:
             if check["name"] == "Rule: merge on main (merge)":
                 assert (
-                    "The pull request has been merged automatically"
-                    == check["output"]["title"]
+                    check["output"]["title"]
+                    == "The pull request has been merged automatically"
                 )
                 assert (
                     f"The pull request has been merged automatically at *{ctxt.pull['merge_commit_sha']}*"

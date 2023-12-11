@@ -40,7 +40,7 @@ class TestGitHubClient(base.FunctionalTestBase):
                 params={"base": self.main_branch_name},
             )
         ]
-        assert 2 == len(pulls)
+        assert len(pulls) == 2
 
         pulls = [
             p
@@ -51,7 +51,7 @@ class TestGitHubClient(base.FunctionalTestBase):
                 page_limit=5,
             )
         ]
-        assert 2 == len(pulls)
+        assert len(pulls) == 2
 
         pulls = [
             p
@@ -62,7 +62,7 @@ class TestGitHubClient(base.FunctionalTestBase):
                 page_limit=5,
             )
         ]
-        assert 1 == len(pulls)
+        assert len(pulls) == 1
 
         pulls = [
             p
@@ -73,7 +73,7 @@ class TestGitHubClient(base.FunctionalTestBase):
                 page_limit=5,
             )
         ]
-        assert 1 == len(pulls)
+        assert len(pulls) == 1
 
         pulls = [
             p
@@ -84,7 +84,7 @@ class TestGitHubClient(base.FunctionalTestBase):
                 page_limit=5,
             )
         ]
-        assert 0 == len(pulls)
+        assert len(pulls) == 0
 
         pull = await client.item(f"{url}/{p1['number']}")
         assert p1["number"] == pull["number"]
@@ -95,7 +95,7 @@ class TestGitHubClient(base.FunctionalTestBase):
         with pytest.raises(http.HTTPStatusError) as ctxt:
             await client.item(f"{url}/10000000000")
 
-        assert 404 == ctxt.value.response.status_code
+        assert ctxt.value.response.status_code == 404
 
     async def test_github_async_client_with_owner_id(self) -> None:
         rules = {
@@ -120,4 +120,4 @@ class TestGitHubClient(base.FunctionalTestBase):
                 params={"base": self.main_branch_name},
             )
         ]
-        assert 1 == len(pulls)
+        assert len(pulls) == 1

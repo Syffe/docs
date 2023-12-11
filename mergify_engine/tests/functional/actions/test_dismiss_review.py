@@ -69,24 +69,30 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
 
         check_run = await self.wait_for_check_run(conclusion="failure")
         assert (
-            "The current Mergify configuration is invalid"
-            == check_run["check_run"]["output"]["title"]
+            check_run["check_run"]["output"]["title"]
+            == "The current Mergify configuration is invalid"
         )
         return check_run["check_run"]
 
     async def test_dismiss_reviews_custom_message_syntax_error(self) -> None:
         check = await self._test_dismiss_reviews_fail("{{Loser")
-        assert """Template syntax error @ pull_request_rules → item 0 → actions → dismiss_reviews → message → line 1
+        assert (
+            check["output"]["summary"]
+            == """Template syntax error @ pull_request_rules → item 0 → actions → dismiss_reviews → message → line 1
 ```
 unexpected end of template, expected 'end of print statement'.
-```""" == check["output"]["summary"]
+```"""
+        )
 
     async def test_dismiss_reviews_custom_message_attribute_error(self) -> None:
         check = await self._test_dismiss_reviews_fail("{{Loser}}")
-        assert """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → dismiss_reviews → message
+        assert (
+            check["output"]["summary"]
+            == """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → dismiss_reviews → message
 ```
 Unknown pull request attribute: Loser
-```""" == check["output"]["summary"]
+```"""
+        )
 
     async def _test_dismiss_reviews(
         self,

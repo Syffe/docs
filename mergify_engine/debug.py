@@ -71,10 +71,7 @@ async def report_worker_status(
     planned = date.fromtimestamp(streams[pos][1]).isoformat()
 
     attempts_raw = await redis_links.stream.hget("attempts", stream_name)
-    if attempts_raw is None:
-        attempts = 0
-    else:
-        attempts = int(attempts_raw)
+    attempts = 0 if attempts_raw is None else int(attempts_raw)
     print(
         "* WORKER: Installation queued, "
         f" pos: {pos}/{len(streams)},"

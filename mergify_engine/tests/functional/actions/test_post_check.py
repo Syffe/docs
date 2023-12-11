@@ -66,7 +66,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         )
         assert len(match_sorted_checks) == 2
         match_check = match_sorted_checks[0]
-        assert "success" == match_check["conclusion"]
+        assert match_check["conclusion"] == "success"
 
         # ensure a failure check is posted on related branch
         unmatch_ctxt = context.Context(self.repository_ctxt, unmatch_p, [])
@@ -76,8 +76,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
         )
         assert len(unmatch_sorted_checks) == 2
         unmatch_check = unmatch_sorted_checks[0]
-        assert "failure" == unmatch_check["conclusion"]
-        assert "'body need sentry ticket' failed" == unmatch_check["output"]["title"]
+        assert unmatch_check["conclusion"] == "failure"
+        assert unmatch_check["output"]["title"] == "'body need sentry ticket' failed"
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={match_p['number']}",
@@ -154,7 +154,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         )
         assert len(match_sorted_checks) == 2
         match_check = match_sorted_checks[0]
-        assert "failure" == match_check["conclusion"]
+        assert match_check["conclusion"] == "failure"
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={match_p['number']}",
@@ -246,8 +246,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
         )
         assert len(match_sorted_checks) == 2
         match_check = match_sorted_checks[0]
-        assert "failure" == match_check["conclusion"]
-        assert "'be neutral' failed" == match_check["output"]["title"]
+        assert match_check["conclusion"] == "failure"
+        assert match_check["output"]["title"] == "'be neutral' failed"
 
         # Now add the label
         await self.add_label(match_pr["number"], "be neutral")
@@ -262,7 +262,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         )
         assert len(match_sorted_checks) == 2
         match_check = match_sorted_checks[0]
-        assert "neutral" == match_check["conclusion"]
+        assert match_check["conclusion"] == "neutral"
 
     async def test_checks_default(self) -> None:
         rules = {
@@ -301,7 +301,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         )
         assert len(unrelated_sorted_checks) == 2
         unrelated_check = unrelated_sorted_checks[0]
-        assert "failure" == unrelated_check["conclusion"]
+        assert unrelated_check["conclusion"] == "failure"
 
         # ensure a success check is posted on related branch
         match_ctxt = context.Context(self.repository_ctxt, match_p, [])
@@ -311,7 +311,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         )
         assert len(match_sorted_checks) == 2
         match_check = match_sorted_checks[0]
-        assert "success" == match_check["conclusion"]
+        assert match_check["conclusion"] == "success"
 
         # ensure a failure check is posted on related branch
         unmatch_ctxt = context.Context(self.repository_ctxt, unmatch_p, [])
@@ -321,8 +321,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
         )
         assert len(unmatch_sorted_checks) == 2
         unmatch_check = unmatch_sorted_checks[0]
-        assert "failure" == unmatch_check["conclusion"]
-        assert "'body need sentry ticket' failed" == unmatch_check["output"]["title"]
+        assert unmatch_check["conclusion"] == "failure"
+        assert unmatch_check["output"]["title"] == "'body need sentry ticket' failed"
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={unmatch_p['number']}",
@@ -411,7 +411,7 @@ Rule list:
             f"Pull request #{p['number']} does not follow our guideline"
             == check["output"]["title"]
         )
-        assert "failure" == check["conclusion"]
+        assert check["conclusion"] == "failure"
 
 
 @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
@@ -447,8 +447,8 @@ class TestPostCheckActionNoSub(base.FunctionalTestBase):
         )
         assert len(sorted_checks) == 1
         check = sorted_checks[0]
-        assert "action_required" == check["conclusion"]
+        assert check["conclusion"] == "action_required"
         assert (
-            "The current Mergify configuration is invalid" == check["output"]["title"]
+            check["output"]["title"] == "The current Mergify configuration is invalid"
         )
         assert "Custom checks are disabled" in check["output"]["summary"]

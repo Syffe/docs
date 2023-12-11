@@ -61,14 +61,16 @@ class MergeExecutor(
                 e.reason,
             )
 
-        if action.config["method"] == "fast-forward":
-            if action.config["commit_message_template"] is not None:
-                raise actions.InvalidDynamicActionConfiguration(
-                    rule,
-                    action,
-                    "Commit message can't be changed with fast-forward merge method",
-                    "`commit_message_template` must not be set if `merge_method: fast-forward` is set.",
-                )
+        if (
+            action.config["method"] == "fast-forward"
+            and action.config["commit_message_template"] is not None
+        ):
+            raise actions.InvalidDynamicActionConfiguration(
+                rule,
+                action,
+                "Commit message can't be changed with fast-forward merge method",
+                "`commit_message_template` must not be set if `merge_method: fast-forward` is set.",
+            )
 
         return cls(
             ctxt,

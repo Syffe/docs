@@ -320,11 +320,7 @@ class AsyncClient(httpx.AsyncClient):
                 retry_exponential_multiplier=self.retry_exponential_multiplier,
             )
         finally:
-            if response is None:
-                # https://github.com/python/mypy/issues/13104
-                status_code = "error"  # type: ignore[unreachable]
-            else:
-                status_code = str(response.status_code)
+            status_code = "error" if response is None else str(response.status_code)
 
             tags = self._get_datadog_tags()
             tags.append(f"status_code:{status_code}")

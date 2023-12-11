@@ -287,24 +287,24 @@ async def test_worker_legacy_push(
                 )
 
     # Check everything we push are in redis
-    assert 16 == (await redis_links.stream.zcard("streams"))
-    assert 16 == len(await redis_links.stream.keys("bucket~*"))
-    assert 32 == len(await redis_links.stream.keys("bucket-sources~*"))
+    assert (await redis_links.stream.zcard("streams")) == 16
+    assert len(await redis_links.stream.keys("bucket~*")) == 16
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 32
     for bucket in buckets:
-        assert 2 == await redis_links.stream.zcard(bucket)
+        assert await redis_links.stream.zcard(bucket) == 2
     for bucket_source in bucket_sources:
-        assert 3 == await redis_links.stream.xlen(bucket_source)
+        assert await redis_links.stream.xlen(bucket_source) == 3
 
     w = await run_worker()
 
     # Check redis is empty
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.keys("bucket~*")) == 0
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
     # Check engine have been run with expect data
-    assert 32 == len(run_engine.mock_calls)
+    assert len(run_engine.mock_calls) == 32
     assert (
         mock.call(
             InstallationMatcher(owner="owner-0"),
@@ -376,24 +376,24 @@ async def test_worker_with_waiting_tasks(
                 )
 
     # Check everything we push are in redis
-    assert 8 == (await redis_links.stream.zcard("streams"))
-    assert 8 == len(await redis_links.stream.keys("bucket~*"))
-    assert 16 == len(await redis_links.stream.keys("bucket-sources~*"))
+    assert (await redis_links.stream.zcard("streams")) == 8
+    assert len(await redis_links.stream.keys("bucket~*")) == 8
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 16
     for bucket in buckets:
-        assert 2 == await redis_links.stream.zcard(bucket)
+        assert await redis_links.stream.zcard(bucket) == 2
     for bucket_source in bucket_sources:
-        assert 3 == await redis_links.stream.xlen(bucket_source)
+        assert await redis_links.stream.xlen(bucket_source) == 3
 
     await run_worker()
 
     # Check redis is empty
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.keys("bucket~*")) == 0
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
     # Check engine have been run with expect data
-    assert 16 == len(run_engine.mock_calls)
+    assert len(run_engine.mock_calls) == 16
     assert (
         mock.call(
             InstallationMatcher(owner="owner-0"),
@@ -493,23 +493,23 @@ async def test_worker_expanded_events(
         priority=worker_pusher.Priority.immediate,
     )
 
-    assert 1 == await redis_links.stream.zcard("streams")
-    assert 2 == await redis_links.stream.zcard("bucket~123")
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 2 == await redis_links.stream.xlen("bucket-sources~123~0")
-    assert 1 == await redis_links.stream.xlen("bucket-sources~123~123")
+    assert await redis_links.stream.zcard("streams") == 1
+    assert await redis_links.stream.zcard("bucket~123") == 2
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert await redis_links.stream.xlen("bucket-sources~123~0") == 2
+    assert await redis_links.stream.xlen("bucket-sources~123~123") == 1
 
     await run_worker()
 
     # Check redis is empty
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.keys("bucket~*")) == 0
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
     # Check engine have been run with expect data, order is very important
     # push event on pull request with other events must go last
-    assert 3 == len(run_engine.mock_calls)
+    assert len(run_engine.mock_calls) == 3
     assert run_engine.mock_calls[0] == mock.call(
         InstallationMatcher(owner="owner-123"),
         123,
@@ -608,22 +608,22 @@ async def test_worker_with_one_task(
     )
 
     # Check everything we push are in redis
-    assert 1 == (await redis_links.stream.zcard("streams"))
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 1 == await redis_links.stream.zcard("bucket~123")
-    assert 1 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 2 == await redis_links.stream.xlen("bucket-sources~123~123")
+    assert (await redis_links.stream.zcard("streams")) == 1
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert await redis_links.stream.zcard("bucket~123") == 1
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 1
+    assert await redis_links.stream.xlen("bucket-sources~123~123") == 2
 
     await run_worker()
 
     # Check redis is empty
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.keys("bucket~*")) == 0
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
     # Check engine have been run with expect data
-    assert 1 == len(run_engine.mock_calls)
+    assert len(run_engine.mock_calls) == 1
     assert run_engine.mock_calls[0] == mock.call(
         InstallationMatcher(owner="owner-123"),
         123,
@@ -702,11 +702,11 @@ async def test_consume_good_stream(
     )
 
     # Check everything we push are in redis
-    assert 1 == (await redis_links.stream.zcard("streams"))
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 1 == await redis_links.stream.zcard("bucket~123")
-    assert 1 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 2 == await redis_links.stream.xlen("bucket-sources~123~123")
+    assert (await redis_links.stream.zcard("streams")) == 1
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert await redis_links.stream.zcard("bucket~123") == 1
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 1
+    assert await redis_links.stream.xlen("bucket-sources~123~123") == 2
 
     await stream_processor.consume(
         stream_lua.BucketOrgKeyType("bucket~123"),
@@ -741,10 +741,10 @@ async def test_consume_good_stream(
     )
 
     # Check redis is empty
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.keys("bucket~*")) == 0
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
 
 @mock.patch.object(manager, "LOG")
@@ -783,7 +783,7 @@ async def test_worker_start_redis_ping(
 
     request.addfinalizer(lambda: event_loop.run_until_complete(w._shutdown()))
 
-    assert 8 == len(logger.warning.mock_calls)
+    assert len(logger.warning.mock_calls) == 8
     assert logger.warning.mock_calls[0].args == (
         "Couldn't connect to Redis %s, retrying in %d seconds...",
         "Stream",
@@ -875,12 +875,12 @@ async def test_stream_processor_retrying_pull(
         )
 
     # Check everything we push are in redis
-    assert 1 == (await redis_links.stream.zcard("streams"))
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 2 == await redis_links.stream.zcard("bucket~123")
-    assert 2 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 1 == await redis_links.stream.xlen("bucket-sources~123~123")
-    assert 1 == await redis_links.stream.xlen("bucket-sources~123~42")
+    assert (await redis_links.stream.zcard("streams")) == 1
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert await redis_links.stream.zcard("bucket~123") == 2
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 2
+    assert await redis_links.stream.xlen("bucket-sources~123~123") == 1
+    assert await redis_links.stream.xlen("bucket-sources~123~42") == 1
 
     with time_travel("2020-01-01 22:00:20", tick=True):
         await stream_processor.consume(
@@ -927,12 +927,12 @@ async def test_stream_processor_retrying_pull(
     ]
 
     # Check stream still there and attempts recorded
-    assert 1 == (await redis_links.stream.zcard("streams"))
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 2 == await redis_links.stream.zcard("bucket~123")
-    assert 2 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 1 == await redis_links.stream.xlen("bucket-sources~123~123")
-    assert 1 == await redis_links.stream.xlen("bucket-sources~123~42")
+    assert (await redis_links.stream.zcard("streams")) == 1
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert await redis_links.stream.zcard("bucket~123") == 2
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 2
+    assert await redis_links.stream.xlen("bucket-sources~123~123") == 1
+    assert await redis_links.stream.xlen("bucket-sources~123~42") == 1
     assert {
         b"bucket-sources~123~42": b"1",
         b"bucket-sources~123~123": b"1",
@@ -945,14 +945,14 @@ async def test_stream_processor_retrying_pull(
             github_types.GitHubLogin("owner-123"),
         )
 
-    assert 1 == (await redis_links.stream.zcard("streams"))
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 1 == await redis_links.stream.zcard("bucket~123")
-    assert 1 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 0 == await redis_links.stream.xlen("bucket-sources~123~123")
-    assert 1 == await redis_links.stream.xlen("bucket-sources~123~42")
+    assert (await redis_links.stream.zcard("streams")) == 1
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert await redis_links.stream.zcard("bucket~123") == 1
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 1
+    assert await redis_links.stream.xlen("bucket-sources~123~123") == 0
+    assert await redis_links.stream.xlen("bucket-sources~123~42") == 1
 
-    assert 1 == len(await redis_links.stream.hgetall("attempts"))
+    assert len(await redis_links.stream.hgetall("attempts")) == 1
     assert len(run_engine.mock_calls) == 4
     assert {b"bucket-sources~123~42": b"2"} == await redis_links.stream.hgetall(
         "attempts",
@@ -965,14 +965,14 @@ async def test_stream_processor_retrying_pull(
             github_types.GitHubAccountIdType(123),
             github_types.GitHubLogin("owner-123"),
         )
-    assert 1 == (await redis_links.stream.zcard("streams"))
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 1 == await redis_links.stream.zcard("bucket~123")
-    assert 1 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 0 == await redis_links.stream.xlen("bucket-sources~123~123")
-    assert 1 == await redis_links.stream.xlen("bucket-sources~123~42")
+    assert (await redis_links.stream.zcard("streams")) == 1
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert await redis_links.stream.zcard("bucket~123") == 1
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 1
+    assert await redis_links.stream.xlen("bucket-sources~123~123") == 0
+    assert await redis_links.stream.xlen("bucket-sources~123~42") == 1
 
-    assert 1 == len(await redis_links.stream.hgetall("attempts"))
+    assert len(await redis_links.stream.hgetall("attempts")) == 1
     assert len(run_engine.mock_calls) == 4
     assert {b"bucket-sources~123~42": b"2"} == await redis_links.stream.hgetall(
         "attempts",
@@ -990,9 +990,9 @@ async def test_stream_processor_retrying_pull(
     assert len(run_engine.mock_calls) == 17
 
     # Too many retries, everything is gone
-    assert 15 == len(logger.info.mock_calls)
-    assert 1 == len(logger.warning.mock_calls)
-    assert 0 == len(logger.error.mock_calls)
+    assert len(logger.info.mock_calls) == 15
+    assert len(logger.warning.mock_calls) == 1
+    assert len(logger.error.mock_calls) == 0
     assert logger.info.mock_calls[0].args == (
         "failed to process pull request, retrying",
     )
@@ -1002,11 +1002,11 @@ async def test_stream_processor_retrying_pull(
     assert logger.warning.mock_calls[0].args == (
         "failed to process pull request, abandoning",
     )
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == await redis_links.stream.zcard("bucket~123")
-    assert 0 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.keys("bucket~*")) == 0
+    assert await redis_links.stream.zcard("bucket~123") == 0
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
 
 @mock.patch.object(stream, "LOG")
@@ -1059,11 +1059,11 @@ async def test_stream_processor_retrying_stream_recovered(
             priority=worker_pusher.Priority.immediate,
         )
 
-        assert 1 == (await redis_links.stream.zcard("streams"))
-        assert 1 == len(await redis_links.stream.keys("bucket~*"))
-        assert 1 == await redis_links.stream.zcard("bucket~123")
-        assert 2 == await redis_links.stream.xlen("bucket-sources~123~123")
-        assert 0 == len(await redis_links.stream.hgetall("attempts"))
+        assert (await redis_links.stream.zcard("streams")) == 1
+        assert len(await redis_links.stream.keys("bucket~*")) == 1
+        assert await redis_links.stream.zcard("bucket~123") == 1
+        assert await redis_links.stream.xlen("bucket-sources~123~123") == 2
+        assert len(await redis_links.stream.hgetall("attempts")) == 0
 
         await stream_processor.consume(
             stream_lua.BucketOrgKeyType("bucket~123"),
@@ -1098,11 +1098,11 @@ async def test_stream_processor_retrying_stream_recovered(
         )
 
         # Check stream still there and attempts recorded
-        assert 1 == (await redis_links.stream.zcard("streams"))
-        assert 1 == len(await redis_links.stream.keys("bucket~*"))
-        assert 1 == await redis_links.stream.zcard("bucket~123")
-        assert 2 == await redis_links.stream.xlen("bucket-sources~123~123")
-        assert 1 == len(await redis_links.stream.hgetall("attempts"))
+        assert (await redis_links.stream.zcard("streams")) == 1
+        assert len(await redis_links.stream.keys("bucket~*")) == 1
+        assert await redis_links.stream.zcard("bucket~123") == 1
+        assert await redis_links.stream.xlen("bucket-sources~123~123") == 2
+        assert len(await redis_links.stream.hgetall("attempts")) == 1
 
         assert {b"bucket~123": b"1"} == await redis_links.stream.hgetall("attempts")
 
@@ -1115,14 +1115,14 @@ async def test_stream_processor_retrying_stream_recovered(
             github_types.GitHubLogin("owner-123"),
         )
         assert len(run_engine.mock_calls) == 2
-        assert 0 == (await redis_links.stream.zcard("streams"))
-        assert 0 == len(await redis_links.stream.keys("bucket~*"))
-        assert 0 == await redis_links.stream.zcard("bucket~123")
-        assert 0 == len(await redis_links.stream.keys("bucket-sources~*"))
+        assert (await redis_links.stream.zcard("streams")) == 0
+        assert len(await redis_links.stream.keys("bucket~*")) == 0
+        assert await redis_links.stream.zcard("bucket~123") == 0
+        assert len(await redis_links.stream.keys("bucket-sources~*")) == 0
 
-        assert 1 == len(logger.info.mock_calls)
-        assert 0 == len(logger.warning.mock_calls)
-        assert 0 == len(logger.error.mock_calls)
+        assert len(logger.info.mock_calls) == 1
+        assert len(logger.warning.mock_calls) == 0
+        assert len(logger.error.mock_calls) == 0
         assert logger.info.mock_calls[0].args == (
             "failed to process org bucket, retrying",
         )
@@ -1177,11 +1177,11 @@ async def test_stream_processor_retrying_stream_failure(
             priority=worker_pusher.Priority.immediate,
         )
 
-        assert 1 == await redis_links.stream.zcard("streams")
-        assert 1 == len(await redis_links.stream.keys("bucket~*"))
-        assert 1 == await redis_links.stream.zcard("bucket~123")
-        assert 2 == await redis_links.stream.xlen("bucket-sources~123~123")
-        assert 0 == len(await redis_links.stream.hgetall("attempts"))
+        assert await redis_links.stream.zcard("streams") == 1
+        assert len(await redis_links.stream.keys("bucket~*")) == 1
+        assert await redis_links.stream.zcard("bucket~123") == 1
+        assert await redis_links.stream.xlen("bucket-sources~123~123") == 2
+        assert len(await redis_links.stream.hgetall("attempts")) == 0
 
     with time_travel("2020-01-01 22:00:31", tick=True):
         await stream_processor.consume(
@@ -1217,9 +1217,9 @@ async def test_stream_processor_retrying_stream_failure(
         )
 
         # Check stream still there and attempts recorded
-        assert 1 == (await redis_links.stream.zcard("streams"))
-        assert 1 == len(await redis_links.stream.keys("bucket~*"))
-        assert 1 == len(await redis_links.stream.hgetall("attempts"))
+        assert (await redis_links.stream.zcard("streams")) == 1
+        assert len(await redis_links.stream.keys("bucket~*")) == 1
+        assert len(await redis_links.stream.hgetall("attempts")) == 1
 
         assert {b"bucket~123": b"1"} == await redis_links.stream.hgetall("attempts")
 
@@ -1240,9 +1240,9 @@ async def test_stream_processor_retrying_stream_failure(
         assert len(run_engine.mock_calls) == 3
 
         # Still there
-        assert 3 == len(logger.info.mock_calls)
-        assert 0 == len(logger.warning.mock_calls)
-        assert 0 == len(logger.error.mock_calls)
+        assert len(logger.info.mock_calls) == 3
+        assert len(logger.warning.mock_calls) == 0
+        assert len(logger.error.mock_calls) == 0
         assert logger.info.mock_calls[0].args == (
             "failed to process org bucket, retrying",
         )
@@ -1252,11 +1252,11 @@ async def test_stream_processor_retrying_stream_failure(
         assert logger.info.mock_calls[2].args == (
             "failed to process org bucket, retrying",
         )
-        assert 1 == (await redis_links.stream.zcard("streams"))
-        assert 1 == len(await redis_links.stream.keys("bucket~*"))
-        assert 1 == await redis_links.stream.zcard("bucket~123")
-        assert 2 == await redis_links.stream.xlen("bucket-sources~123~123")
-        assert 1 == len(await redis_links.stream.hgetall("attempts"))
+        assert (await redis_links.stream.zcard("streams")) == 1
+        assert len(await redis_links.stream.keys("bucket~*")) == 1
+        assert await redis_links.stream.zcard("bucket~123") == 1
+        assert await redis_links.stream.xlen("bucket-sources~123~123") == 2
+        assert len(await redis_links.stream.hgetall("attempts")) == 1
 
 
 @mock.patch("mergify_engine.worker.stream.daiquiri.getLogger")
@@ -1315,9 +1315,9 @@ async def test_stream_processor_pull_unexpected_error(
     assert len(logger.error.mock_calls) == 2
     assert logger.error.mock_calls[0].args == ("failed to process pull request",)
     assert logger.error.mock_calls[1].args == ("failed to process pull request",)
-    assert 1 == (await redis_links.stream.zcard("streams"))
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 1
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
 
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
@@ -1365,9 +1365,9 @@ async def test_stream_processor_priority(
         await push_prio(12, worker_pusher.Priority.medium)
         await push_prio(13, worker_pusher.Priority.low)
 
-    assert 1 == (await redis_links.stream.zcard("streams"))
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 1
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
     received = []
 
@@ -1407,9 +1407,9 @@ async def test_stream_processor_priority(
     with time_travel("2020-01-14", tick=True):
         await shared_service._stream_worker_task(stream_processor)
 
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.keys("bucket~*")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
     assert received == [3, 7, 9, 5, 6, 11, 12, 1, 2, 4, 8, 10, 13]
 
 
@@ -1454,9 +1454,9 @@ async def test_stream_processor_date_scheduling(
         )
         wanted_owner_id = "owner-234"
 
-    assert 2 == (await redis_links.stream.zcard("streams"))
-    assert 2 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 2
+    assert len(await redis_links.stream.keys("bucket~*")) == 2
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
     syncer_service = (
         dedicated_workers_cache_syncer_service.DedicatedWorkersCacheSyncerService(
@@ -1497,26 +1497,26 @@ async def test_stream_processor_date_scheduling(
     with time_travel("2020-01-14"):
         await shared_service._stream_worker_task(stream_processor)
 
-    assert 1 == (await redis_links.stream.zcard("streams"))
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 1
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
     assert received == [wanted_owner_id]
 
     with time_travel("2030-01-14"):
         await shared_service._stream_worker_task(stream_processor)
 
-    assert 1 == (await redis_links.stream.zcard("streams"))
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 1
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
     assert received == [wanted_owner_id]
 
     # We are in 2041, we have something todo :)
     with time_travel("2041-01-14"):
         await shared_service._stream_worker_task(stream_processor)
 
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.keys("bucket~*")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
     assert received == [wanted_owner_id, unwanted_owner_id]
 
     assert (
@@ -1558,20 +1558,20 @@ async def test_worker_drop_bucket(
                 github_types.GitHubEvent({"payload": data}),  # type: ignore[typeddict-item]
             )
 
-    assert 1 == len(await redis_links.stream.keys("bucket~*"))
-    assert 2 == len(await redis_links.stream.keys("bucket-sources~*"))
+    assert len(await redis_links.stream.keys("bucket~*")) == 1
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 2
 
     for bucket in buckets:
-        assert 2 == await redis_links.stream.zcard(bucket)
+        assert await redis_links.stream.zcard(bucket) == 2
     for bucket_source in bucket_sources:
-        assert 3 == await redis_links.stream.xlen(bucket_source)
+        assert await redis_links.stream.xlen(bucket_source) == 3
 
     await stream_lua.drop_bucket(
         redis_links.stream,
         stream_lua.BucketOrgKeyType("bucket~123"),
     )
-    assert 0 == len(await redis_links.stream.keys("bucket~*"))
-    assert 0 == len(await redis_links.stream.keys("bucket-sources~*"))
+    assert len(await redis_links.stream.keys("bucket~*")) == 0
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 0
 
     await stream_lua.clean_org_bucket(
         redis_links.stream,
@@ -1579,8 +1579,8 @@ async def test_worker_drop_bucket(
         date.utcnow(),
     )
 
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
 
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
@@ -1659,9 +1659,9 @@ async def test_stream_processor_ignore_503(
     await run_worker()
 
     # Check redis is empty
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.keys("stream~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.keys("stream~*")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
 
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
@@ -1700,13 +1700,13 @@ async def test_worker_with_multiple_workers(
                 )
 
     # Check everything we push are in redis
-    assert 100 == (await redis_links.stream.zcard("streams"))
-    assert 100 == len(await redis_links.stream.keys("bucket~*"))
-    assert 200 == len(await redis_links.stream.keys("bucket-sources~*"))
+    assert (await redis_links.stream.zcard("streams")) == 100
+    assert len(await redis_links.stream.keys("bucket~*")) == 100
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 200
     for bucket in buckets:
-        assert 2 == await redis_links.stream.zcard(bucket)
+        assert await redis_links.stream.zcard(bucket) == 2
     for bucket_source in bucket_sources:
-        assert 3 == await redis_links.stream.xlen(bucket_source)
+        assert await redis_links.stream.xlen(bucket_source) == 3
 
     shared_stream_processes = 4
     shared_stream_tasks_per_process = 3
@@ -1724,13 +1724,13 @@ async def test_worker_with_multiple_workers(
     )
 
     # Check redis is empty
-    assert 0 == (await redis_links.stream.zcard("streams"))
-    assert 0 == len(await redis_links.stream.keys("buckets~*"))
-    assert 0 == len(await redis_links.stream.keys("bucket-sources~*"))
-    assert 0 == len(await redis_links.stream.hgetall("attempts"))
+    assert (await redis_links.stream.zcard("streams")) == 0
+    assert len(await redis_links.stream.keys("buckets~*")) == 0
+    assert len(await redis_links.stream.keys("bucket-sources~*")) == 0
+    assert len(await redis_links.stream.hgetall("attempts")) == 0
 
     # Check engine have been run with expect data
-    assert 200 == len(run_engine.mock_calls)
+    assert len(run_engine.mock_calls) == 200
 
 
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")

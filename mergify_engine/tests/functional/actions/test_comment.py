@@ -102,8 +102,8 @@ class TestCommentAction(base.FunctionalTestBase):
         )
 
         assert (
-            "The current Mergify configuration is invalid"
-            == check_run["check_run"]["output"]["title"]
+            check_run["check_run"]["output"]["title"]
+            == "The current Mergify configuration is invalid"
         )
         return check_run["check_run"]
 
@@ -111,19 +111,25 @@ class TestCommentAction(base.FunctionalTestBase):
         check = await self._test_comment_template_error(
             msg="Thank you {{",
         )
-        assert """Template syntax error @ pull_request_rules → item 0 → actions → comment → message → line 1
+        assert (
+            check["output"]["summary"]
+            == """Template syntax error @ pull_request_rules → item 0 → actions → comment → message → line 1
 ```
 unexpected 'end of template'
-```""" == check["output"]["summary"]
+```"""
+        )
 
     async def test_comment_template_attribute_error(self) -> None:
         check = await self._test_comment_template_error(
             msg="Thank you {{hello}}",
         )
-        assert """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → comment → message
+        assert (
+            check["output"]["summary"]
+            == """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → comment → message
 ```
 Unknown pull request attribute: hello
-```""" == check["output"]["summary"]
+```"""
+        )
 
     async def test_comment_with_bot_account(self) -> None:
         rules = {

@@ -321,7 +321,7 @@ async def prepare_branch(
                         await git("cherry-pick", "--skip")
                         continue
 
-                    for message in GIT_MESSAGE_TO_EXCEPTION.keys():
+                    for message in GIT_MESSAGE_TO_EXCEPTION:
                         if message in e.output:
                             raise
 
@@ -480,9 +480,8 @@ async def create_duplicate_pull(
     if labels is not None:
         effective_labels.extend(labels)
 
-    if duplicate_branch_result.cherry_pick_error:
-        if label_conflicts is not None:
-            effective_labels.append(label_conflicts)
+    if duplicate_branch_result.cherry_pick_error and label_conflicts is not None:
+        effective_labels.append(label_conflicts)
 
     if len(effective_labels) > 0:
         await ctxt.client.post(

@@ -845,10 +845,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         if self.git.repository is None:
             raise RuntimeError("self.git.init() not called, tmp dir empty")
 
-        if as_ == "fork":
-            remote = "fork"
-        else:
-            remote = "origin"
+        remote = "fork" if as_ == "fork" else "origin"
 
         if base is None:
             base = self.main_branch_name
@@ -999,10 +996,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         if self.git.repository is None:
             raise RuntimeError("self.git.init() not called, tmp dir empty")
 
-        if as_ == "fork":
-            remote = "fork"
-        else:
-            remote = "origin"
+        remote = "fork" if as_ == "fork" else "origin"
 
         if base is None:
             base = self.main_branch_name

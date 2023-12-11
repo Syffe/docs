@@ -77,7 +77,7 @@ def pytest_generate_tests(metafunc: typing.Any) -> None:
 
             yaml_data = yaml.safe_load(f.read())
 
-            for key in yaml_data.keys():
+            for key in yaml_data:
                 if key not in AUTHORIZED_YAML_KEY_IN_CASSETTES:
                     raise RuntimeError(
                         f"Found unauthorized yaml key `{key}` in cassette `{cassette_file.name}`",

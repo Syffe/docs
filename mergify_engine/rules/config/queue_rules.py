@@ -290,10 +290,7 @@ class QueueRules:
         return tuple(rule.name for rule in self.rules)
 
     async def queue_conditions_exists(self) -> bool:
-        for rule in self.rules:
-            if rule.queue_conditions.condition.conditions:
-                return True
-        return False
+        return any(rule.queue_conditions.condition.conditions for rule in self.rules)
 
     async def get_evaluated_queue_conditions(
         self,

@@ -39,7 +39,7 @@ def test_defaults(
     conf = config.EngineSettings()
     assert str(conf.DATABASE_URL) == "postgresql+psycopg://localhost:5432"
     assert conf.DATABASE_URL.geturl() == "postgresql+psycopg://localhost:5432"
-    assert conf.DATABASE_POOL_SIZES == {"web": 55, "worker": 15}
+    assert {"web": 55, "worker": 15} == conf.DATABASE_POOL_SIZES
     assert conf.DATABASE_OAUTH_TOKEN_SECRET_CURRENT.get_secret_value() == "secret"
     assert conf.DATABASE_OAUTH_TOKEN_SECRET_OLD is None
     assert conf.GITHUB_URL == "https://github.com"  # type: ignore[unreachable]
@@ -51,20 +51,20 @@ def test_defaults(
     assert conf.GITHUB_OAUTH_CLIENT_SECRET.get_secret_value() == "secret"
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is None
-    assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == []
+    assert [] == conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES
     assert conf.GITHUB_WEBHOOK_FORWARD_URL is None
     assert conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None
     assert conf.DASHBOARD_UI_FRONT_URL == "http://localhost:3000"
-    assert conf.DASHBOARD_UI_FEATURES == []
+    assert [] == conf.DASHBOARD_UI_FEATURES
     assert conf.DASHBOARD_UI_SESSION_EXPIRATION_HOURS == 24
     assert conf.DASHBOARD_UI_DATADOG_CLIENT_TOKEN is None
-    assert conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO == []
+    assert [] == conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO
     assert conf.LOG_LEVEL == logging.INFO
     assert conf.LOG_STDOUT
     assert conf.LOG_STDOUT_LEVEL is None
     assert conf.LOG_DATADOG is False
     assert conf.LOG_DATADOG_LEVEL is None
-    assert conf.LOG_DEBUG_LOGGER_NAMES == []
+    assert [] == conf.LOG_DEBUG_LOGGER_NAMES
     assert conf.SENTRY_URL is None
     assert conf.SENTRY_ENVIRONMENT == "test"
 
@@ -79,8 +79,8 @@ def test_defaults(
     assert conf.SUBSCRIPTION_URL == "https://subscription.mergify.com"
     assert conf.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()
     assert conf.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION is None
-    assert conf.ACCOUNT_TOKENS == []
-    assert conf.APPLICATION_APIKEYS == {}
+    assert [] == conf.ACCOUNT_TOKENS
+    assert {} == conf.APPLICATION_APIKEYS
 
     assert conf.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value() == "crypto-secret"
     assert conf.REDIS_CRYPTO_SECRET_OLD is None
@@ -212,23 +212,23 @@ def test_all_sets(
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret2"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value() == "secret3"
-    assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == ["foo", "bar", "yo"]
+    assert ["foo", "bar", "yo"] == conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES
     assert conf.GITHUB_WEBHOOK_FORWARD_URL == "https://sub.example.com/events"
-    assert conf.DATABASE_POOL_SIZES == {"web": 2, "worker": 3, "foobar": 6}
+    assert {"web": 2, "worker": 3, "foobar": 6} == conf.DATABASE_POOL_SIZES
     assert conf.DATABASE_OAUTH_TOKEN_SECRET_CURRENT.get_secret_value() == "secret2"
     assert conf.DATABASE_OAUTH_TOKEN_SECRET_OLD is not None
     assert conf.DATABASE_OAUTH_TOKEN_SECRET_OLD.get_secret_value() == "secret3"
-    assert conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY == tmpdir
+    assert tmpdir == conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY
     assert conf.DASHBOARD_UI_FRONT_URL == "https://dashboard.mergify.com"
-    assert conf.DASHBOARD_UI_FEATURES == [
+    assert [
         "subscriptions",
         "applications",
         "intercom",
         "statuspage",
-    ]
+    ] == conf.DASHBOARD_UI_FEATURES
     assert conf.DASHBOARD_UI_SESSION_EXPIRATION_HOURS == 100
     assert conf.DASHBOARD_UI_DATADOG_CLIENT_TOKEN == "no-secret"
-    assert conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO == [1234, 5432]
+    assert [1234, 5432] == conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO
     assert conf.LOG_LEVEL == logging.DEBUG
     assert conf.LOG_STDOUT is False
     assert conf.LOG_STDOUT_LEVEL == logging.CRITICAL
@@ -238,7 +238,7 @@ def test_all_sets(
     assert conf.LOG_DATADOG.host == "localhost"
     assert conf.LOG_DATADOG.port == 8080
     assert conf.LOG_DATADOG_LEVEL == logging.WARNING
-    assert conf.LOG_DEBUG_LOGGER_NAMES == ["foo", "bar", "yo"]
+    assert ["foo", "bar", "yo"] == conf.LOG_DEBUG_LOGGER_NAMES
 
     assert conf.SHARED_STREAM_PROCESSES == 2
     assert conf.DEDICATED_STREAM_PROCESSES == 3
@@ -256,11 +256,11 @@ def test_all_sets(
         conf.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION.get_secret_value()
         == "webhook-secret-bis"
     )
-    assert conf.ACCOUNT_TOKENS == [
+    assert [
         (123, "login1", pydantic.SecretStr("token1")),
         (456, "login2", pydantic.SecretStr("token2")),
-    ]
-    assert conf.APPLICATION_APIKEYS == {
+    ] == conf.ACCOUNT_TOKENS
+    assert {
         "peeph4iephaivohx4jeewociex3rulii": {
             "api_access_key": "peeph4iephaivohx4jeewociex3rulii",
             "api_secret_key": "Shai1Auyiekekeij4OeGh0OoGuph5zei",
@@ -279,7 +279,7 @@ def test_all_sets(
             "account_id": 424242,
             "account_login": "other-bot",
         },
-    }
+    } == conf.APPLICATION_APIKEYS
 
     assert conf.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value() == "crypto-secret"
     assert conf.REDIS_CRYPTO_SECRET_OLD is not None
@@ -295,7 +295,7 @@ def test_all_sets(
     assert conf.REDIS_SSL_VERIFY_MODE_CERT_NONE is True
     assert conf.VERSION == "3.1"
     assert conf.SHA == "f8c4fe06d56cd89cbe48975aa8507d479d881bdc"
-    assert conf.LOG_EMBEDDER_ENABLED_ORGS == ["Mergifyio"]
+    assert ["Mergifyio"] == conf.LOG_EMBEDDER_ENABLED_ORGS
 
 
 def test_legacy_env_sets(
@@ -335,7 +335,7 @@ def test_legacy_env_sets(
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret4"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value() == "secret5"
-    assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == ["foo", "bar", "yo"]
+    assert ["foo", "bar", "yo"] == conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES
     assert conf.GITHUB_WEBHOOK_FORWARD_URL == "https://sub.example.com/events"
     assert conf.GITHUB_APP_ID == 12345
     assert conf.GITHUB_PRIVATE_KEY.get_secret_value() == "hello world"
@@ -415,7 +415,7 @@ def test_type_log_level(
     monkeypatch.setenv("MERGIFYENGINE_LOG_LEVEL", value)
     if isinstance(expected, int):
         conf = config.EngineSettings()
-        assert conf.LOG_LEVEL == expected
+        assert expected == conf.LOG_LEVEL
     else:
         with pytest.raises(pydantic_core.ValidationError) as exc_info:
             config.EngineSettings()
@@ -433,10 +433,10 @@ def test_github_url_normalization(monkeypatch: pytest.MonkeyPatch, path: str) ->
     path, _, _ = path.partition("?")
     if path.endswith("/"):
         path = path[:-1]
-    assert conf.GITHUB_URL == f"https://my-ghes.example.com{path}"
-    assert conf.GITHUB_REST_API_URL == f"https://my-ghes.example.com{path}/api/v3"
+    assert f"https://my-ghes.example.com{path}" == conf.GITHUB_URL
+    assert f"https://my-ghes.example.com{path}/api/v3" == conf.GITHUB_REST_API_URL
     assert (
-        conf.GITHUB_GRAPHQL_API_URL == f"https://my-ghes.example.com{path}/api/graphql"
+        f"https://my-ghes.example.com{path}/api/graphql" == conf.GITHUB_GRAPHQL_API_URL
     )
 
 

@@ -115,9 +115,7 @@ async def fake_get_github_pulls_from_sha(
             },
         },
     )
-    if url.endswith("commits/rebased_c1/pulls"):
-        yield pr
-    elif url.endswith("commits/rebased_c2/pulls"):
+    if url.endswith(("commits/rebased_c1/pulls", "commits/rebased_c2/pulls")):
         yield pr
     else:
         return

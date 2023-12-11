@@ -667,7 +667,7 @@ def test_schedule_eq_with_datetime(
     expected: bool,
 ) -> None:
     assert expected == (date_to_test == schedule)
-    assert not expected == (date_to_test != schedule)
+    assert expected != (date_to_test != schedule)
 
 
 def test_schedule_as_json_dict_only_days() -> None:

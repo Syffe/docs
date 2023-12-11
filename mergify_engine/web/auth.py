@@ -50,17 +50,16 @@ async def github_webhook_signature(request: requests.Request) -> None:
 
 async def shadow_office(request: requests.Request) -> None:
     authorization = request.headers.get("Authorization")
-    if authorization:
-        if authorization.lower().startswith("bearer "):
-            token = authorization[7:]
-            if token == settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value():
-                return
+    if authorization and authorization.lower().startswith("bearer "):
+        token = authorization[7:]
+        if token == settings.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value():
+            return
 
-            if (
-                settings.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION is not None
-                and token
-                == settings.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION.get_secret_value()
-            ):
-                return
+        if (
+            settings.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION is not None
+            and token
+            == settings.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION.get_secret_value()
+        ):
+            return
 
     raise fastapi.HTTPException(status_code=403)

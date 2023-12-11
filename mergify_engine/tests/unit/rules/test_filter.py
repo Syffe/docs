@@ -225,10 +225,10 @@ async def test_invalid_arguments() -> None:
     (filter.BinaryFilter, filter.NearDatetimeFilter, filter.IncompleteChecksFilter),
 )
 async def test_str(filter_: filter.Filter[typing.Any]) -> None:
-    assert "foo~=^f" == str(filter_({"~=": ("foo", "^f")}))
-    assert "-foo=1" == str(filter_({"-": {"=": ("foo", 1)}}))
-    assert "foo" == str(filter_({"=": ("foo", True)}))
-    assert "-bar" == str(filter_({"=": ("bar", False)}))
+    assert str(filter_({"~=": ("foo", "^f")})) == "foo~=^f"
+    assert str(filter_({"-": {"=": ("foo", 1)}})) == "-foo=1"
+    assert str(filter_({"=": ("foo", True)})) == "foo"
+    assert str(filter_({"=": ("bar", False)})) == "-bar"
     with pytest.raises(filter.InvalidOperator):
         str(filter_({">=": ("bar", False)}))
 
@@ -239,14 +239,23 @@ def dtime(day: int) -> datetime.datetime:
 
 @time_travel("2012-01-14")
 async def test_datetime_binary() -> None:
-    assert "foo>=2012-01-05T00:00:00" == str(
-        filter.BinaryFilter({">=": ("foo", dtime(5))}),
+    assert (
+        str(
+            filter.BinaryFilter({">=": ("foo", dtime(5))}),
+        )
+        == "foo>=2012-01-05T00:00:00"
     )
-    assert "foo<=2012-01-05T23:59:00" == str(
-        filter.BinaryFilter({"<=": ("foo", dtime(5).replace(hour=23, minute=59))}),
+    assert (
+        str(
+            filter.BinaryFilter({"<=": ("foo", dtime(5).replace(hour=23, minute=59))}),
+        )
+        == "foo<=2012-01-05T23:59:00"
     )
-    assert "foo<=2012-01-05T03:09:00" == str(
-        filter.BinaryFilter({"<=": ("foo", dtime(5).replace(hour=3, minute=9))}),
+    assert (
+        str(
+            filter.BinaryFilter({"<=": ("foo", dtime(5).replace(hour=3, minute=9))}),
+        )
+        == "foo<=2012-01-05T03:09:00"
     )
 
     f = filter.BinaryFilter({"<=": ("foo", date.utcnow())})
@@ -266,19 +275,31 @@ async def test_datetime_binary() -> None:
 
 @time_travel("2012-01-14")
 async def test_time_binary() -> None:
-    assert "foo>=00:00" == str(
-        filter.BinaryFilter({">=": ("foo", date.Time(0, 0, date.UTC))}),
+    assert (
+        str(
+            filter.BinaryFilter({">=": ("foo", date.Time(0, 0, date.UTC))}),
+        )
+        == "foo>=00:00"
     )
-    assert "foo<=23:59" == str(
-        filter.BinaryFilter({"<=": ("foo", date.Time(23, 59, date.UTC))}),
+    assert (
+        str(
+            filter.BinaryFilter({"<=": ("foo", date.Time(23, 59, date.UTC))}),
+        )
+        == "foo<=23:59"
     )
-    assert "foo<=03:09" == str(
-        filter.BinaryFilter({"<=": ("foo", date.Time(3, 9, date.UTC))}),
+    assert (
+        str(
+            filter.BinaryFilter({"<=": ("foo", date.Time(3, 9, date.UTC))}),
+        )
+        == "foo<=03:09"
     )
-    assert "foo<=03:09[Europe/Paris]" == str(
-        filter.BinaryFilter(
-            {"<=": ("foo", date.Time(3, 9, zoneinfo.ZoneInfo("Europe/Paris")))},
-        ),
+    assert (
+        str(
+            filter.BinaryFilter(
+                {"<=": ("foo", date.Time(3, 9, zoneinfo.ZoneInfo("Europe/Paris")))},
+            ),
+        )
+        == "foo<=03:09[Europe/Paris]"
     )
 
     now = date.utcnow()

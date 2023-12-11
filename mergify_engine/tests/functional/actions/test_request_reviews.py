@@ -162,15 +162,15 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         assert len(checks) == 2
         for check in checks:
             if check["name"] == "Rule: request_reviews (request_reviews)":
-                assert "neutral" == check["conclusion"]
+                assert check["conclusion"] == "neutral"
                 assert (
-                    "Maximum number of reviews already requested"
-                    == check["output"]["title"]
+                    check["output"]["title"]
+                    == "Maximum number of reviews already requested"
                 )
                 assert (
-                    "The maximum number of 1 reviews has been reached.\n"
+                    check["output"]["summary"]
+                    == "The maximum number of 1 reviews has been reached.\n"
                     "Unable to request reviews for additional users."
-                    == check["output"]["summary"]
                 )
                 break
         else:
@@ -218,15 +218,15 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         assert len(checks) == 2
         for check in checks:
             if check["name"] == "Rule: request_reviews (request_reviews)":
-                assert "neutral" == check["conclusion"]
+                assert check["conclusion"] == "neutral"
                 assert (
-                    "Maximum number of reviews already requested"
-                    == check["output"]["title"]
+                    check["output"]["title"]
+                    == "Maximum number of reviews already requested"
                 )
                 assert (
-                    "The maximum number of 2 reviews has been reached.\n"
+                    check["output"]["summary"]
+                    == "The maximum number of 2 reviews has been reached.\n"
                     "Unable to request reviews for additional users."
-                    == check["output"]["summary"]
                 )
                 break
         else:

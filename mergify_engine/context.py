@@ -1660,10 +1660,7 @@ class Context:
     async def dependabot_attributes(
         self,
     ) -> list[dependabot_types.DependabotAttributes]:
-        if (
-            not self.pull["user"]["login"]
-            == constants.DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN
-        ):
+        if self.pull["user"]["login"] != constants.DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN:
             return []
         commits = await self.commits
         return dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
@@ -1922,10 +1919,7 @@ class Context:
             "merged",
             "merged_at",
         )
-        for field in fields_to_control:
-            if field not in self.pull:
-                return False
-        return True
+        return all(field in self.pull for field in fields_to_control)
 
     async def update(
         self,
@@ -2049,10 +2043,7 @@ class Context:
         return False
 
     def has_been_only_refreshed(self) -> bool:
-        for source in self.sources:
-            if source["event_type"] != "refresh":
-                return False
-        return True
+        return all(source["event_type"] == "refresh" for source in self.sources)
 
     def has_been_opened(self) -> bool:
         for source in self.sources:

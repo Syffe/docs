@@ -60,10 +60,7 @@ def Jinja2(
         # TODO: optimize this by returning, storing and using the parsed Jinja2 AST
         types_dummy_context.DUMMY_PR.render_template(value, extra_variables)
     except types_dummy_context.RenderTemplateFailure as rtf:
-        if rtf.lineno is None:
-            path = None
-        else:
-            path = [LineColumnPath(rtf.lineno, None)]
+        path = None if rtf.lineno is None else [LineColumnPath(rtf.lineno, None)]
         raise voluptuous.Invalid(
             "Template syntax error",
             error_message=str(rtf),

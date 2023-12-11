@@ -673,9 +673,9 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 .scalars()
             )
 
-            assert JOB_IDS_BY_ISSUE_GPT == {
+            assert {
                 issue.id: [job.id for job in issue.jobs] for issue in issues
-            }
+            } == JOB_IDS_BY_ISSUE_GPT
 
     @pytest.mark.make_real_openai_calls()
     async def test_extract_data_from_log(

@@ -39,7 +39,7 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
         )
-        assert 1 == len(pulls_stable)
+        assert len(pulls_stable) == 1
 
         refs = [
             ref["ref"]
@@ -88,7 +88,7 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
         )
-        assert 0 == len(pulls_stable)
+        assert len(pulls_stable) == 0
 
         # failure comment
         comments = await self.get_issue_comments(pr["number"])
@@ -119,7 +119,7 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
         )
-        assert 1 == len(pulls_stable)
+        assert len(pulls_stable) == 1
 
         # success comment
         comments = await self.get_issue_comments(pr["number"])
@@ -150,7 +150,7 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
         )
-        assert 0 == len(pulls_stable)
+        assert len(pulls_stable) == 0
 
         # Failure comment
         comments = await self.get_issue_comments(pr["number"])
@@ -183,7 +183,7 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
         )
-        assert 0 == len(pulls_stable)
+        assert len(pulls_stable) == 0
 
         # Failure comment
         comments = await self.get_issue_comments(pr["number"])
@@ -201,7 +201,7 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
         )
-        assert 1 == len(pulls_stable)
+        assert len(pulls_stable) == 1
 
         # Success comment
         comments = await self.get_issue_comments(pr["number"])
@@ -234,7 +234,7 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
         )
-        assert 0 == len(pulls_stable)
+        assert len(pulls_stable) == 0
 
         comments = await self.get_issue_comments(pr["number"])
         assert len(comments) == 2
@@ -265,7 +265,7 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
         )
-        assert 1 == len(pulls_stable)
+        assert len(pulls_stable) == 1
 
         comments = await self.get_issue_comments(pr["number"])
         assert len(comments) == 2

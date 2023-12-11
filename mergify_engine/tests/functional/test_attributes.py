@@ -851,7 +851,7 @@ class TestAttributes(base.FunctionalTestBase):
         assert comment["comment"]["body"] == "review-threads-resolved comment"
 
         review_threads = await self.get_review_comments(pull_number=pr["number"])
-        assert "you shouldn't write `foo` here" == review_threads[-1]["body"]
+        assert review_threads[-1]["body"] == "you shouldn't write `foo` here"
 
     async def test_retrieve_unresolved_threads(self) -> None:
         rules = {
@@ -901,11 +901,11 @@ class TestAttributes(base.FunctionalTestBase):
         assert comment["comment"]["body"] == "review-threads-unresolved comment"
 
         review_threads = await self.get_review_comments(pull_number=pr["number"])
-        assert "...maybe too original" == review_threads[4]["body"]
-        assert "much originality" == review_threads[3]["body"]
-        assert "Don't like this line too much either" == review_threads[2]["body"]
-        assert "How original" == review_threads[1]["body"]
-        assert "why are you still writing `foo` here ?" == review_threads[0]["body"]
+        assert review_threads[4]["body"] == "...maybe too original"
+        assert review_threads[3]["body"] == "much originality"
+        assert review_threads[2]["body"] == "Don't like this line too much either"
+        assert review_threads[1]["body"] == "How original"
+        assert review_threads[0]["body"] == "why are you still writing `foo` here ?"
 
     async def test_retrieve_resolved_and_unresolved_threads(self) -> None:
         rules = {
@@ -1321,7 +1321,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             key=operator.itemgetter("name"),
         )
         assert len(sorted_checks) == 2
-        assert "failure" == sorted_checks[0]["conclusion"]
+        assert sorted_checks[0]["conclusion"] == "failure"
 
         await self.create_status(p, "sick-ci", "error")
         await self.run_engine()
@@ -1331,7 +1331,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             key=operator.itemgetter("name"),
         )
         assert len(sorted_checks) == 2
-        assert "success" == sorted_checks[0]["conclusion"]
+        assert sorted_checks[0]["conclusion"] == "success"
 
     async def test_check_run_failure(self) -> None:
         rules = {
@@ -1353,7 +1353,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             key=operator.itemgetter("name"),
         )
         assert len(sorted_checks) == 2
-        assert "failure" == sorted_checks[0]["conclusion"]
+        assert sorted_checks[0]["conclusion"] == "failure"
 
         await self.create_check_run(p, "sick-ci", "failure")
         await self.run_engine()
@@ -1387,7 +1387,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             key=operator.itemgetter("name"),
         )
         assert len(sorted_checks) == 2
-        assert "failure" == sorted_checks[0]["conclusion"]
+        assert sorted_checks[0]["conclusion"] == "failure"
 
         await self.create_check_run(p, "lazy-ci", "timed_out")
         await self.run_engine()

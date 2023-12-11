@@ -1193,10 +1193,7 @@ class Train:
                     self._current_base_sha,
                 )
 
-                if self._cars:
-                    previous_car = self._cars[-1]
-                else:
-                    previous_car = None
+                previous_car = self._cars[-1] if self._cars else None
 
                 self._cars.append(car)
 

@@ -64,7 +64,7 @@ class RequestReviewsExecutor(
             )
 
         team_errors = set()
-        for team in action.config["teams"].keys():
+        for team in action.config["teams"]:
             try:
                 await team.has_read_permission(ctxt)
             except types.InvalidTeam as e:
@@ -147,10 +147,8 @@ class RequestReviewsExecutor(
         pr_author: str,
     ) -> tuple[set[str], set[str]]:
         if self.config["random_count"] is None:
-            user_reviews_to_request = {
-                user.lower() for user in self.config["users"].keys()
-            }
-            team_reviews_to_request = {t.lower() for t in self.config["teams"].keys()}
+            user_reviews_to_request = {user.lower() for user in self.config["users"]}
+            team_reviews_to_request = {t.lower() for t in self.config["teams"]}
         else:
             team_reviews_to_request = set()
             user_reviews_to_request = set()

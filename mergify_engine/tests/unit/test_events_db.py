@@ -70,7 +70,7 @@ async def test_event_not_supported(fake_repository: context.Repository) -> None:
             metadata={},
             trigger="Rule: my rule",
         )
-    assert "Event 'event.not.supported' not supported in database" == str(e.value)
+    assert str(e.value) == "Event 'event.not.supported' not supported in database"
 
 
 async def test_event_action_assign_consistency(

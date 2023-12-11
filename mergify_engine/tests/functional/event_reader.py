@@ -341,9 +341,7 @@ class EventReader:
             if "check_run" in data:
                 data["check_run"].pop("checks_suite", None)
             for key, value in list(data.items()):
-                if key.endswith("url"):
-                    del data[key]
-                elif key.endswith("_at"):
+                if key.endswith(("url", "_at")):
                     del data[key]
                 else:
                     data[key] = self._remove_useless_links(value)

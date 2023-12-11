@@ -63,7 +63,7 @@ class RequeueExecutor(
             )
 
         has_queue_action_in_prr = any(
-            "queue" in prr.actions.keys()
+            "queue" in prr.actions
             for prr in self.ctxt.repository.mergify_config["pull_request_rules"]
         )
 

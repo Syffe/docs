@@ -2050,7 +2050,10 @@ async def test_train_inplace_branch_update_failure(
         await t.refresh()
 
     ctxt.client.put.side_effect = branch_updater.BranchUpdateFailure("oops")  # type: ignore [attr-defined]
-    with mock.patch.object(merge_train.TrainCar, "_set_creation_failure"):
+    with mock.patch.object(
+        merge_train.TrainCar,
+        "_set_creation_failure",
+    ):
         with pytest.raises(merge_train.TrainCarPullRequestCreationFailure):
             await t._cars[0]._start_checking_inplace_merge(ctxt)
 

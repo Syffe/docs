@@ -33,17 +33,17 @@ class TestCommandCopy(base.FunctionalTestBase):
             )
         ]
         assert len(reactions) == 1
-        assert "+1" == reactions[0]["content"]
+        assert reactions[0]["content"] == "+1"
         await self.run_engine()
 
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
         )
-        assert 1 == len(pulls_stable)
+        assert len(pulls_stable) == 1
         pulls_feature = await self.get_pulls(
             params={"state": "all", "base": feature_branch},
         )
-        assert 1 == len(pulls_feature)
+        assert len(pulls_feature) == 1
 
         refs = [
             ref["ref"]

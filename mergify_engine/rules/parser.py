@@ -313,10 +313,7 @@ def parse_raw_condition(
         )
         if attribute_array_match is not None:
             array_subattribute = attribute_array_match.group(2)
-            if (
-                array_subattribute
-                not in PARSERS_FOR_ARRAY_SUBATTRIBUTES[attribute].keys()
-            ):
+            if array_subattribute not in PARSERS_FOR_ARRAY_SUBATTRIBUTES[attribute]:
                 raise ConditionParsingError(
                     f"`{array_subattribute}` is not a valid sub-attribute for `{attribute}`",
                 )

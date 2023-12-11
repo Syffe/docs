@@ -551,7 +551,7 @@ def _extract_field_info(
                         (
                             alias,
                             self._apply_case_sensitive(self.env_prefix + alias),
-                            True if len(alias) > 1 else False,
+                            len(alias) > 1,
                         ),
                     )
                 elif isinstance(alias, list):  # AliasChoices
@@ -563,7 +563,7 @@ def _extract_field_info(
                         (
                             first_arg,
                             self._apply_case_sensitive(self.env_prefix + first_arg),
-                            True if len(alias) > 1 else False,
+                            len(alias) > 1,
                         ),
                     )
         else:  # string validation alias

@@ -472,8 +472,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             await self.add_label(p4["number"], "queue")
             await self.add_label(p5["number"], "queue")
             await self.run_engine()
-            assert 1 == reset_mock.call_count
-            assert 4 == reset_partitions_mock.call_count
+            assert reset_mock.call_count == 1
+            assert reset_partitions_mock.call_count == 4
             iter_train_mock.assert_any_call(mock.ANY, ["projB"])
 
     async def test_all_partitions_reset_when_manual_force_push_on_base_branch_without_pr_and_with_fallback_partition(
@@ -553,7 +553,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             )
             await self.wait_for_push(branch_name=self.main_branch_name)
             await self.run_engine()
-            assert 3 == reset_mock.call_count
+            assert reset_mock.call_count == 3
 
     async def test_all_partitions_reset_when_manual_force_push_on_base_branch_without_pr_and_no_fallback_partition(
         self,
@@ -627,7 +627,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             await self.wait_for_push(branch_name=self.main_branch_name)
             await self.run_engine()
 
-            assert 2 == reset_mock.call_count
+            assert reset_mock.call_count == 2
 
     async def test_all_partitions_reset_when_pr_manual_merge_with_no_fallback_partition(
         self,
@@ -683,7 +683,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             await self.run_engine()
             await self.merge_pull(p1["number"])
             await self.run_engine()
-            assert 2 == reset_mock.call_count
+            assert reset_mock.call_count == 2
 
     async def test_fallback_partition_reset_when_pr_manual_merge_dont_match_any_partitions(
         self,
@@ -758,8 +758,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             await self.run_engine()
             await self.merge_pull(p1["number"])
             await self.run_engine()
-            assert 1 == reset_mock.call_count
-            assert 3 == reset_partitions_mock.call_count
+            assert reset_mock.call_count == 1
+            assert reset_partitions_mock.call_count == 3
             iter_train_mock.assert_any_call(mock.ANY, ["fallback_partition"])
 
     async def test_partition_reset_when_pr_manual_merge_matches_one_partition(
@@ -833,8 +833,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             await self.run_engine()
             await self.merge_pull(p1["number"])
             await self.run_engine()
-            assert 1 == reset_mock.call_count
-            assert 2 == reset_partitions_mock.call_count
+            assert reset_mock.call_count == 1
+            assert reset_partitions_mock.call_count == 2
             iter_train_mock.assert_any_call(mock.ANY, ["projB"])
 
     async def test_partition_reset_when_pr_manual_merge_matches_several_partitions(
@@ -913,8 +913,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             await self.run_engine()
             await self.merge_pull(p1["number"])
             await self.run_engine()
-            assert 2 == reset_mock.call_count
-            assert 2 == reset_partitions_mock.call_count
+            assert reset_mock.call_count == 2
+            assert reset_partitions_mock.call_count == 2
             iter_train_mock.assert_any_call(mock.ANY, ["projA"])
             iter_train_mock.assert_any_call(mock.ANY, ["projB"])
 
@@ -987,8 +987,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             await self.wait_for_pull_request("closed", draft_pr["number"])
             p1_closed = await self.wait_for_pull_request("closed", p1["number"])
             assert p1_closed["pull_request"]["merged"]
-            assert 0 == reset_partitions_mock.call_count
-            assert 0 == reset_mock.call_count
+            assert reset_partitions_mock.call_count == 0
+            assert reset_mock.call_count == 0
 
     async def test_no_partition_reset_after_queued_merged_pr_with_partition_and_no_fallback_partition(
         self,
@@ -1055,8 +1055,8 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             await self.wait_for_pull_request("closed", draft_pr["number"])
             p1_closed = await self.wait_for_pull_request("closed", p1["number"])
             assert p1_closed["pull_request"]["merged"]
-            assert 0 == reset_partitions_mock.call_count
-            assert 0 == reset_mock.call_count
+            assert reset_partitions_mock.call_count == 0
+            assert reset_mock.call_count == 0
 
     async def test_queue_fallback_partition_if_pr_dont_match_any_partitions_inplace(
         self,

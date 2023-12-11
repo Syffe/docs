@@ -96,10 +96,7 @@ def unicode_truncate(
                 cut_at_left += 1
 
             start = b[:cut_at_left]
-            if cut_at_right > 0:
-                end = b[-cut_at_right:]
-            else:
-                end = b""
+            end = b[-cut_at_right:] if cut_at_right > 0 else b""
             return (start + placeholder_bytes + end).decode(encoding, errors="ignore")
 
         raise RuntimeError(f"Invalid position: {position}")

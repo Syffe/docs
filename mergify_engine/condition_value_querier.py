@@ -131,10 +131,7 @@ class BasePullRequest:
         # Circular import
         from mergify_engine.rules import parser
 
-        if (
-            commit_attribute
-            not in parser.PARSERS_FOR_ARRAY_SUBATTRIBUTES["commits"].keys()
-        ):
+        if commit_attribute not in parser.PARSERS_FOR_ARRAY_SUBATTRIBUTES["commits"]:
             raise PullRequestAttributeError(commit_attribute)
 
         value = getattr(commit, commit_attribute)

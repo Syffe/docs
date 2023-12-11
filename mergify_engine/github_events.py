@@ -54,12 +54,15 @@ async def meter_event(
     if event_type == "pull_request":
         event = typing.cast(github_types.GitHubEventPullRequest, event)
         tags.append(f"action:{event['action']}")
-        if event["action"] == "closed" and event["pull_request"]["merged"]:
-            if (
+        if (
+            event["action"] == "closed"
+            and event["pull_request"]["merged"]
+            and (
                 event["pull_request"]["merged_by"] is not None
                 and event["pull_request"]["merged_by"]["id"] == mergify_bot["id"]
-            ):
-                tags.append("by_mergify")
+            )
+        ):
+            tags.append("by_mergify")
 
     # TODO(sileht): is statsd async ?
     statsd.increment("github.events", tags=tags)

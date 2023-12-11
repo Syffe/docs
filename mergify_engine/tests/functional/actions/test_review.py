@@ -100,10 +100,10 @@ class TestReviewAction(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 1
-        assert "failure" == checks[0]["conclusion"]
+        assert checks[0]["conclusion"] == "failure"
         assert (
-            "The current Mergify configuration is invalid"
-            == checks[0]["output"]["title"]
+            checks[0]["output"]["title"]
+            == "The current Mergify configuration is invalid"
         )
         return checks[0]
 
@@ -111,19 +111,25 @@ class TestReviewAction(base.FunctionalTestBase):
         check = await self._test_review_template_error(
             msg="Thank you {{",
         )
-        assert """Template syntax error @ pull_request_rules → item 0 → actions → review → message → line 1
+        assert (
+            check["output"]["summary"]
+            == """Template syntax error @ pull_request_rules → item 0 → actions → review → message → line 1
 ```
 unexpected 'end of template'
-```""" == check["output"]["summary"]
+```"""
+        )
 
     async def test_review_template_attribute_error(self) -> None:
         check = await self._test_review_template_error(
             msg="Thank you {{hello}}",
         )
-        assert """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → review → message
+        assert (
+            check["output"]["summary"]
+            == """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → review → message
 ```
 Unknown pull request attribute: hello
-```""" == check["output"]["summary"]
+```"""
+        )
 
     async def test_review_with_oauth_token(self) -> None:
         rules = {
@@ -169,7 +175,7 @@ Unknown pull request attribute: hello
         await self.create_comment(p["number"], "@mergifyio refresh")
         await self.run_engine()
         reviews = await self.get_reviews(p["number"])
-        assert 2 == len(reviews)
+        assert len(reviews) == 2
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p['number']}",

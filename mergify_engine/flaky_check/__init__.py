@@ -42,13 +42,16 @@ async def get_checks_to_rerun(
 
     for check in checks:
         need_rerun_status = NeedRerunStatus.DONT_NEED_RERUN
-        if check["name"] in flaky_conf and check["conclusion"] == "failure":
-            if check["app_slug"] == "github-actions":
-                need_rerun_status = await is_gha_job_rerun_needed(
-                    repository.installation.redis.cache,
-                    check,
-                    flaky_conf[check["name"]],
-                )
+        if (
+            check["name"] in flaky_conf
+            and check["conclusion"] == "failure"
+            and check["app_slug"] == "github-actions"
+        ):
+            need_rerun_status = await is_gha_job_rerun_needed(
+                repository.installation.redis.cache,
+                check,
+                flaky_conf[check["name"]],
+            )
 
         if need_rerun_status != NeedRerunStatus.DONT_NEED_RERUN:
             checks_to_rerun.append(

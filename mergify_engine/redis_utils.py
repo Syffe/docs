@@ -115,10 +115,7 @@ async def run_script(
 ) -> typing.Any:
     global SCRIPTS
     sha, script = SCRIPTS[script_id]
-    if args is None:
-        args = keys
-    else:
-        args = keys + args
+    args = keys if args is None else keys + args
     return await redis.evalsha(sha, len(keys), *args)  # type: ignore[no-untyped-call]
 
 

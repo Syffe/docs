@@ -254,10 +254,10 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         )
         assert check_run_p["check_run"]["pull_requests"][0]["number"] == p["number"]
         assert (
-            "Unknown pull request attribute: invalid"
-            == check_run_p["check_run"]["output"]["summary"]
+            check_run_p["check_run"]["output"]["summary"]
+            == "Unknown pull request attribute: invalid"
         )
-        assert "Invalid commit message" == check_run_p["check_run"]["output"]["title"]
+        assert check_run_p["check_run"]["output"]["title"] == "Invalid commit message"
 
         # Edit and fixes the typo
         await self.edit_pull(
@@ -631,7 +631,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.run_engine()
 
         comment = await self.wait_for_issue_comment(str(p1["number"]), "created")
-        assert "review-requested user" == comment["comment"]["body"]
+        assert comment["comment"]["body"] == "review-requested user"
 
         # FIXME(sileht): This doesn't work anymore MRGFY-227
         # p2 = await self.create_pr()
@@ -733,7 +733,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         await self.run_engine()
         comment = await self.wait_for_issue_comment(str(p["number"]), "created")
-        assert "it works" == comment["comment"]["body"]
+        assert comment["comment"]["body"] == "it works"
 
     async def test_check_run_api(self) -> None:
         await self.setup_repo()

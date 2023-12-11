@@ -48,7 +48,8 @@ class Base(orm.DeclarativeBase):
 
         result = {}
         inspector = sqlalchemy.inspect(self.__class__)
-        for name in inspector.all_orm_descriptors.keys():
+        # mypy is not happy without the `.keys()`
+        for name in inspector.all_orm_descriptors.keys():  # noqa: SIM118
             if name.startswith("_"):
                 continue
             if not (included_columns is None or name in included_columns):

@@ -60,7 +60,7 @@ class TestMergeAction(base.FunctionalTestBase):
         p = await self.get_pull(p["number"])
         assert True is p["merged"]
         assert p["merged_by"]
-        assert "mergify-test4" == p["merged_by"]["login"]
+        assert p["merged_by"]["login"] == "mergify-test4"
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
@@ -397,10 +397,10 @@ class TestMergeAction(base.FunctionalTestBase):
             for c in await ctxt.pull_engine_check_runs
             if c["name"] == "Rule: merge (merge)"
         ]
-        assert "failure" == checks[0]["conclusion"]
+        assert checks[0]["conclusion"] == "failure"
         assert (
-            "Branch protection setting 'linear history' conflicts with Mergify configuration"
-            == checks[0]["output"]["title"]
+            checks[0]["output"]["title"]
+            == "Branch protection setting 'linear history' conflicts with Mergify configuration"
         )
 
     async def test_merge_branch_protection_linear_history_without_merge_method(

@@ -160,9 +160,10 @@ def load_command(
         action_class = action_classes[action_name]
 
         action_config = {}
-        if defaults_actions := mergify_config["defaults"].get("actions"):
-            if default_action_config := defaults_actions.get(action_name):
-                action_config = default_action_config
+        if (defaults_actions := mergify_config["defaults"].get("actions")) and (
+            default_action_config := defaults_actions.get(action_name)
+        ):
+            action_config = default_action_config
 
         action_config.update(action_class.command_to_config(command_args))
         try:

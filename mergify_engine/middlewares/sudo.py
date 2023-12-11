@@ -19,12 +19,13 @@ class SudoMiddleware:
             return
 
         async def send_wrapper(message: types.Message) -> None:
-            if message["type"] == "http.response.start":
-                if scope["session"] and "sudoGrantedTo" in scope["session"]:
-                    headers = datastructures.MutableHeaders(scope=message)
-                    headers["Mergify-Sudo-Granted-To"] = scope["session"][
-                        "sudoGrantedTo"
-                    ]
+            if (
+                message["type"] == "http.response.start"
+                and scope["session"]
+                and "sudoGrantedTo" in scope["session"]
+            ):
+                headers = datastructures.MutableHeaders(scope=message)
+                headers["Mergify-Sudo-Granted-To"] = scope["session"]["sudoGrantedTo"]
             await send(message)
 
         await self.app(scope, receive, send_wrapper)

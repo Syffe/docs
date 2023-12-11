@@ -195,7 +195,7 @@ select = [
  "C4", "T10", "ISC", "ICN", "BLE",
  "G", "RSE", "TID", "TRY", "PLE", "UP",
  "RUF", "RET", "DTZ", "TCH", "COM",
- "PERF", "PT", "PL", "PGH",
+ "PERF", "PT", "PL", "PGH", "SIM",
  # FIXME(sileht): very interesting, but require easy manual code change
  # "ARG",
  # FIXME(sileht): doctring/rst-docstring like
@@ -203,6 +203,11 @@ select = [
 ]
 
 ignore = [
+    # NOTE(Greesb): unnecessary nesting of multiple consecutive context managers
+    # It worsens the visibility even more
+    "SIM117",
+    # NOTE(Greesb): contextlib.supress is slower than try-except-pass
+    "SIM105",
     # NOTE(Greesb): Magic value used in comparison
     # Interesting but will require a refactor, and will need to be ignored
     # in tests

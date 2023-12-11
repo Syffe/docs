@@ -49,10 +49,10 @@ class TestSubscription(base.FunctionalTestBase):
         check_run = await self.wait_for_check_run(conclusion="failure")
 
         assert (
-            "⚠ The [subscription](http://localhost:3000/github/mergifyio-testing/subscription) needs to be updated to enable this feature."
-            == check_run["check_run"]["output"]["summary"]
+            check_run["check_run"]["output"]["summary"]
+            == "⚠ The [subscription](http://localhost:3000/github/mergifyio-testing/subscription) needs to be updated to enable this feature."
         )
         assert (
-            "Cannot use Mergify on a public repository"
-            == check_run["check_run"]["output"]["title"]
+            check_run["check_run"]["output"]["title"]
+            == "Cannot use Mergify on a public repository"
         )

@@ -67,10 +67,7 @@ class LoggingMiddleware:
             exc_info = sys.exc_info()
             raise
         finally:
-            if exc_info:
-                level = logging.ERROR
-            else:
-                level = logging.INFO
+            level = logging.ERROR if exc_info else logging.INFO
             LOG.log(
                 level,
                 "request",

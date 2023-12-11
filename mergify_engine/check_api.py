@@ -80,10 +80,7 @@ class Conclusion(enum.Enum):
 
     def __str__(self) -> str:
         prefix = self.emoji
-        if prefix is None:
-            prefix = ""
-        else:
-            prefix = prefix + " "
+        prefix = "" if prefix is None else prefix + " "
 
         return prefix + self._normalize(self.name)
 
@@ -135,10 +132,7 @@ async def get_checks_for_ref(
     check_name: str | None = None,
     app_id: int | None = None,
 ) -> list[github_types.CachedGitHubCheckRun]:
-    if check_name is None:
-        params = {}
-    else:
-        params = {"check_name": check_name}
+    params = {} if check_name is None else {"check_name": check_name}
 
     if app_id is not None:
         params["app_id"] = str(app_id)
@@ -171,10 +165,7 @@ _V = typing.TypeVar("_V")
 
 
 def compare_dict(d1: dict[_K, _V], d2: dict[_K, _V], keys: abc.Iterable[_K]) -> bool:
-    for key in keys:
-        if d1.get(key) != d2.get(key):
-            return False
-    return True
+    return all(d1.get(key) == d2.get(key) for key in keys)
 
 
 def check_need_update(
@@ -215,10 +206,7 @@ async def set_check_run(
     details_url: str | None = None,
 ) -> github_types.CachedGitHubCheckRun:
     status: github_types.GitHubCheckRunStatus
-    if result.conclusion is Conclusion.PENDING:
-        status = "in_progress"
-    else:
-        status = "completed"
+    status = "in_progress" if result.conclusion is Conclusion.PENDING else "completed"
 
     started_at = (result.started_at or date.utcnow()).isoformat()
 

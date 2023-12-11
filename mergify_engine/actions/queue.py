@@ -864,21 +864,23 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
             await self._render_bot_accounts()
         except InvalidQueueConfiguration as e:
-            if isinstance(e, MismatchingQueueConditions):
-                # NOTE(lecrepont01): we don't want the rule to fail yet if PR was already embarked
-                # this could be caused by queue conditions checks removed after a rebase
-                if still_embarked_pull := first.first(
+            if isinstance(e, MismatchingQueueConditions) and (
+                still_embarked_pull := first.first(
                     still_embarked_pull
                     for car in cars
                     for still_embarked_pull in car.still_queued_embarked_pulls
                     if self.ctxt.pull["number"]
                     == still_embarked_pull.user_pull_request_number
-                ):
-                    self.queue_rule = self.queue_rules[
-                        qr_config.QueueName(still_embarked_pull.config["name"])
-                    ]
-                    self.config["name"] = still_embarked_pull.config["name"]
-                    return None
+                )
+            ):
+                # NOTE(lecrepont01): we don't want the rule to fail yet if PR was already embarked
+                # this could be caused by queue conditions checks removed after a rebase
+                self.queue_rule = self.queue_rules[
+                    qr_config.QueueName(still_embarked_pull.config["name"])
+                ]
+                self.config["name"] = still_embarked_pull.config["name"]
+                return None
+
             return check_api.Result(
                 check_api.Conclusion.CANCELLED,
                 e.title,
@@ -943,12 +945,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 summary="The pull request is going to be merged soon",
             )
 
-        if result is not None:
-            if result.conclusion is not check_api.Conclusion.PENDING:
-                dequeue_reason = await self.get_dequeue_reason_from_action_result(
-                    result,
-                )
-                await self._dequeue_pull_request(convoy, cars, dequeue_reason, result)
+        if result is not None and result.conclusion is not check_api.Conclusion.PENDING:
+            dequeue_reason = await self.get_dequeue_reason_from_action_result(
+                result,
+            )
+            await self._dequeue_pull_request(convoy, cars, dequeue_reason, result)
 
         return result
 

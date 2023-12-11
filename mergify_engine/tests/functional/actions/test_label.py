@@ -298,23 +298,29 @@ class TestLabelAction(base.FunctionalTestBase):
             conclusion="action_required",
         )
         assert (
-            "The current Mergify configuration is invalid"
-            == check_run["check_run"]["output"]["title"]
+            check_run["check_run"]["output"]["title"]
+            == "The current Mergify configuration is invalid"
         )
         return check_run["check_run"]
 
     async def test_label_invalid_template_syntax_error(self) -> None:
         check_run = await self._test_label_invalid_template("branch:{{")
 
-        assert """In the rule `add branch label`, the action `label` configuration is invalid:
+        assert (
+            check_run["output"]["summary"]
+            == """In the rule `add branch label`, the action `label` configuration is invalid:
 Invalid template in label 'branch:{{'
 unexpected 'end of template'
-""" == check_run["output"]["summary"]
+"""
+        )
 
     async def test_label_invalid_template_attribute_error(self) -> None:
         check_run = await self._test_label_invalid_template("branch:{{test}}")
 
-        assert """In the rule `add branch label`, the action `label` configuration is invalid:
+        assert (
+            check_run["output"]["summary"]
+            == """In the rule `add branch label`, the action `label` configuration is invalid:
 Invalid template in label 'branch:{{test}}'
 Unknown pull request attribute: test
-""" == check_run["output"]["summary"]
+"""
+        )

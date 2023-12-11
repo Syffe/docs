@@ -16,10 +16,7 @@ from mergify_engine import settings
 
 SERVICE_NAME: str = "engine-<unknown>"
 VERSION: str
-if settings.SAAS_MODE:
-    VERSION = settings.SHA
-else:
-    VERSION = settings.VERSION
+VERSION = settings.SHA if settings.SAAS_MODE else settings.VERSION
 
 
 def ddtrace_hook(span: ddtrace.Span) -> None:

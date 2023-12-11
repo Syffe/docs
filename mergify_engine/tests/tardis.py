@@ -395,9 +395,8 @@ def fake_strftime(
     | time.struct_time
     | None = None,
 ) -> str:
-    if time_to_format is None:
-        if not _should_use_real_time():
-            time_to_format = fake_localtime()
+    if time_to_format is None and not _should_use_real_time():
+        time_to_format = fake_localtime()
 
     if time_to_format is None:
         return real_strftime(date_format)
@@ -521,10 +520,7 @@ class FakeDatetime(real_datetime, FakeDate, metaclass=FakeDatetimeMeta):
     @classmethod
     def now(cls, tz: datetime.tzinfo | None = None) -> FakeDatetime:
         now = cls._time_traveled_to() or real_datetime.now()
-        if tz:
-            result = tz.fromutc(now.replace(tzinfo=tz))
-        else:
-            result = now
+        result = tz.fromutc(now.replace(tzinfo=tz)) if tz else now
         return datetime_to_fakedatetime(result)
 
     def date(self) -> FakeDate:

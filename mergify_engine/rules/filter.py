@@ -416,11 +416,15 @@ class _ListValuesFilter(Filter[ListValuesFilterResult]):
             attribute_values,
             ref_values_expanded,
         )
-        # NOTE(sileht): needed for mypy other it think isinstance will always return False)
+        # NOTE(sileht): needed for mypy otherwise it thinks isinstance
+        # will always return False
         inner_op = typing.cast(_ListValuesOp, op[0])
-        if isinstance(inner_op, _ListValuesOp) and inner_op.op is operator.eq:
-            if ref_values_expanded[0] not in obj.values:
-                obj.values.append(ref_values_expanded[0])
+        if (
+            isinstance(inner_op, _ListValuesOp)
+            and inner_op.op is operator.eq
+            and ref_values_expanded[0] not in obj.values
+        ):
+            obj.values.append(ref_values_expanded[0])
         return obj
 
 
