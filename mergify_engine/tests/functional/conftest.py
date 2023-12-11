@@ -594,13 +594,46 @@ async def _request_sync_lock() -> abc.AsyncIterator[None]:
 
 
 @pytest.fixture(autouse=True, scope="module")
-def _mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
+def _mock_asyncgithubclient_requests(
+    request: pytest.FixtureRequest,
+) -> abc.Generator[None, None, None]:
     # When running tests in parallel, we need to mock the requests function
     # to add a delay between requests creating content to avoid hitting the secondary rate limit.
     # https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
 
     if settings.TESTING_RECORD:
         real_request = github.AsyncGitHubClient.request
+
+        def log_rate_limit(retry_state: tenacity.RetryCallState) -> None:
+            if retry_state.outcome is None or not retry_state.outcome.failed:
+                return
+
+            exception = retry_state.outcome.exception()
+
+            if not isinstance(
+                exception,
+                exceptions.RateLimited | RetrySecondaryRateLimit,
+            ):
+                return
+
+            if isinstance(exception, RetrySecondaryRateLimit):
+                kind = "Secondary"
+                countdown = (
+                    exception.ratelimit_reset_timestamp - date.utcnow().timestamp()
+                )
+            else:
+                kind = "Primary"
+                countdown = exception.countdown.total_seconds()
+
+            # We can't use capsys fixture to get it as we want to use it in a module scoped fixture
+            # and capsys is function scoped, so we directly use the pytest capmanager
+            capmanager = request.config.pluginmanager.getplugin(
+                "capturemanager",
+            )
+            with capmanager.global_and_fixture_disabled():
+                print(
+                    f" [{kind} rate limit hit, waiting for {countdown}s before retrying]",
+                )
 
         async def mocked_request(  # type: ignore[no-untyped-def]
             self,
@@ -617,6 +650,7 @@ def _mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
                         (exceptions.RateLimited, RetrySecondaryRateLimit),
                     ),
                 ),
+                after=log_rate_limit,
             ):
                 with attempts:
                     async with contextlib.AsyncExitStack() as stack:
