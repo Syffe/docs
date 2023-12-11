@@ -121,7 +121,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
         assert check["conclusion"] == "cancelled"
         assert (
             check["output"]["title"]
-            == "The pull request has been removed from the queue `default` by a `dequeue` command"
+            == f"Pull request #{p1['number']} has been dequeued"
         )
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio requeue")

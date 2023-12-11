@@ -236,7 +236,7 @@ class BasePullRequest:
             try:
                 return (
                     (
-                        await action_utils.get_dequeue_reason_from_outcome(
+                        await action_utils.get_dequeue_reason(
                             ctxt,
                             error_if_unknown=False,
                         )
@@ -244,7 +244,10 @@ class BasePullRequest:
                     .dequeue_code.lower()
                     .replace("_", "-")
                 )
-            except (action_utils.MissingMergeQueueCheckRun, tcs.UnexpectedOutcome):
+            except (
+                action_utils.MissingMergeQueueCheckRun,
+                tcs.UnexpectedReason,
+            ):
                 # NOTE(lecrepont01): We don't expect the check to be present here at
                 # all cost during the evaluation, and we can't ensure that the
                 # state can be mapped to an abort reason either. In this case

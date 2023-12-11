@@ -151,6 +151,7 @@ class BatchFailureSummary:
 @dataclasses.dataclass
 class QueueSummary:
     title: str
+    delete_reason: queue_utils.BaseQueueCancelReason | None
     train_car_state: str
     unexpected_changes: str | None
     freeze: str | None
@@ -165,6 +166,9 @@ class QueueSummary:
         body = self.train_car_state
         if self.unexpected_changes is not None:
             body += "\n\n" + self.unexpected_changes
+
+        if self.delete_reason is not None:
+            body += "\n\n" + str(self.delete_reason)
 
         if self.freeze is not None:
             body += "\n\n" + self.freeze
@@ -461,7 +465,43 @@ class TrainCar:
             and not self.is_batch_failure_resolved
         )
 
-    def get_queue_check_run_conclusion(self) -> check_api.Conclusion:
+    def get_queue_check_run_conclusion(
+        self,
+        user_pull_request_number: github_types.GitHubPullRequestNumber,
+    ) -> check_api.Conclusion:
+        if self.train_car_state.delete_reasons:
+            reason = self.train_car_state.delete_reasons[user_pull_request_number]
+            if isinstance(reason, queue_utils.PrMerged):
+                return check_api.Conclusion.SUCCESS
+
+            # FIXME(sileht): UnexpectedQueueChange can be cancel or dequeue it depends, this will
+            # be fixed later to remove this kind of hack
+            if isinstance(reason, queue_utils.UnexpectedQueueChange):
+                for message in (
+                    str(UnexpectedBaseBranchChange(github_types.SHAType(""))),
+                    str(MergifySupportReset()),
+                ):
+                    if message in reason.change:
+                        return check_api.Conclusion.PENDING
+
+            # FIXME(sileht): This clearly show we should have a dedicated type for this.
+            if (
+                isinstance(
+                    reason,
+                    queue_utils.PrDequeued,
+                )
+                and reason.is_dequeue_command()
+            ):
+                return check_api.Conclusion.CANCELLED
+
+            if isinstance(reason, queue_utils.BaseDequeueReason):
+                return check_api.Conclusion.FAILURE
+
+            return check_api.Conclusion.PENDING
+
+        return self._get_queue_check_run_conclusion_from_outcome()
+
+    def _get_queue_check_run_conclusion_from_outcome(self) -> check_api.Conclusion:
         # Set the state report on GitHub for the `Queue:` check-runs, so the action known
         # if the PR need to merge, removed from the queue.
         if self.train_car_state.outcome == TrainCarOutcome.MERGEABLE:
@@ -1258,7 +1298,9 @@ class TrainCar:
                             "number": self.queue_pull_request_number,
                             "in_place": self.train_car_state.checks_type
                             == TrainCarChecksType.INPLACE,
-                            "checks_conclusion": self.get_queue_check_run_conclusion().value
+                            "checks_conclusion": self.get_queue_check_run_conclusion(
+                                ep.user_pull_request_number,
+                            ).value
                             or "pending",
                             "checks_timed_out": self.train_car_state.outcome
                             == TrainCarOutcome.CHECKS_TIMEOUT,
@@ -1390,7 +1432,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
     async def end_checking(
         self,
         reason: queue_utils.BaseQueueCancelReason | None,
-        not_reembarked_pull_requests: dict[
+        not_reembarked_pull_requests: abc.Mapping[
             github_types.GitHubPullRequestNumber,
             queue_utils.BaseQueueCancelReason,
         ],
@@ -1531,7 +1573,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     "number": self.queue_pull_request_number,
                     "in_place": self.train_car_state.checks_type
                     == TrainCarChecksType.INPLACE,
-                    "checks_conclusion": self.get_queue_check_run_conclusion().value
+                    "checks_conclusion": self.get_queue_check_run_conclusion(
+                        ep.user_pull_request_number,
+                    ).value
                     or "pending",
                     "checks_timed_out": self.train_car_state.outcome
                     == TrainCarOutcome.CHECKS_TIMEOUT,
@@ -1952,8 +1996,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
             or saved_ci_state != self.train_car_state.ci_state
             or saved_freeze_data != self.train_car_state.frozen_by
             or saved_pause_data != self.train_car_state.paused_by
-            or saved_queue_check_run_conclusion
-            != self.get_queue_check_run_conclusion().value
         )
         if require_summaries_update:
             await self.update_summaries()
@@ -1981,12 +2023,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 "ci_started_at": self.train_car_state.ci_started_at,
                 "ci_ended_at": self.train_car_state.ci_ended_at,
                 "checks_end_at": self.checks_ended_timestamp,
-                "queue_check_conclusion": self.get_queue_check_run_conclusion(),
             },
             previous_state={
                 "outcome": saved_outcome,
                 "ci_state": saved_ci_state,
-                "queue_check_conclusion": saved_queue_check_run_conclusion,
             },
         )
 
@@ -2023,7 +2063,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             # by the action queue and merge() will be run just after
             return
 
-        if self.get_queue_check_run_conclusion() is check_api.Conclusion.PENDING:
+        if self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
             # NOTE(sileht): No need to refresh as the Draft PR state is not final
             return
 
@@ -2324,12 +2364,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 ),
             )
 
-    def get_check_runs_summary(
-        self,
-        checked_pull: github_types.GitHubPullRequestNumber | None,
-    ) -> str | None:
+    def get_check_runs_summary(self) -> str | None:
         if not self.last_checks:
             return None
+
+        # TODO(sileht):  Only display them when the outcome is UNKNOWN or CHECKS_FAILED* or CHECKS_TIMEOUT
+
+        checked_pull = self.get_checked_pull()
 
         if checked_pull is None:
             checked_pull = github_types.GitHubPullRequestNumber(0)
@@ -2385,7 +2426,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
         )
 
     def get_checks_timeout_summary(self) -> str | None:
-        queue_rule = self.get_queue_rule()
+        try:
+            queue_rule = self.get_queue_rule()
+        except KeyError:
+            # The queue rule has been removed, we can't display the timeout
+            return None
+
         timeout = queue_rule.config["checks_timeout"]
 
         if self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT:
@@ -2417,9 +2463,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
         ).serialized()
 
     def get_merge_conditions_summary(self) -> str:
-        return (
-            "Required conditions for merge:\n\n" + self.last_evaluated_merge_conditions
-        )
+        if self.last_evaluated_merge_conditions:
+            return (
+                "Required conditions for merge:\n\n"
+                + self.last_evaluated_merge_conditions
+            )
+        return ""
 
     def get_unexpected_changes_summary(self) -> str | None:
         if not self.has_unexpected_changes:
@@ -2438,7 +2487,22 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         return self.train_car_state.paused_by.get_pause_message()
 
-    def get_original_pr_summary_title(self) -> str:
+    @staticmethod
+    def get_original_pr_summary_title_from_delete_reason(
+        reason: queue_utils.BaseQueueCancelReason,
+    ) -> str:
+        if isinstance(reason, queue_utils.PrMerged):
+            return "The pull request has been merged"
+
+        if isinstance(reason, queue_utils.PrDequeued):
+            return reason.str_without_details()
+
+        if isinstance(reason, queue_utils.BaseDequeueReason):
+            return str(reason)
+
+        return "The pull request checks has been interruped and will be re-embarked"
+
+    def get_original_pr_summary_title_from_outcome(self) -> str:
         if self.train_car_state.outcome == TrainCarOutcome.DRAFT_PR_CHANGE:
             return "The pull request has been removed from the queue"
 
@@ -2474,25 +2538,35 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     def get_original_pr_summary(
         self,
-        checked_pull: github_types.GitHubPullRequestNumber | None,
+        user_pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> QueueSummary:
+        if self.train_car_state.delete_reasons:
+            delete_reason = self.train_car_state.delete_reasons[
+                user_pull_request_number
+            ]
+            title = self.get_original_pr_summary_title_from_delete_reason(delete_reason)
+        else:
+            delete_reason = None
+            title = self.get_original_pr_summary_title_from_outcome()
+
         return QueueSummary(
-            title=self.get_original_pr_summary_title(),
+            title=title,
+            delete_reason=delete_reason,
             train_car_state=self.get_train_car_state_for_summary(),
             merge_conditions=self.get_merge_conditions_summary(),
             unexpected_changes=self.get_unexpected_changes_summary(),
             freeze=self.get_freeze_summary(),
             pause=self.get_pause_summary(),
             checks_timeout=self.get_checks_timeout_summary(),
-            check_runs=self.get_check_runs_summary(checked_pull),
+            check_runs=self.get_check_runs_summary(),
             batch_failure=self.get_batch_failure_summary(),
         )
 
     def build_original_pr_summary_for_partition_report(
         self,
-        checked_pull: github_types.GitHubPullRequestNumber | None,
+        user_pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> str:
-        original_pr_summary = self.get_original_pr_summary(checked_pull)
+        original_pr_summary = self.get_original_pr_summary(user_pull_request_number)
         return (
             original_pr_summary.train_car_state
             + f"\n\n**Partition {self.train.partition_name}**: {original_pr_summary.title}\n"
@@ -2585,15 +2659,16 @@ You don't need to do anything. Mergify will close this pull request automaticall
     async def update_summaries(self) -> None:
         checked_pull = self.get_checked_pull()
 
-        # "Queue:" summary generation of the original PR
-        queue_summary = self.get_original_pr_summary(checked_pull)
+        # "Queue:" summary generation of the original PR for logging only, so don't use the title
+        # that is pr dependent and may add confusion in logs
+        queue_summary = self.get_original_pr_summary(
+            self.still_queued_embarked_pulls[0].user_pull_request_number,
+        )
 
         self.train.log.info(
             "pull request train car status update",
-            legacy_conclusion=self.get_queue_check_run_conclusion(),
             outcome=self.train_car_state.outcome,
             outcome_message=self.train_car_state.outcome_message,
-            original_pull_title=queue_summary.title,
             gh_pull=checked_pull,
             merge_conditions_summary=queue_summary.merge_conditions.strip(),
             last_evaluated_queue_conditions_summary=self.last_evaluated_queue_conditions.strip(),
@@ -2611,7 +2686,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
         for ep in self.still_queued_embarked_pulls:
             await self.train.convoy.update_user_pull_request_summary(
                 ep.user_pull_request_number,
-                checked_pull,
                 self,
             )
 
@@ -2627,7 +2701,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 payload["body"] = draft_summary
 
             if (
-                self.get_queue_check_run_conclusion() != check_api.Conclusion.PENDING
+                self._get_queue_check_run_conclusion_from_outcome()
+                != check_api.Conclusion.PENDING
                 and not tmp_pull_ctxt.closed
             ):
                 payload["state"] = "closed"

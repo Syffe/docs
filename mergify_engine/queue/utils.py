@@ -41,6 +41,10 @@ class BaseQueueCancelReason:
     message: typing.ClassVar[str]
     dequeue_code: typing.ClassVar[DequeueCodeT]
 
+    __registry__: typing.ClassVar[
+        dict[DequeueCodeT, type["BaseQueueCancelReason"]]
+    ] = {}
+
     def __str__(self) -> str:
         f = string.Formatter()
         fields = {
@@ -50,6 +54,24 @@ class BaseQueueCancelReason:
         }
         values = {k: getattr(self, k) for k in fields}
         return self.message.format(**values)
+
+    def __init_subclass__(cls, **kwargs: typing.Any):
+        super().__init_subclass__(**kwargs)
+        if hasattr(cls, "dequeue_code"):
+            cls.__registry__[cls.dequeue_code] = cls
+
+    Serialized = dict[str, typing.Any]
+
+    def serialized(self) -> Serialized:
+        data = dataclasses.asdict(self)
+        data["dequeue_code"] = self.dequeue_code
+        return data
+
+    @classmethod
+    def deserialized(cls, data: Serialized) -> "BaseQueueCancelReason":
+        dequeue_code = data.pop("dequeue_code")
+        cls = BaseQueueCancelReason.__registry__[dequeue_code]
+        return cls(**data)
 
 
 class BaseDequeueReason(BaseQueueCancelReason):
@@ -62,6 +84,22 @@ class PrDequeued(BaseDequeueReason):
     dequeue_code: typing.ClassVar[typing.Literal["PR_DEQUEUED"]] = "PR_DEQUEUED"
     pr_number: int
     details: str
+
+    def str_without_details(self) -> str:
+        return self.message.format(pr_number=self.pr_number, details="")
+
+    # FIXME(sileht): Should it be a dedicated class, PrManuallyDequeued?
+    DEQUEUE_COMMAND_MESSAGE: typing.ClassVar[str] = " by a `dequeue` command"
+
+    def is_dequeue_command(self) -> bool:
+        return self.details == self.DEQUEUE_COMMAND_MESSAGE
+
+    @classmethod
+    def create_dequeue_command(
+        cls,
+        pr_number: github_types.GitHubPullRequestNumber,
+    ) -> "PrDequeued":
+        return cls(pr_number, cls.DEQUEUE_COMMAND_MESSAGE)
 
 
 @dataclasses.dataclass

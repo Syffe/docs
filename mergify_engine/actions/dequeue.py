@@ -5,17 +5,18 @@ import typing
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import dashboard
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine.engine import commands_runner
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.queue.merge_train import train_car_state
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
     from mergify_engine.rules.config import pull_request_rules as prr_config
+    from mergify_engine.rules.config import queue_rules as qr_config
 
 
 class DequeueExecutorConfig(typing.TypedDict):
@@ -63,11 +64,7 @@ class DequeueExecutor(
 
                 message = commands_runner.prepare_message(
                     command=command,
-                    result=check_api.Result(
-                        conclusion=check_api.Conclusion.CANCELLED,
-                        title="This `queue` command has been cancelled by a `dequeue` command",
-                        summary="",
-                    ),
+                    result=self._get_merge_queue_cancel_result(queue_name),
                     action_is_running=True,
                 )
 
@@ -93,17 +90,6 @@ class DequeueExecutor(
                 summary="",
             )
 
-        # manually set a status, to not automatically re-embark it
-        await check_api.set_check_run(
-            self.ctxt,
-            await self.ctxt.get_merge_queue_check_run_name(),
-            check_api.Result(
-                check_api.Conclusion.CANCELLED,
-                title=f"The pull request has been removed from the queue `{queue_name}` by a `dequeue` command",
-                summary="",
-            ),
-            details_url=await dashboard.get_queues_url_from_context(self.ctxt, convoy),
-        )
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
@@ -116,15 +102,36 @@ class DequeueExecutor(
         await convoy.remove_pull(
             self.ctxt.pull["number"],
             self.rule.get_signal_trigger(),
-            queue_utils.PrDequeued(
+            queue_utils.PrDequeued.create_dequeue_command(
                 self.ctxt.pull["number"],
-                " by a `dequeue` command.",
             ),
         )
         return check_api.Result(
             check_api.Conclusion.SUCCESS,
             title=f"The pull request has been removed from the queue `{queue_name}`",
             summary="",
+        )
+
+    def _get_merge_queue_cancel_result(
+        self,
+        queue_name: qr_config.QueueName | None,
+    ) -> check_api.Result:
+        if queue_name is None:
+            title = "This `queue` command has been cancelled by a `dequeue` command"
+        else:
+            title = f"The pull request has been removed from the queue `{queue_name}` by a `dequeue` command"
+        return check_api.Result(
+            conclusion=check_api.Conclusion.CANCELLED,
+            title=title,
+            summary=train_car_state.TrainCarStateForSummary(
+                delete_reasons={
+                    self.ctxt.pull[
+                        "number"
+                    ]: queue_utils.PrDequeued.create_dequeue_command(
+                        self.ctxt.pull["number"],
+                    ),
+                },
+            ).serialized(),
         )
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover

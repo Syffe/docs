@@ -135,7 +135,10 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
-        assert "cannot be merged and has been disembarked" in check["output"]["title"]
+        assert (
+            f"Pull request #{p2['number']} has been dequeued"
+            == check["output"]["title"]
+        )
 
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
@@ -219,7 +222,10 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
-        assert "cannot be merged and has been disembarked" in check["output"]["title"]
+        assert (
+            f"Pull request #{p2['number']} has been dequeued"
+            == check["output"]["title"]
+        )
 
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
@@ -301,7 +307,10 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
-        assert "cannot be merged and has been disembarked" in check["output"]["title"]
+        assert (
+            f"Pull request #{p2['number']} has been dequeued"
+            == check["output"]["title"]
+        )
 
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
@@ -2427,7 +2436,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
                         "speculative_check_pull_request": {
-                            "checks_conclusion": "pending",
+                            "checks_conclusion": "failure",
                             "checks_ended_at": None,
                             "checks_started_at": anys.ANY_AWARE_DATETIME_STR,
                             "checks_timed_out": False,
@@ -3194,9 +3203,10 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         assert check is not None
-        assert check["conclusion"] == "neutral"
-        assert check["output"]["title"].endswith(
-            "cannot be merged and has been disembarked",
+        assert check["conclusion"] == "failure"
+        assert (
+            check["output"]["title"]
+            == f"Pull request #{p2['number']} has been dequeued"
         )
 
     async def test_unqueue_rule_unmatch_with_batch_requeue(self) -> None:
@@ -3360,7 +3370,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
                         "speculative_check_pull_request": {
-                            "checks_conclusion": "pending",
+                            "checks_conclusion": "failure",
                             "checks_ended_at": None,
                             "checks_started_at": anys.ANY_AWARE_DATETIME_STR,
                             "checks_timed_out": False,
@@ -7569,7 +7579,8 @@ previous_failed_batches:
             )
             assert check is not None
             assert (
-                "cannot be merged and has been disembarked" in check["output"]["title"]
+                check["output"]["title"]
+                == "The queue conditions cannot be satisfied due to checks timeout"
             )
             assert "checks have timed out" in check["output"]["summary"]
 
@@ -8658,8 +8669,10 @@ pull_request_rules:
 
         assert (
             check_run["check_run"]["output"]["title"]
-            == "The pull request has been removed from the queue `default` by a `dequeue` command"
+            == f"Pull request #{p1['number']} has been dequeued"
         )
+
+        assert " by a `dequeue` command" in check_run["check_run"]["output"]["summary"]
 
     async def test_unqueue_then_requeue_not_in_first_place_check_run(self) -> None:
         rules = {
@@ -8747,11 +8760,11 @@ pull_request_rules:
             key=lambda c: c["name"] == constants.MERGE_QUEUE_SUMMARY_NAME,
         )
         assert queue_summary_check is not None
-        assert queue_summary_check["status"] == "completed"
-        assert queue_summary_check["conclusion"] == "neutral"
+        assert queue_summary_check["status"] == "in_progress"
+        assert queue_summary_check["conclusion"] is None
         assert (
             queue_summary_check["output"]["title"]
-            == f"The pull request {p1['number']} is in queue"
+            == "The pull request has been refreshed and is going to be re-embarked soon"
         )
 
     async def test_base_branch_conflicts_check_run_message_draft(self) -> None:
@@ -8807,8 +8820,8 @@ pull_request_rules:
         )
         assert queue_summary_check_run is not None
         assert (
-            queue_summary_check_run["output"]["title"]
-            == "This pull request cannot be embarked for merge"
+            "This pull request cannot be embarked for merge"
+            in queue_summary_check_run["output"]["title"]
         )
         assert (
             "The pull request conflicts with the base branch"

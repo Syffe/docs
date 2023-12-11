@@ -276,6 +276,14 @@ async def fake_train_car_end_checking(
     pass
 
 
+async def fake_convoy_update_user_pull_request_summary(
+    inner_self: merge_train.Convoy,
+    user_pull_request_number: github_types.GitHubPullRequestNumber,
+    temporary_car: merge_train.TrainCar,
+) -> None:
+    pass
+
+
 @pytest.fixture(autouse=True)
 def _monkeypatched_traincar(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
@@ -294,6 +302,10 @@ def _monkeypatched_traincar(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         "mergify_engine.queue.merge_train.TrainCar.check_mergeability",
         fake_train_car_check_mergeability,
+    )
+    monkeypatch.setattr(
+        "mergify_engine.queue.merge_train.Convoy.update_user_pull_request_summary",
+        fake_convoy_update_user_pull_request_summary,
     )
 
 

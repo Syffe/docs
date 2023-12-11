@@ -33,8 +33,6 @@ from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import pause
 from mergify_engine.queue import utils as queue_utils
-from mergify_engine.queue.merge_train import train_car_state as tcs
-from mergify_engine.queue.merge_train import types as merge_train_types
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
@@ -47,6 +45,7 @@ if typing.TYPE_CHECKING:
     from collections import abc
 
     from mergify_engine import context
+    from mergify_engine.queue.merge_train import types as merge_train_types
 
 BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
     "Require branches to be up to date before merging"
@@ -455,6 +454,24 @@ Then, re-embark the pull request into the merge queue by posting the comment
         self._set_action_config_from_queue_rules()
 
     async def _can_be_reembarked_automatically(self) -> bool:
+        # FIXME(sileht): relies on delete_reason and outcome instead of guessing
+        check = await self.ctxt.get_merge_queue_check_run()
+        if check is None or check_api.Conclusion(check["conclusion"]) in (
+            check_api.Conclusion.SUCCESS,
+            check_api.Conclusion.PENDING,
+            check_api.Conclusion.NEUTRAL,
+        ):
+            return False
+
+        reason = await action_utils.get_dequeue_reason(self.ctxt, False)
+        if isinstance(reason, queue_utils.PrDequeued):
+            # FIXME(sileht): we need dedicated BaseDequeueReason for all these special cases
+            if reason.is_dequeue_command():
+                return False
+
+            # Automation match again, we can reembark
+            return actions.CANCELLED_CHECK_REPORT.title in reason.details
+
         # NOTE(sileht): we allow auto reembark only for this configuration
         if not (
             self.queue_rule.config["speculative_checks"] == 1
@@ -463,15 +480,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ):
             return False
 
-        # NOTE(sileht): Previous failure must be CHECKS_FAILED
-        check = await self.ctxt.get_merge_queue_check_run()
-        if check is None:
-            return False
-
-        train_car_state = tcs.TrainCarStateForSummary.deserialize_from_summary(check)
-        if (
-            train_car_state is None
-            or train_car_state.outcome != merge_train.TrainCarOutcome.CHECKS_FAILED
+        if not isinstance(
+            reason,
+            queue_utils.ChecksFailed
+            | queue_utils.ChecksTimeout
+            | queue_utils.QueueRuleMissing
+            | queue_utils.UnexpectedQueueChange,
         ):
             return False
 
@@ -571,8 +585,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     f"{unexpected_changes!s}.\n{self.DEQUEUE_DOCUMENTATION}",
                 )
 
+        dequeue_reason: queue_utils.BaseDequeueReason
+
         if not await self._should_be_queued(self.ctxt):
-            dequeue_reason = await action_utils.get_dequeue_reason_from_outcome(
+            dequeue_reason = await action_utils.get_dequeue_reason(
                 self.ctxt,
             )
             result = check_api.Result(
@@ -772,7 +788,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return result
 
         if not await self._should_be_queued(self.ctxt):
-            dequeue_reason = await action_utils.get_dequeue_reason_from_outcome(
+            dequeue_reason = await action_utils.get_dequeue_reason(
                 self.ctxt,
             )
             dequeue_msg = f"The pull request has been removed from the queue `{self.config['name']}`"
@@ -978,8 +994,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         cls,
         ctxt: context.Context,
     ) -> bool:
-        # TODO(sileht): load outcome from summary,
-        # so we know why it shouldn't be queued
+        # FIXME(sileht): relies on delete_reason and outcome instead of guessing
         check = await ctxt.get_merge_queue_check_run()
         return not check or check_api.Conclusion(check["conclusion"]) in [
             check_api.Conclusion.SUCCESS,
@@ -1310,6 +1325,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def reembark_pull_request_if_possible(self) -> None:
         # NOTE(sileht): user ask a refresh, we just remove the previous state of this
         # check and the method _should_be_queued will become true again :)
+        # FIXME(sileht): relies on delete_reason and outcome instead of guessing
         check = await self.ctxt.get_merge_queue_check_run()
         if check and check_api.Conclusion(check["conclusion"]) not in [
             check_api.Conclusion.SUCCESS,

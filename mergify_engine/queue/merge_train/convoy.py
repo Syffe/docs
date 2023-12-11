@@ -7,6 +7,7 @@ import typing
 
 import daiquiri
 from ddtrace import tracer
+import first
 
 from mergify_engine import check_api
 from mergify_engine import context
@@ -427,7 +428,6 @@ class Convoy:
     async def update_user_pull_request_summary(
         self,
         user_pull_request_number: github_types.GitHubPullRequestNumber,
-        checked_pull: github_types.GitHubPullRequestNumber | None,
         temporary_car: tc_import.TrainCar,
     ) -> None:
         user_pr_context = await self.repository.get_pull_request_context(
@@ -443,8 +443,12 @@ class Convoy:
             and train_cars[0].train.partition_name
             == partr_config.DEFAULT_PARTITION_NAME
         ):
-            queue_check_run_conclusion = train_cars[0].get_queue_check_run_conclusion()
-            original_pr_summary = train_cars[0].get_original_pr_summary(checked_pull)
+            queue_check_run_conclusion = train_cars[0].get_queue_check_run_conclusion(
+                user_pull_request_number,
+            )
+            original_pr_summary = train_cars[0].get_original_pr_summary(
+                user_pull_request_number,
+            )
             report = check_api.Result(
                 queue_check_run_conclusion,
                 title=original_pr_summary.title,
@@ -461,18 +465,37 @@ class Convoy:
                 ),
             )
         else:
-            if any(
-                tc.get_queue_check_run_conclusion() == check_api.Conclusion.FAILURE
+            failed_car = first.first(
+                tc
                 for tc in train_cars
-            ):
-                queue_check_run_conclusion = check_api.Conclusion.FAILURE
-            elif all(
-                tc.get_queue_check_run_conclusion() == check_api.Conclusion.SUCCESS
-                for tc in train_cars
-            ):
-                queue_check_run_conclusion = check_api.Conclusion.SUCCESS
+                if tc.get_queue_check_run_conclusion(
+                    user_pull_request_number,
+                )
+                == check_api.Conclusion.CANCELLED
+            )
+            if failed_car is not None:
+                queue_check_run_conclusion = check_api.Conclusion.CANCELLED
             else:
-                queue_check_run_conclusion = check_api.Conclusion.PENDING
+                failed_car = first.first(
+                    tc
+                    for tc in train_cars
+                    if tc.get_queue_check_run_conclusion(
+                        user_pull_request_number,
+                    )
+                    == check_api.Conclusion.FAILURE
+                )
+                if failed_car is not None:
+                    queue_check_run_conclusion = check_api.Conclusion.FAILURE
+                elif all(
+                    tc.get_queue_check_run_conclusion(
+                        user_pull_request_number,
+                    )
+                    == check_api.Conclusion.SUCCESS
+                    for tc in train_cars
+                ):
+                    queue_check_run_conclusion = check_api.Conclusion.SUCCESS
+                else:
+                    queue_check_run_conclusion = check_api.Conclusion.PENDING
 
             if any(
                 tc.train.partition_name == partr_config.DEFAULT_PARTITION_NAME
@@ -482,11 +505,18 @@ class Convoy:
                     f"Cannot have a `partition_name` set to the default `{partr_config.DEFAULT_PARTITION_NAME}` here",
                 )
 
-            check_title = f"The pull request is embarked in partitions {', '.join([tc.train.partition_name for tc in train_cars])}"
+            if failed_car is not None:
+                check_title = failed_car.get_original_pr_summary(
+                    user_pull_request_number,
+                ).title
+            else:
+                check_title = f"The pull request is embarked in partitions {', '.join([tc.train.partition_name for tc in train_cars])}"
 
             summary = "".join(
                 [
-                    tc.build_original_pr_summary_for_partition_report(checked_pull)
+                    tc.build_original_pr_summary_for_partition_report(
+                        user_pull_request_number,
+                    )
                     for tc in train_cars
                 ],
             )

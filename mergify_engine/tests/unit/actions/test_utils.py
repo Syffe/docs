@@ -35,4 +35,4 @@ async def test_get_dequeue_reason_from_outcome_outdated_check_run(
         "get_merge_queue_check_run",
         fake_merge_queue_check_run_getter,
     ):
-        await utils.get_dequeue_reason_from_outcome(context)
+        await utils.get_dequeue_reason(context)

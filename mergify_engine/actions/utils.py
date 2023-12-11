@@ -244,7 +244,7 @@ def get_invalid_credentials_report(
     )
 
 
-async def get_dequeue_reason_from_outcome(
+async def get_dequeue_reason(
     ctxt: context.Context,
     error_if_unknown: bool = True,
 ) -> queue_utils.BaseDequeueReason:
@@ -256,15 +256,10 @@ async def get_dequeue_reason_from_outcome(
             "get_dequeue_reason_from_outcome() called but check is not there",
         )
 
-    if check["conclusion"] == "cancelled":
-        # NOTE(sileht): should not be possible as dequeue command already
-        # remove the pull request from the queue
-        return queue_utils.PrDequeued(ctxt.pull["number"], " by a `dequeue` command")
-
     train_car_state = tcs.TrainCarStateForSummary.deserialize_from_summary(check)
-    if (
-        train_car_state is None
-        or train_car_state.outcome == train_car.TrainCarOutcome.UNKNOWN
+    if train_car_state is None or (
+        train_car_state.outcome == train_car.TrainCarOutcome.UNKNOWN
+        and not train_car_state.delete_reasons
     ):
         is_check_outdated = check["completed_at"] and date.fromisoformat(
             check["completed_at"],
@@ -282,4 +277,4 @@ async def get_dequeue_reason_from_outcome(
             " due to failing checks or checks timeout",
         )
 
-    return tcs.dequeue_reason_from_train_car_state(train_car_state)
+    return tcs.dequeue_reason_from_train_car_state(train_car_state, ctxt.pull["number"])

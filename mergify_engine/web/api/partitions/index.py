@@ -164,7 +164,10 @@ async def repository_partitions(
                             config=queue_rule.config,
                         ),
                         queued_at=embarked_pull.queued_at,
-                        mergeability_check=BriefMergeabilityCheck.from_train_car(car),
+                        mergeability_check=BriefMergeabilityCheck.from_train_car(
+                            car,
+                            embarked_pull.user_pull_request_number,
+                        ),
                         estimated_time_of_merge=estimated_time_of_merge,
                     ),
                 )
@@ -240,7 +243,10 @@ async def repository_partitions_branch(
                         config=queue_rule.config,
                     ),
                     queued_at=embarked_pull.queued_at,
-                    mergeability_check=BriefMergeabilityCheck.from_train_car(car),
+                    mergeability_check=BriefMergeabilityCheck.from_train_car(
+                        car,
+                        embarked_pull.user_pull_request_number,
+                    ),
                     estimated_time_of_merge=estimated_time_of_merge,
                 ),
             )
@@ -327,7 +333,10 @@ async def repository_partition_branch(
                         config=queue_rule.config,
                     ),
                     queued_at=embarked_pull.queued_at,
-                    mergeability_check=BriefMergeabilityCheck.from_train_car(car),
+                    mergeability_check=BriefMergeabilityCheck.from_train_car(
+                        car,
+                        embarked_pull.user_pull_request_number,
+                    ),
                     estimated_time_of_merge=estimated_time_of_merge,
                 ),
             )

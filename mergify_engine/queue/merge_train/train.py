@@ -322,7 +322,7 @@ class Train:
         self,
         new_queue_size: int,
         reason: queue_utils.BaseQueueCancelReason,
-        drop_pull_requests: dict[
+        drop_pull_requests: abc.Mapping[
             github_types.GitHubPullRequestNumber,
             queue_utils.BaseQueueCancelReason,
         ]
@@ -330,6 +330,8 @@ class Train:
     ) -> None:
         if drop_pull_requests is None:
             drop_pull_requests = {}
+
+        pull_requests_with_final_summary_set = set()
 
         sliced = False
         new_cars: list[train_car.TrainCar] = []
@@ -346,6 +348,25 @@ class Train:
                         ep.user_pull_request_number,
                         reason,
                     )
+
+                    c.train_car_state.delete_reasons[
+                        ep.user_pull_request_number
+                    ] = signal_reason
+
+                    # FIXME(sileht): we should revisit set_creation_failure to always set an outcome
+                    # so we can stop setting the check run in set_creation_failure and set it here only.
+                    if (
+                        c.train_car_state.checks_type
+                        != train_car.TrainCarChecksType.FAILED
+                    ):
+                        await self.convoy.update_user_pull_request_summary(
+                            ep.user_pull_request_number,
+                            c,
+                        )
+
+                    pull_requests_with_final_summary_set.add(
+                        ep.user_pull_request_number,
+                    )
                     await c.send_checks_end_signal(
                         ep.user_pull_request_number,
                         signal_reason,
@@ -357,6 +378,35 @@ class Train:
                     reason,
                     not_reembarked_pull_requests=drop_pull_requests,
                 )
+
+        # Set final summary of pull requests without TrainCar
+        for ep in new_waiting_pulls + self._waiting_pulls:
+            if ep.user_pull_request_number not in drop_pull_requests:
+                continue
+
+            if ep.user_pull_request_number in pull_requests_with_final_summary_set:
+                continue
+
+            reason = drop_pull_requests[ep.user_pull_request_number]
+
+            # FIXME(sileht): this is a bit hacky, we may need to refactor all
+            # the code generating the merge queue summary to make TrainCar optional
+            # because not all queued PR has a TrainCar while all should have a queue summary
+            tc = train_car.TrainCar(
+                self,
+                tcs_import.TrainCarState(
+                    delete_reasons={ep.user_pull_request_number: reason},
+                ),
+                initial_current_base_sha=self._current_base_sha
+                or await self.get_base_sha(),
+                initial_embarked_pulls=[ep],
+                still_queued_embarked_pulls=[ep],
+                parent_pull_request_numbers=[],
+            )
+            await self.convoy.update_user_pull_request_summary(
+                ep.user_pull_request_number,
+                tc,
+            )
 
         if sliced:
             self.log.info(
@@ -708,20 +758,22 @@ class Train:
         )
 
     async def remove_failed_car(self, car: train_car.TrainCar) -> None:
-        dequeue_reason = tcs_import.dequeue_reason_from_train_car_state(
-            car.train_car_state,
-        )
+        dequeue_reasons = {
+            ep.user_pull_request_number: tcs_import.dequeue_reason_from_train_car_state(
+                car.train_car_state,
+                ep.user_pull_request_number,
+            )
+            for ep in car.still_queued_embarked_pulls
+        }
         other_prs_reason = queue_utils.PrAheadDequeued(
             pr_number=car.still_queued_embarked_pulls[0].user_pull_request_number,
         )
-        drop_pull_requests = [
-            ep.user_pull_request_number for ep in car.still_queued_embarked_pulls
-        ]
+        drop_pull_requests = list(dequeue_reasons.keys())
         position = self._cars.index(car)
         await self._slice_cars(
             position,
             reason=other_prs_reason,
-            drop_pull_requests={pr: dequeue_reason for pr in drop_pull_requests},
+            drop_pull_requests=dequeue_reasons,
         )
         for i, ep in enumerate(car.still_queued_embarked_pulls):
             await self._send_queue_leave_signal(
@@ -729,7 +781,7 @@ class Train:
                 ep,
                 car,
                 "merge queue internal",
-                dequeue_reason,
+                dequeue_reasons[ep.user_pull_request_number],
             )
 
         await self.save()

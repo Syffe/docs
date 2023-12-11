@@ -69,6 +69,7 @@ class SpeculativeCheckPullRequest:
     def from_train_car(
         cls,
         car: merge_train.TrainCar | None,
+        user_pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> SpeculativeCheckPullRequest | None:
         if car is None:
             return None
@@ -94,7 +95,8 @@ class SpeculativeCheckPullRequest:
                 number=car.queue_pull_request_number,
                 started_at=car.train_car_state.ci_started_at,
                 ended_at=car.checks_ended_timestamp,
-                state=car.get_queue_check_run_conclusion().value or "pending",
+                state=car.get_queue_check_run_conclusion(user_pull_request_number).value
+                or "pending",
                 checks=car.last_checks,
                 evaluated_conditions=car.last_evaluated_merge_conditions,
             )
@@ -132,8 +134,12 @@ class BriefMergeabilityCheck:
     def from_train_car(
         cls,
         car: merge_train.TrainCar | None,
+        user_pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> BriefMergeabilityCheck | None:
-        mergeability_check = details.MergeabilityCheck.from_train_car(car)
+        mergeability_check = details.MergeabilityCheck.from_train_car(
+            car,
+            user_pull_request_number,
+        )
         if mergeability_check is not None:
             return cls(**dataclasses.asdict(mergeability_check))
         return None
@@ -343,7 +349,10 @@ async def repository_queues(
                     continue
 
                 speculative_check_pull_request = (
-                    SpeculativeCheckPullRequest.from_train_car(car)
+                    SpeculativeCheckPullRequest.from_train_car(
+                        car,
+                        embarked_pull.user_pull_request_number,
+                    )
                 )
 
                 previous_eta = (
@@ -371,7 +380,10 @@ async def repository_queues(
                         ),
                         queued_at=embarked_pull.queued_at,
                         speculative_check_pull_request=speculative_check_pull_request,
-                        mergeability_check=BriefMergeabilityCheck.from_train_car(car),
+                        mergeability_check=BriefMergeabilityCheck.from_train_car(
+                            car,
+                            embarked_pull.user_pull_request_number,
+                        ),
                         estimated_time_of_merge=estimated_time_of_merge,
                         partition_name=train.partition_name,
                     ),

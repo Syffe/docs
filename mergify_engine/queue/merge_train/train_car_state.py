@@ -27,7 +27,7 @@ if typing.TYPE_CHECKING:
 LOG = daiquiri.getLogger(__name__)
 
 
-class UnexpectedOutcome(Exception):
+class UnexpectedReason(Exception):
     pass
 
 
@@ -35,22 +35,40 @@ class UnexpectedOutcome(Exception):
 class TrainCarStateForSummary:
     outcome: train_car.TrainCarOutcome = train_car.TrainCarOutcome.UNKNOWN
     outcome_message: str | None = None
+    delete_reasons: dict[
+        github_types.GitHubPullRequestNumber,
+        queue_utils.BaseQueueCancelReason,
+    ] = dataclasses.field(
+        default_factory=dict,
+    )
 
     @classmethod
     def from_train_car_state(
         cls,
         train_car_state: TrainCarState,
     ) -> TrainCarStateForSummary:
-        return cls(train_car_state.outcome, train_car_state.outcome_message)
+        return cls(
+            train_car_state.outcome,
+            train_car_state.outcome_message,
+            train_car_state.delete_reasons,
+        )
 
     class Serialized(typing.TypedDict):
         outcome: train_car.TrainCarOutcome
         outcome_message: str | None
+        delete_reasons: dict[
+            str,
+            queue_utils.BaseQueueCancelReason.Serialized,
+        ]
 
     def serialized(self) -> str:
         data = self.Serialized(
             outcome=self.outcome,
             outcome_message=self.outcome_message,
+            delete_reasons={
+                str(pull_request): reason.serialized()
+                for pull_request, reason in self.delete_reasons.items()
+            },
         )
 
         return "<!-- " + base64.b64encode(json.dumps(data).encode()).decode() + " -->"
@@ -60,9 +78,22 @@ class TrainCarStateForSummary:
         cls,
         data: TrainCarStateForSummary.Serialized,
     ) -> TrainCarStateForSummary:
+        # backward compatibility introduced in 7.8.0
+        delete_reasons_raw = data.get("delete_reasons", {})
+
+        delete_reasons = {
+            github_types.GitHubPullRequestNumber(
+                int(pull_request),
+            ): queue_utils.BaseQueueCancelReason.deserialized(
+                reason,
+            )
+            for pull_request, reason in delete_reasons_raw.items()
+        }
+
         return cls(
             outcome=data["outcome"],
             outcome_message=data["outcome_message"],
+            delete_reasons=delete_reasons,
         )
 
     @classmethod
@@ -85,6 +116,10 @@ class TrainCarStateForSummary:
 @dataclasses.dataclass
 class TrainCarState:
     outcome: train_car.TrainCarOutcome = train_car.TrainCarOutcome.UNKNOWN
+    delete_reasons: dict[
+        github_types.GitHubPullRequestNumber,
+        queue_utils.BaseQueueCancelReason,
+    ] = dataclasses.field(default_factory=dict)
     ci_state: queue_types.CiState = queue_types.CiState.PENDING
     ci_started_at: datetime.datetime | None = None
     ci_ended_at: datetime.datetime | None = None
@@ -122,6 +157,10 @@ class TrainCarState:
 
     class Serialized(typing.TypedDict):
         outcome: train_car.TrainCarOutcome
+        delete_reasons: dict[
+            str,
+            queue_utils.BaseQueueCancelReason.Serialized,
+        ]
         ci_state: queue_types.CiState
         ci_started_at: datetime.datetime | None
         ci_ended_at: datetime.datetime | None
@@ -147,8 +186,14 @@ class TrainCarState:
         if self.paused_by is not None:
             paused_by = self.paused_by.serialized()
 
+        delete_reasons = {
+            str(pull_request): reason.serialized()
+            for pull_request, reason in self.delete_reasons.items()
+        }
+
         return self.Serialized(
             outcome=self.outcome,
+            delete_reasons=delete_reasons,
             ci_state=self.ci_state,
             ci_started_at=self.ci_started_at,
             ci_ended_at=self.ci_ended_at,
@@ -221,6 +266,18 @@ class TrainCarState:
         if (paused_by_raw := data.get("paused_by")) is not None:
             paused_by = pause.QueuePause.deserialize(repository, paused_by_raw)
 
+        # backward compatibility introduced in 7.8.0
+        delete_reasons_raw = data.get("delete_reasons", {})
+
+        delete_reasons = {
+            github_types.GitHubPullRequestNumber(
+                int(pull_request),
+            ): queue_utils.BaseQueueCancelReason.deserialized(
+                reason,
+            )
+            for pull_request, reason in delete_reasons_raw.items()
+        }
+
         return cls(
             outcome=data["outcome"],
             ci_state=data["ci_state"],
@@ -230,6 +287,7 @@ class TrainCarState:
             checks_type=data["checks_type"],
             frozen_by=frozen_by,
             paused_by=paused_by,
+            delete_reasons=delete_reasons,
             **kwargs,
         )
 
@@ -385,7 +443,21 @@ def extract_encoded_train_car_state_data_from_summary(
 
 def dequeue_reason_from_train_car_state(
     train_car_state: TrainCarState | TrainCarStateForSummary,
+    pull_request: github_types.GitHubPullRequestNumber,
 ) -> queue_utils.BaseDequeueReason:
+    if train_car_state.delete_reasons:
+        if pull_request not in train_car_state.delete_reasons:
+            raise UnexpectedReason(
+                f"Pull request missing from TrainCarState.delete_reasons: `{train_car_state.delete_reasons} {type(train_car_state)}`",
+            )
+        reason = train_car_state.delete_reasons[pull_request]
+        if isinstance(reason, queue_utils.BaseDequeueReason):
+            return reason
+        raise UnexpectedReason(
+            f"TrainCarState.delete_reasons[pull_request] is a cancel reason: `{train_car_state.delete_reasons}`, outcome is `{train_car_state.outcome}`",
+        )
+
+    # Train car has failed but not yet removed from train, or has been created by < 7.9.0
     if train_car_state.outcome in (
         merge_train.TrainCarOutcome.DRAFT_PR_CHANGE,
         merge_train.TrainCarOutcome.BASE_BRANCH_PUSHED,
@@ -421,6 +493,6 @@ def dequeue_reason_from_train_car_state(
     if train_car_state.outcome == merge_train.TrainCarOutcome.BRANCH_UPDATE_FAILED:
         return queue_utils.BranchUpdateFailed()
 
-    raise UnexpectedOutcome(
+    raise UnexpectedReason(
         f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason",
     )

@@ -302,7 +302,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         )
 
         assert (
-            "cannot be merged and has been disembarked"
+            "The queue conditions cannot be satisfied due to failing checks"
             in check_run_p1["check_run"]["output"]["summary"]
         )
         assert (
@@ -384,7 +384,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         assert "**Partition projA**:" in check_run_p1["check_run"]["output"]["summary"]
         assert "**Partition projB**:" in check_run_p1["check_run"]["output"]["summary"]
         assert (
-            "cannot be merged and has been disembarked"
+            "The queue conditions cannot be satisfied due to failing checks"
             in check_run_p1["check_run"]["output"]["summary"]
         )
         assert (

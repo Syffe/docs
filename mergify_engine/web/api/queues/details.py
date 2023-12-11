@@ -87,6 +87,7 @@ class MergeabilityCheck:
     def from_train_car(
         cls,
         car: merge_train.TrainCar | None,
+        user_pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> MergeabilityCheck | None:
         if car is None:
             return None
@@ -120,7 +121,8 @@ class MergeabilityCheck:
                 continuous_integrations_ended_at=car.train_car_state.ci_ended_at,
                 continuous_integrations_state=car.train_car_state.ci_state.value,
                 ended_at=car.checks_ended_timestamp,
-                state=car.get_queue_check_run_conclusion().value or "pending",
+                state=car.get_queue_check_run_conclusion(user_pull_request_number).value
+                or "pending",
                 checks=car.last_checks,
                 evaluated_conditions=car.last_evaluated_merge_conditions,
                 conditions_evaluation=conditions_evaluation,
@@ -344,7 +346,10 @@ async def repository_queue_pull_request(
                 if embarked_pull.user_pull_request_number != pr_number:
                     continue
 
-                mergeability_check = MergeabilityCheck.from_train_car(car)
+                mergeability_check = MergeabilityCheck.from_train_car(
+                    car,
+                    embarked_pull.user_pull_request_number,
+                )
                 estimated_time_of_merge = (
                     await estimated_time_to_merge.get_estimation_from_stats(
                         train,
@@ -356,8 +361,9 @@ async def repository_queue_pull_request(
                 )
 
                 if car is not None:
-                    checked_pull = car.get_checked_pull()
-                    raw_summary = car.get_original_pr_summary(checked_pull)
+                    raw_summary = car.get_original_pr_summary(
+                        embarked_pull.user_pull_request_number,
+                    )
                     summary = PullRequestSummary(
                         title=raw_summary.title,
                         unexpected_changes=raw_summary.unexpected_changes,
