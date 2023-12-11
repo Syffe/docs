@@ -865,7 +865,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "Bypass of verification of signatures in CHECKSUMS files",
+    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
     "PublishedDate": "2021-12-13T18:15:00Z"
   },
@@ -875,7 +875,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "Bypass of verification of signatures in CHECKSUMS files",
+    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
     "PublishedDate": "2021-12-13T18:15:00Z"
   },
@@ -885,7 +885,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "Bypass of verification of signatures in CHECKSUMS files",
+    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
     "PublishedDate": "2021-12-13T18:15:00Z"
   },
@@ -895,7 +895,7 @@
     "Status": "affected",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "Bypass of verification of signatures in CHECKSUMS files",
+    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
     "PublishedDate": "2021-12-13T18:15:00Z"
   },
@@ -1908,6 +1908,33 @@
     "Title": "gcc: -fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-09-13T09:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-46218",
+    "PkgName": "curl",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-46218",
+    "Title": "curl: information disclosure by exploiting a mixed case flaw",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-12-07T01:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-46218",
+    "PkgName": "libcurl3-gnutls",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-46218",
+    "Title": "curl: information disclosure by exploiting a mixed case flaw",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-12-07T01:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-46218",
+    "PkgName": "libcurl4",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-46218",
+    "Title": "curl: information disclosure by exploiting a mixed case flaw",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-12-07T01:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-4641",
