@@ -164,6 +164,20 @@ class DismissReviewsExecutor(
             updated_requested_reviewers_login = {
                 rr["login"] for rr in updated_pull["requested_reviewers"]
             }
+            if updated_requested_reviewers_login != requested_reviewers_login:
+                # Query the PR from GitHub to make sure that the problem also appears
+                # with the latest version of the PR.
+                updated_pull = await pull_request_getter.get_pull_request(
+                    self.ctxt.client,
+                    self.ctxt.pull["number"],
+                    repo_owner=self.ctxt.repo_owner_login,
+                    repo_name=self.ctxt.repo_name,
+                    force_new=True,
+                )
+                updated_requested_reviewers_login = {
+                    rr["login"] for rr in updated_pull["requested_reviewers"]
+                }
+
             level = (
                 logging.ERROR
                 if updated_requested_reviewers_login != requested_reviewers_login
