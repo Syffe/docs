@@ -140,19 +140,14 @@ async def get_log(
     job: gh_models.WorkflowJob,
 ) -> logm.Log:
     if job.log_status == gh_models.WorkflowJobLogStatus.DOWNLOADED:
-        log = await gcs_client.download(
-            settings.LOG_EMBEDDER_GCS_BUCKET,
-            f"{job.repository.owner.id}/{job.repository.id}/{job.id}/logs.gz",
-        )
-
-        if log is None:
+        if job.log_extract is None:
             LOG.error(
-                "Downloaded log is missing from bucket, re-downloading",
+                "Downloaded log is missing from database, re-downloading",
                 **job.as_log_extras(),
             )
             return await fetch_and_store_log(gcs_client, job)
 
-        return logm.Log.decode(log.download_as_bytes())
+        return logm.Log.from_content(job.log_extract)
 
     return await fetch_and_store_log(gcs_client, job)
 
