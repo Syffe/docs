@@ -61,7 +61,7 @@ def pytest_fixture_setup(
     finally:
         end = time.monotonic()
         if PYTEST_FIXTURES_TIMING:
-            print(f"pytest_fixture_setup, request={request}, time={end - start}")
+            print(f"pytest_fixture_setup, request={request}, time={end - start}")  # noqa: T201
 
 
 def msgpack_fakedatetime_fixes(obj: typing.Any) -> typing.Any:

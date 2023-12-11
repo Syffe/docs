@@ -631,7 +631,7 @@ def _mock_asyncgithubclient_requests(
                 "capturemanager",
             )
             with capmanager.global_and_fixture_disabled():
-                print(
+                print(  # noqa: T201
                     f" [{kind} rate limit hit, waiting for {countdown}s before retrying]",
                 )
 

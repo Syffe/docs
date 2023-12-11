@@ -1,3 +1,4 @@
+# ruff: noqa: T201
 """Migrate existing events checks SpecChecks FK
 
 Revision ID: 8e8dfbc9c805

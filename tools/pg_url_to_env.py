@@ -1,3 +1,4 @@
+# ruff: noqa: T201
 import os
 import sys
 from urllib import parse

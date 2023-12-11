@@ -1,3 +1,4 @@
+# ruff: noqa: T201, T203
 import asyncio
 import itertools
 import pprint

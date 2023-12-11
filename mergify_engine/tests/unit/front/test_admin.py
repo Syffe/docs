@@ -177,7 +177,7 @@ async def test_sudo_debug(
     await web_client.log_as(admin_account.id)
 
     def fake_debug(url: str) -> None:
-        print("hello world")
+        print("hello world")  # noqa: T201
 
     with mock.patch.object(debug, "report", side_effect=fake_debug):
         # user is unknown I'm back to real myself

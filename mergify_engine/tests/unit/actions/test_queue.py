@@ -437,8 +437,6 @@ async def test_required_status_checks_strict_compatibility_with_queue_rules(
 
     queue_executor = await queue.QueueExecutor.create(action, ctxt, mock.Mock())
     queue_executor.config.update(queue_executor_config)  # type: ignore[typeddict-item]
-    print(queue_executor.config)
-    print(queue_executor.config)
 
     # Nothing raised
     await queue.QueueExecutor._check_config_compatibility_with_branch_protection(

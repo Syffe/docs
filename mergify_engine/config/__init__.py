@@ -167,7 +167,7 @@ class RedisSettings(pydantic_settings.BaseSettings):
         if self.DEFAULT_REDIS_URL.query and "db" in parse.parse_qs(
             self.DEFAULT_REDIS_URL.query,
         ):
-            print(
+            print(  # noqa: T201
                 "DEFAULT_REDIS_URL must not contain any db parameter. Mergify can't start.",
             )
             sys.exit(1)
