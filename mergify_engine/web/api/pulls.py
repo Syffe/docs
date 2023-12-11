@@ -63,7 +63,7 @@ InputConditions = list[InputConditionDict | str]
     include_in_schema=False,
     response_model=MatchingPullRequests,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         200: {
             "headers": pagination.LinkHeader,
         },
@@ -304,7 +304,7 @@ class PullRequestSummaryResponse(PullRequestSummarySerializerMixin):
     include_in_schema=False,
     response_model=PullRequestSummaryResponse,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
     },
 )
 async def get_pull_request_summary(

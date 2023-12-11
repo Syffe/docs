@@ -7,7 +7,7 @@ Create Date: 2023-07-05 14:50:15.235034
 """
 import alembic
 from alembic_utils.pg_extension import PGExtension
-from pgvector.sqlalchemy import Vector  # type: ignore
+from pgvector.sqlalchemy import Vector  # type: ignore[import-untyped]
 import sqlalchemy
 
 

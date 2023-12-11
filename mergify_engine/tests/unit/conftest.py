@@ -243,7 +243,7 @@ async def build_fake_context(
             "user": repository.repo["owner"],
         },
     }
-    pull.update(kwargs)  # type: ignore
+    pull.update(kwargs)  # type: ignore[typeddict-item]
     return context.Context(repository, pull)
 
 
@@ -283,17 +283,17 @@ class FakePullRequest(condition_value_querier.BasePullRequest):
 
     def sync_checks(self) -> None:
         self.attrs["check-success-or-neutral"] = (
-            self.attrs.get("check-success", [])  # type: ignore
+            self.attrs.get("check-success", [])  # type: ignore[operator,assignment]
             + self.attrs.get("check-neutral", [])
             + self.attrs.get("check-pending", [])
         )
         self.attrs["check-success-or-neutral-or-pending"] = (
-            self.attrs.get("check-success", [])  # type: ignore
+            self.attrs.get("check-success", [])  # type: ignore[operator,assignment]
             + self.attrs.get("check-neutral", [])
             + self.attrs.get("check-pending", [])
         )
         self.attrs["check"] = (
-            self.attrs.get("check-success", [])  # type: ignore
+            self.attrs.get("check-success", [])  # type: ignore[operator, assignment]
             + self.attrs.get("check-neutral", [])
             + self.attrs.get("check-pending", [])
             + self.attrs.get("check-failure", [])

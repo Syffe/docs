@@ -9,7 +9,7 @@ import typing
 import daiquiri
 import numpy as np  # noqa: TCH002
 import numpy.typing as npt  # noqa: TCH002
-from pgvector.sqlalchemy import Vector  # type: ignore
+from pgvector.sqlalchemy import Vector  # type: ignore[import-untyped]
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql

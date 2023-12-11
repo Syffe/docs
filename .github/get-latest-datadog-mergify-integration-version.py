@@ -14,7 +14,7 @@ def get_latest_version_number() -> str:
     response = index_html_request.read().decode()
     matchs = VERSIONS_RE.findall(response)
     if not matchs:
-        raise Exception(  # noqa
+        raise Exception(  # noqa: TRY002
             "No versions found in request of datadog-mergify versions file",
         )
 

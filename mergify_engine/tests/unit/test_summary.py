@@ -492,9 +492,9 @@ async def test_queue_rules_summary() -> None:
     await conditions(pulls)
 
     # Create a fake evaluation error
-    last_condition = conditions._evaluated_conditions[1].conditions[-1]  # type:ignore
-    last_condition.evaluation_error = "Error"  # type:ignore
-    last_condition.related_checks = ["ci-1"]  # type:ignore
+    last_condition = conditions._evaluated_conditions[1].conditions[-1]  # type: ignore[index]
+    last_condition.evaluation_error = "Error"  # type: ignore[union-attr]
+    last_condition.related_checks = ["ci-1"]  # type: ignore[union-attr]
 
     expected_summary = """\
 - `author=me` [Another mechanism to get condtions]

@@ -99,7 +99,7 @@ def _fake_full_pull_request(
             "user": repository["owner"],
         },
     }
-    pull.update(kwargs)  # type: ignore
+    pull.update(kwargs)  # type: ignore[typeddict-item]
     return pull
 
 

@@ -38,7 +38,7 @@ class EventsResponse(pagination.PageResponse[eventlogs.Event]):
     summary="Get the events log",
     description="Get the events logs of the requested repository",
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         200: {
             "headers": pagination.LinkHeader,
         },

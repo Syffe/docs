@@ -73,7 +73,7 @@ class DummyPullRequest(condition_value_querier.PullRequest):
 
 DUMMY_PR = DummyPullRequest(
     DummyContext(
-        None,  # type: ignore
+        None,  # type: ignore[arg-type]
         github_types.GitHubPullRequest(
             {
                 "node_id": "42",

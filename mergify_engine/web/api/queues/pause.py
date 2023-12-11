@@ -55,7 +55,7 @@ class QueuePausePayload(pydantic.BaseModel):
     description="Pause the merge of the requested repository",
     response_model=QueuePauseResponse,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "The pause does not exist"},
     },
     dependencies=[
@@ -140,7 +140,7 @@ async def create_queue_pause(
     ],
     status_code=204,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {
             "description": "The merge queue is not currently paused on this repository",
         },
@@ -180,7 +180,7 @@ async def delete_queue_pause(
     response_model=QueuePauseResponse,
     dependencies=[fastapi.Depends(security.check_subscription_feature_queue_pause)],
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {
             "description": "The merge queue is not currently paused on this repository",
         },

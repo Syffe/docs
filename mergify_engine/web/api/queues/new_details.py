@@ -220,7 +220,7 @@ class EnhancedPullRequestQueued:
     description="Get a pull request queued in a merge queue of a repository",
     response_model=EnhancedPullRequestQueued,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         200: {
             "content": {
                 "application/json": {

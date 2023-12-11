@@ -86,7 +86,7 @@ class SimulatorResponse:
     description="Get a simulation of what Mergify will do on a pull request",
     response_model=SimulatorResponse,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
     },
 )
 async def simulator_pull(
@@ -129,7 +129,7 @@ async def simulator_pull(
     # checkout repository permissions
     dependencies=[fastapi.Depends(security.get_repository_context)],
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
     },
 )
 async def simulator_repo(
@@ -157,7 +157,7 @@ class RepositoryConfigurationSimulatorResponse:
     response_model=RepositoryConfigurationSimulatorResponse,
     dependencies=[fastapi.Depends(security.get_repository_context)],
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         200: {
             "content": {
                 "application/json": {
@@ -215,7 +215,7 @@ class PullRequestConfigurationSimulatorResponse(
     include_in_schema=False,
     response_model=PullRequestConfigurationSimulatorResponse,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         200: {
             "content": {
                 "application/json": {

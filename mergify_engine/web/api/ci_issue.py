@@ -131,7 +131,7 @@ async def query_issues(
     response_model=CiIssuesResponse,
     include_in_schema=False,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
     },
 )
 async def get_ci_issues(
@@ -157,7 +157,7 @@ async def get_ci_issues(
     description="Update some properties of several CI issues",
     include_in_schema=False,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
     },
 )
 async def patch_ci_issues(
@@ -185,7 +185,7 @@ async def patch_ci_issues(
     response_model=CiIssueResponse,
     include_in_schema=False,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "CI issue not found"},
     },
 )
@@ -213,7 +213,7 @@ async def get_ci_issue(
     description="Update some properties of a CI issue",
     include_in_schema=False,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "CI issue not found"},
     },
 )
@@ -257,7 +257,7 @@ class CiIssueEventDetailResponse(CiIssueEvent):
     response_model=CiIssueEventDetailResponse,
     include_in_schema=False,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "CI issue event not found"},
     },
 )

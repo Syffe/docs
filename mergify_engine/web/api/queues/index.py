@@ -197,7 +197,7 @@ class Queues:
     description="Get the list of pull requests queued in a merge queue of a repository",
     response_model=Queues,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         200: {
             "content": {
                 "application/json": {

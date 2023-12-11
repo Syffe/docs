@@ -31,7 +31,7 @@ def _get_badge_url(
     description="Get badge in PNG image format",
     response_class=fastapi.Response,  # to drop application/json from openapi media type
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "Not found"},
         200: {
             "content": {"image/png": {}},
@@ -58,7 +58,7 @@ async def badge_png(
     description="Get badge in SVG image format",
     response_class=fastapi.Response,  # to drop application/json from openapi media type
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "Not found"},
         200: {
             "content": {"image/png": {}},
@@ -85,7 +85,7 @@ async def badge_svg(
     description="Get shields.io badge JSON configuration",
     response_class=fastapi.Response,  # Allow to not document the shields.io format
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "Not found"},
         200: {
             "content": {"application/json": {}},

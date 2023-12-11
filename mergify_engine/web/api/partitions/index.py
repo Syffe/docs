@@ -82,7 +82,7 @@ class BranchPartitions:
     description="Get the list of pull requests queued in each merge queue, organized by partition name",
     response_model=list[BranchPartitions],
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
     },
 )
 async def repository_partitions(
@@ -180,7 +180,7 @@ async def repository_partitions(
     description="Get the list of pull requests queued in each merge queue, organized by partition name",
     response_model=BranchPartitions,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
     },
 )
 async def repository_partitions_branch(
@@ -254,7 +254,7 @@ async def repository_partitions_branch(
     description="Get the list of pull requests queued in each merge queue of a partition",
     response_model=Partition | None,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
     },
 )
 async def repository_partition_branch(

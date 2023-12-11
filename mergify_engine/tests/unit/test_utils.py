@@ -373,7 +373,7 @@ async def test_map_tenacity_try_again_to_real_cause() -> None:
     )
     async def buggy_code() -> None:
         try:
-            1 / 0  # noqa
+            1 / 0  # noqa: B018
         except ZeroDivisionError as exc:
             raise tenacity.TryAgain from exc
 
@@ -392,7 +392,7 @@ async def test_map_tenacity_try_again_to_real_cause_without_from() -> None:
     )
     async def buggy_code() -> None:
         try:
-            1 / 0  # noqa
+            1 / 0  # noqa: B018
         except ZeroDivisionError:
             raise tenacity.TryAgain  # No `from exc`
 

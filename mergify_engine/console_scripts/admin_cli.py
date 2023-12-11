@@ -35,11 +35,11 @@ def devtools() -> None:
 
 
 # NOTE(sileht): ensure click found all commands
-from mergify_engine.console_scripts import account_suspend  # noqa
-from mergify_engine.console_scripts import debug  # noqa
-from mergify_engine.console_scripts import merge_queue  # noqa
-from mergify_engine.console_scripts import openapi_spec_generator  # noqa
-from mergify_engine.console_scripts import redis_dump  # noqa
-from mergify_engine.console_scripts import refresher  # noqa
-from mergify_engine.console_scripts import stream  # noqa
-from mergify_engine.console_scripts import subscription  # noqa
+from mergify_engine.console_scripts import account_suspend  # noqa: E402,F401
+from mergify_engine.console_scripts import debug  # noqa: E402,F401
+from mergify_engine.console_scripts import merge_queue  # noqa: E402,F401
+from mergify_engine.console_scripts import openapi_spec_generator  # noqa: E402,F401
+from mergify_engine.console_scripts import redis_dump  # noqa: E402,F401
+from mergify_engine.console_scripts import refresher  # noqa: E402,F401
+from mergify_engine.console_scripts import stream  # noqa: E402,F401
+from mergify_engine.console_scripts import subscription  # noqa: E402,F401

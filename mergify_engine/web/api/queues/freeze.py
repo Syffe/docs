@@ -64,7 +64,7 @@ class QueueFreezePayload(pydantic.BaseModel):
     description="Freezes the merge of the requested queue and the queues following it",
     response_model=QueueFreezeResponse,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "The queue does not exist"},
     },
     dependencies=[
@@ -163,7 +163,7 @@ async def create_queue_freeze(
     ],
     status_code=204,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "The queue does not exist or is not currently frozen"},
     },
 )
@@ -207,7 +207,7 @@ async def delete_queue_freeze(
     response_model=QueueFreezeResponse,
     dependencies=[fastapi.Depends(security.check_subscription_feature_queue_freeze)],
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "The queue does not exist or is not currently frozen"},
     },
 )
@@ -241,7 +241,7 @@ async def get_queue_freeze(
     response_model=QueueFreezeResponse,
     dependencies=[fastapi.Depends(security.check_subscription_feature_queue_freeze)],
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
     },
 )
 async def get_list_queue_freeze(

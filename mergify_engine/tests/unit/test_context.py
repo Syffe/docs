@@ -823,7 +823,7 @@ You can trigger Dependabot actions by commenting on this PR:
 
 
 
-"""  # noqa
+"""  # noqa: W293
     ctxt = context.Context(mock.Mock(), a_pull_request)
     assert await condition_value_querier.PullRequest(ctxt).get_commit_message(
         "{{ title }} (#{{ number }})\n\n{{ body | markdownify }}",

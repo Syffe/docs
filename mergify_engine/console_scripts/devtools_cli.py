@@ -7,4 +7,4 @@ def devtools_cli() -> None:
 
 
 # NOTE(sileht): ensure click found all commands
-from mergify_engine.console_scripts import openapi_spec_generator  # noqa
+from mergify_engine.console_scripts import openapi_spec_generator  # noqa: E402,F401

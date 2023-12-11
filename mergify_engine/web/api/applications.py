@@ -36,7 +36,7 @@ router = fastapi.APIRouter(tags=["applications"])
     description="Get the current authenticated application",
     response_model=ApplicationResponse,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         404: {"description": "Not found"},
         200: {
             "content": {

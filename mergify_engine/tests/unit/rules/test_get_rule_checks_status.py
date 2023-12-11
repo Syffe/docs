@@ -790,7 +790,7 @@ async def test_rules_checks_status_ceph() -> None:
         },
     )
     pull.attrs["check"] = (
-        pull.attrs.get("check-success", [])  # type: ignore
+        pull.attrs.get("check-success", [])  # type: ignore[operator,assignment]
         + pull.attrs.get("check-neutral", [])
         + pull.attrs.get("check-pending", [])
         + pull.attrs.get("check-stale", [])
@@ -835,8 +835,8 @@ async def test_rules_checks_status_ceph() -> None:
     }
     f = filter.IncompleteChecksFilter(
         typing.cast(filter.TreeT, tree),
-        pending_checks=pull.attrs["check-pending"],  # type: ignore
-        all_checks=pull.attrs["check"],  # type: ignore
+        pending_checks=pull.attrs["check-pending"],  # type: ignore[arg-type]
+        all_checks=pull.attrs["check"],  # type: ignore[arg-type]
     )
 
     async def fake_get_team_members(*args: typing.Any) -> list[str]:

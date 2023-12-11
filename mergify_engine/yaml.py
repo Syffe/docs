@@ -3,7 +3,7 @@ import typing
 import yaml
 
 # convenient aliases
-from yaml import *  # noqa
+from yaml import *  # noqa: F403
 
 
 def safe_load(stream: typing.Any) -> typing.Any:  # type: ignore[no-redef]

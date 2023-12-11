@@ -31,7 +31,7 @@ class QueuesConfig:
     description="Get the list of all merge queues configuration sorted by processing order",
     response_model=QueuesConfig,
     responses={
-        **api.default_responses,  # type: ignore
+        **api.default_responses,  # type: ignore[dict-item]
         422: {"description": "The configuration file is invalid."},
     },
 )

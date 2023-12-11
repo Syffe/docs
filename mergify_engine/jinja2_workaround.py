@@ -9,7 +9,7 @@ import jinja2.filters
 #  https://github.com/pallets/jinja/pull/1782
 if not hasattr(jinja2.filters, "sync_do_unique"):
 
-    @jinja2.async_utils.async_variant(jinja2.filters.do_unique)  # type: ignore
+    @jinja2.async_utils.async_variant(jinja2.filters.do_unique)  # type: ignore[no-untyped-call,misc]
     async def do_unique(
         environment: jinja2.environment.Environment,
         value: abc.AsyncIterable[jinja2.filters.V] | abc.Iterable[jinja2.filters.V],
