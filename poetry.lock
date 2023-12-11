@@ -829,13 +829,13 @@ pgp = ["gpg"]
 
 [[package]]
 name = "envier"
-version = "0.4.0"
+version = "0.5.0"
 description = "Python application configuration via the environment"
 optional = false
-python-versions = ">=2.7"
+python-versions = ">=3.7"
 files = [
-    {file = "envier-0.4.0-py3-none-any.whl", hash = "sha256:7b91af0f16ea3e56d91ec082f038987e81b441fc19c657a8b8afe0909740a706"},
-    {file = "envier-0.4.0.tar.gz", hash = "sha256:e68dcd1ed67d8b6313883e27dff3e701b7fba944d2ed4b7f53d0cc2e12364a82"},
+    {file = "envier-0.5.0-py3-none-any.whl", hash = "sha256:5fed6099ee5d7ad4cf664f8bb99d1281d4ab5fadeec8f40ba9458610938293be"},
+    {file = "envier-0.5.0.tar.gz", hash = "sha256:f35ca8605f0c70c2c0367133af9dc1ef16710021dbd0e28c1b0a83070db06768"},
 ]
 
 [package.extras]
