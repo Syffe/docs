@@ -78,6 +78,10 @@ class UnexpectedLogEmbedderError(Exception):
     log_extras: dict[str, typing.Any] = dataclasses.field(default_factory=dict)
 
 
+class UnableToExtractLogMetadata(Exception):
+    pass
+
+
 class ExtractedDataObject(typing.TypedDict):
     problem_type: str | None
     language: str | None
@@ -245,10 +249,12 @@ async def extract_data_from_log(
 
     if not chat_response:
         # FIXME(sileht): We should mark the job as ERROR instead of retrying
-        raise UnexpectedLogEmbedderError(
+        LOG.warning(
             "ChatGPT returned no extracted data for the job log",
-            log_extras={"chat_completion": chat_completion},
+            chat_completion=chat_completion,
+            **job.as_log_extras(),
         )
+        raise UnableToExtractLogMetadata
 
     try:
         extracted_data: list[ExtractedDataObject] = json.loads(chat_response)[
@@ -259,17 +265,19 @@ async def extract_data_from_log(
             # FIXME(Kontrolix): It means that GPT responde with a too long response,
             # for now I have no better solution than push the error under the carpet.
             # But we will have to improve the prompt or the cleaner or the model we use ...
-            # FIXME(sileht): We should mark the job as ERROR, not DOWNLOADED in such case
-            extracted_data = []
-        else:
-            raise
+            raise UnableToExtractLogMetadata
+        raise
 
     # FIXME(Kontrolix): It means that GPT found no error, for now I have no better
     # solution than push the error under the carpet. But we will have to improve
     # the prompt or the cleaner or the model we use ...
-    # FIXME(sileht): We should mark the job as ERROR, not DOWNLOADED in such case
-    if extracted_data is None or extracted_data == [None]:
-        extracted_data = []
+    if not extracted_data or extracted_data == [None]:
+        LOG.warning(
+            "ChatGPT returned no extracted data for the job log",
+            chat_completion=chat_completion,
+            **job.as_log_extras(),
+        )
+        raise UnableToExtractLogMetadata
 
     for data in extracted_data:
         log_metadata = gh_models.WorkflowJobLogMetadata(
@@ -403,7 +411,9 @@ async def embed_logs_with_log_embedding(
                     ),
                 ),
                 sqlalchemy.or_(
-                    wjob.log_embedding.is_(None),
+                    wjob.log_embedding_status
+                    == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
+                    wjob.log_status == gh_models.WorkflowJobLogStatus.UNKNOWN,
                     wjob.ci_issue_id.is_(None),
                 ),
             )
@@ -482,30 +492,25 @@ async def embed_logs_with_extracted_metadata(
             )
             .where(
                 wjob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
+                wjob.failed_step_number.is_not(None),
                 sqlalchemy.or_(
                     wjob.log_processing_retry_after.is_(None),
                     wjob.log_processing_retry_after <= date.utcnow(),
                 ),
-                wjob.failed_step_number.is_not(None),
-                wjob.log_metadata_extracting_status
-                != gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
                 wjob.log_status.notin_(
                     (
                         gh_models.WorkflowJobLogStatus.GONE,
                         gh_models.WorkflowJobLogStatus.ERROR,
                     ),
                 ),
+                wjob.log_metadata_extracting_status
+                != gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
                 sqlalchemy.or_(
-                    sqlalchemy.and_(
-                        ~wjob.log_metadata.any(),
-                        wjob.log_metadata_extracting_status
-                        != gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
-                    ),
-                    sqlalchemy.and_(
-                        ~wjob.ci_issues_gpt.any(),
-                        wjob.log_metadata_extracting_status
-                        == gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
-                    ),
+                    wjob.log_status == gh_models.WorkflowJobLogStatus.UNKNOWN,
+                    wjob.log_metadata_extracting_status
+                    == gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
+                    # FIXME(sileht): should it be status like other?
+                    ~wjob.ci_issues_gpt.any(),
                 ),
             )
             .order_by(wjob.completed_at.asc())
@@ -544,6 +549,12 @@ async def embed_logs_with_extracted_metadata(
                             job,
                             log,
                         )
+                    except UnableToExtractLogMetadata:
+                        job.log_metadata_extracting_status = (
+                            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR
+                        )
+                        await session.commit()
+                        continue
                     except Exception as e:
                         retry = log_exception_and_maybe_retry(e, job)
                         if not retry:
@@ -553,10 +564,7 @@ async def embed_logs_with_extracted_metadata(
                         await session.commit()
                         continue
 
-                # FIXME(sileht): it does not make sense to check log_metadata is empty when
-                # the status is DOWNLOADED... but now we have the DB with not log_metadata
-                # but with status set as DOWNLOADED...
-                if job.log_metadata and not job.ci_issues_gpt:
+                if not job.ci_issues_gpt:
                     await ci_issue.CiIssueGPT.link_job_to_ci_issues(session, job)
 
                 await session.commit()
