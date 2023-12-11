@@ -84,6 +84,36 @@ def mock_log_error(
     ).respond(500)
 
 
+def mock_embedding_embedded(
+    respx_mock: respx.MockRouter,
+) -> None:
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
+    ).respond(
+        200,
+        json={
+            "object": "list",
+            "data": [
+                {
+                    "object": "embedding",
+                    "index": 0,
+                    "embedding": OPENAI_EMBEDDING_DATASET["toto"],
+                },
+            ],
+            "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
+            "usage": {"prompt_tokens": 2, "total_tokens": 2},
+        },
+    )
+
+
+def mock_embedding_error(
+    respx_mock: respx.MockRouter,
+) -> None:
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
+    ).respond(500)
+
+
 @pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
 async def test_embed_logs_on_controlled_data(
     respx_mock: respx.MockRouter,
@@ -446,7 +476,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_downloaded,
-                "mock_embedding": "mock_embedding_embedded",
+                "mock_embedding": mock_embedding_embedded,
                 "mock_extracting": "mock_extracting_metadata_extracted",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -454,7 +484,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -465,7 +495,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_gone,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.GONE,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
@@ -473,7 +503,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.GONE,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
@@ -484,7 +514,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_error,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.ERROR,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
@@ -492,7 +522,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.ERROR,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
@@ -503,7 +533,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_downloaded,
-                "mock_embedding": "mock_embedding_error",
+                "mock_embedding": mock_embedding_error,
                 "mock_extracting": "mock_extracting_metadata_extracted",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
@@ -511,7 +541,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": "mock_embedding_embedded",
+                "mock_embedding": mock_embedding_embedded,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -522,7 +552,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_downloaded,
-                "mock_embedding": "mock_embedding_error",
+                "mock_embedding": mock_embedding_error,
                 "mock_extracting": "mock_extracting_metadata_extracted",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
@@ -530,7 +560,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.ERROR,
@@ -541,7 +571,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_downloaded,
-                "mock_embedding": "mock_embedding_embedded",
+                "mock_embedding": mock_embedding_embedded,
                 "mock_extracting": "mock_extracting_metadata_misformated",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -549,7 +579,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": "mock_extracting_metadata_extracted",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -560,7 +590,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_downloaded,
-                "mock_embedding": "mock_embedding_embedded",
+                "mock_embedding": mock_embedding_embedded,
                 "mock_extracting": "mock_extracting_metadata_misformated",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -568,7 +598,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -582,7 +612,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_downloaded,
-                "mock_embedding": "mock_embedding_embedded",
+                "mock_embedding": mock_embedding_embedded,
                 "mock_extracting": "mock_extracting_metadata_invalid_json",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -590,7 +620,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": "mock_extracting_metadata_error",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -604,7 +634,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_downloaded,
-                "mock_embedding": "mock_embedding_embedded",
+                "mock_embedding": mock_embedding_embedded,
                 "mock_extracting": "mock_extracting_metadata_empty_failures",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -612,7 +642,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -623,7 +653,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_downloaded,
-                "mock_embedding": "mock_embedding_embedded",
+                "mock_embedding": mock_embedding_embedded,
                 "mock_extracting": "mock_extracting_metadata_none_failures",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -631,7 +661,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -642,7 +672,7 @@ async def test_embed_logs_on_various_data(
         (
             {
                 "mock_log": mock_log_downloaded,
-                "mock_embedding": "mock_embedding_embedded",
+                "mock_embedding": mock_embedding_embedded,
                 "mock_extracting": "mock_extracting_metadata_finish_reason_length",
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -650,7 +680,7 @@ async def test_embed_logs_on_various_data(
             },
             {
                 "mock_log": noop,
-                "mock_embedding": None,
+                "mock_embedding": noop,
                 "mock_extracting": None,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -718,30 +748,6 @@ async def test_workflow_job_log_life_cycle(
     ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
 
     def preprare_mocking(mocking_info: dict[str, typing.Any]) -> None:
-        if mocking_info["mock_embedding"] == "mock_embedding_embedded":
-            respx_mock.post(
-                f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
-            ).respond(
-                200,
-                json={
-                    "object": "list",
-                    "data": [
-                        {
-                            "object": "embedding",
-                            "index": 0,
-                            "embedding": OPENAI_EMBEDDING_DATASET["toto"],
-                        },
-                    ],
-                    "model": openai_api.OPENAI_EMBEDDINGS_MODEL,
-                    "usage": {"prompt_tokens": 2, "total_tokens": 2},
-                },
-            )
-
-        if mocking_info["mock_embedding"] == "mock_embedding_error":
-            respx_mock.post(
-                f"{openai_api.OPENAI_API_BASE_URL}/embeddings",
-            ).respond(500)
-
         if mocking_info["mock_extracting"] == "mock_extracting_metadata_extracted":
             json_response = {
                 "id": "chatcmpl-123",
@@ -988,6 +994,7 @@ async def test_workflow_job_log_life_cycle(
 
     preprare_mocking(first_try)
     first_try["mock_log"](respx_mock, owner, repo, job)
+    first_try["mock_embedding"](respx_mock)
 
     await github_action.embed_logs(redis_links)
 
@@ -999,6 +1006,7 @@ async def test_workflow_job_log_life_cycle(
 
     preprare_mocking(second_try)
     second_try["mock_log"](respx_mock, owner, repo, job)
+    second_try["mock_embedding"](respx_mock)
 
     await github_action.embed_logs(redis_links)
 
