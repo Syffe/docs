@@ -58,6 +58,35 @@ class TimestampNotInFuture(int):
         return int(v)
 
 
+class DatetimeNotInFuture(datetime.datetime):
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls,
+        source_type: typing.Any,
+        handler: pydantic.GetCoreSchemaHandler,
+    ) -> pydantic_core.CoreSchema:
+        from_dt_schema = pydantic_core.core_schema.chain_schema(
+            [
+                pydantic_core.core_schema.datetime_schema(),
+                pydantic_core.core_schema.no_info_plain_validator_function(
+                    cls.validate,
+                ),
+            ],
+        )
+
+        return pydantic_core.core_schema.json_or_python_schema(
+            json_schema=from_dt_schema,
+            python_schema=from_dt_schema,
+        )
+
+    @classmethod
+    def validate(cls, v: datetime.datetime) -> datetime.datetime:
+        if is_timestamp_in_future(int(v.timestamp())):
+            raise ValueError("Datetime cannot be in the future")
+
+        return v
+
+
 async def get_queue_checks_end_events(
     session: database.Session,
     repository_id: github_types.GitHubRepositoryIdType,

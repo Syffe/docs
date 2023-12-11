@@ -16,6 +16,8 @@ import typing_extensions
 UTC = zoneinfo.ZoneInfo("UTC")
 DT_MAX = datetime.datetime.max.replace(tzinfo=UTC)
 
+EPOCH = datetime.datetime(1970, 1, 1, tzinfo=UTC)
+
 
 @dataclasses.dataclass
 class InvalidDate(Exception):

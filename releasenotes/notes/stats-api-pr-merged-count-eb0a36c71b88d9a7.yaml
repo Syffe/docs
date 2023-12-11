@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Added a new statistics endpoint that returns the number of
+    pull requests merged by intervals of time.
+    The endpoint path is "/v1/repos/{repository_owner}/{repository_name}/stats/queues_merged_count".
