@@ -1,4 +1,5 @@
 import asyncio
+import difflib
 import filecmp
 import io
 import os
@@ -96,12 +97,15 @@ def test_migration(_setup_database: None, tmp_path: pathlib.Path) -> None:
     loop.close()
 
 
-def filediff(path1: pathlib.Path, path2: pathlib.Path) -> str | None:
+def filediff(path1: pathlib.Path, path2: pathlib.Path) -> str:
     with path1.open() as f1, path2.open() as f2:
-        for i, (l1, l2) in enumerate(zip(f1, f2, strict=True)):
-            if l1 != l2:
-                return f'Difference at line {i+1}: "{l1.strip()}" != "{l2.strip()}"'
-    return None
+        diff = difflib.unified_diff(
+            f1.readlines(),
+            f2.readlines(),
+            path1.name,
+            path2.name,
+        )
+        return "Database dump differences: \n" + "".join(diff)
 
 
 def test_one_head() -> None:
