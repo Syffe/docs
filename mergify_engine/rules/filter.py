@@ -829,7 +829,7 @@ class IncompleteChecksFilter(TernaryFilter):
         else:
             real_attr_name = attribute_name
 
-        if real_attr_name.startswith("check-") or real_attr_name.startswith("status-"):
+        if real_attr_name.startswith(("check-", "status-")):
             if attribute_name.startswith(Filter.LENGTH_OPERATOR):
                 if len(self.pending_checks) != 0:
                     return False

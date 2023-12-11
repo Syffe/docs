@@ -142,7 +142,6 @@ class GitterService(task.SimpleService):
             )
             # NOTE(sileht): we ignore exception on purpose, the job caller must
             # reawait the Coroutine to get the result
-            pass
         else:
             job.logger.debug("gitter worker finished job func", job_id=job.id)
 

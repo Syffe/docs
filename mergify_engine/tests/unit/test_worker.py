@@ -337,7 +337,7 @@ async def test_worker_legacy_push(
 
     serv = w.get_service(shared_workers_spawner_service.SharedStreamService)
     assert serv is not None
-    assert serv._owners_cache._mapping == {i: f"owner-{i}" for i in range(0, 8)}
+    assert serv._owners_cache._mapping == {i: f"owner-{i}" for i in range(8)}
 
 
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
@@ -2391,7 +2391,7 @@ async def test_get_shared_worker_ids(
     request.addfinalizer(lambda: event_loop.run_until_complete(w1._shutdown()))
     shared_serv1 = w1.get_service(shared_workers_spawner_service.SharedStreamService)
     assert shared_serv1 is not None
-    assert shared_serv1.get_shared_worker_ids() == list(range(0, 30))
+    assert shared_serv1.get_shared_worker_ids() == list(range(30))
     assert shared_serv1.global_shared_tasks_count == 60
     s1 = stream.Processor(redis_links, "shared-8", None, shared_serv1._owners_cache)
     assert shared_serv1.should_handle_owner(s1, owner_id)

@@ -333,7 +333,7 @@ did not find expected alphabetic or numeric character
         # Create a lot of file to ignore optimization
         p = await self.create_pr(
             git_tree_ready=True,
-            files={f"f{i}": "data" for i in range(0, 160)},
+            files={f"f{i}": "data" for i in range(160)},
         )
         ctxt = context.Context(self.repository_ctxt, p, [])
         await self.run_engine()
@@ -441,7 +441,7 @@ did not find expected alphabetic or numeric character
         rules["pull_request_rules"].append(
             {"name": "foobar", "conditions": ["label!=wip"], "actions": {"merge": {}}},
         )
-        p = await self.create_pr(files={f"f{i}": "data" for i in range(0, 160)})
+        p = await self.create_pr(files={f"f{i}": "data" for i in range(160)})
         await self.run_engine()
 
         p_change_config = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
