@@ -114,6 +114,256 @@ def mock_embedding_error(
     ).respond(500)
 
 
+def mock_extracting_metadata_extracted(
+    respx_mock: respx.MockRouter,
+) -> None:
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": [
+                                {
+                                    "problem_type": "Toto title",
+                                    "language": "Python",
+                                    "filename": "toto.py",
+                                    "lineno": null,
+                                    "error": "Exception",
+                                    "test_framework": "pytest",
+                                    "stack_trace": ""
+                                }
+                            ]
+                        }""",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {
+            "prompt_tokens": 9,
+            "completion_tokens": 12,
+            "total_tokens": 21,
+        },
+    }
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
+    )
+
+
+def mock_extracting_metadata_misformated(
+    respx_mock: respx.MockRouter,
+) -> None:
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": [
+                                {
+                                    "ttttt": "Toto title",
+                                    "aaaaa": "Python",
+                                    "filename": "toto.py",
+                                    "lineno": null,
+                                    "ssss": "Exception",
+                                    "test_framework": "pytest",
+                                    "stack_trace": ""
+                                }
+                            ]
+                        }""",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {
+            "prompt_tokens": 9,
+            "completion_tokens": 12,
+            "total_tokens": 21,
+        },
+    }
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
+    )
+
+
+def mock_extracting_metadata_invalid_json(
+    respx_mock: respx.MockRouter,
+) -> None:
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": [
+                                {
+                                    dfqdfezff
+                                }
+                            ]
+                        }""",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {
+            "prompt_tokens": 9,
+            "completion_tokens": 12,
+            "total_tokens": 21,
+        },
+    }
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
+    )
+
+
+def mock_extracting_metadata_empty_failures(
+    respx_mock: respx.MockRouter,
+) -> None:
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": [null]
+                        }""",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {
+            "prompt_tokens": 9,
+            "completion_tokens": 12,
+            "total_tokens": 21,
+        },
+    }
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
+    )
+
+
+def mock_extracting_metadata_none_failures(
+    respx_mock: respx.MockRouter,
+) -> None:
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": null
+                        }""",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {
+            "prompt_tokens": 9,
+            "completion_tokens": 12,
+            "total_tokens": 21,
+        },
+    }
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
+    )
+
+
+def mock_extracting_metadata_finish_reason_length(
+    respx_mock: respx.MockRouter,
+) -> None:
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": {
+                        """,
+                },
+                "finish_reason": "length",
+            },
+        ],
+        "usage": {
+            "prompt_tokens": 9,
+            "completion_tokens": 12,
+            "total_tokens": 21,
+        },
+    }
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        200,
+        content_type="text/event-stream",
+        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
+    )
+
+
+def mock_extracting_metadata_error(
+    respx_mock: respx.MockRouter,
+) -> None:
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        500,
+    )
+
+
 @pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
 async def test_embed_logs_on_controlled_data(
     respx_mock: respx.MockRouter,
@@ -477,7 +727,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_downloaded,
                 "mock_embedding": mock_embedding_embedded,
-                "mock_extracting": "mock_extracting_metadata_extracted",
+                "mock_extracting": mock_extracting_metadata_extracted,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
@@ -485,7 +735,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": noop,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
@@ -496,7 +746,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_gone,
                 "mock_embedding": noop,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.GONE,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
@@ -504,7 +754,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": noop,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.GONE,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
@@ -515,7 +765,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_error,
                 "mock_embedding": noop,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.ERROR,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
@@ -523,7 +773,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": noop,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.ERROR,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
@@ -534,7 +784,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_downloaded,
                 "mock_embedding": mock_embedding_error,
-                "mock_extracting": "mock_extracting_metadata_extracted",
+                "mock_extracting": mock_extracting_metadata_extracted,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
@@ -542,7 +792,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": mock_embedding_embedded,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
@@ -553,7 +803,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_downloaded,
                 "mock_embedding": mock_embedding_error,
-                "mock_extracting": "mock_extracting_metadata_extracted",
+                "mock_extracting": mock_extracting_metadata_extracted,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
@@ -561,7 +811,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": noop,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.ERROR,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
@@ -572,7 +822,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_downloaded,
                 "mock_embedding": mock_embedding_embedded,
-                "mock_extracting": "mock_extracting_metadata_misformated",
+                "mock_extracting": mock_extracting_metadata_misformated,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
@@ -580,7 +830,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": noop,
-                "mock_extracting": "mock_extracting_metadata_extracted",
+                "mock_extracting": mock_extracting_metadata_extracted,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
@@ -591,7 +841,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_downloaded,
                 "mock_embedding": mock_embedding_embedded,
-                "mock_extracting": "mock_extracting_metadata_misformated",
+                "mock_extracting": mock_extracting_metadata_misformated,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
@@ -599,7 +849,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": noop,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
@@ -613,7 +863,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_downloaded,
                 "mock_embedding": mock_embedding_embedded,
-                "mock_extracting": "mock_extracting_metadata_invalid_json",
+                "mock_extracting": mock_extracting_metadata_invalid_json,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
@@ -621,7 +871,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": noop,
-                "mock_extracting": "mock_extracting_metadata_error",
+                "mock_extracting": mock_extracting_metadata_error,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
@@ -635,7 +885,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_downloaded,
                 "mock_embedding": mock_embedding_embedded,
-                "mock_extracting": "mock_extracting_metadata_empty_failures",
+                "mock_extracting": mock_extracting_metadata_empty_failures,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
@@ -643,7 +893,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": noop,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
@@ -654,7 +904,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_downloaded,
                 "mock_embedding": mock_embedding_embedded,
-                "mock_extracting": "mock_extracting_metadata_none_failures",
+                "mock_extracting": mock_extracting_metadata_none_failures,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
@@ -662,7 +912,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": noop,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
@@ -673,7 +923,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": mock_log_downloaded,
                 "mock_embedding": mock_embedding_embedded,
-                "mock_extracting": "mock_extracting_metadata_finish_reason_length",
+                "mock_extracting": mock_extracting_metadata_finish_reason_length,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
@@ -681,7 +931,7 @@ async def test_embed_logs_on_various_data(
             {
                 "mock_log": noop,
                 "mock_embedding": noop,
-                "mock_extracting": None,
+                "mock_extracting": noop,
                 "log": gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 "embedding": gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 "metadata": gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
@@ -747,239 +997,6 @@ async def test_workflow_job_log_life_cycle(
         f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens",
     ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
 
-    def preprare_mocking(mocking_info: dict[str, typing.Any]) -> None:
-        if mocking_info["mock_extracting"] == "mock_extracting_metadata_extracted":
-            json_response = {
-                "id": "chatcmpl-123",
-                "object": "chat.completion",
-                "created": 1677652288,
-                "model": "gpt-3.5-turbo-0613",
-                "choices": [
-                    {
-                        "index": 0,
-                        "delta": {
-                            "role": "assistant",
-                            "content": """
-                                {
-                                    "failures": [
-                                        {
-                                            "problem_type": "Toto title",
-                                            "language": "Python",
-                                            "filename": "toto.py",
-                                            "lineno": null,
-                                            "error": "Exception",
-                                            "test_framework": "pytest",
-                                            "stack_trace": ""
-                                        }
-                                    ]
-                                }""",
-                        },
-                        "finish_reason": "stop",
-                    },
-                ],
-                "usage": {
-                    "prompt_tokens": 9,
-                    "completion_tokens": 12,
-                    "total_tokens": 21,
-                },
-            }
-            respx_mock.post(
-                f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-            ).respond(
-                200,
-                content_type="text/event-stream",
-                content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-            )
-
-        if mocking_info["mock_extracting"] == "mock_extracting_metadata_misformated":
-            json_response = {
-                "id": "chatcmpl-123",
-                "object": "chat.completion",
-                "created": 1677652288,
-                "model": "gpt-3.5-turbo-0613",
-                "choices": [
-                    {
-                        "index": 0,
-                        "delta": {
-                            "role": "assistant",
-                            "content": """
-                                {
-                                    "failures": [
-                                        {
-                                            "ttttt": "Toto title",
-                                            "aaaaa": "Python",
-                                            "filename": "toto.py",
-                                            "lineno": null,
-                                            "ssss": "Exception",
-                                            "test_framework": "pytest",
-                                            "stack_trace": ""
-                                        }
-                                    ]
-                                }""",
-                        },
-                        "finish_reason": "stop",
-                    },
-                ],
-                "usage": {
-                    "prompt_tokens": 9,
-                    "completion_tokens": 12,
-                    "total_tokens": 21,
-                },
-            }
-            respx_mock.post(
-                f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-            ).respond(
-                200,
-                content_type="text/event-stream",
-                content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-            )
-
-        if mocking_info["mock_extracting"] == "mock_extracting_metadata_invalid_json":
-            json_response = {
-                "id": "chatcmpl-123",
-                "object": "chat.completion",
-                "created": 1677652288,
-                "model": "gpt-3.5-turbo-0613",
-                "choices": [
-                    {
-                        "index": 0,
-                        "delta": {
-                            "role": "assistant",
-                            "content": """
-                                {
-                                    "failures": [
-                                        {
-                                            dfqdfezff
-                                        }
-                                    ]
-                                }""",
-                        },
-                        "finish_reason": "stop",
-                    },
-                ],
-                "usage": {
-                    "prompt_tokens": 9,
-                    "completion_tokens": 12,
-                    "total_tokens": 21,
-                },
-            }
-            respx_mock.post(
-                f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-            ).respond(
-                200,
-                content_type="text/event-stream",
-                content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-            )
-
-        if mocking_info["mock_extracting"] == "mock_extracting_metadata_empty_failures":
-            json_response = {
-                "id": "chatcmpl-123",
-                "object": "chat.completion",
-                "created": 1677652288,
-                "model": "gpt-3.5-turbo-0613",
-                "choices": [
-                    {
-                        "index": 0,
-                        "delta": {
-                            "role": "assistant",
-                            "content": """
-                                {
-                                    "failures": [null]
-                                }""",
-                        },
-                        "finish_reason": "stop",
-                    },
-                ],
-                "usage": {
-                    "prompt_tokens": 9,
-                    "completion_tokens": 12,
-                    "total_tokens": 21,
-                },
-            }
-            respx_mock.post(
-                f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-            ).respond(
-                200,
-                content_type="text/event-stream",
-                content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-            )
-
-        if mocking_info["mock_extracting"] == "mock_extracting_metadata_none_failures":
-            json_response = {
-                "id": "chatcmpl-123",
-                "object": "chat.completion",
-                "created": 1677652288,
-                "model": "gpt-3.5-turbo-0613",
-                "choices": [
-                    {
-                        "index": 0,
-                        "delta": {
-                            "role": "assistant",
-                            "content": """
-                                {
-                                    "failures": null
-                                }""",
-                        },
-                        "finish_reason": "stop",
-                    },
-                ],
-                "usage": {
-                    "prompt_tokens": 9,
-                    "completion_tokens": 12,
-                    "total_tokens": 21,
-                },
-            }
-            respx_mock.post(
-                f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-            ).respond(
-                200,
-                content_type="text/event-stream",
-                content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-            )
-
-        if (
-            mocking_info["mock_extracting"]
-            == "mock_extracting_metadata_finish_reason_length"
-        ):
-            json_response = {
-                "id": "chatcmpl-123",
-                "object": "chat.completion",
-                "created": 1677652288,
-                "model": "gpt-3.5-turbo-0613",
-                "choices": [
-                    {
-                        "index": 0,
-                        "delta": {
-                            "role": "assistant",
-                            "content": """
-                                {
-                                    "failures": {
-                                """,
-                        },
-                        "finish_reason": "length",
-                    },
-                ],
-                "usage": {
-                    "prompt_tokens": 9,
-                    "completion_tokens": 12,
-                    "total_tokens": 21,
-                },
-            }
-            respx_mock.post(
-                f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-            ).respond(
-                200,
-                content_type="text/event-stream",
-                content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-            )
-
-        if mocking_info["mock_extracting"] == "mock_extracting_metadata_error":
-            respx_mock.post(
-                f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-            ).respond(
-                500,
-            )
-
     monkeypatch.setattr(settings, "LOG_EMBEDDER_ENABLED_ORGS", [owner.login])
     monkeypatch.setattr(github_action, "LOG_EMBEDDER_MAX_ATTEMPTS", 2)
 
@@ -992,9 +1009,9 @@ async def test_workflow_job_log_life_cycle(
     )
     db.expunge_all()
 
-    preprare_mocking(first_try)
     first_try["mock_log"](respx_mock, owner, repo, job)
     first_try["mock_embedding"](respx_mock)
+    first_try["mock_extracting"](respx_mock)
 
     await github_action.embed_logs(redis_links)
 
@@ -1004,9 +1021,9 @@ async def test_workflow_job_log_life_cycle(
     assert job.log_metadata_extracting_status == first_try["metadata"]
     db.expunge_all()
 
-    preprare_mocking(second_try)
     second_try["mock_log"](respx_mock, owner, repo, job)
     second_try["mock_embedding"](respx_mock)
+    second_try["mock_extracting"](respx_mock)
 
     await github_action.embed_logs(redis_links)
 
