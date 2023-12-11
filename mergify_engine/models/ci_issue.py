@@ -183,12 +183,11 @@ class CiIssue(models.Base, CiIssueMixin):
             )
 
         stmt = (
-            sqlalchemy.select(cls)
-            .join(gh_models.WorkflowJob, gh_models.WorkflowJob.ci_issue_id == cls.id)
+            sqlalchemy.select(gh_models.WorkflowJob.ci_issue_id)
             .where(
+                gh_models.WorkflowJob.repository_id == job.repository_id,
                 gh_models.WorkflowJob.name_without_matrix == job.name_without_matrix,
                 gh_models.WorkflowJob.ci_issue_id.isnot(None),
-                gh_models.WorkflowJob.repository_id == job.repository_id,
                 (
                     1
                     - (
@@ -212,13 +211,11 @@ class CiIssue(models.Base, CiIssueMixin):
             .limit(1)
         )
 
-        issue = (await session.execute(stmt)).scalar_one_or_none()
-
-        if issue is None:
-            issue = await CiIssue.insert(session, job.repository_id)
-
-        job.ci_issue = issue
-        job.ci_issue_id = issue.id
+        ci_issue_id = (await session.execute(stmt)).scalar_one_or_none()
+        if ci_issue_id is None:
+            job.ci_issue = await CiIssue.insert(session, job.repository_id)
+        else:
+            job.ci_issue_id = ci_issue_id
 
 
 class CiIssueGPT(models.Base, CiIssueMixin):
