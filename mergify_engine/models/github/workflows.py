@@ -262,14 +262,6 @@ class WorkflowJobColumnMixin:
         server_default=WorkflowJobLogStatus.UNKNOWN.name,
         anonymizer_config=None,
     )
-    log_embedding_attempts: orm.Mapped[int] = orm.mapped_column(
-        server_default="0",
-        anonymizer_config=None,
-    )
-    log_embedding_retry_after: orm.Mapped[datetime.datetime | None] = orm.mapped_column(
-        nullable=True,
-        anonymizer_config=None,
-    )
     matrix: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
 
     head_sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
@@ -287,30 +279,9 @@ class WorkflowJobColumnMixin:
     def ci_issue(self) -> orm.Mapped[ci_issue_model.CiIssue]:
         return orm.relationship("CiIssue", lazy="raise_on_sql")
 
-    log_downloading_attempts: orm.Mapped[int] = orm.mapped_column(
-        server_default="0",
-        anonymizer_config=None,
-    )
-    log_downloading_retry_after: orm.Mapped[
-        datetime.datetime | None
-    ] = orm.mapped_column(
-        nullable=True,
-        anonymizer_config=None,
-    )
-
     log_embedding_status: orm.Mapped[WorkflowJobLogEmbeddingStatus] = orm.mapped_column(
         sqlalchemy.Enum(WorkflowJobLogEmbeddingStatus),
         server_default=WorkflowJobLogEmbeddingStatus.UNKNOWN.name,
-        anonymizer_config=None,
-    )
-    log_metadata_extracting_attempts: orm.Mapped[int] = orm.mapped_column(
-        server_default="0",
-        anonymizer_config=None,
-    )
-    log_metadata_extracting_retry_after: orm.Mapped[
-        datetime.datetime | None
-    ] = orm.mapped_column(
-        nullable=True,
         anonymizer_config=None,
     )
     log_metadata_extracting_status: orm.Mapped[
@@ -318,6 +289,17 @@ class WorkflowJobColumnMixin:
     ] = orm.mapped_column(
         sqlalchemy.Enum(WorkflowJobLogMetadataExtractingStatus),
         server_default=WorkflowJobLogMetadataExtractingStatus.UNKNOWN.name,
+        anonymizer_config=None,
+    )
+
+    log_processing_attempts: orm.Mapped[int] = orm.mapped_column(
+        server_default="0",
+        anonymizer_config=None,
+    )
+    log_processing_retry_after: orm.Mapped[
+        datetime.datetime | None
+    ] = orm.mapped_column(
+        nullable=True,
         anonymizer_config=None,
     )
 
@@ -361,21 +343,12 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
         ),
         sqlalchemy.schema.CheckConstraint(
             """
-            log_embedding_attempts >= 0 AND (
-                ( log_embedding_attempts = 0 AND log_embedding_retry_after IS NULL )
-                OR ( log_embedding_attempts > 0 AND log_embedding_retry_after IS NOT NULL)
+            log_processing_attempts >= 0 AND (
+                ( log_processing_attempts = 0 AND log_processing_retry_after IS NULL )
+                OR ( log_processing_attempts > 0 AND log_processing_retry_after IS NOT NULL)
             )
             """,
-            name="embedding_retries",
-        ),
-        sqlalchemy.schema.CheckConstraint(
-            """
-            log_metadata_extracting_attempts >= 0 AND (
-                ( log_metadata_extracting_attempts = 0 AND log_metadata_extracting_retry_after IS NULL )
-                OR ( log_metadata_extracting_attempts > 0 AND log_metadata_extracting_retry_after IS NOT NULL)
-            )
-            """,
-            name="metadata_extracting_retries",
+            name="processing_retries",
         ),
     )
 
@@ -441,11 +414,9 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
                 "completed_at": self.completed_at,
                 "log_status": self.log_status,
                 "log_embedding_status": self.log_embedding_status,
-                "log_embedding_attempts": self.log_embedding_attempts,
-                "log_embedding_retry_after": self.log_embedding_retry_after,
                 "log_metadata_extracting_status": self.log_metadata_extracting_status,
-                "log_metadata_extracting_attempts": self.log_metadata_extracting_attempts,
-                "log_metadata_extracting_retry_after": self.log_metadata_extracting_retry_after,
+                "log_processing_attempts": self.log_processing_attempts,
+                "log_processing_retry_after": self.log_processing_retry_after,
             },
         }
 

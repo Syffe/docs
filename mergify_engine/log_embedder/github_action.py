@@ -401,8 +401,8 @@ async def embed_logs_with_log_embedding(
             .where(
                 wjob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
                 sqlalchemy.or_(
-                    wjob.log_embedding_retry_after.is_(None),
-                    wjob.log_embedding_retry_after <= date.utcnow(),
+                    wjob.log_processing_retry_after.is_(None),
+                    wjob.log_processing_retry_after <= date.utcnow(),
                 ),
                 wjob.failed_step_number.is_not(None),
                 wjob.log_embedding_status
@@ -438,14 +438,14 @@ async def embed_logs_with_log_embedding(
                 except Exception as e:
                     retry = log_exception_and_maybe_retry(
                         e,
-                        job.log_downloading_attempts + 1,
+                        job.log_processing_attempts + 1,
                         job.as_log_extras(),
                     )
                     if retry is None:
                         job.log_status = gh_models.WorkflowJobLogStatus.ERROR
                     else:
-                        job.log_downloading_attempts += 1
-                        job.log_downloading_retry_after = retry.at
+                        job.log_processing_attempts += 1
+                        job.log_processing_retry_after = retry.at
                     await session.commit()
                     continue
 
@@ -458,7 +458,7 @@ async def embed_logs_with_log_embedding(
                     except Exception as e:
                         retry = log_exception_and_maybe_retry(
                             e,
-                            job.log_embedding_attempts + 1,
+                            job.log_processing_attempts + 1,
                             job.as_log_extras(),
                         )
                         if retry is None:
@@ -466,8 +466,8 @@ async def embed_logs_with_log_embedding(
                                 gh_models.WorkflowJobLogEmbeddingStatus.ERROR
                             )
                         else:
-                            job.log_embedding_attempts += 1
-                            job.log_embedding_retry_after = retry.at
+                            job.log_processing_attempts += 1
+                            job.log_processing_retry_after = retry.at
                         await session.commit()
                         continue
 
@@ -508,8 +508,8 @@ async def embed_logs_with_extracted_metadata(
             .where(
                 wjob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
                 sqlalchemy.or_(
-                    wjob.log_metadata_extracting_retry_after.is_(None),
-                    wjob.log_metadata_extracting_retry_after <= date.utcnow(),
+                    wjob.log_processing_retry_after.is_(None),
+                    wjob.log_processing_retry_after <= date.utcnow(),
                 ),
                 wjob.failed_step_number.is_not(None),
                 wjob.log_metadata_extracting_status
@@ -555,14 +555,14 @@ async def embed_logs_with_extracted_metadata(
                 except Exception as e:
                     retry = log_exception_and_maybe_retry(
                         e,
-                        job.log_downloading_attempts + 1,
+                        job.log_processing_attempts + 1,
                         job.as_log_extras(),
                     )
                     if retry is None:
                         job.log_status = gh_models.WorkflowJobLogStatus.ERROR
                     else:
-                        job.log_downloading_attempts += 1
-                        job.log_downloading_retry_after = retry.at
+                        job.log_processing_attempts += 1
+                        job.log_processing_retry_after = retry.at
                     await session.commit()
                     continue
 
@@ -579,7 +579,7 @@ async def embed_logs_with_extracted_metadata(
                     except Exception as e:
                         retry = log_exception_and_maybe_retry(
                             e,
-                            job.log_metadata_extracting_attempts + 1,
+                            job.log_processing_attempts + 1,
                             job.as_log_extras(),
                         )
                         if retry is None:
@@ -587,8 +587,8 @@ async def embed_logs_with_extracted_metadata(
                                 gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR
                             )
                         else:
-                            job.log_metadata_extracting_attempts += 1
-                            job.log_metadata_extracting_retry_after = retry.at
+                            job.log_processing_attempts += 1
+                            job.log_processing_retry_after = retry.at
                         await session.commit()
                         continue
 
