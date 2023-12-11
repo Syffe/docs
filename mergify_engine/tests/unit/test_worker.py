@@ -757,7 +757,6 @@ async def test_worker_start_redis_ping(
     ping: mock.MagicMock,
     logger: mock.MagicMock,
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
 ) -> None:
     logs.setup_logging()
 
@@ -780,6 +779,8 @@ async def test_worker_start_redis_ping(
 
     with mock.patch.object(tenacity.wait_exponential, "__call__", return_value=0):
         await w.start()
+
+    event_loop = asyncio.get_event_loop()
 
     request.addfinalizer(lambda: event_loop.run_until_complete(w._shutdown()))
 
@@ -1330,7 +1331,6 @@ async def test_stream_processor_priority(
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -1398,6 +1398,9 @@ async def test_stream_processor_priority(
         retry_handled_exception_forever=False,
     )
     shared_service.shared_stream_tasks_per_process = 1
+
+    event_loop = asyncio.get_event_loop()
+
     request.addfinalizer(
         lambda: event_loop.run_until_complete(
             task.stop_and_wait(syncer_service.tasks + shared_service.tasks),
@@ -1423,7 +1426,6 @@ async def test_stream_processor_date_scheduling(
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -1475,6 +1477,9 @@ async def test_stream_processor_date_scheduling(
         retry_handled_exception_forever=False,
     )
     shared_service.shared_stream_tasks_per_process = 1
+
+    event_loop = asyncio.get_event_loop()
+
     request.addfinalizer(
         lambda: event_loop.run_until_complete(
             task.stop_and_wait(syncer_service.tasks + shared_service.tasks),
@@ -1775,7 +1780,6 @@ async def test_dedicated_worker_scaleup_scaledown(
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
@@ -1789,6 +1793,7 @@ async def test_dedicated_worker_scaleup_scaledown(
         gitter_concurrent_jobs=1,
     )
     await w.start()
+    event_loop = asyncio.get_event_loop()
     request.addfinalizer(lambda: event_loop.run_until_complete(w._shutdown()))
 
     tracker = []
@@ -1934,7 +1939,6 @@ async def test_dedicated_worker_process_scaleup_scaledown(
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
@@ -1956,6 +1960,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
     )
     await w_shared.start()
 
+    event_loop = asyncio.get_event_loop()
     request.addfinalizer(lambda: event_loop.run_until_complete(w_dedicated._shutdown()))
     request.addfinalizer(lambda: event_loop.run_until_complete(w_shared._shutdown()))
 
@@ -2377,7 +2382,6 @@ async def test_get_shared_worker_ids(
     monkeypatch: pytest.MonkeyPatch,
     redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
 ) -> None:
     owner_id = github_types.GitHubAccountIdType(132)
     monkeypatch.setattr(manager, "_DYNO", "worker-shared.1")
@@ -2388,6 +2392,7 @@ async def test_get_shared_worker_ids(
         shared_stream_tasks_per_process=30,
     )
     await w1.start()
+    event_loop = asyncio.get_event_loop()
     request.addfinalizer(lambda: event_loop.run_until_complete(w1._shutdown()))
     shared_serv1 = w1.get_service(shared_workers_spawner_service.SharedStreamService)
     assert shared_serv1 is not None
@@ -2417,7 +2422,6 @@ async def test_get_my_dedicated_worker_ids(
     monkeypatch: pytest.MonkeyPatch,
     redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
 ) -> None:
     owners_cache = {
         github_types.GitHubAccountIdType(123),
@@ -2435,6 +2439,7 @@ async def test_get_my_dedicated_worker_ids(
         dedicated_stream_processes=2,
     )
     await w1.start()
+    event_loop = asyncio.get_event_loop()
     request.addfinalizer(lambda: event_loop.run_until_complete(w1._shutdown()))
     dedicated_serv1 = w1.get_service(
         dedicated_workers_spawner_service.DedicatedStreamService,
@@ -2534,7 +2539,6 @@ async def test_dedicated_multiple_processes(
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
@@ -2571,6 +2575,7 @@ async def test_dedicated_multiple_processes(
     )
     await w2.start()
 
+    event_loop = asyncio.get_event_loop()
     request.addfinalizer(lambda: event_loop.run_until_complete(w_shared._shutdown()))
     request.addfinalizer(lambda: event_loop.run_until_complete(w1._shutdown()))
     request.addfinalizer(lambda: event_loop.run_until_complete(w2._shutdown()))
@@ -2688,7 +2693,6 @@ async def test_dedicated_multiple_processes(
 async def test_start_stop_cycle(
     redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
     _setup_database: None,
 ) -> None:
     w = manager.ServiceManager(
@@ -2826,7 +2830,6 @@ def test_get_bucket_sources_key() -> None:
 
 
 async def test_task_stop_ordering(
-    event_loop: asyncio.BaseEventLoop,
     request: pytest.FixtureRequest,
 ) -> None:
     w = manager.ServiceManager(
@@ -2845,6 +2848,7 @@ async def test_task_stop_ordering(
     assert w._stop_task is None
 
     await w.start()
+    event_loop = asyncio.get_event_loop()
     request.addfinalizer(lambda: event_loop.run_until_complete(w._shutdown()))
 
     first, then = w._get_tasks_to_stops()
