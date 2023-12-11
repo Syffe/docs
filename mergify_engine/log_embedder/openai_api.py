@@ -19,6 +19,10 @@ OPENAI_API_BASE_URL: str = "https://api.openai.com/v1"
 OPENAI_EMBEDDINGS_MODEL: str = "text-embedding-ada-002"
 OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN: int = 8191
 
+# This is a rule-of-thumb number of how many bytes are stored in a token.
+# This is not accurate but gives a good estimation when needed.
+BYTES_PER_TOKEN_APPROX = 4
+
 # NOTE: https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken
 mergeable_ranks_file = str(
     importlib.resources.files(__package__).joinpath("cl100k_base.tiktoken"),

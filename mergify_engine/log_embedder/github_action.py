@@ -63,9 +63,12 @@ Logs:
     response_format="json_object",
 )
 
+
+CHAT_COMPLETION_MODEL = openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]
+
+
 MAX_CHAT_COMPLETION_TOKENS = (
-    openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]["max_tokens"]
-    - EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
+    CHAT_COMPLETION_MODEL["max_tokens"] - EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
 )
 
 
@@ -121,6 +124,9 @@ async def fetch_and_store_log(
     )
 
     job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
+    job.embedded_log = log.extract(
+        openai_api.BYTES_PER_TOKEN_APPROX * CHAT_COMPLETION_MODEL["max_tokens"],
+    )
 
     return log
 
@@ -152,12 +158,11 @@ async def embed_log(
     job: gh_models.WorkflowJob,
     log: logm.Log,
 ) -> None:
-    tokens, truncated_log = await get_tokenized_cleaned_log(log)
+    tokens = await get_tokenized_cleaned_log(log)
 
     embedding = await openai_client.get_embedding(tokens)
 
     job.log_embedding = embedding
-    job.embedded_log = truncated_log
     job.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
 
@@ -190,35 +195,16 @@ def get_step_log_from_zipped_content(
 
 async def get_tokenized_cleaned_log(
     log: logm.Log,
-) -> tuple[list[int], str]:
+) -> list[int]:
     cleaner = log_cleaner.LogCleaner()
 
     cleaned_tokens: list[int] = []
-    truncated_log_lines: list[str] = []
-    truncated_log_ready = False
-    truncated_log_tokens_length = 0
 
     for line in reversed(log.lines):
         if not line:
             continue
 
         cleaned_line = cleaner.clean_line(line, log.tags)
-        # Start feeding truncated_log only on first non empty line
-        if not cleaned_line and not truncated_log_lines:
-            continue
-
-        if not truncated_log_ready:
-            nb_tokens_in_line = len(openai_api.TIKTOKEN_ENCODING.encode(line))
-            next_truncated_log_tokens_length = (
-                truncated_log_tokens_length + nb_tokens_in_line
-            )
-
-            if next_truncated_log_tokens_length <= MAX_CHAT_COMPLETION_TOKENS:
-                truncated_log_lines.insert(0, line)
-                truncated_log_tokens_length = next_truncated_log_tokens_length
-
-            if truncated_log_tokens_length >= MAX_CHAT_COMPLETION_TOKENS:
-                truncated_log_ready = True
 
         if not cleaned_line:
             continue
@@ -233,7 +219,7 @@ async def get_tokenized_cleaned_log(
         if total_tokens >= openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN:
             break
 
-    return cleaned_tokens, "\n".join(truncated_log_lines)
+    return cleaned_tokens
 
 
 async def extract_data_from_log(

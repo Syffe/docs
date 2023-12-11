@@ -361,6 +361,11 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
                 log = await gha_embedder.get_log(gcs_client, job)
 
+                assert (
+                    job.embedded_log
+                    == "2023-11-21T16:30:32.4617760Z ##[group]Run echo I will fail on sha 841ec6924dab3ee7fdf09da82017dd30692a20cd run_attempt:1;exit 1\n2023-11-21T16:30:32.4619158Z \x1b[36;1mecho I will fail on sha 841ec6924dab3ee7fdf09da82017dd30692a20cd run_attempt:1;exit 1\x1b[0m\n2023-11-21T16:30:32.4633563Z shell: /usr/bin/bash -e {0}\n2023-11-21T16:30:32.4634022Z ##[endgroup]\n2023-11-21T16:30:32.4666136Z I will fail on sha 841ec6924dab3ee7fdf09da82017dd30692a20cd run_attempt:1\n2023-11-21T16:30:32.4668467Z ##[error]Process completed with exit code 1."
+                )
+
                 async with openai_api.OpenAIClient() as openai_client:
                     await gha_embedder.embed_log(openai_client, job, log)
 
@@ -567,17 +572,13 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     with open(
                         f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
                     ) as log_file:
-                        (
-                            tokens,
-                            truncated_log,
-                        ) = await gha_embedder.get_tokenized_cleaned_log(
+                        tokens = await gha_embedder.get_tokenized_cleaned_log(
                             logm.Log.from_content(log_file.read()),
                         )
                     async with openai_api.OpenAIClient() as openai_client:
                         embedding = await openai_client.get_embedding(tokens)
 
                     job.log_embedding = embedding
-                    job.embedded_log = truncated_log
                     job.log_embedding_status = (
                         gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
                     )

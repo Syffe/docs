@@ -93,3 +93,34 @@ class Log:
     def iter_gpt_cleaned_log_lines_reverse(self) -> abc.Generator[str, None, None]:
         for line in reversed(self.lines):
             yield LOG_CLEANER.gpt_clean_line(line)
+
+    def extract(self, max_bytes: int) -> str:
+        """Return an extract of the log that is bytes long at max, starting from the end."""
+        if max_bytes < 0:
+            raise ValueError("max_bytes must be positive")
+
+        if max_bytes == 0:
+            return ""
+
+        content = self.content.strip()
+
+        # Do we need to truncate?
+        if len(content) <= max_bytes:
+            return content
+
+        ex = content[-max_bytes:]
+
+        # now try to find if the first line we have in the extract is complete or not
+        previous_char = content[-max_bytes - 1]
+
+        # We split just before or on a \n, great
+        if previous_char == "\n" or ex[0] == "\n":
+            return ex.lstrip()
+
+        # Otherwise remove the first line as it's incomplete
+        try:
+            newline = ex.index("\n")
+        except ValueError:
+            return ex
+
+        return ex[newline + 1 :].lstrip()

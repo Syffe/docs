@@ -9,14 +9,13 @@ MAX_TOKENS_EMBEDDED_LOG = github_action.MAX_CHAT_COMPLETION_TOKENS
 
 
 @pytest.mark.parametrize(
-    ("raw_log", "expected_length", "expected_cleaned_log", "expected_embedded_log"),
+    ("raw_log", "expected_length", "expected_cleaned_log"),
     [
-        ("hello\n", 1, "hello", "hello"),
+        ("hello\n", 1, "hello"),
         (
             "hello\n" * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
             openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
             "hello" * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
-            ("hello\n" * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN)[:-1],
         ),
         (
             ("hello\n" * openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN)
@@ -25,17 +24,12 @@ MAX_TOKENS_EMBEDDED_LOG = github_action.MAX_CHAT_COMPLETION_TOKENS
             openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN,
             ("hello" * (openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 4))
             + "endextra token end",
-            (
-                "hello\n" * (openai_api.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN - 4)
-                + "before the end\nextra token at the end"
-            ),
         ),
         (
             # more is removed by LogCleaner, this ensures we remove end of files
             # from emebedded_log and log_embedding
             "hello\nmore\nmore\nmore\n",
             1,
-            "hello",
             "hello",
         ),
     ],
@@ -50,17 +44,14 @@ async def test_get_tokenized_cleaned_log(
     raw_log: str,
     expected_length: int,
     expected_cleaned_log: str,
-    expected_embedded_log: str,
 ) -> None:
-    tokens, truncated_log = await github_action.get_tokenized_cleaned_log(
+    tokens = await github_action.get_tokenized_cleaned_log(
         logm.Log.from_content(raw_log),
     )
 
     assert len(tokens) == expected_length
 
     assert openai_api.TIKTOKEN_ENCODING.decode(tokens) == expected_cleaned_log
-    assert len(truncated_log) == len(expected_embedded_log)
-    assert truncated_log == expected_embedded_log
 
 
 @pytest.mark.parametrize(

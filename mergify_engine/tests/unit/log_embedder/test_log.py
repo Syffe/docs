@@ -1,3 +1,5 @@
+import pytest
+
 from mergify_engine.log_embedder import log as logm
 
 
@@ -40,3 +42,58 @@ def test_iter_gpt_cleaned_log_lines_reverse() -> None:
             assert line == "world"
         if i > 1:
             raise ValueError("Should only have 2 lines")
+
+
+def test_extract() -> None:
+    content = """ hello
+world
+   happy
+
+
+ to😇
+be
+here """
+    log = logm.Log.from_content(content)
+
+    with pytest.raises(ValueError, match="positive"):
+        assert log.extract(-1) == ""
+
+    assert log.extract(0) == ""
+    assert log.extract(1) == "e"
+    assert log.extract(2) == "re"
+    assert log.extract(3) == "ere"
+    assert log.extract(4) == "here"
+    assert log.extract(5) == "here"
+    assert log.extract(6) == "here"
+    assert log.extract(7) == "be\nhere"
+    assert log.extract(8) == "be\nhere"
+    assert log.extract(9) == "be\nhere"
+    assert log.extract(10) == "be\nhere"
+    assert log.extract(11) == "be\nhere"
+    assert log.extract(12) == "to😇\nbe\nhere"
+    assert log.extract(13) == "to😇\nbe\nhere"
+    assert log.extract(14) == "to😇\nbe\nhere"
+    assert log.extract(15) == "to😇\nbe\nhere"
+    assert log.extract(16) == "to😇\nbe\nhere"
+    assert log.extract(17) == "to😇\nbe\nhere"
+    assert log.extract(18) == "to😇\nbe\nhere"
+    assert log.extract(19) == "to😇\nbe\nhere"
+    assert log.extract(20) == "to😇\nbe\nhere"
+    assert log.extract(21) == "to😇\nbe\nhere"
+    assert log.extract(22) == "to😇\nbe\nhere"
+    assert log.extract(23) == "happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(24) == "happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(25) == "happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(26) == "happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(27) == "happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(28) == "happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(29) == "world\n   happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(30) == "world\n   happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(31) == "world\n   happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(32) == "world\n   happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(33) == "world\n   happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(34) == "world\n   happy\n\n\n to😇\nbe\nhere"
+    assert log.extract(35) == content.strip()
+    assert log.extract(36) == content.strip()
+
+    assert log.extract(1000) == content.strip()
