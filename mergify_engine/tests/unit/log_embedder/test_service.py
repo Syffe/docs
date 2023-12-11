@@ -369,7 +369,7 @@ async def test_embed_logs_on_various_data(
     count = (
         await populated_db.execute(
             sqlalchemy.select(sqlalchemy.func.count(gh_models.WorkflowJob.id)).where(
-                gh_models.WorkflowJob.embedded_log.is_not(None),
+                gh_models.WorkflowJob.log_extract.is_not(None),
             ),
         )
     ).all()[0][0]
@@ -383,7 +383,7 @@ async def test_embed_logs_on_various_data(
     count = (
         await populated_db.execute(
             sqlalchemy.select(sqlalchemy.func.count(gh_models.WorkflowJob.id)).where(
-                gh_models.WorkflowJob.embedded_log.is_not(None),
+                gh_models.WorkflowJob.log_extract.is_not(None),
             ),
         )
     ).all()[0][0]

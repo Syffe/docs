@@ -114,7 +114,7 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
             await session.execute(
                 sqlalchemy.update(gh_models.WorkflowJob)
                 .values(
-                    embedded_log="Awesome log",
+                    log_extract="Awesome log",
                     log_embedding=np.array(list(map(np.float32, [1] * 1536))),
                     log_embedding_status=gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
                 )

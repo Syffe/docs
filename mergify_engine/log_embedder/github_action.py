@@ -124,7 +124,7 @@ async def fetch_and_store_log(
     )
 
     job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
-    job.embedded_log = log.extract(
+    job.log_extract = log.extract(
         openai_api.BYTES_PER_TOKEN_APPROX * CHAT_COMPLETION_MODEL["max_tokens"],
     )
 

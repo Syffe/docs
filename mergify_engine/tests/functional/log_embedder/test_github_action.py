@@ -362,7 +362,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 log = await gha_embedder.get_log(gcs_client, job)
 
                 assert (
-                    job.embedded_log
+                    job.log_extract
                     == "2023-11-21T16:30:32.4617760Z ##[group]Run echo I will fail on sha 841ec6924dab3ee7fdf09da82017dd30692a20cd run_attempt:1;exit 1\n2023-11-21T16:30:32.4619158Z \x1b[36;1mecho I will fail on sha 841ec6924dab3ee7fdf09da82017dd30692a20cd run_attempt:1;exit 1\x1b[0m\n2023-11-21T16:30:32.4633563Z shell: /usr/bin/bash -e {0}\n2023-11-21T16:30:32.4634022Z ##[endgroup]\n2023-11-21T16:30:32.4666136Z I will fail on sha 841ec6924dab3ee7fdf09da82017dd30692a20cd run_attempt:1\n2023-11-21T16:30:32.4668467Z ##[error]Process completed with exit code 1."
                 )
 
@@ -380,8 +380,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             job = result.scalar()
 
         assert job is not None
-        assert job.embedded_log is not None
-        assert f"I will fail on sha {pr['head']['sha']}" in job.embedded_log
+        assert job.log_extract is not None
+        assert f"I will fail on sha {pr['head']['sha']}" in job.log_extract
         assert job.failed_step_number == 4
         assert job.failed_step_name == 'Failure step with *"/\\<>:|? in the title ❌'
         assert job.log_embedding is not None

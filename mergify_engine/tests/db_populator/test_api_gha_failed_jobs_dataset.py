@@ -66,7 +66,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         )
 
         job1.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
-        job1.embedded_log = "Some logs"
+        job1.log_extract = "Some logs"
         job1.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
         session.add(
@@ -118,7 +118,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         )
 
         job2.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
-        job2.embedded_log = "Some logs"
+        job2.log_extract = "Some logs"
         job2.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
         session.add(
@@ -205,7 +205,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         )
 
         job3.log_embedding = np.array(list(map(np.float32, ([1] * 1535) + [-1])))
-        job3.embedded_log = "Some similar logs"
+        job3.log_extract = "Some similar logs"
         job3.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
         session.add(
@@ -273,7 +273,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         )
 
         job4.log_embedding = np.array(list(map(np.float32, [-1] * 1536)))
-        job4.embedded_log = "Some different logs"
+        job4.log_extract = "Some different logs"
         job4.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
         session.add(
@@ -341,7 +341,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         )
 
         job5.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
-        job5.embedded_log = "Some logs"
+        job5.log_extract = "Some logs"
         job5.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
         session.add(
@@ -395,7 +395,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         )
 
         uncomputed_job.log_embedding = None
-        uncomputed_job.embedded_log = None
+        uncomputed_job.log_extract = None
         uncomputed_job.log_status = gh_models.WorkflowJobLogStatus.UNKNOWN
 
         cls.internal_ref["OneAccount/OneRepo/failed_job_uncomputed"] = uncomputed_job.id

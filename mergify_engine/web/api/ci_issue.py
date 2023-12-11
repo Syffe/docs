@@ -243,7 +243,7 @@ async def patch_ci_issue(
 @pydantic.dataclasses.dataclass
 class CiIssueEventDetailResponse(CiIssueEvent):
     completed_at: github_types.ISODateTimeType
-    embedded_log: str
+    log_extract: str
     failed_step_number: int | None
     name: str
     run_attempt: int
@@ -280,7 +280,7 @@ async def get_ci_issue_event_detail(
         WorkflowJobEnhanced.failed_step_number,
         WorkflowJobEnhanced.flaky,
         WorkflowJobEnhanced.failed_run_count,
-        WorkflowJobEnhanced.embedded_log,
+        WorkflowJobEnhanced.log_extract,
         WorkflowJobEnhanced.ci_issue_id,
         WorkflowJobEnhanced.run_attempt,
     ).where(
@@ -305,7 +305,7 @@ async def get_ci_issue_event_detail(
         started_at=github_types.ISODateTimeType(event_detail.started_at.isoformat()),
         flaky=FlakyStatus(event_detail.flaky),
         failed_run_count=event_detail.failed_run_count,
-        embedded_log=event_detail.embedded_log,
+        log_extract=event_detail.log_extract,
         run_attempt=event_detail.run_attempt,
         name=event_detail.name,
     )

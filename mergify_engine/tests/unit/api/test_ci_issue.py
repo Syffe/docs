@@ -283,7 +283,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
         "flaky": "flaky",
         "run_attempt": 1,
         "failed_run_count": 3,
-        "embedded_log": "Some logs",
+        "log_extract": "Some logs",
     }
 
     job = await populated_db.get_one(
@@ -321,7 +321,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
         "flaky": "flaky",
         "run_attempt": 2,
         "failed_run_count": 3,
-        "embedded_log": "Some logs",
+        "log_extract": "Some logs",
     }
 
     reply = await web_client.get(
