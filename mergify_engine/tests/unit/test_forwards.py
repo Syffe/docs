@@ -33,7 +33,6 @@ async def test_app_event_forward(
     web_client: httpx.AsyncClient,
     respx_mock: respx.MockRouter,
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     with open(os.path.join(os.path.dirname(__file__), "events", "push.json")) as f:
@@ -57,6 +56,7 @@ async def test_app_event_forward(
         event_forwarder_idle_time=0,
     )
     await w.start()
+    event_loop = asyncio.get_event_loop()
     request.addfinalizer(lambda: event_loop.run_until_complete(w._shutdown()))
     await web_client.post("/event", content=data, headers=headers)
     while await redis_links.stream.xlen(event_forwarder.EVENT_FORWARDER_REDIS_KEY) != 0:

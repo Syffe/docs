@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TESTS="$(pytest --collect-only | sed -n -e '/\(TestCaseFunction\|Function\)/s/.* \([^ >]*\)>.*/\1/gp')"
+TESTS="$(pytest --collect-only | sed -n -e '/\(TestCaseFunction\|Function\|Coroutine\)/s/.* \([^ >]*\)>.*/\1/gp')"
 ret=0
 for f in $(find zfixtures -name config.json -o -name 'git-*.json' -o -name 'http.yaml' | xargs dirname | uniq); do
     f=$(basename $f)

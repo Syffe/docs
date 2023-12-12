@@ -15,7 +15,6 @@ OWNER = github_types.GitHubLogin("owner")
 
 async def test_gitter_service_lifecycle(
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     logs.setup_logging()
@@ -26,6 +25,7 @@ async def test_gitter_service_lifecycle(
         gitter_worker_idle_time=0.01,
     )
     assert gitter_service.GitterService._instance is not None
+    event_loop = asyncio.get_event_loop()
     request.addfinalizer(
         lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks)),
     )
@@ -52,7 +52,6 @@ async def test_gitter_service_lifecycle(
 
 async def test_gitter_service_exception(
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     logs.setup_logging()
@@ -63,6 +62,7 @@ async def test_gitter_service_exception(
         gitter_worker_idle_time=0.01,
     )
     assert gitter_service.GitterService._instance is not None
+    event_loop = asyncio.get_event_loop()
     request.addfinalizer(
         lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks)),
     )
@@ -91,7 +91,6 @@ async def test_gitter_service_exception(
 
 async def test_gitter_service_concurrency(
     request: pytest.FixtureRequest,
-    event_loop: asyncio.BaseEventLoop,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     logs.setup_logging()
@@ -101,6 +100,7 @@ async def test_gitter_service_concurrency(
         gitter_worker_idle_time=0.01,
         idle_time=0,
     )
+    event_loop = asyncio.get_event_loop()
     request.addfinalizer(
         lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks)),
     )
