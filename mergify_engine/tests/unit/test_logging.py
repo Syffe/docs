@@ -71,4 +71,5 @@ def test_logging(
             "dd.env": "",
             "HEROKU_RELEASE_VERSION": "v1234",
             "worker_id": "shared-30",
+            "taskName": None,
         }

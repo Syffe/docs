@@ -91,9 +91,8 @@ targets:
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: (python = \"~)(3\.\d+)(\")
+      lineMatchPattern: (python = \">=)(3\.\d+.\d+)(,<4.0\")
     transformers:
-      - find: ^\d+\.\d+
       - replaceRegexGroup: 2
   pyproject.toml-classifers-py-version:
     name: Update pyproject.toml python classifier version
