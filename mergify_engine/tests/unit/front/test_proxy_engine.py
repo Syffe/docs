@@ -5,7 +5,6 @@ import respx
 import sqlalchemy
 
 from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine.models.github import user as github_user
 from mergify_engine.tests import conftest
 
@@ -120,7 +119,6 @@ queue_rules:
     ),
 )
 async def test_engine_proxy_get_queue_freeze(
-    redis_links: redis_utils.RedisLinks,  # FIXME(sileht): this fixture should be autouse to always cleanup redis
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
@@ -159,7 +157,6 @@ async def test_engine_proxy_get_queue_freeze(
     ),
 )
 async def test_engine_proxy_update_queue_freeze(
-    redis_links: redis_utils.RedisLinks,  # FIXME(sileht): this fixture should be autouse to always cleanup redis
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
@@ -197,7 +194,6 @@ async def test_engine_proxy_update_queue_freeze(
     ),
 )
 async def test_engine_proxy_delete_queue_freeze(
-    redis_links: redis_utils.RedisLinks,  # FIXME(sileht): this fixture should be autouse to always cleanup redis
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
