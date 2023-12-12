@@ -133,15 +133,12 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         rules = {
             "pull_request_rules": [
                 {
-                    "name": "approve",
-                    "conditions": [f"base={self.main_branch_name}"],
-                    "actions": {"review": {"type": "APPROVE"}},
-                },
-                {
                     "name": "request_reviews",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
-                        "request_reviews": {"users": ["mergify-test1", "mergify-test"]},
+                        "request_reviews": {
+                            "users": ["mergify-test4"],
+                        },
                     },
                 },
             ],
@@ -149,13 +146,9 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        await self.create_pr(as_="fork")
+        p = await self.create_pr(as_="fork")
+        p_updated = await self.create_review_request(p["number"], ["mergify-test1"])
         await self.run_engine()
-
-        p_updated = await self.wait_for_pull_request("review_requested")
-        assert ["mergify-test1"] == [
-            user["login"] for user in p_updated["pull_request"]["requested_reviewers"]
-        ]
 
         ctxt = context.Context(self.repository_ctxt, p_updated["pull_request"], [])
         checks = await ctxt.pull_engine_check_runs
@@ -188,7 +181,7 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
                     "name": "request_reviews",
                     "conditions": [
                         f"base={self.main_branch_name}",
-                        "#review-requested>0",
+                        "#review-requested=0",
                     ],
                     "actions": {
                         "request_reviews": {
@@ -203,9 +196,6 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         p = await self.create_pr()
-        await self.run_engine()
-
-        await self.create_review_request(p["number"], ["mergify-test1"])
         await self.run_engine()
 
         p_updated = await self.wait_for_pull_request("review_requested")

@@ -188,11 +188,13 @@ class RequestReviewsExecutor(
             for user in await getattr(pull_attrs, key)
         }
 
-        user_reviews_to_request, team_reviews_to_request = self._get_reviewers(
+        user_reviews_to_request_set, team_reviews_to_request_set = self._get_reviewers(
             self.ctxt.pull["id"],
             existing_reviews,
             self.ctxt.pull["user"]["login"],
         )
+        user_reviews_to_request = list(user_reviews_to_request_set)
+        team_reviews_to_request = list(team_reviews_to_request_set)
 
         if user_reviews_to_request or team_reviews_to_request:
             requested_reviews_nb = len(
@@ -207,51 +209,76 @@ class RequestReviewsExecutor(
                 > self.GITHUB_MAXIMUM_REVIEW_REQUEST
             )
 
-            if not already_at_max:
-                try:
-                    on_behalf = await action_utils.get_github_user_from_bot_account(
-                        self.ctxt.repository,
-                        "request review",
-                        self.config["bot_account"],
-                        required_permissions=[],
-                    )
-                except action_utils.BotAccountNotFound as e:
-                    return check_api.Result(e.status, e.title, e.reason)
-
-                try:
-                    await self.ctxt.client.post(
-                        f"{self.ctxt.base_url}/pulls/{self.ctxt.pull['number']}/requested_reviewers",
-                        oauth_token=on_behalf.oauth_access_token if on_behalf else None,
-                        json={
-                            "reviewers": list(user_reviews_to_request),
-                            "team_reviewers": list(team_reviews_to_request),
-                        },
-                    )
-                except http.HTTPUnauthorized:
-                    if on_behalf is None:
-                        raise
-                    return action_utils.get_invalid_credentials_report(on_behalf)
-                except http.HTTPClientSideError as e:  # pragma: no cover
-                    return check_api.Result(
-                        check_api.Conclusion.FAILURE,
-                        "Unable to create review request",
-                        f"GitHub error: [{e.status_code}] `{e.message}`",
-                    )
-                await signals.send(
-                    self.ctxt.repository,
-                    self.ctxt.pull["number"],
-                    self.ctxt.pull["base"]["ref"],
-                    "action.request_reviews",
-                    signals.EventRequestReviewsMetadata(
-                        {
-                            "reviewers": list(user_reviews_to_request),
-                            "team_reviewers": list(team_reviews_to_request),
-                        },
-                    ),
-                    self.rule.get_signal_trigger(),
+            if already_at_max:
+                return check_api.Result(
+                    check_api.Conclusion.NEUTRAL,
+                    "Maximum number of reviews already requested",
+                    f"The maximum number of {self.GITHUB_MAXIMUM_REVIEW_REQUEST} reviews has been reached.\n"
+                    "Unable to request reviews for additional users.",
                 )
 
-            if already_at_max or will_exceed_max:
+            if will_exceed_max:
+                max_number_of_reviews = (
+                    self.GITHUB_MAXIMUM_REVIEW_REQUEST - requested_reviews_nb
+                )
+                if max_number_of_reviews < len(user_reviews_to_request):
+                    user_reviews_to_request = user_reviews_to_request[
+                        :max_number_of_reviews
+                    ]
+
+                max_number_of_reviews -= len(user_reviews_to_request)
+                if max_number_of_reviews > 0:
+                    team_reviews_to_request = team_reviews_to_request[
+                        :max_number_of_reviews
+                    ]
+                else:
+                    team_reviews_to_request = []
+
+            try:
+                on_behalf = await action_utils.get_github_user_from_bot_account(
+                    self.ctxt.repository,
+                    "request review",
+                    self.config["bot_account"],
+                    required_permissions=[],
+                )
+            except action_utils.BotAccountNotFound as e:
+                return check_api.Result(e.status, e.title, e.reason)
+
+            try:
+                await self.ctxt.client.post(
+                    f"{self.ctxt.base_url}/pulls/{self.ctxt.pull['number']}/requested_reviewers",
+                    oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+                    json={
+                        "reviewers": user_reviews_to_request,
+                        "team_reviewers": team_reviews_to_request,
+                    },
+                )
+            except http.HTTPUnauthorized:
+                if on_behalf is None:
+                    raise
+                return action_utils.get_invalid_credentials_report(on_behalf)
+            except http.HTTPClientSideError as e:  # pragma: no cover
+                return check_api.Result(
+                    check_api.Conclusion.FAILURE,
+                    "Unable to create review request",
+                    f"GitHub error: [{e.status_code}] `{e.message}`",
+                )
+
+            await signals.send(
+                self.ctxt.repository,
+                self.ctxt.pull["number"],
+                self.ctxt.pull["base"]["ref"],
+                "action.request_reviews",
+                signals.EventRequestReviewsMetadata(
+                    {
+                        "reviewers": user_reviews_to_request,
+                        "team_reviewers": team_reviews_to_request,
+                    },
+                ),
+                self.rule.get_signal_trigger(),
+            )
+
+            if will_exceed_max:
                 return check_api.Result(
                     check_api.Conclusion.NEUTRAL,
                     "Maximum number of reviews already requested",
