@@ -1073,8 +1073,15 @@ async def test_workflow_job_log_life_cycle(
             gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
             gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
         ),
+        (
+            "job_toto",
+            2,
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
+        ),
     ),
-    ids=("simple", "special chars in name", "huge logs"),
+    ids=("simple", "special chars in name", "huge logs", "nul byte"),
 )
 @pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
 async def test_workflow_job_from_real_life(
