@@ -21,6 +21,7 @@ from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
+from mergify_engine.clients import google_cloud_storage
 from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import ci_issue
@@ -1223,3 +1224,128 @@ async def test_workflow_job_from_real_life(
     assert jobs[0].log_metadata_extracting_status == metadata_status
 
     db.expunge_all()
+
+
+@pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
+@pytest.mark.ignored_logging_errors(
+    "log-embedder: unexpected failure, retrying later",
+    "log-embedder: too many unexpected failures, giving up",
+)
+async def test_log_exception_and_maybe_retry_on_database_error(
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    owner = gh_models.GitHubAccount(id=1, login="owner", avatar_url="https://dummy.com")
+    repo = gh_models.GitHubRepository(id=1, owner=owner, name="repo1")
+    job_data = {
+        "repository": repo,
+        "workflow_run_id": 1,
+        "name_without_matrix": "job_toto",
+        "started_at": date.utcnow(),
+        "completed_at": date.utcnow(),
+        "conclusion": gh_models.WorkflowJobConclusion.FAILURE,
+        "labels": [],
+        "run_attempt": 1,
+        "failed_step_name": "toto",
+        "failed_step_number": 1,
+        "head_sha": "",
+    }
+    db.add(
+        gh_models.WorkflowJob(
+            id=1,
+            **job_data,
+        ),
+    )
+    db.add(
+        gh_models.WorkflowJob(
+            id=2,
+            **job_data,
+        ),
+    )
+    db.add(
+        gh_models.WorkflowJob(
+            id=3,
+            **job_data,
+        ),
+    )
+    await db.commit()
+    db.expunge_all()
+
+    monkeypatch.setattr(settings, "LOG_EMBEDDER_ENABLED_ORGS", [owner.login])
+    monkeypatch.setattr(github_action, "LOG_EMBEDDER_MAX_ATTEMPTS", 1)
+
+    async def embed_log_raise_data_error_for_job_1(
+        openai_client: openai_api.OpenAIClient,
+        job: gh_models.WorkflowJob,
+        log_lines: list[str],
+    ) -> None:
+        if job.id == 1:
+            # This nul byte in a text field will lead to a DataError when we try to
+            # flush or commit this job to db
+            job.log_extract = "\x00"
+        job.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
+        job.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
+
+    async def extract_data_from_log_raise_data_error_for_job_2(
+        openai_client: openai_api.OpenAIClient,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        job: gh_models.WorkflowJob,
+        log_lines: list[str],
+    ) -> None:
+        if job.id == 2:
+            # This nul byte in a text field will lead to a DataError when we try to
+            # flush or commit this job to db
+            job.log_extract = "\x00"
+        job.log_metadata_extracting_status = (
+            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED
+        )
+        job.log_metadata = [
+            gh_models.WorkflowJobLogMetadata(),
+        ]
+
+    async def get_log_lines_raise_data_error_for_job_3(
+        gcs_client: google_cloud_storage.GoogleCloudStorageClient,
+        job: gh_models.WorkflowJob,
+    ) -> list[str]:
+        if job.id == 3:
+            # This nul byte in a text field will lead to a DataError when we try to
+            # flush or commit this job to db
+            job.log_extract = "\x00"
+        job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
+        return ["toto"]
+
+    with mock.patch.multiple(
+        github_action,
+        embed_log=embed_log_raise_data_error_for_job_1,
+        extract_data_from_log=extract_data_from_log_raise_data_error_for_job_2,
+        get_log=get_log_lines_raise_data_error_for_job_3,
+    ):
+        await github_action.embed_logs(redis_links)
+
+    job1 = await db.get_one(gh_models.WorkflowJob, 1)
+    assert job1.log_status == gh_models.WorkflowJobLogStatus.DOWNLOADED
+    assert job1.log_embedding_status == gh_models.WorkflowJobLogEmbeddingStatus.ERROR
+    assert (
+        job1.log_metadata_extracting_status
+        == gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED
+    )
+    assert job1.log_processing_attempts == 0
+
+    job2 = await db.get_one(gh_models.WorkflowJob, 2)
+    assert job2.log_status == gh_models.WorkflowJobLogStatus.DOWNLOADED
+    assert job2.log_embedding_status == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
+    assert (
+        job2.log_metadata_extracting_status
+        == gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR
+    )
+    assert job1.log_processing_attempts == 0
+
+    job3 = await db.get_one(gh_models.WorkflowJob, 3)
+    assert job3.log_status == gh_models.WorkflowJobLogStatus.ERROR
+    assert job3.log_embedding_status == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN
+    assert (
+        job3.log_metadata_extracting_status
+        == gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN
+    )
+    assert job1.log_processing_attempts == 0

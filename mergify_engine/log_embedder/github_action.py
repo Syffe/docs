@@ -332,9 +332,7 @@ def log_exception_and_maybe_retry(
         )
         return False
 
-    job.log_processing_attempts += 1
-
-    if job.log_processing_attempts >= LOG_EMBEDDER_MAX_ATTEMPTS:
+    if job.log_processing_attempts + 1 >= LOG_EMBEDDER_MAX_ATTEMPTS:
         LOG.error(
             "log-embedder: too many unexpected failures, giving up",
             exc_info=True,
@@ -366,8 +364,20 @@ def log_exception_and_maybe_retry(
             **log_extras,
         )
 
+    job.log_processing_attempts += 1
     job.log_processing_retry_after = retry_at
     return True
+
+
+async def try_commit_or_rollback(
+    session: sqlalchemy.ext.asyncio.AsyncSessionTransaction
+    | sqlalchemy.ext.asyncio.AsyncSession,
+) -> None:
+    try:
+        await session.commit()
+    except sqlalchemy.exc.DatabaseError:
+        await session.rollback()
+        raise
 
 
 async def embed_logs_with_log_embedding(
@@ -417,45 +427,55 @@ async def embed_logs_with_log_embedding(
         )
 
         jobs = (await session.scalars(stmt)).all()
+        # We detach jobs from the session to avoid these instances to be updated
+        session.expunge_all()
 
         LOG.info("log-embedder: %d jobs to embed", len(jobs))
 
         async with openai_api.OpenAIClient() as openai_client:
             refresh_ready_job_ids = []
             for job in jobs:
+                job_for_update = await session.merge(job, load=False)
                 try:
-                    log = await get_log(gcs_client, job)
+                    log = await get_log(gcs_client, job_for_update)
+                    await try_commit_or_rollback(session)
                 except gh_models.WorkflowJob.UnableToRetrieveLog:
-                    job.log_status = gh_models.WorkflowJobLogStatus.GONE
-                    await session.commit()
+                    session.expunge(job_for_update)
+                    job_for_error = await session.merge(job, load=False)
+                    job_for_error.log_status = gh_models.WorkflowJobLogStatus.GONE
+                    await try_commit_or_rollback(session)
                     continue
                 except Exception as e:
-                    retry = log_exception_and_maybe_retry(e, job)
+                    session.expunge(job_for_update)
+                    job_for_error = await session.merge(job, load=False)
+                    retry = log_exception_and_maybe_retry(e, job_for_error)
                     if not retry:
-                        job.log_status = gh_models.WorkflowJobLogStatus.ERROR
-                    await session.commit()
+                        job_for_error.log_status = gh_models.WorkflowJobLogStatus.ERROR
+                    await try_commit_or_rollback(session)
                     continue
 
                 if (
-                    job.log_embedding_status
+                    job_for_update.log_embedding_status
                     == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN
                 ):
                     try:
-                        await embed_log(openai_client, job, log)
+                        await embed_log(openai_client, job_for_update, log)
+                        await try_commit_or_rollback(session)
                     except Exception as e:
-                        retry = log_exception_and_maybe_retry(e, job)
+                        session.expunge(job_for_update)
+                        job_for_error = await session.merge(job, load=False)
+                        retry = log_exception_and_maybe_retry(e, job_for_error)
                         if not retry:
-                            job.log_embedding_status = (
+                            job_for_error.log_embedding_status = (
                                 gh_models.WorkflowJobLogEmbeddingStatus.ERROR
                             )
-                        await session.commit()
+                        await try_commit_or_rollback(session)
                         continue
 
-                if job.ci_issue_id is None:
-                    await ci_issue.CiIssue.link_job_to_ci_issue(session, job)
-                    refresh_ready_job_ids.append(job.id)
-
-                await session.commit()
+                if job_for_update.ci_issue_id is None:
+                    await ci_issue.CiIssue.link_job_to_ci_issue(session, job_for_update)
+                    await try_commit_or_rollback(session)
+                    refresh_ready_job_ids.append(job_for_update.id)
 
         await flaky_check.send_pull_refresh_for_jobs(redis_links, refresh_ready_job_ids)
 
@@ -513,6 +533,8 @@ async def embed_logs_with_extracted_metadata(
         )
 
         jobs = (await session.scalars(stmt)).unique().all()
+        # We detach jobs from the session to avoid these instances to be updated
+        session.expunge_all()
 
         LOG.info(
             "log-embedder: %d jobs to extract metadata",
@@ -521,48 +543,61 @@ async def embed_logs_with_extracted_metadata(
 
         async with openai_api.OpenAIClient() as openai_client:
             for job in jobs:
+                job_for_update = await session.merge(job, load=False)
                 try:
-                    log = await get_log(gcs_client, job)
+                    log = await get_log(gcs_client, job_for_update)
+                    await try_commit_or_rollback(session)
                 except gh_models.WorkflowJob.UnableToRetrieveLog:
-                    job.log_status = gh_models.WorkflowJobLogStatus.GONE
-                    await session.commit()
+                    session.expunge(job_for_update)
+                    job_for_error = await session.merge(job, load=False)
+                    job_for_error.log_status = gh_models.WorkflowJobLogStatus.GONE
+                    await try_commit_or_rollback(session)
                     continue
                 except Exception as e:
-                    retry = log_exception_and_maybe_retry(e, job)
+                    session.expunge(job_for_update)
+                    job_for_error = await session.merge(job, load=False)
+                    retry = log_exception_and_maybe_retry(e, job_for_error)
                     if not retry:
-                        job.log_status = gh_models.WorkflowJobLogStatus.ERROR
-                    await session.commit()
+                        job_for_error.log_status = gh_models.WorkflowJobLogStatus.ERROR
+                    await try_commit_or_rollback(session)
                     continue
 
-                if job.log_metadata_extracting_status == (
+                if job_for_update.log_metadata_extracting_status == (
                     gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN
                 ):
                     try:
                         await extract_data_from_log(
                             openai_client,
                             session,
-                            job,
+                            job_for_update,
                             log,
                         )
+                        await try_commit_or_rollback(session)
                     except UnableToExtractLogMetadata:
-                        job.log_metadata_extracting_status = (
+                        session.expunge(job_for_update)
+                        job_for_error = await session.merge(job, load=False)
+                        job_for_error.log_metadata_extracting_status = (
                             gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR
                         )
-                        await session.commit()
+                        await try_commit_or_rollback(session)
                         continue
                     except Exception as e:
-                        retry = log_exception_and_maybe_retry(e, job)
+                        session.expunge(job_for_update)
+                        job_for_error = await session.merge(job, load=False)
+                        retry = log_exception_and_maybe_retry(e, job_for_error)
                         if not retry:
-                            job.log_metadata_extracting_status = (
+                            job_for_error.log_metadata_extracting_status = (
                                 gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR
                             )
-                        await session.commit()
+                        await try_commit_or_rollback(session)
                         continue
 
-                if not job.ci_issues_gpt:
-                    await ci_issue.CiIssueGPT.link_job_to_ci_issues(session, job)
-
-                await session.commit()
+                if not job_for_update.ci_issues_gpt:
+                    await ci_issue.CiIssueGPT.link_job_to_ci_issues(
+                        session,
+                        job_for_update,
+                    )
+                    await try_commit_or_rollback(session)
 
         # FIXME(Kontrolix): For now, flacky_check is link to ci_issue when it will be link
         # to ci_issue_gpt adapte this method. I keep it here to not forget.
