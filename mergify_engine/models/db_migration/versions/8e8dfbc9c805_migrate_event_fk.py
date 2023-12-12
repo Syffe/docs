@@ -7,12 +7,13 @@ Create Date: 2023-11-20 15:14:45.599908
 
 """
 import asyncio
-import os
 
 import alembic.operations
 import sqlalchemy
 from sqlalchemy import func
 import sqlalchemy.ext.asyncio
+
+from mergify_engine import settings
 
 
 revision = "8e8dfbc9c805"
@@ -54,7 +55,7 @@ async def migrate_data(
     conn: sqlalchemy.ext.asyncio.AsyncConnection | sqlalchemy.ext.asyncio.AsyncSession,
     manual: bool = False,
 ) -> None:
-    if not manual and os.getenv("MERGIFYENGINE_SAAS_MODE"):
+    if not manual and settings.SAAS_MODE:
         print(
             "This must be a manual data migration for SaaS. "
             "Please run it directly on server with cmd `mergify-database-update`.",
