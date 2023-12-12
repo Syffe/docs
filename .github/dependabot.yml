@@ -15,9 +15,6 @@ updates:
       # FIXME(sileht):
       # https://github.com/redis/redis-py/issues/2995
       - dependency-name: redis
-      # FIXME(leo): 2.3.0 has some incompatibility issues
-      # https://linear.app/mergify/issue/MRGFY-2933/ddtrace-230-errors
-      - dependency-name: ddtrace
   - package-ecosystem: github-actions
     directory: /
     schedule:
