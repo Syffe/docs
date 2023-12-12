@@ -466,13 +466,13 @@ async def test_embed_logs_on_controlled_data(
             id=i,
             repository=repo,
             workflow_run_id=1,
-            name_without_matrix="job_toto",
+            name_without_matrix="job_sample",
             started_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
             completed_at=github_types.ISODateTimeType(date.utcnow().isoformat()),
             conclusion=gh_models.WorkflowJobConclusion.FAILURE,
             labels=[],
             run_attempt=1,
-            failed_step_name="toto",
+            failed_step_name="step_sample",
             failed_step_number=1,
             head_sha="",
         )
@@ -664,9 +664,9 @@ async def test_embed_logs_on_various_data(
     await populated_db.execute(
         sqlalchemy.update(gh_models.WorkflowJob)
         .values(
-            failed_step_name="toto",
+            failed_step_name="step_sample",
             failed_step_number=1,
-            name_without_matrix="job_toto",
+            name_without_matrix="job_sample",
         )
         .where(
             gh_models.WorkflowJob.failed_step_name.is_not(None),
@@ -967,13 +967,13 @@ async def test_workflow_job_log_life_cycle(
         id=1,
         repository=repo,
         workflow_run_id=1,
-        name_without_matrix="job_toto",
+        name_without_matrix="job_sample",
         started_at=date.utcnow(),
         completed_at=date.utcnow(),
         conclusion=gh_models.WorkflowJobConclusion.FAILURE,
         labels=[],
         run_attempt=1,
-        failed_step_name="toto",
+        failed_step_name="step_sample",
         failed_step_number=1,
         head_sha="",
     )
@@ -1053,7 +1053,7 @@ async def test_workflow_job_log_life_cycle(
     ("job_name", "step", "log_status", "embedding_status", "metadata_status"),
     (
         (
-            "job_toto",
+            "job_sample",
             1,
             gh_models.WorkflowJobLogStatus.DOWNLOADED,
             gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -1067,14 +1067,14 @@ async def test_workflow_job_log_life_cycle(
             gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
         ),
         (
-            "job_toto",
+            "job_sample",
             6,
             gh_models.WorkflowJobLogStatus.DOWNLOADED,
             gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
             gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
         ),
         (
-            "job_toto",
+            "job_sample",
             2,
             gh_models.WorkflowJobLogStatus.DOWNLOADED,
             gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
@@ -1107,7 +1107,7 @@ async def test_workflow_job_from_real_life(
         conclusion=gh_models.WorkflowJobConclusion.FAILURE,
         labels=[],
         run_attempt=1,
-        failed_step_name="toto",
+        failed_step_name="step_sample",
         failed_step_number=step,
         head_sha="",
     )
@@ -1248,7 +1248,7 @@ async def test_log_exception_and_maybe_retry_on_database_error(
     job_data = {
         "repository": repo,
         "workflow_run_id": 1,
-        "name_without_matrix": "job_toto",
+        "name_without_matrix": "job_sample",
         "started_at": date.utcnow(),
         "completed_at": date.utcnow(),
         "conclusion": gh_models.WorkflowJobConclusion.FAILURE,
