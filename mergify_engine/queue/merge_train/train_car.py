@@ -56,6 +56,11 @@ class DraftPullRequestCreationTemporaryFailure(Exception):
     reason: str
 
 
+@dataclasses.dataclass
+class DraftPullRequestBranchCreationTemporaryFailure(Exception):
+    reason: str
+
+
 CI_FAILED_MESSAGE = "The CI checks have failed."
 CHECKS_TIMEOUT_MESSAGE = "The checks have timed out."
 
@@ -937,6 +942,14 @@ class TrainCar:
                 typing.cast(github_types.GitHubPullRequest, response.json()),
             )
 
+    @tracer.wrap("TrainCar._prepare_draft_pr_branch")
+    @tenacity.retry(
+        retry=tenacity.retry_if_exception_type(
+            DraftPullRequestBranchCreationTemporaryFailure,
+        ),
+        stop=tenacity.stop_after_attempt(2),
+        reraise=True,
+    )
     async def _prepare_draft_pr_branch(
         self,
         branch_name: github_types.GitHubRefType,
@@ -987,6 +1000,21 @@ class TrainCar:
                 except http.HTTPClientSideError as exc_patch:
                     await self._set_creation_failure(exc_patch.message)
                     raise TrainCarPullRequestCreationFailure(self) from exc_patch
+
+                self.train.log.error(
+                    "Conflict with merge-queue branch creation",
+                    partition_name=self.train.partition_name,
+                    queue_name=self.get_queue_name(),
+                    branch_name=branch_name,
+                    sha=base_sha,
+                    gh_pull=self.queue_pull_request_number,
+                    parent_pull_request_numbers=self.parent_pull_request_numbers,
+                    still_queued_embarked_pull_numbers=[
+                        ep.user_pull_request_number
+                        for ep in self.still_queued_embarked_pulls
+                    ],
+                )
+                raise DraftPullRequestBranchCreationTemporaryFailure(exc.message)
 
             await self._set_creation_failure(exc.message, report_as_error=True)
             raise TrainCarPullRequestCreationFailure(self) from exc
@@ -1177,11 +1205,16 @@ class TrainCar:
             f"{self.QUEUE_BRANCH_PREFIX}{self.queue_branch_name}",
         )
 
-        existing_pr = await self._prepare_draft_pr_branch(
-            self.queue_branch_name,
-            base_sha,
-            on_behalf,
-        )
+        try:
+            existing_pr = await self._prepare_draft_pr_branch(
+                self.queue_branch_name,
+                base_sha,
+                on_behalf,
+            )
+        except DraftPullRequestBranchCreationTemporaryFailure as e:
+            await self._set_creation_failure(e.reason)
+            raise TrainCarPullRequestCreationPostponed(self) from e
+
         if existing_pr is not None:
             await self._set_initial_state(
                 TrainCarChecksType.DRAFT_DELEGATED,
