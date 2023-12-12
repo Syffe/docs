@@ -144,6 +144,10 @@ class RegexToolbox:
 
 class GeneralCleaningToolbox:
     @staticmethod
+    def remove_null_bytes(log_line: str) -> str:
+        return log_line.replace("\x00", "")
+
+    @staticmethod
     def lower_case(log_line: str) -> str:
         return log_line.lower()
 
@@ -200,12 +204,18 @@ class GeneralCleaningToolbox:
     )
 
     @classmethod
+    def apply_minimal_cleaning(cls, log_line: str) -> str:
+        return cls.remove_null_bytes(log_line)
+
+    @classmethod
     def apply_general_cleaning(
         cls,
         log_line: str,
         log_tags: list[log_tag.LogTag],
         clean_non_alphanumeric: bool,
     ) -> str:
+        log_line = cls.apply_minimal_cleaning(log_line)
+
         for clean_fn in cls.clean_functions:
             log_line = clean_fn(log_line)
 
@@ -253,7 +263,8 @@ class LogCleaner:
         self,
         raw_log_line: str,
     ) -> str:
-        line = self.regex_toolbox.apply_gpt_regex(raw_log_line)
+        line = self.general_cleaning_toolbox.apply_minimal_cleaning(raw_log_line)
+        line = self.regex_toolbox.apply_gpt_regex(line)
         if not line:
             return line
         return self.general_cleaning_toolbox.clean_number_inside_brackets(line.rstrip())

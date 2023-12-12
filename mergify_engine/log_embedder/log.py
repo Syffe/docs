@@ -103,6 +103,7 @@ class Log:
             return ""
 
         content = self.content.strip()
+        content = content.replace("\x00", "")
 
         # Do we need to truncate?
         if len(content) <= max_bytes:

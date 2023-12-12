@@ -1,0 +1,1 @@
+Some log with a nul byte:  and another one

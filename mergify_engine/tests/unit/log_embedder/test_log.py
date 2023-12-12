@@ -46,7 +46,7 @@ def test_iter_gpt_cleaned_log_lines_reverse() -> None:
 
 def test_extract() -> None:
     content = """ hello
-world
+world\x00
    happy
 
 
@@ -93,7 +93,9 @@ here """
     assert log.extract(32) == "world\n   happy\n\n\n to😇\nbe\nhere"
     assert log.extract(33) == "world\n   happy\n\n\n to😇\nbe\nhere"
     assert log.extract(34) == "world\n   happy\n\n\n to😇\nbe\nhere"
-    assert log.extract(35) == content.strip()
-    assert log.extract(36) == content.strip()
 
-    assert log.extract(1000) == content.strip()
+    cleaned = content.strip().replace("\x00", "")
+    assert log.extract(35) == cleaned
+    assert log.extract(36) == cleaned
+
+    assert log.extract(1000) == cleaned
