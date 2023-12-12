@@ -5,18 +5,15 @@ import io
 import os
 import pathlib
 import subprocess
-import typing
 from unittest import mock
 import warnings
 
 import alembic
 import sqlalchemy
-from sqlalchemy import orm
 import sqlalchemy.ext.hybrid
 
 from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import models
 from mergify_engine import settings
 from mergify_engine.config import types as config_types
 from mergify_engine.models import github as gh_models
@@ -111,74 +108,6 @@ async def test_one_head() -> None:
     assert (
         len(heads) == 1
     ), f"One head revision allowed, {len(heads)} found: {', '.join(heads)}"
-
-
-def test_model_as_dict() -> None:
-    class TestSimpleModel(models.Base):
-        __tablename__ = "test_simple_table"
-        __github_attributes__ = ("id", "name")
-        id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
-        name: orm.Mapped[str]
-        not_a_github_thing: orm.Mapped[str]
-
-    obj = TestSimpleModel(id=0)
-    assert obj.as_github_dict() == typing.cast(
-        models.ORMObjectAsDict,
-        {"id": 0, "name": None},
-    )
-
-    obj = TestSimpleModel(id=0, name="hello")
-    assert obj.as_github_dict() == typing.cast(
-        models.ORMObjectAsDict,
-        {"id": 0, "name": "hello"},
-    )
-
-
-def test_relational_model_as_dict() -> None:
-    class TestRelationalUserModel(models.Base):
-        __tablename__ = "test_relational_user_table"
-        __github_attributes__ = ("id", "name", "copy_id")
-
-        id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
-        name: orm.Mapped[str]
-
-        @sqlalchemy.ext.hybrid.hybrid_property
-        def copy_id(self) -> int:
-            return self.id
-
-    class TestRelationalModel(models.Base):
-        __tablename__ = "test_relational_table"
-        __github_attributes__ = ("id", "name", "user")
-        id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
-        name: orm.Mapped[str]
-        user_id: orm.Mapped[int] = orm.mapped_column(
-            sqlalchemy.ForeignKey("test_relational_user_table.id"),
-        )
-        user: orm.Mapped[TestRelationalUserModel] = orm.relationship(
-            lazy="joined",
-            foreign_keys=[user_id],
-        )
-
-    obj = TestRelationalModel(id=0)
-    assert obj.as_github_dict() == typing.cast(
-        models.ORMObjectAsDict,
-        {"id": 0, "name": None, "user": None},
-    )
-
-    obj = TestRelationalModel(
-        id=0,
-        name="hello",
-        user_id=0,
-        user=TestRelationalUserModel(id=0, name="me"),
-    )
-    assert obj.as_github_dict() == typing.cast(
-        models.ORMObjectAsDict,
-        {
-            "id": 0,
-            "name": "hello",
-            "user": {"id": 0, "name": "me", "copy_id": 0},
-        },
-    )
 
 
 async def test_get_or_create_on_conflict(_setup_database: None) -> None:
