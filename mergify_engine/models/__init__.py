@@ -1,5 +1,6 @@
 from collections import abc
 import datetime
+import enum
 import typing
 
 from alembic_utils import pg_extension
@@ -79,6 +80,10 @@ class Base(orm.DeclarativeBase):
         if isinstance(value, datetime.datetime):
             # Replace the +00:00 with Z to be iso with GitHub's way of returning iso dates
             return value.isoformat().replace("+00:00", "Z")
+
+        if isinstance(value, enum.StrEnum):
+            return value.value
+
         return value
 
     def as_github_dict(self) -> ORMObjectAsDict:

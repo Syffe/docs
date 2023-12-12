@@ -1,3 +1,4 @@
+import pydantic
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
@@ -90,6 +91,7 @@ async def test_as_dict(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
     repo = await gh_models.GitHubRepository.get_or_create(db, gh_repo)
     db.add(repo)
     await db.commit()
+    db.expunge_all()
 
     commited_repo = await gh_models.GitHubRepository.get_by_name(
         db,
@@ -98,7 +100,8 @@ async def test_as_dict(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
     )
 
     assert commited_repo is not None
-    assert commited_repo.as_github_dict() == {
+    repo_github_dict = commited_repo.as_github_dict()
+    assert repo_github_dict == {
         "id": 0,
         "name": "mergify-engine",
         "owner": {"id": 0, "login": "Mergifyio", "type": "User", "avatar_url": ""},
@@ -107,6 +110,9 @@ async def test_as_dict(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
         "full_name": "Mergifyio/mergify-engine",
         "archived": False,
     }
+    pydantic.TypeAdapter(github_types.GitHubAccount).validate_python(
+        repo_github_dict["owner"],
+    )
 
 
 def test_is_complete() -> None:
