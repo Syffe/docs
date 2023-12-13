@@ -1,5 +1,3 @@
-import json
-
 import numpy as np
 import pytest
 import respx
@@ -63,7 +61,7 @@ async def test_get_chat_completion(
         "choices": [
             {
                 "index": 0,
-                "delta": {
+                "message": {
                     "role": "assistant",
                     "content": "Hello! How can I assist you today?",
                 },
@@ -76,13 +74,12 @@ async def test_get_chat_completion(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
     ).respond(
         200,
-        content_type="text/event-stream",
-        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
+        json=json_response,
     )
 
     async with openai_api.OpenAIClient() as client:
         chat_completion = await client.get_chat_completion(
-            openai_api.ChatCompletionQuery("user", "hello", 0),
+            openai_api.ChatCompletionQuery("user", "hello", 0, 0, 0),
         )
 
     assert (
@@ -96,6 +93,8 @@ async def test_get_chat_completion_model() -> None:
         "user",
         "hello",
         0,
+        0,
+        0,
     )
     model = query.get_chat_completion_model()
     assert model["name"] == "gpt-4-1106-preview"
@@ -104,6 +103,8 @@ async def test_get_chat_completion_model() -> None:
         "user",
         "hello"
         * (model["max_tokens"] - 1 - openai_api.OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN),
+        0,
+        0,
         0,
     )
     # NOTE(Kontrolix): - 1 is for the token used by the role
@@ -120,6 +121,8 @@ async def test_get_chat_completion_model() -> None:
             - 100
         ),
         100,
+        0,
+        0,
     )
 
     model = query.get_chat_completion_model()
@@ -135,6 +138,8 @@ async def test_get_chat_completion_model() -> None:
             - 100
         ),
         101,
+        0,
+        0,
     )
     with pytest.raises(
         openai_api.OpenAiException,
@@ -148,17 +153,23 @@ async def test_get_query_json() -> None:
         "user",
         "hello",
         0,
+        0,
+        0,
     )
 
     assert query.json() == {
         "model": "gpt-4-1106-preview",
         "messages": [{"role": "user", "content": "hello"}],
         "response_format": {"type": "text"},
+        "seed": 0,
+        "temperature": 0,
     }
 
     query = openai_api.ChatCompletionQuery(
         "user",
         "hello",
+        0,
+        0,
         0,
         "json_object",
     )
@@ -167,9 +178,11 @@ async def test_get_query_json() -> None:
         "model": "gpt-4-1106-preview",
         "messages": [{"role": "user", "content": "hello"}],
         "response_format": {"type": "json_object"},
+        "seed": 0,
+        "temperature": 0,
     }
 
-    query = openai_api.ChatCompletionQuery("user", "hello", 0, "json_object", 5, 1)
+    query = openai_api.ChatCompletionQuery("user", "hello", 0, 5, 1, "json_object")
 
     assert query.json() == {
         "model": "gpt-4-1106-preview",

@@ -230,7 +230,6 @@ async def extract_data_from_log(
     log: logm.Log,
 ) -> None:
     cleaned_log = get_cleaned_log(log)
-
     query = openai_api.ChatCompletionQuery(
         role=EXTRACT_DATA_QUERY_TEMPLATE.role,
         content=f"{EXTRACT_DATA_QUERY_TEMPLATE.content}{cleaned_log}",
@@ -242,8 +241,13 @@ async def extract_data_from_log(
 
     chat_completion = await openai_client.get_chat_completion(query)
     choice = chat_completion["choices"][0]
-    chat_response = choice.get("message", {}).get("content")
+    if choice["finish_reason"] != "stop":
+        # FIXME(Kontrolix): It means that GPT reaches a limit.
+        # for now I have no better solution than push the error under the carpet.
+        # But we will have to improve the prompt or the cleaner or the model we use ...
+        raise UnableToExtractLogMetadata
 
+    chat_response = choice.get("message", {}).get("content")
     if not chat_response:
         # FIXME(sileht): We should mark the job as ERROR instead of retrying
         LOG.warning(
@@ -253,17 +257,7 @@ async def extract_data_from_log(
         )
         raise UnableToExtractLogMetadata
 
-    try:
-        extracted_data: list[ExtractedDataObject] = json.loads(chat_response)[
-            "failures"
-        ]
-    except json.JSONDecodeError:
-        if choice["finish_reason"] == openai_api.ChatCompletionFinishReason.length:
-            # FIXME(Kontrolix): It means that GPT responde with a too long response,
-            # for now I have no better solution than push the error under the carpet.
-            # But we will have to improve the prompt or the cleaner or the model we use ...
-            raise UnableToExtractLogMetadata
-        raise
+    extracted_data: list[ExtractedDataObject] = json.loads(chat_response)["failures"]
 
     # FIXME(Kontrolix): It means that GPT found no error, for now I have no better
     # solution than push the error under the carpet. But we will have to improve

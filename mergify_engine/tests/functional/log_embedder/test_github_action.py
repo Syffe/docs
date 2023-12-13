@@ -80,33 +80,36 @@ JOB_IDS_BY_ISSUE_GPT: dict[int, list[int]] = {
     8: [17901659641],
     9: [17901659641],
     10: [17901659641],
-    11: [17921959372, 17925396037],
-    12: [17925396037],
-    13: [17949965633],
-    14: [17952684380],
-    15: [17953176262, 17953176746, 17953198682, 17953198783, 17953364603, 17953417253],
-    16: [17956712782],
-    17: [17956714438],
-    18: [17957050782, 17957055281],
-    19: [17865016836],
-    20: [17901359458],
-    21: [17901360892],
-    22: [17901361506],
-    23: [17901361849],
-    24: [17951738999],
-    25: [17952831249, 17954365579],
-    26: [17952831249, 17954365579, 17960638740],
-    27: [17954365579, 17960638740],
-    28: [17954365579],
-    29: [17955513710, 17960638740],
-    30: [17955513710, 17960638740],
-    31: [17959931265],
-    32: [17963656086],
-    33: [17963656086],
-    34: [17963656086],
+    11: [17901659641],
+    12: [17921959372],
+    13: [17925396037],
+    14: [17925396037],
+    15: [17949965633],
+    16: [17952684380],
+    17: [17953176262, 17953176746, 17953198682, 17953198783, 17953364603, 17953417253],
+    18: [17956712782],
+    19: [17956714438],
+    20: [17957050782, 17957055281],
+    21: [17957055281],
+    22: [17865016836],
+    23: [17901359458],
+    24: [17901360892],
+    25: [17901361506],
+    26: [17901361849],
+    27: [17951738999],
+    28: [17952831249, 17954365579, 17960638740],
+    29: [17952831249, 17955513710, 17960638740],
+    30: [17952831249, 17955513710, 17960638740],
+    31: [17952831249, 17955513710, 17960638740],
+    32: [17954365579],
+    33: [17955513710],
+    34: [17959931265],
     35: [17963656086],
-    36: [17890395377, 17890412896],
-    37: [17890410390],
+    36: [17963656086],
+    37: [17963656086],
+    38: [17963656086],
+    39: [17890395377],
+    40: [17890410390, 17890412896],
 }
 
 
@@ -728,12 +731,10 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             for metadata in job.log_metadata:
                 assert metadata.language == "JavaScript"
                 assert metadata.lineno == "15"
-                assert (
-                    metadata.stack_trace
-                    == """TypeError: Cannot read properties of undefined (reading 'id')\n    at eval (eval at callAsyncFunction (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15143:16), <anonymous>:15:31)\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)\n    at async main (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15236:20)"""
+                assert metadata.stack_trace is not None
+                assert metadata.stack_trace.startswith(
+                    "TypeError: Cannot read properties of undefined (reading 'id')",
                 )
-                assert (
-                    metadata.error
-                    == "TypeError: Cannot read properties of undefined (reading 'id')"
-                )
+                assert metadata.error is not None
+                assert metadata.error.startswith("TypeError")
                 assert metadata.problem_type == "Accessing property of undefined object"

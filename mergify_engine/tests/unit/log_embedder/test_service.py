@@ -1,6 +1,5 @@
 import datetime
 import io
-import json
 import os
 import re
 import typing
@@ -126,7 +125,7 @@ def mock_extracting_metadata_extracted(
         "choices": [
             {
                 "index": 0,
-                "delta": {
+                "message": {
                     "role": "assistant",
                     "content": """
                         {
@@ -154,11 +153,7 @@ def mock_extracting_metadata_extracted(
     }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-    ).respond(
-        200,
-        content_type="text/event-stream",
-        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-    )
+    ).respond(200, json=json_response)
 
 
 def mock_extracting_metadata_misformated(
@@ -172,7 +167,7 @@ def mock_extracting_metadata_misformated(
         "choices": [
             {
                 "index": 0,
-                "delta": {
+                "message": {
                     "role": "assistant",
                     "content": """
                         {
@@ -200,11 +195,7 @@ def mock_extracting_metadata_misformated(
     }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-    ).respond(
-        200,
-        content_type="text/event-stream",
-        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-    )
+    ).respond(200, json=json_response)
 
 
 def mock_extracting_metadata_invalid_json(
@@ -218,7 +209,7 @@ def mock_extracting_metadata_invalid_json(
         "choices": [
             {
                 "index": 0,
-                "delta": {
+                "message": {
                     "role": "assistant",
                     "content": """
                         {
@@ -240,11 +231,7 @@ def mock_extracting_metadata_invalid_json(
     }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-    ).respond(
-        200,
-        content_type="text/event-stream",
-        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-    )
+    ).respond(200, json=json_response)
 
 
 def mock_extracting_metadata_empty_failures(
@@ -258,7 +245,7 @@ def mock_extracting_metadata_empty_failures(
         "choices": [
             {
                 "index": 0,
-                "delta": {
+                "message": {
                     "role": "assistant",
                     "content": """
                         {
@@ -276,11 +263,7 @@ def mock_extracting_metadata_empty_failures(
     }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-    ).respond(
-        200,
-        content_type="text/event-stream",
-        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-    )
+    ).respond(200, json=json_response)
 
 
 def mock_extracting_metadata_none_failures(
@@ -294,7 +277,7 @@ def mock_extracting_metadata_none_failures(
         "choices": [
             {
                 "index": 0,
-                "delta": {
+                "message": {
                     "role": "assistant",
                     "content": """
                         {
@@ -312,11 +295,7 @@ def mock_extracting_metadata_none_failures(
     }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-    ).respond(
-        200,
-        content_type="text/event-stream",
-        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-    )
+    ).respond(200, json=json_response)
 
 
 def mock_extracting_metadata_finish_reason_length(
@@ -330,7 +309,7 @@ def mock_extracting_metadata_finish_reason_length(
         "choices": [
             {
                 "index": 0,
-                "delta": {
+                "message": {
                     "role": "assistant",
                     "content": """
                         {
@@ -348,11 +327,7 @@ def mock_extracting_metadata_finish_reason_length(
     }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-    ).respond(
-        200,
-        content_type="text/event-stream",
-        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-    )
+    ).respond(200, json=json_response)
 
 
 def mock_extracting_metadata_error(
@@ -427,7 +402,7 @@ async def test_embed_logs_on_controlled_data(
         "choices": [
             {
                 "index": 0,
-                "delta": {
+                "message": {
                     "role": "assistant",
                     "content": """
                         {
@@ -451,11 +426,7 @@ async def test_embed_logs_on_controlled_data(
     }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-    ).respond(
-        200,
-        content_type="text/event-stream",
-        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-    )
+    ).respond(200, json=json_response)
 
     # NOTE(Kontrolix): Reduce batch size to speed up test
     monkeypatch.setattr(github_action, "LOG_EMBEDDER_JOBS_BATCH_SIZE", 2)
@@ -621,7 +592,7 @@ async def test_embed_logs_on_various_data(
         "choices": [
             {
                 "index": 0,
-                "delta": {
+                "message": {
                     "role": "assistant",
                     "content": """
                         {
@@ -645,11 +616,7 @@ async def test_embed_logs_on_various_data(
     }
     respx_mock.post(
         f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-    ).respond(
-        200,
-        content_type="text/event-stream",
-        content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-    )
+    ).respond(200, json=json_response)
 
     respx_mock.get(
         re.compile(
@@ -1176,7 +1143,7 @@ async def test_workflow_job_from_real_life(
             "choices": [
                 {
                     "index": 0,
-                    "delta": {
+                    "message": {
                         "role": "assistant",
                         "content": """
                             {
@@ -1200,11 +1167,7 @@ async def test_workflow_job_from_real_life(
         }
         respx_mock.post(
             f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
-        ).respond(
-            200,
-            content_type="text/event-stream",
-            content=f"data: {json.dumps(json_response)}\n\ndata: [DONE]\n\n".encode(),
-        )
+        ).respond(200, json=json_response)
 
     monkeypatch.setattr(settings, "LOG_EMBEDDER_ENABLED_ORGS", [owner.login])
     monkeypatch.setattr(github_action, "LOG_EMBEDDER_MAX_ATTEMPTS", 1)
