@@ -34,7 +34,7 @@ LOG = daiquiri.getLogger(__name__)
 # NOTE(Kontrolix): We remove all the windows forbidden path character as github does
 WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP = re.compile(r"[\*\"/\\<>:|\?]")
 LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
-LOG_EMBEDDER_MAX_ATTEMPTS = 30
+LOG_EMBEDDER_MAX_ATTEMPTS = 5
 
 JSON_STRUCTURE = {
     "problem_type": "What is the root cause",
