@@ -26,7 +26,6 @@ from mergify_engine import yaml
 from mergify_engine.actions import merge_base
 from mergify_engine.engine import actions_runner
 from mergify_engine.engine import commands_runner
-from mergify_engine.github_in_postgres import process_events as github_event_processing
 from mergify_engine.models import events as evt_models
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
@@ -34,8 +33,6 @@ from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.tests.tardis import time_travel
-from mergify_engine.worker import manager
-from mergify_engine.worker import stream as stream_worker
 
 
 TEMPLATE_GITHUB_ACTION = """
@@ -9400,33 +9397,3 @@ class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
             f"The [subscription]({settings.DASHBOARD_UI_FRONT_URL}/github/mergifyio-testing/subscription) needs to be updated to enable this feature"
             in comment_p1_rep["comment"]["body"]
         )
-
-
-@pytest.mark.skipif(
-    not settings.GITHUB_URL.startswith("https://github.com"),
-    reason="too slow to be ran in daily rerecording",
-)
-class TestQueueActionWithPgEventsIngestion(TestQueueAction):
-    async def run_engine(
-        self,
-        additional_services: manager.ServiceNamesT | None = None,
-    ) -> None:
-        real_engine_run = stream_worker.run_engine
-
-        async def mocked_stream_run_engine(*args, **kwargs):  # type: ignore[no-untyped-def]
-            await self.receive_and_forward_all_events_to_engine()
-
-            # Also need to run github-in-postgres service after
-            # events were stored, otherwise we won't update anything in db
-            base.LOG.info("Running github-in-postgres")
-            while await self.redis_links.stream.xlen("github_in_postgres"):
-                await github_event_processing.store_redis_events_in_pg(self.redis_links)
-            base.LOG.info("github-in-postgres finished")
-            return await real_engine_run(*args, **kwargs)
-
-        with mock.patch.object(stream_worker, "run_engine", mocked_stream_run_engine):
-            if additional_services:
-                additional_services.add("github-in-postgres")
-            else:
-                additional_services = {"github-in-postgres"}
-            await super().run_engine(additional_services)
