@@ -1415,7 +1415,7 @@
     "Status": "affected",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-35737",
-    "Title": "an array-bounds overflow if billions of bytes are used in a string argument to a C API",
+    "Title": "sqlite: an array-bounds overflow if billions of bytes are used in a string argument to a C API",
     "Severity": "LOW",
     "PublishedDate": "2022-08-03T06:15:00Z"
   },
@@ -1848,6 +1848,14 @@
     "Title": "http-tiny: insecure TLS cert default",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-39804",
+    "PkgName": "tar",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-39804",
+    "Title": "tar: Incorrectly handled extension attributes in PAX archives can lead to a crash.",
+    "Severity": "LOW"
   },
   {
     "VulnerabilityID": "CVE-2023-4016",
