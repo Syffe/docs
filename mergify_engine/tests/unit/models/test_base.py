@@ -25,6 +25,9 @@ def test_as_github_dict_value_transformer(
     expected_value: typing.Any,
 ) -> None:
     assert models.Base._as_github_dict_value_transformer(value) == expected_value
+    assert type(models.Base._as_github_dict_value_transformer(value)) == type(
+        expected_value,
+    )
 
 
 def test_model_as_dict() -> None:
