@@ -131,7 +131,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            f"### Rule: test (merge)\n- [X] `-conflict` [:pushpin: merge requirement]\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] `label=test`\n"
+            f"### ✅ Rule: test (merge)\n- [X] `-conflict` [:pushpin: merge requirement]\n- [X] `-draft` [:pushpin: merge requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] `label=test`\n"
             in summary["output"]["summary"]
         )
 

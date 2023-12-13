@@ -61,7 +61,7 @@ class TestApiSimulator(base.FunctionalTestBase):
         assert r.json()["title"] == "1 rule matches", r.json()
         assert (
             r.json()["summary"].split("<hr />")[0]
-            == f"""### Rule: a lot of stuff (post_check, comment, edit, assign)
+            == f"""### ✅ Rule: a lot of stuff (post_check, comment, edit, assign)
 - [X] `base={self.main_branch_name}`
 - [X] any of:
   - [X] `schedule=MON-SUN 00:00-23:59`

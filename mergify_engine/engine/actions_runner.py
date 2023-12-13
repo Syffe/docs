@@ -127,7 +127,7 @@ async def gen_summary_rules(
         if rule.hidden:
             continue
         if rule.disabled is None:
-            summary += f"### Rule: {escaped_rule_name} ({', '.join(rule.actions)})\n"
+            summary += f"###{' ✅' if rule.conditions.match else ''} Rule: {escaped_rule_name} ({', '.join(rule.actions)})\n"
         else:
             summary += (
                 f"### Rule: ~~{escaped_rule_name} ({', '.join(rule.actions)})~~\n"

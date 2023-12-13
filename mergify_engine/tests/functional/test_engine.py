@@ -368,7 +368,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 - [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]
 - [X] `base={self.main_branch_name}`
 
-### Rule: merge (comment)
+### ✅ Rule: merge (comment)
 - [X] `base={self.main_branch_name}`
 """
             in check_run_summary_p["check_run"]["output"]["summary"]
