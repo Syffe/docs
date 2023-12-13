@@ -1,14 +1,8 @@
 import typing
-from unittest import mock
-
-import httpx
 
 from mergify_engine import context
 from mergify_engine import github_graphql_types
-from mergify_engine import settings
 from mergify_engine import yaml
-from mergify_engine.clients import github
-from mergify_engine.clients import http
 from mergify_engine.tests.functional import base
 
 
@@ -185,32 +179,7 @@ class TestBranchProtection(base.FunctionalTestBase):
 
         await self.add_label(p1["number"], "ready-to-merge")
 
-        class HTTPForbiddenRename(http.HTTPClientSideError):
-            status_code = 403
-            message = "Resource not accessible by integration"
-
-        real_client_post = github.AsyncGitHubClient.post
-
-        async def mock_client_post(  # type: ignore[no-untyped-def]
-            self,
-            url: str,
-            **kwargs: typing.Any,
-        ) -> httpx.Response:
-            if url.endswith("/rename"):
-                raise HTTPForbiddenRename(
-                    message="Resource not accessible by integration",
-                    request=mock.Mock(),
-                    response=mock.Mock(),
-                )
-
-            return await real_client_post(self, url, **kwargs)
-
-        # Mock only in non-record mode to keep the real request from github in record mode
-        if not settings.TESTING_RECORD:
-            with mock.patch.object(github.AsyncGitHubClient, "post", mock_client_post):
-                await self.run_engine()
-        else:
-            await self.run_engine()
+        await self.run_engine()
 
         draft_pr = await self.wait_for_pull_request("opened")
         await self.wait_for_pull_request("closed", draft_pr["number"])
