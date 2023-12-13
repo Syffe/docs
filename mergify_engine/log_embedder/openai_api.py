@@ -97,10 +97,17 @@ class ChatCompletionJson(typing.TypedDict):
     temperature: float
 
 
+# https://platform.openai.com/docs/api-reference/chat/object
 class ChatCompletionChoice(typing.TypedDict):
     index: int
     message: ChatCompletionMessage
-    finish_reason: typing.Literal["stop", "length", "timeout"]
+    finish_reason: typing.Literal[
+        "stop",
+        "length",
+        "content_filter",
+        "tool_calls",
+        "function_call",
+    ]
 
 
 class ChatCompletionObject(typing.TypedDict):
