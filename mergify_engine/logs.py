@@ -1,6 +1,7 @@
 import contextvars
 import logging
 import os
+import pathlib
 import sys
 import typing
 
@@ -117,7 +118,11 @@ def config_log() -> None:
             )
 
 
-def setup_logging(dump_config: bool = True, stdout_logging_only: bool = False) -> None:
+def setup_logging(
+    dump_config: bool = True,
+    stdout_logging_only: bool = False,
+    log_pytest_xdist_to_files: bool = False,
+) -> None:
     outputs: list[daiquiri.output.Output] = []
 
     if settings.LOG_STDOUT or stdout_logging_only:
@@ -146,6 +151,19 @@ def setup_logging(dump_config: bool = True, stdout_logging_only: bool = False) -
                 handler_class=daiquiri.handlers.PlainTextDatagramHandler,
                 formatter=HerokuDatadogFormatter(),
                 **dd_extras,  # type:ignore [arg-type]
+            ),
+        )
+
+    if log_pytest_xdist_to_files:
+        dir_location = pathlib.Path(__file__).parent / "tests-logs"
+        dir_location.mkdir(exist_ok=True)
+
+        outputs.append(
+            daiquiri.output.File(
+                filename=f"{os.environ.get('PYTEST_XDIST_WORKER')}.log",
+                directory="tests-logs",
+                level=settings.LOG_STDOUT_LEVEL,
+                formatter=CUSTOM_FORMATTER,
             ),
         )
 

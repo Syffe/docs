@@ -49,6 +49,14 @@ GITHUB_CI = utils.strtobool(os.getenv("CI", "false"))
 PYTEST_FIXTURES_TIMING = utils.strtobool(os.getenv("PYTEST_FIXTURES_TIMING", "false"))
 
 
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--log-xdist",
+        action="store_true",
+        help="Create a log file for each pytest-xdist workers in `tests-logs`",
+    )
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_fixture_setup(
     fixturedef: typing.Any,
@@ -109,9 +117,14 @@ def _setup_logging(
     request: pytest.FixtureRequest,
     caplog: pytest.LogCaptureFixture,
 ) -> abc.Generator[None, None, None]:
+    log_pytest_xdist_to_files = bool(
+        settings.TESTING_RECORD
+        and os.environ.get("PYTEST_XDIST_WORKER")
+        and request.config.getoption("--log-xdist"),
+    )
     # daiquiri removes all handlers during setup, as we want to sexy output and the pytest
     # capability at the same, we must add back the pytest handler
-    logs.setup_logging()
+    logs.setup_logging(log_pytest_xdist_to_files=log_pytest_xdist_to_files)
     logging.getLogger(None).addHandler(caplog.handler)
     yield
 

@@ -17,3 +17,4 @@ api-schemas
 delete_branch_on_merge.lock
 postgresql_anonymizer_rules.sql
 empty_database.sql
+tests-logs
