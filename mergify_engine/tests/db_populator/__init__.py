@@ -52,6 +52,12 @@ class DbPopulator:
                 await cls.dataset_registry[dataset]._load(session)
                 cls.loaded_dadaset.add(dataset)
 
+    @classmethod
+    def reset(cls) -> None:
+        cls.loaded_dadaset = set()
+        cls.id_auto_increment = {}
+        cls.internal_ref = {}
+
 
 # NOTE(Kontrolix): Import here to register dataset
 import mergify_engine.tests.db_populator.account_and_repo  # noqa: E402

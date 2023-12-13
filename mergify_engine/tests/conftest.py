@@ -249,14 +249,20 @@ def _setup_database(
 
 
 @pytest.fixture()
+def _reset_dbpopulator() -> abc.Generator[None, None, None]:
+    try:
+        yield
+    finally:
+        DbPopulator.reset()
+
+
+@pytest.fixture()
 async def db(
     _setup_database: None,
+    _reset_dbpopulator: None,
 ) -> abc.AsyncGenerator[sqlalchemy.ext.asyncio.AsyncSession, None]:
     async with database.create_session() as session:
         yield session
-        DbPopulator.loaded_dadaset = set()
-        DbPopulator.id_auto_increment = {}
-        DbPopulator.internal_ref = {}
 
 
 @pytest.fixture()
