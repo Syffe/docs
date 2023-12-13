@@ -415,3 +415,80 @@ class TestGhaFailedJobsLinkToCissueDataset(DbPopulator):
         )
         for job in jobs:
             await CiIssue.link_job_to_ci_issue(session, job)
+
+
+class TestGhaFailedJobsPullRequestsDataset(DbPopulator):
+    @classmethod
+    async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
+        # NOTE(Kontrolix): circular import
+        from mergify_engine.tests.utils import fake_full_pull_request
+
+        await cls.load(session, {"AccountAndRepo"})
+        repo = typing.cast(
+            github_types.GitHubRepository,
+            (
+                await session.get_one(
+                    gh_models.GitHubRepository,
+                    DbPopulator.internal_ref["OneRepo"],
+                )
+            ).as_github_dict(),
+        )
+
+        repo.update(
+            {
+                "url": "https://blabla.com",
+                "html_url": "https://blabla.com",
+                "default_branch": github_types.GitHubRefType("main"),
+            },
+        )
+
+        # PRs with a head sha linked to jobs:
+        # OneAccount/OneRepo/flaky_failed_job_attempt_1
+        # OneAccount/OneRepo/flaky_failed_job_attempt_2
+        # OneAccount/OneRepo/successful_flaky_job
+        pr = fake_full_pull_request(
+            github_types.GitHubPullRequestId(cls.next_id(gh_models.PullRequest)),
+            github_types.GitHubPullRequestNumber(123),
+            repo,
+        )
+        pr["head"]["sha"] = github_types.SHAType("two_pr_with_the_same_head_sha")
+        await gh_models.PullRequest.insert_or_update(
+            session,
+            pr,
+        )
+        pr = fake_full_pull_request(
+            github_types.GitHubPullRequestId(cls.next_id(gh_models.PullRequest)),
+            github_types.GitHubPullRequestNumber(789),
+            repo,
+        )
+        pr["head"]["sha"] = github_types.SHAType("two_pr_with_the_same_head_sha")
+        await gh_models.PullRequest.insert_or_update(
+            session,
+            pr,
+        )
+
+        # PR with a head sha linked to jobs:
+        # OneAccount/OneRepo/failed_job_with_flaky_nghb
+        pr = fake_full_pull_request(
+            github_types.GitHubPullRequestId(cls.next_id(gh_models.PullRequest)),
+            github_types.GitHubPullRequestNumber(234),
+            repo,
+        )
+        pr["head"]["sha"] = github_types.SHAType("OneRepo_pr_234_sha_1")
+        await gh_models.PullRequest.insert_or_update(
+            session,
+            pr,
+        )
+
+        # PR with a head sha linked to jobs:
+        # OneAccount/OneRepo/failed_job_with_no_flaky_nghb
+        pr = fake_full_pull_request(
+            github_types.GitHubPullRequestId(cls.next_id(gh_models.PullRequest)),
+            github_types.GitHubPullRequestNumber(456),
+            repo,
+        )
+        pr["head"]["sha"] = github_types.SHAType("OneRepo_pr_456_sha_1")
+        await gh_models.PullRequest.insert_or_update(
+            session,
+            pr,
+        )

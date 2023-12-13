@@ -217,9 +217,13 @@ async def _reset_database_state() -> abc.AsyncGenerator[None, None]:
     try:
         yield
     finally:
-        if database.APP_STATE is not None:
-            await database.APP_STATE["engine"].dispose()
-            database.APP_STATE = None
+        await reset_database_state()
+
+
+async def reset_database_state() -> None:
+    if database.APP_STATE is not None:
+        await database.APP_STATE["engine"].dispose()
+        database.APP_STATE = None
 
 
 @pytest.fixture()

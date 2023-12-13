@@ -9,7 +9,9 @@ from unittest import mock
 import warnings
 
 import alembic
+import pytest
 import sqlalchemy
+from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.hybrid
 
 from mergify_engine import database
@@ -18,7 +20,12 @@ from mergify_engine import settings
 from mergify_engine.config import types as config_types
 from mergify_engine.models import github as gh_models
 from mergify_engine.models import manage
+from mergify_engine.models.db_migration.versions import (
+    c3263ca8c1c0_update_base_repository_id_on_pull_ as c3263ca8c1c0,
+)
+from mergify_engine.tests import conftest
 from mergify_engine.tests import utils
+from mergify_engine.tests.db_populator import DbPopulator
 
 
 def _alembic_thread(command: str, *args: str) -> str:
@@ -187,3 +194,108 @@ async def test_get_or_create_on_conflict(_setup_database: None) -> None:
 
     assert len(accounts) == 1
     assert accounts[0].id == 1
+
+
+@pytest.mark.parametrize("mergifyengine_saas_mode", (True, False))
+async def test_migration_script_c3263ca8c1c0(
+    mergifyengine_saas_mode: bool,
+    _reset_database_state: None,
+    _reset_dbpopulator: None,
+    _mock_gh_pull_request_commits_insert_in_pg: None,
+) -> None:
+    async def prepare_data() -> None:
+        async with database.create_session() as session:
+            # NOTE(Kontrolix): Using DbPopulator is a potential risk of failure for this
+            # test in the future since this test will upgrade the database to
+            # a certain point in the migration and then use DbPopulator that relies on
+            # the current orm schema. It's known and assumed because it allows us to avoid
+            # a lot of code in this test to insert pull requests in db. If the test fails
+            # in the future, it's probably safe to remove it, since the migration script
+            # is a one-shot and would have been troughly tested. This can only be done
+            # here exceptionnaly because this part is not yet deployd on-premise.
+            await DbPopulator.load(session, {"TestGhaFailedJobsPullRequestsDataset"})
+
+            await session.execute(
+                sqlalchemy.update(c3263ca8c1c0.pull_request).values(
+                    base_repository_id=None,
+                ),
+            )
+            await session.execute(
+                sqlalchemy.update(c3263ca8c1c0.pull_request).values(
+                    base=sqlalchemy.func.jsonb_set(
+                        c3263ca8c1c0.pull_request.c.base,
+                        ["repo", "owner", "id"],
+                        sqlalchemy.cast(999, postgresql.JSONB),
+                    ),
+                ),
+            )
+            await session.execute(
+                sqlalchemy.update(c3263ca8c1c0.pull_request).values(
+                    base=sqlalchemy.func.jsonb_set(
+                        c3263ca8c1c0.pull_request.c.base,
+                        ["repo", "id"],
+                        sqlalchemy.cast(888, postgresql.JSONB),
+                    ),
+                ),
+            )
+
+            await session.commit()
+
+    async def assert_data(
+        repo_exists: bool,
+        owner_exists: bool,
+        nb_pr_to_update: int,
+    ) -> None:
+        async with database.create_session() as session:
+            assert (
+                await session.execute(
+                    sqlalchemy.exists()
+                    .where(
+                        c3263ca8c1c0.github_repository.c.id == 888,
+                    )
+                    .select(),
+                )
+            ).scalar() == repo_exists
+
+            assert (
+                await session.execute(
+                    sqlalchemy.exists()
+                    .where(
+                        c3263ca8c1c0.github_account.c.id == 999,
+                    )
+                    .select(),
+                )
+            ).scalar() == owner_exists
+
+            assert (
+                await session.execute(
+                    sqlalchemy.select(sqlalchemy.func.count()).where(
+                        c3263ca8c1c0.pull_request.c.base_repository_id.is_(None),
+                    ),
+                )
+            ).scalar() == nb_pr_to_update
+
+    db_name = "test_update_base_repository_id_on_pull_request"
+
+    url_migrate, url_migrate_without_db_name = utils.create_database_url(db_name)
+
+    await utils.create_database(url_migrate_without_db_name.geturl(), db_name)
+
+    with mock.patch.multiple(
+        settings,
+        DATABASE_URL=url_migrate,
+        SAAS_MODE=mergifyengine_saas_mode,
+    ):
+        await _run_alembic("upgrade", c3263ca8c1c0.down_revision)
+        database.init_sqlalchemy("migration_script")
+
+        await prepare_data()
+        await assert_data(False, False, 4)
+        await _run_alembic("upgrade", c3263ca8c1c0.revision)
+        if mergifyengine_saas_mode:
+            # NOTE(Kontrolix): In manual mode we call `init_sqlalchemy` so we have
+            # reset database state first
+            await conftest.reset_database_state()
+            await c3263ca8c1c0.manual_run()
+
+        await assert_data(True, True, 0)

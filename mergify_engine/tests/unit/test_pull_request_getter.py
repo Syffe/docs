@@ -1,4 +1,3 @@
-import typing
 from unittest import mock
 
 import pytest
@@ -9,98 +8,7 @@ from mergify_engine import github_types
 from mergify_engine import pull_request_getter
 from mergify_engine.models.github import pull_request as gh_pr_model
 from mergify_engine.tests import db_populator
-
-
-def _fake_full_pull_request(
-    pull_id: github_types.GitHubPullRequestId,
-    number: github_types.GitHubPullRequestNumber,
-    repository: github_types.GitHubRepository,
-    **kwargs: typing.Any,
-) -> github_types.GitHubPullRequest:
-    pull_request_author = github_types.GitHubAccount(
-        {
-            "id": github_types.GitHubAccountIdType(123),
-            "type": "User",
-            "login": github_types.GitHubLogin("contributor"),
-            "avatar_url": "",
-        },
-    )
-
-    pull: github_types.GitHubPullRequest = {
-        "node_id": "42",
-        "locked": False,
-        "assignees": [],
-        "requested_reviewers": [
-            {
-                "id": github_types.GitHubAccountIdType(123),
-                "type": "User",
-                "login": github_types.GitHubLogin("jd"),
-                "avatar_url": "",
-            },
-            {
-                "id": github_types.GitHubAccountIdType(456),
-                "type": "User",
-                "login": github_types.GitHubLogin("sileht"),
-                "avatar_url": "",
-            },
-        ],
-        "requested_teams": [
-            {"slug": github_types.GitHubTeamSlug("foobar")},
-            {"slug": github_types.GitHubTeamSlug("foobaz")},
-        ],
-        "milestone": None,
-        "title": "awesome",
-        "body": "",
-        "created_at": github_types.ISODateTimeType("2021-06-01T18:41:39Z"),
-        "closed_at": None,
-        "updated_at": github_types.ISODateTimeType("2021-06-01T18:41:39Z"),
-        "id": pull_id,
-        "maintainer_can_modify": True,
-        "user": pull_request_author,
-        "labels": [],
-        "rebaseable": True,
-        "draft": False,
-        "merge_commit_sha": None,
-        "number": number,
-        "commits": 1,
-        "mergeable_state": "clean",
-        "mergeable": True,
-        "state": "open",
-        "changed_files": 1,
-        "head": {
-            "sha": github_types.SHAType("the-head-sha"),
-            "label": github_types.GitHubHeadBranchLabel(
-                f"{pull_request_author['login']}:feature-branch",
-            ),
-            "ref": github_types.GitHubRefType("feature-branch"),
-            "repo": {
-                "id": github_types.GitHubRepositoryIdType(123),
-                "default_branch": github_types.GitHubRefType("main"),
-                "name": github_types.GitHubRepositoryName("mergify-engine"),
-                "full_name": "contributor/mergify-engine",
-                "archived": False,
-                "private": False,
-                "owner": pull_request_author,
-                "url": "https://api.github.com/repos/contributor/mergify-engine",
-                "html_url": "https://github.com/contributor/mergify-engine",
-            },
-            "user": pull_request_author,
-        },
-        "merged": False,
-        "merged_by": None,
-        "merged_at": None,
-        "html_url": "https://...",
-        "issue_url": "",
-        "base": {
-            "label": github_types.GitHubBaseBranchLabel("mergify_engine:main"),
-            "ref": github_types.GitHubRefType("main"),
-            "repo": repository,
-            "sha": github_types.SHAType("the-base-sha"),
-            "user": repository["owner"],
-        },
-    }
-    pull.update(kwargs)  # type: ignore[typeddict-item]
-    return pull
+from mergify_engine.tests import utils
 
 
 @pytest.mark.populated_db_datasets("AccountAndRepo")
@@ -199,7 +107,7 @@ async def test_same_pull_request_number_in_multiple_repo(
         html_url="https://blabla.com",
         default_branch=github_types.GitHubRefType("main"),
     )
-    pr_repo1 = _fake_full_pull_request(
+    pr_repo1 = utils.fake_full_pull_request(
         github_types.GitHubPullRequestId(1),
         pr_number,
         repo1_1,
@@ -224,7 +132,7 @@ async def test_same_pull_request_number_in_multiple_repo(
         html_url="https://blabla.com",
         default_branch=github_types.GitHubRefType("main"),
     )
-    pr_repo2 = _fake_full_pull_request(
+    pr_repo2 = utils.fake_full_pull_request(
         github_types.GitHubPullRequestId(2),
         pr_number,
         repo1_2,
