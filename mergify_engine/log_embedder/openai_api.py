@@ -82,7 +82,7 @@ ChatCompletionRole = typing.Literal["system", "user", "assistant"]
 
 class ChatCompletionMessage(typing.TypedDict):
     role: ChatCompletionRole
-    content: str
+    content: str | None
 
 
 class ChatCompletionResponseFormat(typing.TypedDict):

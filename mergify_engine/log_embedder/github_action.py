@@ -247,7 +247,7 @@ async def extract_data_from_log(
         # But we will have to improve the prompt or the cleaner or the model we use ...
         raise UnableToExtractLogMetadata
 
-    chat_response = choice.get("message", {}).get("content")
+    chat_response = choice["message"]["content"]
     if not chat_response:
         # FIXME(sileht): We should mark the job as ERROR instead of retrying
         LOG.warning(
