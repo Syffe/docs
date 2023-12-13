@@ -34,6 +34,43 @@ def _match(data: github_types.GitHubEvent, expected_data: typing.Any) -> bool:
     return bool(data == expected_data)
 
 
+def _remove_useless_links(data: typing.Any) -> typing.Any:
+    if isinstance(data, dict):
+        data.pop("installation", None)
+        data.pop("sender", None)
+        data.pop("repository", None)
+        data.pop("id", None)
+        data.pop("node_id", None)
+        data.pop("tree_id", None)
+        data.pop("repo", None)
+        data.pop("organization", None)
+        data.pop("pusher", None)
+        data.pop("_links", None)
+        data.pop("user", None)
+        data.pop("body", None)
+        data.pop("after", None)
+        data.pop("before", None)
+        data.pop("app", None)
+        data.pop("timestamp", None)
+        data.pop("external_id", None)
+
+        if "check_run" in data:
+            data["check_run"].pop("check_suite", None)
+
+        for key, value in list(data.items()):
+            if key.endswith(("url", "_at")):
+                del data[key]
+            else:
+                data[key] = _remove_useless_links(value)
+
+        return data
+
+    if isinstance(data, list):
+        return [_remove_useless_links(elem) for elem in data]
+
+    return data
+
+
 class MissingEventTimeout(Exception):
     def __init__(
         self,
@@ -161,7 +198,7 @@ class EventReader:
                         expected_event_data["event_type"],
                         expected_event_data["payload"].get("action"),
                         expected_event_data["payload"],
-                        self._remove_useless_links(copy.deepcopy(event)),
+                        _remove_useless_links(copy.deepcopy(event)),
                     )
 
                     received_events.append(
@@ -303,7 +340,7 @@ class EventReader:
             event["type"],
             payload.get("action"),
             extra,
-            self._remove_useless_links(copy.deepcopy(event)),
+            _remove_useless_links(copy.deepcopy(event)),
         )
         if forward_to_engine:
             await self._app.post(
@@ -316,38 +353,3 @@ class EventReader:
                 },
                 content=json.dumps(payload),
             )
-
-    def _remove_useless_links(self, data: typing.Any) -> typing.Any:
-        if isinstance(data, dict):
-            data.pop("installation", None)
-            data.pop("sender", None)
-            data.pop("repository", None)
-            data.pop("id", None)
-            data.pop("node_id", None)
-            data.pop("tree_id", None)
-            data.pop("repo", None)
-            data.pop("organization", None)
-            data.pop("pusher", None)
-            data.pop("_links", None)
-            data.pop("user", None)
-            data.pop("body", None)
-            data.pop("after", None)
-            data.pop("before", None)
-            data.pop("app", None)
-            data.pop("timestamp", None)
-            data.pop("external_id", None)
-            if "organization" in data:
-                data["organization"].pop("description", None)
-            if "check_run" in data:
-                data["check_run"].pop("checks_suite", None)
-            for key, value in list(data.items()):
-                if key.endswith(("url", "_at")):
-                    del data[key]
-                else:
-                    data[key] = self._remove_useless_links(value)
-            return data
-
-        if isinstance(data, list):
-            return [self._remove_useless_links(elem) for elem in data]
-
-        return data
