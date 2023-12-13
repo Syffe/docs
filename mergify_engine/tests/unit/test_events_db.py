@@ -1,3 +1,5 @@
+import datetime
+import pathlib
 import random
 import typing
 from unittest import mock
@@ -16,9 +18,11 @@ from mergify_engine import eventlogs
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine import signals
+from mergify_engine import yaml
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_model
 from mergify_engine.models import events_metadata as evt_meta_model
+from mergify_engine.models.github import repository as github_repository
 from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
 from mergify_engine.tests.tardis import time_travel
@@ -906,3 +910,54 @@ async def test_delete_event_is_cascading(
     await assert_deleted(evt_model.Event)
     await assert_deleted(evt_model.EventActionQueueChecksStart)
     await assert_deleted(evt_meta_model.SpeculativeCheckPullRequest)
+
+
+async def test_age_of_oldest_event(
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
+) -> None:
+    repo = await github_repository.GitHubRepository.get_or_create(
+        db,
+        fake_repository.repo,
+    )
+
+    # get server current timestamp to use as "origin" of time for test purpose
+    server_timestamp = (
+        await db.execute(sqlalchemy.text("select current_timestamp"))
+    ).scalar_one()
+
+    for p, day in enumerate(
+        (
+            server_timestamp - datetime.timedelta(days=1),
+            server_timestamp - datetime.timedelta(days=2),
+            server_timestamp - datetime.timedelta(days=3),
+        ),
+    ):
+        db.add(
+            evt_model.EventActionRebase(
+                repository=repo,
+                pull_request=github_types.GitHubPullRequestNumber(p),
+                base_ref="main",
+                received_at=day,
+                trigger="Rule: some rule",
+            ),
+        )
+        await db.commit()
+
+    # fetch the query from the yaml file
+    postgres_dd_metrics_file = (
+        pathlib.Path(__file__).parents[3] / "datadog" / "conf.d" / "postgres.yaml"
+    )
+    with open(postgres_dd_metrics_file) as file:
+        metrics = yaml.safe_load(file)
+
+    events_metric = next(
+        m
+        for m in metrics["instances"][0]["custom_queries"]
+        if m["columns"][0]["name"] == "events.age.max"
+    )
+    # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+    stmt = sqlalchemy.text(events_metric["query"])
+    result = (await db.execute(stmt)).scalar_one()
+
+    assert round(result, -2) == 3 * 24 * 3600

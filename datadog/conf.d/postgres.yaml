@@ -14,6 +14,7 @@ instances:
         columns:
           - name: users.count
             type: gauge
+
       - metric_prefix: engine.db
         query: >
           SELECT
@@ -64,3 +65,15 @@ instances:
             type: tag
           - name: has-ci-issue-gpt
             type: tag
+
+      - metric_prefix: engine.db
+        query: >
+          SELECT CAST(
+              EXTRACT(
+                  epoch FROM (current_timestamp - min(e.received_at))
+              ) AS INTEGER
+          )
+          FROM event e;
+        columns:
+          - name: events.age.max
+            type: gauge
