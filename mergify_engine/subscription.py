@@ -60,6 +60,8 @@ FeaturesLiteralT = typing.Literal[
     "workflow_automation",
 ]
 
+LEGACY_FEATURES = ("eventlogs_long", "eventlogs_short")
+
 
 class SubscriptionDict(typing.TypedDict):
     subscription_reason: str
@@ -93,6 +95,8 @@ class SubscriptionBase(abstract.ABC):
             try:
                 feature = Features(f)
             except ValueError:
+                if f in LEGACY_FEATURES:
+                    continue
                 LOG.log(
                     cls.feature_flag_log_level,
                     "Unknown subscription feature %s",
