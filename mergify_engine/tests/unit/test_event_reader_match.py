@@ -12,10 +12,12 @@ from mergify_engine.tests.functional import utils as tests_utils
     (
         (
             {
-                "name": "test",
-                "pull_requests": [
-                    {"number": 123, "id": 456, "head": {"ref": "blabla"}},
-                ],
+                "check_run": {
+                    "name": "test",
+                    "pull_requests": [
+                        {"number": 123, "id": 456, "head": {"ref": "blabla"}},
+                    ],
+                },
             },
             tests_utils.get_check_run_event_payload(
                 pr_number=github_types.GitHubPullRequestNumber(123),
@@ -24,11 +26,13 @@ from mergify_engine.tests.functional import utils as tests_utils
         ),
         (
             {
-                "name": "test",
-                "pull_requests": [
-                    {"number": 123, "id": 456, "head": {"ref": "blabla"}},
-                    {"number": 456, "id": 456, "head": {"ref": "blabla"}},
-                ],
+                "check_run": {
+                    "name": "test",
+                    "pull_requests": [
+                        {"number": 123, "id": 456, "head": {"ref": "blabla"}},
+                        {"number": 456, "id": 456, "head": {"ref": "blabla"}},
+                    ],
+                },
             },
             tests_utils.get_check_run_event_payload(
                 pr_number=github_types.GitHubPullRequestNumber(123),
@@ -37,10 +41,12 @@ from mergify_engine.tests.functional import utils as tests_utils
         ),
         (
             {
-                "name": "test",
-                "pull_requests": [
-                    {"number": 456, "id": 456, "head": {"ref": "blabla"}},
-                ],
+                "check_run": {
+                    "name": "test",
+                    "pull_requests": [
+                        {"number": 456, "id": 456, "head": {"ref": "blabla"}},
+                    ],
+                },
             },
             tests_utils.get_check_run_event_payload(
                 pr_number=github_types.GitHubPullRequestNumber(123),

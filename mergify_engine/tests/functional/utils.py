@@ -68,7 +68,7 @@ def get_check_run_event_payload(
     if action:
         payload["action"] = action
 
-    if status or conclusion or name or check_id:
+    if status or conclusion or name or check_id or pr_number:
         payload["check_run"] = {}
         if check_id:
             payload["check_run"]["id"] = check_id
@@ -78,11 +78,10 @@ def get_check_run_event_payload(
             payload["check_run"]["conclusion"] = conclusion
         if name:
             payload["check_run"]["name"] = name
-
-    if pr_number:
-        payload["pull_requests"] = anys.AnyContains(
-            anys.AnyWithEntries({"number": pr_number}),
-        )
+        if pr_number:
+            payload["check_run"]["pull_requests"] = anys.AnyContains(
+                anys.AnyWithEntries({"number": pr_number}),
+            )
 
     return payload
 
