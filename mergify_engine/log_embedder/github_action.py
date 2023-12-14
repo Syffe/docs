@@ -129,8 +129,6 @@ async def fetch_and_store_log(
     )
 
     job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
-    # NOTE(Kontrolix): Postgres Text fields do not allow nul bytes, some logs
-    # may contains some, so we have to remove them before saving the data in db
     job.log_extract = log.extract(
         openai_api.BYTES_PER_TOKEN_APPROX * CHAT_COMPLETION_MODEL["max_tokens"],
     )
