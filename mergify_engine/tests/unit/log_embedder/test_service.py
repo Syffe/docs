@@ -330,6 +330,17 @@ def mock_extracting_metadata_finish_reason_length(
     ).respond(200, json=json_response)
 
 
+def mock_extracting_metadata_error_in_prompt(
+    respx_mock: respx.MockRouter,
+) -> None:
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(
+        400,
+        content="Detected an error in the prompt. Please try again with a different prompt.",
+    )
+
+
 def mock_extracting_metadata_error(
     respx_mock: respx.MockRouter,
 ) -> None:
@@ -865,6 +876,21 @@ async def test_embed_logs_on_various_data(
             mock_log_downloaded,
             mock_embedding_embedded,
             mock_extracting_metadata_finish_reason_length,
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            noop,
+            noop,
+            noop,
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            [],
+        ),
+        (
+            mock_log_downloaded,
+            mock_embedding_embedded,
+            mock_extracting_metadata_error_in_prompt,
             gh_models.WorkflowJobLogStatus.DOWNLOADED,
             gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
             gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,

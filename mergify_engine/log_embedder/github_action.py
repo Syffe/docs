@@ -240,7 +240,19 @@ async def extract_data_from_log(
         response_format=EXTRACT_DATA_QUERY_TEMPLATE.response_format,
     )
 
-    chat_completion = await openai_client.get_chat_completion(query)
+    try:
+        chat_completion = await openai_client.get_chat_completion(query)
+    except http.HTTPClientSideError as err:
+        # NOTE(Kontrolix): Do not retry when OpenAI said that there is an error in
+        # the prompt, the error will still be there next time.
+        if (
+            err.response.status_code == 400
+            and "Detected an error in the prompt" in err.response.content.decode()
+        ):
+            raise UnableToExtractLogMetadata
+
+        raise
+
     choice = chat_completion["choices"][0]
     if choice["finish_reason"] != "stop":
         # FIXME(Kontrolix): It means that GPT reaches a limit.
