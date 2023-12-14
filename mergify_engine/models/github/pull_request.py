@@ -233,7 +233,7 @@ class PullRequest(models.Base):
     )
 
     base_repository_id: orm.Mapped[
-        github_types.GitHubRepositoryIdType | None
+        github_types.GitHubRepositoryIdType
     ] = orm.mapped_column(
         sqlalchemy.ForeignKey("github_repository.id"),
         anonymizer_config=None,
