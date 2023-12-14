@@ -55,14 +55,13 @@ class CiIssueBody(pydantic.BaseModel):
     status: CiIssueStatus
 
 
-async def query_issues(
-    session: database.Session,
+async def get_filtered_issues_cte(
     repository_id: github_types.GitHubRepositoryIdType,
     limit: int,
     issue_id: int | None = None,
     statuses: tuple[CiIssueStatus, ...] | None = None,
     cursor: pagination.Cursor | None = None,
-) -> list[CiIssueResponse]:
+) -> type[CiIssue]:
     if cursor is None:
         cursor = pagination.Cursor("")
 
@@ -80,6 +79,7 @@ async def query_issues(
         filtered_issues = filtered_issues.where(CiIssue.id == issue_id)
     if statuses is not None:
         filtered_issues = filtered_issues.where(CiIssue.status.in_(statuses))
+
     if cursor.value:
         try:
             cursor_issue_id = int(cursor.value)
@@ -91,12 +91,16 @@ async def query_issues(
         else:
             filtered_issues = filtered_issues.where(CiIssue.id > cursor_issue_id)
 
-    filtered_issues_cte = orm.aliased(
+    return orm.aliased(
         CiIssue,
         filtered_issues.cte("filtered_issues"),
     )
 
-    pr_linked_to_ci_issue = (
+
+async def get_pr_linked_to_ci_issue_cte(
+    repository_id: github_types.GitHubRepositoryIdType,
+) -> sqlalchemy.CTE:
+    return (
         sqlalchemy.select(
             sqlalchemy.func.array_agg(gh_models.PullRequest.id.distinct()).label(
                 "pull_requests",
@@ -124,6 +128,27 @@ async def query_issues(
         )
         .group_by(CiIssue.id)
     ).cte("pr_linked_to_ci_issue")
+
+
+async def query_issues(
+    session: database.Session,
+    repository_id: github_types.GitHubRepositoryIdType,
+    limit: int,
+    issue_id: int | None = None,
+    statuses: tuple[CiIssueStatus, ...] | None = None,
+    cursor: pagination.Cursor | None = None,
+) -> list[CiIssueResponse]:
+    filtered_issues_cte = await get_filtered_issues_cte(
+        repository_id,
+        limit,
+        issue_id,
+        statuses,
+        cursor,
+    )
+
+    pr_linked_to_ci_issue = await get_pr_linked_to_ci_issue_cte(
+        repository_id,
+    )
 
     stmt = (
         sqlalchemy.select(
