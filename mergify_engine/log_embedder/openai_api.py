@@ -156,7 +156,7 @@ class ChatCompletionQuery:
 
 
 class OpenAIClient(http.AsyncClient):
-    TIMEOUT = httpx.Timeout(5.0, read=60.0)
+    TIMEOUT = httpx.Timeout(5.0, read=120.0)
 
     def __init__(self) -> None:
         super().__init__(
