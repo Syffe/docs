@@ -13,6 +13,7 @@ from mergify_engine import pagination
 from mergify_engine.models import github as gh_models
 from mergify_engine.models.ci_issue import CiIssue
 from mergify_engine.models.ci_issue import CiIssueStatus
+from mergify_engine.models.github.pull_request import PullRequestHeadShaHistory
 from mergify_engine.models.views.workflows import FlakyStatus
 from mergify_engine.models.views.workflows import WorkflowJobEnhanced
 from mergify_engine.web import api
@@ -95,6 +96,35 @@ async def query_issues(
         filtered_issues.cte("filtered_issues"),
     )
 
+    pr_linked_to_ci_issue = (
+        sqlalchemy.select(
+            sqlalchemy.func.array_agg(gh_models.PullRequest.id.distinct()).label(
+                "pull_requests",
+            ),
+            CiIssue.id,
+        )
+        .select_from(CiIssue)
+        .join(
+            gh_models.WorkflowJob,
+            sqlalchemy.and_(
+                gh_models.WorkflowJob.ci_issue_id == CiIssue.id,
+                gh_models.WorkflowJob.repository_id == repository_id,
+            ),
+        )
+        .join(
+            gh_models.PullRequest,
+            sqlalchemy.and_(
+                gh_models.PullRequest.head_sha_history.any(
+                    PullRequestHeadShaHistory.head_sha
+                    == gh_models.WorkflowJob.head_sha,
+                ),
+                gh_models.PullRequest.base_repository_id
+                == gh_models.WorkflowJob.repository_id,
+            ),
+        )
+        .group_by(CiIssue.id)
+    ).cte("pr_linked_to_ci_issue")
+
     stmt = (
         sqlalchemy.select(
             filtered_issues_cte.id,
@@ -107,6 +137,7 @@ async def query_issues(
             WorkflowJobEnhanced.started_at,
             WorkflowJobEnhanced.flaky,
             WorkflowJobEnhanced.failed_run_count,
+            pr_linked_to_ci_issue.c.pull_requests,
         )
         .join(
             gh_models.GitHubRepository,
@@ -119,6 +150,10 @@ async def query_issues(
                 WorkflowJobEnhanced.repository_id == repository_id,
             ),
         )
+        .outerjoin(
+            pr_linked_to_ci_issue,
+            pr_linked_to_ci_issue.c.id == filtered_issues_cte.id,
+        )
         .order_by(WorkflowJobEnhanced.started_at.desc())
     )
 
@@ -126,6 +161,10 @@ async def query_issues(
     # the SQL query
     reponses: OrderedDict[int, CiIssueResponse] = OrderedDict()
     for result in await session.execute(stmt):
+        # NOTE(Kontrolix): Filter out ci_issue link to only one PR
+        if result.pull_requests and len(result.pull_requests) == 1:
+            continue
+
         if result.id in reponses:
             reponse = reponses[result.id]
         else:

@@ -45,7 +45,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
-                head_sha=github_types.SHAType(""),
+                head_sha=github_types.SHAType("two_pr_with_the_same_head_sha"),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -97,7 +97,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=2,
-                head_sha=github_types.SHAType(""),
+                head_sha=github_types.SHAType("two_pr_with_the_same_head_sha"),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -149,7 +149,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="success",
                 labels=[],
                 run_attempt=3,
-                head_sha=github_types.SHAType(""),
+                head_sha=github_types.SHAType("two_pr_with_the_same_head_sha"),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -184,7 +184,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
-                head_sha=github_types.SHAType(""),
+                head_sha=github_types.SHAType("OneRepo_pr_234_sha_1"),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -252,7 +252,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
-                head_sha=github_types.SHAType(""),
+                head_sha=github_types.SHAType("OneRepo_pr_456_sha_1"),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",
@@ -320,7 +320,7 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
                 conclusion="failure",
                 labels=[],
                 run_attempt=1,
-                head_sha=github_types.SHAType(""),
+                head_sha=github_types.SHAType("sha1_linked_to_no_pr"),
                 steps=[
                     github_types.GitHubWorkflowJobStep(
                         name="Run a step",

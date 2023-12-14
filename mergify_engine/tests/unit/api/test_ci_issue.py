@@ -12,7 +12,7 @@ from mergify_engine.tests.db_populator import DbPopulator
 
 
 @pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueDataset")
-async def test_api_ci_issue_get_ci_issues(
+async def test_api_ci_issue_get_ci_issues_without_pr(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
@@ -89,6 +89,110 @@ async def test_api_ci_issue_get_ci_issues(
         ],
         "per_page": 10,
         "size": 2,
+    }
+
+    await tests_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock,
+        populated_db,
+        web_client,
+        "colliding-account-1/colliding_repo_name",
+    )
+
+    reply = await web_client.get(
+        "/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues",
+        follow_redirects=False,
+    )
+
+    assert reply.json() == {
+        "issues": [
+            {
+                "events": [
+                    {
+                        "failed_run_count": 1,
+                        "flaky": "unknown",
+                        "id": DbPopulator.internal_ref[
+                            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"
+                        ],
+                        "run_id": anys.ANY_INT,
+                        "started_at": anys.ANY_DATETIME_STR,
+                    },
+                ],
+                "id": anys.ANY_INT,
+                "job_name": "A job",
+                "name": "Failure of A job",
+                "short_id": anys.ANY_STR,
+                "status": "unresolved",
+            },
+        ],
+        "per_page": 10,
+        "size": 1,
+    }
+
+
+@pytest.mark.populated_db_datasets(
+    "TestGhaFailedJobsLinkToCissueDataset",
+    "TestGhaFailedJobsPullRequestsDataset",
+)
+async def test_api_ci_issue_get_ci_issues_with_pr(
+    _mock_gh_pull_request_commits_insert_in_pg: None,
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+) -> None:
+    await populated_db.commit()
+    await tests_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock,
+        populated_db,
+        web_client,
+        "OneAccount/OneRepo",
+    )
+
+    reply = await web_client.get(
+        "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues",
+        follow_redirects=False,
+    )
+
+    assert reply.json() == {
+        "issues": [
+            {
+                "events": [
+                    {
+                        "failed_run_count": 1,
+                        "flaky": "unknown",
+                        "id": DbPopulator.internal_ref[
+                            "OneAccount/OneRepo/failed_job_with_flaky_nghb"
+                        ],
+                        "run_id": anys.ANY_INT,
+                        "started_at": anys.ANY_DATETIME_STR,
+                    },
+                    {
+                        "failed_run_count": 3,
+                        "flaky": "flaky",
+                        "id": DbPopulator.internal_ref[
+                            "OneAccount/OneRepo/flaky_failed_job_attempt_2"
+                        ],
+                        "run_id": anys.ANY_INT,
+                        "started_at": anys.ANY_DATETIME_STR,
+                    },
+                    {
+                        "failed_run_count": 3,
+                        "flaky": "flaky",
+                        "id": DbPopulator.internal_ref[
+                            "OneAccount/OneRepo/flaky_failed_job_attempt_1"
+                        ],
+                        "run_id": anys.ANY_INT,
+                        "started_at": anys.ANY_DATETIME_STR,
+                    },
+                ],
+                "id": anys.ANY_INT,
+                "job_name": "A job",
+                "name": "Failure of A job",
+                "short_id": anys.ANY_STR,
+                "status": "unresolved",
+            },
+        ],
+        "per_page": 10,
+        "size": 1,
     }
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
