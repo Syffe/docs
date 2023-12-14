@@ -10,6 +10,7 @@ import tiktoken
 
 from mergify_engine import settings
 from mergify_engine.clients import http
+from mergify_engine.config import types
 
 
 OPENAI_API_BASE_URL: str = "https://api.openai.com/v1"
@@ -51,24 +52,13 @@ class OpenAiException(Exception):
     pass
 
 
-OpenAIModel = typing.Literal["gpt-4-1106-preview"]
+class OpenAIModelNotFound(Exception):
+    pass
 
 
-class ChatCompletionModel(typing.TypedDict):
-    name: OpenAIModel
-    max_tokens: int
-
-
-# NOTE(Kontrolix): This list must always be ascending sorted
-# according to max_tokens values because when we use it, it must be sorted that way
-OPENAI_CHAT_COMPLETION_MODELS: list[ChatCompletionModel] = sorted(
-    [
-        # NOTE(Kontrolix): We don't use the full token potential of 128k
-        # to avoid too much billing with unecessary amount of context
-        ChatCompletionModel(name="gpt-4-1106-preview", max_tokens=16384),
-    ],
-    key=lambda e: e["max_tokens"],
-)
+OPENAI_CHAT_COMPLETION_MODELS: list[types.OpenAIModel] = types.OpenAIModel.__args__  # type: ignore[attr-defined]
+# All models above must at least support this
+OPENAI_CHAT_COMPLETION_MODEL_MAX_TOKENS = 16384
 
 # NOTE(Kontolix): "Why 6 ? O_o" according to openai doc "Each message passed to the API
 # consumes the number of tokens in the content, role, and other fields, plus a few
@@ -90,7 +80,7 @@ class ChatCompletionResponseFormat(typing.TypedDict):
 
 
 class ChatCompletionJson(typing.TypedDict):
-    model: OpenAIModel
+    model: types.OpenAIModel
     messages: list[ChatCompletionMessage]
     response_format: ChatCompletionResponseFormat
     seed: int
@@ -117,6 +107,7 @@ class ChatCompletionObject(typing.TypedDict):
 
 @dataclasses.dataclass
 class ChatCompletionQuery:
+    model: types.OpenAIModel
     role: ChatCompletionRole
     content: str
     answer_size: int
@@ -127,7 +118,7 @@ class ChatCompletionQuery:
     def json(self) -> ChatCompletionJson:
         return ChatCompletionJson(
             {
-                "model": self.get_chat_completion_model()["name"],
+                "model": self.model,
                 "messages": [
                     ChatCompletionMessage(role=self.role, content=self.content),
                 ],
@@ -146,13 +137,6 @@ class ChatCompletionQuery:
             + self.answer_size
             + OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
         )
-
-    def get_chat_completion_model(self) -> ChatCompletionModel:
-        nb_token_needed = self.get_tokens_size()
-        for model in OPENAI_CHAT_COMPLETION_MODELS:
-            if model["max_tokens"] >= nb_token_needed:
-                return model
-        raise OpenAiException(f"No model found to handle {nb_token_needed} tokens")
 
 
 class OpenAIClient(http.AsyncClient):

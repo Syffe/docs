@@ -48,6 +48,7 @@ JSON_STRUCTURE = {
 }
 
 EXTRACT_DATA_QUERY_TEMPLATE = openai_api.ChatCompletionQuery(
+    model=settings.LOG_EMBEDDER_METADATA_EXTRACT_MODEL,
     role="user",
     content=f"""Analyze the program logs I will provide you and identify the root cause of the program's failure.
 Your response must be an array of json object matching the following json structure.
@@ -64,12 +65,9 @@ Logs:
     response_format="json_object",
 )
 
-
-CHAT_COMPLETION_MODEL = openai_api.OPENAI_CHAT_COMPLETION_MODELS[-1]
-
-
-MAX_CHAT_COMPLETION_TOKENS = (
-    CHAT_COMPLETION_MODEL["max_tokens"] - EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
+MAX_LOGS_TOKENS = (
+    openai_api.OPENAI_CHAT_COMPLETION_MODEL_MAX_TOKENS
+    - EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
 )
 
 
@@ -130,7 +128,8 @@ async def fetch_and_store_log(
 
     job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
     job.log_extract = log.extract(
-        openai_api.BYTES_PER_TOKEN_APPROX * CHAT_COMPLETION_MODEL["max_tokens"],
+        openai_api.BYTES_PER_TOKEN_APPROX
+        * openai_api.OPENAI_CHAT_COMPLETION_MODEL_MAX_TOKENS,
     )
 
     return log
@@ -230,6 +229,7 @@ async def extract_data_from_log(
 ) -> None:
     cleaned_log = get_cleaned_log(log)
     query = openai_api.ChatCompletionQuery(
+        model=settings.LOG_EMBEDDER_METADATA_EXTRACT_MODEL,
         role=EXTRACT_DATA_QUERY_TEMPLATE.role,
         content=f"{EXTRACT_DATA_QUERY_TEMPLATE.content}{cleaned_log}",
         answer_size=EXTRACT_DATA_QUERY_TEMPLATE.answer_size,
@@ -306,13 +306,13 @@ def get_cleaned_log(log: logm.Log) -> str:
 
         total_tokens += len(tokenized_cleaned_line)
 
-        if total_tokens <= MAX_CHAT_COMPLETION_TOKENS:
+        if total_tokens <= MAX_LOGS_TOKENS:
             cleaned_lines.insert(0, cleaned_line)
 
         # NOTE(Kontrolix): Add 1 for the `\n` that will links lines
         total_tokens += 1
 
-        if total_tokens >= MAX_CHAT_COMPLETION_TOKENS:
+        if total_tokens >= MAX_LOGS_TOKENS:
             break
 
     return "\n".join(cleaned_lines)

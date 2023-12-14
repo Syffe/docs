@@ -23,11 +23,8 @@ def _unset_testing_env(
             del os.environ[env]
 
 
-def test_defaults(
-    _unset_testing_env: None,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    # defaults (if not mandatory)
+@pytest.fixture()
+def _setup_mandatory_envs(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT", "secret")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET", "secret")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_APP_ID", "12345")
@@ -36,6 +33,12 @@ def test_defaults(
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_SECRET", "secret")
     monkeypatch.setenv("MERGIFYENGINE_REDIS_CRYPTO_SECRET_CURRENT", "crypto-secret")
 
+
+def test_defaults(
+    _unset_testing_env: None,
+    _setup_mandatory_envs: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     conf = config.EngineSettings()
     assert str(conf.DATABASE_URL) == "postgresql+psycopg://localhost:5432"
     assert conf.DATABASE_URL.geturl() == "postgresql+psycopg://localhost:5432"
@@ -330,6 +333,10 @@ def test_legacy_env_sets(
         "MERGIFYENGINE_DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION",
         "webhook-secret-bis",
     )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_LOG_EMBEDDER_METADATA_EXTRACT_MODEL",
+        "gpt-3.5-turbo-1106",
+    )
 
     conf = config.EngineSettings()
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret4"
@@ -355,6 +362,7 @@ def test_legacy_env_sets(
         conf.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION.get_secret_value()
         == "webhook-secret-bis"
     )
+    assert conf.LOG_EMBEDDER_METADATA_EXTRACT_MODEL == "gpt-3.5-turbo-1106"
 
 
 @pytest.mark.parametrize(
@@ -363,18 +371,11 @@ def test_legacy_env_sets(
 )
 def test_legacy_dashboard_urls(
     _unset_testing_env: None,
+    _setup_mandatory_envs: None,
     monkeypatch: pytest.MonkeyPatch,
     env_var: str,
 ) -> None:
-    # Required values
     monkeypatch.setenv("MERGIFYENGINE_BASE_URL", "https://not-me-for-sure.example.com")
-    monkeypatch.setenv("MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT", "secret")
-    monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET", "secret")
-    monkeypatch.setenv("MERGIFYENGINE_GITHUB_APP_ID", "12345")
-    monkeypatch.setenv("MERGIFYENGINE_GITHUB_PRIVATE_KEY", "aGVsbG8gd29ybGQ=")
-    monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_ID", "Iv1.XXXXXX")
-    monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_SECRET", "secret")
-    monkeypatch.setenv("MERGIFYENGINE_REDIS_CRYPTO_SECRET_CURRENT", "secret")
 
     monkeypatch.setenv(env_var, "https://mergify.example.com")
     conf = config.EngineSettings()
@@ -630,4 +631,21 @@ def test_redis_all_set(monkeypatch: pytest.MonkeyPatch) -> None:
     assert (
         conf.USER_PERMISSIONS_CACHE_URL.geturl()
         == "rediss://redis-user-perm.example.com:1234"
+    )
+
+
+def test_invalid_openai_model(
+    _unset_testing_env: None,
+    _setup_mandatory_envs: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(
+        "MERGIFYENGINE_LOG_EMBEDDER_METADATA_EXTRACT_MODEL",
+        "gpt-3.5-invalid",
+    )
+    with pytest.raises(pydantic_core.ValidationError) as exc_info:
+        config.EngineSettings()
+
+    assert "Input should be 'gpt-4-1106-preview' or 'gpt-3.5-turbo-1106'" in str(
+        exc_info.value,
     )

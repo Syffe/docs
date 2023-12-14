@@ -502,6 +502,7 @@ class LogEmbedderSettings(pydantic_settings.BaseSettings):
     OPENAI_API_TOKEN: pydantic.SecretStr = pydantic.Field(
         default=pydantic.SecretStr(""),
     )
+    LOG_EMBEDDER_METADATA_EXTRACT_MODEL: types.OpenAIModel = "gpt-4-1106-preview"
     LOG_EMBEDDER_ENABLED_ORGS: types.GitHubLoginListFromStrWithComma = (
         types.GitHubLoginListFromStrWithComma([])
     )

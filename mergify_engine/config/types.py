@@ -308,3 +308,9 @@ def _validate_application_api_keys(applications: list[tuple[str, ...]]) -> None:
     for api_key, _, _ in applications:
         if len(api_key) != API_ACCESS_KEY_LEN + API_ACCESS_KEY_LEN:
             raise ValueError("api_key must be 64 character long")
+
+
+OpenAIModel = typing.Literal[
+    "gpt-4-1106-preview",
+    "gpt-3.5-turbo-1106",
+]

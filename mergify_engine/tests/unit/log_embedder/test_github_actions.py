@@ -11,9 +11,6 @@ from mergify_engine.log_embedder import openai_api
 from mergify_engine.tests.tardis import time_travel
 
 
-MAX_TOKENS_EMBEDDED_LOG = github_action.MAX_CHAT_COMPLETION_TOKENS
-
-
 @pytest.mark.parametrize(
     ("raw_log", "expected_length", "expected_cleaned_log"),
     [
@@ -65,19 +62,19 @@ async def test_get_tokenized_cleaned_log(
     [
         (["hello\n"], "hello", 1),
         (
-            ["hello\n"] * github_action.MAX_CHAT_COMPLETION_TOKENS,
+            ["hello\n"] * github_action.MAX_LOGS_TOKENS,
             # NOTE(Kontrolix): Divide by 2 because 'hello\n' is 2 token
-            "\n".join(["hello"] * int(MAX_TOKENS_EMBEDDED_LOG / 2)),
+            "\n".join(["hello"] * int(github_action.MAX_LOGS_TOKENS / 2)),
             # NOTE(Kontrolix): minus 1 because we haven't an '\n' at the end of the log
-            github_action.MAX_CHAT_COMPLETION_TOKENS - 1,
+            github_action.MAX_LOGS_TOKENS - 1,
         ),
         (
             ["Tokens that will be removed at the beginning"]
-            + (["hello\n"] * github_action.MAX_CHAT_COMPLETION_TOKENS),
+            + (["hello\n"] * github_action.MAX_LOGS_TOKENS),
             # NOTE(Kontrolix): Divide by 2 because 'hello\n' is 2 token
-            "\n".join(["hello"] * int(MAX_TOKENS_EMBEDDED_LOG / 2)),
+            "\n".join(["hello"] * int(github_action.MAX_LOGS_TOKENS / 2)),
             # NOTE(Kontrolix): minus 1 because we haven't an '\n' at the end of the log
-            github_action.MAX_CHAT_COMPLETION_TOKENS - 1,
+            github_action.MAX_LOGS_TOKENS - 1,
         ),
     ],
     ids=["one_token_string", "max_input_token_string", "too_long_input_token_string"],
