@@ -1,8 +1,14 @@
+from unittest import mock
+
+import httpx
 import pytest
 
+from mergify_engine import date
+from mergify_engine.clients import http
 from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import log as logm
 from mergify_engine.log_embedder import openai_api
+from mergify_engine.tests.tardis import time_travel
 
 
 MAX_TOKENS_EMBEDDED_LOG = github_action.MAX_CHAT_COMPLETION_TOKENS
@@ -87,3 +93,37 @@ async def test_get_cleaned_log(
     assert (
         len(openai_api.TIKTOKEN_ENCODING.encode(cleaned_log)) == cleaned_log_token_size
     )
+
+
+@pytest.mark.parametrize(
+    ("url", "timestamp"),
+    (
+        (f"{openai_api.OPENAI_API_BASE_URL}/chat/completions", "2021-09-22T08:10:02"),
+        ("https://whatevent.example.com", "2021-09-22T08:01:02"),
+    ),
+)
+def test_log_exception_and_maybe_retry(url: str, timestamp: str) -> None:
+    job = mock.Mock(
+        log_processing_attempts=0,
+        log_processing_retry_after=None,
+    )
+    request = httpx.Request(
+        method="POST",
+        url=url,
+    )
+
+    with time_travel("2021-09-22T08:00:02"):
+        github_action.log_exception_and_maybe_retry(
+            http.HTTPServerSideError(
+                message="Internal Server Error",
+                request=request,
+                response=httpx.Response(
+                    status_code=500,
+                    content="Internal Server Error",
+                    request=request,
+                ),
+            ),
+            job,
+        )
+
+    assert job.log_processing_retry_after == date.fromisoformat(timestamp)

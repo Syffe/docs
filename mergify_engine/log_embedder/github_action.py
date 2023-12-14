@@ -8,6 +8,7 @@ import zipfile
 
 import daiquiri
 from ddtrace import tracer
+import httpx
 import sqlalchemy
 from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
@@ -337,8 +338,9 @@ def log_exception_and_maybe_retry(
         return False
 
     if (
-        isinstance(exc, http.RequestError)
-        and exc.request.url == openai_api.OPENAI_API_BASE_URL
+        isinstance(exc, httpx.HTTPError)
+        and exc.request is not None
+        and str(exc.request.url).startswith(openai_api.OPENAI_API_BASE_URL)
     ):
         # NOTE(sileht): This cost money so we don't want to retry too often
         base_retry_min = 10
