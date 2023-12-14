@@ -53,9 +53,20 @@ async def store_redis_events_in_pg(redis_links: redis_utils.RedisLinks) -> None:
         async with database.create_session() as session:
             try:
                 await model.insert_or_update(session, typed_event_data)
-            except exceptions.MergifyNotInstalled:
-                # We don't care Mergify has been uninstalled just drop the event
-                pass
+            except Exception as e:
+                if exceptions.need_retry_in(e):
+                    # TODO(sileht): We should retry later, not on next iteration
+                    LOG.warning(
+                        "Event %s/id=%s need to be retried",
+                        event_type,
+                        event_id,
+                        raw_event=event,
+                        event_data=event_data,
+                        exc_info=True,
+                    )
+                    continue
+                if not exceptions.should_be_ignored(e):
+                    raise
             else:
                 await session.commit()
 
