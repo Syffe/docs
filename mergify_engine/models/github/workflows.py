@@ -267,6 +267,7 @@ class WorkflowJobColumnMixin:
     head_sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
         sqlalchemy.String,
         anonymizer_config=None,
+        index=True,
     )
 
     ci_issue_id: orm.Mapped[int | None] = orm.mapped_column(

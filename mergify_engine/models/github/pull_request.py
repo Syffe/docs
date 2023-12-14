@@ -524,6 +524,7 @@ class PullRequestHeadShaHistory(models.Base):
     head_sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
         sqlalchemy.Text,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
+        index=True,
     )
     timestamp: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime(timezone=True),
