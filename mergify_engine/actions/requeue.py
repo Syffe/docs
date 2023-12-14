@@ -85,8 +85,8 @@ class RequeueExecutor(
                 check_api.Conclusion.NEUTRAL,
                 "This pull request will be re-embarked automatically",
                 "",
+                details_url=await dashboard.get_queues_url_from_context(self.ctxt),
             ),
-            details_url=await dashboard.get_queues_url_from_context(self.ctxt),
         )
         queue_command = "queue"
         if self.config["queue_name"] is not None:
@@ -109,8 +109,8 @@ class RequeueExecutor(
                 check_api.Conclusion.NEUTRAL,
                 "This pull request can be re-embarked automatically",
                 "",
+                details_url=await dashboard.get_queues_url_from_context(self.ctxt),
             ),
-            details_url=await dashboard.get_queues_url_from_context(self.ctxt),
         )
 
         # NOTE(sileht): refresh it to, maybe, retrigger the queue action.

@@ -1738,10 +1738,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     check_api.Conclusion.ACTION_REQUIRED,
                     title=title,
                     summary=summary,
-                ),
-                details_url=await dashboard.get_queues_url_from_context(
-                    original_ctxt,
-                    self.train.convoy,
+                    details_url=await dashboard.get_queues_url_from_context(
+                        original_ctxt,
+                        self.train.convoy,
+                    ),
                 ),
             )
             await refresher.send_pull_refresh(

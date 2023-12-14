@@ -672,10 +672,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                             " queue, this summary will be updated once the queue"
                             " checks have started."
                         ),
-                    ),
-                    details_url=await dashboard.get_queues_url_from_context(
-                        self.ctxt,
-                        convoy,
+                        details_url=await dashboard.get_queues_url_from_context(
+                            self.ctxt,
+                            convoy,
+                        ),
                     ),
                 )
 
@@ -725,10 +725,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     conclusion,
                     f"The pull request {self.ctxt.pull['number']} cannot be merged and has been disembarked",
                     result.title + "\n" + result.summary,
-                ),
-                details_url=await dashboard.get_queues_url_from_context(
-                    self.ctxt,
-                    convoy,
+                    details_url=await dashboard.get_queues_url_from_context(
+                        self.ctxt,
+                        convoy,
+                    ),
                 ),
             )
 
@@ -1339,8 +1339,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     check_api.Conclusion.PENDING,
                     "The pull request has been refreshed and is going to be re-embarked soon",
                     "",
+                    details_url=await dashboard.get_queues_url_from_context(self.ctxt),
                 ),
-                details_url=await dashboard.get_queues_url_from_context(self.ctxt),
             )
 
 

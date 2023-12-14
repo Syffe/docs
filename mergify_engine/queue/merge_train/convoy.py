@@ -453,16 +453,16 @@ class Convoy:
                 queue_check_run_conclusion,
                 title=original_pr_summary.title,
                 summary=original_pr_summary.body,
+                details_url=await dashboard.get_queues_url_from_context(
+                    user_pr_context,
+                    self,
+                ),
             )
 
             await check_api.set_check_run(
                 user_pr_context,
                 await user_pr_context.get_merge_queue_check_run_name(),
                 report,
-                details_url=await dashboard.get_queues_url_from_context(
-                    user_pr_context,
-                    self,
-                ),
             )
         else:
             failed_car = first.first(
@@ -525,16 +525,16 @@ class Convoy:
                 queue_check_run_conclusion,
                 title=check_title,
                 summary=summary,
+                details_url=await dashboard.get_queues_url_from_context(
+                    user_pr_context,
+                    self,
+                ),
             )
 
             await check_api.set_check_run(
                 user_pr_context,
                 await user_pr_context.get_merge_queue_check_run_name(),
                 report,
-                details_url=await dashboard.get_queues_url_from_context(
-                    user_pr_context,
-                    self,
-                ),
             )
 
     @classmethod

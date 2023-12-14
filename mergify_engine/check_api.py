@@ -6,6 +6,7 @@ import typing
 
 import daiquiri
 
+from mergify_engine import dashboard
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
@@ -203,12 +204,19 @@ async def set_check_run(
     result: Result,
     external_id: str | None = None,
     skip_cache: bool = False,
-    details_url: str | None = None,
 ) -> github_types.CachedGitHubCheckRun:
     status: github_types.GitHubCheckRunStatus
     status = "in_progress" if result.conclusion is Conclusion.PENDING else "completed"
 
     started_at = (result.started_at or date.utcnow()).isoformat()
+
+    details_url = result.details_url
+    if details_url is None:
+        details_url = dashboard.get_eventlogs_url(
+            ctxt.repository.installation.owner_login,
+            ctxt.repository.repo["name"],
+            ctxt.pull["number"],
+        )
 
     post_parameters = GitHubCheckRunParameters(
         {
@@ -216,7 +224,7 @@ async def set_check_run(
             "head_sha": ctxt.pull["head"]["sha"],
             "status": status,
             "started_at": typing.cast(github_types.ISODateTimeType, started_at),
-            "details_url": details_url or f"{ctxt.pull['html_url']}/checks",
+            "details_url": details_url,
             "output": {
                 "title": result.title,
                 "summary": result.summary,
@@ -298,26 +306,24 @@ async def set_check_run(
                 ).json(),
             ),
         )
-    else:
-        if details_url is None:
-            post_parameters["details_url"] += f"?check_run_id={checks[0]['id']}"
 
-        # Don't do useless update
-        if check_need_update(checks[0], post_parameters):
-            new_check = to_check_run_light(
-                typing.cast(
-                    github_types.GitHubCheckRun,
-                    (
-                        await ctxt.client.patch(
-                            f"{ctxt.base_url}/check-runs/{checks[0]['id']}",
-                            api_version="antiope",
-                            json=post_parameters,
-                        )
-                    ).json(),
-                ),
-            )
-        else:
-            new_check = checks[0]
+    # Don't do useless update
+    elif check_need_update(checks[0], post_parameters):
+        new_check = to_check_run_light(
+            typing.cast(
+                github_types.GitHubCheckRun,
+                (
+                    await ctxt.client.patch(
+                        f"{ctxt.base_url}/check-runs/{checks[0]['id']}",
+                        api_version="antiope",
+                        json=post_parameters,
+                    )
+                ).json(),
+            ),
+        )
+
+    else:
+        new_check = checks[0]
 
     if not skip_cache:
         await ctxt.update_cached_check_runs(new_check)
