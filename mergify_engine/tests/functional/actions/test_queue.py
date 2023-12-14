@@ -508,6 +508,54 @@ class TestQueueAction(base.FunctionalTestBase):
         p2_merged = await self.wait_for_pull_request("closed")
         assert p2_merged["pull_request"]["merged"]
 
+    async def test_pr_queued_with_depends_on_and_higher_priority(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "queue_conditions": ["label=queue"],
+                    "priority_rules": [
+                        {
+                            "name": "high priority",
+                            "conditions": ["label=urgent"],
+                            "priority": "high",
+                        },
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
+        p1 = await self.create_pr()
+        body = f"Urgent PR!\nDepends-On: #{p1['number']}\n"
+        p2 = await self.create_pr(message=body)
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.add_label(p2["number"], "urgent")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+
     async def test_queue_conditions_matching_with_pull_request_rules(
         self,
     ) -> None:

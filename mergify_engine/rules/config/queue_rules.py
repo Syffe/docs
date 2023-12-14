@@ -14,6 +14,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine.actions import merge_base
+from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import generic_evaluator
 from mergify_engine.rules import types
@@ -240,10 +241,27 @@ class QueueRule:
         return typing.cast(EvaluatedQueueRule, self)
 
     async def get_context_effective_priority(self, ctxt: context.Context) -> int:
-        return (
+        effective_priority = (
             await self.priority_rules.get_context_priority(ctxt)
             + self.config["priority"] * queue.QUEUE_PRIORITY_OFFSET
         )
+
+        convoy = await merge_train.Convoy.from_context(ctxt)
+
+        # NOTE(charly): if some dependent pull requests are already in the
+        # queue, pick the lowest priority to preserve the dependency graph
+        for dependent_pr_number in ctxt.get_depends_on():
+            dependent_embarked_prs = await convoy.find_embarked_pull(
+                dependent_pr_number,
+            )
+            for _, dependent_embarked_pr, _, _ in dependent_embarked_prs:
+                dependent_effective_priority = dependent_embarked_pr.config[
+                    "effective_priority"
+                ]
+                if dependent_effective_priority < effective_priority:
+                    effective_priority = dependent_effective_priority
+
+        return effective_priority
 
 
 @dataclasses.dataclass
