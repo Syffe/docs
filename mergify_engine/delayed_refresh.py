@@ -66,13 +66,6 @@ async def plan_next_refresh(
     pull_request: condition_value_querier.BasePullRequest,
     only_if_earlier: bool = False,
 ) -> None:
-    plan_refresh_at = await _get_current_refresh_datetime(
-        ctxt.repository,
-        ctxt.pull["number"],
-    )
-    if plan_refresh_at is not None and plan_refresh_at < date.utcnow():
-        plan_refresh_at = None
-
     refresh_time_conditions = (
         ctxt.pull["closed_at"] is None
         or (date.utcnow() - date.fromisoformat(ctxt.pull["closed_at"]))
