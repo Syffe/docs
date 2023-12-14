@@ -64,7 +64,25 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 ],
                 "id": anys.ANY_INT,
                 "job_name": "A job",
-                "name": "Failure of A job",
+                "name": "Error on test: my_awesome_test",
+                "short_id": anys.ANY_STR,
+                "status": "unresolved",
+            },
+            {
+                "events": [
+                    {
+                        "failed_run_count": 1,
+                        "flaky": "unknown",
+                        "id": DbPopulator.internal_ref[
+                            "OneAccount/OneRepo/failed_job_with_flaky_nghb"
+                        ],
+                        "run_id": anys.ANY_INT,
+                        "started_at": anys.ANY_DATETIME_STR,
+                    },
+                ],
+                "id": anys.ANY_INT,
+                "job_name": "A job",
+                "name": "Error on test: my_fucking_awesome_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
             },
@@ -82,13 +100,13 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 ],
                 "id": anys.ANY_INT,
                 "job_name": "A job",
-                "name": "Failure of A job",
+                "name": "Error on test: my_cypress_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
             },
         ],
         "per_page": 10,
-        "size": 2,
+        "size": 3,
     }
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
@@ -119,7 +137,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 ],
                 "id": anys.ANY_INT,
                 "job_name": "A job",
-                "name": "Failure of A job",
+                "name": "Error on test: my_awesome_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
             },
@@ -186,7 +204,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 ],
                 "id": anys.ANY_INT,
                 "job_name": "A job",
-                "name": "Failure of A job",
+                "name": "Error on test: my_awesome_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
             },
@@ -223,7 +241,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 ],
                 "id": anys.ANY_INT,
                 "job_name": "A job",
-                "name": "Failure of A job",
+                "name": "Error on test: my_awesome_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
             },
@@ -240,6 +258,7 @@ async def test_api_ci_issue_get_ci_issue(
     web_client: conftest.CustomTestClient,
 ) -> None:
     await populated_db.commit()
+    populated_db.expunge_all()
     await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock,
         populated_db,
@@ -250,13 +269,14 @@ async def test_api_ci_issue_get_ci_issue(
     job = await populated_db.get_one(
         gh_models.WorkflowJob,
         DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"],
-        options=[orm.joinedload(gh_models.WorkflowJob.ci_issue)],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
     )
 
-    assert job.ci_issue_id is not None
+    assert len(job.ci_issues_gpt) == 1
+    ci_issue = job.ci_issues_gpt[0]
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{job.ci_issue_id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
         follow_redirects=False,
     )
 
@@ -288,10 +308,10 @@ async def test_api_ci_issue_get_ci_issue(
                 "started_at": job.started_at.isoformat(),
             },
         ],
-        "id": job.ci_issue_id,
+        "id": ci_issue.id,
         "job_name": "A job",
-        "name": "Failure of A job",
-        "short_id": job.ci_issue.short_id,
+        "name": "Error on test: my_awesome_test",
+        "short_id": ci_issue.short_id,
         "status": "unresolved",
     }
 
@@ -303,7 +323,7 @@ async def test_api_ci_issue_get_ci_issue(
     )
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{job.ci_issue_id}",
+        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.id}",
         follow_redirects=False,
     )
 
@@ -314,13 +334,14 @@ async def test_api_ci_issue_get_ci_issue(
         DbPopulator.internal_ref[
             "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"
         ],
-        options=[orm.joinedload(gh_models.WorkflowJob.ci_issue)],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
     )
 
-    assert job.ci_issue_id is not None
+    assert len(job.ci_issues_gpt) == 1
+    ci_issue = job.ci_issues_gpt[0]
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{job.ci_issue_id}",
+        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.id}",
         follow_redirects=False,
     )
 
@@ -334,10 +355,10 @@ async def test_api_ci_issue_get_ci_issue(
                 "started_at": job.started_at.isoformat(),
             },
         ],
-        "id": job.ci_issue_id,
+        "id": ci_issue.id,
         "job_name": "A job",
-        "name": "Failure of A job",
-        "short_id": job.ci_issue.short_id,
+        "name": "Error on test: my_awesome_test",
+        "short_id": ci_issue.short_id,
         "status": "unresolved",
     }
 
@@ -349,6 +370,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     web_client: conftest.CustomTestClient,
 ) -> None:
     await populated_db.commit()
+    populated_db.expunge_all()
     await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock,
         populated_db,
@@ -359,13 +381,14 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     job = await populated_db.get_one(
         gh_models.WorkflowJob,
         DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"],
-        options=[orm.joinedload(gh_models.WorkflowJob.ci_issue)],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
     )
 
-    assert job.ci_issue_id is not None
+    assert len(job.ci_issues_gpt) == 1
+    ci_issue = job.ci_issues_gpt[0]
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{job.ci_issue_id}/events/{job.id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/{job.id}",
         follow_redirects=False,
     )
 
@@ -400,10 +423,10 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
         options=[orm.joinedload(gh_models.WorkflowJob.ci_issue)],
     )
 
-    assert job.ci_issue_id is not None
+    assert ci_issue.id is not None
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{job.ci_issue_id}/events/{job.id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/{job.id}",
         follow_redirects=False,
     )
 
@@ -433,7 +456,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     }
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{job.ci_issue_id}/events/9999999",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/9999999",
         follow_redirects=False,
     )
 
@@ -454,7 +477,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     )
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{job.ci_issue_id}/events/{job.id}",
+        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.id}/events/{job.id}",
         follow_redirects=False,
     )
 
@@ -468,6 +491,7 @@ async def test_api_ci_issue_put_ci_issue(
     web_client: conftest.CustomTestClient,
 ) -> None:
     await populated_db.commit()
+    populated_db.expunge_all()
     await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock,
         populated_db,
@@ -478,27 +502,28 @@ async def test_api_ci_issue_put_ci_issue(
     job = await populated_db.get_one(
         gh_models.WorkflowJob,
         DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"],
-        options=[orm.joinedload(gh_models.WorkflowJob.ci_issue)],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
     )
 
-    assert job.ci_issue_id is not None
+    assert len(job.ci_issues_gpt) == 1
+    ci_issue = job.ci_issues_gpt[0]
 
     response = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{job.ci_issue_id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
         follow_redirects=False,
     )
 
     assert response.json() == {
-        "id": job.ci_issue_id,
-        "name": "Failure of A job",
-        "short_id": job.ci_issue.short_id,
+        "id": ci_issue.id,
+        "name": "Error on test: my_awesome_test",
+        "short_id": ci_issue.short_id,
         "job_name": "A job",
         "status": "unresolved",
         "events": anys.ANY_LIST,
     }
 
     response = await web_client.patch(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{job.ci_issue_id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
         json={"status": "resolved"},
         follow_redirects=False,
     )
@@ -506,14 +531,14 @@ async def test_api_ci_issue_put_ci_issue(
     assert response.status_code == 200, response.text
 
     response = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{job.ci_issue_id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
         follow_redirects=False,
     )
 
     assert response.json() == {
-        "id": job.ci_issue_id,
-        "name": "Failure of A job",
-        "short_id": job.ci_issue.short_id,
+        "id": ci_issue.id,
+        "name": "Error on test: my_awesome_test",
+        "short_id": ci_issue.short_id,
         "job_name": "A job",
         "status": "resolved",
         "events": anys.ANY_LIST,
@@ -553,7 +578,7 @@ async def test_api_ci_issue_put_ci_issues(
             {
                 "id": anys.ANY_INT,
                 "short_id": anys.ANY_STR,
-                "name": "Failure of A job",
+                "name": "Error on test: my_awesome_test",
                 "job_name": "A job",
                 "status": "unresolved",
                 "events": anys.ANY_LIST,
@@ -561,20 +586,29 @@ async def test_api_ci_issue_put_ci_issues(
             {
                 "id": anys.ANY_INT,
                 "short_id": anys.ANY_STR,
-                "name": "Failure of A job",
+                "name": "Error on test: my_fucking_awesome_test",
+                "job_name": "A job",
+                "status": "unresolved",
+                "events": anys.ANY_LIST,
+            },
+            {
+                "id": anys.ANY_INT,
+                "short_id": anys.ANY_STR,
+                "name": "Error on test: my_cypress_test",
                 "job_name": "A job",
                 "status": "unresolved",
                 "events": anys.ANY_LIST,
             },
         ],
         "per_page": 10,
-        "size": 2,
+        "size": 3,
     }
     issue1 = response.json()["issues"][0]["id"]
     issue2 = response.json()["issues"][1]["id"]
+    issue3 = response.json()["issues"][2]["id"]
 
     response = await web_client.patch(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?id={issue1}&id={issue2}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?id={issue1}&id={issue2}&id={issue3}",
         json={"status": "resolved"},
         follow_redirects=False,
     )
@@ -599,7 +633,7 @@ async def test_api_ci_issue_put_ci_issues(
             {
                 "id": anys.ANY_INT,
                 "short_id": anys.ANY_STR,
-                "name": "Failure of A job",
+                "name": "Error on test: my_awesome_test",
                 "job_name": "A job",
                 "status": "resolved",
                 "events": anys.ANY_LIST,
@@ -607,14 +641,22 @@ async def test_api_ci_issue_put_ci_issues(
             {
                 "id": anys.ANY_INT,
                 "short_id": anys.ANY_STR,
-                "name": "Failure of A job",
+                "name": "Error on test: my_fucking_awesome_test",
+                "job_name": "A job",
+                "status": "resolved",
+                "events": anys.ANY_LIST,
+            },
+            {
+                "id": anys.ANY_INT,
+                "short_id": anys.ANY_STR,
+                "name": "Error on test: my_cypress_test",
                 "job_name": "A job",
                 "status": "resolved",
                 "events": anys.ANY_LIST,
             },
         ],
         "per_page": 10,
-        "size": 2,
+        "size": 3,
     }
 
 

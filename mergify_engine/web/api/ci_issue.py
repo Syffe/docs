@@ -11,7 +11,7 @@ from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import pagination
 from mergify_engine.models import github as gh_models
-from mergify_engine.models.ci_issue import CiIssue
+from mergify_engine.models.ci_issue import CiIssueGPT
 from mergify_engine.models.ci_issue import CiIssueStatus
 from mergify_engine.models.github.pull_request import PullRequestHeadShaHistory
 from mergify_engine.models.views.workflows import FlakyStatus
@@ -61,24 +61,24 @@ async def get_filtered_issues_cte(
     issue_id: int | None = None,
     statuses: tuple[CiIssueStatus, ...] | None = None,
     cursor: pagination.Cursor | None = None,
-) -> type[CiIssue]:
+) -> type[CiIssueGPT]:
     if cursor is None:
         cursor = pagination.Cursor("")
 
     # NOTE(charly): subquery to filter and limit issues, for pagination mainly
     filtered_issues = (
-        sqlalchemy.select(CiIssue)
-        .where(CiIssue.repository_id == repository_id)
+        sqlalchemy.select(CiIssueGPT)
+        .where(CiIssueGPT.repository_id == repository_id)
         .order_by(
-            CiIssue.id.desc() if cursor.forward else CiIssue.id.asc(),
+            CiIssueGPT.id.desc() if cursor.forward else CiIssueGPT.id.asc(),
         )
         .limit(limit)
     )
 
     if issue_id is not None:
-        filtered_issues = filtered_issues.where(CiIssue.id == issue_id)
+        filtered_issues = filtered_issues.where(CiIssueGPT.id == issue_id)
     if statuses is not None:
-        filtered_issues = filtered_issues.where(CiIssue.status.in_(statuses))
+        filtered_issues = filtered_issues.where(CiIssueGPT.status.in_(statuses))
 
     if cursor.value:
         try:
@@ -87,12 +87,12 @@ async def get_filtered_issues_cte(
             raise pagination.InvalidCursor(cursor)
 
         if cursor.forward:
-            filtered_issues = filtered_issues.where(CiIssue.id < cursor_issue_id)
+            filtered_issues = filtered_issues.where(CiIssueGPT.id < cursor_issue_id)
         else:
-            filtered_issues = filtered_issues.where(CiIssue.id > cursor_issue_id)
+            filtered_issues = filtered_issues.where(CiIssueGPT.id > cursor_issue_id)
 
     return orm.aliased(
-        CiIssue,
+        CiIssueGPT,
         filtered_issues.cte("filtered_issues"),
     )
 
@@ -105,13 +105,18 @@ async def get_pr_linked_to_ci_issue_cte(
             sqlalchemy.func.array_agg(gh_models.PullRequest.id.distinct()).label(
                 "pull_requests",
             ),
-            CiIssue.id,
+            CiIssueGPT.id,
         )
-        .select_from(CiIssue)
+        .select_from(CiIssueGPT)
+        .join(
+            gh_models.WorkflowJobLogMetadata,
+            gh_models.WorkflowJobLogMetadata.ci_issue_id == CiIssueGPT.id,
+        )
         .join(
             gh_models.WorkflowJob,
             sqlalchemy.and_(
-                gh_models.WorkflowJob.ci_issue_id == CiIssue.id,
+                gh_models.WorkflowJobLogMetadata.workflow_job_id
+                == gh_models.WorkflowJob.id,
                 gh_models.WorkflowJob.repository_id == repository_id,
             ),
         )
@@ -126,7 +131,7 @@ async def get_pr_linked_to_ci_issue_cte(
                 == gh_models.WorkflowJob.repository_id,
             ),
         )
-        .group_by(CiIssue.id)
+        .group_by(CiIssueGPT.id)
     ).cte("pr_linked_to_ci_issue")
 
 
@@ -169,9 +174,14 @@ async def query_issues(
             gh_models.GitHubRepository.id == filtered_issues_cte.repository_id,
         )
         .join(
+            gh_models.WorkflowJobLogMetadata,
+            gh_models.WorkflowJobLogMetadata.ci_issue_id == filtered_issues_cte.id,
+        )
+        .join(
             WorkflowJobEnhanced,
             sqlalchemy.and_(
-                WorkflowJobEnhanced.ci_issue_id == filtered_issues_cte.id,
+                gh_models.WorkflowJobLogMetadata.workflow_job_id
+                == WorkflowJobEnhanced.id,
                 WorkflowJobEnhanced.repository_id == repository_id,
             ),
         )
@@ -277,9 +287,9 @@ async def patch_ci_issues(
     json: CiIssueBody,
 ) -> None:
     stmt = (
-        sqlalchemy.update(CiIssue)
+        sqlalchemy.update(CiIssueGPT)
         .values(status=json.status)
-        .where(CiIssue.id.in_(ci_issue_ids))
+        .where(CiIssueGPT.id.in_(ci_issue_ids))
     )
     await session.execute(stmt)
     await session.commit()
@@ -335,10 +345,10 @@ async def patch_ci_issue(
     json: CiIssueBody,
 ) -> None:
     stmt = (
-        sqlalchemy.update(CiIssue)
+        sqlalchemy.update(CiIssueGPT)
         .values(status=json.status)
-        .where(CiIssue.id == ci_issue_id)
-        .returning(CiIssue.id)
+        .where(CiIssueGPT.id == ci_issue_id)
+        .returning(CiIssueGPT.id)
     )
     result = await session.execute(stmt)
     await session.commit()

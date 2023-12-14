@@ -2,12 +2,14 @@ import datetime
 import typing
 
 import numpy as np
+from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.models import github as gh_models
 from mergify_engine.models.ci_issue import CiIssue
+from mergify_engine.models.ci_issue import CiIssueGPT
 from mergify_engine.tests.db_populator import DbPopulator
 
 
@@ -406,15 +408,21 @@ class TestGhaFailedJobsLinkToCissueDataset(DbPopulator):
     async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
         await cls.load(session, {"TestApiGhaFailedJobsDataset"})
         jobs = await session.scalars(
-            sqlalchemy.select(gh_models.WorkflowJob).where(
+            sqlalchemy.select(gh_models.WorkflowJob)
+            .options(
+                orm.joinedload(gh_models.WorkflowJob.log_metadata),
+                orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt),
+            )
+            .where(
                 gh_models.WorkflowJob.conclusion
                 == gh_models.WorkflowJobConclusion.FAILURE,
                 gh_models.WorkflowJob.log_embedding.isnot(None),
                 gh_models.WorkflowJob.ci_issue_id.is_(None),
             ),
         )
-        for job in jobs:
+        for job in jobs.unique():
             await CiIssue.link_job_to_ci_issue(session, job)
+            await CiIssueGPT.link_job_to_ci_issues(session, job)
 
 
 class TestGhaFailedJobsPullRequestsDataset(DbPopulator):
