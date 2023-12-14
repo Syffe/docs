@@ -10,3 +10,4 @@ excluded-packages:
   - systemd-timesyncd
   - libkrb5support0
   - libx11-data
+  - ncurses-term
