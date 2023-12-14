@@ -501,7 +501,10 @@ class BasePullRequest:
                 except http.HTTPNotFound:
                     continue
 
-                is_pr_queued_above = await ctxt.is_pr_queued_above(pull_request_number)
+                is_pr_queued_above = await cls.is_pull_queued_above(
+                    ctxt,
+                    pull_request_number,
+                )
 
                 if depends_on_ctxt.pull["merged"] or is_pr_queued_above:
                     depends_on.append(f"#{pull_request_number}")
@@ -593,6 +596,29 @@ class BasePullRequest:
             }
 
         raise PullRequestAttributeError(name)
+
+    @staticmethod
+    async def is_pull_queued_above(
+        ctxt: context_mod.Context,
+        other_pull_number: github_types.GitHubPullRequestNumber,
+    ) -> bool:
+        # Circular import
+        from mergify_engine.queue import merge_train
+
+        convoy = await merge_train.Convoy.from_context(ctxt)
+
+        list_other_pull = await convoy.find_embarked_pull(other_pull_number)
+        if not list_other_pull:
+            return False
+
+        list_current_pull = await convoy.find_embarked_pull(ctxt.pull["number"])
+
+        return all(
+            other_pull.position < current_pull.position
+            for current_pull in list_current_pull
+            for other_pull in list_other_pull
+            if other_pull.partition_name == current_pull.partition_name
+        )
 
 
 @dataclasses.dataclass
