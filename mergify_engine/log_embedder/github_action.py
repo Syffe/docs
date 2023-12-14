@@ -282,9 +282,17 @@ async def extract_data_from_log(
         raise UnableToExtractLogMetadata
 
     for data in extracted_data:
+        # NOTE(Kontrolix): Convert all data returned by GPT in str as we expect them to be
+        # sometimes `lineno` is returned as int. It would be preferable to have `lineno`
+        # column as an int in db but sometime GPT return str for `lineno`
+        # like `line 51` or `41 and 45`
+        stringified_data = {
+            key: None if value is None else str(value) for key, value in data.items()
+        }
+
         log_metadata = gh_models.WorkflowJobLogMetadata(
             workflow_job_id=job.id,
-            **data,
+            **stringified_data,
         )
         session.add(log_metadata)
         job.log_metadata.append(log_metadata)

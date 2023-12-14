@@ -156,6 +156,48 @@ def mock_extracting_metadata_extracted(
     ).respond(200, json=json_response)
 
 
+def mock_extracting_metadata_lineno_int(
+    respx_mock: respx.MockRouter,
+) -> None:
+    json_response = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 1677652288,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": """
+                        {
+                            "failures": [
+                                {
+                                    "problem_type": "Toto title",
+                                    "language": "Python",
+                                    "filename": "toto.py",
+                                    "lineno": 15,
+                                    "error": "Exception",
+                                    "test_framework": "pytest",
+                                    "stack_trace": ""
+                                }
+                            ]
+                        }""",
+                },
+                "finish_reason": "stop",
+            },
+        ],
+        "usage": {
+            "prompt_tokens": 9,
+            "completion_tokens": 12,
+            "total_tokens": 21,
+        },
+    }
+    respx_mock.post(
+        f"{openai_api.OPENAI_API_BASE_URL}/chat/completions",
+    ).respond(200, json=json_response)
+
+
 def mock_extracting_metadata_misformated(
     respx_mock: respx.MockRouter,
 ) -> None:
@@ -900,6 +942,21 @@ async def test_embed_logs_on_various_data(
             gh_models.WorkflowJobLogStatus.DOWNLOADED,
             gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
             gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            [],
+        ),
+        (
+            mock_log_downloaded,
+            mock_embedding_embedded,
+            mock_extracting_metadata_lineno_int,
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
+            noop,
+            noop,
+            noop,
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
             [],
         ),
     ),
