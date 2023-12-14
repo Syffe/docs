@@ -665,10 +665,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     merge_queue_check_run["name"],
                     check_api.Result(
                         check_api.Conclusion.NEUTRAL,
-                        f"The pull request {self.ctxt.pull['number']} is in queue",
+                        f"The pull request #{self.ctxt.pull['number']} is queued",
                         (
-                            f"The pull request {self.ctxt.pull['number']} is in"
-                            " queue, this summary will be updated once the queue"
+                            f"The pull request #{self.ctxt.pull['number']} is queued,"
+                            " this summary will be updated once the queue"
                             " checks have started."
                         ),
                         details_url=await dashboard.get_queues_url_from_context(
