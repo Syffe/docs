@@ -44,6 +44,9 @@ class QueueChecksOutcomeT(typing.TypedDict):
     CONFLICT_WITH_PULL_AHEAD: int
     BRANCH_UPDATE_FAILED: int
     SUCCESS: int
+    DRAFT_PULL_REQUEST_CHANGED: int
+    PULL_REQUEST_UPDATED: int
+    MERGE_QUEUE_RESET: int
 
 
 BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
@@ -68,6 +71,9 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
         "CONFLICT_WITH_BASE_BRANCH": 0,
         "CONFLICT_WITH_PULL_AHEAD": 0,
         "BRANCH_UPDATE_FAILED": 0,
+        "DRAFT_PULL_REQUEST_CHANGED": 0,
+        "PULL_REQUEST_UPDATED": 0,
+        "MERGE_QUEUE_RESET": 0,
     },
 )
 

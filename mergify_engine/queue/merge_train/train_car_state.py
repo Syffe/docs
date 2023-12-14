@@ -31,6 +31,20 @@ class UnexpectedReason(Exception):
     pass
 
 
+def convert_legacy_outcome(
+    outcome: merge_train.TrainCarOutcome,
+) -> merge_train.TrainCarOutcome:
+    # Has been dropped, just move back to waiting for CI until next eval
+    if outcome in (
+        train_car.TrainCarOutcome.BASE_BRANCH_PUSHED,
+        train_car.TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE,
+    ):
+        # Just wait reevaluation
+        outcome = merge_train.TrainCarOutcome.UNKNOWN
+
+    return outcome
+
+
 @dataclasses.dataclass
 class TrainCarStateForSummary:
     outcome: train_car.TrainCarOutcome = train_car.TrainCarOutcome.UNKNOWN
@@ -90,8 +104,15 @@ class TrainCarStateForSummary:
             for pull_request, reason in delete_reasons_raw.items()
         }
 
+        # backward compatibility introduced in 7.8.0, when TrainCarOutcome was not registered in
+        # the enum registry
+        if isinstance(data["outcome"], str):
+            outcome = train_car.TrainCarOutcome(data["outcome"])
+        else:
+            outcome = data["outcome"]
+
         return cls(
-            outcome=data["outcome"],
+            outcome=convert_legacy_outcome(outcome),
             outcome_message=data["outcome_message"],
             delete_reasons=delete_reasons,
         )
@@ -278,8 +299,14 @@ class TrainCarState:
             for pull_request, reason in delete_reasons_raw.items()
         }
 
+        # backward compatibility introduced in 7.8.0
+        if isinstance(data["outcome"], str):
+            outcome = train_car.TrainCarOutcome(data["outcome"])
+        else:
+            outcome = data["outcome"]
+
         return cls(
-            outcome=data["outcome"],
+            outcome=convert_legacy_outcome(outcome),
             ci_state=data["ci_state"],
             ci_started_at=data.get("ci_started_at", legacy_creation_date),
             ci_ended_at=data.get("ci_ended_at"),
@@ -457,21 +484,6 @@ def dequeue_reason_from_train_car_state(
             f"TrainCarState.delete_reasons[pull_request] is a cancel reason: `{train_car_state.delete_reasons}`, outcome is `{train_car_state.outcome}`",
         )
 
-    # Train car has failed but not yet removed from train, or has been created by < 7.9.0
-    if train_car_state.outcome in (
-        merge_train.TrainCarOutcome.DRAFT_PR_CHANGE,
-        merge_train.TrainCarOutcome.BASE_BRANCH_PUSHED,
-        merge_train.TrainCarOutcome.UPDATED_PR_CHANGE,
-    ):
-        if train_car_state.outcome_message is None:
-            LOG.error(
-                "outcome_message is not set",
-                outcome=train_car_state.outcome.value,
-            )
-        return queue_utils.UnexpectedQueueChange(
-            change=train_car_state.outcome_message or "unexpected queue change",
-        )
-
     if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
         return queue_utils.ChecksFailed()
 
@@ -492,6 +504,12 @@ def dequeue_reason_from_train_car_state(
 
     if train_car_state.outcome == merge_train.TrainCarOutcome.BRANCH_UPDATE_FAILED:
         return queue_utils.BranchUpdateFailed()
+
+    if train_car_state.outcome == merge_train.TrainCarOutcome.DRAFT_PR_CHANGE:
+        return queue_utils.DraftPullRequestChanged()
+
+    if train_car_state.outcome == merge_train.TrainCarOutcome.UPDATED_PR_CHANGE:
+        return queue_utils.PullRequestUpdated(pull_request)
 
     raise UnexpectedReason(
         f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason",

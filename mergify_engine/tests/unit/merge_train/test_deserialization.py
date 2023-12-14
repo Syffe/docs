@@ -40,6 +40,7 @@ of an attribute of the Train object, and, the values being the expected values
 of the key in the deserialized object.
 """
 
+import enum
 import os
 import pathlib
 import typing
@@ -110,6 +111,10 @@ def _test_nested_variable(
     property_path_name: str,
 ) -> None:
     LOG.info("Testing train property `%s`", property_path_name)
+
+    if isinstance(real_nested_variable, enum.Enum):
+        assert real_nested_variable.value == expected_nested_variable
+        return
 
     if not isinstance(real_nested_variable, list | dict):
         assert real_nested_variable == expected_nested_variable

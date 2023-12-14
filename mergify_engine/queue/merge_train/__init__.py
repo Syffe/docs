@@ -6,14 +6,12 @@ from mergify_engine.queue.merge_train.train import Train
 from mergify_engine.queue.merge_train.train import get_redis_train_key
 from mergify_engine.queue.merge_train.train_car import CHECKS_TIMEOUT_MESSAGE
 from mergify_engine.queue.merge_train.train_car import CI_FAILED_MESSAGE
+from mergify_engine.queue.merge_train.train_car import MergeQueueReset
 from mergify_engine.queue.merge_train.train_car import TrainCar
 from mergify_engine.queue.merge_train.train_car import TrainCarChecksType
 from mergify_engine.queue.merge_train.train_car import TrainCarOutcome
 from mergify_engine.queue.merge_train.train_car import (
     TrainCarPullRequestCreationFailure,
-)
-from mergify_engine.queue.merge_train.train_car import (
-    UnexpectedUpdatedPullRequestChange,
 )
 from mergify_engine.queue.merge_train.train_car_state import TrainCarState
 from mergify_engine.queue.merge_train.train_car_state import TrainCarStateForSummary
@@ -38,5 +36,5 @@ __all__ = [
     "TrainCarPullRequestCreationFailure",
     "TrainCarState",
     "TrainCarStateForSummary",
-    "UnexpectedUpdatedPullRequestChange",
+    "MergeQueueReset",
 ]

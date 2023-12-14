@@ -485,7 +485,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             queue_utils.ChecksFailed
             | queue_utils.ChecksTimeout
             | queue_utils.QueueRuleMissing
-            | queue_utils.UnexpectedQueueChange,
+            | queue_utils.DraftPullRequestChanged
+            | queue_utils.PullRequestUpdated,
         ):
             return False
 
@@ -530,13 +531,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if await self._can_be_reembarked_automatically():
             await self.reembark_pull_request_if_possible()
 
-        for car in cars:
-            if car is not None:
+        for car in cars[:]:
+            try:
                 await car.check_mergeability(
                     "original_pull_request",
                     original_pull_request_rule=self.rule,
                     original_pull_request_number=self.ctxt.pull["number"],
                 )
+            except merge_train.MergeQueueReset:
+                cars.remove(car)
 
         dequeue_msg = (
             f"The pull request has been removed from the queue `{self.config['name']}`"
@@ -552,12 +555,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
         # NOTE(sileht): the pull request gets checked and then changed
         # by user, we should dequeue and requeue it as the conditions still match.
         if await self.ctxt.synchronized_by_user_at():
-            unexpected_changes = queue_utils.UnexpectedQueueChange(
-                str(
-                    merge_train.UnexpectedUpdatedPullRequestChange(
-                        self.ctxt.pull["number"],
-                    ),
-                ),
+            dequeue_reason_pr_updated = queue_utils.PullRequestUpdated(
+                self.ctxt.pull["number"],
             )
             self.ctxt.log.info(
                 "pull request has unexpected pull request update",
@@ -576,13 +575,13 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await convoy.remove_pull(
                 self.ctxt.pull["number"],
                 self.rule.get_signal_trigger(),
-                unexpected_changes,
+                dequeue_reason_pr_updated,
             )
             if isinstance(self.rule, prr_config.CommandRule):
                 return check_api.Result(
                     check_api.Conclusion.CANCELLED,
                     dequeue_msg,
-                    f"{unexpected_changes!s}.\n{self.DEQUEUE_DOCUMENTATION}",
+                    f"{dequeue_reason_pr_updated!s}.\n{self.DEQUEUE_DOCUMENTATION}",
                 )
 
         dequeue_reason: queue_utils.BaseDequeueReason
@@ -762,12 +761,14 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return result
 
         for car in cars:
-            if car is not None:
+            try:
                 await car.check_mergeability(
                     "original_pull_request",
                     original_pull_request_rule=self.rule,
                     original_pull_request_number=self.ctxt.pull["number"],
                 )
+            except merge_train.MergeQueueReset:
+                cars.remove(car)
 
         # We just rebase the pull request, don't cancel it yet if CIs are
         # running. The pull request will be merged if all rules match again.

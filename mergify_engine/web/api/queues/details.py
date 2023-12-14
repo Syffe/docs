@@ -366,10 +366,11 @@ async def repository_queue_pull_request(
                     )
                     summary = PullRequestSummary(
                         title=raw_summary.title,
-                        unexpected_changes=raw_summary.unexpected_changes,
                         freeze=raw_summary.freeze,
                         checks_timeout=raw_summary.checks_timeout,
                         batch_failure=raw_summary.get_batch_failure_summary_title(),
+                        # TODO(sileht): We need to drop it first from the dashboard
+                        unexpected_changes=None,
                     )
                 else:
                     summary = None

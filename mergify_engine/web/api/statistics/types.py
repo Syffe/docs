@@ -118,3 +118,18 @@ class QueueChecksOutcome:
             "description": "The pull request can't be updated for security reasons",
         },
     )
+    DRAFT_PULL_REQUEST_CHANGED: int = dataclasses.field(
+        metadata={
+            "description": "The draft pull request has been unexpectedly changed",
+        },
+    )
+    PULL_REQUEST_UPDATED: int = dataclasses.field(
+        metadata={
+            "description": "The pull request has been unexpectedly updated",
+        },
+    )
+    MERGE_QUEUE_RESET: int = dataclasses.field(
+        metadata={
+            "description": "The merge queue has been reset",
+        },
+    )

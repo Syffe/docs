@@ -19,7 +19,7 @@ AbortCodeT = typing.Literal[
     "CHECKS_TIMEOUT",
     "CHECKS_FAILED",
     "QUEUE_RULE_MISSING",
-    "UNEXPECTED_QUEUE_CHANGE",
+    "UNEXPECTED_QUEUE_CHANGE",  # retrocompatibility <= 8.0.0
     "PR_FROZEN_NO_CASCADING",
     "BASE_BRANCH_MISSING",
     "BASE_BRANCH_CHANGED",
@@ -29,6 +29,9 @@ AbortCodeT = typing.Literal[
     "CONFLICT_WITH_BASE_BRANCH",
     "CONFLICT_WITH_PULL_AHEAD",
     "BRANCH_UPDATE_FAILED",
+    "DRAFT_PULL_REQUEST_CHANGED",
+    "PULL_REQUEST_UPDATED",
+    "MERGE_QUEUE_RESET",
 ]
 
 DequeueCodeT = typing.Literal["PR_MERGED"] | AbortCodeT
@@ -217,6 +220,7 @@ class BaseBranchChanged(BaseDequeueReason):
     ] = "BASE_BRANCH_CHANGED"
 
 
+# Kept for retrocompatibility <= 8.0.0
 @dataclasses.dataclass
 class UnexpectedQueueChange(BaseDequeueReason):
     message = "Unexpected queue change: {change}"
@@ -256,6 +260,32 @@ class BranchUpdateFailed(BaseDequeueReason):
     dequeue_code: typing.ClassVar[
         typing.Literal["BRANCH_UPDATE_FAILED"]
     ] = "BRANCH_UPDATE_FAILED"
+
+
+@dataclasses.dataclass
+class DraftPullRequestChanged(BaseDequeueReason):
+    message = "The draft pull request has been unexpectedly changed"
+    dequeue_code: typing.ClassVar[
+        typing.Literal["DRAFT_PULL_REQUEST_CHANGED"]
+    ] = "DRAFT_PULL_REQUEST_CHANGED"
+
+
+@dataclasses.dataclass
+class PullRequestUpdated(BaseDequeueReason):
+    message = "The pull request #{pr_number} has been manually updated"
+    dequeue_code: typing.ClassVar[
+        typing.Literal["PULL_REQUEST_UPDATED"]
+    ] = "PULL_REQUEST_UPDATED"
+    pr_number: int
+
+
+@dataclasses.dataclass
+class QueueReset(BaseQueueCancelReason):
+    message = "Merge queue reset: {reason}"
+    dequeue_code: typing.ClassVar[
+        typing.Literal["MERGE_QUEUE_RESET"]
+    ] = "MERGE_QUEUE_RESET"
+    reason: str
 
 
 _HiddenQueuePullRequestTag = typing.TypedDict(

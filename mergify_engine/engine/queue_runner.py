@@ -73,8 +73,11 @@ async def _handle_car(
         )
         return
 
-    await car.check_mergeability(
-        origin="draft_pull_request",
-        original_pull_request_rule=None,
-        original_pull_request_number=None,
-    )
+    try:
+        await car.check_mergeability(
+            origin="draft_pull_request",
+            original_pull_request_rule=None,
+            original_pull_request_number=None,
+        )
+    except merge_train.MergeQueueReset:
+        pass

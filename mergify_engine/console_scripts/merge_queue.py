@@ -8,7 +8,7 @@ from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.console_scripts import admin_cli
 from mergify_engine.queue import merge_train
-from mergify_engine.queue.merge_train import train_car
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import mergify as mergify_conf
 
 
@@ -59,5 +59,9 @@ async def merge_queue_reset(cli_ctxt: click.Context, url: str) -> None:
         for train in convoy.iter_trains():
             # NOTE(sileht): This is not concurrent safe, if a pull request is added/removed on the train
             # on the same moment, we will lost the change.
-            await train.reset(unexpected_changes=train_car.MergifySupportReset())
+            await train.reset(
+                queue_utils.QueueReset(
+                    "Mergify support has reset the merge queue",
+                ),
+            )
     click.echo(f"{repository.repo['full_name']} merge queue reseted")

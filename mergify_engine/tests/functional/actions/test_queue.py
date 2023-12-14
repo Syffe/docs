@@ -4463,7 +4463,7 @@ previous_failed_batches:
                 assert expected_reason in event["metadata"]["abort_reason"]
                 return
 
-        pytest.fail("No action.queue.checks_end event found")
+        pytest.fail("No action.queue.checks_end event found", response["events"])
 
     async def assert_api_checks_start_reason(
         self,
@@ -4548,11 +4548,11 @@ previous_failed_batches:
 
         await self.assert_api_checks_end_reason(
             p1["number"],
-            "has sustained unexpected changes from external sources",
+            "The draft pull request has been unexpectedly changed",
         )
         await self.assert_api_checks_end_reason(
             p2["number"],
-            "has sustained unexpected changes from external sources",
+            "The draft pull request has been unexpectedly changed",
         )
 
         # when detecting external changes onto the draft PR, the engine should disembark it and
@@ -4657,12 +4657,15 @@ previous_failed_batches:
 
         await self.assert_api_checks_start_reason(
             p1["number"],
-            "Unexpected queue change: an external action moved the base branch head to",
+            "merge queue reset: an external action moved the base branch head to",
         )
 
         # when detecting base branch changes, the engine should reset the train
         comment = await self.wait_for_issue_comment(str(draft_pr["number"]), "created")
-        assert "The whole train will be reset." in comment["comment"]["body"]
+        assert (
+            "Merge queue reset: an external action moved the base branch head to"
+            in comment["comment"]["body"]
+        )
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
@@ -4739,12 +4742,15 @@ previous_failed_batches:
 
         await self.assert_api_checks_end_reason(
             p1["number"],
-            "Unexpected queue change: an external action moved the base branch head to",
+            "Merge queue reset: an external action moved the base branch head to",
         )
 
         # when detecting base branch changes, the engine should reset the train
         comment = await self.wait_for_issue_comment(str(draft_pr["number"]), "created")
-        assert "The whole train will be reset." in comment["comment"]["body"]
+        assert (
+            "Merge queue reset: an external action moved the base branch head to"
+            in comment["comment"]["body"]
+        )
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
@@ -4827,7 +4833,7 @@ previous_failed_batches:
         for event in response["events"]:
             if event["type"] == "action.queue.checks_end":
                 assert (
-                    f"Unexpected queue change: the updated pull request #{p1['number']} has been manually updated"
+                    f"The pull request #{p1['number']} has been manually updated"
                     in event["metadata"]["abort_reason"]
                 )
                 timestamp_checks_end = event["received_at"]

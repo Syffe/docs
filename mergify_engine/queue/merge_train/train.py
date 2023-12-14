@@ -251,13 +251,10 @@ class Train:
                 )
                 return
 
-    async def reset(self, unexpected_changes: train_car.UnexpectedChanges) -> None:
-        await self._slice_cars(
-            0,
-            reason=queue_utils.UnexpectedQueueChange(change=str(unexpected_changes)),
-        )
+    async def reset(self, reason: queue_utils.QueueReset) -> None:
+        await self._slice_cars(0, reason=reason)
         await self.save()
-        self.log.info("train cars reset")
+        self.log.info("train cars reset", reason=reason)
 
     async def get_unexpected_base_branch_pushed_after_manually_merged_pr_with_fallback_partition(
         self,
@@ -734,7 +731,7 @@ class Train:
             return
 
         other_prs_reason: queue_utils.BaseQueueCancelReason
-        if isinstance(dequeue_reason, queue_utils.UnexpectedQueueChange):
+        if isinstance(dequeue_reason, queue_utils.QueueReset):
             other_prs_reason = dequeue_reason
         else:
             other_prs_reason = queue_utils.PrAheadDequeued(pr_number=pr_number)
