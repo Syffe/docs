@@ -96,37 +96,38 @@ GIT_MESSAGE_TO_EXCEPTION: dict[
 @dataclasses.dataclass
 class Gitter:
     logger: "logging.LoggerAdapter[logging.Logger]"
-    tmp: str | None = None
+    _temporary_directory: str | None = dataclasses.field(default=None, init=False)
     _messages: list[tuple[str, dict[str, typing.Any]]] = dataclasses.field(
+        init=False,
         default_factory=list,
     )
-    _log_level: int = logging.INFO
-    _td: aiofiles.tempfile.AiofilesContextManagerTempDir[
-        None,
-        None,
-        aiofiles.tempfile.temptypes.AsyncTemporaryDirectory,
-    ] = dataclasses.field(
-        default_factory=lambda: aiofiles.tempfile.TemporaryDirectory(
-            prefix="mergify-gitter",
-        ),
-    )
+    _log_level: int = dataclasses.field(init=False, default=logging.INFO)
 
     GIT_COMMAND_TIMEOUT: float = dataclasses.field(
         init=False,
         default=datetime.timedelta(minutes=10).total_seconds(),
     )
 
+    def __post_init__(self) -> None:
+        # Can't be put in as dataclasses field with a `default_factory` otherwise,
+        # if the object initialization crashes during the __init__ or __post_init__,
+        # then the stack trace becomes polluted saying that the default_factory was never awaited
+        self._td = aiofiles.tempfile.TemporaryDirectory(
+            prefix="mergify-gitter",
+        )
+
     async def __aenter__(self) -> "Gitter":
         await self.init()
         return self
 
     async def init(self) -> None:
-        self.tmp = await self._td.__aenter__()
+        self._temporary_directory = await self._td.__aenter__()
+
         try:
-            if self.tmp is None:
+            if self._temporary_directory is None:
                 # This is to please mypy only as it never returns None
                 raise RuntimeError("Unable to create temporary directory?")
-            self.repository = os.path.join(self.tmp, "repository")
+            self.repository = os.path.join(self._temporary_directory, "repository")
             await aiofiles.os.mkdir(self.repository)
 
             self.env = {
@@ -136,12 +137,16 @@ class Gitter:
                 "GIT_PROTOCOL_FROM_USER": "0",
                 "GIT_ALLOW_PROTOCOL": "https",
                 "PATH": os.environ["PATH"],
-                "HOME": self.tmp,
-                "TMPDIR": self.tmp,
+                "HOME": self._temporary_directory,
+                "TMPDIR": self._temporary_directory,
                 "LANG": "C.UTF-8",
             }
             version = await self("version")
-            self.log("git directory created", path=self.tmp, version=version)
+            self.log(
+                "git directory created",
+                path=self._temporary_directory,
+                version=version,
+            )
             await self("init", "--initial-branch=tmp-mergify-trunk")
             # NOTE(sileht): Bump the repository format. This ensures required
             # extensions (promisor, partialclonefilter) are present in git cli and
@@ -155,7 +160,7 @@ class Gitter:
             await self(
                 "config",
                 "credential.helper",
-                f"cache --timeout=300 --socket={self.tmp}/.git-creds-socket",
+                f"cache --timeout=300 --socket={self._temporary_directory}/.git-creds-socket",
             )
             # Setting the number of checkout workers to 0 will use as many workers
             # as there are logical cores on the machine.
@@ -283,13 +288,13 @@ class Gitter:
         await self.cleanup()
 
     async def cleanup(self) -> None:
-        self.log(f"cleaning: {self.tmp}")
+        self.log(f"cleaning: {self._temporary_directory}")
 
         try:
             try:
                 await self(
                     "credential-cache",
-                    f"--socket={self.tmp}/.git-creds-socket",
+                    f"--socket={self._temporary_directory}/.git-creds-socket",
                     "exit",
                 )
             except GitError:  # pragma: no cover

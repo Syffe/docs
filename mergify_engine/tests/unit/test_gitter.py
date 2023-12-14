@@ -41,8 +41,8 @@ async def test_gitter_init_fails(
     git = gitter.Gitter(mock.Mock())
     with pytest.raises(KeyError):
         await git.init()
-    assert git.tmp is not None
-    assert not os.path.exists(git.tmp)
+    assert git._temporary_directory is not None
+    assert not os.path.exists(git._temporary_directory)
 
 
 @pytest.mark.parametrize(

@@ -2,6 +2,7 @@ import asyncio
 from collections import abc
 import contextlib
 import copy
+import dataclasses
 import datetime
 import itertools
 import json
@@ -95,15 +96,23 @@ class Record(RecordExc):
     out: str
 
 
+@dataclasses.dataclass
 class GitterRecorder(gitter.Gitter):
-    def __init__(
+    cassette_library_dir: dataclasses.InitVar[str]
+    cassette_library_dir_suffix: dataclasses.InitVar[str]
+    cassette_path: str = dataclasses.field(init=False)
+    records: list[Record] = dataclasses.field(init=False)
+
+    def __post_init__(
         self,
-        logger: "logging.LoggerAdapter[logging.Logger]",
         cassette_library_dir: str,
-        suffix: str,
+        cassette_library_dir_suffix: str,
     ) -> None:
-        super().__init__(logger)
-        self.cassette_path = os.path.join(cassette_library_dir, f"git-{suffix}.json")
+        super().__post_init__()
+        self.cassette_path = os.path.join(
+            cassette_library_dir,
+            f"git-{cassette_library_dir_suffix}.json",
+        )
         if settings.TESTING_RECORD:
             self.records: list[Record] = []
         else:
@@ -162,7 +171,8 @@ class GitterRecorder(gitter.Gitter):
 
     def prepare_args(self, args: typing.Any) -> list[str]:
         prepared_args = [
-            arg.replace(self.tmp, "/tmp/mergify-gitter<random>") for arg in args
+            arg.replace(self._temporary_directory, "/tmp/mergify-gitter<random>")
+            for arg in args
         ]
         if "user.signingkey" in prepared_args:
             prepared_args = [
