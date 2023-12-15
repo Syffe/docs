@@ -718,7 +718,6 @@ class GitHubCheckRunOutput(typing_extensions.TypedDict):
     title: str
     summary: str
     text: str | None
-    annotations: list[str] | None
     annotations_count: int
     annotations_url: str
 
@@ -746,14 +745,32 @@ class GitHubCheckRunCheckSuite(typing_extensions.TypedDict):
     id: int
 
 
+class GitHubCheckRunPullRequestRepository(typing_extensions.TypedDict):
+    id: GitHubRepositoryIdType
+    name: GitHubRepositoryName
+    url: str
+
+
+class GitHubCheckRunPullRequestHeadOrBaseBranch(typing_extensions.TypedDict):
+    ref: GitHubRefType
+    sha: SHAType
+    repo: GitHubCheckRunPullRequestRepository
+
+
+class GitHubCheckRunPullRequest(GitHubIssueOrPullRequest):
+    id: GitHubPullRequestId
+    number: GitHubPullRequestNumber
+    base: GitHubCheckRunPullRequestHeadOrBaseBranch
+    head: GitHubCheckRunPullRequestHeadOrBaseBranch
+    url: str
+
+
 class GitHubCheckRun(typing_extensions.TypedDict):
     id: int
     app: GitHubApp
     external_id: str
-    pull_requests: list[GitHubPullRequest]
+    pull_requests: list[GitHubCheckRunPullRequest]
     head_sha: SHAType
-    before: SHAType
-    after: SHAType
     name: str
     status: GitHubCheckRunStatus
     output: GitHubCheckRunOutput

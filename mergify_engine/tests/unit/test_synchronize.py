@@ -45,12 +45,6 @@ async def test_summary_synchronization_cache(
                         },
                         "external_id": "",
                         "pull_requests": [],
-                        "before": github_types.SHAType(
-                            "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                        ),
-                        "after": github_types.SHAType(
-                            "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                        ),
                         "started_at": github_types.ISODateTimeType(""),
                         "completed_at": github_types.ISODateTimeType(""),
                         "html_url": "https://example.com",
@@ -59,7 +53,6 @@ async def test_summary_synchronization_cache(
                             "summary": "",
                             "title": "It runs!",
                             "text": "",
-                            "annotations": [],
                             "annotations_count": 0,
                             "annotations_url": "https://example.com",
                         },

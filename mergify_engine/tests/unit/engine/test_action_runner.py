@@ -74,7 +74,6 @@ async def test_cleanup_pending_actions_with_no_associated_rules(
                 "summary": "",
                 "text": None,
                 "annotations_count": 0,
-                "annotations": [],
                 "annotations_url": "",
             },
             conclusion=None,

@@ -59,12 +59,6 @@ def fake_client() -> mock.Mock:
                     },
                     "external_id": "",
                     "pull_requests": [],
-                    "before": github_types.SHAType(
-                        "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    ),
-                    "after": github_types.SHAType(
-                        "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    ),
                     "started_at": github_types.ISODateTimeType(""),
                     "completed_at": None,
                     "html_url": "https://example.com",
@@ -73,7 +67,6 @@ def fake_client() -> mock.Mock:
                         "summary": "",
                         "title": "It runs!",
                         "text": "",
-                        "annotations": [],
                         "annotations_count": 0,
                         "annotations_url": "https://example.com",
                     },
@@ -102,12 +95,6 @@ def fake_client() -> mock.Mock:
                     },
                     "external_id": "",
                     "pull_requests": [],
-                    "before": github_types.SHAType(
-                        "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    ),
-                    "after": github_types.SHAType(
-                        "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    ),
                     "started_at": github_types.ISODateTimeType(""),
                     "completed_at": None,
                     "html_url": "https://example.com",
@@ -116,7 +103,6 @@ def fake_client() -> mock.Mock:
                         "summary": "",
                         "title": "It runs!",
                         "text": "",
-                        "annotations": [],
                         "annotations_count": 0,
                         "annotations_url": "https://example.com",
                     },
@@ -145,12 +131,6 @@ def fake_client() -> mock.Mock:
                     },
                     "external_id": "",
                     "pull_requests": [],
-                    "before": github_types.SHAType(
-                        "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    ),
-                    "after": github_types.SHAType(
-                        "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    ),
                     "started_at": github_types.ISODateTimeType(""),
                     "completed_at": None,
                     "html_url": "https://example.com",
@@ -159,7 +139,6 @@ def fake_client() -> mock.Mock:
                         "summary": "",
                         "title": "It runs!",
                         "text": "",
-                        "annotations": [],
                         "annotations_count": 0,
                         "annotations_url": "https://example.com",
                     },
@@ -188,12 +167,6 @@ def fake_client() -> mock.Mock:
                     },
                     "external_id": "",
                     "pull_requests": [],
-                    "before": github_types.SHAType(
-                        "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    ),
-                    "after": github_types.SHAType(
-                        "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    ),
                     "started_at": github_types.ISODateTimeType(""),
                     "completed_at": None,
                     "html_url": "https://example.com",
@@ -202,7 +175,6 @@ def fake_client() -> mock.Mock:
                         "summary": "",
                         "title": "It runs!",
                         "text": "",
-                        "annotations": [],
                         "annotations_count": 0,
                         "annotations_url": "https://example.com",
                     },

@@ -105,7 +105,6 @@ def to_check_run_light(
         # NOTE(sileht): We only need the output for our own checks
         check["output"]["text"] = None
         check["output"]["summary"] = ""
-        check["output"]["annotations"] = []
         check["output"]["annotations_url"] = ""
 
     return github_types.CachedGitHubCheckRun(
