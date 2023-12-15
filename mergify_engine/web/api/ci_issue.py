@@ -388,23 +388,33 @@ async def get_ci_issue_event_detail(
     ],
     event_id: typing.Annotated[int, fastapi.Path(description="The ID of the Event")],
 ) -> CiIssueEventDetailResponse:
-    stmt = sqlalchemy.select(
-        WorkflowJobEnhanced.id,
-        WorkflowJobEnhanced.name_without_matrix.label("name"),
-        WorkflowJobEnhanced.workflow_run_id,
-        WorkflowJobEnhanced.started_at,
-        WorkflowJobEnhanced.completed_at,
-        WorkflowJobEnhanced.steps,
-        WorkflowJobEnhanced.failed_step_number,
-        WorkflowJobEnhanced.flaky,
-        WorkflowJobEnhanced.failed_run_count,
-        WorkflowJobEnhanced.log_extract,
-        WorkflowJobEnhanced.ci_issue_id,
-        WorkflowJobEnhanced.run_attempt,
-    ).where(
-        WorkflowJobEnhanced.repository_id == repository_ctxt.repo["id"],
-        WorkflowJobEnhanced.ci_issue_id == ci_issue_id,
-        WorkflowJobEnhanced.id == event_id,
+    stmt = (
+        sqlalchemy.select(
+            WorkflowJobEnhanced.id,
+            WorkflowJobEnhanced.name_without_matrix.label("name"),
+            WorkflowJobEnhanced.workflow_run_id,
+            WorkflowJobEnhanced.started_at,
+            WorkflowJobEnhanced.completed_at,
+            WorkflowJobEnhanced.steps,
+            WorkflowJobEnhanced.failed_step_number,
+            WorkflowJobEnhanced.flaky,
+            WorkflowJobEnhanced.failed_run_count,
+            WorkflowJobEnhanced.log_extract,
+            WorkflowJobEnhanced.ci_issue_id,
+            WorkflowJobEnhanced.run_attempt,
+        )
+        .join(
+            gh_models.WorkflowJobLogMetadata,
+            sqlalchemy.and_(
+                gh_models.WorkflowJobLogMetadata.ci_issue_id == ci_issue_id,
+                gh_models.WorkflowJobLogMetadata.workflow_job_id
+                == WorkflowJobEnhanced.id,
+            ),
+        )
+        .where(
+            WorkflowJobEnhanced.repository_id == repository_ctxt.repo["id"],
+            WorkflowJobEnhanced.id == event_id,
+        )
     )
 
     event_detail = (await session.execute(stmt)).one_or_none()

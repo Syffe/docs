@@ -11,7 +11,7 @@ from mergify_engine.tests import utils as tests_utils
 from mergify_engine.tests.db_populator import DbPopulator
 
 
-@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueDataset")
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
 async def test_api_ci_issue_get_ci_issues_without_pr(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
@@ -148,7 +148,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
 
 
 @pytest.mark.populated_db_datasets(
-    "TestGhaFailedJobsLinkToCissueDataset",
+    "TestGhaFailedJobsLinkToCissueGPTDataset",
     "TestGhaFailedJobsPullRequestsDataset",
 )
 async def test_api_ci_issue_get_ci_issues_with_pr(
@@ -251,7 +251,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
     }
 
 
-@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueDataset")
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
 async def test_api_ci_issue_get_ci_issue(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
@@ -363,7 +363,7 @@ async def test_api_ci_issue_get_ci_issue(
     }
 
 
-@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueDataset")
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
 async def test_api_ci_issue_get_ci_issue_event_detail(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
@@ -484,7 +484,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     assert reply.status_code == 404
 
 
-@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueDataset")
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
 async def test_api_ci_issue_put_ci_issue(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
@@ -554,7 +554,7 @@ async def test_api_ci_issue_put_ci_issue(
     assert response.status_code == 404, response.text
 
 
-@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueDataset")
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
 async def test_api_ci_issue_put_ci_issues(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
@@ -660,7 +660,7 @@ async def test_api_ci_issue_put_ci_issues(
     }
 
 
-@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueDataset")
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
 async def test_api_ci_issue_get_ci_issues_pagination(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,

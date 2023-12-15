@@ -408,6 +408,22 @@ class TestGhaFailedJobsLinkToCissueDataset(DbPopulator):
     async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
         await cls.load(session, {"TestApiGhaFailedJobsDataset"})
         jobs = await session.scalars(
+            sqlalchemy.select(gh_models.WorkflowJob).where(
+                gh_models.WorkflowJob.conclusion
+                == gh_models.WorkflowJobConclusion.FAILURE,
+                gh_models.WorkflowJob.log_embedding.isnot(None),
+                gh_models.WorkflowJob.ci_issue_id.is_(None),
+            ),
+        )
+        for job in jobs:
+            await CiIssue.link_job_to_ci_issue(session, job)
+
+
+class TestGhaFailedJobsLinkToCissueGPTDataset(DbPopulator):
+    @classmethod
+    async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
+        await cls.load(session, {"TestApiGhaFailedJobsDataset"})
+        jobs = await session.scalars(
             sqlalchemy.select(gh_models.WorkflowJob)
             .options(
                 orm.joinedload(gh_models.WorkflowJob.log_metadata),
@@ -421,7 +437,6 @@ class TestGhaFailedJobsLinkToCissueDataset(DbPopulator):
             ),
         )
         for job in jobs.unique():
-            await CiIssue.link_job_to_ci_issue(session, job)
             await CiIssueGPT.link_job_to_ci_issues(session, job)
 
 
