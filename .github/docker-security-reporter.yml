@@ -11,3 +11,4 @@ excluded-packages:
   - libkrb5support0
   - libx11-data
   - ncurses-term
+  - ncurses-bin
