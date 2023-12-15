@@ -680,6 +680,28 @@ async def test_embed_logs_on_various_data(
         stream=GHA_CI_LOGS_ZIP,  # type: ignore[arg-type]
     )
 
+    respx_mock.get(
+        re.compile(
+            f"{settings.GITHUB_REST_API_URL}/repos/.+/.+/check-runs/.+/annotations",
+        ),
+    ).respond(
+        200,
+        json=[
+            {
+                "path": "",
+                "blob_href": "",
+                "start_line": 3,
+                "start_column": 2,
+                "end_line": 3,
+                "end_column": 2,
+                "annotation_level": "failure",
+                "title": "Invalid YAML",
+                "message": "some error message",
+                "raw_details": None,
+            },
+        ],
+    )
+
     # Update jobs name and failed step to match the zip archive mock
     await populated_db.execute(
         sqlalchemy.update(gh_models.WorkflowJob)
@@ -694,6 +716,7 @@ async def test_embed_logs_on_various_data(
         ),
     )
     await populated_db.commit()
+    populated_db.expunge_all()
 
     logins = set()
     for job in (
@@ -710,12 +733,21 @@ async def test_embed_logs_on_various_data(
     count = (
         await populated_db.execute(
             sqlalchemy.select(sqlalchemy.func.count(gh_models.WorkflowJob.id)).where(
-                gh_models.WorkflowJob.log_extract.is_not(None),
+                gh_models.WorkflowJob.conclusion
+                == gh_models.WorkflowJobConclusion.FAILURE,
+                sqlalchemy.or_(
+                    gh_models.WorkflowJob.log_status
+                    != gh_models.WorkflowJobLogStatus.DOWNLOADED,
+                    gh_models.WorkflowJob.log_embedding_status
+                    != gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+                    gh_models.WorkflowJob.log_metadata_extracting_status
+                    != gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
+                ),
             ),
         )
     ).all()[0][0]
 
-    assert count == 5
+    assert count == 8
 
     pending_work = True
     while pending_work:
@@ -724,12 +756,19 @@ async def test_embed_logs_on_various_data(
     count = (
         await populated_db.execute(
             sqlalchemy.select(sqlalchemy.func.count(gh_models.WorkflowJob.id)).where(
-                gh_models.WorkflowJob.log_extract.is_not(None),
+                gh_models.WorkflowJob.conclusion
+                == gh_models.WorkflowJobConclusion.FAILURE,
+                gh_models.WorkflowJob.log_status
+                == gh_models.WorkflowJobLogStatus.DOWNLOADED,
+                gh_models.WorkflowJob.log_embedding_status
+                == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+                gh_models.WorkflowJob.log_metadata_extracting_status
+                == gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
             ),
         )
     ).all()[0][0]
 
-    assert count == 7
+    assert count == 8
 
 
 @pytest.mark.ignored_logging_errors(

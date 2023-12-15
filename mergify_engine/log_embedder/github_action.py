@@ -422,7 +422,6 @@ async def embed_logs_with_log_embedding(
                     wjob.log_processing_retry_after.is_(None),
                     wjob.log_processing_retry_after <= date.utcnow(),
                 ),
-                wjob.failed_step_number.is_not(None),
                 wjob.log_embedding_status
                 != gh_models.WorkflowJobLogEmbeddingStatus.ERROR,
                 wjob.log_status.notin_(
@@ -523,7 +522,6 @@ async def embed_logs_with_extracted_metadata(
             )
             .where(
                 wjob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
-                wjob.failed_step_number.is_not(None),
                 sqlalchemy.or_(
                     wjob.log_processing_retry_after.is_(None),
                     wjob.log_processing_retry_after <= date.utcnow(),
