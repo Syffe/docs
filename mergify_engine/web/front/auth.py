@@ -122,6 +122,9 @@ async def create_or_update_user(
 ) -> github_user.GitHubUser:
     async with github.AsyncGitHubInstallationClient(
         github.GitHubTokenAuth(token),
+        # NOTE(sileht): this is a critical authentication steps, so we retry a bit more than usual
+        retry_stop_after_attempt=10,
+        retry_exponential_multiplier=0.1,
     ) as client:
         try:
             user_data = typing.cast(
@@ -131,6 +134,10 @@ async def create_or_update_user(
         except http.HTTPUnauthorized:
             await clear_session_and_auth(request)
             raise fastapi.HTTPException(401)
+        except http.HTTPServerSideError:
+            # We already retried 10 times; we can't do much
+            await clear_session_and_auth(request)
+            raise fastapi.HTTPException(503)
 
     user = await github_user.GitHubUser.create_or_update(
         session,

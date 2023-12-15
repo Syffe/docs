@@ -352,12 +352,16 @@ class AsyncGitHubClient(http.AsyncClient):
         auth: (
             github_app.GitHubBearerAuth | GitHubAppInstallationAuth | GitHubTokenAuth
         ),
+        retry_stop_after_attempt: int | None = None,
+        retry_exponential_multiplier: float | None = None,
     ) -> None:
         super().__init__(
             base_url=settings.GITHUB_REST_API_URL,
             auth=auth,
             headers={"Accept": "application/vnd.github.machine-man-preview+json"},
             transport=DEFAULT_GITHUB_TRANSPORT,
+            retry_stop_after_attempt=retry_stop_after_attempt,
+            retry_exponential_multiplier=retry_exponential_multiplier,
         )
 
     def _prepare_request_kwargs(
@@ -557,9 +561,15 @@ class AsyncGitHubInstallationClient(AsyncGitHubClient):
         self,
         auth: (GitHubAppInstallationAuth | GitHubTokenAuth),
         extra_metrics: bool = False,
+        retry_stop_after_attempt: int | None = None,
+        retry_exponential_multiplier: float | None = None,
     ) -> None:
         self._extra_metrics = extra_metrics
-        super().__init__(auth=auth)
+        super().__init__(
+            auth=auth,
+            retry_stop_after_attempt=retry_stop_after_attempt,
+            retry_exponential_multiplier=retry_exponential_multiplier,
+        )
 
     def enable_extra_metrics(self) -> None:
         self._extra_metrics = True

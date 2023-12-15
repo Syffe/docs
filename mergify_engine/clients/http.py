@@ -267,6 +267,9 @@ class RequestHistory:
 
 
 class AsyncClient(httpx.AsyncClient):
+    DEFAULT_RETRY_STOP_AFTER_ATTEMPT: int = 5
+    DEFAULT_RETRY_EXPONENTIAL_MULTIPLIER: float = 0.2
+
     def __init__(
         self,
         auth: httpx_types.AuthTypes | None = None,
@@ -274,12 +277,20 @@ class AsyncClient(httpx.AsyncClient):
         timeout: httpx_types.TimeoutTypes = DEFAULT_TIMEOUT,
         base_url: httpx_types.URLTypes = "",
         transport: httpx.AsyncBaseTransport | None = None,
-        retry_stop_after_attempt: int = 5,
-        retry_exponential_multiplier: float = 0.2,
+        retry_stop_after_attempt: int | None = None,
+        retry_exponential_multiplier: float | None = None,
     ) -> None:
         self._requests: list[RequestHistory] = []
-        self.retry_stop_after_attempt = retry_stop_after_attempt
-        self.retry_exponential_multiplier = retry_exponential_multiplier
+        self.retry_stop_after_attempt = (
+            self.DEFAULT_RETRY_STOP_AFTER_ATTEMPT
+            if retry_stop_after_attempt is None
+            else retry_stop_after_attempt
+        )
+        self.retry_exponential_multiplier = (
+            self.DEFAULT_RETRY_EXPONENTIAL_MULTIPLIER
+            if retry_exponential_multiplier is None
+            else retry_exponential_multiplier
+        )
 
         final_headers = DEFAULT_HEADERS.copy()
         if headers is not None:
