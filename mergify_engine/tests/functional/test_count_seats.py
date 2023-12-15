@@ -60,7 +60,7 @@ class TestCountSeats(base.FunctionalTestBase):
                 date.utcnow(),
             ),
         }
-        organization[key_repo] = count_seats.CollaboratorsSetsT(
+        organization[key_repo] = count_seats.SeatsCountDetailed(
             {
                 "active_users": active_users,
             },

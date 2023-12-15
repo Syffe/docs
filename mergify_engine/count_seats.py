@@ -51,17 +51,17 @@ class SeatRepository:
     name: github_types.GitHubRepositoryName = dataclasses.field(compare=False)
 
 
-class SeatsCountResultT(typing.NamedTuple):
+class SeatsCountResult(typing.NamedTuple):
     active_users: int
 
 
-class CollaboratorsSetsT(typing.TypedDict):
+class SeatsCountDetailed(typing.TypedDict):
     active_users: set[ActiveUser] | None
 
 
-CollaboratorsT = dict[
+SeatsDetailsT = dict[
     SeatAccount,
-    dict[SeatRepository, CollaboratorsSetsT],
+    dict[SeatRepository, SeatsCountDetailed],
 ]
 
 
@@ -233,7 +233,7 @@ class SeatsJsonT(typing.TypedDict):
 
 @dataclasses.dataclass
 class Seats:
-    seats: CollaboratorsT = dataclasses.field(
+    seats: SeatsDetailsT = dataclasses.field(
         default_factory=lambda: collections.defaultdict(
             lambda: collections.defaultdict(lambda: {"active_users": None}),
         ),
@@ -290,13 +290,13 @@ class Seats:
             )
         return data
 
-    def count(self) -> SeatsCountResultT:
+    def count(self) -> SeatsCountResult:
         all_active_users_collaborators = set()
         for repos in self.seats.values():
             for sets in repos.values():
                 if sets["active_users"] is not None:
                     all_active_users_collaborators |= sets["active_users"]
-        return SeatsCountResultT(len(all_active_users_collaborators))
+        return SeatsCountResult(len(all_active_users_collaborators))
 
     async def populate_with_active_users(
         self,
@@ -325,7 +325,7 @@ class Seats:
                 repo_seats["active_users"] |= active_users
 
 
-async def send_seats(seats: SeatsCountResultT) -> None:
+async def send_report(seats: SeatsCountResult) -> None:
     async with http.AsyncClient() as client:
         if settings.SUBSCRIPTION_TOKEN is None:
             raise RuntimeError("SUBSCRIPTION_TOKEN is None")
@@ -365,7 +365,7 @@ async def count_and_send(redis: redis_utils.RedisActiveUsers) -> None:
                 LOG.error("failed to count seats", exc_info=True)
             else:
                 try:
-                    await send_seats(seats)
+                    await send_report(seats)
                 except Exception:
                     LOG.error("failed to send seats usage", exc_info=True)
             LOG.info("reported seats usage", seats=seats)

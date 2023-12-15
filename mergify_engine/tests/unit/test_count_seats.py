@@ -65,7 +65,7 @@ def test_seats_renamed_account_repo() -> None:
     assert repos == {repo1, repo2}
 
 
-async def test_send_seats(
+async def test_send_report(
     respx_mock: respx.MockRouter,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -75,7 +75,7 @@ async def test_send_seats(
         json={"active_users": 2, "engine_version": "dev"},
     ).respond(201, content="Accepted")
 
-    await count_seats.send_seats(count_seats.SeatsCountResultT(2))
+    await count_seats.send_report(count_seats.SeatsCountResult(2))
 
     assert route.call_count == 1
 
