@@ -1,6 +1,7 @@
 import typing
 
 import anys
+import pytest
 import sqlalchemy
 
 from mergify_engine import database
@@ -10,6 +11,7 @@ from mergify_engine.models.github import pull_request as gh_pull_request_mod
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.usefixtures("_enable_github_in_postgres")
 class TestGitHubPullRequestInPg(base.FunctionalTestBase):
     async def test_pull_request_inserted_and_updated(self) -> None:
         await self.setup_repo()

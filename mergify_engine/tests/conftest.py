@@ -161,12 +161,18 @@ def _enable_ci_dump_ingestion() -> None:
     settings.CI_EVENT_INGESTION = True
 
 
-@pytest.fixture(autouse=True, scope="session")
-def _enable_github_in_postgres_event_ingestion() -> None:
-    settings.GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS = (
-        config_types.StrListFromStrWithComma([settings.TESTING_ORGANIZATION_NAME])
-    )
-    settings.GITHUB_IN_POSTGRES_EVENTS_INGESTION = True
+@pytest.fixture()
+def _enable_github_in_postgres() -> abc.Generator[None, None, None]:
+    with mock.patch.object(
+        settings,
+        "GITHUB_IN_POSTGRES_EVENTS_INGESTION",
+        True,
+    ), mock.patch.object(
+        settings,
+        "GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS",
+        config_types.StrListFromStrWithComma([settings.TESTING_ORGANIZATION_NAME]),
+    ):
+        yield
 
 
 def get_worker_id_as_int(worker_id: str) -> int:

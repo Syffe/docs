@@ -1,5 +1,6 @@
 from unittest import mock
 
+import pytest
 import sqlalchemy
 from sqlalchemy import orm
 
@@ -11,6 +12,7 @@ from mergify_engine.models.github import pull_request_commit as gh_pullcommit_mo
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.usefixtures("_enable_github_in_postgres")
 class TestGitHubPullRequestCommitInPg(base.FunctionalTestBase):
     async def test_pull_request_commits_from_fork(self) -> None:
         await self.setup_repo()
