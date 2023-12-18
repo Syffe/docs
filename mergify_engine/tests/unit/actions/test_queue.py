@@ -5,7 +5,6 @@ from unittest import mock
 import pytest
 import voluptuous
 
-from mergify_engine import check_api
 from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine import queue as merge_queue
@@ -259,31 +258,33 @@ def fake_client() -> mock.Mock:
 
 
 @pytest.mark.parametrize(
-    ("conditions", "conclusion"),
+    ("conditions", "outcome"),
     (
         (
             ["title=awesome", "check-neutral:neutral", "check-success:success"],
-            check_api.Conclusion.SUCCESS,
+            merge_queue.merge_train.TrainCarOutcome.WAITING_FOR_MERGE,
         ),
         (
             ["title!=awesome", "check-neutral:neutral", "check-success:success"],
-            check_api.Conclusion.FAILURE,
+            # CONDITIONS_FAILED?
+            merge_queue.merge_train.TrainCarOutcome.CHECKS_FAILED,
         ),
         (
             ["title=awesome", "check-neutral:neutral", "check-success:pending"],
-            check_api.Conclusion.PENDING,
+            merge_queue.merge_train.TrainCarOutcome.WAITING_FOR_CI,
         ),
         (
             ["title=awesome", "check-neutral:pending", "check-success:pending"],
-            check_api.Conclusion.PENDING,
+            merge_queue.merge_train.TrainCarOutcome.WAITING_FOR_CI,
         ),
         (
             ["title=awesome", "check-neutral:notexists", "check-success:success"],
-            check_api.Conclusion.PENDING,
+            merge_queue.merge_train.TrainCarOutcome.WAITING_FOR_CI,
         ),
         (
             ["title=awesome", "check-neutral:failure", "check-success:success"],
-            check_api.Conclusion.FAILURE,
+            # CONDITIONS_FAILED?
+            merge_queue.merge_train.TrainCarOutcome.CHECKS_FAILED,
         ),
         (
             [
@@ -294,7 +295,7 @@ def fake_client() -> mock.Mock:
                     ],
                 },
             ],
-            check_api.Conclusion.PENDING,
+            merge_queue.merge_train.TrainCarOutcome.WAITING_FOR_CI,
         ),
         (
             [
@@ -305,7 +306,7 @@ def fake_client() -> mock.Mock:
                     ],
                 },
             ],
-            check_api.Conclusion.FAILURE,
+            merge_queue.merge_train.TrainCarOutcome.CHECKS_FAILED,
         ),
         (
             [
@@ -319,13 +320,13 @@ def fake_client() -> mock.Mock:
                     },
                 },
             ],
-            check_api.Conclusion.SUCCESS,
+            merge_queue.merge_train.TrainCarOutcome.WAITING_FOR_MERGE,
         ),
     ),
 )
 async def test_get_rule_checks_status(
     conditions: typing.Any,
-    conclusion: check_api.Conclusion,
+    outcome: merge_queue.merge_train.TrainCarOutcome,
     context_getter: conftest.ContextGetterFixture,
     fake_client: mock.Mock,
 ) -> None:
@@ -343,13 +344,13 @@ async def test_get_rule_checks_status(
     match = await rules.get_pull_request_rules_evaluator(ctxt)
     evaluated_rule = match.matching_rules[0]
     assert (
-        await checks_status.get_rule_checks_status(
+        await checks_status.get_outcome_from_conditions(
             ctxt.log,
             ctxt.repository,
             [condition_value_querier.PullRequest(ctxt)],
             evaluated_rule.conditions,
         )
-    ) == conclusion
+    ) == outcome
 
 
 GITHUB_BRANCH_PROTECTION = github_types.GitHubBranchProtection(

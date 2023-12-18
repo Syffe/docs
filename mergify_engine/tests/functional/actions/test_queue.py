@@ -7748,7 +7748,10 @@ previous_failed_batches:
                 await self.repository_ctxt.get_pull_request_context(pr["number"]),
             )
             assert car is not None
-            assert car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
+            assert (
+                car.train_car_state.outcome
+                == merge_train.TrainCarOutcome.WAITING_FOR_UNFREEZE
+            )
 
             r = await self.admin_app.delete(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
@@ -7763,7 +7766,10 @@ previous_failed_batches:
                 await self.repository_ctxt.get_pull_request_context(pr["number"]),
             )
             assert car is not None
-            assert car.train_car_state.outcome == merge_train.TrainCarOutcome.UNKNOWN
+            assert (
+                car.train_car_state.outcome
+                == merge_train.TrainCarOutcome.WAITING_FOR_SCHEDULE
+            )
 
         pr = await self.get_pull(pr["number"])
         assert pr["merged"] is False
@@ -9119,30 +9125,30 @@ pull_request_rules:
         )
         await self.run_engine()
 
-        # merge conditions validated while queue is frozen -> pr is mergeable
-        await self.update_check_run(
-            pr,
-            check_id=pending_check["check_run"]["id"],
-        )
-        await self.run_engine()
-        await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue",
-            conclusion="success",
-        )
-
-        # checks_end signal has been emitted
+        # checks_end signal has not been emitted yet, as the checks can still be cancelled
         async with database.create_session() as db:
             result = await db.execute(
                 sqlalchemy.select(func.count()).select_from(
                     evt_models.EventActionQueueChecksEnd,
                 ),
             )
-        assert result.scalar() == 1
+        assert result.scalar() == 0
 
-        await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue",
-            conclusion="neutral",
+        # merge conditions validated while queue is frozen -> PR outcome is WAITING_FOR_UNFREEZE
+        await self.update_check_run(
+            pr,
+            check_id=pending_check["check_run"]["id"],
         )
+        await self.run_engine()
+
+        # checks_end signal has not been emitted yet, as the checks can still be cancelled
+        async with database.create_session() as db:
+            result = await db.execute(
+                sqlalchemy.select(func.count()).select_from(
+                    evt_models.EventActionQueueChecksEnd,
+                ),
+            )
+        assert result.scalar() == 0
 
         # queue freeze lifted
         await self._delete_queue_freeze(queue_name="default", expected_status_code=204)

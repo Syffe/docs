@@ -530,7 +530,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queued_at": anys.ANY_DATETIME_STR,
             "estimated_time_of_merge": None,
             "summary": {
-                "title": f"The pull request is embarked with {self.main_branch_name} ({base_sha[:7]}) for merge",
+                "title": f"The pull request is embarked with {self.main_branch_name} ({base_sha[:7]}) for merge and is waiting for checks to finish",
                 "unexpected_changes": None,
                 "freeze": None,
                 "checks_timeout": None,
@@ -1478,7 +1478,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                     "pause": None,
                     "title": "The pull request is embarked with "
                     f"{self.main_branch_name} "
-                    f"({base_sha[:7]}) for merge",
+                    f"({base_sha[:7]}) for merge and is waiting for checks to finish",
                     "unexpected_changes": None,
                 },
             },
@@ -1600,7 +1600,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                     "pause": None,
                     "title": "The pull request is embarked with "
                     f"{self.main_branch_name} "
-                    f"({base_sha_projA[:7]}) for merge",
+                    f"({base_sha_projA[:7]}) for merge and is waiting for checks to finish",
                     "unexpected_changes": None,
                 },
                 "projectB": {
@@ -1610,7 +1610,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                     "pause": None,
                     "title": "The pull request is embarked with "
                     f"{self.main_branch_name} "
-                    f"({base_sha_projB[:7]}) for merge",
+                    f"({base_sha_projB[:7]}) for merge and is waiting for checks to finish",
                     "unexpected_changes": None,
                 },
             },

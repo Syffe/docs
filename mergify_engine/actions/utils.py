@@ -258,7 +258,7 @@ async def get_dequeue_reason(
 
     train_car_state = tcs.TrainCarStateForSummary.deserialize_from_summary(check)
     if train_car_state is None or (
-        train_car_state.outcome == train_car.TrainCarOutcome.UNKNOWN
+        train_car_state.outcome == train_car.TrainCarOutcome.WAITING_FOR_CI
         and not train_car_state.delete_reasons
     ):
         is_check_outdated = check["completed_at"] and date.fromisoformat(

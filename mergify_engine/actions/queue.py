@@ -496,15 +496,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
             self.ctxt.repository,
             self.ctxt.pull["base"]["ref"],
         )
-        status = await checks_status.get_rule_checks_status(
+        outcome = await checks_status.get_outcome_from_conditions(
             self.ctxt.log,
             self.ctxt.repository,
             [condition_value_querier.PullRequest(self.ctxt)],
             queue_rule_for_evaluator.merge_conditions,
-            wait_for_schedule_to_match=False,
         )
+
         # Allow reembark if CIs states is not failing anymore
-        return status != check_api.Conclusion.FAILURE
+        return outcome != merge_train.TrainCarOutcome.CHECKS_FAILED
 
     async def run(self) -> check_api.Result:
         if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
@@ -553,7 +553,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
         # NOTE(sileht): the pull request gets checked and then changed
-        # by user, we should dequeue and requeue it as the conditions still match.
+        # by user, we should unqueue and requeue it as the conditions still match.
+        # FIXME(sileht): We already do that in check_mergeability, deduplicate?
         if await self.ctxt.synchronized_by_user_at():
             dequeue_reason_pr_updated = queue_utils.PullRequestUpdated(
                 self.ctxt.pull["number"],
@@ -702,7 +703,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
         merge_has_been_cancelled = (
             cars
             and all(
-                car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
+                car.train_car_state.outcome
+                == merge_train.TrainCarOutcome.WAITING_FOR_MERGE
                 for car in cars
             )
             and result.conclusion is check_api.Conclusion.CANCELLED
@@ -1025,7 +1027,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
             if car is None:
                 return False
 
-            if car.train_car_state.outcome != merge_train.TrainCarOutcome.MERGEABLE:
+            if (
+                car.train_car_state.outcome
+                != merge_train.TrainCarOutcome.WAITING_FOR_MERGE
+            ):
                 return False
 
         return True
@@ -1065,7 +1070,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 == merge_train.TrainCarChecksType.INPLACE
             ):
                 # NOTE(sileht) check first if PR should be removed from the queue
-                pull_rule_checks_status = await checks_status.get_rule_checks_status(
+                outcome = await checks_status.get_outcome_from_conditions(
                     ctxt.log,
                     ctxt.repository,
                     [condition_value_querier.PullRequest(ctxt)],
@@ -1077,10 +1082,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 # TODO(sileht): we may want to make this behavior configurable as
                 # people having slow/long CI running only on pull request rules, we
                 # may want to merge it before it finishes.
-                should_be_cancelled = pull_rule_checks_status not in (
-                    check_api.Conclusion.PENDING,
-                    check_api.Conclusion.SUCCESS,
-                )
+                should_be_cancelled = outcome.is_failure()
 
         if not rule.conditions.match:
             summary = f"""The following conditions don't match anymore:

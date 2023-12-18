@@ -200,6 +200,7 @@ class Train:
         await self._remove_duplicate_pulls()
         await self._sync_configuration_change()
         await self._split_failed_batches()
+
         try:
             await self._populate_cars()
         except train_utils.BaseBranchVanished:
@@ -340,12 +341,14 @@ class Train:
             else:
                 sliced = True
                 new_waiting_pulls.extend(c.still_queued_embarked_pulls)
+
                 for ep in c.still_queued_embarked_pulls:
                     signal_reason = drop_pull_requests.get(
                         ep.user_pull_request_number,
                         reason,
                     )
 
+                    ep.restart_reason = str(signal_reason)
                     c.train_car_state.delete_reasons[
                         ep.user_pull_request_number
                     ] = signal_reason
@@ -367,10 +370,8 @@ class Train:
                     await c.send_checks_end_signal(
                         ep.user_pull_request_number,
                         signal_reason,
-                        "DEFINITIVE"
-                        if ep.user_pull_request_number in drop_pull_requests
-                        else "REEMBARKED",
                     )
+
                 await c.end_checking(
                     reason,
                     not_reembarked_pull_requests=drop_pull_requests,
@@ -511,7 +512,7 @@ class Train:
             ][embarked_pull.config["name"]]
             car_can_be_interrupted = car is None or (
                 (
-                    car.can_be_interrupted()
+                    car.train_car_state.outcome.can_be_interrupted()
                     or (
                         embarked_pull.config["name"] != config["name"]
                         # NOTE(Syffe): If we don't consider unfrozen queues with lower priority
@@ -579,6 +580,7 @@ class Train:
             ctxt.pull["number"],
             config,
             date.utcnow(),
+            None,
         )
         self._waiting_pulls.append(new_embarked_pull)
 
@@ -679,13 +681,11 @@ class Train:
                 ].train_car_state.seconds_waiting_for_freeze,
             },
         )
-
         # Head of the train was merged and the base_sha haven't changed, we can keep
         # other running cars
         await self._cars[0].send_checks_end_signal(
             self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number,
             dequeue_reason,
-            "DEFINITIVE",
         )
         del self._cars[0].still_queued_embarked_pulls[0]
         if len(self._cars[0].still_queued_embarked_pulls) == 0:
@@ -933,33 +933,54 @@ class Train:
 
         if (
             len(self._cars) == 1
-            and self._cars[0].train_car_state.outcome
-            == train_car.TrainCarOutcome.CHECKS_FAILED
             and len(self._cars[0].initial_embarked_pulls) == 1
+            and self._cars[0].train_car_state.outcome
+            == train_car.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
         ):
-            # we refresh the state, to set the final conclusion
-            await self._cars[0].check_mergeability(
-                origin="batch_split",
-                # NOTE(sileht): We should pass the original pull request rule
-                # in case of inplace checks, but since the outcome is
-                # train_car.TrainCarOutcome.CHECKS_FAILED, it's not a bug deal.
-                original_pull_request_rule=None,
-                original_pull_request_number=None,
-            )
+            # we refresh the state, to switch back the outcome to CHECKS_FAILED
+            try:
+                await self._cars[0].check_mergeability(
+                    origin="batch_split",
+                    # NOTE(sileht): We should pass the original pull request rule
+                    # in case of inplace checks, but since the outcome is
+                    # train_car.TrainCarOutcome.CHECKS_FAILED, it's not a big deal.
+                    original_pull_request_rule=None,
+                    original_pull_request_number=None,
+                )
+            except train_car.MergeQueueReset:
+                pass
             return
 
         # NOTE(sileht): Looks for batch failure and split if needed
-        first_failed_batch_train_car = first.first(
-            car
-            for car in self._cars
+        train_car_to_split = None
+        for car in self._cars:
+            if car.train_car_state.outcome.is_mergeable_soon():
+                # This car succeed, we can check the next one
+                continue
+
+            if car.train_car_state.outcome.is_failure():
+                # This car has failed, we need it to get removed first
+                break
+
+            if car.train_car_state.outcome == train_car.TrainCarOutcome.WAITING_FOR_CI:
+                # This car has not finished yet, we need to wait if it succeed or not
+                break
+
             if (
-                car.train_car_state.outcome == train_car.TrainCarOutcome.CHECKS_FAILED
-                and car.has_previous_car_status_succeeded()
-                and len(car.initial_embarked_pulls) > 1
+                car.train_car_state.outcome
+                == train_car.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
+            ):
+                if len(self._cars[0].initial_embarked_pulls) > 1:
+                    train_car_to_split = car
+
+                break
+
+            raise RuntimeError(
+                f"Unhanlded outcome `{car.train_car_state.outcome}` in batch split",
             )
-        )
-        if first_failed_batch_train_car is not None:
-            await self._split_failed_train_car(first_failed_batch_train_car)
+
+        if train_car_to_split is not None:
+            await self._split_failed_train_car(train_car_to_split)
 
         # NOTE(sileht): speculative_checks=1 may create car without the
         # attached draft pull request if this car become the first, it means
@@ -1094,11 +1115,9 @@ class Train:
         if self._cars and (
             self._cars[-1].train_car_state.checks_type
             == train_car.TrainCarChecksType.FAILED
+            or self._cars[-1].train_car_state.outcome.is_failure()
             or self._cars[-1].train_car_state.outcome
-            not in (
-                train_car.TrainCarOutcome.MERGEABLE,
-                train_car.TrainCarOutcome.UNKNOWN,
-            )
+            == train_car.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
         ):
             # We are searching the responsible of a failure don't touch anything
             return

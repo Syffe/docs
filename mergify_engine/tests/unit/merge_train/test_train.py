@@ -941,7 +941,11 @@ async def test_train_queue_splitted_on_failure_1x2(
     assert [[41, 42]] == mt_conftest.get_train_cars_content(t)
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
-    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
+    t._cars[
+        0
+    ].train_car_state.outcome = (
+        merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
+    )
     await t.save()
     assert [[41, 42]] == mt_conftest.get_train_cars_content(t)
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
@@ -1016,7 +1020,11 @@ async def test_train_queue_splitted_on_failure_1x5(
     assert [[41, 42, 43, 44, 45]] == mt_conftest.get_train_cars_content(t)
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
-    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
+    t._cars[
+        0
+    ].train_car_state.outcome = (
+        merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
+    )
     await t.save()
     assert [[41, 42, 43, 44, 45]] == mt_conftest.get_train_cars_content(t)
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
@@ -1041,7 +1049,11 @@ async def test_train_queue_splitted_on_failure_1x5(
     )
 
     # mark [43+44] as failed
-    t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
+    t._cars[
+        1
+    ].train_car_state.outcome = (
+        merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
+    )
     await t.save()
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
@@ -1064,7 +1076,7 @@ async def test_train_queue_splitted_on_failure_1x5(
     )
 
     # mark [41+42] as ready and merge it
-    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.WAITING_FOR_MERGE
     await t.save()
     fake_client.update_base_sha("sha41")
     await t.remove_pull(
@@ -1150,7 +1162,11 @@ async def test_train_queue_splitted_on_failure_2x5(
     ] == mt_conftest.get_train_cars_content(t)
     assert list(range(11, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
-    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
+    t._cars[
+        0
+    ].train_car_state.outcome = (
+        merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
+    )
     await t.save()
     assert [
         [41, 42, 43, 44, 45],
@@ -1180,7 +1196,11 @@ async def test_train_queue_splitted_on_failure_2x5(
     )
 
     # mark [43+44] as failed
-    t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
+    t._cars[
+        1
+    ].train_car_state.outcome = (
+        merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
+    )
     await t.save()
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
@@ -1205,7 +1225,7 @@ async def test_train_queue_splitted_on_failure_2x5(
     )
 
     # mark [41+42] as ready and merge it
-    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.WAITING_FOR_MERGE
     await t.save()
     fake_client.update_base_sha("sha41")
     await t.remove_pull(
@@ -1303,7 +1323,11 @@ async def test_train_queue_splitted_on_failure_5x3(
     ] == mt_conftest.get_train_cars_content(t)
     assert list(range(16, 22)) == mt_conftest.get_train_waiting_pulls_content(t)
 
-    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
+    t._cars[
+        0
+    ].train_car_state.outcome = (
+        merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
+    )
     await t.save()
     assert [
         [41, 42, 43],
@@ -1357,8 +1381,12 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert len(t._cars[4].failure_history) == 0
 
     # mark [42+43+44] as ready and merge it
-    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
-    t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.WAITING_FOR_MERGE
+    t._cars[
+        1
+    ].train_car_state.outcome = (
+        merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
+    )
     await t.save()
     fake_client.update_base_sha("sha42")
     await t.remove_pull(
@@ -1391,8 +1419,8 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert len(t._cars[2].failure_history) == 0
 
     # mark [45] and [46+46] as success, so it's 7 fault !
-    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
-    t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.WAITING_FOR_MERGE
+    t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.WAITING_FOR_MERGE
     await t.save()
 
     # Nothing change yet!
@@ -1733,7 +1761,7 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
     assert [[41, 42, 43, 44, 45]] == mt_conftest.get_train_cars_content(t)
     assert [] == mt_conftest.get_train_waiting_pulls_content(t)
 
-    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.WAITING_FOR_MERGE
     await t.save()
     await t.refresh()
     assert [[41, 42, 43, 44, 45]] == mt_conftest.get_train_cars_content(t)
@@ -1794,7 +1822,7 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
     ] == mt_conftest.get_train_cars_content(t)
     assert [51] == mt_conftest.get_train_waiting_pulls_content(t)
 
-    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.WAITING_FOR_MERGE
     await t.save()
     await t.refresh()
     assert [
@@ -1880,7 +1908,7 @@ async def test_train_load_from_redis_with_None_partition_name(
                     "inplace",
                 ),
                 queued_at=date.utcnow(),
-                checks_end_metadata=merge_train.embarked_pull.QueueChecksEndMetadata(),
+                restart_reason=None,
             ),
         ],
         current_base_sha=github_types.SHAType("abc123"),
@@ -2012,10 +2040,17 @@ async def test_train_car_has_reached_batch_max_failure(
     # - Second failure, second resolution attempt
     # - Third failure, maximum reached, outcome should not be unknown
     for _ in range(failure_count):
-        assert t._cars[0].train_car_state.outcome == merge_train.TrainCarOutcome.UNKNOWN
+        assert (
+            t._cars[0].train_car_state.outcome
+            == merge_train.TrainCarOutcome.WAITING_FOR_CI
+        )
         assert not t._cars[0]._has_reached_batch_max_failure()
 
-        t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
+        t._cars[
+            0
+        ].train_car_state.outcome = (
+            merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
+        )
 
         await t.save()
         await t.test_helper_load_from_redis()
@@ -2053,12 +2088,12 @@ async def test_train_inplace_branch_update_failure(
     with mock.patch.object(
         merge_train.TrainCar,
         "_set_creation_failure",
-    ):
+    ) as _set_creation_failure:
         with pytest.raises(merge_train.TrainCarPullRequestCreationFailure):
             await t._cars[0]._start_checking_inplace_merge(ctxt)
 
     assert (
-        t._cars[0].train_car_state.outcome
+        _set_creation_failure.call_args[0][1]
         == merge_train.TrainCarOutcome.BRANCH_UPDATE_FAILED
     )
 
@@ -2085,7 +2120,10 @@ async def test_train_inplace_branch_rebase_failure(
     ):
         await t.refresh()
 
-    with mock.patch.object(merge_train.TrainCar, "_set_creation_failure"), mock.patch(
+    with mock.patch.object(
+        merge_train.TrainCar,
+        "_set_creation_failure",
+    ) as _set_creation_failure, mock.patch(
         "mergify_engine.actions.utils.get_github_user_from_bot_account",
     ), mock.patch(
         "mergify_engine.branch_updater.rebase_with_git",
@@ -2095,6 +2133,6 @@ async def test_train_inplace_branch_rebase_failure(
             await t._cars[0]._start_checking_inplace_rebase(ctxt)
 
     assert (
-        t._cars[0].train_car_state.outcome
+        _set_creation_failure.call_args[0][1]
         == merge_train.TrainCarOutcome.BRANCH_UPDATE_FAILED
     )

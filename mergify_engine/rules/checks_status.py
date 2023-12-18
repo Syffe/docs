@@ -13,6 +13,8 @@ from mergify_engine.rules import live_resolvers
 if typing.TYPE_CHECKING:
     import logging
 
+    from mergify_engine.queue.merge_train import TrainCarOutcome
+
 
 def get_conditions_with_ignored_attributes(
     conditions: rules_conditions.PullRequestRuleConditions
@@ -86,17 +88,19 @@ async def _get_checks_result(
     return check_api.Conclusion.FAILURE
 
 
-async def get_rule_checks_status(
+async def get_outcome_from_conditions(
     log: logging.LoggerAdapter[logging.Logger],
     repository: context.Repository,
     pulls: list[condition_value_querier.BasePullRequest],
     conditions: rules_conditions.PullRequestRuleConditions
     | rules_conditions.QueueRuleMergeConditions,
-    *,
-    wait_for_schedule_to_match: bool = False,
-) -> check_api.Conclusion:
+    # Maybe create a sub type for TrainCarOutcome used here.
+) -> TrainCarOutcome:
+    # Circular import
+    from mergify_engine.queue.merge_train import TrainCarOutcome
+
     if conditions.match:
-        return check_api.Conclusion.SUCCESS
+        return TrainCarOutcome.WAITING_FOR_MERGE
 
     only_checks_does_not_match = await conditions_without_some_attributes_match_p(
         log,
@@ -113,31 +117,46 @@ async def get_rule_checks_status(
                 tree=conditions.extract_raw_filter_tree(),
             )
             # So don't merge broken stuff
-            return check_api.Conclusion.PENDING
-        return result
+            return TrainCarOutcome.WAITING_FOR_CI
 
-    if wait_for_schedule_to_match:
-        schedule_match = await conditions_without_some_attributes_match_p(
-            log,
+        if result == check_api.Conclusion.PENDING:
+            return TrainCarOutcome.WAITING_FOR_CI
+
+        if result == check_api.Conclusion.FAILURE:
+            return TrainCarOutcome.CHECKS_FAILED
+
+        raise RuntimeError("Unexpected _get_checks_result() return value")
+
+    schedule_match = await conditions_without_some_attributes_match_p(
+        log,
+        pulls,
+        conditions,
+        ("check-", "status-", "schedule"),
+    )
+    # NOTE(sileht): when something not related to checks does not match
+    # we now also remove schedule from the tree, if it match
+    # afterwards, it means that a schedule didn't match yet
+    if schedule_match:
+        # NOTE(sileht): now we look at the CIs result and if it fail
+        # we fail too, otherwise we wait for the schedule to match
+        result_without_schedule = await _get_checks_result(
+            repository,
             pulls,
-            conditions,
-            ("check-", "status-", "schedule"),
+            get_conditions_with_ignored_attributes(conditions, ("schedule",)),
         )
-        # NOTE(sileht): when something not related to checks does not match
-        # we now also remove schedule from the tree, if it match
-        # afterwards, it means that a schedule didn't match yet
-        if schedule_match:
-            # NOTE(sileht): now we look at the CIs result and if it fail
-            # we fail too, otherwise we wait for the schedule to match
-            result_without_schedule = await _get_checks_result(
-                repository,
-                pulls,
-                get_conditions_with_ignored_attributes(conditions, ("schedule",)),
-            )
-            if result_without_schedule == check_api.Conclusion.FAILURE:
-                return result_without_schedule
-            return check_api.Conclusion.PENDING
+        if result_without_schedule == check_api.Conclusion.FAILURE:
+            # Checks failed outside of schedule
+            return TrainCarOutcome.CHECKS_FAILED
 
-        return check_api.Conclusion.FAILURE
+        if result_without_schedule == check_api.Conclusion.PENDING:
+            # Checks running outside of schedule
+            return TrainCarOutcome.WAITING_FOR_CI
 
-    return check_api.Conclusion.FAILURE
+        if result_without_schedule == check_api.Conclusion.SUCCESS:
+            return TrainCarOutcome.WAITING_FOR_SCHEDULE
+
+        raise RuntimeError("Unexpected _get_checks_result() return value")
+
+    # FIXME(sileht): this should be CONDITION_FAILED and then we should return which pull requests
+    # has a missing label or something to only unqueue this one.
+    return TrainCarOutcome.CHECKS_FAILED

@@ -40,14 +40,24 @@ def convert_legacy_outcome(
         train_car.TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE,
     ):
         # Just wait reevaluation
-        outcome = merge_train.TrainCarOutcome.UNKNOWN
+        outcome = merge_train.TrainCarOutcome.WAITING_FOR_CI
+
+    # backward compatibility introduced in 8.0.0
+    elif outcome == merge_train.TrainCarOutcome.UNKNOWN:
+        # We can't be 100% sure, could also be WAITING_FOR_SCHEDULE or WIATIN_FOR_UNFREEZE
+        # but this state ensure the train car will be reevaluated
+        outcome = merge_train.TrainCarOutcome.WAITING_FOR_CI
+    elif outcome == merge_train.TrainCarOutcome.MERGEABLE:
+        outcome = merge_train.TrainCarOutcome.WAITING_FOR_MERGE
+
+    # Has been dropped, just move back to waiting for CI until next eval
 
     return outcome
 
 
 @dataclasses.dataclass
 class TrainCarStateForSummary:
-    outcome: train_car.TrainCarOutcome = train_car.TrainCarOutcome.UNKNOWN
+    outcome: train_car.TrainCarOutcome = train_car.TrainCarOutcome.WAITING_FOR_CI
     outcome_message: str | None = None
     delete_reasons: dict[
         github_types.GitHubPullRequestNumber,
@@ -136,7 +146,10 @@ class TrainCarStateForSummary:
 
 @dataclasses.dataclass
 class TrainCarState:
-    outcome: train_car.TrainCarOutcome = train_car.TrainCarOutcome.UNKNOWN
+    outcome: train_car.TrainCarOutcome = train_car.TrainCarOutcome.WAITING_FOR_CI
+    outcome_from_conditions: train_car.TrainCarOutcome = (
+        train_car.TrainCarOutcome.WAITING_FOR_CI
+    )
     delete_reasons: dict[
         github_types.GitHubPullRequestNumber,
         queue_utils.BaseQueueCancelReason,
@@ -178,6 +191,7 @@ class TrainCarState:
 
     class Serialized(typing.TypedDict):
         outcome: train_car.TrainCarOutcome
+        outcome_from_conditions: train_car.TrainCarOutcome
         delete_reasons: dict[
             str,
             queue_utils.BaseQueueCancelReason.Serialized,
@@ -214,6 +228,7 @@ class TrainCarState:
 
         return self.Serialized(
             outcome=self.outcome,
+            outcome_from_conditions=self.outcome_from_conditions,
             delete_reasons=delete_reasons,
             ci_state=self.ci_state,
             ci_started_at=self.ci_started_at,
@@ -236,34 +251,6 @@ class TrainCarState:
         repository: context.Repository,
         data: TrainCarState.Serialized,
     ) -> TrainCarState:
-        # Backward compat, introduced in 7.6.0
-        kwargs = {
-            "waiting_for_freeze_start_dates": data.get(
-                "waiting_for_freeze_start_dates",
-                [],
-            ),
-            "waiting_for_freeze_end_dates": data.get(
-                "waiting_for_freeze_end_dates",
-                [],
-            ),
-            "waiting_for_schedule_start_dates": data.get(
-                "waiting_for_schedule_start_dates",
-                [],
-            ),
-            "waiting_for_schedule_end_dates": data.get(
-                "waiting_for_schedule_end_dates",
-                [],
-            ),
-            "time_spent_outside_schedule_start_dates": data.get(
-                "time_spent_outside_schedule_start_dates",
-                [],
-            ),
-            "time_spent_outside_schedule_end_dates": data.get(
-                "time_spent_outside_schedule_end_dates",
-                [],
-            ),
-        }
-
         # Backward compat, introduced in 7.6.0
         legacy_creation_date: datetime.datetime | None = data.get("creation_date")  # type: ignore[assignment]
 
@@ -289,7 +276,6 @@ class TrainCarState:
 
         # backward compatibility introduced in 7.8.0
         delete_reasons_raw = data.get("delete_reasons", {})
-
         delete_reasons = {
             github_types.GitHubPullRequestNumber(
                 int(pull_request),
@@ -305,8 +291,13 @@ class TrainCarState:
         else:
             outcome = data["outcome"]
 
+        outcome = convert_legacy_outcome(data["outcome"])
+        if (outcome_from_conditions := data.get("outcome_from_conditions")) is None:
+            outcome_from_conditions = outcome
+
         return cls(
-            outcome=convert_legacy_outcome(outcome),
+            outcome=outcome,
+            outcome_from_conditions=outcome_from_conditions,
             ci_state=data["ci_state"],
             ci_started_at=data.get("ci_started_at", legacy_creation_date),
             ci_ended_at=data.get("ci_ended_at"),
@@ -315,7 +306,31 @@ class TrainCarState:
             frozen_by=frozen_by,
             paused_by=paused_by,
             delete_reasons=delete_reasons,
-            **kwargs,
+            # Backward compat, introduced in 7.6.0
+            waiting_for_freeze_start_dates=data.get(
+                "waiting_for_freeze_start_dates",
+                [],
+            ),
+            waiting_for_freeze_end_dates=data.get(
+                "waiting_for_freeze_end_dates",
+                [],
+            ),
+            waiting_for_schedule_start_dates=data.get(
+                "waiting_for_schedule_start_dates",
+                [],
+            ),
+            waiting_for_schedule_end_dates=data.get(
+                "waiting_for_schedule_end_dates",
+                [],
+            ),
+            time_spent_outside_schedule_start_dates=data.get(
+                "time_spent_outside_schedule_start_dates",
+                [],
+            ),
+            time_spent_outside_schedule_end_dates=data.get(
+                "time_spent_outside_schedule_end_dates",
+                [],
+            ),
         )
 
     def ci_has_timed_out(self, timeout: datetime.timedelta) -> bool:

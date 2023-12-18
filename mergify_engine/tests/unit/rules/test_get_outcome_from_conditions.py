@@ -4,8 +4,8 @@ from unittest import mock
 
 import voluptuous
 
-from mergify_engine import check_api
 from mergify_engine import condition_value_querier
+from mergify_engine.queue.merge_train import TrainCarOutcome
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import filter
@@ -62,19 +62,19 @@ async def test_rules_conditions_update() -> None:
   - [X] #1"""
     )
 
-    state = await checks_status.get_rule_checks_status(
+    outcome = await checks_status.get_outcome_from_conditions(
         mock.Mock(),
         FAKE_REPO,
         typing.cast(list[condition_value_querier.BasePullRequest], pulls),
         c,
     )
-    assert state == check_api.Conclusion.FAILURE
+    assert outcome == TrainCarOutcome.CHECKS_FAILED
 
 
 async def assert_queue_rule_checks_status(
     conds: list[typing.Any],
     pull: conftest.FakePullRequest,
-    expected_state: check_api.Conclusion,
+    expected_outcome: TrainCarOutcome,
 ) -> None:
     pull.sync_checks()
     schema = voluptuous.Schema(
@@ -87,14 +87,13 @@ async def assert_queue_rule_checks_status(
     c = schema(conds)
 
     await c([pull])
-    state = await checks_status.get_rule_checks_status(
+    outcome = await checks_status.get_outcome_from_conditions(
         mock.Mock(),
         FAKE_REPO,
         [typing.cast(condition_value_querier.BasePullRequest, pull)],
         c,
-        wait_for_schedule_to_match=True,
     )
-    assert state == expected_state
+    assert outcome == expected_outcome
 
 
 async def test_rules_checks_basic() -> None:
@@ -117,35 +116,41 @@ async def test_rules_checks_basic() -> None:
     )
     conds = ["check-success=fake-ci", "label=foobar", "schedule=MON-FRI"]
 
+    # FIXME(sileht): add a new outcome when it not CI or schedule?
     # Label missing and nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
+    # FIXME(sileht): add a new outcome when it not CI or schedule?
     # Label missing and success
     pull.attrs["check-success"] = ["fake-ci"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # label ok and nothing reported
     pull.attrs["label"] = ["foobar"]
     pull.attrs["check-success"] = empty
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = ["fake-ci"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Failure reported
     pull.attrs["check-pending"] = ["whatever"]
     pull.attrs["check-failure"] = ["foo", "fake-ci"]
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # Success reported
     pull.attrs["check-pending"] = ["whatever"]
     pull.attrs["check-failure"] = ["foo"]
     pull.attrs["check-success"] = ["fake-ci", "test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # Pending reported and schedule missing
     # Saturday
@@ -158,7 +163,7 @@ async def test_rules_checks_basic() -> None:
     pull.attrs["check-pending"] = ["fake-ci"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Failure reported and schedule missing
     # Saturday
@@ -171,7 +176,7 @@ async def test_rules_checks_basic() -> None:
     pull.attrs["check-pending"] = ["whatever"]
     pull.attrs["check-failure"] = ["foo", "fake-ci"]
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # Success reported and schedule missing
     # Saturday
@@ -184,7 +189,11 @@ async def test_rules_checks_basic() -> None:
     pull.attrs["check-pending"] = ["whatever"]
     pull.attrs["check-failure"] = ["foo"]
     pull.attrs["check-success"] = ["fake-ci", "test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_SCHEDULE,
+    )
 
 
 async def test_rules_checks_with_and_or() -> None:
@@ -209,54 +218,62 @@ async def test_rules_checks_with_and_or() -> None:
     ]
 
     # Label missing and nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Label missing and half success
     pull.attrs["check-success"] = ["fake-ci"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Label missing and half success and half pending
     pull.attrs["check-success"] = ["fake-ci"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Label missing and all success
     pull.attrs["check-success"] = ["fake-ci", "other-ci"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # Label missing and half failure
     pull.attrs["check-success"] = ["fake-ci"]
     pull.attrs["check-failure"] = ["other-ci"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # Label missing and half failure bus
     pull.attrs["check-success"] = ["other-ci"]
     pull.attrs["check-failure"] = ["fake-ci"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # label ok and nothing reported
     pull.attrs["label"] = ["skip-tests"]
     pull.attrs["check-success"] = empty
     pull.attrs["check-failure"] = empty
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # label ok and failure
     pull.attrs["label"] = ["skip-tests"]
     pull.attrs["check-success"] = empty
     pull.attrs["check-failure"] = ["other-ci"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # label ok and failure
     pull.attrs["label"] = ["skip-tests"]
     pull.attrs["check-success"] = empty
     pull.attrs["check-failure"] = ["fake-ci"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # label ok and success
     pull.attrs["label"] = ["skip-tests"]
     pull.attrs["check-pending"] = ["fake-ci"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["other-ci"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
 
 async def test_rules_checks_status_with_negative_conditions1() -> None:
@@ -283,42 +300,50 @@ async def test_rules_checks_status_with_negative_conditions1() -> None:
     ]
 
     # Nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = ["foo"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-timed-out"] = empty
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Failure reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["foo"]
     pull.attrs["check-timed-out"] = empty
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # Timeout reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-timed-out"] = ["foo"]
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # Success reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-timed-out"] = empty
     pull.attrs["check-success"] = ["test-starter", "foo"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # half reported, sorry..., UNDEFINED BEHAVIOR
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = empty
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
 
 async def test_rules_checks_status_with_negative_conditions2() -> None:
@@ -343,31 +368,39 @@ async def test_rules_checks_status_with_negative_conditions2() -> None:
     ]
 
     # Nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = ["foo"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Failure reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["foo"]
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # Success reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter", "foo"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # half reported, sorry..., UNDEFINED BEHAVIOR
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
 
 async def test_rules_checks_status_with_negative_conditions3() -> None:
@@ -392,31 +425,39 @@ async def test_rules_checks_status_with_negative_conditions3() -> None:
     ]
 
     # Nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = ["foo"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Failure reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["foo"]
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # Success reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter", "foo"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # half reported, sorry..., UNDEFINED BEHAVIOR
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
 
 async def test_rules_checks_status_with_or_conditions() -> None:
@@ -441,43 +482,59 @@ async def test_rules_checks_status_with_or_conditions() -> None:
     ]
 
     # Nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = ["ci-1"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-2"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # Pending reported
     pull.attrs["check-pending"] = ["ci-1"]
     pull.attrs["check-failure"] = ["ci-2"]
     pull.attrs["check-success"] = empty
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Failure reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["ci-1"]
     pull.attrs["check-success"] = ["ci-2"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # Success reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-1", "ci-2"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # half reported success
     pull.attrs["check-failure"] = empty
     pull.attrs["check-pending"] = empty
     pull.attrs["check-success"] = ["ci-1"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # half reported failure, wait for ci-2 to finish
     pull.attrs["check-failure"] = ["ci-1"]
     pull.attrs["check-pending"] = empty
     pull.attrs["check-success"] = empty
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
 
 async def test_rules_checks_status_expected_failure() -> None:
@@ -498,25 +555,29 @@ async def test_rules_checks_status_expected_failure() -> None:
     conds = ["check-failure=ci-1"]
 
     # Nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = ["ci-1"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = empty
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Failure reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["ci-1"]
     pull.attrs["check-success"] = empty
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # Success reported, no way!
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-1"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
 
 async def test_rules_checks_status_regular() -> None:
@@ -537,37 +598,41 @@ async def test_rules_checks_status_regular() -> None:
     conds = ["check-success=ci-1", "check-success=ci-2"]
 
     # Nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = ["ci-1"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-2"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Failure reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["ci-1"]
     pull.attrs["check-success"] = ["ci-2"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # Success reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-1", "ci-2"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # half reported success
     pull.attrs["check-failure"] = empty
     pull.attrs["check-pending"] = empty
     pull.attrs["check-success"] = ["ci-1"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # half reported failure, fail early
     pull.attrs["check-failure"] = ["ci-1"]
     pull.attrs["check-pending"] = empty
     pull.attrs["check-success"] = empty
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
 
 async def test_rules_checks_status_regex() -> None:
@@ -588,37 +653,41 @@ async def test_rules_checks_status_regex() -> None:
     conds = ["check-success~=^ci-1$", "check-success~=^ci-2$"]
 
     # Nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = ["ci-1"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-2"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Failure reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["ci-1"]
     pull.attrs["check-success"] = ["ci-2"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # Success reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-1", "ci-2"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
     # half reported success
     pull.attrs["check-failure"] = empty
     pull.attrs["check-pending"] = empty
     pull.attrs["check-success"] = ["ci-1"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # half reported failure, fail early
     pull.attrs["check-failure"] = ["ci-1"]
     pull.attrs["check-pending"] = empty
     pull.attrs["check-success"] = empty
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
 
 async def test_rules_checks_status_depop() -> None:
@@ -672,13 +741,13 @@ async def test_rules_checks_status_depop() -> None:
         "#changes-requested-reviews-by=0",
     ]
     # Nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["Summary", "continuous-integration/jenkins/pr-head"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = ["c-ci/status"]
@@ -688,7 +757,7 @@ async def test_rules_checks_status_depop() -> None:
         "continuous-integration/jenkins/pr-head",
         "c-ci/s-c-t",
     ]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Pending reported
     pull.attrs["check-pending"] = [
@@ -698,7 +767,7 @@ async def test_rules_checks_status_depop() -> None:
     ]
     pull.attrs["check-failure"] = ["c-ci/g-validate"]
     pull.attrs["check-success"] = ["Summary"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.WAITING_FOR_CI)
 
     # Failure reported
     pull.attrs["check-pending"] = empty
@@ -711,7 +780,7 @@ async def test_rules_checks_status_depop() -> None:
         "c-ci/status",
         "c-ci/c-p-validate",
     ]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
 
     # Success reported
     pull.attrs["check-pending"] = empty
@@ -722,7 +791,11 @@ async def test_rules_checks_status_depop() -> None:
         "c-ci/s-c-t",
         "c-ci/c-p-validate",
     ]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.WAITING_FOR_MERGE,
+    )
 
 
 async def test_rules_checks_status_ceph() -> None:

@@ -139,11 +139,7 @@ pull_requests:
             in tmp_pull["pull_request"]["body"]
         )
 
-        await car.send_checks_end_signal(
-            p2["number"],
-            queue_utils.ChecksFailed(),
-            "REEMBARKED",
-        )
+        await car.send_checks_end_signal(p2["number"], queue_utils.ChecksFailed())
         await car.end_checking(
             reason=queue_utils.ChecksFailed(),
             not_reembarked_pull_requests={},
@@ -156,7 +152,7 @@ pull_requests:
 
         await self.wait_for_pull_request("closed", tmp_pull["number"])
 
-        await self.assert_eventlog_check_end("REEMBARKED")
+        await self.assert_eventlog_check_end("DEFINITIVE")
 
     async def assert_eventlog_check_end(
         self,
