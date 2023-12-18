@@ -98,7 +98,6 @@ jobs:
             exit 1
           fi
 
-
   secrets-leakage:
     runs-on: ubuntu-22.04
     steps:
@@ -203,12 +202,6 @@ jobs:
         with:
           python-version: 3.12.1
 
-      - name: Download test durations
-        uses: actions/download-artifact@v4.0.0
-        continue-on-error: true
-        with:
-          name: engine-ci-test-durations
-
       - name: Build 🔧 & Test 🔍
         # yamllint disable rule:line-length
         run: |
@@ -217,19 +210,11 @@ jobs:
           tools/poetry-ci-install.sh
           poetry run poe test \
             --splits 10 --group ${{ matrix.group }} \
-            --store-durations \
-            --durations-path engine-ci-test-durations \
             --splitting-algorithm=least_duration \
             --reruns 3 --only-rerun MissingEventTimeout \
             mergify_engine/tests
         # yamllint enable rule:line-length
 
-      - name: Store test durations
-        uses: actions/upload-artifact@v3.1.3
-        with:
-          name: engine-ci-test-durations
-          if-no-files-found: warn
-          path: engine-ci-test-durations
   api-schemas:
     timeout-minutes: 20
     runs-on: ubuntu-22.04
