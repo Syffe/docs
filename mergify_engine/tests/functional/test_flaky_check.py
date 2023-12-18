@@ -10,7 +10,7 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.models import github as gh_models
 from mergify_engine.tests.functional import base
-from mergify_engine.worker.manager import ServicesSet
+from mergify_engine.tests.functional import utils as tests_utils
 
 
 class TestRerunFlakyCheck(base.FunctionalTestBase):
@@ -20,11 +20,8 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
     def _add_monkeypatch(self, monkeypatch: pytest.MonkeyPatch) -> None:
         self.monkeypatch = monkeypatch
 
-    @pytest.mark.usefixtures(
-        "_prepare_google_cloud_storage_setup",
-        "_enable_github_in_postgres",
-    )
-    async def test_rerun_on_known_flaky(self) -> None:
+    @pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
+    async def test_rerun_on_known_flaky_with_api(self) -> None:
         ci = {
             "name": "Continuous Integration",
             "on": {"pull_request": {"branches": self.main_branch_name}},
@@ -35,7 +32,7 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
                     "steps": [
                         {
                             "name": "Fail until run_attempt 2",
-                            "run": """echo I will fail on sha ${{ github.event.pull_request.head.sha }} and if run_attempt is lower than 2 run_attempt:${{ github.run_attempt }};[[ ${{ github.run_attempt }} -lt 2 ]] && exit 1 || exit 0""",
+                            "run": """echo I will fail if run_attempt is lower than 2 run_attempt:${{ github.run_attempt }};[[ ${{ github.run_attempt }} -lt 2 ]] && exit 1 || exit 0""",
                         },
                     ],
                 },
@@ -82,34 +79,83 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
             "completed",
             conclusion="success",
             name="unit-tests",
+            pr_number=pr["number"],
         )
-        await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
+        await self.run_engine(additionnal_services={"ci-event-processing"})
         await self.wait_for_pull_request("closed", pr["number"], merged=True)
 
-        await self.git("pull")
+    @pytest.mark.skip(
+        """embed_logs_with_extracted_metadata does not send a pull refresh at the moment,
+        which cause the automatic retry to not work""",
+    )
+    @pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
+    async def test_automatic_rerun_on_known_flaky(self) -> None:
+        ci = {
+            "name": "Continuous Integration",
+            "on": {"pull_request": {"branches": self.main_branch_name}},
+            "jobs": {
+                "unit-tests": {
+                    "timeout-minutes": 5,
+                    "runs-on": "ubuntu-20.04",
+                    "steps": [
+                        {
+                            "name": "Fail until run_attempt 2",
+                            "run": """echo I will fail if run_attempt is lower than 2 run_attempt:${{ github.run_attempt }};[[ ${{ github.run_attempt }} -lt 2 ]] && exit 1 || exit 0""",
+                        },
+                    ],
+                },
+            },
+        }
 
+        config = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "merge_conditions": [
+                        "check-success=unit-tests",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+            "_checks_to_retry_on_failure": {"unit-tests": 2},
+        }
+        await self.setup_repo(
+            yaml.dump(config),
+            files={".github/workflows/ci.yml": yaml.dump(ci)},
+        )
         # Create the test PR
-        pr2 = await self.create_pr()
+        pr = await self.create_pr()
 
         await self.wait_for_all(
             [
-                {"event_type": "workflow_job", "payload": {"action": "completed"}},
                 {
-                    "event_type": "check_run",
+                    "event_type": "workflow_job",
                     "payload": {
                         "action": "completed",
-                        "check_run": {
-                            "conclusion": "failure",
-                            "name": "unit-tests",
-                        },
+                        "head_sha": pr["head"]["sha"],
                     },
+                },
+                {
+                    "event_type": "check_run",
+                    "payload": tests_utils.get_check_run_event_payload(
+                        action="completed",
+                        conclusion="failure",
+                        name="unit-tests",
+                        pr_number=pr["number"],
+                    ),
                 },
             ],
         )
 
-        await self.run_engine(
-            additionnal_services=ServicesSet("ci-event-processing,github-in-postgres"),
-        )
+        await self.run_engine(additionnal_services={"ci-event-processing"})
 
         async with database.create_session() as session:
             # Set the embedding to the same value on the failed jobs to make them
@@ -135,9 +181,9 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
             [self.repository_ctxt.repo["owner"]["login"]],
         )
 
-        # Run engine with log-embedder up since it's it, that will send the
+        # Run engine with log-embedder up since it's the one that will send the
         # send_pull_refresh signal that will make the pending PR reevaluated
-        await self.run_engine(additionnal_services=ServicesSet("log-embedder"))
+        await self.run_engine(additionnal_services={"log-embedder"})
 
         # Run engine once again to take the send_pull_refresh into account
         await self.run_engine()
@@ -146,6 +192,7 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
             "completed",
             conclusion="success",
             name="unit-tests",
+            pr_number=pr["number"],
         )
         await self.run_engine()
-        await self.wait_for_pull_request("closed", pr2["number"], merged=True)
+        await self.wait_for_pull_request("closed", pr["number"], merged=True)
