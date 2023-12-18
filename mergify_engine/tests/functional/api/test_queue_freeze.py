@@ -1773,3 +1773,59 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "The merge is currently blocked by the freeze of the queue `urgent`, for the following reason: `urgent test freeze reason`"
             in check_run_p1["output"]["summary"]
         )
+
+    async def test_draft_pr_summary_when_queue_frozen(
+        self,
+    ) -> None:
+        rules_config = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "batch_max_wait_time": "0 s",
+                    "speculative_checks": 2,
+                    "batch_size": 3,
+                    "allow_inplace_checks": True,
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules_config), preload_configuration=True)
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        draft_pr = await self.wait_for_pull_request("opened")
+        assert draft_pr["number"] not in [p1["number"], p2["number"]]
+
+        await self._create_queue_freeze(
+            queue_name="default",
+            freeze_payload={"reason": "test freeze reason"},
+        )
+
+        # We set the status and run the engine to put the train car into a final state.
+        await self.create_status(draft_pr["pull_request"])
+        await self.run_engine()
+
+        await self.wait_for_pull_request("edited", draft_pr["number"])
+        tmp_pull = await self.get_pull(draft_pr["number"])
+        assert tmp_pull["body"] is not None
+        assert (
+            "❄️ This combination of pull requests is blocked by the freeze of the queue: `default` ❄️"
+            in tmp_pull["body"]
+        )

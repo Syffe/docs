@@ -4,6 +4,7 @@ import dataclasses
 import datetime  # noqa: TCH003
 import typing
 
+import daiquiri
 import fastapi
 import pydantic
 from starlette.status import HTTP_204_NO_CONTENT
@@ -14,6 +15,8 @@ from mergify_engine.queue import freeze
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
+
+LOG = daiquiri.getLogger(__name__)
 
 router = fastapi.APIRouter(
     tags=["queues"],
@@ -111,6 +114,14 @@ async def create_queue_freeze(
             "Create queue freeze",
         )
 
+        LOG.info(
+            "Create queue freeze",
+            queue_name=queue_rule.name,
+            reason=queue_freeze.reason,
+            cascading=queue_freeze.cascading,
+            created_by=authentication_actor.actor,
+        )
+
     has_been_updated = False
     if queue_freeze.reason != queue_freeze_payload.reason:
         has_been_updated = True
@@ -138,6 +149,14 @@ async def create_queue_freeze(
                 },
             ),
             "Update queue freeze",
+        )
+
+        LOG.info(
+            "Update queue freeze",
+            queue_name=queue_rule.name,
+            reason=queue_freeze.reason,
+            cascading=queue_freeze.cascading,
+            updated_by=authentication_actor.actor,
         )
 
     await queue_freeze.save()
@@ -195,6 +214,12 @@ async def delete_queue_freeze(
             },
         ),
         "Delete queue freeze",
+    )
+
+    LOG.info(
+        "Delete queue freeze",
+        queue_name=queue_rule.name,
+        deleted_by=authentication_actor.actor,
     )
 
     return fastapi.Response(status_code=HTTP_204_NO_CONTENT)

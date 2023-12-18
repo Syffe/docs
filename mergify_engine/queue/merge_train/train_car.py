@@ -2566,7 +2566,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
     async def get_draft_pr_summary(self) -> str:
         headline: str | None = None
         show_queue = False
-        if self.train_car_state.outcome == TrainCarOutcome.MERGEABLE:
+
+        if self.train_car_state.frozen_by is not None:
+            if len(self.initial_embarked_pulls) == 1:
+                headline = f"❄️ This pull request is blocked by the freeze of the queue: `{self.train_car_state.frozen_by.name}` ❄️"
+            else:
+                headline = f"❄️ This combination of pull requests is blocked by the freeze of the queue: `{self.train_car_state.frozen_by.name}` ❄️"
+        elif self.train_car_state.outcome == TrainCarOutcome.MERGEABLE:
             if len(self.initial_embarked_pulls) == 1:
                 headline = "🎉 This pull request has been checked successfully and will be merged. 🎉"
             else:
@@ -2673,6 +2679,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 ep.user_pull_request_number for ep in self.initial_embarked_pulls
             ],
             partition_name=self.train.partition_name,
+            is_frozen=self.train_car_state.frozen_by is not None,
+            is_paused=self.train_car_state.paused_by is not None,
         )
 
         for ep in self.still_queued_embarked_pulls:
