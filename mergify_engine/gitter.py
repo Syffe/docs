@@ -68,6 +68,7 @@ GIT_MESSAGE_TO_EXCEPTION: dict[
         ("The requested URL returned error: 502", GitErrorRetriable),
         ("The requested URL returned error: 503", GitErrorRetriable),
         ("The requested URL returned error: 504", GitErrorRetriable),
+        ("Internal Server Error", GitErrorRetriable),
         ("Failed sending data to the peer", GitErrorRetriable),
         ("remote contains work that you do", GitErrorRetriable),
         ("remote end hung up unexpectedly", GitErrorRetriable),
