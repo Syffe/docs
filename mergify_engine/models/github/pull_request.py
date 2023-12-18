@@ -116,7 +116,7 @@ class PullRequest(models.Base):
     )
     labels: orm.Mapped[list[github_types.GitHubLabel]] = orm.mapped_column(
         postgresql.ARRAY(postgresql.JSONB, dimensions=1),
-        anonymizer_config="custom_masks.json_obj_array(0, 3, ARRAY['id', 'name', 'color', 'default']",
+        anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
     )
     draft: orm.Mapped[bool] = orm.mapped_column(
         sqlalchemy.Boolean,
@@ -174,7 +174,7 @@ class PullRequest(models.Base):
     )
     requested_teams: orm.Mapped[list[github_types.GitHubTeam]] = orm.mapped_column(
         postgresql.ARRAY(postgresql.JSONB, dimensions=1),
-        anonymizer_config="custom_masks.json_obj_array(0, 2, ARRAY['slug'])",
+        anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
     )
     milestone: orm.Mapped[github_types.GitHubMilestone | None] = orm.mapped_column(
         postgresql.JSONB,
