@@ -12,3 +12,4 @@ excluded-packages:
   - libx11-data
   - ncurses-term
   - ncurses-bin
+  - ncurses-base
