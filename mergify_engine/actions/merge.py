@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-import functools
 import typing
 
 import voluptuous
@@ -94,17 +93,21 @@ class MergeExecutor(
             self.config["merge_bot_account"],
         )
         if report is None:
-            report = await self.common_merge(
-                "merge",
-                self.ctxt,
-                self.config["method"],
-                self.config["merge_bot_account"],
-                self.config["commit_message_template"],
-                functools.partial(
-                    self.get_pending_merge_status,
-                    rule=self.rule,
-                ),
-            )
+            try:
+                report = await self.common_merge(
+                    "merge",
+                    self.ctxt,
+                    self.config["method"],
+                    self.config["merge_bot_account"],
+                    self.config["commit_message_template"],
+                )
+            except merge_base.MergeNeedRetry:
+                report = check_api.Result(
+                    check_api.Conclusion.PENDING,
+                    "The pull request will be merged soon",
+                    "",
+                )
+
             if report.conclusion == check_api.Conclusion.SUCCESS:
                 convoy = await merge_train.Convoy.from_context(self.ctxt)
                 await convoy.remove_pull(
@@ -130,17 +133,6 @@ class MergeExecutor(
 
     async def cancel(self) -> check_api.Result:
         return actions.CANCELLED_CHECK_REPORT
-
-    async def get_pending_merge_status(
-        self,
-        ctxt: context.Context,
-        rule: prr_config.EvaluatedPullRequestRule,
-    ) -> check_api.Result:
-        return check_api.Result(
-            check_api.Conclusion.PENDING,
-            "The pull request will be merged soon",
-            "",
-        )
 
 
 class MergeAction(actions.Action):

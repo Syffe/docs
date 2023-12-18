@@ -51,6 +51,12 @@ MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
 PullMergePayload = dict[str, str]
 
 
+class MergeNeedRetry(Exception):
+    ctxt: context.Context
+    abort_message: str
+    exception: Exception | None
+
+
 class MergeUtilsMixin:
     MAX_REFRESH_ATTEMPTS: typing.ClassVar[int | None] = 15
 
@@ -58,7 +64,6 @@ class MergeUtilsMixin:
     async def _refresh_for_retry(
         cls,
         ctxt: context.Context,
-        pending_result_builder: PendingResultBuilderT,
         abort_message: str,
         exception: http.HTTPClientSideError | None = None,
     ) -> check_api.Result:
@@ -94,7 +99,7 @@ class MergeUtilsMixin:
             is_conflicting=await ctxt.is_conflicting(),
             curl=await exception.to_curl() if exception else None,
         )
-        return await pending_result_builder(ctxt)
+        raise MergeNeedRetry(exception)
 
     @staticmethod
     def _get_redis_recently_merged_tracker_key(
@@ -141,7 +146,6 @@ class MergeUtilsMixin:
         merge_method: MergeMethodT | None,
         merge_bot_account: github_types.GitHubLogin | None,
         commit_message_template: str | None,
-        pending_result_builder: PendingResultBuilderT,
         branch_protection_injection_mode: queue.BranchProtectionInjectionModeT = "queue",
     ) -> check_api.Result:
         pull_merge_payload = {}
@@ -182,11 +186,7 @@ class MergeUtilsMixin:
                 if ctxt.pull["merged"]:
                     ctxt.log.info("merged in the meantime")
                 else:
-                    return await self._handle_merge_error(
-                        e,
-                        ctxt,
-                        pending_result_builder,
-                    )
+                    return await self._handle_merge_error(e, ctxt)
             else:
                 ctxt.log.info("merged")
 
@@ -244,7 +244,7 @@ class MergeUtilsMixin:
             if ctxt.pull["merged"]:
                 ctxt.log.info("merged in the meantime")
             else:
-                return await self._handle_merge_error(e, ctxt, pending_result_builder)
+                return await self._handle_merge_error(e, ctxt)
         else:
             await ctxt.update(wait_merged=True, wait_merge_commit_sha=True)
             ctxt.log.info("merged", merge_method=merge_method)
@@ -371,15 +371,8 @@ class MergeUtilsMixin:
         self,
         e: http.HTTPClientSideError,
         ctxt: context.Context,
-        pending_result_builder: PendingResultBuilderT,
     ) -> check_api.Result:
-        if (
-            result := await self._handle_merge_error_conditions(
-                e,
-                ctxt,
-                pending_result_builder,
-            )
-        ) is not None:
+        if (result := await self._handle_merge_error_conditions(e, ctxt)) is not None:
             return result
 
         message = "Mergify failed to merge the pull request"
@@ -399,19 +392,16 @@ class MergeUtilsMixin:
         self,
         e: http.HTTPClientSideError,
         ctxt: context.Context,
-        pending_result_builder: PendingResultBuilderT,
     ) -> check_api.Result | None:
         if "Head branch was modified" in e.message:
             return await self._refresh_for_retry(
                 ctxt,
-                pending_result_builder,
                 "Head branch was modified in the meantime",
                 e,
             )
         if "Head branch is out of date" in e.message:
             return await self._refresh_for_retry(
                 ctxt,
-                pending_result_builder,
                 "Head branch is out of date",
                 e,
             )
@@ -425,7 +415,6 @@ class MergeUtilsMixin:
             # with the base branch.
             return await self._refresh_for_retry(
                 ctxt,
-                pending_result_builder,
                 "Base branch was modified in the meantime",
                 e,
             )
@@ -448,7 +437,6 @@ class MergeUtilsMixin:
                 if new_pull["head"]["sha"] != ctxt.pull["head"]["sha"]:
                     return await self._refresh_for_retry(
                         ctxt,
-                        pending_result_builder,
                         "Head branch was modified in the meantime",
                         e,
                     )

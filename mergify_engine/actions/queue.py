@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
-import functools
 import typing
 
 import first
@@ -205,14 +204,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
             self.config["merge_method"],
             self.config["merge_bot_account"],
             self.config["commit_message_template"],
-            functools.partial(
-                self.get_pending_queue_status,
-                convoy=convoy,
-                rule=self.rule,
-                queue_rule=self.queue_rule,
-                queue_freeze=queue_freeze,
-                queue_pause=queue_pause,
-            ),
             self.queue_rule.branch_protection_injection_mode,
         )
         if result.conclusion == check_api.Conclusion.SUCCESS:
@@ -311,18 +302,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 raise
             return action_utils.get_invalid_credentials_report(on_behalf)
         except http.HTTPClientSideError as e:  # pragma: no cover
-            return await self._handle_merge_error(
-                e,
-                self.ctxt,
-                functools.partial(
-                    self.get_pending_queue_status,
-                    convoy=convoy,
-                    rule=self.rule,
-                    queue_rule=self.queue_rule,
-                    queue_freeze=queue_freeze,
-                    queue_pause=queue_pause,
-                ),
-            )
+            return await self._handle_merge_error(e, self.ctxt)
 
         for embarked_pull in cars[0].still_queued_embarked_pulls.copy():
             await self.create_recently_merged_tracker(
@@ -632,15 +612,19 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 queue_pause,
                 partition_names,
             ):
-                result = await self._merge(convoy, queue_freeze, queue_pause, cars)
+                try:
+                    result = await self._merge(convoy, queue_freeze, queue_pause, cars)
+                except merge_base.MergeNeedRetry:
+                    result = await self.get_pending_queue_status(
+                        convoy=convoy,
+                        queue_freeze=queue_freeze,
+                        queue_pause=queue_pause,
+                    )
             else:
                 result = await self.get_pending_queue_status(
-                    self.ctxt,
-                    convoy,
-                    self.rule,
-                    self.queue_rule,
-                    queue_freeze,
-                    queue_pause,
+                    convoy=convoy,
+                    queue_freeze=queue_freeze,
+                    queue_pause=queue_pause,
                 )
         except Exception as e:
             if not exceptions.need_retry_in(e):
@@ -807,12 +791,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
         queue_freeze = await convoy.get_current_queue_freeze(self.config["name"])
         queue_pause = await pause.QueuePause.get(convoy.repository)
         result = await self.get_pending_queue_status(
-            self.ctxt,
-            convoy,
-            self.rule,
-            self.queue_rule,
-            queue_freeze,
-            queue_pause,
+            convoy=convoy,
+            queue_freeze=queue_freeze,
+            queue_pause=queue_pause,
         )
 
         if result.conclusion is not check_api.Conclusion.PENDING:
@@ -1092,12 +1073,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         return QueueCancellationQueryResult(should_be_cancelled, summary)
 
-    @staticmethod
     async def get_pending_queue_status(
-        ctxt: context.Context,
+        self,
         convoy: merge_train.Convoy,
-        rule: prr_config.EvaluatedPullRequestRule,
-        queue_rule: qr_config.QueueRule,
         queue_freeze: freeze.QueueFreeze | None,
         queue_pause: pause.QueuePause | None,
     ) -> check_api.Result:
@@ -1106,9 +1084,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
         elif queue_freeze is not None:
             title = queue_freeze.get_freeze_message()
         else:
-            embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])
+            embarked_pulls = await convoy.find_embarked_pull(self.ctxt.pull["number"])
             if not embarked_pulls:
-                ctxt.log.error("expected queued pull request not found in queue")
+                self.ctxt.log.error("expected queued pull request not found in queue")
                 title = "The pull request is queued to be merged"
             elif len(embarked_pulls) == 1:
                 _ord = utils.to_ordinal_numeric(embarked_pulls[0].position + 1)
@@ -1134,9 +1112,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 )
 
         summary = await convoy.get_pull_summary(
-            ctxt,
-            queue_rule=queue_rule,
-            pull_rule=rule,
+            self.ctxt,
+            queue_rule=self.queue_rule,
+            pull_rule=self.rule,
         )
 
         return check_api.Result(check_api.Conclusion.PENDING, title, summary)
