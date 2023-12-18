@@ -396,49 +396,58 @@ async def try_commit_or_rollback(
         raise
 
 
+def get_job_processing_base_query() -> sqlalchemy.Select[tuple[gh_models.WorkflowJob]]:
+    return (
+        sqlalchemy.select(gh_models.WorkflowJob)
+        .join(gh_models.GitHubRepository)
+        .join(
+            gh_models.GitHubAccount,
+            sqlalchemy.and_(
+                gh_models.GitHubRepository.owner_id == gh_models.GitHubAccount.id,
+                gh_models.GitHubAccount.login.in_(
+                    settings.LOG_EMBEDDER_ENABLED_ORGS,
+                ),
+            ),
+        )
+        .where(
+            gh_models.WorkflowJob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
+            sqlalchemy.or_(
+                gh_models.WorkflowJob.log_processing_retry_after.is_(None),
+                gh_models.WorkflowJob.log_processing_retry_after <= date.utcnow(),
+            ),
+            gh_models.WorkflowJob.log_status.notin_(
+                (
+                    gh_models.WorkflowJobLogStatus.GONE,
+                    gh_models.WorkflowJobLogStatus.ERROR,
+                ),
+            ),
+        )
+        .order_by(gh_models.WorkflowJob.completed_at.asc())
+        .limit(LOG_EMBEDDER_JOBS_BATCH_SIZE)
+    )
+
+
 async def embed_logs_with_log_embedding(
     redis_links: redis_utils.RedisLinks,
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
 ) -> bool:
-    wjob = orm.aliased(gh_models.WorkflowJob, name="wjob")
-
     async with database.create_session() as session:
         stmt = (
-            sqlalchemy.select(wjob)
-            .options(orm.joinedload(wjob.ci_issue))
-            .join(gh_models.GitHubRepository)
-            .join(
-                gh_models.GitHubAccount,
-                sqlalchemy.and_(
-                    gh_models.GitHubRepository.owner_id == gh_models.GitHubAccount.id,
-                    gh_models.GitHubAccount.login.in_(
-                        settings.LOG_EMBEDDER_ENABLED_ORGS,
-                    ),
-                ),
+            get_job_processing_base_query()
+            .options(
+                orm.joinedload(gh_models.WorkflowJob.ci_issue),
             )
             .where(
-                wjob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
-                sqlalchemy.or_(
-                    wjob.log_processing_retry_after.is_(None),
-                    wjob.log_processing_retry_after <= date.utcnow(),
-                ),
-                wjob.log_embedding_status
+                gh_models.WorkflowJob.log_embedding_status
                 != gh_models.WorkflowJobLogEmbeddingStatus.ERROR,
-                wjob.log_status.notin_(
-                    (
-                        gh_models.WorkflowJobLogStatus.GONE,
-                        gh_models.WorkflowJobLogStatus.ERROR,
-                    ),
-                ),
                 sqlalchemy.or_(
-                    wjob.log_embedding_status
+                    gh_models.WorkflowJob.log_embedding_status
                     == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
-                    wjob.log_status == gh_models.WorkflowJobLogStatus.UNKNOWN,
-                    wjob.ci_issue_id.is_(None),
+                    gh_models.WorkflowJob.log_status
+                    == gh_models.WorkflowJobLogStatus.UNKNOWN,
+                    gh_models.WorkflowJob.ci_issue_id.is_(None),
                 ),
             )
-            .order_by(wjob.completed_at.asc())
-            .limit(LOG_EMBEDDER_JOBS_BATCH_SIZE)
         )
 
         jobs = (await session.scalars(stmt)).all()
@@ -501,49 +510,25 @@ async def embed_logs_with_extracted_metadata(
     redis_links: redis_utils.RedisLinks,
     gcs_client: google_cloud_storage.GoogleCloudStorageClient,
 ) -> bool:
-    wjob = orm.aliased(gh_models.WorkflowJob, name="wjob")
-
     async with database.create_session() as session:
         stmt = (
-            sqlalchemy.select(wjob)
+            get_job_processing_base_query()
             .options(
-                orm.joinedload(wjob.ci_issues_gpt),
-                orm.joinedload(wjob.log_metadata),
-            )
-            .join(gh_models.GitHubRepository)
-            .join(
-                gh_models.GitHubAccount,
-                sqlalchemy.and_(
-                    gh_models.GitHubRepository.owner_id == gh_models.GitHubAccount.id,
-                    gh_models.GitHubAccount.login.in_(
-                        settings.LOG_EMBEDDER_ENABLED_ORGS,
-                    ),
-                ),
+                orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt),
+                orm.joinedload(gh_models.WorkflowJob.log_metadata),
             )
             .where(
-                wjob.conclusion == gh_models.WorkflowJobConclusion.FAILURE,
-                sqlalchemy.or_(
-                    wjob.log_processing_retry_after.is_(None),
-                    wjob.log_processing_retry_after <= date.utcnow(),
-                ),
-                wjob.log_status.notin_(
-                    (
-                        gh_models.WorkflowJobLogStatus.GONE,
-                        gh_models.WorkflowJobLogStatus.ERROR,
-                    ),
-                ),
-                wjob.log_metadata_extracting_status
+                gh_models.WorkflowJob.log_metadata_extracting_status
                 != gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
                 sqlalchemy.or_(
-                    wjob.log_status == gh_models.WorkflowJobLogStatus.UNKNOWN,
-                    wjob.log_metadata_extracting_status
+                    gh_models.WorkflowJob.log_status
+                    == gh_models.WorkflowJobLogStatus.UNKNOWN,
+                    gh_models.WorkflowJob.log_metadata_extracting_status
                     == gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
                     # FIXME(sileht): should it be status like other?
-                    ~wjob.ci_issues_gpt.any(),
+                    ~gh_models.WorkflowJob.ci_issues_gpt.any(),
                 ),
             )
-            .order_by(wjob.completed_at.asc())
-            .limit(LOG_EMBEDDER_JOBS_BATCH_SIZE)
         )
 
         jobs = (await session.scalars(stmt)).unique().all()
