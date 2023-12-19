@@ -755,7 +755,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         if additionnal_services and "log-embedder" in additionnal_services:
             pending_work = True
             while pending_work:
-                pending_work = await github_action.embed_logs(self.redis_links)
+                pending_work = await github_action.process_failed_jobs(self.redis_links)
 
     def get_gitter(
         self,

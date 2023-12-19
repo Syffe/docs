@@ -510,7 +510,7 @@ async def test_embed_logs_on_controlled_data(
 
     await db.commit()
 
-    pending_work = await github_action.embed_logs(redis_links)
+    pending_work = await github_action.process_failed_jobs(redis_links)
     assert not pending_work
     jobs = (await db.scalars(sqlalchemy.select(gh_models.WorkflowJob))).all()
     assert len(jobs) == 3
@@ -523,9 +523,9 @@ async def test_embed_logs_on_controlled_data(
         "LOG_EMBEDDER_ENABLED_ORGS",
         [owner.login],
     )
-    pending_work = await github_action.embed_logs(redis_links)
+    pending_work = await github_action.process_failed_jobs(redis_links)
     assert pending_work
-    pending_work = await github_action.embed_logs(redis_links)
+    pending_work = await github_action.process_failed_jobs(redis_links)
     assert not pending_work
 
     jobs = (await db.scalars(sqlalchemy.select(gh_models.WorkflowJob))).all()
@@ -547,7 +547,7 @@ async def test_embed_logs_on_controlled_data(
     jobs[0].log_embedding = embedding_control_value
     await db.commit()
 
-    pending_work = await github_action.embed_logs(redis_links)
+    pending_work = await github_action.process_failed_jobs(redis_links)
     assert not pending_work
 
     db.expunge_all()
@@ -750,7 +750,7 @@ async def test_embed_logs_on_various_data(
 
     pending_work = True
     while pending_work:
-        pending_work = await github_action.embed_logs(redis_links)
+        pending_work = await github_action.process_failed_jobs(redis_links)
 
     count = (
         await populated_db.execute(
@@ -1381,7 +1381,7 @@ async def test_workflow_job_from_real_life(
 
     db.expunge_all()
 
-    await github_action.embed_logs(redis_links)
+    await github_action.process_failed_jobs(redis_links)
 
     jobs = list((await db.scalars(sqlalchemy.select(gh_models.WorkflowJob))).all())
     assert len(jobs) == 1
@@ -1487,7 +1487,7 @@ async def test_log_exception_and_maybe_retry_on_database_error(
         extract_data_from_log=extract_data_from_log_raise_data_error_for_job_2,
         get_log=get_log_lines_raise_data_error_for_job_3,
     ):
-        await github_action.embed_logs(redis_links)
+        await github_action.process_failed_jobs(redis_links)
 
     job1 = await db.get_one(gh_models.WorkflowJob, 1)
     assert job1.log_status == gh_models.WorkflowJobLogStatus.DOWNLOADED

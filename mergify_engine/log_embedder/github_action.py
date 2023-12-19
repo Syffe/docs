@@ -605,8 +605,8 @@ async def embed_logs_with_extracted_metadata(
         return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
 
 
-@tracer.wrap("embed-logs")
-async def embed_logs(redis_links: redis_utils.RedisLinks) -> bool:
+@tracer.wrap("process-failed-jobs")
+async def process_failed_jobs(redis_links: redis_utils.RedisLinks) -> bool:
     if not settings.LOG_EMBEDDER_ENABLED_ORGS:
         return False
 
