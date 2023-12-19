@@ -53,6 +53,9 @@ async def store_redis_events_in_pg(redis_links: redis_utils.RedisLinks) -> None:
         async with database.create_session() as session:
             try:
                 await model.insert_or_update(session, typed_event_data)
+            except exceptions.MergifyNotInstalled:
+                # Just ignore event for uninstalled repository
+                pass
             except Exception as e:
                 if exceptions.need_retry_in(e):
                     # TODO(sileht): We should retry later, not on next iteration
