@@ -485,7 +485,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
 
 
 @pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
-async def test_api_ci_issue_put_ci_issue(
+async def test_api_ci_issue_patch_ci_issue(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
@@ -555,7 +555,7 @@ async def test_api_ci_issue_put_ci_issue(
 
 
 @pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
-async def test_api_ci_issue_put_ci_issues(
+async def test_api_ci_issue_patch_ci_issues(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
