@@ -153,7 +153,7 @@ class QueuePaused(MergeQueueReset):
     pause: pause.QueuePause
 
     def __str__(self) -> str:
-        return "the merge queue has been paused (reason: `{self.pause.reason}`)"
+        return f"the merge queue has been paused (reason: `{self.pause.reason}`)"
 
 
 @dataclasses.dataclass
