@@ -30,7 +30,7 @@ MERGIFY_OPENSOURCE_SPONSOR_DOC = (
     "<hr />\n"
     ":sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service "
     "for free to open source projects.\n\n"
-    ":rocket:&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n"
+    "🚀&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n"
 )
 
 MERGIFY_PULL_REQUEST_DOC = f"""

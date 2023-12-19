@@ -118,7 +118,7 @@ class UpdateAction(actions.Action):
         self,
         ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
-        description = ":pushpin: update requirement"
+        description = "📌 update requirement"
         return [
             conditions.RuleCondition.from_tree(
                 {"=": ("closed", False)},

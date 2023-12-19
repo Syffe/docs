@@ -301,10 +301,10 @@ def test_extract_command_state_with_old_payload_format() -> None:
   - [ ] `check-neutral=continuous-integration/fake-ci`
   - [ ] `check-skipped=continuous-integration/fake-ci`
   - [ ] `check-success=continuous-integration/fake-ci`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [X] all of [:pushpin: queue conditions of queue `default`]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
+- [X] any of: [🔀 queue conditions]
+  - [X] all of [📌 queue conditions of queue `default`]
 
 </details>
 

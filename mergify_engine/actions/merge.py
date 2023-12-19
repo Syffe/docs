@@ -166,7 +166,7 @@ class MergeAction(actions.Action):
             conditions_requirements.append(
                 conditions.RuleCondition.from_tree(
                     {"=": ("#commits-behind", 0)},
-                    description=":pushpin: fast-forward merge requirement",
+                    description="📌 fast-forward merge requirement",
                 ),
             )
 
@@ -178,11 +178,11 @@ class MergeAction(actions.Action):
                 ),
                 conditions.RuleCondition.from_tree(
                     {"=": ("draft", False)},
-                    description=":pushpin: merge requirement",
+                    description="📌 merge requirement",
                 ),
                 conditions.RuleCondition.from_tree(
                     {"=": ("conflict", False)},
-                    description=":pushpin: merge requirement",
+                    description="📌 merge requirement",
                 ),
             ]
             + await conditions.get_branch_protection_conditions(

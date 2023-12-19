@@ -34,7 +34,7 @@ NOT_APPLICABLE_TEMPLATE = """<details>
 </details>"""
 
 REQUIRE_BRANCH_PROTECTION_DEPRECATION_GHES = """
-:bangbang: **Action Required** :bangbang:
+‼️ **Action Required** ‼️
 > **The configuration uses the deprecated option `require_branch_protection` in the queue_rules.**
 > It must be replaced with the `queue_rules` option `branch_protection_injection_mode`.
 > The `require_branch_protection` option will be removed on a future version.
@@ -42,7 +42,7 @@ REQUIRE_BRANCH_PROTECTION_DEPRECATION_GHES = """
 """
 
 REQUIRE_BRANCH_PROTECTION_DEPRECATION_SAAS = """
-:bangbang: **Action Required** :bangbang:
+‼️ **Action Required** ‼️
 > **The configuration uses the deprecated option `require_branch_protection` in the queue_rules.**
 > It must be replaced with the `queue_rules` option `branch_protection_injection_mode`.
 > A brownout for `require_branch_protection` is planned on November 21st, 2023.

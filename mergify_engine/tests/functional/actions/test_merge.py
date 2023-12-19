@@ -506,7 +506,7 @@ superRP!"""
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary
         assert """
-:bangbang: **Action Required** :bangbang:
+‼️ **Action Required** ‼️
 
 > **The configuration uses the deprecated `commit_message` mode of the merge action.**
 > A brownout is planned for the whole March 21th, 2022 day.

@@ -363,9 +363,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
   - [ ] `check-skipped=skipped-ci`
   - [ ] `check-success=skipped-ci`
 - [X] `#changes-requested-reviews-by=0` [🛡 GitHub branch protection]
-- [X] `-conflict` [:pushpin: merge requirement]
-- [X] `-draft` [:pushpin: merge requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]
+- [X] `-conflict` [📌 merge requirement]
+- [X] `-draft` [📌 merge requirement]
+- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]
 - [X] `base={self.main_branch_name}`
 
 ### ✅ Rule: merge (comment)
@@ -976,7 +976,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         comment = await self.wait_for_issue_comment(str(pr2["number"]), "created")
         assert (
             comment["comment"]["body"]
-            == f":warning: The sha of the head commit of this PR conflicts with #{pr1['number']}. Mergify cannot evaluate rules on this PR. :warning:"
+            == f"⚠️ The sha of the head commit of this PR conflicts with #{pr1['number']}. Mergify cannot evaluate rules on this PR. ⚠️"
         )
 
         # Pr2 is not merged even if it fulfill the requirements

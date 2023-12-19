@@ -411,13 +411,13 @@ class TestDequeueCommand(base.FunctionalTestBase):
 
 <details>
 
-- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `label=default`
-  - [ ] all of: [:pushpin: queue conditions of queue `specialq`]
+  - [ ] all of: [📌 queue conditions of queue `specialq`]
     - [ ] `label=special`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 
 </details>""" in comment["comment"]["body"]
 
@@ -450,11 +450,11 @@ class TestDequeueCommand(base.FunctionalTestBase):
 
 <details>
 
-- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `label=default`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 
 </details>""" in comment["comment"]["body"]
 

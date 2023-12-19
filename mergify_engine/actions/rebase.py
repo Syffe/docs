@@ -140,7 +140,7 @@ class RebaseAction(actions.Action):
         self,
         ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
-        description = ":pushpin: rebase requirement"
+        description = "📌 rebase requirement"
         conds: list[conditions.RuleConditionNode] = [
             conditions.RuleCondition.from_tree(
                 {"=": ("closed", False)},

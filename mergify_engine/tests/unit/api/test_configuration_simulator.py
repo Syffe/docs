@@ -132,21 +132,21 @@ queue_rules:
         anys.AnyWithEntries(
             {
                 "label": "-conflict",
-                "description": ":pushpin: merge requirement",
+                "description": "📌 merge requirement",
                 "match": True,
             },
         ),
         anys.AnyWithEntries(
             {
                 "label": "-draft",
-                "description": ":pushpin: merge requirement",
+                "description": "📌 merge requirement",
                 "match": True,
             },
         ),
         anys.AnyWithEntries(
             {
                 "label": "-mergify-configuration-changed",
-                "description": ":pushpin: merge -> allow_merging_configuration_change setting requirement",
+                "description": "📌 merge -> allow_merging_configuration_change setting requirement",
                 "match": True,
             },
         ),

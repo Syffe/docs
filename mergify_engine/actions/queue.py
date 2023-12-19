@@ -1440,7 +1440,7 @@ class QueueAction(actions.Action):
         conditions_requirements.append(
             conditions.RuleCondition.from_tree(
                 {"=": ("draft", False)},
-                description=":pushpin: queue requirement",
+                description="📌 queue requirement",
             ),
         )
         return conditions_requirements

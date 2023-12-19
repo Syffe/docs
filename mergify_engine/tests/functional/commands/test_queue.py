@@ -289,14 +289,14 @@ class TestQueueCommand(base.FunctionalTestBase):
 
 <details>
 
-- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] any of: [🛡 GitHub branch protection]
       - [ ] `check-neutral=continuous-integration/fake-ci`
       - [ ] `check-skipped=continuous-integration/fake-ci`
       - [ ] `check-success=continuous-integration/fake-ci`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 
 </details>
 """ in comment_p1["comment"]["body"]
@@ -309,14 +309,14 @@ class TestQueueCommand(base.FunctionalTestBase):
 
 <details>
 
-- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] any of: [🛡 GitHub branch protection]
       - [ ] `check-neutral=continuous-integration/fake-ci`
       - [ ] `check-skipped=continuous-integration/fake-ci`
       - [ ] `check-success=continuous-integration/fake-ci`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 
 </details>
 """ in comment_p2["comment"]["body"]
@@ -454,17 +454,17 @@ class TestQueueCommand(base.FunctionalTestBase):
         assert "Waiting for conditions to match" in comment["comment"]["body"]
         assert """<details>
 
-- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]
     - [ ] `label=default`
     - [X] `#changes-requested-reviews-by=0` [🛡 GitHub branch protection]
-  - [ ] all of: [:pushpin: queue conditions of queue `quwu`]
+  - [ ] all of: [📌 queue conditions of queue `quwu`]
     - [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]
     - [X] `#changes-requested-reviews-by=0` [🛡 GitHub branch protection]
     - [X] `label=uwu`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 
 </details>
 """ in comment["comment"]["body"]
@@ -502,11 +502,11 @@ class TestQueueCommand(base.FunctionalTestBase):
 
 <details>
 
-- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `label=default`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 
 </details>""" in comment["comment"]["body"]
         train = await self.get_train()
@@ -679,14 +679,14 @@ class TestQueueCommand(base.FunctionalTestBase):
 
 <details>
 
-- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] any of: [🛡 GitHub branch protection]
       - [ ] `check-neutral=continuous-integration/fake-ci`
       - [ ] `check-skipped=continuous-integration/fake-ci`
       - [ ] `check-success=continuous-integration/fake-ci`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 
 </details>
 """ in comment_p1["comment"]["body"]
@@ -770,21 +770,21 @@ class TestQueueCommand(base.FunctionalTestBase):
         assert "Waiting for conditions to match" in comment["comment"]["body"]
         assert """<details>
 
-- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `label=default`
     - [ ] any of: [🛡 GitHub branch protection]
       - [ ] `check-neutral=continuous-integration/fake-ci`
       - [ ] `check-skipped=continuous-integration/fake-ci`
       - [ ] `check-success=continuous-integration/fake-ci`
-  - [ ] all of: [:pushpin: queue conditions of queue `specialq`]
+  - [ ] all of: [📌 queue conditions of queue `specialq`]
     - [ ] any of: [🛡 GitHub branch protection]
       - [ ] `check-neutral=continuous-integration/fake-ci`
       - [ ] `check-skipped=continuous-integration/fake-ci`
       - [ ] `check-success=continuous-integration/fake-ci`
     - [X] `label=specialq`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 
 </details>
 """ in comment["comment"]["body"]

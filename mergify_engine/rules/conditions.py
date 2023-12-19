@@ -470,7 +470,9 @@ def get_mergify_configuration_change_conditions(
     action_name: str,
     allow_merging_configuration_change: bool,
 ) -> RuleConditionNode:
-    description = f":pushpin: {action_name} -> allow_merging_configuration_change setting requirement"
+    description = (
+        f"📌 {action_name} -> allow_merging_configuration_change setting requirement"
+    )
     if allow_merging_configuration_change:
         return RuleConditionCombination(
             {
@@ -657,13 +659,13 @@ async def get_queue_conditions(
         else:
             conditions = rule.queue_conditions.condition.copy()
 
-        conditions.description = f":pushpin: queue conditions of queue `{rule.name}`"
+        conditions.description = f"📌 queue conditions of queue `{rule.name}`"
         queue_conditions[rule.name] = conditions
 
     if len(queue_conditions) >= 1:
         return RuleConditionCombination(
             {"or": list(queue_conditions.values())},
-            description=":twisted_rightwards_arrows: queue conditions",
+            description="🔀 queue conditions",
         )
 
     return None

@@ -282,7 +282,7 @@ mergeable_state: blocked
 > <hr />
 > :sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for free to open source projects.
 > 
-> :rocket:&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!
+> 🚀&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!
 > <hr />
 > 
 > <details>
@@ -321,7 +321,7 @@ mergeable_state: blocked
 > <hr />
 > :sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for free to open source projects.
 > 
-> :rocket:&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!
+> 🚀&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!
 > <hr />"""  # noqa: W291
         )
 
@@ -560,7 +560,7 @@ mergeable_state: blocked
 > <hr />
 > :sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for free to open source projects.
 > 
-> :rocket:&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!
+> 🚀&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!
 > <hr />
 > 
 > <details>
@@ -599,6 +599,6 @@ mergeable_state: blocked
 > <hr />
 > :sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for free to open source projects.
 > 
-> :rocket:&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!
+> 🚀&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!
 > <hr />"""  # noqa: W291
         )

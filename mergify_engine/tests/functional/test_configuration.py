@@ -400,7 +400,7 @@ did not find expected alphabetic or numeric character
         assert summary is not None
         assert summary["output"]["title"] == "1 potential rule"
         assert """### Rule: nothing (merge)
-- [ ] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]
+- [ ] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]
 """ in summary["output"]["summary"]
 
     async def test_allowed_change_mergify_yml(self) -> None:

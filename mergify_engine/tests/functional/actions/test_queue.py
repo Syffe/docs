@@ -651,14 +651,14 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = await self.wait_for_check_run(name="Summary", conclusion="success")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
-        assert """- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+        assert """- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `label=tata`
     - [ ] `label=toto`
-  - [ ] all of: [:pushpin: queue conditions of queue `hotfix`]
+  - [ ] all of: [📌 queue conditions of queue `hotfix`]
     - [ ] `label=hotfix`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 - [X] `label=queue`""" in check["check_run"]["output"]["summary"]
 
     async def test_queue_conditions_failure_with_pull_request_rules_and_fallback(
@@ -795,11 +795,11 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = await self.wait_for_check_run(name="Summary")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
-        expected_summary = f"""- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+        expected_summary = f"""- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `files~=^dummy/`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 - [X] `base={p1['base']['ref']}`
 - [X] `label=queue`"""
         assert expected_summary in check["check_run"]["output"]["summary"]
@@ -1139,13 +1139,13 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = await self.wait_for_check_run(name="Summary", conclusion="success")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
-        assert """- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+        assert """- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `label=will-not-be-set`
-  - [ ] all of: [:pushpin: queue conditions of queue `pending-check-success`]
+  - [ ] all of: [📌 queue conditions of queue `pending-check-success`]
     - [ ] `check-success=some-pending-check-in-ci`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `-draft` [📌 queue requirement]
+- [X] `-mergify-configuration-changed` [📌 queue -> allow_merging_configuration_change setting requirement]
 - [X] `label=queue`""" in check["check_run"]["output"]["summary"]
 
         # run engine with check in success -> pull request is queued
@@ -1514,8 +1514,8 @@ class TestQueueAction(base.FunctionalTestBase):
 
         summary = await self.wait_for_check_run(name="Summary")
         assert """Rule: Merge default (queue)
-- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+- [ ] any of: [🔀 queue conditions]
+  - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] any of: [🛡 GitHub branch protection]
       - [ ] `check-neutral=continuous-integration/fake-ci`
       - [ ] `check-skipped=continuous-integration/fake-ci`

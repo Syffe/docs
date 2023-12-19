@@ -1955,16 +1955,16 @@ async def test_get_pull_request_rules_evaluator(
     assert str(config_change) == "-mergify-configuration-changed"
     assert (
         config_change.description
-        == ":pushpin: merge -> allow_merging_configuration_change setting requirement"
+        == "📌 merge -> allow_merging_configuration_change setting requirement"
     )
     draft = match.matching_rules[0].conditions.condition.conditions[1]
     assert isinstance(draft, rules.conditions.RuleCondition)
     assert str(draft) == "-draft"
-    assert draft.description == ":pushpin: merge requirement"
+    assert draft.description == "📌 merge requirement"
     conflict = match.matching_rules[0].conditions.condition.conditions[2]
     assert isinstance(conflict, rules.conditions.RuleCondition)
     assert str(conflict) == "-conflict"
-    assert conflict.description == ":pushpin: merge requirement"
+    assert conflict.description == "📌 merge requirement"
     group = match.matching_rules[0].conditions.condition.conditions[3]
     assert isinstance(group, rules.conditions.RuleConditionCombination)
     assert group.operator == "or"

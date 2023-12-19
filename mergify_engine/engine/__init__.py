@@ -331,8 +331,8 @@ async def report_sha_collision(
         try:
             comment = await ctxt.post_comment(
                 (
-                    ":warning: The sha of the head commit of this PR conflicts with "
-                    f"#{conflicting_ctxt.pull['number']}. Mergify cannot evaluate rules on this PR. :warning:"
+                    "⚠️ The sha of the head commit of this PR conflicts with "
+                    f"#{conflicting_ctxt.pull['number']}. Mergify cannot evaluate rules on this PR. ⚠️"
                 ),
             )
         except http.HTTPClientSideError as e:
