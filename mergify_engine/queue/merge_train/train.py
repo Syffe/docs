@@ -747,8 +747,8 @@ class Train:
 
     async def remove_failed_car(self, car: train_car.TrainCar) -> None:
         dequeue_reasons = {
-            ep.user_pull_request_number: tcs_import.dequeue_reason_from_train_car_state(
-                car.train_car_state,
+            ep.user_pull_request_number: tcs_import.dequeue_reason_from_outcome(
+                car.train_car_state.outcome,
                 ep.user_pull_request_number,
             )
             for ep in car.still_queued_embarked_pulls

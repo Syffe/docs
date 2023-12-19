@@ -483,49 +483,64 @@ def extract_encoded_train_car_state_data_from_summary(
     return None
 
 
+# FIXME(sileht): We should use one method or the other, not this method that guess if train car state
+# is deleted or not
 def dequeue_reason_from_train_car_state(
     train_car_state: TrainCarState | TrainCarStateForSummary,
     pull_request: github_types.GitHubPullRequestNumber,
 ) -> queue_utils.BaseDequeueReason:
     if train_car_state.delete_reasons:
-        if pull_request not in train_car_state.delete_reasons:
-            raise UnexpectedReason(
-                f"Pull request missing from TrainCarState.delete_reasons: `{train_car_state.delete_reasons} {type(train_car_state)}`",
-            )
-        reason = train_car_state.delete_reasons[pull_request]
-        if isinstance(reason, queue_utils.BaseDequeueReason):
-            return reason
-        raise UnexpectedReason(
-            f"TrainCarState.delete_reasons[pull_request] is a cancel reason: `{train_car_state.delete_reasons}`, outcome is `{train_car_state.outcome}`",
+        return dequeue_reason_from_train_car_state_delete_reasons(
+            train_car_state,
+            pull_request,
         )
+    return dequeue_reason_from_outcome(train_car_state.outcome, pull_request)
 
-    if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
+
+def dequeue_reason_from_train_car_state_delete_reasons(
+    train_car_state: TrainCarState | TrainCarStateForSummary,
+    pull_request: github_types.GitHubPullRequestNumber,
+) -> queue_utils.BaseDequeueReason:
+    if pull_request not in train_car_state.delete_reasons:
+        raise UnexpectedReason(
+            f"Pull request missing from TrainCarState.delete_reasons: `{train_car_state.delete_reasons} {type(train_car_state)}`",
+        )
+    reason = train_car_state.delete_reasons[pull_request]
+    if isinstance(reason, queue_utils.BaseDequeueReason):
+        return reason
+    raise UnexpectedReason(
+        f"TrainCarState.delete_reasons[pull_request] is a cancel reason: `{train_car_state.delete_reasons}`, outcome is `{train_car_state.outcome}`",
+    )
+
+
+def dequeue_reason_from_outcome(
+    outcome: train_car.TrainCarOutcome,
+    pull_request: github_types.GitHubPullRequestNumber,
+) -> queue_utils.BaseDequeueReason:
+    if outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
         return queue_utils.ChecksFailed()
 
-    if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_TIMEOUT:
+    if outcome == merge_train.TrainCarOutcome.CHECKS_TIMEOUT:
         return queue_utils.ChecksTimeout()
 
-    if (
-        train_car_state.outcome
-        == merge_train.TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
-    ):
+    if outcome == merge_train.TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS:
         return queue_utils.MaximumBatchFailureResolutionAttemptsReached()
 
-    if train_car_state.outcome == merge_train.TrainCarOutcome.CONFLICT_WITH_BASE_BRANCH:
+    if outcome == merge_train.TrainCarOutcome.CONFLICT_WITH_BASE_BRANCH:
         return queue_utils.ConflictWithBaseBranch()
 
-    if train_car_state.outcome == merge_train.TrainCarOutcome.CONFLICT_WITH_PULL_AHEAD:
+    if outcome == merge_train.TrainCarOutcome.CONFLICT_WITH_PULL_AHEAD:
         return queue_utils.ConflictWithPullAhead()
 
-    if train_car_state.outcome == merge_train.TrainCarOutcome.BRANCH_UPDATE_FAILED:
+    if outcome == merge_train.TrainCarOutcome.BRANCH_UPDATE_FAILED:
         return queue_utils.BranchUpdateFailed()
 
-    if train_car_state.outcome == merge_train.TrainCarOutcome.DRAFT_PR_CHANGE:
+    if outcome == merge_train.TrainCarOutcome.DRAFT_PR_CHANGE:
         return queue_utils.DraftPullRequestChanged()
 
-    if train_car_state.outcome == merge_train.TrainCarOutcome.UPDATED_PR_CHANGE:
+    if outcome == merge_train.TrainCarOutcome.UPDATED_PR_CHANGE:
         return queue_utils.PullRequestUpdated(pull_request)
 
     raise UnexpectedReason(
-        f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason",
+        f"TrainCarState.outcome `{outcome.value}` can't be mapped to an AbortReason",
     )
