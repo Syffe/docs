@@ -8,8 +8,6 @@ from sqlalchemy import func
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import database
-from mergify_engine import github_events
-from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.ci import event_processing
 from mergify_engine.models import github as gh_models
@@ -18,19 +16,6 @@ from mergify_engine.tests.tardis import time_travel
 
 MAIN_TIMESTAMP = "2023-05-11T12:40:28Z"
 LATER_TIMESTAMP = "2024-08-22T12:00:00+00:00"
-
-
-@pytest.fixture()
-def sample_ci_events_to_process(
-    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
-) -> dict[str, github_events.CIEventToProcess]:
-    ci_events = {}
-
-    for filename, (event_type, event) in sample_events.items():
-        if event_type in ("workflow_run", "workflow_job"):
-            ci_events[filename] = github_events.CIEventToProcess(event_type, "", event)
-
-    return ci_events
 
 
 @pytest.mark.parametrize(
@@ -44,13 +29,13 @@ def sample_ci_events_to_process(
 async def test_process_event_stream_workflow_run(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
-    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
+    sample_ci_events_to_process: dict[str, typing.Any],
     event_filename: str,
 ) -> None:
     # Create the event twice, as we should handle duplicates
     stream_event = {
         "event_type": "workflow_run",
-        "data": msgpack.packb(sample_ci_events_to_process[event_filename].slim_event),
+        "data": msgpack.packb(sample_ci_events_to_process[event_filename]),
     }
     await redis_links.stream.xadd(
         "gha_workflow_run",
@@ -107,7 +92,7 @@ async def test_process_event_stream_workflow_run(
 async def test_process_event_stream_workflow_job(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
-    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
+    sample_ci_events_to_process: dict[str, typing.Any],
     event_file_name: str,
     conclusion: gh_models.WorkflowJobConclusion,
     failed_step_number: int,
@@ -117,7 +102,7 @@ async def test_process_event_stream_workflow_job(
     # Create the event twice, as we should handle duplicates
     stream_event = {
         "event_type": "workflow_job",
-        "data": msgpack.packb(sample_ci_events_to_process[event_file_name].slim_event),
+        "data": msgpack.packb(sample_ci_events_to_process[event_file_name]),
     }
     await redis_links.stream.xadd(
         "gha_workflow_job",
@@ -153,13 +138,13 @@ async def test_process_event_stream_workflow_job(
 async def test_process_event_stream_broken_workflow_job(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
-    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
+    sample_ci_events_to_process: dict[str, typing.Any],
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     stream_event = {
         "event_type": "workflow_job",
         "data": msgpack.packb(
-            sample_ci_events_to_process["workflow_job.broken_job.json"].slim_event,
+            sample_ci_events_to_process["workflow_job.broken_job.json"],
         ),
     }
     await redis_links.stream.xadd(
@@ -189,7 +174,7 @@ async def test_delete_workflow_job(
     monkeypatch: pytest.MonkeyPatch,
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
-    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
+    sample_ci_events_to_process: dict[str, typing.Any],
 ) -> None:
     monkeypatch.setattr(
         database,
@@ -199,7 +184,7 @@ async def test_delete_workflow_job(
 
     outdated_job_slim_event = sample_ci_events_to_process[
         "workflow_job.completed_failure.json"
-    ].slim_event
+    ]
     outdated_job_slim_event["workflow_job"]["completed_at"] = MAIN_TIMESTAMP
 
     outdated_job_stream_event = {

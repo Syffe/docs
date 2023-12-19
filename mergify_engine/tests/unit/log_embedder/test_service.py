@@ -16,7 +16,6 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine import date
 from mergify_engine import exceptions
-from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
@@ -397,7 +396,7 @@ def mock_extracting_metadata_error(
 async def test_embed_logs_on_controlled_data(
     respx_mock: respx.MockRouter,
     db: sqlalchemy.ext.asyncio.AsyncSession,
-    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
+    sample_ci_events_to_process: dict[str, typing.Any],
     monkeypatch: pytest.MonkeyPatch,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
@@ -420,9 +419,9 @@ async def test_embed_logs_on_controlled_data(
                 "target_type": "Organization",
                 "suspended_at": None,
                 "permissions": {},
-                "account": sample_ci_events_to_process[
-                    "workflow_job.completed.json"
-                ].slim_event["repository"]["owner"],
+                "account": sample_ci_events_to_process["workflow_job.completed.json"][
+                    "repository"
+                ]["owner"],
             },
         ),
     )
@@ -595,7 +594,7 @@ async def test_embed_logs_on_controlled_data(
 async def test_embed_logs_on_various_data(
     respx_mock: respx.MockRouter,
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
-    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
+    sample_ci_events_to_process: dict[str, typing.Any],
     monkeypatch: pytest.MonkeyPatch,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
@@ -609,9 +608,9 @@ async def test_embed_logs_on_various_data(
                 "target_type": "Organization",
                 "suspended_at": None,
                 "permissions": {},
-                "account": sample_ci_events_to_process[
-                    "workflow_job.completed.json"
-                ].slim_event["repository"]["owner"],
+                "account": sample_ci_events_to_process["workflow_job.completed.json"][
+                    "repository"
+                ]["owner"],
             },
         ),
     )

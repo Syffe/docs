@@ -1,6 +1,7 @@
 # FIXME(sileht): https://github.com/Mergifyio/engine/pull/4644
 # mypy: disable-error-code=unreachable
 import dataclasses
+import enum
 import typing
 
 import daiquiri
@@ -70,29 +71,27 @@ async def meter_event(
 
 @dataclasses.dataclass
 class IgnoredEvent(Exception):
-    """Raised when an event is ignored."""
-
-    event_type: str
-    event_id: str
     reason: str
 
 
+class EventRoute(enum.Flag):
+    STREAM = enum.auto()
+    CI_MONITORING = enum.auto()
+    GITHUB_IN_POSTGRES = enum.auto()
+
+
 @dataclasses.dataclass
-class EventBase:
+class EventToRoute:
+    routes: EventRoute
     event_type: str
     event_id: str
-    event: github_types.GitHubEventWithRepository | github_types.GitHubEvent
+    event: github_types.GitHubEventWithRepository
+    pull_request_number: github_types.GitHubPullRequestNumber | None = None
+    priority: worker_pusher.Priority | None = None
 
     @property
     def slim_event(self) -> typing.Any:
         return filtered_github_types.extract(self.event_type, self.event_id, self.event)
-
-
-@dataclasses.dataclass
-class EventToProcess(EventBase):
-    event: github_types.GitHubEventWithRepository
-    pull_request_number: github_types.GitHubPullRequestNumber | None
-    priority: worker_pusher.Priority | None = None
 
     def set_sentry_info(self) -> None:
         sentry_sdk.set_user({"username": self.event["repository"]["owner"]["login"]})
@@ -102,6 +101,7 @@ class EventToProcess(EventBase):
     def emit_log(self) -> None:
         LOG.info(
             "GitHubApp event pushed",
+            routes=self.routes.name,
             event_type=self.event_type,
             event_id=self.event_id,
             sender=self.event["sender"]["login"],
@@ -110,62 +110,6 @@ class EventToProcess(EventBase):
             slim_event=self.slim_event,
             priority=self.priority,
             gh_pull=self.pull_request_number,
-        )
-
-
-@dataclasses.dataclass
-class SendEventDataInPg(EventToProcess):
-    pass
-
-
-@dataclasses.dataclass
-class CIEventToProcess(EventBase):
-    event: github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob
-
-    def set_sentry_info(self) -> None:
-        sentry_sdk.set_user({"username": self.event["repository"]["owner"]["login"]})
-        sentry_sdk.set_tag("gh_owner", self.event["repository"]["owner"]["login"])
-        sentry_sdk.set_tag("gh_repo", self.event["repository"]["name"])
-
-    def emit_log(self) -> None:
-        LOG.info(
-            "GitHubApp CI event pushed",
-            event_type=self.event_type,
-            event_id=self.event_id,
-            sender=self.event["sender"]["login"],
-            gh_owner=self.event["repository"]["owner"]["login"],
-            gh_repo=self.event["repository"]["name"],
-            slim_event=self.slim_event,
-        )
-
-
-@dataclasses.dataclass
-class EventToIgnore(EventBase):
-    reason: str
-
-    def emit_log(self) -> None:
-        if "repository" in self.event:
-            event = typing.cast(github_types.GitHubEventWithRepository, self.event)
-            gh_owner = event["repository"]["owner"]["login"]
-            gh_repo = event["repository"]["name"]
-        elif "organization" in self.event:
-            gh_owner = self.event["organization"]["login"]
-            gh_repo = None
-        elif "installation" in self.event and "account" in self.event["installation"]:
-            gh_owner = self.event["installation"]["account"]["login"]
-            gh_repo = None
-        else:
-            gh_owner = None
-            gh_repo = None
-
-        LOG.info(
-            "GitHubApp event ignored",
-            reason=self.reason,
-            event_type=self.event_type,
-            event_id=self.event_id,
-            sender=self.event["sender"]["login"],
-            gh_owner=gh_owner,
-            gh_repo=gh_repo,
         )
 
 
@@ -428,7 +372,7 @@ async def event_classifier(
     event_id: str,
     event: github_types.GitHubEvent,
     mergify_bot: github_types.GitHubAccount,
-) -> EventToIgnore | EventToProcess | CIEventToProcess | SendEventDataInPg:
+) -> EventToRoute:
     # NOTE(sileht): those events are only used by synack or cache cleanup/feed
     if event_type in (
         "installation",
@@ -441,12 +385,12 @@ async def event_classifier(
         "team_add",
         "workflow_run",
     ):
-        return EventToIgnore(event_type, event_id, event, f"{event_type} event")
+        raise IgnoredEvent(f"{event_type} event")
 
     if "repository" in event:
         event = typing.cast(github_types.GitHubEventWithRepository, event)
         if event["repository"]["archived"]:
-            return EventToIgnore(event_type, event_id, event, "repository archived")
+            raise IgnoredEvent("repository archived")
 
     if event_type == "pull_request":
         event = typing.cast(github_types.GitHubEventPullRequest, event)
@@ -466,14 +410,10 @@ async def event_classifier(
                 )
             )
         ):
-            return EventToIgnore(
-                event_type,
-                event_id,
-                event,
-                "mergify merge queue description update",
-            )
+            raise IgnoredEvent("mergify merge queue description update")
 
-        return SendEventDataInPg(
+        return EventToRoute(
+            EventRoute.STREAM | EventRoute.GITHUB_IN_POSTGRES,
             event_type,
             event_id,
             event,
@@ -482,11 +422,18 @@ async def event_classifier(
 
     if event_type == "refresh":
         event = typing.cast(github_types.GitHubEventRefresh, event)
-        return EventToProcess(event_type, event_id, event, event["pull_request_number"])
+        return EventToRoute(
+            EventRoute.STREAM,
+            event_type,
+            event_id,
+            event,
+            event["pull_request_number"],
+        )
 
     if event_type == "pull_request_review_comment":
         event = typing.cast(github_types.GitHubEventPullRequestReviewComment, event)
-        return EventToProcess(
+        return EventToRoute(
+            EventRoute.STREAM,
             event_type,
             event_id,
             event,
@@ -497,7 +444,8 @@ async def event_classifier(
 
     if event_type == "pull_request_review":
         event = typing.cast(github_types.GitHubEventPullRequestReview, event)
-        return EventToProcess(
+        return EventToRoute(
+            EventRoute.STREAM,
             event_type,
             event_id,
             event,
@@ -506,7 +454,8 @@ async def event_classifier(
 
     if event_type == "pull_request_review_thread":
         event = typing.cast(github_types.GitHubEventPullRequestReviewThread, event)
-        return EventToProcess(
+        return EventToRoute(
+            EventRoute.STREAM,
             event_type,
             event_id,
             event,
@@ -516,20 +465,10 @@ async def event_classifier(
     if event_type == "issue_comment":
         event = typing.cast(github_types.GitHubEventIssueComment, event)
         if "pull_request" not in event["issue"]:
-            return EventToIgnore(
-                event_type,
-                event_id,
-                event,
-                "comment is not on a pull request",
-            )
+            raise IgnoredEvent("comment is not on a pull request")
 
         if event["action"] not in ("created", "edited"):
-            return EventToIgnore(
-                event_type,
-                event_id,
-                event,
-                f"comment action is '{event['action']}'",
-            )
+            raise IgnoredEvent(f"comment action is '{event['action']}'")
 
         if (
             # When someone else edit our comment the user id is still us
@@ -537,7 +476,7 @@ async def event_classifier(
             event["comment"]["user"]["id"] == mergify_bot["id"]
             and event["sender"]["id"] == mergify_bot["id"]
         ):
-            return EventToIgnore(event_type, event_id, event, "comment by Mergify[bot]")
+            raise IgnoredEvent("comment by Mergify[bot]")
 
         if (
             # At the moment there is no specific "action" key or event
@@ -548,17 +487,13 @@ async def event_classifier(
             and event["action"] == "edited"
             and event["changes"]["body"]["from"] == event["comment"]["body"]
         ):
-            return EventToIgnore(event_type, event_id, event, "comment has been hidden")
+            raise IgnoredEvent("comment has been hidden")
 
         if not commands_runner.COMMAND_MATCHER.search(event["comment"]["body"]):
-            return EventToIgnore(
-                event_type,
-                event_id,
-                event,
-                "comment is not a command",
-            )
+            raise IgnoredEvent("comment is not a command")
 
-        return EventToProcess(
+        return EventToRoute(
+            EventRoute.STREAM,
             event_type,
             event_id,
             event,
@@ -568,7 +503,8 @@ async def event_classifier(
 
     if event_type == "status":
         event = typing.cast(github_types.GitHubEventStatus, event)
-        return EventToProcess(
+        return EventToRoute(
+            EventRoute.STREAM,
             event_type,
             event_id,
             event,
@@ -583,8 +519,10 @@ async def event_classifier(
     if event_type == "push":
         event = typing.cast(github_types.GitHubEventPush, event)
         if not event["ref"].startswith("refs/heads/"):
-            return EventToIgnore(event_type, event_id, event, f"push on {event['ref']}")
-        return EventToProcess(
+            raise IgnoredEvent(f"push on {event['ref']}")
+
+        return EventToRoute(
+            EventRoute.STREAM,
             event_type,
             event_id,
             event,
@@ -594,21 +532,17 @@ async def event_classifier(
     if event_type == "check_suite":
         event = typing.cast(github_types.GitHubEventCheckSuite, event)
         if event["action"] != "rerequested":
-            return EventToIgnore(
-                event_type,
-                event_id,
-                event,
-                f"check_suite/{event['action']}",
-            )
+            raise IgnoredEvent(f"check_suite/{event['action']}")
 
         if (
             event["check_suite"]["app"]["id"] == settings.GITHUB_APP_ID
             and event["action"] != "rerequested"
             and event["check_suite"].get("external_id") != check_api.USER_CREATED_CHECKS
         ):
-            return EventToIgnore(event_type, event_id, event, "mergify check_suite")
+            raise IgnoredEvent("mergify check_suite")
 
-        return EventToProcess(
+        return EventToRoute(
+            EventRoute.STREAM,
             event_type,
             event_id,
             event,
@@ -627,9 +561,10 @@ async def event_classifier(
             and event["action"] != "rerequested"
             and event[event_type].get("external_id") != check_api.USER_CREATED_CHECKS
         ):
-            return EventToIgnore(event_type, event_id, event, "mergify check_run")
+            raise IgnoredEvent("mergify check_run")
 
-        return EventToProcess(
+        return EventToRoute(
+            EventRoute.STREAM,
             event_type,
             event_id,
             event,
@@ -646,13 +581,9 @@ async def event_classifier(
         if job_registries.HTTPJobRegistry.is_workflow_run_ignored(
             event["workflow_run"],
         ):
-            return EventToIgnore(
-                event_type,
-                event_id,
-                event,
-                reason="workflow_run ignored",
-            )
-        return CIEventToProcess(event_type, event_id, event)
+            raise IgnoredEvent(reason="workflow_run ignored")
+
+        return EventToRoute(EventRoute.CI_MONITORING, event_type, event_id, event)
 
     if event_type == "workflow_job":
         event = typing.cast(github_types.GitHubEventWorkflowJob, event)
@@ -660,15 +591,11 @@ async def event_classifier(
         if event_data is None or job_registries.HTTPJobRegistry.is_workflow_job_ignored(
             event_data,
         ):
-            return EventToIgnore(
-                event_type,
-                event_id,
-                event,
-                reason="workflow_job ignored",
-            )
-        return CIEventToProcess(event_type, event_id, event)
+            raise IgnoredEvent("workflow_job ignored")
 
-    return EventToIgnore(event_type, event_id, event, "unexpected event_type")
+        return EventToRoute(EventRoute.CI_MONITORING, event_type, event_id, event)
+
+    raise IgnoredEvent("unexpected event_type")
 
 
 async def filter_and_dispatch(
@@ -687,20 +614,45 @@ async def filter_and_dispatch(
         event,
     )
 
-    classified_event = await event_classifier(
-        redis_links,
-        event_type,
-        event_id,
-        event,
-        mergify_bot,
-    )
+    try:
+        classified_event = await event_classifier(
+            redis_links,
+            event_type,
+            event_id,
+            event,
+            mergify_bot,
+        )
+    except IgnoredEvent as exc:
+        if "repository" in event:
+            event = typing.cast(github_types.GitHubEventWithRepository, event)
+            gh_owner = event["repository"]["owner"]["login"]
+            gh_repo = event["repository"]["name"]
+        elif "organization" in event:
+            gh_owner = event["organization"]["login"]
+            gh_repo = None
+        elif "installation" in event and "account" in event["installation"]:
+            gh_owner = event["installation"]["account"]["login"]
+            gh_repo = None
+        else:
+            gh_owner = None
+            gh_repo = None
+
+        LOG.info(
+            "GitHubApp event ignored",
+            reason=exc.reason,
+            event_type=event_type,
+            event_id=event_id,
+            sender=event["sender"]["login"],
+            gh_owner=gh_owner,
+            gh_repo=gh_repo,
+        )
+        raise
 
     await clean_and_fill_caches(redis_links, event_type, event_id, event)
 
-    if not isinstance(classified_event, EventToIgnore):
-        classified_event.set_sentry_info()
+    classified_event.set_sentry_info()
 
-    if isinstance(classified_event, EventToProcess):
+    if EventRoute.STREAM in classified_event.routes:
         await event_preprocessing(
             background_tasks,
             redis_links,
@@ -721,7 +673,10 @@ async def filter_and_dispatch(
             classified_event.priority,
         )
 
-    if settings.CI_EVENT_INGESTION and isinstance(classified_event, CIEventToProcess):
+    if (
+        settings.CI_EVENT_INGESTION
+        and EventRoute.CI_MONITORING in classified_event.routes
+    ):
         await worker_pusher.push_ci_event(
             redis_links.stream,
             event_type,
@@ -729,9 +684,9 @@ async def filter_and_dispatch(
             classified_event.slim_event,
         )
 
-    if settings.GITHUB_IN_POSTGRES_EVENTS_INGESTION and isinstance(
-        classified_event,
-        SendEventDataInPg,
+    if (
+        settings.GITHUB_IN_POSTGRES_EVENTS_INGESTION
+        and EventRoute.GITHUB_IN_POSTGRES in classified_event.routes
     ):
         await worker_pusher.push_github_in_pg_event(
             redis_links.stream,
@@ -744,6 +699,3 @@ async def filter_and_dispatch(
         )
 
     classified_event.emit_log()
-
-    if isinstance(classified_event, EventToIgnore):
-        raise IgnoredEvent(event_type, event_id, classified_event.reason)

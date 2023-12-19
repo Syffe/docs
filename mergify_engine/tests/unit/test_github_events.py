@@ -40,8 +40,6 @@ async def test_filter_and_dispatch(
     except github_events.IgnoredEvent as e:
         # Not all events are supposed to raise an error, so the
         # PT017 is useless here.
-        assert e.event_type == event_type  # noqa: PT017
-        assert e.event_id == event_id  # noqa: PT017
         assert isinstance(e.reason, str)  # noqa: PT017
 
 
@@ -52,22 +50,28 @@ async def test_event_classifier(
     mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache)
 
     expected_event_classes = {
-        "workflow_run.completed.json": github_events.EventToIgnore,
-        "workflow_job.completed.json": github_events.CIEventToProcess,
-        "workflow_run.in_progress.json": github_events.EventToIgnore,
-        "workflow_job.in_progress.json": github_events.EventToIgnore,
+        "workflow_run.completed.json": None,
+        "workflow_job.completed.json": github_events.EventRoute.CI_MONITORING,
+        "workflow_run.in_progress.json": None,
+        "workflow_job.in_progress.json": None,
     }
 
-    for filename, expected_event_class in expected_event_classes.items():
+    for filename, expected_event_routes in expected_event_classes.items():
         event_type, event = sample_events[filename]
-        classified_event = await github_events.event_classifier(
-            redis_links,
-            event_type,
-            "whatever",
-            event,
-            mergify_bot,
-        )
-        assert isinstance(classified_event, expected_event_class)
+        try:
+            classified_event = await github_events.event_classifier(
+                redis_links,
+                event_type,
+                "whatever",
+                event,
+                mergify_bot,
+            )
+        except github_events.IgnoredEvent:
+            if expected_event_routes is not None:
+                raise
+
+        if expected_event_routes is not None:
+            assert classified_event.routes == expected_event_routes
 
 
 async def test_push_ci_event_workflow_run(

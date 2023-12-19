@@ -13,7 +13,7 @@ import respx
 
 from mergify_engine import condition_value_querier
 from mergify_engine import context
-from mergify_engine import github_events
+from mergify_engine import filtered_github_types
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import redis_utils
@@ -372,12 +372,16 @@ def sample_events() -> dict[str, tuple[github_types.GitHubEventType, typing.Any]
 @pytest.fixture()
 def sample_ci_events_to_process(
     sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
-) -> dict[str, github_events.CIEventToProcess]:
+) -> dict[str, typing.Any]:
     ci_events = {}
 
     for filename, (event_type, event) in sample_events.items():
         if event_type in ("workflow_run", "workflow_job"):
-            ci_events[filename] = github_events.CIEventToProcess(event_type, "", event)
+            ci_events[filename] = filtered_github_types.extract(
+                event_type,
+                "",
+                event,
+            )
 
     return ci_events
 
