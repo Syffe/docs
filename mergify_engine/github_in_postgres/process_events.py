@@ -57,19 +57,30 @@ async def store_redis_events_in_pg(redis_links: redis_utils.RedisLinks) -> None:
                 # Just ignore event for uninstalled repository
                 pass
             except Exception as e:
-                if exceptions.need_retry_in(e):
+                if exceptions.should_be_ignored(e):
+                    pass
+                elif exceptions.need_retry_in(e):
                     # TODO(sileht): We should retry later, not on next iteration
                     LOG.warning(
-                        "Event %s/id=%s need to be retried",
-                        event_type,
-                        event_id,
+                        "Event need to be retried",
+                        event_type=event_type,
+                        event_id=event_id,
                         raw_event=event,
                         event_data=event_data,
                         exc_info=True,
                     )
                     continue
-                if not exceptions.should_be_ignored(e):
-                    raise
+                else:
+                    # TODO(sileht): We should have a better retry mechanism
+                    LOG.error(
+                        "Event can't be processed",
+                        event_type=event_type,
+                        event_id=event_id,
+                        raw_event=event,
+                        event_data=event_data,
+                        exc_info=True,
+                    )
+                    continue
             else:
                 await session.commit()
 

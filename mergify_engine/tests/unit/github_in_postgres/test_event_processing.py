@@ -1,5 +1,6 @@
 import typing
 
+import pytest
 import respx
 import sqlalchemy
 import sqlalchemy.ext.asyncio
@@ -195,3 +196,34 @@ async def test_pull_request_event_commits_endpoint_return_404(
         await db.scalars(sqlalchemy.select(gh_models.PullRequestCommit)),
     )
     assert len(pull_request_commits) == 0
+
+
+@pytest.mark.ignored_logging_errors("Event can't be processed")
+async def test_unexpected_exception(
+    redis_links: redis_utils.RedisLinks,
+    respx_mock: respx.MockRouter,
+    a_pull_request: github_types.GitHubPullRequest,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+) -> None:
+    user = gh_models.GitHubUser(
+        id=github_types.GitHubAccountIdType(0),
+        login=github_types.GitHubLogin("user"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
+    )
+    db.add(user)
+    await db.commit()
+
+    respx_mock.get(
+        "https://api.github.com/users/user/installation",
+    ).side_effect = Exception("Unexpected exception")
+
+    await worker_pusher.push_github_in_pg_event(
+        redis_links.stream,
+        "pull_request",
+        "12345",
+        a_pull_request,
+    )
+    await process_events.store_redis_events_in_pg(redis_links)
+
+    # Ensure event has not been consumed
+    assert await redis_links.stream.xlen("github_in_postgres") == 1
