@@ -503,7 +503,7 @@ class Train:
             config["name"]
         ]
         best_position = -1
-        need_to_be_readded = False
+        is_already_queued = False
         frozen_queues = await self.convoy.get_frozen_queue_names()
 
         for position, (embarked_pull, car) in enumerate(self._iter_embarked_pulls()):
@@ -544,7 +544,9 @@ class Train:
                         config=config,
                         **self.log_queue_extras,
                     )
-                    need_to_be_readded = True
+                    is_already_queued = True
+                    best_position = position
+                    embarked_pull.config = config
                     break
 
                 # already in queue at right place, we are good
@@ -564,25 +566,15 @@ class Train:
                 # We found a car with lower priority
                 best_position = position
 
-        if need_to_be_readded:
-            # FIXME(sileht): this can be optimised by not dropping spec checks,
-            # if the position in the queue does not change
-            await self.remove_pull(
+        if not is_already_queued:
+            new_embarked_pull = ep_import.EmbarkedPull(
+                self,
                 ctxt.pull["number"],
-                signal_trigger,
-                queue_utils.PrWithHigherPriorityQueued(ctxt.pull["number"]),
+                config,
+                date.utcnow(),
+                None,
             )
-            await self.add_pull(ctxt, config, signal_trigger)
-            return
-
-        new_embarked_pull = ep_import.EmbarkedPull(
-            self,
-            ctxt.pull["number"],
-            config,
-            date.utcnow(),
-            None,
-        )
-        self._waiting_pulls.append(new_embarked_pull)
+            self._waiting_pulls.append(new_embarked_pull)
 
         if best_position != -1:
             await self._slice_cars(
@@ -600,29 +592,30 @@ class Train:
                 "Could not find the pull request we just added in the queue",
             )
 
-        ctxt.log.info(
-            "pull request added to train",
-            gh_pull=ctxt.pull["number"],
-            position=final_position,
-            queue_name=config["name"],
-            **self.log_queue_extras,
-        )
-        await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
-            ctxt.pull["base"]["ref"],
-            "action.queue.enter",
-            signals.EventQueueEnterMetadata(
-                {
-                    "branch": self.convoy.ref,
-                    "partition_name": self.partition_name,
-                    "position": final_position,
-                    "queue_name": new_embarked_pull.config["name"],
-                    "queued_at": new_embarked_pull.queued_at,
-                },
-            ),
-            signal_trigger,
-        )
+        if not is_already_queued:
+            ctxt.log.info(
+                "pull request added to train",
+                gh_pull=ctxt.pull["number"],
+                position=final_position,
+                queue_name=config["name"],
+                **self.log_queue_extras,
+            )
+            await signals.send(
+                ctxt.repository,
+                ctxt.pull["number"],
+                ctxt.pull["base"]["ref"],
+                "action.queue.enter",
+                signals.EventQueueEnterMetadata(
+                    {
+                        "branch": self.convoy.ref,
+                        "partition_name": self.partition_name,
+                        "position": final_position,
+                        "queue_name": new_embarked_pull.config["name"],
+                        "queued_at": new_embarked_pull.queued_at,
+                    },
+                ),
+                signal_trigger,
+            )
         # Refresh summary of all pull requests
         await self.refresh_pulls(
             source=f"pull {ctxt.pull['number']} added to queue",
@@ -632,8 +625,7 @@ class Train:
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        # FIXME(jd): This should accept only BaseDequeueReason
-        dequeue_reason: queue_utils.BaseQueueCancelReason,
+        dequeue_reason: queue_utils.BaseDequeueReason,
     ) -> None:
         if not self.is_queued(pull_number):
             self.log.info(
@@ -723,8 +715,7 @@ class Train:
         self,
         pr_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        # FIXME(jd): This should accept only BaseDequeueReason
-        dequeue_reason: queue_utils.BaseQueueCancelReason,
+        dequeue_reason: queue_utils.BaseDequeueReason,
     ) -> None:
         position, embarked_pull_with_car = self.find_embarked_pull(pr_number)
         if position is None or embarked_pull_with_car is None:

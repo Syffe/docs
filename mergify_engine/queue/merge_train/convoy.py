@@ -171,7 +171,7 @@ class Convoy:
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        queue_cancel_reason: queue_utils.BaseQueueCancelReason,
+        queue_cancel_reason: queue_utils.BaseDequeueReason,
     ) -> None:
         await self.force_remove_pull(
             self.repository,
@@ -189,8 +189,7 @@ class Convoy:
         repository: context.Repository,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        # FIXME(jd): This should accept only BaseDequeueReason
-        dequeue_reason: queue_utils.BaseQueueCancelReason,
+        dequeue_reason: queue_utils.BaseDequeueReason,
         exclude_ref: github_types.GitHubRefType | None = None,
     ) -> None:
         async for convoy in cls.iter_convoys(repository):
