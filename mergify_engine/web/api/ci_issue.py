@@ -161,7 +161,7 @@ async def query_issues(
             filtered_issues_cte.short_id,
             filtered_issues_cte.name,
             filtered_issues_cte.status,
-            WorkflowJobEnhanced.id.label("event_id"),
+            gh_models.WorkflowJobLogMetadata.id.label("event_id"),
             WorkflowJobEnhanced.name_without_matrix.label("job_name"),
             WorkflowJobEnhanced.workflow_run_id,
             WorkflowJobEnhanced.started_at,
@@ -390,7 +390,7 @@ async def get_ci_issue_event_detail(
 ) -> CiIssueEventDetailResponse:
     stmt = (
         sqlalchemy.select(
-            WorkflowJobEnhanced.id,
+            gh_models.WorkflowJobLogMetadata.id,
             WorkflowJobEnhanced.name_without_matrix.label("name"),
             WorkflowJobEnhanced.workflow_run_id,
             WorkflowJobEnhanced.started_at,
@@ -413,7 +413,7 @@ async def get_ci_issue_event_detail(
         )
         .where(
             WorkflowJobEnhanced.repository_id == repository_ctxt.repo["id"],
-            WorkflowJobEnhanced.id == event_id,
+            gh_models.WorkflowJobLogMetadata.id == event_id,
         )
     )
 

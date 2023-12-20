@@ -38,7 +38,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                         "failed_run_count": 1,
                         "flaky": "unknown",
                         "id": DbPopulator.internal_ref[
-                            "OneAccount/OneRepo/failed_job_with_flaky_nghb"
+                            "OneAccount/OneRepo/failed_job_with_flaky_nghb/metadata/1"
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
@@ -47,7 +47,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                         "failed_run_count": 3,
                         "flaky": "flaky",
                         "id": DbPopulator.internal_ref[
-                            "OneAccount/OneRepo/flaky_failed_job_attempt_2"
+                            "OneAccount/OneRepo/flaky_failed_job_attempt_2/metadata/1"
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
@@ -56,7 +56,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                         "failed_run_count": 3,
                         "flaky": "flaky",
                         "id": DbPopulator.internal_ref[
-                            "OneAccount/OneRepo/flaky_failed_job_attempt_1"
+                            "OneAccount/OneRepo/flaky_failed_job_attempt_1/metadata/1"
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
@@ -74,7 +74,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                         "failed_run_count": 1,
                         "flaky": "unknown",
                         "id": DbPopulator.internal_ref[
-                            "OneAccount/OneRepo/failed_job_with_flaky_nghb"
+                            "OneAccount/OneRepo/failed_job_with_flaky_nghb/metadata/2"
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
@@ -92,7 +92,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                         "failed_run_count": 1,
                         "flaky": "unknown",
                         "id": DbPopulator.internal_ref[
-                            "OneAccount/OneRepo/failed_job_with_no_flaky_nghb"
+                            "OneAccount/OneRepo/failed_job_with_no_flaky_nghb/metadata/1"
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
@@ -129,7 +129,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                         "failed_run_count": 1,
                         "flaky": "unknown",
                         "id": DbPopulator.internal_ref[
-                            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"
+                            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb/metadata/1"
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
@@ -178,7 +178,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                         "failed_run_count": 1,
                         "flaky": "unknown",
                         "id": DbPopulator.internal_ref[
-                            "OneAccount/OneRepo/failed_job_with_flaky_nghb"
+                            "OneAccount/OneRepo/failed_job_with_flaky_nghb/metadata/1"
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
@@ -187,7 +187,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                         "failed_run_count": 3,
                         "flaky": "flaky",
                         "id": DbPopulator.internal_ref[
-                            "OneAccount/OneRepo/flaky_failed_job_attempt_2"
+                            "OneAccount/OneRepo/flaky_failed_job_attempt_2/metadata/1"
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
@@ -196,7 +196,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                         "failed_run_count": 3,
                         "flaky": "flaky",
                         "id": DbPopulator.internal_ref[
-                            "OneAccount/OneRepo/flaky_failed_job_attempt_1"
+                            "OneAccount/OneRepo/flaky_failed_job_attempt_1/metadata/1"
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
@@ -233,7 +233,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                         "failed_run_count": 1,
                         "flaky": "unknown",
                         "id": DbPopulator.internal_ref[
-                            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"
+                            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb/metadata/1"
                         ],
                         "run_id": anys.ANY_INT,
                         "started_at": anys.ANY_DATETIME_STR,
@@ -286,7 +286,7 @@ async def test_api_ci_issue_get_ci_issue(
                 "failed_run_count": 1,
                 "flaky": "unknown",
                 "id": DbPopulator.internal_ref[
-                    "OneAccount/OneRepo/failed_job_with_flaky_nghb"
+                    "OneAccount/OneRepo/failed_job_with_flaky_nghb/metadata/1"
                 ],
                 "run_id": anys.ANY_INT,
                 "started_at": anys.ANY_DATETIME_STR,
@@ -295,7 +295,7 @@ async def test_api_ci_issue_get_ci_issue(
                 "failed_run_count": 3,
                 "flaky": "flaky",
                 "id": DbPopulator.internal_ref[
-                    "OneAccount/OneRepo/flaky_failed_job_attempt_2"
+                    "OneAccount/OneRepo/flaky_failed_job_attempt_2/metadata/1"
                 ],
                 "run_id": anys.ANY_INT,
                 "started_at": anys.ANY_DATETIME_STR,
@@ -303,7 +303,9 @@ async def test_api_ci_issue_get_ci_issue(
             {
                 "failed_run_count": 3,
                 "flaky": "flaky",
-                "id": job.id,
+                "id": DbPopulator.internal_ref[
+                    "OneAccount/OneRepo/flaky_failed_job_attempt_1/metadata/1"
+                ],
                 "run_id": job.workflow_run_id,
                 "started_at": job.started_at.isoformat(),
             },
@@ -350,7 +352,9 @@ async def test_api_ci_issue_get_ci_issue(
             {
                 "failed_run_count": 1,
                 "flaky": "unknown",
-                "id": job.id,
+                "id": DbPopulator.internal_ref[
+                    "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb/metadata/1"
+                ],
                 "run_id": job.workflow_run_id,
                 "started_at": job.started_at.isoformat(),
             },
@@ -381,22 +385,27 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     job = await populated_db.get_one(
         gh_models.WorkflowJob,
         DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"],
-        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
+        options=[
+            orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt),
+            orm.joinedload(gh_models.WorkflowJob.log_metadata),
+        ],
     )
 
     assert len(job.ci_issues_gpt) == 1
     ci_issue = job.ci_issues_gpt[0]
+    assert len(job.log_metadata) == 1
+    event_id = job.log_metadata[0].id
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/{job.id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/{event_id}",
         follow_redirects=False,
     )
 
     assert job.steps is not None
 
     assert reply.json() == {
+        "id": event_id,
         "name": "A job",
-        "id": job.id,
         "run_id": job.workflow_run_id,
         "steps": [
             {
@@ -420,21 +429,26 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     job = await populated_db.get_one(
         gh_models.WorkflowJob,
         DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_2"],
-        options=[orm.joinedload(gh_models.WorkflowJob.ci_issue)],
+        options=[
+            orm.joinedload(gh_models.WorkflowJob.ci_issue),
+            orm.joinedload(gh_models.WorkflowJob.log_metadata),
+        ],
     )
 
     assert ci_issue.id is not None
+    assert len(job.log_metadata) == 1
+    event_id = job.log_metadata[0].id
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/{job.id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/{event_id}",
         follow_redirects=False,
     )
 
     assert job.steps is not None
 
     assert reply.json() == {
+        "id": event_id,
         "name": "A job",
-        "id": job.id,
         "run_id": job.workflow_run_id,
         "steps": [
             {

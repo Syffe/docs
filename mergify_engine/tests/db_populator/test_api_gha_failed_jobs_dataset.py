@@ -71,20 +71,24 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job1.log_extract = "Some logs"
         job1.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
-        session.add(
-            gh_models.WorkflowJobLogMetadata(
-                workflow_job_id=job1.id,
-                problem_type="Error on test: my_awesome_test",
-                language="Python",
-                filename="test.py",
-                lineno="325",
-                error="AssertionError: True is False",
-                test_framework="pytest",
-                stack_trace="some traceback",
-            ),
+        job1_metadata = gh_models.WorkflowJobLogMetadata(
+            workflow_job_id=job1.id,
+            problem_type="Error on test: my_awesome_test",
+            language="Python",
+            filename="test.py",
+            lineno="325",
+            error="AssertionError: True is False",
+            test_framework="pytest",
+            stack_trace="some traceback",
         )
+        session.add(job1_metadata)
+        await session.flush()
+        await session.refresh(job1_metadata)
 
         cls.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"] = job1.id
+        cls.internal_ref[
+            "OneAccount/OneRepo/flaky_failed_job_attempt_1/metadata/1"
+        ] = job1_metadata.id
 
         # Another failed job
         job2 = await gh_models.WorkflowJob.insert(
@@ -123,20 +127,24 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job2.log_extract = "Some logs"
         job2.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
-        session.add(
-            gh_models.WorkflowJobLogMetadata(
-                workflow_job_id=job2.id,
-                problem_type="Error on test: my_awesome_test",
-                language="Python",
-                filename="test.py",
-                lineno="325",
-                error="AssertionError: True is False",
-                test_framework="pytest",
-                stack_trace="some traceback",
-            ),
+        job2_metadata = gh_models.WorkflowJobLogMetadata(
+            workflow_job_id=job2.id,
+            problem_type="Error on test: my_awesome_test",
+            language="Python",
+            filename="test.py",
+            lineno="325",
+            error="AssertionError: True is False",
+            test_framework="pytest",
+            stack_trace="some traceback",
         )
+        session.add(job2_metadata)
+        await session.flush()
+        await session.refresh(job2_metadata)
 
         cls.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_2"] = job2.id
+        cls.internal_ref[
+            "OneAccount/OneRepo/flaky_failed_job_attempt_2/metadata/1"
+        ] = job2_metadata.id
 
         # Successful job
         succesful_job = await gh_models.WorkflowJob.insert(
@@ -210,32 +218,39 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job3.log_extract = "Some similar logs"
         job3.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
-        session.add(
-            gh_models.WorkflowJobLogMetadata(
-                workflow_job_id=job3.id,
-                problem_type="Error on test: my_awesome_test",
-                language="Python",
-                filename="test.py",
-                lineno="325",
-                error="AssertionError: True is False",
-                test_framework="pytest",
-                stack_trace="some traceback",
-            ),
+        job3_metadata1 = gh_models.WorkflowJobLogMetadata(
+            workflow_job_id=job3.id,
+            problem_type="Error on test: my_awesome_test",
+            language="Python",
+            filename="test.py",
+            lineno="325",
+            error="AssertionError: True is False",
+            test_framework="pytest",
+            stack_trace="some traceback",
         )
-        session.add(
-            gh_models.WorkflowJobLogMetadata(
-                workflow_job_id=job3.id,
-                problem_type="Error on test: my_fucking_awesome_test",
-                language="Python",
-                filename="test.py",
-                lineno="455",
-                error="AssertionError: 3 == 0",
-                test_framework="pytest",
-                stack_trace="some other traceback",
-            ),
+        session.add(job3_metadata1)
+        job3_metadata2 = gh_models.WorkflowJobLogMetadata(
+            workflow_job_id=job3.id,
+            problem_type="Error on test: my_fucking_awesome_test",
+            language="Python",
+            filename="test.py",
+            lineno="455",
+            error="AssertionError: 3 == 0",
+            test_framework="pytest",
+            stack_trace="some other traceback",
         )
+        session.add(job3_metadata2)
+        await session.flush()
+        await session.refresh(job3_metadata1)
+        await session.refresh(job3_metadata2)
 
         cls.internal_ref["OneAccount/OneRepo/failed_job_with_flaky_nghb"] = job3.id
+        cls.internal_ref[
+            "OneAccount/OneRepo/failed_job_with_flaky_nghb/metadata/1"
+        ] = job3_metadata1.id
+        cls.internal_ref[
+            "OneAccount/OneRepo/failed_job_with_flaky_nghb/metadata/2"
+        ] = job3_metadata2.id
 
         # Failed job completly different to the job1
         job4 = await gh_models.WorkflowJob.insert(
@@ -278,20 +293,24 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job4.log_extract = "Some different logs"
         job4.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
-        session.add(
-            gh_models.WorkflowJobLogMetadata(
-                workflow_job_id=job4.id,
-                problem_type="Error on test: my_cypress_test",
-                language="JavaScript",
-                filename="test.js",
-                lineno="15",
-                error="Some Js error",
-                test_framework="Cypress",
-                stack_trace="",
-            ),
+        job4_metadata = gh_models.WorkflowJobLogMetadata(
+            workflow_job_id=job4.id,
+            problem_type="Error on test: my_cypress_test",
+            language="JavaScript",
+            filename="test.js",
+            lineno="15",
+            error="Some Js error",
+            test_framework="Cypress",
+            stack_trace="",
         )
+        session.add(job4_metadata)
+        await session.flush()
+        await session.refresh(job4_metadata)
 
         cls.internal_ref["OneAccount/OneRepo/failed_job_with_no_flaky_nghb"] = job4.id
+        cls.internal_ref[
+            "OneAccount/OneRepo/failed_job_with_no_flaky_nghb/metadata/1"
+        ] = job4_metadata.id
 
         # Failed job similar to the job1 but on another repo
         colliding_repo = typing.cast(
@@ -346,22 +365,26 @@ class TestApiGhaFailedJobsDataset(DbPopulator):
         job5.log_extract = "Some logs"
         job5.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
 
-        session.add(
-            gh_models.WorkflowJobLogMetadata(
-                workflow_job_id=job5.id,
-                problem_type="Error on test: my_awesome_test",
-                language="Python",
-                filename="test.py",
-                lineno="325",
-                error="AssertionError: True is False",
-                test_framework="pytest",
-                stack_trace="some traceback",
-            ),
+        job5_metadata = gh_models.WorkflowJobLogMetadata(
+            workflow_job_id=job5.id,
+            problem_type="Error on test: my_awesome_test",
+            language="Python",
+            filename="test.py",
+            lineno="325",
+            error="AssertionError: True is False",
+            test_framework="pytest",
+            stack_trace="some traceback",
         )
+        session.add(job5_metadata)
+        await session.flush()
+        await session.refresh(job5_metadata)
 
         cls.internal_ref[
             "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"
         ] = job5.id
+        cls.internal_ref[
+            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb/metadata/1"
+        ] = job5_metadata.id
 
         # Failed job similar to the first one but not yet computed, it should be excluded
         uncomputed_job = await gh_models.WorkflowJob.insert(
