@@ -14,5 +14,6 @@ instances:
       - attempts
       - gha_workflow_run
       - gha_workflow_job
+      - github_in_postgres
     tags:
       - role:streams
