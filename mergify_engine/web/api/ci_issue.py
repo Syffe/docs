@@ -161,7 +161,7 @@ async def query_issues(
             filtered_issues_cte.short_id,
             filtered_issues_cte.name,
             filtered_issues_cte.status,
-            WorkflowJobEnhanced.id.label("job_id"),
+            WorkflowJobEnhanced.id.label("event_id"),
             WorkflowJobEnhanced.name_without_matrix.label("job_name"),
             WorkflowJobEnhanced.workflow_run_id,
             WorkflowJobEnhanced.started_at,
@@ -215,7 +215,7 @@ async def query_issues(
 
         reponse.events.append(
             CiIssueEvent(
-                id=result.job_id,
+                id=result.event_id,
                 run_id=result.workflow_run_id,
                 started_at=github_types.ISODateTimeType(result.started_at.isoformat()),
                 flaky=FlakyStatus(result.flaky),
