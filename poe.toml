@@ -108,7 +108,7 @@ cmd = "./tools/docker-build-dev.sh"
 [tool.poe.tasks.semgrep]
 deps = ["setup"]
 help = "Run SAST tools"
-cmd = "semgrep --config=auto --error"
+cmd = "semgrep --config=auto --error --timeout=15"
 
 [tool.poe.tasks.setup]
 help = "Sync poetry virtualenv"
