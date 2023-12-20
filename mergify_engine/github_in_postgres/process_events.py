@@ -12,8 +12,11 @@ from mergify_engine.models import github as gh_models
 LOG = daiquiri.getLogger(__name__)
 
 
-EVENT_TO_MODEL_MAPPING = {
+HandledModelsT = type[gh_models.PullRequest] | type[gh_models.CheckRun]
+
+EVENT_TO_MODEL_MAPPING: dict[str, HandledModelsT] = {
     "pull_request": gh_models.PullRequest,
+    "check_run": gh_models.CheckRun,
 }
 
 
@@ -52,7 +55,9 @@ async def store_redis_events_in_pg(redis_links: redis_utils.RedisLinks) -> None:
 
         async with database.create_session() as session:
             try:
-                await model.insert_or_update(session, typed_event_data)
+                # mypy thinks the typed_event_data can be, for example,
+                # `CheckRun` for a "pull_request" event.
+                await model.insert_or_update(session, typed_event_data)  # type: ignore[arg-type]
             except exceptions.MergifyNotInstalled:
                 # Just ignore event for uninstalled repository
                 pass

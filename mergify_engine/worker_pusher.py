@@ -9,6 +9,7 @@ import tenacity
 
 from mergify_engine import constants
 from mergify_engine import date
+from mergify_engine import filtered_github_types
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.worker import stream_lua
@@ -167,10 +168,7 @@ async def push_github_in_pg_event(
     redis_stream: redis_utils.RedisStream,
     event_type: github_types.GitHubEventType,
     event_id: str,
-    # NOTE(Greesb): Use same typing as the return type of
-    # `filtered_github_types.extract_github_data_from_github_event`
-    # when it will have multiple possible return types
-    data: github_types.GitHubPullRequest,
+    data: filtered_github_types.GitHubDataT,
 ) -> None:
     fields = {
         "event_type": event_type,

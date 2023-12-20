@@ -556,15 +556,16 @@ async def event_classifier(
 
     if event_type == "check_run":
         event = typing.cast(github_types.GitHubEventCheckRun, event)
-        if (
+        routes = EventRoute.GITHUB_IN_POSTGRES
+        if not (
             event[event_type]["app"]["id"] == settings.GITHUB_APP_ID
             and event["action"] != "rerequested"
             and event[event_type].get("external_id") != check_api.USER_CREATED_CHECKS
         ):
-            raise IgnoredEvent("mergify check_run")
+            routes |= EventRoute.STREAM
 
         return EventToRoute(
-            EventRoute.STREAM,
+            routes,
             event_type,
             event_id,
             event,

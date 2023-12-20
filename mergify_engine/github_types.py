@@ -782,6 +782,10 @@ class GitHubCheckRun(typing_extensions.TypedDict):
     check_suite: GitHubCheckRunCheckSuite
 
 
+class GitHubCheckRunWithRepository(GitHubCheckRun):
+    repository: GitHubRepository
+
+
 class CachedGitHubCheckRun(typing_extensions.TypedDict):
     id: int
     app_id: int

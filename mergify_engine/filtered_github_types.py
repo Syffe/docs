@@ -178,14 +178,26 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
     return slim_event
 
 
+GitHubDataT = github_types.GitHubPullRequest | github_types.GitHubCheckRunWithRepository
+GitHubEventDataT = (
+    github_types.GitHubEventPullRequest | github_types.GitHubEventCheckRun
+)
+
+
 def extract_github_data_from_github_event(
     event_type: str,
     event: github_types.GitHubEvent,
-    # NOTE(Greesb): When there will be multiple event handled, create a new
-    # type containing all the possible return types as an union
-) -> github_types.GitHubPullRequest:
+) -> GitHubDataT:
+    cast_event: GitHubEventDataT
     if event_type == "pull_request":
         cast_event = typing.cast(github_types.GitHubEventPullRequest, event)
         return cast_event["pull_request"]
+
+    if event_type == "check_run":
+        cast_event = typing.cast(github_types.GitHubEventCheckRun, event)
+        return typing.cast(
+            github_types.GitHubCheckRunWithRepository,
+            cast_event["check_run"] | {"repository": cast_event["repository"]},
+        )
 
     raise RuntimeError(f"Unhandled event type to extract data from: {event_type}")

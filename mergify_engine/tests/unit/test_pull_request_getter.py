@@ -6,13 +6,14 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
 from mergify_engine import pull_request_getter
+from mergify_engine.github_in_postgres import utils as ghinpg_utils
 from mergify_engine.models.github import pull_request as gh_pr_model
 from mergify_engine.tests import db_populator
 from mergify_engine.tests import utils
 
 
 @pytest.mark.populated_db_datasets("AccountAndRepo")
-async def test_can_repo_use_pull_requests_in_pg(
+async def test_can_repo_use_github_in_pg_data(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     await populated_db.commit()
@@ -21,21 +22,21 @@ async def test_can_repo_use_pull_requests_in_pg(
         "mergify_engine.settings.GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS",
         new_callable=mock.PropertyMock(return_value=["OneAccount"]),
     ):
-        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["OneRepo"],
             ),
         )
-        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_owner=github_types.GitHubLogin("OneAccount"),
         )
 
-        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert not await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["colliding_repo_1"],
             ),
         )
-        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert not await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_owner=github_types.GitHubLogin("colliding-account-1"),
         )
 
@@ -43,21 +44,21 @@ async def test_can_repo_use_pull_requests_in_pg(
         "mergify_engine.settings.GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS",
         new_callable=mock.PropertyMock(return_value=["*"]),
     ):
-        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["OneRepo"],
             ),
         )
-        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_owner=github_types.GitHubLogin("OneAccount"),
         )
 
-        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["colliding_repo_1"],
             ),
         )
-        assert await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_owner=github_types.GitHubLogin("colliding-account-1"),
         )
 
@@ -65,21 +66,21 @@ async def test_can_repo_use_pull_requests_in_pg(
         "mergify_engine.settings.GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS",
         new_callable=mock.PropertyMock(return_value=[]),
     ):
-        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert not await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["OneRepo"],
             ),
         )
-        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert not await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_owner=github_types.GitHubLogin("OneAccount"),
         )
 
-        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert not await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_id=github_types.GitHubRepositoryIdType(
                 db_populator.DbPopulator.internal_ref["colliding_repo_1"],
             ),
         )
-        assert not await pull_request_getter.can_repo_use_pull_requests_in_pg(
+        assert not await ghinpg_utils.can_repo_use_github_in_pg_data(
             repo_owner=github_types.GitHubLogin("colliding-account-1"),
         )
 

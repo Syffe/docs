@@ -37,6 +37,7 @@ from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
+from mergify_engine.github_in_postgres import utils as ghinpg_utils
 from mergify_engine.models.github import pull_request_commit as prcommit_model
 from mergify_engine.rules.config import mergify as mergify_conf
 
@@ -2096,7 +2097,7 @@ class Context:
         if commits is cache.Unset:
             # Use pull request commits from db only if the pull request is already in db
             commits = []
-            if await pull_request_getter.can_repo_use_pull_requests_in_pg(
+            if await ghinpg_utils.can_repo_use_github_in_pg_data(
                 repo_owner=self.repository.repo["owner"]["login"],
             ):
                 commits = await self._commits_from_db()

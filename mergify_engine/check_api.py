@@ -132,14 +132,41 @@ async def get_checks_for_ref(
     check_name: str | None = None,
     app_id: int | None = None,
 ) -> list[github_types.CachedGitHubCheckRun]:
-    params = {} if check_name is None else {"check_name": check_name}
+    from mergify_engine.github_in_postgres import utils as ghinpg_utils
+
+    if await ghinpg_utils.can_repo_use_github_in_pg_data(
+        repo_owner=ctxt.repository.repo["owner"]["login"],
+    ):
+        from mergify_engine.models.github import check_run as ghinpg_checkrun_model
+
+        checks = await ghinpg_checkrun_model.CheckRun.get_checks_as_github_dict(
+            ctxt.repository.repo["id"],
+            sha,
+            check_name,
+            app_id,
+        )
+    else:
+        checks = await _get_checks_for_ref_from_http(ctxt, sha, check_name, app_id)
+
+    return [to_check_run_light(check) for check in checks]
+
+
+async def _get_checks_for_ref_from_http(
+    ctxt: "context.Context",
+    sha: github_types.SHAType,
+    check_name: str | None = None,
+    app_id: int | None = None,
+) -> list[github_types.GitHubCheckRun]:
+    params = {}
+    if check_name is not None:
+        params["check_name"] = check_name
 
     if app_id is not None:
         params["app_id"] = str(app_id)
 
     try:
-        checks = [
-            to_check_run_light(check)
+        return [
+            check
             async for check in typing.cast(
                 abc.AsyncGenerator[github_types.GitHubCheckRun, None],
                 ctxt.client.items(
@@ -156,8 +183,6 @@ async def get_checks_for_ref(
         if e.status_code == 422 and "No commit found for SHA" in e.message:
             return []
         raise
-
-    return checks
 
 
 _K = typing.TypeVar("_K")
