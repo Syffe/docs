@@ -85,10 +85,6 @@ class MonitoringStreamService(task.SimpleService):
             await self._get_stream_latency_of("event-forward"),
         )
         statsd.timing(
-            "engine.event-forward.stream.latency",
-            await self._get_stream_latency_of("event-forward"),
-        )
-        statsd.timing(
             "engine.gha_workflow_run.stream.latency",
             await self._get_stream_latency_of("gha_workflow_run"),
         )
