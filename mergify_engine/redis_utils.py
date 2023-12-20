@@ -308,3 +308,21 @@ async def iter_stream(
             yield entry_id, entry_data
 
         min_stream_event_id = f"({entry_id.decode()}"
+
+
+async def iter_stream_reverse(
+    stream: RedisStream,
+    stream_key: str,
+    batch_size: int,
+) -> abc.AsyncGenerator[tuple[bytes, dict[bytes, bytes]], None]:
+    max_stream_event_id = "+"
+
+    while stream_entry := await stream.xrevrange(
+        stream_key,
+        max=max_stream_event_id,
+        count=batch_size,
+    ):
+        for entry_id, entry_data in stream_entry:
+            yield entry_id, entry_data
+
+        max_stream_event_id = f"({entry_id.decode()}"

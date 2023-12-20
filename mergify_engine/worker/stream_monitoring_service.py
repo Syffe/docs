@@ -5,6 +5,8 @@ import time
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
 
+from mergify_engine import date
+from mergify_engine import redis_utils
 from mergify_engine import worker_pusher
 from mergify_engine.worker import dedicated_workers_cache_syncer_service
 from mergify_engine.worker import shared_workers_spawner_service
@@ -26,6 +28,16 @@ class MonitoringStreamService(task.SimpleService):
     @property
     def global_shared_tasks_count(self) -> int:
         return self.shared_stream_tasks_per_process * self.shared_stream_processes
+
+    async def _get_stream_latency_of(self, key: str) -> float:
+        async for event_id, _ in redis_utils.iter_stream_reverse(
+            self.redis_links.stream,
+            key,
+            1,
+        ):
+            timestamp = date.fromtimestamp(float(event_id.decode().split("-")[0]))
+            return (date.utcnow() - timestamp).total_seconds()
+        return 0
 
     async def work(self) -> None:
         # TODO(sileht): maybe also graph streams that are before `now`
@@ -62,6 +74,27 @@ class MonitoringStreamService(task.SimpleService):
         statsd.gauge(
             "engine.workers-per-process.count",
             self.shared_stream_tasks_per_process,
+        )
+
+        statsd.timing(
+            "engine.github-in-postgres.stream.latency",
+            await self._get_stream_latency_of("github_in_postgres"),
+        )
+        statsd.timing(
+            "engine.event-forward.stream.latency",
+            await self._get_stream_latency_of("event-forward"),
+        )
+        statsd.timing(
+            "engine.event-forward.stream.latency",
+            await self._get_stream_latency_of("event-forward"),
+        )
+        statsd.timing(
+            "engine.gha_workflow_run.stream.latency",
+            await self._get_stream_latency_of("gha_workflow_run"),
+        )
+        statsd.timing(
+            "engine.gha_workflow_job.stream.latency",
+            await self._get_stream_latency_of("gha_workflow_job"),
         )
 
         # TODO(sileht): maybe we can do something with the bucket scores to
