@@ -35,7 +35,11 @@ class MonitoringStreamService(task.SimpleService):
             key,
             1,
         ):
-            timestamp = date.fromtimestamp(float(event_id.decode().split("-")[0]))
+            # Redis stream timestamp format is 1703065634032-0
+            # It's a millisecond timestamp suffixed with a sequence number
+            timestamp = date.fromtimestamp(
+                float(event_id.decode().split("-")[0]) / 1000,
+            )
             return (date.utcnow() - timestamp).total_seconds()
         return 0
 

@@ -6,7 +6,9 @@ import time
 import typing
 from unittest import mock
 
+import anys
 import daiquiri
+from datadog import statsd  # type: ignore[attr-defined]
 import httpx
 import msgpack
 import pytest
@@ -3067,3 +3069,44 @@ async def test_postgres_cleaner_service_sleep_before(
     assert service.sleep_before_task  # type: ignore[attr-defined]
     assert service.main_task.sleep_before  # type: ignore[attr-defined]
     await worker._shutdown()
+
+
+@mock.patch.object(statsd, "timing")
+async def test_monitoring_service(
+    statd_timing: mock.Mock,
+    monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    # Prepare some fake data
+    await redis_links.stream.xadd("github_in_postgres", {"foo": "bar"})
+    await redis_links.stream.xadd("event-forward", {"foo": "bar"})
+    await redis_links.stream.xadd("gha_workflow_run", {"foo": "bar"})
+    await redis_links.stream.xadd("gha_workflow_job", {"foo": "bar"})
+
+    worker = manager.ServiceManager(enabled_services={"stream-monitoring"})
+    worker._mandatory_services = {"dedicated-workers-cache-syncer"}  # type: ignore[misc]
+    await worker.start()
+    while statd_timing.call_count < 5:
+        await asyncio.sleep(0.01)
+    await worker._shutdown()
+
+    AlmostZero = anys.ANY_FLOAT | anys.AnyLT(0.025) | anys.AnyGT(0)
+    assert statd_timing.mock_calls == [
+        mock.call("engine.streams.latency", 0),
+        mock.call(
+            "engine.github-in-postgres.stream.latency",
+            AlmostZero,
+        ),
+        mock.call(
+            "engine.event-forward.stream.latency",
+            AlmostZero,
+        ),
+        mock.call(
+            "engine.gha_workflow_run.stream.latency",
+            AlmostZero,
+        ),
+        mock.call(
+            "engine.gha_workflow_job.stream.latency",
+            AlmostZero,
+        ),
+    ]
