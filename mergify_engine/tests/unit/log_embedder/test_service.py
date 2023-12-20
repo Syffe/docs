@@ -1453,7 +1453,7 @@ async def test_log_exception_and_maybe_retry_on_database_error(
         job.log_embedding_status = gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
         job.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
 
-    async def extract_data_from_log_raise_data_error_for_job_2(
+    async def create_job_log_metadata_raise_data_error_for_job_2(
         openai_client: openai_api.OpenAIClient,
         session: sqlalchemy.ext.asyncio.AsyncSession,
         job: gh_models.WorkflowJob,
@@ -1484,7 +1484,7 @@ async def test_log_exception_and_maybe_retry_on_database_error(
     with mock.patch.multiple(
         github_action,
         embed_log=embed_log_raise_data_error_for_job_1,
-        extract_data_from_log=extract_data_from_log_raise_data_error_for_job_2,
+        create_job_log_metadata=create_job_log_metadata_raise_data_error_for_job_2,
         get_log=get_log_lines_raise_data_error_for_job_3,
     ):
         await github_action.process_failed_jobs(redis_links)

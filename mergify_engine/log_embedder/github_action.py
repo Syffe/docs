@@ -77,8 +77,9 @@ class UnexpectedLogEmbedderError(Exception):
     log_extras: dict[str, typing.Any] = dataclasses.field(default_factory=dict)
 
 
+@dataclasses.dataclass
 class UnableToExtractLogMetadata(Exception):
-    pass
+    chat_completion_result: openai_api.ChatCompletionObject | None
 
 
 class ExtractedDataObject(typing.TypedDict):
@@ -221,65 +222,21 @@ async def get_tokenized_cleaned_log(
     return cleaned_tokens
 
 
-async def extract_data_from_log(
+async def create_job_log_metadata(
     openai_client: openai_api.OpenAIClient,
     session: sqlalchemy.ext.asyncio.AsyncSession,
     job: gh_models.WorkflowJob,
     log: logm.Log,
 ) -> None:
-    cleaned_log = get_cleaned_log(log)
-    query = openai_api.ChatCompletionQuery(
-        model=settings.LOG_EMBEDDER_METADATA_EXTRACT_MODEL,
-        role=EXTRACT_DATA_QUERY_TEMPLATE.role,
-        content=f"{EXTRACT_DATA_QUERY_TEMPLATE.content}{cleaned_log}",
-        answer_size=EXTRACT_DATA_QUERY_TEMPLATE.answer_size,
-        seed=EXTRACT_DATA_QUERY_TEMPLATE.seed,
-        temperature=EXTRACT_DATA_QUERY_TEMPLATE.temperature,
-        response_format=EXTRACT_DATA_QUERY_TEMPLATE.response_format,
-    )
-
     try:
-        chat_completion = await openai_client.get_chat_completion(query)
-    except http.HTTPClientSideError as err:
-        # NOTE(Kontrolix): Do not retry when OpenAI said that there is an error in
-        # the prompt, the error will still be there next time.
-        if (
-            err.response.status_code == 400
-            and "Detected an error in the prompt" in err.response.content.decode()
-        ):
-            raise UnableToExtractLogMetadata
-
+        extracted_data = await extract_data_from_log(openai_client, log)
+    except UnableToExtractLogMetadata as err:
+        LOG.warning(
+            "Unable to extract data for the job log",
+            chat_completion=err.chat_completion_result,
+            **job.as_log_extras(),
+        )
         raise
-
-    choice = chat_completion["choices"][0]
-    if choice["finish_reason"] != "stop":
-        # FIXME(Kontrolix): It means that GPT reaches a limit.
-        # for now I have no better solution than push the error under the carpet.
-        # But we will have to improve the prompt or the cleaner or the model we use ...
-        raise UnableToExtractLogMetadata
-
-    chat_response = choice["message"]["content"]
-    if not chat_response:
-        # FIXME(sileht): We should mark the job as ERROR instead of retrying
-        LOG.warning(
-            "ChatGPT returned no extracted data for the job log",
-            chat_completion=chat_completion,
-            **job.as_log_extras(),
-        )
-        raise UnableToExtractLogMetadata
-
-    extracted_data: list[ExtractedDataObject] = json.loads(chat_response)["failures"]
-
-    # FIXME(Kontrolix): It means that GPT found no error, for now I have no better
-    # solution than push the error under the carpet. But we will have to improve
-    # the prompt or the cleaner or the model we use ...
-    if not extracted_data or extracted_data == [None]:
-        LOG.warning(
-            "ChatGPT returned no extracted data for the job log",
-            chat_completion=chat_completion,
-            **job.as_log_extras(),
-        )
-        raise UnableToExtractLogMetadata
 
     for data in extracted_data:
         # NOTE(Kontrolix): Convert all data returned by GPT in str as we expect them to be
@@ -300,6 +257,56 @@ async def extract_data_from_log(
     job.log_metadata_extracting_status = (
         gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED
     )
+
+
+async def extract_data_from_log(
+    openai_client: openai_api.OpenAIClient,
+    log: logm.Log,
+) -> list[ExtractedDataObject]:
+    cleaned_log = get_cleaned_log(log)
+    query = openai_api.ChatCompletionQuery(
+        model=settings.LOG_EMBEDDER_METADATA_EXTRACT_MODEL,
+        role=EXTRACT_DATA_QUERY_TEMPLATE.role,
+        content=f"{EXTRACT_DATA_QUERY_TEMPLATE.content}{cleaned_log}",
+        answer_size=EXTRACT_DATA_QUERY_TEMPLATE.answer_size,
+        seed=EXTRACT_DATA_QUERY_TEMPLATE.seed,
+        temperature=EXTRACT_DATA_QUERY_TEMPLATE.temperature,
+        response_format=EXTRACT_DATA_QUERY_TEMPLATE.response_format,
+    )
+
+    try:
+        chat_completion = await openai_client.get_chat_completion(query)
+    except http.HTTPClientSideError as err:
+        # NOTE(Kontrolix): Do not retry when OpenAI said that there is an error in
+        # the prompt, the error will still be there next time.
+        if (
+            err.response.status_code == 400
+            and "Detected an error in the prompt" in err.response.content.decode()
+        ):
+            raise UnableToExtractLogMetadata(None)
+
+        raise
+
+    choice = chat_completion["choices"][0]
+    if choice["finish_reason"] != "stop":
+        # FIXME(Kontrolix): It means that GPT reaches a limit.
+        # for now I have no better solution than push the error under the carpet.
+        # But we will have to improve the prompt or the cleaner or the model we use ...
+        raise UnableToExtractLogMetadata(chat_completion)
+
+    chat_response = choice["message"]["content"]
+    if not chat_response:
+        raise UnableToExtractLogMetadata(chat_completion)
+
+    extracted_data: list[ExtractedDataObject] = json.loads(chat_response)["failures"]
+
+    # FIXME(Kontrolix): It means that GPT found no error, for now I have no better
+    # solution than push the error under the carpet. But we will have to improve
+    # the prompt or the cleaner or the model we use ...
+    if not extracted_data or extracted_data == [None]:
+        raise UnableToExtractLogMetadata(chat_completion)
+
+    return extracted_data
 
 
 def get_cleaned_log(log: logm.Log) -> str:
@@ -565,7 +572,7 @@ async def embed_logs_with_extracted_metadata(
                     gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN
                 ):
                     try:
-                        await extract_data_from_log(
+                        await create_job_log_metadata(
                             openai_client,
                             session,
                             job_for_update,

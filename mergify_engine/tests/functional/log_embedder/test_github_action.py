@@ -647,7 +647,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     log = logm.Log.from_content(log_content)
 
                     async with openai_api.OpenAIClient() as openai_client:
-                        await gha_embedder.extract_data_from_log(
+                        await gha_embedder.create_job_log_metadata(
                             openai_client,
                             session,
                             job,
@@ -682,7 +682,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             } == JOB_IDS_BY_ISSUE_GPT
 
     @pytest.mark.make_real_openai_calls()
-    async def test_extract_data_from_log(
+    async def test_create_job_log_metadata(
         self,
     ) -> None:
         async with database.create_session() as session:
@@ -712,7 +712,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             log = logm.Log.from_content(log_content)
 
             async with openai_api.OpenAIClient() as openai_client:
-                await gha_embedder.extract_data_from_log(
+                await gha_embedder.create_job_log_metadata(
                     openai_client,
                     session,
                     job,
