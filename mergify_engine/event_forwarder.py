@@ -39,10 +39,11 @@ async def forward(redis_links: redis_utils.RedisLinks) -> bool:
     async with http.AsyncClient(
         base_url=settings.GITHUB_WEBHOOK_FORWARD_URL,
     ) as client:
-        ids_to_delete: list[str] = []
-        for event_id, raw_info in await redis_links.stream.xrange(
+        ids_to_delete: list[bytes] = []
+        async for event_id, raw_info in redis_utils.iter_stream(
+            redis_links.stream,
             EVENT_FORWARDER_REDIS_KEY,
-            count=EVENT_FORWARDER_BATCH_SIZE,
+            batch_size=EVENT_FORWARDER_BATCH_SIZE,
         ):
             ids_to_delete.append(event_id)
             info = typing.cast(ForwardInfo, msgpack.unpackb(raw_info[b"info"]))
