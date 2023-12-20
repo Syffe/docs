@@ -2,7 +2,6 @@
 type = "poetry"
 
 [tool.poe.env]
-PYTHONASYNCIODEBUG = "1"
 DD_DOGSTATSD_DISABLE = "1"
 DD_TRACE_ENABLED = "0"
 MERGIFYENGINE_TEST_SETTINGS.default = "fake.env"
