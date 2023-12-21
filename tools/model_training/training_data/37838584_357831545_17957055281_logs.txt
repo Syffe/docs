@@ -1,0 +1,401 @@
+##[group]Run # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+# nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+pip install -r requirements-poetry.txt
+tools/poetry-ci-install.sh
+poetry run poe semgrep
+shell: /usr/bin/bash -e {0}
+env:
+  pythonLocation: /opt/hostedtoolcache/Python/3.11.4/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.4/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.4/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.4/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.4/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.4/x64/lib
+##[endgroup]
+Collecting poetry==1.6.1 (from -r requirements-poetry.txt (line 1))
+  Downloading poetry-1.6.1-py3-none-any.whl.metadata (6.8 kB)
+Collecting build<0.11.0,>=0.10.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading build-0.10.0-py3-none-any.whl (17 kB)
+Collecting cachecontrol<0.14.0,>=0.13.0 (from cachecontrol[filecache]<0.14.0,>=0.13.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading cachecontrol-0.13.1-py3-none-any.whl.metadata (3.0 kB)
+Collecting cleo<3.0.0,>=2.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading cleo-2.0.1-py3-none-any.whl (77 kB)
+      77.3/77.3 kB 3.0 MB/s eta 0:00:00
+Collecting crashtest<0.5.0,>=0.4.1 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading crashtest-0.4.1-py3-none-any.whl (7.6 kB)
+Collecting dulwich<0.22.0,>=0.21.2 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading dulwich-0.21.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.3 kB)
+Collecting installer<0.8.0,>=0.7.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading installer-0.7.0-py3-none-any.whl (453 kB)
+      453.8/453.8 kB 6.8 MB/s eta 0:00:00
+Collecting jsonschema<4.18.0,>=4.10.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading jsonschema-4.17.3-py3-none-any.whl (90 kB)
+      90.4/90.4 kB 7.2 MB/s eta 0:00:00
+Collecting keyring<25.0.0,>=24.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading keyring-24.2.0-py3-none-any.whl.metadata (20 kB)
+Collecting packaging>=20.4 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading packaging-23.2-py3-none-any.whl.metadata (3.2 kB)
+Collecting pexpect<5.0.0,>=4.7.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading pexpect-4.8.0-py2.py3-none-any.whl (59 kB)
+      59.0/59.0 kB 7.9 MB/s eta 0:00:00
+Collecting pkginfo<2.0.0,>=1.9.4 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading pkginfo-1.9.6-py3-none-any.whl (30 kB)
+Collecting platformdirs<4.0.0,>=3.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading platformdirs-3.11.0-py3-none-any.whl.metadata (11 kB)
+Collecting poetry-core==1.7.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading poetry_core-1.7.0-py3-none-any.whl.metadata (3.4 kB)
+Collecting poetry-plugin-export<2.0.0,>=1.5.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading poetry_plugin_export-1.5.0-py3-none-any.whl.metadata (2.7 kB)
+Collecting pyproject-hooks<2.0.0,>=1.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading pyproject_hooks-1.0.0-py3-none-any.whl (9.3 kB)
+Collecting requests<3.0,>=2.26 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading requests-2.31.0-py3-none-any.whl.metadata (4.6 kB)
+Collecting requests-toolbelt<2,>=0.9.1 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading requests_toolbelt-1.0.0-py2.py3-none-any.whl (54 kB)
+      54.5/54.5 kB 4.6 MB/s eta 0:00:00
+Collecting shellingham<2.0,>=1.5 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading shellingham-1.5.3-py2.py3-none-any.whl.metadata (3.4 kB)
+Collecting tomlkit<1.0.0,>=0.11.4 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading tomlkit-0.12.1-py3-none-any.whl.metadata (2.7 kB)
+Collecting trove-classifiers>=2022.5.19 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading trove_classifiers-2023.10.18-py3-none-any.whl.metadata (2.2 kB)
+Collecting virtualenv<21.0.0,>=20.22.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading virtualenv-20.24.5-py3-none-any.whl.metadata (4.5 kB)
+Collecting msgpack>=0.5.2 (from cachecontrol<0.14.0,>=0.13.0->cachecontrol[filecache]<0.14.0,>=0.13.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading msgpack-1.0.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.1 kB)
+Collecting filelock>=3.8.0 (from cachecontrol[filecache]<0.14.0,>=0.13.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading filelock-3.12.4-py3-none-any.whl.metadata (2.8 kB)
+Collecting rapidfuzz<3.0.0,>=2.2.0 (from cleo<3.0.0,>=2.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading rapidfuzz-2.15.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.0 kB)
+Collecting urllib3>=1.25 (from dulwich<0.22.0,>=0.21.2->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading urllib3-2.0.7-py3-none-any.whl.metadata (6.6 kB)
+Collecting attrs>=17.4.0 (from jsonschema<4.18.0,>=4.10.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading attrs-23.1.0-py3-none-any.whl (61 kB)
+      61.2/61.2 kB 13.1 MB/s eta 0:00:00
+Collecting pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,>=0.14.0 (from jsonschema<4.18.0,>=4.10.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading pyrsistent-0.19.3-py3-none-any.whl (57 kB)
+      57.5/57.5 kB 8.5 MB/s eta 0:00:00
+Collecting jaraco.classes (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading jaraco.classes-3.3.0-py3-none-any.whl.metadata (2.9 kB)
+Collecting importlib-metadata>=4.11.4 (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading importlib_metadata-6.8.0-py3-none-any.whl.metadata (5.1 kB)
+Collecting SecretStorage>=3.2 (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading SecretStorage-3.3.3-py3-none-any.whl (15 kB)
+Collecting jeepney>=0.4.2 (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading jeepney-0.8.0-py3-none-any.whl (48 kB)
+      48.4/48.4 kB 6.5 MB/s eta 0:00:00
+Collecting ptyprocess>=0.5 (from pexpect<5.0.0,>=4.7.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading ptyprocess-0.7.0-py2.py3-none-any.whl (13 kB)
+Collecting charset-normalizer<4,>=2 (from requests<3.0,>=2.26->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading charset_normalizer-3.3.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (33 kB)
+Collecting idna<4,>=2.5 (from requests<3.0,>=2.26->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading idna-3.4-py3-none-any.whl (61 kB)
+      61.5/61.5 kB 5.8 MB/s eta 0:00:00
+Collecting certifi>=2017.4.17 (from requests<3.0,>=2.26->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading certifi-2023.7.22-py3-none-any.whl.metadata (2.2 kB)
+Collecting distlib<1,>=0.3.7 (from virtualenv<21.0.0,>=20.22.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading distlib-0.3.7-py2.py3-none-any.whl.metadata (5.1 kB)
+Collecting zipp>=0.5 (from importlib-metadata>=4.11.4->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading zipp-3.17.0-py3-none-any.whl.metadata (3.7 kB)
+Collecting cryptography>=2.0 (from SecretStorage>=3.2->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading cryptography-41.0.4-cp37-abi3-manylinux_2_28_x86_64.whl.metadata (5.2 kB)
+Collecting more-itertools (from jaraco.classes->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading more_itertools-10.1.0-py3-none-any.whl.metadata (33 kB)
+Collecting cffi>=1.12 (from cryptography>=2.0->SecretStorage>=3.2->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading cffi-1.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.5 kB)
+Collecting pycparser (from cffi>=1.12->cryptography>=2.0->SecretStorage>=3.2->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+  Downloading pycparser-2.21-py2.py3-none-any.whl (118 kB)
+      118.7/118.7 kB 8.3 MB/s eta 0:00:00
+Downloading poetry-1.6.1-py3-none-any.whl (232 kB)
+    232.8/232.8 kB 10.4 MB/s eta 0:00:00
+Downloading poetry_core-1.7.0-py3-none-any.whl (426 kB)
+    426.4/426.4 kB 12.5 MB/s eta 0:00:00
+Downloading cachecontrol-0.13.1-py3-none-any.whl (22 kB)
+Downloading dulwich-0.21.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (513 kB)
+    513.8/513.8 kB 15.2 MB/s eta 0:00:00
+Downloading keyring-24.2.0-py3-none-any.whl (37 kB)
+Downloading packaging-23.2-py3-none-any.whl (53 kB)
+    53.0/53.0 kB 8.0 MB/s eta 0:00:00
+Downloading platformdirs-3.11.0-py3-none-any.whl (17 kB)
+Downloading poetry_plugin_export-1.5.0-py3-none-any.whl (10 kB)
+Downloading requests-2.31.0-py3-none-any.whl (62 kB)
+    62.6/62.6 kB 13.4 MB/s eta 0:00:00
+Downloading shellingham-1.5.3-py2.py3-none-any.whl (9.7 kB)
+Downloading tomlkit-0.12.1-py3-none-any.whl (37 kB)
+Downloading trove_classifiers-2023.10.18-py3-none-any.whl (13 kB)
+Downloading virtualenv-20.24.5-py3-none-any.whl (3.7 MB)
+    3.7/3.7 MB 25.8 MB/s eta 0:00:00
+Downloading certifi-2023.7.22-py3-none-any.whl (158 kB)
+    158.3/158.3 kB 35.1 MB/s eta 0:00:00
+Downloading charset_normalizer-3.3.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (137 kB)
+    137.5/137.5 kB 31.5 MB/s eta 0:00:00
+Downloading distlib-0.3.7-py2.py3-none-any.whl (468 kB)
+    468.9/468.9 kB 34.8 MB/s eta 0:00:00
+Downloading filelock-3.12.4-py3-none-any.whl (11 kB)
+Downloading importlib_metadata-6.8.0-py3-none-any.whl (22 kB)
+Downloading msgpack-1.0.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (557 kB)
+    558.0/558.0 kB 41.7 MB/s eta 0:00:00
+Downloading rapidfuzz-2.15.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.0 MB)
+    3.0/3.0 MB 46.5 MB/s eta 0:00:00
+Downloading urllib3-2.0.7-py3-none-any.whl (124 kB)
+    124.2/124.2 kB 32.5 MB/s eta 0:00:00
+Downloading jaraco.classes-3.3.0-py3-none-any.whl (5.9 kB)
+Downloading cryptography-41.0.4-cp37-abi3-manylinux_2_28_x86_64.whl (4.4 MB)
+    4.4/4.4 MB 68.3 MB/s eta 0:00:00
+Downloading zipp-3.17.0-py3-none-any.whl (7.4 kB)
+Downloading more_itertools-10.1.0-py3-none-any.whl (55 kB)
+    55.8/55.8 kB 13.6 MB/s eta 0:00:00
+Downloading cffi-1.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (464 kB)
+    464.8/464.8 kB 68.2 MB/s eta 0:00:00
+Installing collected packages: trove-classifiers, ptyprocess, distlib, zipp, urllib3, tomlkit, shellingham, rapidfuzz, pyrsistent, pyproject-hooks, pycparser, poetry-core, platformdirs, pkginfo, pexpect, packaging, msgpack, more-itertools, jeepney, installer, idna, filelock, crashtest, charset-normalizer, certifi, attrs, virtualenv, requests, jsonschema, jaraco.classes, importlib-metadata, dulwich, cleo, cffi, build, requests-toolbelt, cryptography, cachecontrol, SecretStorage, keyring, poetry-plugin-export, poetry
+Successfully installed SecretStorage-3.3.3 attrs-23.1.0 build-0.10.0 cachecontrol-0.13.1 certifi-2023.7.22 cffi-1.16.0 charset-normalizer-3.3.1 cleo-2.0.1 crashtest-0.4.1 cryptography-41.0.4 distlib-0.3.7 dulwich-0.21.6 filelock-3.12.4 idna-3.4 importlib-metadata-6.8.0 installer-0.7.0 jaraco.classes-3.3.0 jeepney-0.8.0 jsonschema-4.17.3 keyring-24.2.0 more-itertools-10.1.0 msgpack-1.0.7 packaging-23.2 pexpect-4.8.0 pkginfo-1.9.6 platformdirs-3.11.0 poetry-1.6.1 poetry-core-1.7.0 poetry-plugin-export-1.5.0 ptyprocess-0.7.0 pycparser-2.21 pyproject-hooks-1.0.0 pyrsistent-0.19.3 rapidfuzz-2.15.2 requests-2.31.0 requests-toolbelt-1.0.0 shellingham-1.5.3 tomlkit-0.12.1 trove-classifiers-2023.10.18 urllib3-2.0.7 virtualenv-20.24.5 zipp-3.17.0
+Creating virtualenv mergify-engine-cHHEL7M--py3.11 in /home/runner/.cache/pypoetry/virtualenvs
+Installing dependencies from lock file
+Package operations: 177 installs, 0 updates, 0 removals
+  Installing pyasn1 (0.5.0)
+  Installing attrs (23.1.0)
+  Installing cachetools (5.3.1)
+  Installing certifi (2023.7.22)
+  Installing charset-normalizer (3.3.1)
+  Installing idna (3.4)
+  Installing protobuf (4.24.4)
+  Installing pyasn1-modules (0.3.0)
+  Installing pycparser (2.21)
+  Installing rpds-py (0.10.6)
+  Installing rsa (4.9)
+  Installing sniffio (1.3.0)
+  Installing typing-extensions (4.8.0)
+  Installing urllib3 (1.26.18)
+  Installing annotated-types (0.6.0)
+  Installing anyio (3.7.1)
+  Installing cffi (1.16.0)
+  Installing boltons (21.0.0)
+  Installing google-auth (2.23.3)
+  Installing googleapis-common-protos (1.61.0)
+  Installing h11 (0.14.0)
+  Installing markupsafe (2.1.3)
+  Installing mdurl (0.1.2)
+  Installing pydantic-core (2.10.1)
+  Installing referencing (0.30.2)
+  Installing requests (2.31.0)
+  Installing wrapt (1.15.0)
+  Installing zipp (3.17.0)
+  Installing alabaster (0.7.13)
+  Installing babel (2.13.0)
+  Installing bracex (2.4)
+  Installing click (8.1.7)
+  Installing cryptography (41.0.4)
+  Installing deprecated (1.2.14)
+  Installing docutils (0.20.1)
+  Installing face (22.0.0)
+  Installing google-api-core (2.12.0)
+  Installing google-crc32c (1.5.0)
+  Installing hpack (4.0.0)
+  Installing httpcore (0.18.0)
+  Installing hyperframe (6.0.1)
+  Installing imagesize (1.4.1)
+  Installing importlib-metadata (6.8.0)
+  Installing iniconfig (2.0.0)
+  Installing jinja2 (3.1.2)
+  Installing jsonschema-specifications (2023.7.1)
+  Installing mako (1.2.4)
+  Installing markdown-it-py (3.0.0)
+  Installing multidict (6.0.4)
+  Installing packaging (23.2)
+  Installing pluggy (1.3.0)
+  Installing pydantic (2.4.2)
+  Installing pygments (2.16.1)
+  Installing ruamel-yaml-clib (0.2.8)
+  Installing six (1.16.0)
+  Installing snowballstemmer (2.2.0)
+  Installing soupsieve (2.5)
+  Installing sphinxcontrib-applehelp (1.0.7)
+  Installing sphinxcontrib-devhelp (1.0.5)
+  Installing sphinxcontrib-htmlhelp (2.0.4)
+  Installing sphinxcontrib-jsmath (1.0.1)
+  Installing sphinxcontrib-qthelp (1.0.6)
+  Installing sphinxcontrib-serializinghtml (1.1.9)
+  Installing sqlalchemy (2.0.22)
+  Installing starlette (0.27.0)
+  Installing ujson (5.8.0)
+  Installing alembic (1.12.0)
+  Installing beautifulsoup4 (4.12.2)
+  Installing bytecode (0.15.1)
+  Installing colorama (0.4.6)
+  Installing cattrs (23.1.2)
+  Installing click-option-group (0.5.6)
+  Installing coverage (7.3.2)
+  Installing ddsketch (2.0.4)
+  Installing defusedxml (0.7.1)
+  Installing dulwich (0.21.6)
+  Installing envier (0.4.0)
+  Installing execnet (2.0.2)
+  Installing fastapi (0.104.0)
+  Installing flupy (1.2.0)
+  Installing glom (22.1.0)
+  Installing google-cloud-core (2.3.3)
+  Installing google-resumable-media (2.6.0)
+  Installing greenlet (3.0.0)
+  Installing h2 (4.1.0)
+  Installing httptools (0.6.1)
+  Installing httpx (0.25.0)
+  Installing itsdangerous (2.1.2)
+  Installing jsonschema (4.19.1)
+  Installing mypy-extensions (1.0.0)
+  Installing numpy (1.26.1)
+  Installing opentelemetry-api (1.20.0)
+  Installing ordered-set (4.1.0)
+  Installing parse (1.19.1)
+  Installing passlib (1.7.4)
+  Installing pastel (0.2.1)
+  Installing pathspec (0.11.2)
+  Installing pbr (5.11.1)
+  Installing peewee (3.17.0)
+  Installing platformdirs (3.11.0)
+  Installing psycopg (3.1.12)
+  Installing psycopg-binary (3.1.12)
+  Installing pyenchant (3.2.2)
+  Installing pytest (7.4.2)
+  Installing python-dotenv (1.0.0)
+  Installing python-json-logger (2.0.7)
+  Installing python-lsp-jsonrpc (1.0.0)
+  Installing pyyaml (6.0.1)
+  Installing regex (2023.10.3)
+  Installing rich (13.6.0)
+  Installing ruamel-yaml (0.17.40)
+  Installing setproctitle (1.3.3)
+  Installing sphinx (7.2.6)
+  Installing tomli (2.0.1)
+  Installing types-pyopenssl (23.2.0.2)
+  Installing uvloop (0.19.0)
+  Installing watchfiles (0.21.0)
+  Installing wcmatch (8.5)
+  Installing websockets (12.0)
+  Installing xmltodict (0.13.0)
+  Installing yarl (1.9.2)
+  Installing aiofiles (23.2.1)
+  Installing alembic-utils (0.8.1)
+  Installing anys (0.3.0)
+  Installing asgi-lifespan (2.1.0)
+  Installing authlib (1.2.1)
+  Installing black (23.10.0)
+  Installing daiquiri (3.2.3)
+  Installing datadog (0.47.0)
+  Installing ddtrace (1.20.2)
+  Installing deepdiff (6.6.1)
+  Installing filelock (3.12.4)
+  Installing first (2.0.2)
+  Installing google-cloud-storage (2.12.0)
+  Installing graphql-utils (0.4)
+  Installing gunicorn (21.2.0)
+  Installing hiredis (2.2.3)
+  Installing honcho (1.1.0)
+  Installing imia (0.5.3)
+  Installing markdownify (0.11.6)
+  Installing msgpack (1.0.7)
+  Installing mypy (1.6.1)
+  Installing pgvector (0.2.3)
+  Installing poethepoet (0.24.1)
+  Installing pydantic-settings (2.0.3)
+  Installing pyjwt (2.8.0)
+  Installing pytest-asyncio (0.21.1)
+  Installing pytest-cov (4.1.0)
+  Installing pytest-flakefinder (1.1.0)
+  Installing pytest-github-actions-annotate-failures (0.2.0)
+  Installing pytest-rerunfailures (12.0)
+  Installing pytest-split (0.8.1)
+  Installing pytest-timeout (2.2.0)
+  Installing pytest-xdist (3.3.1)
+  Installing python-multipart (0.0.6)
+  Installing redis (5.0.0)
+  Installing reno (4.0.0)
+  Installing respx (0.20.2)
+  Installing ruff (0.1.1)
+  Installing semgrep (1.45.0)
+  Installing sentry-sdk (1.32.0)
+  Installing sphinxcontrib-jquery (4.1)
+  Installing sphinxcontrib-spelling (8.0.0)
+  Installing sqlalchemy-utils (0.41.1)
+  Installing starsessions (2.1.3)
+  Installing tenacity (8.2.3)
+  Installing tiktoken (0.5.1)
+  Installing types-first (2.0.5.2)
+  Installing types-pkg-resources (0.1.3)
+  Installing types-python-dateutil (2.8.19.14)
+  Installing types-pyyaml (6.0.12.12)
+  Installing types-redis (4.6.0.7)
+  Installing unidecode (1.3.7)
+  Installing uvicorn (0.23.2)
+  Installing vcrpy (5.1.0)
+  Installing voluptuous (0.13.1)
+  Installing yamllint (1.32.0)
+Installing the current project: mergify_engine (0.0.0)
+Poe => ./tools/poetry-ci-install.sh
+Installing dependencies from lock file
+No dependencies to install or update
+Installing the current project: mergify_engine (0.0.0)
+Poe => semgrep --config=auto --error
+METRICS: Using configs from the Registry (like --config=p/ci) reports pseudonymous rule metrics to semgrep.dev.
+To disable Registry rule metrics, use "--metrics=off".
+Using configs only from local files (like --config=xyz.yml) does not enable metrics.
+More information: https://semgrep.dev/docs/metrics
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 2329 files tracked by git with 1101 Code rules:
+  Language      Rules   Files          Origin      Rules
+        ───────────────────
+  <multilang>      76    1238          Community    1101
+  python          239     494
+  yaml             28      37
+  json              4      29
+  bash              4      18
+  html              1       2
+  js              179       1
+Warning: 1 timeout error(s) in mergify_engine/tests/functional/actions/test_queue.py when running the following rules:
+[python.boto3.security.hardcoded-token.hardcoded-token]
+┌─────────────────┐
+│ 4 Code Findings │
+└─────────────────┘
+    mergify_engine/tests/unit/models/test_ci_issue.py
+       python.sqlalchemy.performance.performance-improvements.len-all-count
+          Using QUERY.count() instead of len(QUERY.all()) sends less data to the
+  client since the
+          SQLAlchemy method is performed server-side.
+          Details: https://sg.run/4y8g
+          101┆ len(
+          102┆     (
+          103┆         await populated_db.execute(
+          104┆             sqlalchemy.select(gh_models.WorkflowJob).where(
+          105┆                 gh_models.WorkflowJob.log_status
+          106┆                 == gh_models.WorkflowJobLogStatus.EMBEDDED,
+          107┆                 gh_models.WorkflowJob.ci_issue_id.is_(None),
+          108┆             )
+          109┆         )
+          110┆     )
+             [hid 3 additional lines, adjust with --max-lines-per-finding]
+          117┆ assert len((await
+  populated_db.scalars(sqlalchemy.select(CiIssue))).all()) == 0
+            ⋮┆
+          127┆ len(
+          128┆     (
+          129┆         await populated_db.execute(
+          130┆             sqlalchemy.select(gh_models.WorkflowJob).where(
+          131┆                 gh_models.WorkflowJob.log_status
+          132┆                 == gh_models.WorkflowJobLogStatus.EMBEDDED,
+          133┆                 gh_models.WorkflowJob.ci_issue_id.is_(None),
+          134┆             )
+          135┆         )
+          136┆     )
+             [hid 3 additional lines, adjust with --max-lines-per-finding]
+          143┆ assert len((await
+  populated_db.scalars(sqlalchemy.select(CiIssue))).all()) == 3
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+Some files were skipped or only partially analyzed.
+  Scan was limited to files tracked by git.
+  Scan skipped: 150 files larger than 1.0 MB, 1560 files matching .semgrepignore patterns
+  For a full list of skipped files, run semgrep with the --verbose flag.
+Ran 1101 rules on 619 files: 4 findings.
+##[error]Process completed with exit code 1.

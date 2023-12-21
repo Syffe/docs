@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "Assertion error in unit test",
+        "language": "Python",
+        "filename": "mergify_engine/tests/unit/test_events_db.py",
+        "lineno": "760",
+        "error": "AssertionError",
+        "test_framework": "pytest",
+        "stack_trace": "The test `test_event_as_dict` failed due to an assertion error comparing the expected dictionary with the actual dictionary returned by the `_as_dict` method. The differences are in the 'repository' key, specifically the 'ci_issue_prefix' key is missing in the actual output, and the 'type' key under 'owner' has a different format."
+    }
+]

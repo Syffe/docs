@@ -1,0 +1,496 @@
+      at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)
+      at Promise._settlePromiseFromHandler (http://localhost:3000/__cypress/runner/cypress_runner.js:1519:31)
+      at Promise._settlePromise (http://localhost:3000/__cypress/runner/cypress_runner.js:1576:18)
+      at Promise._settlePromise0 (http://localhost:3000/__cypress/runner/cypress_runner.js:1621:10)
+      at Promise._settlePromises (http://localhost:3000/__cypress/runner/cypress_runner.js:1701:18)
+      at Promise._fulfill (http://localhost:3000/__cypress/runner/cypress_runner.js:1645:18)
+      at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:5450:46)
+  From Your Spec Code:
+      at Context.eval (webpack://mergify-dashboard/./cypress/support/commands.ts:125:0)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      7                                                                                │
+  │ Failing:      1                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  3                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 59 seconds                                                             │
+  │ Spec Ran:     Partitions.cy.ts                                                                 │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Screenshots)
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/Partitions.cy.ts/Queues view      (1280x720)
+     with partitions -- Should handle partitions even if nothing queued (failed).png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/Partitions.cy.ts/Queues view      (1280x720)
+     with partitions -- Should handle partitions even if nothing queued (failed) (att
+     empt 2).png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/Partitions.cy.ts/Queues view      (1280x720)
+     with partitions -- Should handle partitions even if nothing queued (failed) (att
+     empt 3).png
+  Running:  Sidebar.cy.ts                                                                   (4 of 6)
+  Sidebar
+ HTTP  10/23/2023 12:14:03 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:03 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:14:05 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:05 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:05 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:05 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:05 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:05 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:07 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:07 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:14:07 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:07 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 12:14:07 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:07 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 12:14:07 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:07 PM 127.0.0.1 Returned 200 in 1 ms
+    ✓ Should be able to log out (3156ms)
+ HTTP  10/23/2023 12:14:08 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458448&end_at=1698063248
+ HTTP  10/23/2023 12:14:08 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 Returned 304 in 6 ms
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:09 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:10 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458450&end_at=1698063250
+ HTTP  10/23/2023 12:14:10 PM 127.0.0.1 Returned 200 in 5 ms
+    ✓ Should display settings as button (3231ms)
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 Returned 304 in 6 ms
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:12 PM 127.0.0.1 Returned 304 in 8 ms
+ HTTP  10/23/2023 12:14:13 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458453&end_at=1698063253
+ HTTP  10/23/2023 12:14:13 PM 127.0.0.1 Returned 200 in 6 ms
+    ✓ Should navigate through all items (2703ms)
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 Returned 304 in 6 ms
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:15 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:16 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458456&end_at=1698063256
+ HTTP  10/23/2023 12:14:16 PM 127.0.0.1 Returned 200 in 6 ms
+    ✓ Should shrink (2276ms)
+  On-premise
+ HTTP  10/23/2023 12:14:17 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:17 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 12:14:17 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:17 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:14:17 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:17 PM 127.0.0.1 Returned 304 in 0 ms
+ HTTP  10/23/2023 12:14:17 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:17 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:18 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:18 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:18 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:18 PM 127.0.0.1 Returned 304 in 6 ms
+ HTTP  10/23/2023 12:14:18 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:18 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:18 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458458&end_at=1698063258
+ HTTP  10/23/2023 12:14:18 PM 127.0.0.1 Returned 200 in 6 ms
+    ✓ Should hide avatar for on-premise (2530ms)
+  Upgrade button
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 Returned 200 in 6 ms
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:20 PM 127.0.0.1 Returned 304 in 6 ms
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 GET /assets/background-e9030368.png
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 Returned 200 in 4 ms
+    ✓ Should show upgrade button if user has no subscription (1432ms)
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:21 PM 127.0.0.1 Returned 304 in 7 ms
+ HTTP  10/23/2023 12:14:22 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:22 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:14:22 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:22 PM 127.0.0.1 Returned 304 in 5 ms
+    ✓ Should not show upgrade button if user is subscribed (1117ms)
+ HTTP  10/23/2023 12:14:22 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:22 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:14:22 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:22 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:23 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:23 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:23 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:23 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:23 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:23 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:14:23 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:23 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:14:23 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:23 PM 127.0.0.1 Returned 304 in 1 ms
+    ✓ Should show Plan & Billing if subcription and billing_manager (1189ms)
+  8 passing (21s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      8                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     21 seconds                                                                       │
+  │ Spec Ran:     Sidebar.cy.ts                                                                    │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Running:  queues/QueuesActivity.cy.ts                                                     (5 of 6)
+  Queues activity
+ HTTP  10/23/2023 12:14:27 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:27 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:29 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:29 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:14:29 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:29 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 12:14:29 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:29 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:31 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:31 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 12:14:31 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:31 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:31 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:31 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:31 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:31 PM 127.0.0.1 Returned 200 in 4 ms
+    ✓ Should show queue event logs title & queue name (4095ms)
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:34 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:35 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458475&end_at=1698063275
+ HTTP  10/23/2023 12:14:35 PM 127.0.0.1 Returned 200 in 5 ms
+    ✓ Should show queue event logs pull requests (2228ms)
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:36 PM 127.0.0.1 Returned 304 in 2 ms
+    ✓ Should show queue freeze event logs aditionnal informations (1358ms)
+ HTTP  10/23/2023 12:14:37 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458477&end_at=1698063277
+ HTTP  10/23/2023 12:14:37 PM 127.0.0.1 Returned 200 in 5 ms
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:38 PM 127.0.0.1 Returned 304 in 1 ms
+    ✓ Should show queue event logs (without freeze) aditionnal informations (1664ms)
+ HTTP  10/23/2023 12:14:39 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458479&end_at=1698063279
+ HTTP  10/23/2023 12:14:39 PM 127.0.0.1 Returned 200 in 7 ms
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:40 PM 127.0.0.1 Returned 304 in 6 ms
+ HTTP  10/23/2023 12:14:41 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458481&end_at=1698063281
+ HTTP  10/23/2023 12:14:41 PM 127.0.0.1 Returned 200 in 2 ms
+    ✓ Should show queue event logs status (1852ms)
+  Scrolling
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:42 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:14:43 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458483&end_at=1698063283
+ HTTP  10/23/2023 12:14:43 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 12:14:45 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458485&end_at=1698063285
+ HTTP  10/23/2023 12:14:45 PM 127.0.0.1 Returned 200 in 2 ms
+    ✓ Should fill queues activity when not enough events to scroll (3014ms)
+  Branch and partition filtering
+ HTTP  10/23/2023 12:14:45 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:45 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 12:14:45 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:45 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:45 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:45 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:14:45 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:45 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:14:46 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:46 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:14:46 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:46 PM 127.0.0.1 Returned 304 in 7 ms
+ HTTP  10/23/2023 12:14:46 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:46 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:46 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=&start_at=1697458486&end_at=1698063286
+ HTTP  10/23/2023 12:14:46 PM 127.0.0.1 Returned 200 in 7 ms
+ HTTP  10/23/2023 12:14:47 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=main&start_at=1697458487&end_at=1698063287
+ HTTP  10/23/2023 12:14:47 PM 127.0.0.1 Returned 200 in 22 ms
+ HTTP  10/23/2023 12:14:47 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=&start_at=1697458487&end_at=1698063287
+ HTTP  10/23/2023 12:14:47 PM 127.0.0.1 Returned 200 in 7 ms
+    ✓ Should sort events by partitions (2457ms)
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 Returned 304 in 0 ms
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:48 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:49 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=&start_at=1697458489&end_at=1698063289
+ HTTP  10/23/2023 12:14:49 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 12:14:49 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=main&start_at=1697458489&end_at=1698063289
+ HTTP  10/23/2023 12:14:49 PM 127.0.0.1 Returned 200 in 5 ms
+ HTTP  10/23/2023 12:14:49 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458489&end_at=1698063289
+ HTTP  10/23/2023 12:14:49 PM 127.0.0.1 Returned 200 in 2 ms
+    ✓ Should sort events by branch (2140ms)
+  8 passing (24s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      8                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     23 seconds                                                                       │
+  │ Spec Ran:     queues/QueuesActivity.cy.ts                                                      │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Running:  Config.cy.ts                                                                    (6 of 6)
+  Testing config effects on UI
+ HTTP  10/23/2023 12:14:53 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:53 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:55 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:55 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:55 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:55 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 12:14:55 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:55 PM 127.0.0.1 Returned 200 in 0 ms
+ HTTP  10/23/2023 12:14:57 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:57 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 12:14:57 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:57 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:14:57 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:57 PM 127.0.0.1 Returned 200 in 5 ms
+ HTTP  10/23/2023 12:14:58 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458498&end_at=1698063298
+ HTTP  10/23/2023 12:14:58 PM 127.0.0.1 Returned 200 in 2 ms
+    ✓ Should not load intercom if config don't allow (3078ms)
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 Returned 200 in 7 ms
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:14:59 PM 127.0.0.1 Returned 304 in 8 ms
+ HTTP  10/23/2023 12:15:00 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458500&end_at=1698063300
+ HTTP  10/23/2023 12:15:00 PM 127.0.0.1 Returned 200 in 7 ms
+    ✓ Should not display application keys link (1939ms)
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 GET /github/mergifyio-testing/application-keys
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 Returned 304 in 0 ms
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 GET /assets/error-page-background-f8fc4eec.png
+ HTTP  10/23/2023 12:15:01 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 12:15:02 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458502&end_at=1698063302
+ HTTP  10/23/2023 12:15:02 PM 127.0.0.1 Returned 200 in 4 ms
+    ✓ Should not be able to access application keys via url (1424ms)
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 Returned 304 in 0 ms
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:15:03 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 12:15:04 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458504&end_at=1698063304
+ HTTP  10/23/2023 12:15:04 PM 127.0.0.1 Returned 200 in 4 ms
+    ✓ Should not display billing links (1764ms)
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 GET /mergifyio-testing/usage
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 GET /assets/error-page-background-f8fc4eec.png
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 GET /assets/intercom-95dfc246.js
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 Returned 304 in 7 ms
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:15:05 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:15:06 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458506&end_at=1698063306
+ HTTP  10/23/2023 12:15:06 PM 127.0.0.1 Returned 200 in 5 ms
+    ✓ Should not be able to access usage via url (1556ms)
+ HTTP  10/23/2023 12:15:06 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:15:06 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:15:07 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:15:07 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:15:07 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:15:07 PM 127.0.0.1 Returned 304 in 12 ms
+ HTTP  10/23/2023 12:15:07 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:15:07 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:15:07 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:15:07 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:15:07 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:15:07 PM 127.0.0.1 Returned 304 in 0 ms
+ HTTP  10/23/2023 12:15:08 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458508&end_at=1698063308
+ HTTP  10/23/2023 12:15:08 PM 127.0.0.1 Returned 200 in 5 ms
+    ✓ Should load status page script (1877ms)
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 GET /assets/index-ea2abd32.js
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 Returned 304 in 6 ms
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 12:15:09 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 12:15:10 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458510&end_at=1698063310
+ HTTP  10/23/2023 12:15:10 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 12:15:11 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697458511&end_at=1698063311
+ HTTP  10/23/2023 12:15:11 PM 127.0.0.1 Returned 200 in 6 ms
+    ✓ Should not load status page script (2716ms)
+  7 passing (19s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        7                                                                                │
+  │ Passing:      7                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     19 seconds                                                                       │
+  │ Spec Ran:     Config.cy.ts                                                                     │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Run Finished)
+       Spec                                              Tests  Passing  Failing  Pending  Skipped
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ✔  UpgradeModal.cy.ts                       00:30        9        9        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  dashboard-pull-requests/PullList.cy      00:16        9        9        -        -        - │
+  │    .ts                                                                                         │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✖  Partitions.cy.ts                         01:59        8        7        1        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  Sidebar.cy.ts                            00:21        8        8        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  queues/QueuesActivity.cy.ts              00:23        8        8        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  Config.cy.ts                             00:19        7        7        -        -        - │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ✖  1 of 6 failed (17%)                      03:49       49       48        1        -        -
+##[error]Cypress tests: 1 failed

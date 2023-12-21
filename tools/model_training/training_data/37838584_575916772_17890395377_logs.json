@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "Accessing property of undefined object",
+        "language": "JavaScript",
+        "filename": "github-script",
+        "lineno": "15",
+        "error": "TypeError: Cannot read properties of undefined (reading 'id')",
+        "test_framework": null,
+        "stack_trace": "TypeError: Cannot read properties of undefined (reading 'id')\n    at eval (eval at callAsyncFunction (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15143:16), <anonymous>:15:31)\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)\n    at async main (/home/runner/work/_actions/actions/github-script/v6/dist/index.js:15236:20)"
+    }
+]

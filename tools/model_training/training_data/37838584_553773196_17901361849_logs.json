@@ -1,0 +1,29 @@
+[
+    {
+        "problem_type": "ESLint configuration error",
+        "language": "JavaScript",
+        "filename": "EmbeddedLog.cy.tsx",
+        "lineno": "1",
+        "error": "Resolve error: unable to load resolver 'alias'",
+        "test_framework": null,
+        "stack_trace": null
+    },
+    {
+        "problem_type": "Module resolution error",
+        "language": "JavaScript",
+        "filename": "EmbeddedLog.cy.tsx",
+        "lineno": "1",
+        "error": "Unable to resolve path to module '../../../src/dashboard/FailedJobs/components/GHAFailedJobsError/EmbeddedLog'",
+        "test_framework": null,
+        "stack_trace": null
+    },
+    {
+        "problem_type": "Mocha exclusive test error",
+        "language": "JavaScript",
+        "filename": "GHAFailedJobs.cy.ts",
+        "lineno": "11",
+        "error": "Unexpected exclusive mocha test",
+        "test_framework": "Mocha",
+        "stack_trace": null
+    }
+]

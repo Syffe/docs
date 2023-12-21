@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "TypeScript Compilation Error",
+        "language": "TypeScript",
+        "filename": "src/dashboard/Queues/QueuesActivity/hooks.ts",
+        "lineno": "87",
+        "error": "TS18048",
+        "test_framework": null,
+        "stack_trace": null
+    }
+]

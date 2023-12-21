@@ -1,0 +1,35 @@
+##[group]Run cypress-io/github-action@v6.5.0
+with:
+  runTests: false
+  build: npm run build
+  record: false
+  publish-summary: true
+  component: false
+##[endgroup]
+[command]/opt/hostedtoolcache/node/18.18.2/x64/bin/npm ci
+added 936 packages, and audited 937 packages in 1m
+218 packages are looking for funding
+  run `npm fund` for details
+found 0 vulnerabilities
+[command]/opt/hostedtoolcache/node/18.18.2/x64/bin/npx cypress cache list
+┌─────────┬────────────┐
+│ version │ last used  │
+├─────────┼────────────┤
+│ 13.3.1  │ 3 days ago │
+└─────────┴────────────┘
+[command]/opt/hostedtoolcache/node/18.18.2/x64/bin/npx cypress verify
+[STARTED] Task without title.
+[SUCCESS] Task without title.
+[command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/dashboard-ui/dashboard-ui --files-from manifest.txt --use-compress-program zstdmt
+Cache Size: ~101 MB (105479566 B)
+Cache saved successfully
+[command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/dashboard-ui/dashboard-ui --files-from manifest.txt --use-compress-program zstdmt
+Cache Size: ~157 MB (164797116 B)
+Cache saved successfully
+build app command "npm run build"
+current working directory "/home/runner/work/dashboard-ui/dashboard-ui"
+[command]/opt/hostedtoolcache/node/18.18.2/x64/bin/npm run build
+> mergify-dashboard@0.1.0 build
+> bash ./build.sh
+##[error]src/dashboard/Queues/QueuesActivity/hooks.ts(87,11): error TS18048: 'event.metadata.partition_names' is possibly 'undefined'.
+##[error]The process '/opt/hostedtoolcache/node/18.18.2/x64/bin/npm' failed with exit code 2

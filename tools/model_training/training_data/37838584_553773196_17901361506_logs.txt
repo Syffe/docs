@@ -1,0 +1,35 @@
+##[group]Run cypress-io/github-action@v6.5.0
+with:
+  runTests: false
+  build: npm run build
+  record: false
+  publish-summary: true
+  component: false
+##[endgroup]
+[command]/opt/hostedtoolcache/node/20.8.1/x64/bin/npm ci
+added 929 packages, and audited 930 packages in 43s
+222 packages are looking for funding
+  run `npm fund` for details
+found 0 vulnerabilities
+[command]/opt/hostedtoolcache/node/20.8.1/x64/bin/npx cypress cache list
+┌─────────┬────────────┐
+│ version │ last used  │
+├─────────┼────────────┤
+│ 13.3.1  │ 4 days ago │
+└─────────┴────────────┘
+[command]/opt/hostedtoolcache/node/20.8.1/x64/bin/npx cypress verify
+[STARTED] Task without title.
+[SUCCESS] Task without title.
+[command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/dashboard-ui/dashboard-ui --files-from manifest.txt --use-compress-program zstdmt
+Cache Size: ~101 MB (105682459 B)
+Cache saved successfully
+[command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/dashboard-ui/dashboard-ui --files-from manifest.txt --use-compress-program zstdmt
+Cache Size: ~157 MB (164789063 B)
+Cache saved successfully
+build app command "npm run build"
+current working directory "/home/runner/work/dashboard-ui/dashboard-ui"
+[command]/opt/hostedtoolcache/node/20.8.1/x64/bin/npm run build
+> mergify-dashboard@0.1.0 build
+> bash ./build.sh
+##[error]src/dashboard/CIMonitoring/components/Issue/Main.tsx(124,22): error TS2740: Type '{ id: number; run_id: number; started_at: string; flaky: string; failed_run_count: number; }' is missing the following properties from type '{ name: string; error_description: string | null; id: number; run_id: number; steps: { name: string; status: "queued" | "in_progress" | "completed"; conclusion: "success" | "failure" | "neutral" | ... 4 more ... | null; number: number; started_at: string | null; completed_at: string | null; } ; ... 5 more ...; fail...': name, error_description, steps, failed_step_number, and 3 more.
+##[error]The process '/opt/hostedtoolcache/node/20.8.1/x64/bin/npm' failed with exit code 2

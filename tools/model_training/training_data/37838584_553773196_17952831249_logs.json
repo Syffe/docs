@@ -1,0 +1,38 @@
+[
+    {
+        "problem_type": "Assertion Error",
+        "language": "JavaScript",
+        "filename": "gha-failed-jobs/GHAFailedJobs.cy.ts",
+        "lineno": "11",
+        "error": "CypressError",
+        "test_framework": "Cypress",
+        "stack_trace": "CypressError: Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document.\nNo elements in the current DOM matched your query:\n  > cy.get([data-field=error])"
+    },
+    {
+        "problem_type": "Assertion Error",
+        "language": "JavaScript",
+        "filename": "gha-failed-jobs/GHAFailedJobs.cy.ts",
+        "lineno": "null",
+        "error": "AssertionError",
+        "test_framework": "Cypress",
+        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it."
+    },
+    {
+        "problem_type": "Assertion Error",
+        "language": "JavaScript",
+        "filename": "gha-failed-jobs/GHAFailedJobDetails.cy.ts",
+        "lineno": "null",
+        "error": "AssertionError",
+        "test_framework": "Cypress",
+        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"details-17728253792\"]`, but never found it."
+    },
+    {
+        "problem_type": "Assertion Error",
+        "language": "JavaScript",
+        "filename": "gha-failed-jobs/GHAFailedJobDetails.cy.ts",
+        "lineno": "17",
+        "error": "AssertionError",
+        "test_framework": "Cypress",
+        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"previous-job\"]`, but never found it."
+    }
+]

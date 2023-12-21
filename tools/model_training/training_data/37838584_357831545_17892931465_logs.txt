@@ -1,0 +1,657 @@
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `base=20231018113839/test_queue_update_inplace_merge_report/main`
+- [X] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [X] all of [:pushpin: queue conditions of queue `default`]] [worker_id: dedicated-40527191]
+  INFO     Context: summary changed [conclusions: {'Rule: default merge (queue)': <Conclusion.PENDING: None>}] [gh_author: mergify-test1] [gh_branch: 20231018113839/test_queue_update_inplace_merge_report/main] [gh_owner: mergifyio-testing] [gh_private: False] [gh_pull: 33759] [gh_pull_base_sha: 51d3c6b21e10241cbc361d9d4360fd269204e3d0] [gh_pull_head_owner: mergifyio-testing] [gh_pull_head_ref: 20231018113839/test_queue_update_inplace_merge_report/admin/pr2] [gh_pull_head_sha: 8e27533e3e1c43dbb10d31fa06487c7d592428e3] [gh_pull_locked: False] [gh_pull_merge_commit_sha: 7461731b93fc888960b4113b2fdf0a4c27953e93] [gh_pull_mergeable: True] [gh_pull_mergeable_state: clean] [gh_pull_url: https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/33759] [gh_repo: functional-testing-repo-sileht] [previous_conclusions: {'Rule: default merge (queue)': <Conclusion.PENDING: None>}] [worker_id: dedicated-40527191]
+  INFO     mergify_engine.queue.merge_train.train: refreshing merge train [gh_branch: 20231018113839/test_queue_update_inplace_merge_report/main] [gh_owner: mergifyio-testing] [gh_repo: functional-testing-repo-sileht] [partition_name: __default__] [train_cars: [ ]] [train_waiting_pulls_by_priority:  ] [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: tasks stopping [count: 3] [tasks: ['dedicated-workers-cache-syncer', 'dedicated-workers-spawner', 'gitter']] [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: dedicated-workers-cache-syncer task exited [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: dedicated-workers-spawner task exited [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: gitter task exited [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: tasks stopped [count: 3] [tasks: ['dedicated-workers-cache-syncer', 'dedicated-workers-spawner', 'gitter']] [worker_id: dedicated-40527191]
+  TEST     mergify_engine.tests.functional.base: WAITING FOR status/None: {'state': 'success'} [worker_id: dedicated-40527191]
+  TEST     mergify_engine.tests.functional.base: EVENT RECEIVED status/None/success: {'hook_id': '365596432', 'type': 'status', 'payload': {'sha': '8e27533e3e1c43dbb10d31fa06487c7d592428e3', 'name': 'mergifyio-testing/functional-testing-repo-sileht', 'context': 'another-ci', 'description': 'The CI is success', 'state': 'success', 'commit': {'sha': '8e27533e3e1c43dbb10d31fa06487c7d592428e3', 'commit': {'author': {'name': 'Mergify', 'email': '108276933+mergify-sileht[bot]@users.noreply.github.com', 'date': '2023-10-18T11:39:02Z'}, 'committer': {'name': 'mergify-test1', 'email': '38494943+mergify-test1@users.noreply.github.com', 'date': '2023-10-18T11:39:43Z'}, 'message': 'test_queue_update_inplace_merge_report: pull request n2 from admin', 'tree': {'sha': '342c2f83f38274b2bad35c28ebecb77791abaf0f'}, 'comment_count': 0, 'verification': {'verified': False, 'reason': 'unsigned', 'signature': None, 'payload': None}}, 'author': {'login': 'mergify-sileht[bot]', 'gravatar_id': '', 'type': 'Bot', 'site_admin': False}, 'committer': {'login': 'mergify-test1', 'gravatar_id': '', 'type': 'User', 'site_admin': False}, 'parents': [{'sha': '51d3c6b21e10241cbc361d9d4360fd269204e3d0'}]}, 'branches': [{'name': '20231018113839/test_queue_update_inplace_merge_report/admin/pr2', 'commit': {'sha': '8e27533e3e1c43dbb10d31fa06487c7d592428e3'}, 'protected': False}], 'organization': {'login': 'mergifyio-testing'}}} [worker_id: dedicated-40527191]
+  INFO     mergify_engine.github_events: GitHubApp event pushed [event_id: 123456789] [event_type: status] [gh_owner: mergifyio-testing] [gh_pull: 33759] [gh_repo: functional-testing-repo-sileht] [priority: None] [sender: mergify-sileht[bot]] [slim_event: {'sha': '8e27533e3e1c43dbb10d31fa06487c7d592428e3', 'name': 'mergifyio-testing/functional-testing-repo-sileht', 'target_url': None, 'context': 'another-ci', 'state': 'success', 'sender': {'login': 'mergify-sileht[bot]', 'id': 108276933, 'type': 'Bot'}, 'delivery_id': '123456789', 'received_at': '2023-10-20T09:24:31.392713+00:00'}] [worker_id: dedicated-40527191]
+  TEST     mergify_engine.tests.functional.base: RUNNING ENGINE [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: gitter starting [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: dedicated-workers-cache-syncer starting [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.shared_workers_spawner_service: workers starting [count: 0] [process_index: 0] [shared_stream_tasks_per_process: 0] [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.shared_workers_spawner_service: workers started [count: 0] [process_index: 0] [shared_stream_tasks_per_process: 0] [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: dedicated-workers-spawner starting [worker_id: dedicated-40527191]
+  INFO     Context: unplan to refresh pull request [gh_author: mergify-test1] [gh_branch: 20231018113839/test_queue_update_inplace_merge_report/main] [gh_owner: mergifyio-testing] [gh_private: False] [gh_pull: 33759] [gh_pull_base_sha: 51d3c6b21e10241cbc361d9d4360fd269204e3d0] [gh_pull_head_owner: mergifyio-testing] [gh_pull_head_ref: 20231018113839/test_queue_update_inplace_merge_report/admin/pr2] [gh_pull_head_sha: 8e27533e3e1c43dbb10d31fa06487c7d592428e3] [gh_pull_locked: False] [gh_pull_merge_commit_sha: 7461731b93fc888960b4113b2fdf0a4c27953e93] [gh_pull_mergeable: True] [gh_pull_mergeable_state: unstable] [gh_pull_url: https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/33759] [gh_repo: functional-testing-repo-sileht] [worker_id: dedicated-40527191]
+  INFO     Context: actions runner [configuration_changed: False] [gh_author: mergify-test1] [gh_branch: 20231018113839/test_queue_update_inplace_merge_report/main] [gh_owner: mergifyio-testing] [gh_private: False] [gh_pull: 33759] [gh_pull_base_sha: 51d3c6b21e10241cbc361d9d4360fd269204e3d0] [gh_pull_head_owner: mergifyio-testing] [gh_pull_head_ref: 20231018113839/test_queue_update_inplace_merge_report/admin/pr2] [gh_pull_head_sha: 8e27533e3e1c43dbb10d31fa06487c7d592428e3] [gh_pull_locked: False] [gh_pull_merge_commit_sha: 7461731b93fc888960b4113b2fdf0a4c27953e93] [gh_pull_mergeable: True] [gh_pull_mergeable_state: unstable] [gh_pull_url: https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/33759] [gh_repo: functional-testing-repo-sileht] [sources: [{'event_type': 'status', 'data': {'sha': '8e27533e3e1c43dbb10d31fa06487c7d592428e3', 'name': 'mergifyio-testing/functional-testing-repo-sileht', 'target_url': None, 'context': 'another-ci', 'state': 'success', 'sender': {'login': 'mergify-sileht[bot]', 'id': 108276933, 'type': 'Bot'}, 'delivery_id': '123456789', 'received_at': '2023-10-20T09:24:31.389956+00:00'}, 'timestamp': '2023-10-20T09:24:31.390070+00:00', 'initial_score': 2016977938713900.0}]] [worker_id: dedicated-40527191]
+  INFO     Context: ignored pull request rules [gh_author: mergify-test1] [gh_branch: 20231018113839/test_queue_update_inplace_merge_report/main] [gh_owner: mergifyio-testing] [gh_private: False] [gh_pull: 33759] [gh_pull_base_sha: 51d3c6b21e10241cbc361d9d4360fd269204e3d0] [gh_pull_head_owner: mergifyio-testing] [gh_pull_head_ref: 20231018113839/test_queue_update_inplace_merge_report/admin/pr2] [gh_pull_head_sha: 8e27533e3e1c43dbb10d31fa06487c7d592428e3] [gh_pull_locked: False] [gh_pull_merge_commit_sha: 7461731b93fc888960b4113b2fdf0a4c27953e93] [gh_pull_mergeable: True] [gh_pull_mergeable_state: unstable] [gh_pull_url: https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/33759] [gh_repo: functional-testing-repo-sileht] [pull_request_rules: [{'name': 'delete backport/copy branch (Mergify rule)', 'rule_summary': '- [ ] `author=mergify-sileht[bot]`\n- [ ] `closed` [:pushpin: delete_head_branch requirement]\n- [ ] `head~=^mergify/(bp|copy)/`', 'actions': ['delete_head_branch']}]] [worker_id: dedicated-40527191]
+  INFO     Repository: override plan to refresh pull request [gh_owner: mergifyio-testing] [gh_private: False] [gh_pull: 33759] [gh_repo: functional-testing-repo-sileht] [refresh_planned_at: 2023-10-20T09:27:31.656689+00:00] [worker_id: dedicated-40527191]
+  INFO     mergify_engine.queue.merge_train.train: pull request train car status update [batch_failure_summary: ] [checks_copy_summary: {'another-ci': 'success'}] [gh_branch: 20231018113839/test_queue_update_inplace_merge_report/main] [gh_owner: mergifyio-testing] [gh_pull: 33759] [gh_repo: functional-testing-repo-sileht] [initial_embarked_pull_numbers:  ] [last_evaluated_queue_conditions_summary: - [ ] all of [📃 From pull request rule default merge]:
+  - `status-success=continuous-integration/fake-ci`
+    - [ ] #33759
+  - `-draft` [:pushpin: queue requirement]
+    - [X] #33759
+  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+    - [X] #33759
+  - `base=20231018113839/test_queue_update_inplace_merge_report/main`
+    - [X] #33759
+  - [X] any of [:twisted_rightwards_arrows: queue conditions]:
+    - [X] all of [:pushpin: queue conditions of queue `default`]] [legacy_conclusion: 🟠 pending] [merge_conditions_summary: Required conditions for merge:
+- [ ] all of [📃 From pull request rule default merge]:
+  - [ ] `status-success=continuous-integration/fake-ci`
+  - `-draft` [:pushpin: queue requirement]
+    - [X] #33759
+  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+    - [X] #33759
+  - [X] `base=20231018113839/test_queue_update_inplace_merge_report/main`
+  - [X] any of [:twisted_rightwards_arrows: queue conditions]:
+    - [X] all of [:pushpin: queue conditions of queue `default`]
+- [X] `status-success=another-ci`] [original_pull_title: The pull request is embarked with 20231018113839/test_queue_update_inplace_merge_report/main (51d3c6b) for merge] [outcome: TrainCarOutcome.UNKNOWN] [outcome_message: None] [partition_name: __default__] [still_embarked_pull_numbers:  ] [train_cars: [ ]] [train_waiting_pulls_by_priority:  ] [worker_id: dedicated-40527191]
+  INFO     Context: train car pull request evaluation [diff_result: {'values_changed': {'root.subconditions .match': {'new_value': True, 'old_value': False}, 'root.subconditions .evaluations .match': {'new_value': True, 'old_value': False}}}] [event_types: ['status']] [gh_author: mergify-test1] [gh_branch: 20231018113839/test_queue_update_inplace_merge_report/main] [gh_owner: mergifyio-testing] [gh_private: False] [gh_pull: 33759] [gh_pull_base_sha: 51d3c6b21e10241cbc361d9d4360fd269204e3d0] [gh_pull_head_owner: mergifyio-testing] [gh_pull_head_ref: 20231018113839/test_queue_update_inplace_merge_report/admin/pr2] [gh_pull_head_sha: 8e27533e3e1c43dbb10d31fa06487c7d592428e3] [gh_pull_locked: False] [gh_pull_merge_commit_sha: 7461731b93fc888960b4113b2fdf0a4c27953e93] [gh_pull_mergeable: True] [gh_pull_mergeable_state: unstable] [gh_pull_queued:  ] [gh_pull_url: https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/33759] [gh_repo: functional-testing-repo-sileht] [new_state: {'outcome': <TrainCarOutcome.UNKNOWN: 'unknown'>, 'ci_state': <CiState.PENDING: 'pending'>, 'ci_started_at': datetime.datetime(2023, 10, 20, 9, 24, 30, 925128, tzinfo=datetime.timezone.utc), 'ci_ended_at': None, 'checks_end_at': None, 'queue_check_conclusion': <Conclusion.PENDING: None>}] [origin: original_pull_request] [previous_state: {'outcome': <TrainCarOutcome.UNKNOWN: 'unknown'>, 'ci_state': <CiState.PENDING: 'pending'>, 'queue_check_conclusion': None}] [require_summaries_update: True] [status: 🟠 pending] [unexpected_changes: None] [worker_id: dedicated-40527191]
+  INFO     Context: action evaluation: `queue` executed: cancel/None -> None [action: queue] [check_name: Rule: default merge (queue)] [conclusion: None] [gh_author: mergify-test1] [gh_branch: 20231018113839/test_queue_update_inplace_merge_report/main] [gh_owner: mergifyio-testing] [gh_private: False] [gh_pull: 33759] [gh_pull_base_sha: 51d3c6b21e10241cbc361d9d4360fd269204e3d0] [gh_pull_head_owner: mergifyio-testing] [gh_pull_head_ref: 20231018113839/test_queue_update_inplace_merge_report/admin/pr2] [gh_pull_head_sha: 8e27533e3e1c43dbb10d31fa06487c7d592428e3] [gh_pull_locked: False] [gh_pull_merge_commit_sha: 7461731b93fc888960b4113b2fdf0a4c27953e93] [gh_pull_mergeable: True] [gh_pull_mergeable_state: unstable] [gh_pull_url: https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/33759] [gh_repo: functional-testing-repo-sileht] [previous_conclusion: None] [report: Result(conclusion=<Conclusion.PENDING: None>, title='The pull request is the 1st in the queue to be merged', summary='Branch 20231018113839/test_queue_update_inplace_merge_report/main (51d3c6b) and [#33759](/mergifyio-testing/functional-testing-repo-sileht/pull/33759) are embarked together for merge.\n\nRequired conditions of queue `default` for merge:\n\n- [ ] all of [📃 From pull request rule default merge]:\n  - [ ] `status-success=continuous-integration/fake-ci`\n  - `-draft` [:pushpin: queue requirement]\n    - [X] #33759\n  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    - [X] #33759\n  - [X] `base=20231018113839/test_queue_update_inplace_merge_report/main`\n  - [X] any of [:twisted_rightwards_arrows: queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue `default`]\n- [X] `status-success=another-ci`\n\nRequired conditions to stay in the queue:\n\n- [ ] all of [📃 From pull request rule default merge]:\n  - `status-success=continuous-integration/fake-ci`\n    - [ ] #33759\n  - `-draft` [:pushpin: queue requirement]\n    - [X] #33759\n  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    - [X] #33759\n  - `base=20231018113839/test_queue_update_inplace_merge_report/main`\n    - [X] #33759\n  - [X] any of [:twisted_rightwards_arrows: queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue `default`]\n\nVisit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-sileht/queues/partitions/__default__?queues=default&branch=20231018113839%2Ftest_queue_update_inplace_merge_report%2Fmain) to check the state of the queue `default`.', annotations=None, started_at=None, ended_at=None, log_details=None, details_url=None)] [rule_summary: - [ ] `status-success=continuous-integration/fake-ci`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `base=20231018113839/test_queue_update_inplace_merge_report/main`
+- [X] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [X] all of [:pushpin: queue conditions of queue `default`]] [worker_id: dedicated-40527191]
+  INFO     Context: summary unchanged [conclusions: {'Rule: default merge (queue)': <Conclusion.PENDING: None>}] [gh_author: mergify-test1] [gh_branch: 20231018113839/test_queue_update_inplace_merge_report/main] [gh_owner: mergifyio-testing] [gh_private: False] [gh_pull: 33759] [gh_pull_base_sha: 51d3c6b21e10241cbc361d9d4360fd269204e3d0] [gh_pull_head_owner: mergifyio-testing] [gh_pull_head_ref: 20231018113839/test_queue_update_inplace_merge_report/admin/pr2] [gh_pull_head_sha: 8e27533e3e1c43dbb10d31fa06487c7d592428e3] [gh_pull_locked: False] [gh_pull_merge_commit_sha: 7461731b93fc888960b4113b2fdf0a4c27953e93] [gh_pull_mergeable: True] [gh_pull_mergeable_state: unstable] [gh_pull_url: https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/33759] [gh_repo: functional-testing-repo-sileht] [previous_conclusions: {'Rule: default merge (queue)': <Conclusion.PENDING: None>}] [worker_id: dedicated-40527191]
+  INFO     mergify_engine.queue.merge_train.train: refreshing merge train [gh_branch: 20231018113839/test_queue_update_inplace_merge_report/main] [gh_owner: mergifyio-testing] [gh_repo: functional-testing-repo-sileht] [partition_name: __default__] [train_cars: [ ]] [train_waiting_pulls_by_priority:  ] [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: tasks stopping [count: 3] [tasks: ['dedicated-workers-cache-syncer', 'dedicated-workers-spawner', 'gitter']] [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: dedicated-workers-cache-syncer task exited [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: dedicated-workers-spawner task exited [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: gitter task exited [worker_id: dedicated-40527191]
+  INFO     mergify_engine.worker.task: tasks stopped [count: 3] [tasks: ['dedicated-workers-cache-syncer', 'dedicated-workers-spawner', 'gitter']] [worker_id: dedicated-40527191]
+  INFO     mergify_engine.tests.functional.base: gitter messages [messages: [('git directory created', {'path': '/tmp/mergify-gitters3z9yfss', 'version': 'git version 2.39.3 (Apple Git-145)\n'}), ('cleaning: /tmp/mergify-gitters3z9yfss', {})]] [worker_id: dedicated-40527191]
+ test_api_cursor_redis
+fake_repository = Repository(installation=Installation(installation={'id': 12345, 'target_type': 'User', 'permissions': {}, 'account': {...tps://avatars.githubusercontent.com/u/0?v=4'}, 'archived': False, 'url': '', 'html_url': '', 'default_branch': 'main'})
+web_client = <mergify_engine.tests.conftest.CustomTestClient object at 0x7fcc33e85490>
+api_token = TokenUserRepo(api_token=, user=<me... 'html_url': '', 'default_branch': 'main', 'owner': {'id': 0, 'login': 'Mergifyio', 'type': 'User', 'avatar_url': ''}})
+    @pytest.mark.subscription(subscription.Features.EVENTLOGS_LONG)
+    async def test_api_cursor_redis(
+        fake_repository: context.Repository,
+        web_client: tests_conftest.CustomTestClient,
+        api_token: tests_api_conftest.TokenUserRepo,
+    ) -> None:
+        signal = eventlogs.EventLogsSignal()
+        for i in range(6):
+>           await signal(
+                event="action.assign",
+                repository=fake_repository,
+                pull_request=github_types.GitHubPullRequestNumber(1),
+                metadata=signals.EventAssignMetadata(
+                    {
+                        "added": ["leo", "charly", "guillaume"],
+                        "removed": ["damien", "fabien"],
+                    }
+                ),
+                trigger=f"Rule: {i}",
+            )
+mergify_engine/tests/unit/api/test_events.py:310:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+self = <mergify_engine.eventlogs.EventLogsSignal object at 0x7fcc320a58d0>
+repository = Repository(installation=Installation(installation={'id': 12345, 'target_type': 'User', 'permissions': {}, 'account': {...tps://avatars.githubusercontent.com/u/0?v=4'}, 'archived': False, 'url': '', 'html_url': '', 'default_branch': 'main'})
+pull_request = 1, event = 'action.assign'
+metadata = {'added': ['leo', 'charly', 'guillaume'], 'removed': ['damien', 'fabien']}
+trigger = 'Rule: 0'
+    async def __call__(
+        self,
+        repository: "context.Repository",
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        event: signals.EventName,
+        metadata: signals.EventMetadata,
+        trigger: str,
+    ) -> None:
+        if event not in SUPPORTED_EVENT_NAMES:
+            return
+        redis = repository.installation.redis.eventlogs
+        if repository.installation.subscription.has_feature(
+            subscription.Features.EVENTLOGS_LONG
+        ):
+            retention = EVENTLOGS_LONG_RETENTION
+        elif repository.installation.subscription.has_feature(
+            subscription.Features.EVENTLOGS_SHORT
+        ):
+            retention = EVENTLOGS_SHORT_RETENTION
+        else:
+            return
+>       if settings.EVENTLOG_EVENTS_REDIS_INGESTION:
+E       NameError: name 'settings' is not defined
+mergify_engine/eventlogs.py:362: NameError
+ Captured stdout setup
+  INFO     mergify_engine.logs: ##################### CONFIGURATION ######################
+  INFO     mergify_engine.logs: * OPENAI_API_TOKEN:
+  INFO     mergify_engine.logs: * LOG_EMBEDDER_ENABLED_ORGS:  
+  INFO     mergify_engine.logs: * LOG_EMBEDDER_GCS_BUCKET: bucket-f4192acc-1fba-4e65-a4e5-f7d4aa1c6ca2
+  INFO     mergify_engine.logs: * LOG_EMBEDDER_GCS_CREDENTIALS:
+  INFO     mergify_engine.logs: * SHARED_STREAM_PROCESSES: 1
+  INFO     mergify_engine.logs: * DEDICATED_STREAM_PROCESSES: 1
+  INFO     mergify_engine.logs: * SHARED_STREAM_TASKS_PER_PROCESS: 7
+  INFO     mergify_engine.logs: * BUCKET_PROCESSING_MAX_SECONDS: 100000
+  INFO     mergify_engine.logs: * MAX_GITTER_CONCURRENT_JOBS: 20
+  INFO     mergify_engine.logs: * CI_DOWNLOAD_FREQUENCY: 1:00:00
+  INFO     mergify_engine.logs: * CI_EVENT_PROCESSING_BATCH_SIZE: 1000
+  INFO     mergify_engine.logs: * CI_EVENT_INGESTION: True
+  INFO     mergify_engine.logs: * CI_DOWNLOAD_BATCH_SIZE: 50
+  INFO     mergify_engine.logs: * GITHUB_IN_POSTGRES_EVENTS_INGESTION: True
+  INFO     mergify_engine.logs: * GITHUB_IN_POSTGRES_PROCESSING_BATCH_SIZE: 1000
+  INFO     mergify_engine.logs: * EVENTLOG_EVENTS_REDIS_INGESTION: True
+  INFO     mergify_engine.logs: * SAAS_MODE: True
+  INFO     mergify_engine.logs: * SUBSCRIPTION_URL: http://localhost:5000
+  INFO     mergify_engine.logs: * ENGINE_TO_SHADOW_OFFICE_API_KEY:
+  INFO     mergify_engine.logs: * SUBSCRIPTION_TOKEN: None
+  INFO     mergify_engine.logs: * SHADOW_OFFICE_TO_ENGINE_API_KEY:
+  INFO     mergify_engine.logs: * SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION: None
+  INFO     mergify_engine.logs: * ACCOUNT_TOKENS:  
+  INFO     mergify_engine.logs: * APPLICATION_APIKEYS: {}
+  INFO     mergify_engine.logs: * DASHBOARD_UI_STATIC_FILES_DIRECTORY: None
+  INFO     mergify_engine.logs: * DASHBOARD_UI_FRONT_URL: http://localhost:3000
+  INFO     mergify_engine.logs: * DASHBOARD_UI_SESSION_EXPIRATION_HOURS: 24
+  INFO     mergify_engine.logs: * DASHBOARD_UI_FEATURES:  
+  INFO     mergify_engine.logs: * DASHBOARD_UI_DATADOG_CLIENT_TOKEN: None
+  INFO     mergify_engine.logs: * DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO:  
+  INFO     mergify_engine.logs: * GITHUB_URL: https://github.com
+  INFO     mergify_engine.logs: * GITHUB_APP_ID: 0
+  INFO     mergify_engine.logs: * GITHUB_PRIVATE_KEY:
+  INFO     mergify_engine.logs: * GITHUB_OAUTH_CLIENT_ID: X
+  INFO     mergify_engine.logs: * GITHUB_OAUTH_CLIENT_SECRET:
+  INFO     mergify_engine.logs: * GITHUB_WEBHOOK_SECRET:
+  INFO     mergify_engine.logs: * GITHUB_WEBHOOK_SECRET_PRE_ROTATION: None
+  INFO     mergify_engine.logs: * GITHUB_WEBHOOK_FORWARD_URL: None
+  INFO     mergify_engine.logs: * GITHUB_WEBHOOK_FORWARD_EVENT_TYPES:  
+  INFO     mergify_engine.logs: * REDIS_SSL_VERIFY_MODE_CERT_NONE: False
+  INFO     mergify_engine.logs: * REDIS_CRYPTO_SECRET_CURRENT:
+  INFO     mergify_engine.logs: * REDIS_CRYPTO_SECRET_OLD: None
+  INFO     mergify_engine.logs: * STORAGE_URL: None
+  INFO     mergify_engine.logs: * DEFAULT_REDIS_URL: redis://localhost:6363
+  INFO     mergify_engine.logs: * ENV_STREAM_URL: redis://localhost:6363?db=3
+  INFO     mergify_engine.logs: * ENV_EVENTLOGS_URL: redis://localhost:6363?db=8
+  INFO     mergify_engine.logs: * ENV_QUEUE_URL: redis://localhost:6363?db=4
+  INFO     mergify_engine.logs: * ENV_CACHE_URL: redis://localhost:6363?db=2
+  INFO     mergify_engine.logs: * ENV_TEAM_PERMISSIONS_CACHE_URL: redis://localhost:6363?db=6
+  INFO     mergify_engine.logs: * ENV_TEAM_MEMBERS_CACHE_URL: redis://localhost:6363?db=5
+  INFO     mergify_engine.logs: * ENV_USER_PERMISSIONS_CACHE_URL: redis://localhost:6363?db=7
+  INFO     mergify_engine.logs: * ENV_ACTIVE_USERS_URL: redis://localhost:6363?db=9
+  INFO     mergify_engine.logs: * ENV_STATISTICS_URL: redis://localhost:6363?db=10
+  INFO     mergify_engine.logs: * ENV_AUTHENTICATION_URL: redis://localhost:6363?db=11
+  INFO     mergify_engine.logs: * LOG_LEVEL: 20
+  INFO     mergify_engine.logs: * LOG_STDOUT: True
+  INFO     mergify_engine.logs: * LOG_STDOUT_LEVEL: None
+  INFO     mergify_engine.logs: * LOG_DATADOG: False
+  INFO     mergify_engine.logs: * LOG_DATADOG_LEVEL: None
+  INFO     mergify_engine.logs: * LOG_DEBUG_LOGGER_NAMES:  
+  INFO     mergify_engine.logs: * SENTRY_URL: None
+  INFO     mergify_engine.logs: * SENTRY_ENVIRONMENT: test
+  INFO     mergify_engine.logs: * DATABASE_URL: postgresql+psycopg://@localhost:5432/postgres0
+  INFO     mergify_engine.logs: * DATABASE_POOL_SIZES: {'worker': 15, 'web': 55}
+  INFO     mergify_engine.logs: * DATABASE_OAUTH_TOKEN_SECRET_CURRENT:
+  INFO     mergify_engine.logs: * DATABASE_OAUTH_TOKEN_SECRET_OLD: None
+  INFO     mergify_engine.logs: * HTTP_TRUSTED_HOSTS: ['*']
+  INFO     mergify_engine.logs: * API_ENABLE: True
+  INFO     mergify_engine.logs: * REDIS_STREAM_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_CACHE_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_QUEUE_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_STATS_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * VERSION: dev
+  INFO     mergify_engine.logs: * SHA: unknown
+  INFO     mergify_engine.logs: * HEALTHCHECK_SHARED_TOKEN: None
+  INFO     mergify_engine.logs: * ALLOW_REQUIRE_BRANCH_PROTECTION_QUEUE_ATTRIBUTE: True
+  INFO     mergify_engine.logs: * PATH: /home/runner/.cache/pypoetry/virtualenvs/mergify-engine-cHHEL7M--py3.11/bin:/opt/hostedtoolcache/Python/3.11.4/x64/bin:/opt/hostedtoolcache/Python/3.11.4/x64:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/snap/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+  INFO     mergify_engine.logs: ##########################################################
+  WARNING  asyncio: Executing <Task pending name='Task-45727' coro=<_wrap_asyncgen_fixture.<locals>._asyncgen_fixture_wrapper.<locals>.setup() running at /home/runner/.cache/pypoetry/virtualenvs/mergify-engine-cHHEL7M--py3.11/lib/python3.11/site-packages/pytest_asyncio/plugin.py:286> wait_for=<Future pending cb=[Task.task_wakeup()] created at /opt/hostedtoolcache/Python/3.11.4/x64/lib/python3.11/asyncio/base_events.py:427> cb=[_run_until_complete_cb() at /opt/hostedtoolcache/Python/3.11.4/x64/lib/python3.11/asyncio/base_events.py:180] created at /opt/hostedtoolcache/Python/3.11.4/x64/lib/python3.11/asyncio/tasks.py:670> took 2.372 seconds
+  INFO     mergify_engine.middlewares.logging: request [request: {'method': 'POST', 'url': URL('http://localhost:3000/front/for-testing/log-as/42'), 'headers': [('accept', '*/*'), ('accept-encoding', 'gzip, deflate'), ('connection', 'keep-alive'), ('content-length', '0'), ('content-type', 'application/json'), ('host', 'localhost:3000'), ('user-agent', 'python-httpx/0.25.0')]}] [response: {'status': 200, 'headers': [('content-length', '0')]}]
+  INFO     mergify_engine.middlewares.logging: request [request: {'method': 'GET', 'url': URL('http://localhost:3000/front/for-testing/logged-as'), 'headers': [('accept', '*/*'), ('accept-encoding', 'gzip, deflate'), ('connection', 'keep-alive'), ('content-type', 'application/json'), ('cookie', 'mergify-session=f46fdeb48f951e05167e97335b28ed28'), ('host', 'localhost:3000'), ('user-agent', 'python-httpx/0.25.0')]}] [response: {'status': 200, 'headers': [('content-length', '21'), ('content-type', 'application/json')]}]
+  INFO     mergify_engine.middlewares.logging: request [request: {'method': 'POST', 'url': URL('http://localhost:3000/front/github-account/0/applications'), 'headers': [('accept', '*/*'), ('accept-encoding', 'gzip, deflate'), ('connection', 'keep-alive'), ('content-length', '21'), ('content-type', 'application/json'), ('cookie', 'mergify-session=f46fdeb48f951e05167e97335b28ed28'), ('host', 'localhost:3000'), ('user-agent', 'python-httpx/0.25.0')]}] [response: {'status': 200, 'headers': [('content-length', '257'), ('content-type', 'application/json')]}]
+ slowest 10 durations
+8.57s call     mergify_engine/tests/functional/api/test_statistics_with_partition_rules.py::TestStatisticsWithPartitionsEndpoints::test_queue_checks_outcome_with_partitions_endpoint
+6.80s call     mergify_engine/tests/functional/test_statistics.py::TestStatisticsRedis::test_accuracy_measure
+4.64s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_update_inplace_merge_report
+4.58s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_with_rebase_update_method
+4.39s call     mergify_engine/tests/functional/api/test_queue_pause.py::TestQueuePause::test_create_queue_pause_inplace
+4.17s call     mergify_engine/tests/functional/test_engine.py::TestEngineV2Scenario::test_sha_collision_after_pr_synchronization
+3.62s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_inplace_interrupted
+3.59s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_more_ci_in_pull_request_rules_failure
+3.57s call     mergify_engine/tests/functional/actions/test_queue_with_partition_rules.py::TestQueueWithPartitionRules::test_trains_with_no_partitions_then_chaning_conf_to_use_partitions
+3.48s call     mergify_engine/tests/functional/api/test_queue.py::TestQueueApi::test_estimated_time_of_merge_schedule_condition_match_but_eta_dont
+ short test summary info
+FAILED mergify_engine/tests/functional/actions/test_edit.py::TestEditAction::test_draft_to_ready_for_review - AssertionError: assert {'events':  ...0, 'total': 0} == {'events': [{...1, 'total': 1}
+  Omitting 1 identical items, use -vv to show
+  Differing items:
+  {'events':  } != {'events': [{'event': 'action.edit', 'id': ANY_INT, 'metadata': {'draft': False}, 'pull_request': 33709, ...}]}
+  {'total': 0} != {'total': 1}
+  {'size': 0} != {'size': 1}
+  Full diff:
+    {
+  +  'events':  ,
+  -  'events': [{'event': 'action.edit',
+  -              'id': ANY_INT,
+  -              'metadata': {'draft': False},
+  -              'pull_request': 33709,
+  -              'received_at': ANY_AWARE_DATETIME_STR,
+  -              'repository': 'mergifyio-testing/functional-testing-repo-sileht',
+  -              'timestamp': ANY_AWARE_DATETIME_STR,
+  -              'trigger': 'Rule: Remove Draft from Pull Request',
+  -              'type': 'action.edit'}],
+     'per_page': 10,
+  -  'size': 1,
+  ?          ^
+  +  'size': 0,
+  ?          ^
+  -  'total': 1,
+  ?           ^
+  +  'total': 0,
+  ?           ^
+    }
+FAILED mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_update_inplace_merge_report - AssertionError: assert {'events':  ...0, 'total': 0} == {'events': [{...5, 'total': 5}
+  Omitting 1 identical items, use -vv to show
+  Differing items:
+  {'events':  } != {'events': [{'event': 'action.queue.merged', 'id': ANY_INT, 'metadata': {'branch': '20231018113839/test_queue_update_i...ort/main', 'partition_name': '__default__', 'position': 0, 'queue_name': 'default', ...}, 'pull_request': 33758, ...}]}
+  {'total': 0} != {'total': 5}
+  {'size': 0} != {'size': 5}
+  Full diff:
+    {
+  +  'events':  ,
+  -  'events': [{'event': 'action.queue.merged',
+  -              'id': ANY_INT,
+  -              'metadata': {'branch': '20231018113839/test_queue_update_inplace_merge_report/main',
+  -                           'partition_names': ['__default__'],
+  -                           'queue_name': 'default',
+  -                           'queued_at': ANY_AWARE_DATETIME_STR},
+  -              'pull_request': 33758,
+  -              'received_at': ANY_AWARE_DATETIME_STR,
+  -              'repository': 'mergifyio-testing/functional-testing-repo-sileht',
+  -              'timestamp': ANY_AWARE_DATETIME_STR,
+  -              'trigger': 'Rule: default merge',
+  -              'type': 'action.queue.merged'},
+  -             {'event': 'action.queue.leave',
+  -              'id': ANY_INT,
+  -              'metadata': {'branch': '20231018113839/test_queue_update_inplace_merge_report/main',
+  -                           'merged': True,
+  -                           'partition_name': '__default__',
+  -                           'position': 0,
+  -                           'queue_name': 'default',
+  -                           'queued_at': ANY_AWARE_DATETIME_STR,
+  -                           'reason': 'Pull request #33758 has been merged '
+  -                                     'automatically at '
+  -                                     '*51d3c6b21e10241cbc361d9d4360fd269204e3d0*',
+  -                           'seconds_waiting_for_freeze': 0,
+  -                           'seconds_waiting_for_schedule': 0},
+  -              'pull_request': 33758,
+  -              'received_at': ANY_AWARE_DATETIME_STR,
+  -              'repository': 'mergifyio-testing/functional-testing-repo-sileht',
+  -              'timestamp': ANY_AWARE_DATETIME_STR,
+  -              'trigger': 'Rule: default merge',
+  -              'type': 'action.queue.leave'},
+  -             {'event': 'action.queue.checks_end',
+  -              'id': ANY_INT,
+  -              'metadata': {'abort_code': None,
+  -                           'abort_reason': '',
+  -                           'abort_status': 'DEFINITIVE',
+  -                           'aborted': False,
+  -                           'branch': '20231018113839/test_queue_update_inplace_merge_report/main',
+  -                           'partition_name': '__default__',
+  -                           'position': 0,
+  -                           'queue_name': 'default',
+  -                           'queued_at': ANY_AWARE_DATETIME_STR,
+  -                           'speculative_check_pull_request': {'checks_conclusion': 'success',
+  -                                                              'checks_ended_at': ANY_AWARE_DATETIME_STR,
+  -                                                              'checks_started_at': ANY_AWARE_DATETIME_STR,
+  -                                                              'checks_timed_out': False,
+  -                                                              'in_place': True,
+  -                                                              'number': 33758,
+  -                                                              'unsuccessful_checks':  },
+  -                           'unqueue_code': None},
+  -              'pull_request': 33758,
+  -              'received_at': ANY_AWARE_DATETIME_STR,
+  -              'repository': 'mergifyio-testing/functional-testing-repo-sileht',
+  -              'timestamp': ANY_AWARE_DATETIME_STR,
+  -              'trigger': 'merge queue internal',
+  -              'type': 'action.queue.checks_end'},
+  -             {'event': 'action.queue.checks_start',
+  -              'id': ANY_INT,
+  -              'metadata': {'branch': '20231018113839/test_queue_update_inplace_merge_report/main',
+  -                           'partition_name': '__default__',
+  -                           'position': 0,
+  -                           'queue_name': 'default',
+  -                           'queued_at': ANY_AWARE_DATETIME_STR,
+  -                           'speculative_check_pull_request': {'checks_conclusion': 'pending',
+  -                                                              'checks_ended_at': None,
+  -                                                              'checks_started_at': None,
+  -                                                              'checks_timed_out': False,
+  -                                                              'in_place': True,
+  -                                                              'number': 33758,
+  -                                                              'unsuccessful_checks':  },
+  -                           'start_reason': 'First time checking pull request '
+  -                                           '#33758'},
+  -              'pull_request': 33758,
+  -              'received_at': ANY_AWARE_DATETIME_STR,
+  -              'repository': 'mergifyio-testing/functional-testing-repo-sileht',
+  -              'timestamp': ANY_AWARE_DATETIME_STR,
+  -              'trigger': 'merge queue internal',
+  -              'type': 'action.queue.checks_start'},
+  -             {'event': 'action.queue.enter',
+  -              'id': ANY_INT,
+  -              'metadata': {'branch': '20231018113839/test_queue_update_inplace_merge_report/main',
+  -                           'partition_name': '__default__',
+  -                           'position': 0,
+  -                           'queue_name': 'default',
+  -                           'queued_at': ANY_AWARE_DATETIME_STR},
+  -              'pull_request': 33758,
+  -              'received_at': ANY_AWARE_DATETIME_STR,
+  -              'repository': 'mergifyio-testing/functional-testing-repo-sileht',
+  -              'timestamp': ANY_AWARE_DATETIME_STR,
+  -              'trigger': 'Rule: default merge',
+  -              'type': 'action.queue.enter'}],
+     'per_page': 5,
+  -  'size': 5,
+  ?          ^
+  +  'size': 0,
+  ?          ^
+  -  'total': 5,
+  ?           ^
+  +  'total': 0,
+  ?           ^
+    }
+FAILED mergify_engine/tests/unit/api/test_events.py::test_api_cursor_redis - NameError: name 'settings' is not defined
+ERROR mergify_engine/tests/functional/test_statistics.py::TestStatisticsRedis::test_accuracy_measure - AssertionError: assert   == ['failed to r...entlogs', ...]
+  Right contains 20 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/test_statistics.py::TestStatisticsRedis::test_statistics_format_in_redis_with_partitions - AssertionError: assert   == ['failed to r...entlogs', ...]
+  Right contains 10 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_edit.py::TestEditAction::test_draft_to_ready_for_review - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains one more item: 'failed to run signal: eventlogs'
+  Full diff:
+  - ['failed to run signal: eventlogs']
+  +  
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_check_runs_filtering - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 5 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_merge_queue_refresh - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 5 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_more_ci_in_pull_request_rules_failure - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 4 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_pr_with_depends_on_not_queued_if_dependent_pr_is_not_queued - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 4 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_conditions_empty - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 5 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_dequeue_reason_condition - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 5 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_inplace_interrupted - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 6 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_update_inplace_merge_report - AssertionError: assert   == ['failed to r...entlogs', ...]
+  Right contains 7 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_with_rebase_update_method - AssertionError: assert   == ['failed to r...entlogs', ...]
+  Right contains 10 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_unqueue_command_after_queue_action_and_command - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 3 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_unqueue_rule_unmatches - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 6 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue_with_partition_rules.py::TestQueueWithPartitionRules::test_no_partition_reset_after_queued_merged_pr_with_partition_and_fallback_partition - AssertionError: assert   == ['failed to r...entlogs', ...]
+  Right contains 7 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue_with_partition_rules.py::TestQueueWithPartitionRules::test_queue_multiple_partition_only_1_match - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 5 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_queue_with_partition_rules.py::TestQueueWithPartitionRules::test_trains_with_no_partitions_then_chaning_conf_to_use_partitions - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 4 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/actions/test_review.py::TestReviewAction::test_review_normal - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 2 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+  - ['failed to run signal: eventlogs', 'failed to run signal: eventlogs']
+  +  
+ERROR mergify_engine/tests/functional/api/test_queue.py::TestQueueApi::test_estimated_time_of_merge_schedule_condition_match_but_eta_dont - AssertionError: assert   == ['failed to r...entlogs', ...]
+  Right contains 7 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/api/test_queue_freeze.py::TestQueueFreeze::test_delete_queue_freeze - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 4 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/api/test_queue_pause.py::TestQueuePause::test_create_queue_pause_inplace - AssertionError: assert   == ['failed to r...entlogs', ...]
+  Right contains 7 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/api/test_statistics_with_partition_rules.py::TestStatisticsWithPartitionsEndpoints::test_queue_checks_outcome_with_partitions_endpoint - AssertionError: assert   == ['failed to r...entlogs', ...]
+  Right contains 21 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/commands/test_queue.py::TestQueueCommand::test_branch_protections_reporting_when_pr_is_not_yet_in_traincar - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 5 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+    [
+  +  ,
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+  -  'failed to run signal: eventlogs',
+    ]
+ERROR mergify_engine/tests/functional/commands/test_queue.py::TestQueueCommand::test_command_queue_with_queue_conditions_matching - AssertionError: assert   == ['failed to r...l: eventlogs']
+  Right contains 2 more items, first extra item: 'failed to run signal: eventlogs'
+  Full diff:
+  - ['failed to run signal: eventlogs', 'failed to run signal: eventlogs']
+  +  
+ERROR mergify_engine/tests/unit/api/test_events.py::test_api_cursor_redis - AssertionError: RESPX: some routes were not called!
+assert [<Route <Sche...od eq 'GET'>>] ==  
+  Left contains 3 more items, first extra item: <Route <Scheme eq 'https'> AND <Host eq 'api.github.com'> AND <Path eq '/repos/Mergifyio/engine/installation'> AND <Method eq 'GET'>>
+  Full diff:
+    [
+  -  ,
+  +  <Route <Scheme eq 'https'> AND <Host eq 'api.github.com'> AND <Path eq '/repos/Mergifyio/engine/installation'> AND <Method eq 'GET'>>,
+  +  <Route <Scheme eq 'https'> AND <Host eq 'api.github.com'> AND <Path eq '/repos/Mergifyio/engine'> AND <Method eq 'GET'>>,
+  +  <Route <Scheme eq 'http'> AND <Host eq 'localhost'> AND <Port eq 5000> AND <Path eq '/engine/subscription/0'> AND <Method eq 'GET'>>,
+    ]
+ 3 failed, 196 passed, 1800 deselected, 25 errors in 262.30s (0:04:22)
+##[error]Process completed with exit code 1.

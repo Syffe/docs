@@ -1,0 +1,367 @@
+##[group]Run cypress-io/github-action@v6.5.0
+with:
+  component: true
+  browser: chrome
+  record: false
+  publish-summary: true
+##[endgroup]
+[command]/usr/local/bin/npm ci
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: 'mergify-dashboard@0.1.0',
+npm WARN EBADENGINE   required: { node: '20.x' },
+npm WARN EBADENGINE   current: { node: 'v18.18.2', npm: '9.8.1' }
+npm WARN EBADENGINE }
+added 929 packages, and audited 930 packages in 59s
+222 packages are looking for funding
+  run `npm fund` for details
+found 0 vulnerabilities
+[command]/usr/local/bin/npx cypress cache list
+┌─────────┬────────────┐
+│ version │ last used  │
+├─────────┼────────────┤
+│ 13.3.1  │ 4 days ago │
+└─────────┴────────────┘
+[command]/usr/local/bin/npx cypress verify
+[STARTED] Task without title.
+[SUCCESS] Task without title.
+[command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/dashboard-ui/dashboard-ui --files-from manifest.txt --use-compress-program zstdmt
+Failed to save: Unable to reserve cache with key npm-linux-x64-d26c9c953e2cedd97c12a4179c6d54eebade23a048f0331990c76de1e2dc97d13b8fbf9cd39a5eb2b4fbc45a4ba8512086ad17b5278b9a4d0a38fd910548ccdd, another job may be creating this cache. More details: Cache already exists. Scope: refs/pull/3904/merge, Key: npm-linux-x64-d26c9c953e2cedd97c12a4179c6d54eebade23a048f0331990c76de1e2dc97d13b8fbf9cd39a5eb2b4fbc45a4ba8512086ad17b5278b9a4d0a38fd910548ccdd, Version: 04d00cc68e25ee34fd8b04095d0a46a28244d98af53e6925e47ed311d487b1d6
+[command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/dashboard-ui/dashboard-ui --files-from manifest.txt --use-compress-program zstdmt
+Failed to save: Unable to reserve cache with key cypress-linux-x64-d26c9c953e2cedd97c12a4179c6d54eebade23a048f0331990c76de1e2dc97d13b8fbf9cd39a5eb2b4fbc45a4ba8512086ad17b5278b9a4d0a38fd910548ccdd, another job may be creating this cache. More details: Cache already exists. Scope: refs/pull/3904/merge, Key: cypress-linux-x64-d26c9c953e2cedd97c12a4179c6d54eebade23a048f0331990c76de1e2dc97d13b8fbf9cd39a5eb2b4fbc45a4ba8512086ad17b5278b9a4d0a38fd910548ccdd, Version: 1955096f8dd018efdf62615d0a27779c95e9b0287a6a71bc182356f3b1a36196
+DevTools listening on ws://127.0.0.1:37191/devtools/browser/55f4ca6f-19c6-4125-b81b-6432748e6402
+[2163:1020/135352.917514:ERROR:object_proxy.cc(590)] Failed to call method: org.freedesktop.portal.Settings.Read: object_path= /org/freedesktop/portal/desktop: unknown error type:
+Missing baseUrl in compilerOptions. tsconfig-paths will be skipped
+[sentry-vite-plugin] Warning: No auth token provided. Will not create release. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[sentry-vite-plugin] Warning: No auth token provided. Will not upload source maps. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[sentry-vite-plugin] Info: Sending error and performance telemetry data to Sentry. To disable telemetry, set `options.telemetry` to `false`.
+  (Run Starting)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Cypress:        13.3.1                                                                         │
+  │ Browser:        Chrome 118 (headless)                                                          │
+  │ Node Version:   v20.5.0 (/home/runner/runners/2.310.2/externals/node20/bin/node)               │
+  │ Specs:          10 found (CheckBadge.cy.tsx, MonacoEditor.cy.tsx, ScheduleWidget.cy.tsx, gener │
+  │                 ic-component/DateSelector.cy.tsx, generic-component/GithubLabel.cy.tsx, generi │
+  │                 c-component/MGCollapseSection.cy.tsx, gha-failed-jobs/EmbeddedLog.cy.tsx, gene │
+  │                 ric-component/inputs/MG...)                                                    │
+  │ Searched:       /*.cy.{js,jsx,ts,tsx}                                                        │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Running:  CheckBadge.cy.tsx                                                              (1 of 10)
+  CheckBadge.cy.ts
+    ✓ Success check (342ms)
+    ✓ Action required check (54ms)
+    ✓ Cancelled check (114ms)
+    ✓ Error check (118ms)
+    ✓ Failure check (97ms)
+    ✓ Neutral check (109ms)
+    ✓ Pending check (100ms)
+    ✓ Skipped check (107ms)
+    ✓ Stale check (93ms)
+    ✓ Timed out check (103ms)
+  10 passing (1s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        10                                                                               │
+  │ Passing:      10                                                                               │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     1 second                                                                         │
+  │ Spec Ran:     CheckBadge.cy.tsx                                                                │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Video)
+  -  Video output: /home/runner/work/dashboard-ui/dashboard-ui/cypress/videos/CheckBadge.cy.tsx.mp4
+  Running:  MonacoEditor.cy.tsx                                                            (2 of 10)
+  MonacoEditor
+    ✓ Should provide suggestions for queue_rule options (7855ms)
+    ✓ Should provide suggestions for condition string (1791ms)
+    ✓ Should provide interractive snippet for queue rule (1855ms)
+    ✓ Should provide completion on check-* conditions (2057ms)
+    ✓ Should provide completion on users conditions (1722ms)
+    ✓ Should show teams along with users in conditions (1723ms)
+    ✓ Should provide completion for conditions only if in a "conditions", "or" and "and" block (1986ms)
+    ✓ Should provide completion actions properties (1442ms)
+  8 passing (21s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      8                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     21 seconds                                                                       │
+  │ Spec Ran:     MonacoEditor.cy.tsx                                                              │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Video)
+  -  Video output: /home/runner/work/dashboard-ui/dashboard-ui/cypress/videos/MonacoEditor.cy.tsx.mp4
+  Running:  ScheduleWidget.cy.tsx                                                          (3 of 10)
+  ScheduleWidget
+    ✓ Should handle basic schedule (220ms)
+    ✓ Should display current time (71ms)
+    ✓ Should handle timezone offset (84ms)
+    ✓ Should handle negative timezone offset (253ms)
+  4 passing (733ms)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        4                                                                                │
+  │ Passing:      4                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     0 seconds                                                                        │
+  │ Spec Ran:     ScheduleWidget.cy.tsx                                                            │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Video)
+  -  Video output: /home/runner/work/dashboard-ui/dashboard-ui/cypress/videos/ScheduleWidget.cy.tsx.mp4
+  Running:  generic-component/DateSelector.cy.tsx                                          (4 of 10)
+  DateSelector
+    ✓ Should handle custom range (2695ms)
+    ✓ Should handle custom compare (2156ms)
+    ✓ Should call onChange props only on apply click (1782ms)
+    Range presets
+      ✓ Should handle Yesterday (650ms)
+      ✓ Should handle Last 3 days (875ms)
+      ✓ Should handle Last 7 days (678ms)
+      ✓ Should handle Last 14 days (829ms)
+      ✓ Should handle Last 21 days (760ms)
+      ✓ Should handle Last 30 days (825ms)
+    Compare range presets
+      ✓ Should handle LastPeriod (734ms)
+      ✓ Should handle SamePeriodLastWeek (927ms)
+      ✓ Should handle SamePeriod2WeeksAgo (897ms)
+      ✓ Should handle SamePeriod3WeeksAgo (947ms)
+      ✓ Should handle SamePeriodLastMonth (975ms)
+      ✓ Should handle SamePeriodStartingAt (1582ms)
+  15 passing (18s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        15                                                                               │
+  │ Passing:      15                                                                               │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     17 seconds                                                                       │
+  │ Spec Ran:     generic-component/DateSelector.cy.tsx                                            │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Video)
+  -  Video output: /home/runner/work/dashboard-ui/dashboard-ui/cypress/videos/generic-component/DateSelector.cy.tsx.mp4
+  Running:  generic-component/GithubLabel.cy.tsx                                           (5 of 10)
+  GithubLabel
+    ✓ Should show label name with color (93ms)
+    Should have readable font color
+      ✓ With dark background (47ms)
+      ✓ With bright background (46ms)
+  3 passing (266ms)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        3                                                                                │
+  │ Passing:      3                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     0 seconds                                                                        │
+  │ Spec Ran:     generic-component/GithubLabel.cy.tsx                                             │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Video)
+  -  Video output: /home/runner/work/dashboard-ui/dashboard-ui/cypress/videos/generic-component/GithubLabel.cy.tsx.mp4
+  Running:  generic-component/MGCollapseSection.cy.tsx                                     (6 of 10)
+  CollapseSection
+    ✓ Should render (213ms)
+    ✓ Should handle defaultOpen (149ms)
+  2 passing (426ms)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        2                                                                                │
+  │ Passing:      2                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     0 seconds                                                                        │
+  │ Spec Ran:     generic-component/MGCollapseSection.cy.tsx                                       │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Video)
+  -  Video output: /home/runner/work/dashboard-ui/dashboard-ui/cypress/videos/generic-component/MGCollapseSection.cy.tsx.mp4
+  Running:  gha-failed-jobs/EmbeddedLog.cy.tsx                                             (7 of 10)
+1:55:34 PM [vite] Internal server error: Failed to resolve import "../../../src/dashboard/FailedJobs/components/GHAFailedJobsError/EmbeddedLog" from "cypress/component/gha-failed-jobs/EmbeddedLog.cy.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/runner/work/dashboard-ui/dashboard-ui/cypress/component/gha-failed-jobs/EmbeddedLog.cy.tsx:2:26
+  1  |  import { jsxDEV } from "react/jsx-dev-runtime";
+  2  |  import EmbeddedLog from "../../../src/dashboard/FailedJobs/components/GHAFailedJobsError/EmbeddedLog";
+     |                           ^
+##[error]Cypress tests: 3 failed\n";
+  4  |  const expectedResult = `   │ ✔  CheckBadge.cy.tsx                        00:01       10       10        -        -        - │
+      at formatError (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:44055:46)
+      at TransformContext.error (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:44051:19)
+      at normalizeUrl (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:41837:33)
+      at processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:41991:47
+      at async Promise.all (index 1)
+      at async TransformContext.transform (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:41907:13)
+      at async Object.transform (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:44345:30)
+      at async loadAndTransform (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:55015:29)
+      at async viteTransformMiddleware (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:64417:32)
+1:55:37 PM [vite] Internal server error: Failed to resolve import "../../../src/dashboard/FailedJobs/components/GHAFailedJobsError/EmbeddedLog" from "cypress/component/gha-failed-jobs/EmbeddedLog.cy.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/runner/work/dashboard-ui/dashboard-ui/cypress/component/gha-failed-jobs/EmbeddedLog.cy.tsx:2:26
+  1  |  import { jsxDEV } from "react/jsx-dev-runtime";
+  2  |  import EmbeddedLog from "../../../src/dashboard/FailedJobs/components/GHAFailedJobsError/EmbeddedLog";
+     |                           ^
+##[error]Cypress tests: 3 failed\n";
+  4  |  const expectedResult = `   │ ✔  CheckBadge.cy.tsx                        00:01       10       10        -        -        - │
+      at formatError (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:44055:46)
+      at TransformContext.error (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:44051:19)
+      at normalizeUrl (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:41837:33)
+      at processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:41991:47
+      at async Promise.all (index 1)
+      at async TransformContext.transform (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:41907:13)
+      at async Object.transform (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:44345:30)
+      at async loadAndTransform (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:55015:29)
+      at async viteTransformMiddleware (file:///home/runner/work/dashboard-ui/dashboard-ui/node_modules/vite/dist/node/chunks/dep-2b82a1ce.js:64417:32)
+  1) An uncaught error was detected outside of a test
+  0 passing (419ms)
+  1 failing
+  1) An uncaught error was detected outside of a test:
+     TypeError: The following error originated from your test code, not from Cypress.
+  > Failed to fetch dynamically imported module: http://localhost:3000/__cypress/src/@fs/home/runner/work/dashboard-ui/dashboard-ui/cypress/component/gha-failed-jobs/EmbeddedLog.cy.tsx
+When Cypress detects uncaught errors originating from your test code it will automatically fail the current test.
+Cypress could not associate this error to any specific test.
+We dynamically generated a new test to display this failure.
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        1                                                                                │
+  │ Passing:      0                                                                                │
+  │ Failing:      1                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  1                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     0 seconds                                                                        │
+  │ Spec Ran:     gha-failed-jobs/EmbeddedLog.cy.tsx                                               │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Screenshots)
+  -  /home/runner/work/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/     (1280x599)
+     EmbeddedLog.cy.tsx/An uncaught error was detected outside of a test (failed).png
+  (Video)
+  -  Video output: /home/runner/work/dashboard-ui/dashboard-ui/cypress/videos/gha-failed-jobs/EmbeddedLog.cy.tsx.mp4
+  Running:  generic-component/inputs/MGDateRangeInput.cy.tsx                               (8 of 10)
+  MGDateRangeInput
+    ✓ Should have past week by default (2556ms)
+    ✓ Should open date range selector (222ms)
+    ✓ Should handle today selection (399ms)
+    ✓ Should handle yesterday selection (420ms)
+    ✓ Should handle this week selection (393ms)
+    ✓ Should handle last week selection (370ms)
+    ✓ Should handle this month selection (358ms)
+    ✓ Should handle last month selection (348ms)
+    ✓ Should handle manual range selection (541ms)
+    ✓ should close on click outside (576ms)
+  10 passing (6s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        10                                                                               │
+  │ Passing:      10                                                                               │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     6 seconds                                                                        │
+  │ Spec Ran:     generic-component/inputs/MGDateRangeInput.cy.tsx                                 │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Video)
+  -  Video output: /home/runner/work/dashboard-ui/dashboard-ui/cypress/videos/generic-component/inputs/MGDateRangeInput.cy.tsx.mp4
+  Running:  queue/details/Checks.cy.tsx                                                    (9 of 10)
+  Queued pull checks list
+    ✓ Should render check statuses icons (455ms)
+    ✓ Should render check names (374ms)
+    ✓ Should render details link (469ms)
+  3 passing (2s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        3                                                                                │
+  │ Passing:      3                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     1 second                                                                         │
+  │ Spec Ran:     queue/details/Checks.cy.tsx                                                      │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Video)
+  -  Video output: /home/runner/work/dashboard-ui/dashboard-ui/cypress/videos/queue/details/Checks.cy.tsx.mp4
+  Running:  queue/statistics/QueuesStatistics.cy.tsx                                      (10 of 10)
+  StatisticsCard
+    ✓ Should display No available data when logs is empty (255ms)
+  AverageRuntimeChecksCard
+    when there are checkEnd events last seven days
+      ✓ Should display average value & dash for comparison when there is no checkEvent for today (186ms)
+      ✓ Should display average value & comparison value when there is checkEvent for today (174ms)
+    when there are no checkEnd events last seven days
+      ✓ Should display average N/A & dash for comparison (166ms)
+  MergeCountCard
+    ✓ Should display today merge count & comparison when there is merged event (154ms)
+    ✓ Should display today merge count as 0 & + 0% for comparison when there is no merged event for today (147ms)
+  SevenLastDaysBreakdownCard
+    ✓ Should display seven last day breakdown reasons (240ms)
+  AverageQueueTimeCard
+    ✓ Should display average time idle spent & dash for comparison when there is no checkEvent for today (173ms)
+    ✓ Should display average time idle spent & comparison value when there are multiple same checkEvent (172ms)
+    ✓ Should display average time idle spent & comparison value whitout event in freeze events (185ms)
+  10 passing (2s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        10                                                                               │
+  │ Passing:      10                                                                               │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     2 seconds                                                                        │
+  │ Spec Ran:     queue/statistics/QueuesStatistics.cy.tsx                                         │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Video)
+  -  Video output: /home/runner/work/dashboard-ui/dashboard-ui/cypress/videos/queue/statistics/QueuesStatistics.cy.tsx.mp4
+  (Run Finished)
+       Spec                                              Tests  Passing  Failing  Pending  Skipped
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ✔  CheckBadge.cy.tsx                        00:01       10       10        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  MonacoEditor.cy.tsx                      00:21        8        8        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  ScheduleWidget.cy.tsx                    735ms        4        4        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  generic-component/DateSelector.cy.t      00:17       15       15        -        -        - │
+  │    sx                                                                                          │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  generic-component/GithubLabel.cy.ts      271ms        3        3        -        -        - │
+  │    x                                                                                           │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  generic-component/MGCollapseSection      430ms        2        2        -        -        - │
+  │    .cy.tsx                                                                                     │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✖  gha-failed-jobs/EmbeddedLog.cy.tsx       386ms        1        -        1        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  generic-component/inputs/MGDateRang      00:06       10       10        -        -        - │
+  │    eInput.cy.tsx                                                                               │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  queue/details/Checks.cy.tsx              00:01        3        3        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  queue/statistics/QueuesStatistics.c      00:02       10       10        -        -        - │
+  │    y.tsx                                                                                       │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ✖  1 of 10 failed (10%)                     00:53       66       65        1        -        -
+##[error]Cypress tests: 1 failed

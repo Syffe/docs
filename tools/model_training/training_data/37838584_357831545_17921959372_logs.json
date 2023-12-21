@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "Invalid GitHub organization name in test case",
+        "language": "Python",
+        "filename": "mergify_engine/tests/unit/rules/test_types.py",
+        "lineno": "118",
+        "error": "voluptuous.error.MultipleInvalid",
+        "test_framework": "pytest",
+        "stack_trace": "voluptuous.error.MultipleInvalid: GitHub organization contains invalid characters: foo"
+    }
+]

@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "Import Resolution Failure",
+        "language": "JavaScript",
+        "filename": "gha-failed-jobs/EmbeddedLog.cy.tsx",
+        "lineno": "2",
+        "error": "Internal server error: Failed to resolve import",
+        "test_framework": "Cypress",
+        "stack_trace": "Failed to resolve import \"../../../src/dashboard/FailedJobs/components/GHAFailedJobsError/EmbeddedLog\" from \"cypress/component/gha-failed-jobs/EmbeddedLog.cy.tsx\". Does the file exist?"
+    }
+]

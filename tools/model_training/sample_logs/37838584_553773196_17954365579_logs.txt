@@ -1,0 +1,1197 @@
+2023-10-23T09:08:40.0655312Z ##[group]Run cypress-io/github-action@v6.5.0
+2023-10-23T09:08:40.0655846Z with:
+2023-10-23T09:08:40.0656153Z   start: npx serve -s build
+2023-10-23T09:08:40.0656584Z   wait-on: http://localhost:3000
+2023-10-23T09:08:40.0657028Z   wait-on-timeout: 120
+2023-10-23T09:08:40.0657391Z   browser: electron
+2023-10-23T09:08:40.0661568Z   spec: cypress/e2e/queued-pull-details/Fallbacks.cy.ts,cypress/e2e/NewcomerPopup.cy.ts,cypress/e2e/OrganizationSelector.cy.ts,cypress/e2e/Permissions.cy.ts,cypress/e2e/Subscription.cy.ts,cypress/e2e/Sudo.cy.ts,cypress/e2e/InstallRequestPopup.cy.ts,cypress/e2e/ApiCallHandling.cy.ts,cypress/e2e/Home.cy.ts,cypress/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts,cypress/e2e/gha-failed-jobs/GHAFailedJobDetails.cy.ts,cypress/e2e/Footer.cy.ts,cypress/e2e/NoRepository.cy.ts,cypress/e2e/statistics/constants.ts,cypress/e2e/gha-failed-jobs/constants.ts
+2023-10-23T09:08:40.0665926Z   record: false
+2023-10-23T09:08:40.0666261Z   publish-summary: true
+2023-10-23T09:08:40.0666657Z   component: false
+2023-10-23T09:08:40.0667031Z env:
+2023-10-23T09:08:40.0667555Z   GITHUB_TOKEN: ***
+2023-10-23T09:08:40.0668085Z ##[endgroup]
+2023-10-23T09:08:40.0679131Z ##[command]/usr/bin/docker exec  2f859040b9d98de990bf9d9053115ccdf978b0695c2b6fa6de03a3ad5283f0ec sh -c "cat /etc/*release | grep ^ID"
+2023-10-23T09:08:41.7025538Z Received 105628679 of 105628679 (100.0%), 99.1 MBs/sec
+2023-10-23T09:08:41.7029978Z Cache Size: ~101 MB (105628679 B)
+2023-10-23T09:08:41.7156922Z Received 125829120 of 175603918 (71.7%), 112.0 MBs/sec
+2023-10-23T09:08:41.8306211Z [command]/bin/tar -xf /__w/_temp/1b0639b6-1495-4ad9-a134-1f40285647ea/cache.tgz -P -C /__w/dashboard-ui/dashboard-ui -z
+2023-10-23T09:08:42.1863830Z Received 175603918 of 175603918 (100.0%), 108.7 MBs/sec
+2023-10-23T09:08:42.1870953Z Cache Size: ~167 MB (175603918 B)
+2023-10-23T09:08:42.2004290Z [command]/bin/tar -xf /__w/_temp/a5bd2fa4-6d19-4dd6-afef-234d46ef2a1e/cache.tgz -P -C /__w/dashboard-ui/dashboard-ui -z
+2023-10-23T09:08:43.2231128Z Cache restored successfully
+2023-10-23T09:08:48.2171588Z Cache restored successfully
+2023-10-23T09:08:48.2436051Z [command]/usr/local/bin/npm ci
+2023-10-23T09:09:17.5245539Z 
+2023-10-23T09:09:17.5246270Z added 930 packages, and audited 931 packages in 29s
+2023-10-23T09:09:17.5257423Z 
+2023-10-23T09:09:17.5265012Z 220 packages are looking for funding
+2023-10-23T09:09:17.5271143Z   run `npm fund` for details
+2023-10-23T09:09:17.5294538Z 
+2023-10-23T09:09:17.5295164Z found 0 vulnerabilities
+2023-10-23T09:09:17.5922785Z [command]/usr/local/bin/npx cypress cache list
+2023-10-23T09:09:18.2784721Z ┌─────────┬───────────────────┐
+2023-10-23T09:09:18.2785536Z │ version │ last used         │
+2023-10-23T09:09:18.2786079Z ├─────────┼───────────────────┤
+2023-10-23T09:09:18.2786583Z │ 13.3.1  │ a few seconds ago │
+2023-10-23T09:09:18.2787103Z └─────────┴───────────────────┘
+2023-10-23T09:09:18.3092017Z start server command "npx serve -s build"
+2023-10-23T09:09:18.3095924Z current working directory "/__w/dashboard-ui/dashboard-ui"
+2023-10-23T09:09:18.3111690Z waiting on "http://localhost:3000" with timeout of 120 seconds
+2023-10-23T09:09:18.3274854Z [command]/usr/local/bin/npx serve -s build
+2023-10-23T09:09:19.4591902Z npm WARN exec The following package was not found and will be installed: serve@14.2.1
+2023-10-23T09:09:21.7406190Z  INFO  Accepting connections at http://localhost:3000
+2023-10-23T09:09:22.3473110Z  HTTP  10/23/2023 9:09:22 AM 127.0.0.1 GET /
+2023-10-23T09:09:22.3548840Z  HTTP  10/23/2023 9:09:22 AM 127.0.0.1 Returned 200 in 15 ms
+2023-10-23T09:09:23.5649410Z 
+2023-10-23T09:09:23.5651065Z DevTools listening on ws://127.0.0.1:46149/devtools/browser/9827f278-6fd2-48f5-857b-94a8d0456e4a
+2023-10-23T09:09:23.5738883Z [369:1023/090923.573143:ERROR:object_proxy.cc(590)] Failed to call method: org.freedesktop.portal.Settings.Read: object_path= /org/freedesktop/portal/desktop: unknown error type: 
+2023-10-23T09:09:24.2176232Z Missing baseUrl in compilerOptions. tsconfig-paths will be skipped
+2023-10-23T09:09:25.5437272Z 
+2023-10-23T09:09:25.5707468Z [90m====================================================================================================[39m
+2023-10-23T09:09:25.5708696Z 
+2023-10-23T09:09:25.5708971Z [0m  ([4m[1mRun Starting[22m[24m)[0m
+2023-10-23T09:09:25.5709343Z 
+2023-10-23T09:09:25.5854306Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:09:25.5860345Z [90m  │[39m [90mCypress:[39m        13.3.1                                                                         [90m│[39m
+2023-10-23T09:09:25.5861716Z [90m  │[39m [90mBrowser:[39m        Electron 114 [90m(headless)[39m                                                        [90m│[39m
+2023-10-23T09:09:25.5863295Z [90m  │[39m [90mNode Version:[39m   [0mv20.5.0 [90m(/__e/node20/bin/node)[39m[0m                                                 [90m│[39m
+2023-10-23T09:09:25.5865004Z [90m  │[39m [90mSpecs:[39m          [0m13 found (queued-pull-details/Fallbacks.cy.ts, NewcomerPopup.cy.ts, Organizati[0m [90m│[39m
+2023-10-23T09:09:25.5866709Z [90m  │[39m                 [0monSelector.cy.ts, Permissions.cy.ts, Subscription.cy.ts, Sudo.cy.ts, InstallRe[0m [90m│[39m
+2023-10-23T09:09:25.5868549Z [90m  │[39m                 [0mquestPopup.cy.ts, ApiCallHandling.cy.ts, Home.cy.ts, gha-failed-jobs/GHAFailed[0m [90m│[39m
+2023-10-23T09:09:25.5874985Z [90m  │[39m                 [0mJobs.cy.ts, gha-failed-...)[0m                                                    [90m│[39m
+2023-10-23T09:09:25.5876583Z [90m  │[39m [90mSearched:[39m       [0mcypress/e2e/queued-pull-details/Fallbacks.cy.ts, cypress/e2e/NewcomerPopup.cy.[0m [90m│[39m
+2023-10-23T09:09:25.5878313Z [90m  │[39m                 [0mts, cypress/e2e/OrganizationSelector.cy.ts, cypress/e2e/Permissions.cy.ts, cyp[0m [90m│[39m
+2023-10-23T09:09:25.5880562Z [90m  │[39m                 [0mress/e2e/Subscription.cy.ts, cypress/e2e/Sudo.cy.ts, cypress/e2e/InstallReques[0m [90m│[39m
+2023-10-23T09:09:25.5882153Z [90m  │[39m                 [0mtPopup.cy.ts, cypress/e2e/ApiCallHandling.cy.ts, cypress/e2e/Home.cy.ts, cypre[0m [90m│[39m
+2023-10-23T09:09:25.5884259Z [90m  │[39m                 [0mss/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts, cypress/e2e/gha-failed-jobs/GHAFai[0m [90m│[39m
+2023-10-23T09:09:25.5885846Z [90m  │[39m                 [0mledJobDetails.cy.ts, cypress/e2e/Footer.cy.ts, cypress/e2e/NoRepository.cy.ts,[0m [90m│[39m
+2023-10-23T09:09:25.5887428Z [90m  │[39m                 [0m cypress/e2e/statistics/constants.ts, cypress/e2e/gha-failed-jobs/constants.ts[0m [90m│[39m
+2023-10-23T09:09:25.5893892Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:09:25.5903447Z 
+2023-10-23T09:09:25.5903464Z 
+2023-10-23T09:09:25.5918921Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:09:25.5924406Z                                                                                                     
+2023-10-23T09:09:25.5925612Z   Running:  [90mqueued-pull-details/Fallbacks.cy.ts[39m                                            [90m(1 of 13)[39m
+2023-10-23T09:09:29.1269923Z 
+2023-10-23T09:09:29.1279821Z [0m[0m
+2023-10-23T09:09:29.1320570Z [0m  Queue state for the pull request not found[0m
+2023-10-23T09:09:29.6908322Z  HTTP  10/23/2023 9:09:29 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/queues
+2023-10-23T09:09:29.6924433Z  HTTP  10/23/2023 9:09:29 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:09:32.7232134Z  HTTP  10/23/2023 9:09:32 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/queues
+2023-10-23T09:09:32.7319424Z  HTTP  10/23/2023 9:09:32 AM 127.0.0.1 Returned 200 in 10 ms
+2023-10-23T09:09:33.2646925Z  HTTP  10/23/2023 9:09:33 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:09:33.3079497Z  HTTP  10/23/2023 9:09:33 AM 127.0.0.1 Returned 200 in 44 ms
+2023-10-23T09:09:33.3220680Z  HTTP  10/23/2023 9:09:33 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:09:33.3338880Z  HTTP  10/23/2023 9:09:33 AM 127.0.0.1 Returned 200 in 9 ms
+2023-10-23T09:09:35.8209200Z  HTTP  10/23/2023 9:09:35 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:09:35.8276352Z  HTTP  10/23/2023 9:09:35 AM 127.0.0.1 Returned 200 in 8 ms
+2023-10-23T09:09:36.1854937Z  HTTP  10/23/2023 9:09:36 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:09:36.1914164Z  HTTP  10/23/2023 9:09:36 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:09:36.8643823Z  HTTP  10/23/2023 9:09:36 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:09:36.8856587Z  HTTP  10/23/2023 9:09:36 AM 127.0.0.1 Returned 200 in 20 ms
+2023-10-23T09:09:37.7974343Z  HTTP  10/23/2023 9:09:37 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447377&end_at=1698052177
+2023-10-23T09:09:37.8029729Z  HTTP  10/23/2023 9:09:37 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:09:39.0222424Z   [32m  ✓[0m[90m Should show a fallback when the PR just left the queue[0m[90m (6673ms)[0m
+2023-10-23T09:09:39.5286286Z  HTTP  10/23/2023 9:09:39 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/queues?pull=123
+2023-10-23T09:09:39.5312026Z  HTTP  10/23/2023 9:09:39 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:09:39.5993805Z  HTTP  10/23/2023 9:09:39 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:09:39.6009501Z  HTTP  10/23/2023 9:09:39 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:09:39.6099577Z  HTTP  10/23/2023 9:09:39 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:09:39.6117676Z  HTTP  10/23/2023 9:09:39 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:09:39.7255413Z  HTTP  10/23/2023 9:09:39 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:09:39.7268302Z  HTTP  10/23/2023 9:09:39 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:09:39.9782564Z  HTTP  10/23/2023 9:09:39 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:09:39.9790342Z  HTTP  10/23/2023 9:09:39 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:09:40.1065533Z  HTTP  10/23/2023 9:09:40 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:09:40.1078712Z  HTTP  10/23/2023 9:09:40 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:09:40.7728208Z  HTTP  10/23/2023 9:09:40 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447380&end_at=1698052180
+2023-10-23T09:09:40.7744670Z  HTTP  10/23/2023 9:09:40 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:09:41.6611041Z   [32m  ✓[0m[90m Should show a fallback when the PR is not queued yet[0m[90m (2398ms)[0m
+2023-10-23T09:09:42.0391102Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/queues?pull=123
+2023-10-23T09:09:42.0408722Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:09:42.1020986Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:09:42.1081630Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:09:42.1174201Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:09:42.1186637Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:09:42.2408849Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:09:42.2480509Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:09:42.3835657Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:09:42.3875655Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:09:42.5250679Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:09:42.5276609Z  HTTP  10/23/2023 9:09:42 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:09:43.2562529Z  HTTP  10/23/2023 9:09:43 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1662163200&end_at=1662768000
+2023-10-23T09:09:43.2597218Z  HTTP  10/23/2023 9:09:43 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:09:44.0616763Z   [32m  ✓[0m[90m Should show a fallback when the PR is not queued yet[0m[90m (2333ms)[0m
+2023-10-23T09:09:44.5794140Z  HTTP  10/23/2023 9:09:44 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/queues?pull=123
+2023-10-23T09:09:44.5843012Z  HTTP  10/23/2023 9:09:44 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:09:44.6447613Z  HTTP  10/23/2023 9:09:44 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:09:44.6485330Z  HTTP  10/23/2023 9:09:44 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:09:44.6499250Z  HTTP  10/23/2023 9:09:44 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:09:44.6515006Z  HTTP  10/23/2023 9:09:44 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:09:45.0425187Z  HTTP  10/23/2023 9:09:45 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:09:45.0444611Z  HTTP  10/23/2023 9:09:45 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:09:45.1769112Z  HTTP  10/23/2023 9:09:45 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:09:45.1799947Z  HTTP  10/23/2023 9:09:45 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:09:45.3097383Z  HTTP  10/23/2023 9:09:45 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:09:45.3110669Z  HTTP  10/23/2023 9:09:45 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:09:45.9752974Z  HTTP  10/23/2023 9:09:45 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447385&end_at=1698052185
+2023-10-23T09:09:45.9801702Z  HTTP  10/23/2023 9:09:45 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:09:46.6927484Z   [32m  ✓[0m[90m Should show a fallback when the PR has no events[0m[90m (2572ms)[0m
+2023-10-23T09:09:47.0680560Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/queues?pull=123
+2023-10-23T09:09:47.0696403Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:09:47.1257285Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:09:47.1275593Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:09:47.1410724Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:09:47.1417675Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:09:47.2467932Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:09:47.2577048Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 Returned 304 in 10 ms
+2023-10-23T09:09:47.4891301Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:09:47.4957691Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:09:47.6161579Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:09:47.6193323Z  HTTP  10/23/2023 9:09:47 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:09:48.3089009Z  HTTP  10/23/2023 9:09:48 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447388&end_at=1698052188
+2023-10-23T09:09:48.3117650Z  HTTP  10/23/2023 9:09:48 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:09:49.2323315Z   [32m  ✓[0m[90m Should show a fallback when the PR does not even exist[0m[90m (2478ms)[0m
+2023-10-23T09:09:49.2502607Z 
+2023-10-23T09:09:49.2511953Z [0m  Pull request queue state could not be loaded[0m
+2023-10-23T09:09:49.5521497Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 GET /
+2023-10-23T09:09:49.5576237Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:09:49.6125051Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:09:49.6219649Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 Returned 304 in 10 ms
+2023-10-23T09:09:49.6249657Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:09:49.6263143Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:09:49.7366115Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:09:49.7419026Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:09:49.8530679Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:09:49.8556520Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:09:49.8945744Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:09:49.8998075Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:09:49.9464195Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:09:49.9524811Z  HTTP  10/23/2023 9:09:49 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:09:50.9002147Z  HTTP  10/23/2023 9:09:50 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447390&end_at=1698052190
+2023-10-23T09:09:50.9045907Z  HTTP  10/23/2023 9:09:50 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:09:51.9202613Z   [32m  ✓[0m[90m Should show a fallback component when mergeability_check is null[0m[90m (2611ms)[0m
+2023-10-23T09:09:51.9221695Z 
+2023-10-23T09:09:51.9526057Z 
+2023-10-23T09:09:51.9526956Z [92m [0m[32m 6 passing[0m[90m (23s)[0m
+2023-10-23T09:09:51.9527399Z 
+2023-10-23T09:09:51.9545047Z 
+2023-10-23T09:09:51.9545587Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:09:51.9548908Z 
+2023-10-23T09:09:51.9591105Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:09:51.9596921Z [90m  │[39m [90mTests:[39m        [32m6[39m                                                                                [90m│[39m
+2023-10-23T09:09:51.9598652Z [90m  │[39m [90mPassing:[39m      [32m6[39m                                                                                [90m│[39m
+2023-10-23T09:09:51.9599900Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:09:51.9601131Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:09:51.9602375Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:09:51.9603640Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:09:51.9604944Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:09:51.9606442Z [90m  │[39m [90mDuration:[39m     [32m22 seconds[39m                                                                       [90m│[39m
+2023-10-23T09:09:51.9608039Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mqueued-pull-details/Fallbacks.cy.ts[32m[39m                                              [90m│[39m
+2023-10-23T09:09:51.9614491Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:09:51.9619565Z 
+2023-10-23T09:09:51.9878893Z 
+2023-10-23T09:09:51.9924505Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:09:51.9930182Z                                                                                                     
+2023-10-23T09:09:51.9931262Z   Running:  [90mNewcomerPopup.cy.ts[39m                                                            [90m(2 of 13)[39m
+2023-10-23T09:09:54.5647041Z 
+2023-10-23T09:09:54.5654009Z [0m[0m
+2023-10-23T09:09:54.5703984Z [0m  Newcomer popup[0m
+2023-10-23T09:09:55.0206100Z  HTTP  10/23/2023 9:09:55 AM 127.0.0.1 GET /github/mergifyio-testing?new=true
+2023-10-23T09:09:55.0221829Z  HTTP  10/23/2023 9:09:55 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:09:57.8154057Z  HTTP  10/23/2023 9:09:57 AM 127.0.0.1 GET /github/mergifyio-testing?new=true
+2023-10-23T09:09:57.8193953Z  HTTP  10/23/2023 9:09:57 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:09:57.8825363Z  HTTP  10/23/2023 9:09:57 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:09:57.8866452Z  HTTP  10/23/2023 9:09:57 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:09:57.9403108Z  HTTP  10/23/2023 9:09:57 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:09:57.9418384Z  HTTP  10/23/2023 9:09:57 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:09:59.3821372Z  HTTP  10/23/2023 9:09:59 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:09:59.3866983Z  HTTP  10/23/2023 9:09:59 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:09:59.6283911Z  HTTP  10/23/2023 9:09:59 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:09:59.6293192Z  HTTP  10/23/2023 9:09:59 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:09:59.8672930Z  HTTP  10/23/2023 9:09:59 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:09:59.8684359Z  HTTP  10/23/2023 9:09:59 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:00.0059541Z  HTTP  10/23/2023 9:10:00 AM 127.0.0.1 GET /assets/success-928e5303.jpg
+2023-10-23T09:10:00.0193785Z  HTTP  10/23/2023 9:10:00 AM 127.0.0.1 Returned 200 in 11 ms
+2023-10-23T09:10:01.1643415Z  HTTP  10/23/2023 9:10:01 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447401&end_at=1698052201
+2023-10-23T09:10:01.1662809Z  HTTP  10/23/2023 9:10:01 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:10:01.5482526Z   [32m  ✓[0m[90m Should display information popup for newcomers[0m[90m (3621ms)[0m
+2023-10-23T09:10:02.0614150Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 GET /github/mergifyio-testing?new=true
+2023-10-23T09:10:02.0621713Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:02.1108033Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:02.1223965Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:10:02.1225661Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:02.1227141Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 Returned 304 in 0 ms
+2023-10-23T09:10:02.2309027Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:02.2364049Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:10:02.4730456Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:02.4798472Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:10:02.5766863Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:02.5795846Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:02.6735412Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 GET /assets/success-928e5303.jpg
+2023-10-23T09:10:02.6748422Z  HTTP  10/23/2023 9:10:02 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:10:03.3999807Z  HTTP  10/23/2023 9:10:03 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447403&end_at=1698052203
+2023-10-23T09:10:03.4044071Z  HTTP  10/23/2023 9:10:03 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:10:04.1354745Z   [32m  ✓[0m[90m Should handle close[0m[90m (2390ms)[0m
+2023-10-23T09:10:04.5119880Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 GET /github/mergifyio-testing?new=true
+2023-10-23T09:10:04.5133828Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:04.5726303Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:04.5777986Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:10:04.5784385Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:04.5793805Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:10:04.6887798Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:04.6928640Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:10:04.8255738Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:04.8276303Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:10:04.9317580Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:04.9364559Z  HTTP  10/23/2023 9:10:04 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:10:05.0410674Z  HTTP  10/23/2023 9:10:05 AM 127.0.0.1 GET /assets/success-928e5303.jpg
+2023-10-23T09:10:05.0439935Z  HTTP  10/23/2023 9:10:05 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:10:05.8514395Z  HTTP  10/23/2023 9:10:05 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447405&end_at=1698052205
+2023-10-23T09:10:05.8535675Z  HTTP  10/23/2023 9:10:05 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:10:06.4179931Z   [32m  ✓[0m[90m Should handle config editor redirect by hyperlink[0m[90m (2218ms)[0m
+2023-10-23T09:10:06.7457082Z  HTTP  10/23/2023 9:10:06 AM 127.0.0.1 GET /github/mergifyio-testing?new=true
+2023-10-23T09:10:06.7464798Z  HTTP  10/23/2023 9:10:06 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:06.7957575Z  HTTP  10/23/2023 9:10:06 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:06.7964707Z  HTTP  10/23/2023 9:10:06 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:06.8136932Z  HTTP  10/23/2023 9:10:06 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:06.8146340Z  HTTP  10/23/2023 9:10:06 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:10:06.9228641Z  HTTP  10/23/2023 9:10:06 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:06.9273491Z  HTTP  10/23/2023 9:10:06 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:10:07.0553798Z  HTTP  10/23/2023 9:10:07 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:07.0583571Z  HTTP  10/23/2023 9:10:07 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:10:07.1667354Z  HTTP  10/23/2023 9:10:07 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:07.1711238Z  HTTP  10/23/2023 9:10:07 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:10:07.2792490Z  HTTP  10/23/2023 9:10:07 AM 127.0.0.1 GET /assets/success-928e5303.jpg
+2023-10-23T09:10:07.2800109Z  HTTP  10/23/2023 9:10:07 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:08.2319954Z  HTTP  10/23/2023 9:10:08 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447408&end_at=1698052208
+2023-10-23T09:10:08.2395859Z  HTTP  10/23/2023 9:10:08 AM 127.0.0.1 Returned 200 in 8 ms
+2023-10-23T09:10:08.7181866Z   [32m  ✓[0m[90m Should handle config editor redirect by button[0m[90m (2220ms)[0m
+2023-10-23T09:10:08.7198152Z 
+2023-10-23T09:10:08.7221612Z 
+2023-10-23T09:10:08.7222432Z [92m [0m[32m 4 passing[0m[90m (14s)[0m
+2023-10-23T09:10:08.7222860Z 
+2023-10-23T09:10:08.7235613Z 
+2023-10-23T09:10:08.7236260Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:10:08.7247448Z 
+2023-10-23T09:10:08.7266621Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:10:08.7273241Z [90m  │[39m [90mTests:[39m        [32m4[39m                                                                                [90m│[39m
+2023-10-23T09:10:08.7274498Z [90m  │[39m [90mPassing:[39m      [32m4[39m                                                                                [90m│[39m
+2023-10-23T09:10:08.7275739Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:08.7277220Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:08.7278465Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:08.7279738Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:08.7281011Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:10:08.7282317Z [90m  │[39m [90mDuration:[39m     [32m14 seconds[39m                                                                       [90m│[39m
+2023-10-23T09:10:08.7283792Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mNewcomerPopup.cy.ts[32m[39m                                                              [90m│[39m
+2023-10-23T09:10:08.7290183Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:10:08.7295279Z 
+2023-10-23T09:10:08.7382902Z 
+2023-10-23T09:10:08.7398740Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:10:08.7404854Z                                                                                                     
+2023-10-23T09:10:08.7406046Z   Running:  [90mOrganizationSelector.cy.ts[39m                                                     [90m(3 of 13)[39m
+2023-10-23T09:10:11.1927952Z 
+2023-10-23T09:10:11.1937359Z [0m[0m
+2023-10-23T09:10:11.1988223Z [0m  Organization selector[0m
+2023-10-23T09:10:11.6423449Z  HTTP  10/23/2023 9:10:11 AM 127.0.0.1 GET /
+2023-10-23T09:10:11.6430976Z  HTTP  10/23/2023 9:10:11 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:14.3538292Z  HTTP  10/23/2023 9:10:14 AM 127.0.0.1 GET /
+2023-10-23T09:10:14.3545493Z  HTTP  10/23/2023 9:10:14 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:10:14.4353908Z  HTTP  10/23/2023 9:10:14 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:14.4363333Z  HTTP  10/23/2023 9:10:14 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:10:14.4600860Z  HTTP  10/23/2023 9:10:14 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:14.4798744Z  HTTP  10/23/2023 9:10:14 AM 127.0.0.1 Returned 200 in 19 ms
+2023-10-23T09:10:15.9157375Z  HTTP  10/23/2023 9:10:15 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:15.9198871Z  HTTP  10/23/2023 9:10:15 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:10:16.1458444Z  HTTP  10/23/2023 9:10:16 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:16.1522800Z  HTTP  10/23/2023 9:10:16 AM 127.0.0.1 Returned 200 in 7 ms
+2023-10-23T09:10:16.2717351Z  HTTP  10/23/2023 9:10:16 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:16.2751589Z  HTTP  10/23/2023 9:10:16 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:10:16.3094795Z  HTTP  10/23/2023 9:10:16 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:10:16.3118731Z  HTTP  10/23/2023 9:10:16 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:10:17.7025190Z  HTTP  10/23/2023 9:10:17 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447417&end_at=1698052217
+2023-10-23T09:10:17.7112795Z  HTTP  10/23/2023 9:10:17 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:10:18.4298891Z   [32m  ✓[0m[90m Should have all organizations[0m[90m (4516ms)[0m
+2023-10-23T09:10:18.9521240Z  HTTP  10/23/2023 9:10:18 AM 127.0.0.1 GET /
+2023-10-23T09:10:18.9536214Z  HTTP  10/23/2023 9:10:18 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:10:19.0161066Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:19.0167966Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:19.0238207Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:19.0244876Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:10:19.1376590Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:19.1436310Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:10:19.3551905Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:19.3629377Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 Returned 304 in 8 ms
+2023-10-23T09:10:19.3914306Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:19.3997690Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 Returned 304 in 9 ms
+2023-10-23T09:10:19.4498474Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:10:19.4529724Z  HTTP  10/23/2023 9:10:19 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:10:20.3144999Z  HTTP  10/23/2023 9:10:20 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447420&end_at=1698052220
+2023-10-23T09:10:20.3202913Z  HTTP  10/23/2023 9:10:20 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:10:21.4471914Z   [32m  ✓[0m[90m Should handle select organization[0m[90m (2709ms)[0m
+2023-10-23T09:10:21.8383843Z  HTTP  10/23/2023 9:10:21 AM 127.0.0.1 GET /
+2023-10-23T09:10:21.8438394Z  HTTP  10/23/2023 9:10:21 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:10:21.8999732Z  HTTP  10/23/2023 9:10:21 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:21.9012301Z  HTTP  10/23/2023 9:10:21 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:21.9159439Z  HTTP  10/23/2023 9:10:21 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:21.9166295Z  HTTP  10/23/2023 9:10:21 AM 127.0.0.1 Returned 304 in 0 ms
+2023-10-23T09:10:22.0275543Z  HTTP  10/23/2023 9:10:22 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:22.0361419Z  HTTP  10/23/2023 9:10:22 AM 127.0.0.1 Returned 304 in 9 ms
+2023-10-23T09:10:22.1382933Z  HTTP  10/23/2023 9:10:22 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:22.1395670Z  HTTP  10/23/2023 9:10:22 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:22.1794733Z  HTTP  10/23/2023 9:10:22 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:22.1840772Z  HTTP  10/23/2023 9:10:22 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:10:22.2359005Z  HTTP  10/23/2023 9:10:22 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:10:22.2379647Z  HTTP  10/23/2023 9:10:22 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:10:23.1638003Z  HTTP  10/23/2023 9:10:23 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447423&end_at=1698052223
+2023-10-23T09:10:23.1676225Z  HTTP  10/23/2023 9:10:23 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:10:24.0767734Z   [32m  ✓[0m[90m Should be able to add an organization[0m[90m (2573ms)[0m
+2023-10-23T09:10:24.3899892Z  HTTP  10/23/2023 9:10:24 AM 127.0.0.1 GET /
+2023-10-23T09:10:24.3957604Z  HTTP  10/23/2023 9:10:24 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:10:24.4503749Z  HTTP  10/23/2023 9:10:24 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:24.4533397Z  HTTP  10/23/2023 9:10:24 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:10:24.4636936Z  HTTP  10/23/2023 9:10:24 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:24.4646471Z  HTTP  10/23/2023 9:10:24 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:24.8607407Z  HTTP  10/23/2023 9:10:24 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:24.8618745Z  HTTP  10/23/2023 9:10:24 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:24.9701390Z  HTTP  10/23/2023 9:10:24 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:24.9714967Z  HTTP  10/23/2023 9:10:24 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:25.0223475Z  HTTP  10/23/2023 9:10:25 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:25.0280031Z  HTTP  10/23/2023 9:10:25 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:10:25.0768219Z  HTTP  10/23/2023 9:10:25 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:10:25.0775880Z  HTTP  10/23/2023 9:10:25 AM 127.0.0.1 Returned 304 in 0 ms
+2023-10-23T09:10:26.0736078Z  HTTP  10/23/2023 9:10:26 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447426&end_at=1698052226
+2023-10-23T09:10:26.0798985Z  HTTP  10/23/2023 9:10:26 AM 127.0.0.1 Returned 200 in 7 ms
+2023-10-23T09:10:27.0218833Z   [32m  ✓[0m[90m Should refetch installations on focus[0m[90m (2904ms)[0m
+2023-10-23T09:10:27.0226593Z 
+2023-10-23T09:10:27.0496422Z 
+2023-10-23T09:10:27.0501996Z [92m [0m[32m 4 passing[0m[90m (16s)[0m
+2023-10-23T09:10:27.0506361Z 
+2023-10-23T09:10:27.0518842Z 
+2023-10-23T09:10:27.0524502Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:10:27.0533452Z 
+2023-10-23T09:10:27.0553190Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:10:27.0559122Z [90m  │[39m [90mTests:[39m        [32m4[39m                                                                                [90m│[39m
+2023-10-23T09:10:27.0560376Z [90m  │[39m [90mPassing:[39m      [32m4[39m                                                                                [90m│[39m
+2023-10-23T09:10:27.0561628Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:27.0562877Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:27.0564122Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:27.0565419Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:27.0566697Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:10:27.0572091Z [90m  │[39m [90mDuration:[39m     [32m15 seconds[39m                                                                       [90m│[39m
+2023-10-23T09:10:27.0573645Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mOrganizationSelector.cy.ts[32m[39m                                                       [90m│[39m
+2023-10-23T09:10:27.0580103Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:10:27.0585629Z 
+2023-10-23T09:10:27.0828157Z 
+2023-10-23T09:10:27.0846911Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:10:27.0852889Z                                                                                                     
+2023-10-23T09:10:27.0853994Z   Running:  [90mPermissions.cy.ts[39m                                                              [90m(4 of 13)[39m
+2023-10-23T09:10:29.4292427Z 
+2023-10-23T09:10:29.4293182Z [0m[0m
+2023-10-23T09:10:29.4340009Z [0m  Testing permissions[0m
+2023-10-23T09:10:29.8978892Z  HTTP  10/23/2023 9:10:29 AM 127.0.0.1 GET /
+2023-10-23T09:10:29.9023543Z  HTTP  10/23/2023 9:10:29 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:10:32.5508826Z  HTTP  10/23/2023 9:10:32 AM 127.0.0.1 GET /
+2023-10-23T09:10:32.5555946Z  HTTP  10/23/2023 9:10:32 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:10:32.6180621Z  HTTP  10/23/2023 9:10:32 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:32.6224443Z  HTTP  10/23/2023 9:10:32 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:10:32.6235844Z  HTTP  10/23/2023 9:10:32 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:32.6246950Z  HTTP  10/23/2023 9:10:32 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:33.9943817Z  HTTP  10/23/2023 9:10:33 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:33.9958045Z  HTTP  10/23/2023 9:10:33 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:10:34.1716625Z  HTTP  10/23/2023 9:10:34 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:34.1732906Z  HTTP  10/23/2023 9:10:34 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:10:34.2909182Z  HTTP  10/23/2023 9:10:34 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:34.2968543Z  HTTP  10/23/2023 9:10:34 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:10:34.3284708Z  HTTP  10/23/2023 9:10:34 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:10:34.3343068Z  HTTP  10/23/2023 9:10:34 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:10:35.7765850Z  HTTP  10/23/2023 9:10:35 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447435&end_at=1698052235
+2023-10-23T09:10:35.7799936Z  HTTP  10/23/2023 9:10:35 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:10:35.8969059Z   [32m  ✓[0m[90m Missing permissions[0m[90m (3401ms)[0m
+2023-10-23T09:10:36.4000440Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 GET /
+2023-10-23T09:10:36.4020692Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:36.4408852Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:36.4419782Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:10:36.4488519Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:36.4500753Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:36.5620568Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:36.5852384Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 Returned 304 in 24 ms
+2023-10-23T09:10:36.7850129Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:36.7919479Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:10:36.8254716Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:36.8319536Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:10:36.8573973Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:10:36.8597302Z  HTTP  10/23/2023 9:10:36 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:10:37.7621888Z  HTTP  10/23/2023 9:10:37 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447437&end_at=1698052237
+2023-10-23T09:10:37.7673388Z  HTTP  10/23/2023 9:10:37 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:38.0774439Z   [32m  ✓[0m[90m Should not see "accept them here" link if not admin[0m[90m (1443ms)[0m
+2023-10-23T09:10:38.0799214Z 
+2023-10-23T09:10:38.1869579Z 
+2023-10-23T09:10:38.1870463Z [92m [0m[32m 2 passing[0m[90m (9s)[0m
+2023-10-23T09:10:38.1870904Z 
+2023-10-23T09:10:38.1880690Z 
+2023-10-23T09:10:38.1881197Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:10:38.1888572Z 
+2023-10-23T09:10:38.1908084Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:10:38.1913918Z [90m  │[39m [90mTests:[39m        [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:10:38.1915162Z [90m  │[39m [90mPassing:[39m      [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:10:38.1916409Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:38.1917650Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:38.1919276Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:38.1920544Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:38.1921828Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:10:38.1923125Z [90m  │[39m [90mDuration:[39m     [32m8 seconds[39m                                                                        [90m│[39m
+2023-10-23T09:10:38.1924573Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mPermissions.cy.ts[32m[39m                                                                [90m│[39m
+2023-10-23T09:10:38.1930946Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:10:38.1936185Z 
+2023-10-23T09:10:38.2136472Z 
+2023-10-23T09:10:38.2164493Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:10:38.2170447Z                                                                                                     
+2023-10-23T09:10:38.2171539Z   Running:  [90mSubscription.cy.ts[39m                                                             [90m(5 of 13)[39m
+2023-10-23T09:10:40.5905028Z 
+2023-10-23T09:10:40.5918427Z [0m[0m
+2023-10-23T09:10:40.5930018Z [0m  Testing subscription related features[0m
+2023-10-23T09:10:41.3659542Z  HTTP  10/23/2023 9:10:41 AM 127.0.0.1 GET /
+2023-10-23T09:10:41.3675153Z  HTTP  10/23/2023 9:10:41 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:44.3159817Z  HTTP  10/23/2023 9:10:44 AM 127.0.0.1 GET /
+2023-10-23T09:10:44.3172823Z  HTTP  10/23/2023 9:10:44 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:44.4088992Z  HTTP  10/23/2023 9:10:44 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:44.4117680Z  HTTP  10/23/2023 9:10:44 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:10:44.5056688Z  HTTP  10/23/2023 9:10:44 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:44.5084231Z  HTTP  10/23/2023 9:10:44 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:10:45.9233741Z  HTTP  10/23/2023 9:10:45 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:45.9242795Z  HTTP  10/23/2023 9:10:45 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:10:46.1301061Z  HTTP  10/23/2023 9:10:46 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:46.1348241Z  HTTP  10/23/2023 9:10:46 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:10:46.2650076Z  HTTP  10/23/2023 9:10:46 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:46.2677962Z  HTTP  10/23/2023 9:10:46 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:10:46.3229908Z  HTTP  10/23/2023 9:10:46 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:10:46.3306661Z  HTTP  10/23/2023 9:10:46 AM 127.0.0.1 Returned 200 in 7 ms
+2023-10-23T09:10:47.7449729Z   [32m  ✓[0m[90m Should show a banner if user has not enough seats[0m[90m (4104ms)[0m
+2023-10-23T09:10:48.0588350Z  HTTP  10/23/2023 9:10:48 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447447&end_at=1698052247
+2023-10-23T09:10:48.0618911Z  HTTP  10/23/2023 9:10:48 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:10:48.7399334Z  HTTP  10/23/2023 9:10:48 AM 127.0.0.1 GET /
+2023-10-23T09:10:48.7437197Z  HTTP  10/23/2023 9:10:48 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:10:48.8076701Z  HTTP  10/23/2023 9:10:48 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:48.8088190Z  HTTP  10/23/2023 9:10:48 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:10:48.8204344Z  HTTP  10/23/2023 9:10:48 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:48.8229174Z  HTTP  10/23/2023 9:10:48 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:10:48.9391111Z  HTTP  10/23/2023 9:10:48 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:48.9438462Z  HTTP  10/23/2023 9:10:48 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:10:49.1813176Z  HTTP  10/23/2023 9:10:49 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:49.1860164Z  HTTP  10/23/2023 9:10:49 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:10:49.2276646Z  HTTP  10/23/2023 9:10:49 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:49.2357628Z  HTTP  10/23/2023 9:10:49 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:10:49.2767861Z  HTTP  10/23/2023 9:10:49 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:10:49.2779290Z  HTTP  10/23/2023 9:10:49 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:10:49.4533381Z  HTTP  10/23/2023 9:10:49 AM 127.0.0.1 GET /assets/error-page-background-f8fc4eec.png
+2023-10-23T09:10:49.4633362Z  HTTP  10/23/2023 9:10:49 AM 127.0.0.1 Returned 200 in 10 ms
+2023-10-23T09:10:49.5810527Z   [32m  ✓[0m[90m Should show fallback for blacklisted accounts[0m[90m (1406ms)[0m
+2023-10-23T09:10:49.5879406Z 
+2023-10-23T09:10:49.6145003Z 
+2023-10-23T09:10:49.6149825Z [92m [0m[32m 2 passing[0m[90m (9s)[0m
+2023-10-23T09:10:49.6153241Z 
+2023-10-23T09:10:49.6165018Z 
+2023-10-23T09:10:49.6170171Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:10:49.6208296Z 
+2023-10-23T09:10:49.6242683Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:10:49.6249030Z [90m  │[39m [90mTests:[39m        [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:10:49.6250278Z [90m  │[39m [90mPassing:[39m      [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:10:49.6251522Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:49.6252759Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:49.6254031Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:49.6255297Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:10:49.6256572Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:10:49.6257873Z [90m  │[39m [90mDuration:[39m     [32m8 seconds[39m                                                                        [90m│[39m
+2023-10-23T09:10:49.6259326Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mSubscription.cy.ts[32m[39m                                                               [90m│[39m
+2023-10-23T09:10:49.6265677Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:10:49.6325692Z 
+2023-10-23T09:10:49.6669174Z 
+2023-10-23T09:10:49.6685421Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:10:49.6691369Z                                                                                                     
+2023-10-23T09:10:49.6692403Z   Running:  [90mSudo.cy.ts[39m                                                                     [90m(6 of 13)[39m
+2023-10-23T09:10:52.0772806Z 
+2023-10-23T09:10:52.0780292Z [0m[0m
+2023-10-23T09:10:52.0832793Z [0m  Testing dashboard in sudo mode[0m
+2023-10-23T09:10:52.5433984Z  HTTP  10/23/2023 9:10:52 AM 127.0.0.1 GET /
+2023-10-23T09:10:52.5448018Z  HTTP  10/23/2023 9:10:52 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:10:55.2322707Z  HTTP  10/23/2023 9:10:55 AM 127.0.0.1 GET /
+2023-10-23T09:10:55.2336322Z  HTTP  10/23/2023 9:10:55 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:10:55.3117280Z  HTTP  10/23/2023 9:10:55 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:55.3170918Z  HTTP  10/23/2023 9:10:55 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:10:55.3274680Z  HTTP  10/23/2023 9:10:55 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:55.3315444Z  HTTP  10/23/2023 9:10:55 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:10:56.7774251Z  HTTP  10/23/2023 9:10:56 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:56.7842574Z  HTTP  10/23/2023 9:10:56 AM 127.0.0.1 Returned 200 in 7 ms
+2023-10-23T09:10:57.0268724Z  HTTP  10/23/2023 9:10:57 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:57.0318371Z  HTTP  10/23/2023 9:10:57 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:10:57.1593395Z  HTTP  10/23/2023 9:10:57 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:57.1673949Z  HTTP  10/23/2023 9:10:57 AM 127.0.0.1 Returned 200 in 8 ms
+2023-10-23T09:10:57.2343100Z  HTTP  10/23/2023 9:10:57 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:10:57.2401038Z  HTTP  10/23/2023 9:10:57 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:10:58.5907352Z  HTTP  10/23/2023 9:10:58 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447458&end_at=1698052258
+2023-10-23T09:10:58.5956980Z  HTTP  10/23/2023 9:10:58 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:10:58.7093145Z   [32m  ✓[0m[90m Should display banner indicating we are in sudo[0m[90m (3539ms)[0m
+2023-10-23T09:10:59.2376407Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 GET /
+2023-10-23T09:10:59.2398001Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:10:59.2971299Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:10:59.3014320Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:10:59.3038743Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:10:59.3047888Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:59.4137690Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:10:59.4172146Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:59.6299448Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:10:59.6307081Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:10:59.6796723Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:10:59.6804001Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:10:59.7265847Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:10:59.7273542Z  HTTP  10/23/2023 9:10:59 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:11:00.6239178Z  HTTP  10/23/2023 9:11:00 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447460&end_at=1698052260
+2023-10-23T09:11:00.6318330Z  HTTP  10/23/2023 9:11:00 AM 127.0.0.1 Returned 200 in 9 ms
+2023-10-23T09:11:01.1092250Z   [32m  ✓[0m[90m Should not load intercom in sudo[0m[90m (1961ms)[0m
+2023-10-23T09:11:01.1134864Z 
+2023-10-23T09:11:01.2706424Z 
+2023-10-23T09:11:01.2707380Z [92m [0m[32m 2 passing[0m[90m (9s)[0m
+2023-10-23T09:11:01.2708087Z 
+2023-10-23T09:11:01.2715084Z 
+2023-10-23T09:11:01.2717960Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:11:01.2725869Z 
+2023-10-23T09:11:01.2743980Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:11:01.2750201Z [90m  │[39m [90mTests:[39m        [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:11:01.2751635Z [90m  │[39m [90mPassing:[39m      [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:11:01.2753074Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:01.2754968Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:01.2756387Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:01.2757830Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:01.2759282Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:11:01.2760757Z [90m  │[39m [90mDuration:[39m     [32m9 seconds[39m                                                                        [90m│[39m
+2023-10-23T09:11:01.2762348Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mSudo.cy.ts[32m[39m                                                                       [90m│[39m
+2023-10-23T09:11:01.2769088Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:11:01.2774933Z 
+2023-10-23T09:11:01.2910101Z 
+2023-10-23T09:11:01.2924875Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:11:01.2930561Z                                                                                                     
+2023-10-23T09:11:01.2931698Z   Running:  [90mInstallRequestPopup.cy.ts[39m                                                      [90m(7 of 13)[39m
+2023-10-23T09:11:03.7997993Z 
+2023-10-23T09:11:03.8006307Z [0m[0m
+2023-10-23T09:11:03.8053249Z [0m  Install request popup[0m
+2023-10-23T09:11:04.2381828Z  HTTP  10/23/2023 9:11:04 AM 127.0.0.1 GET /github/mergifyio-testing?request=true
+2023-10-23T09:11:04.2396320Z  HTTP  10/23/2023 9:11:04 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:06.8534341Z  HTTP  10/23/2023 9:11:06 AM 127.0.0.1 GET /github/mergifyio-testing?request=true
+2023-10-23T09:11:06.8554893Z  HTTP  10/23/2023 9:11:06 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:06.9278114Z  HTTP  10/23/2023 9:11:06 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:11:06.9290897Z  HTTP  10/23/2023 9:11:06 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:06.9622566Z  HTTP  10/23/2023 9:11:06 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:11:06.9655017Z  HTTP  10/23/2023 9:11:06 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:11:08.3508991Z  HTTP  10/23/2023 9:11:08 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:11:08.3554242Z  HTTP  10/23/2023 9:11:08 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:08.5860388Z  HTTP  10/23/2023 9:11:08 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:11:08.5877184Z  HTTP  10/23/2023 9:11:08 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:08.8134018Z  HTTP  10/23/2023 9:11:08 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:11:08.8233387Z  HTTP  10/23/2023 9:11:08 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:11:08.9355745Z  HTTP  10/23/2023 9:11:08 AM 127.0.0.1 GET /assets/request-ac675bde.jpg
+2023-10-23T09:11:08.9623213Z  HTTP  10/23/2023 9:11:08 AM 127.0.0.1 Returned 200 in 27 ms
+2023-10-23T09:11:09.8593627Z   [32m  ✓[0m[90m Should show popup[0m[90m (3246ms)[0m
+2023-10-23T09:11:10.1233074Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447469&end_at=1698052269
+2023-10-23T09:11:10.1259822Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:11:10.4953787Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 GET /github/mergifyio-testing?request=true
+2023-10-23T09:11:10.5033569Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:11:10.5505211Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:11:10.5517411Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:11:10.5606944Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:11:10.5613334Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 Returned 304 in 0 ms
+2023-10-23T09:11:10.6894462Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:11:10.6954961Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:11:10.9183400Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:11:10.9203442Z  HTTP  10/23/2023 9:11:10 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:11:11.0163936Z  HTTP  10/23/2023 9:11:11 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:11:11.0236389Z  HTTP  10/23/2023 9:11:11 AM 127.0.0.1 Returned 304 in 8 ms
+2023-10-23T09:11:11.1478937Z  HTTP  10/23/2023 9:11:11 AM 127.0.0.1 GET /assets/request-ac675bde.jpg
+2023-10-23T09:11:11.1555871Z  HTTP  10/23/2023 9:11:11 AM 127.0.0.1 Returned 304 in 8 ms
+2023-10-23T09:11:11.8892088Z  HTTP  10/23/2023 9:11:11 AM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697447471&end_at=1698052271
+2023-10-23T09:11:11.8910670Z  HTTP  10/23/2023 9:11:11 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:12.1229073Z   [32m  ✓[0m[90m Should close on confirm[0m[90m (1461ms)[0m
+2023-10-23T09:11:12.1240645Z 
+2023-10-23T09:11:12.2109764Z 
+2023-10-23T09:11:12.2111044Z [92m [0m[32m 2 passing[0m[90m (8s)[0m
+2023-10-23T09:11:12.2111693Z 
+2023-10-23T09:11:12.2123700Z 
+2023-10-23T09:11:12.2129511Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:11:12.2153871Z 
+2023-10-23T09:11:12.2210497Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:11:12.2217048Z [90m  │[39m [90mTests:[39m        [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:11:12.2218408Z [90m  │[39m [90mPassing:[39m      [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:11:12.2220046Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:12.2221489Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:12.2245175Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:12.2246505Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:12.2247804Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:11:12.2249229Z [90m  │[39m [90mDuration:[39m     [32m8 seconds[39m                                                                        [90m│[39m
+2023-10-23T09:11:12.2250771Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mInstallRequestPopup.cy.ts[32m[39m                                                        [90m│[39m
+2023-10-23T09:11:12.2257176Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:11:12.2262328Z 
+2023-10-23T09:11:12.2376298Z 
+2023-10-23T09:11:12.2392002Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:11:12.2397962Z                                                                                                     
+2023-10-23T09:11:12.2399073Z   Running:  [90mApiCallHandling.cy.ts[39m                                                          [90m(8 of 13)[39m
+2023-10-23T09:11:14.6410385Z 
+2023-10-23T09:11:14.6418045Z [0m[0m
+2023-10-23T09:11:14.6465616Z [0m  Testing API calls handling [0m
+2023-10-23T09:11:15.0604044Z  HTTP  10/23/2023 9:11:15 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/event-logs
+2023-10-23T09:11:15.0641335Z  HTTP  10/23/2023 9:11:15 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:11:17.6979065Z  HTTP  10/23/2023 9:11:17 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/event-logs
+2023-10-23T09:11:17.6991271Z  HTTP  10/23/2023 9:11:17 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:17.7731032Z  HTTP  10/23/2023 9:11:17 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:11:17.7792236Z  HTTP  10/23/2023 9:11:17 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:11:17.7793338Z  HTTP  10/23/2023 9:11:17 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:11:17.7808483Z  HTTP  10/23/2023 9:11:17 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:11:19.1483567Z  HTTP  10/23/2023 9:11:19 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:11:19.1517044Z  HTTP  10/23/2023 9:11:19 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:11:19.4404165Z  HTTP  10/23/2023 9:11:19 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:11:19.4523931Z  HTTP  10/23/2023 9:11:19 AM 127.0.0.1 Returned 200 in 11 ms
+2023-10-23T09:11:19.7184083Z  HTTP  10/23/2023 9:11:19 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:11:19.7278981Z  HTTP  10/23/2023 9:11:19 AM 127.0.0.1 Returned 200 in 12 ms
+2023-10-23T09:11:20.0085515Z   [32m  ✓[0m[90m Should show banner on 402[0m[90m (2675ms)[0m
+2023-10-23T09:11:20.3576904Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/event-logs
+2023-10-23T09:11:20.3591243Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:20.4033804Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:11:20.4043261Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:11:20.4118914Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:11:20.4128172Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:11:20.5195894Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:11:20.5238049Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:11:20.7429460Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:11:20.7480150Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:11:20.8856910Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:11:20.8872714Z  HTTP  10/23/2023 9:11:20 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:11:21.1069303Z   [32m  ✓[0m[90m Should show banner on 403[0m[90m (1047ms)[0m
+2023-10-23T09:11:21.1081212Z 
+2023-10-23T09:11:21.1277677Z 
+2023-10-23T09:11:21.1278568Z [92m [0m[32m 2 passing[0m[90m (6s)[0m
+2023-10-23T09:11:21.1279008Z 
+2023-10-23T09:11:21.1279015Z 
+2023-10-23T09:11:21.1279236Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:11:21.1283863Z 
+2023-10-23T09:11:21.1302587Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:11:21.1309144Z [90m  │[39m [90mTests:[39m        [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:11:21.1310393Z [90m  │[39m [90mPassing:[39m      [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:11:21.1311652Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:21.1312894Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:21.1314130Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:21.1315389Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:21.1316693Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:11:21.1317987Z [90m  │[39m [90mDuration:[39m     [32m6 seconds[39m                                                                        [90m│[39m
+2023-10-23T09:11:21.1319463Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mApiCallHandling.cy.ts[32m[39m                                                            [90m│[39m
+2023-10-23T09:11:21.1325918Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:11:21.1331180Z 
+2023-10-23T09:11:21.1405620Z 
+2023-10-23T09:11:21.1417282Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:11:21.1423222Z                                                                                                     
+2023-10-23T09:11:21.1424238Z   Running:  [90mHome.cy.ts[39m                                                                     [90m(9 of 13)[39m
+2023-10-23T09:11:23.5253901Z 
+2023-10-23T09:11:23.5261450Z [0m[0m
+2023-10-23T09:11:23.5296728Z [0m  Testing Home page[0m
+2023-10-23T09:11:23.9382777Z  HTTP  10/23/2023 9:11:23 AM 127.0.0.1 GET /
+2023-10-23T09:11:23.9396416Z  HTTP  10/23/2023 9:11:23 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:26.5973311Z  HTTP  10/23/2023 9:11:26 AM 127.0.0.1 GET /
+2023-10-23T09:11:26.5991953Z  HTTP  10/23/2023 9:11:26 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:26.6713747Z  HTTP  10/23/2023 9:11:26 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:11:26.6725014Z  HTTP  10/23/2023 9:11:26 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:26.7112342Z  HTTP  10/23/2023 9:11:26 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:11:26.7133227Z  HTTP  10/23/2023 9:11:26 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:28.1358570Z  HTTP  10/23/2023 9:11:28 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:11:28.1391543Z  HTTP  10/23/2023 9:11:28 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:11:28.3825826Z  HTTP  10/23/2023 9:11:28 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:11:28.4010432Z  HTTP  10/23/2023 9:11:28 AM 127.0.0.1 Returned 200 in 19 ms
+2023-10-23T09:11:28.5278243Z  HTTP  10/23/2023 9:11:28 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:11:28.5316380Z  HTTP  10/23/2023 9:11:28 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:11:28.5556702Z  HTTP  10/23/2023 9:11:28 AM 127.0.0.1 GET /assets/error-page-background-f8fc4eec.png
+2023-10-23T09:11:28.5568407Z  HTTP  10/23/2023 9:11:28 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:28.5973004Z  HTTP  10/23/2023 9:11:28 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:11:28.5987982Z  HTTP  10/23/2023 9:11:28 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:28.8394950Z   [32m  ✓[0m[90m Should show message if no installations[0m[90m (2570ms)[0m
+2023-10-23T09:11:29.2271242Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 GET /
+2023-10-23T09:11:29.2315828Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:11:29.2810592Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:11:29.2828398Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:11:29.2938115Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:11:29.2945360Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:11:29.3932665Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:11:29.3981823Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:11:29.5919574Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:11:29.6002171Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 Returned 304 in 8 ms
+2023-10-23T09:11:29.6698879Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:11:29.6705784Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:11:29.6910407Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 GET /assets/error-page-background-f8fc4eec.png
+2023-10-23T09:11:29.6917456Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:11:29.7120004Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:11:29.7127165Z  HTTP  10/23/2023 9:11:29 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:11:29.8006381Z   [32m  ✓[0m[90m Enable mergify button should include custom server name[0m[90m (889ms)[0m
+2023-10-23T09:11:29.8020615Z 
+2023-10-23T09:11:29.8217167Z 
+2023-10-23T09:11:29.8218117Z [92m [0m[32m 2 passing[0m[90m (6s)[0m
+2023-10-23T09:11:29.8218564Z 
+2023-10-23T09:11:29.8221705Z 
+2023-10-23T09:11:29.8222428Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:11:29.8229318Z 
+2023-10-23T09:11:29.8279538Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:11:29.8288394Z [90m  │[39m [90mTests:[39m        [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:11:29.8289711Z [90m  │[39m [90mPassing:[39m      [32m2[39m                                                                                [90m│[39m
+2023-10-23T09:11:29.8290961Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:29.8292198Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:29.8293441Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:29.8294706Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:11:29.8295981Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:11:29.8297847Z [90m  │[39m [90mDuration:[39m     [32m6 seconds[39m                                                                        [90m│[39m
+2023-10-23T09:11:29.8299265Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mHome.cy.ts[32m[39m                                                                       [90m│[39m
+2023-10-23T09:11:29.8305675Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:11:29.8310857Z 
+2023-10-23T09:11:29.8374059Z 
+2023-10-23T09:11:29.8393362Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:11:29.8398957Z                                                                                                     
+2023-10-23T09:11:29.8400136Z   Running:  [90mgha-failed-jobs/GHAFailedJobs.cy.ts[39m                                           [90m(10 of 13)[39m
+2023-10-23T09:11:32.4177788Z 
+2023-10-23T09:11:32.4184114Z [0m[0m
+2023-10-23T09:11:32.4233001Z [0m  gha failed jobs[0m
+2023-10-23T09:11:32.8612101Z  HTTP  10/23/2023 9:11:32 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+2023-10-23T09:11:32.8637455Z  HTTP  10/23/2023 9:11:32 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:11:35.5693070Z  HTTP  10/23/2023 9:11:35 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+2023-10-23T09:11:35.5716407Z  HTTP  10/23/2023 9:11:35 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:11:35.6376423Z  HTTP  10/23/2023 9:11:35 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:11:35.6385839Z  HTTP  10/23/2023 9:11:35 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:35.6931522Z  HTTP  10/23/2023 9:11:35 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:11:35.6972491Z  HTTP  10/23/2023 9:11:35 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:11:37.0369059Z  HTTP  10/23/2023 9:11:37 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:11:37.0449605Z  HTTP  10/23/2023 9:11:37 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:37.3461867Z  HTTP  10/23/2023 9:11:37 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:11:37.3492509Z  HTTP  10/23/2023 9:11:37 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:11:37.6385783Z  HTTP  10/23/2023 9:11:37 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:11:37.6434188Z  HTTP  10/23/2023 9:11:37 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:11:48.0828006Z     [33m(Attempt 1 of 3)[0m Should display flaky guard table
+2023-10-23T09:11:48.9641770Z  HTTP  10/23/2023 9:11:48 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+2023-10-23T09:11:48.9685004Z  HTTP  10/23/2023 9:11:48 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:11:49.0393783Z  HTTP  10/23/2023 9:11:49 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:11:49.0406456Z  HTTP  10/23/2023 9:11:49 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:11:49.0482380Z  HTTP  10/23/2023 9:11:49 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:11:49.0500114Z  HTTP  10/23/2023 9:11:49 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:11:49.1856401Z  HTTP  10/23/2023 9:11:49 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:11:49.1867388Z  HTTP  10/23/2023 9:11:49 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:11:49.5368353Z  HTTP  10/23/2023 9:11:49 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:11:49.5378759Z  HTTP  10/23/2023 9:11:49 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:11:49.7705022Z  HTTP  10/23/2023 9:11:49 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:11:49.7746504Z  HTTP  10/23/2023 9:11:49 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:12:00.1546134Z     [33m(Attempt 2 of 3)[0m Should display flaky guard table
+2023-10-23T09:12:01.2214651Z  HTTP  10/23/2023 9:12:01 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+2023-10-23T09:12:01.2218516Z  HTTP  10/23/2023 9:12:01 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:12:01.2924076Z  HTTP  10/23/2023 9:12:01 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:12:01.2951342Z  HTTP  10/23/2023 9:12:01 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:12:01.3178540Z  HTTP  10/23/2023 9:12:01 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:12:01.3235579Z  HTTP  10/23/2023 9:12:01 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:12:01.4375043Z  HTTP  10/23/2023 9:12:01 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:12:01.4439261Z  HTTP  10/23/2023 9:12:01 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:12:01.7757594Z  HTTP  10/23/2023 9:12:01 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:12:01.7792704Z  HTTP  10/23/2023 9:12:01 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:12:02.0349134Z  HTTP  10/23/2023 9:12:02 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:12:02.0400813Z  HTTP  10/23/2023 9:12:02 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:12:12.3745548Z   [31m  1) Should display flaky guard table[0m
+2023-10-23T09:12:12.7647584Z  HTTP  10/23/2023 9:12:12 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+2023-10-23T09:12:12.7717664Z  HTTP  10/23/2023 9:12:12 AM 127.0.0.1 Returned 200 in 8 ms
+2023-10-23T09:12:12.8326599Z  HTTP  10/23/2023 9:12:12 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:12:12.8335949Z  HTTP  10/23/2023 9:12:12 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:12:12.8399457Z  HTTP  10/23/2023 9:12:12 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:12:12.8405396Z  HTTP  10/23/2023 9:12:12 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:12:13.3669091Z  HTTP  10/23/2023 9:12:13 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:12:13.3726520Z  HTTP  10/23/2023 9:12:13 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:12:13.5244273Z  HTTP  10/23/2023 9:12:13 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:12:13.5301296Z  HTTP  10/23/2023 9:12:13 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:12:13.6882791Z  HTTP  10/23/2023 9:12:13 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:12:13.6960697Z  HTTP  10/23/2023 9:12:13 AM 127.0.0.1 Returned 304 in 8 ms
+2023-10-23T09:12:23.6092957Z     [33m(Attempt 1 of 3)[0m Should navigate to flaky guard error details
+2023-10-23T09:12:24.4384138Z  HTTP  10/23/2023 9:12:24 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+2023-10-23T09:12:24.4437038Z  HTTP  10/23/2023 9:12:24 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:12:24.5783682Z  HTTP  10/23/2023 9:12:24 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:12:24.5840302Z  HTTP  10/23/2023 9:12:24 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:12:24.5841926Z  HTTP  10/23/2023 9:12:24 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:12:24.5845187Z  HTTP  10/23/2023 9:12:24 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:12:25.0247501Z  HTTP  10/23/2023 9:12:25 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:12:25.0275885Z  HTTP  10/23/2023 9:12:25 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:12:25.3945857Z  HTTP  10/23/2023 9:12:25 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:12:25.3971083Z  HTTP  10/23/2023 9:12:25 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:12:25.6945554Z  HTTP  10/23/2023 9:12:25 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:12:25.6959014Z  HTTP  10/23/2023 9:12:25 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:12:35.4325206Z     [33m(Attempt 2 of 3)[0m Should navigate to flaky guard error details
+2023-10-23T09:12:36.6459020Z  HTTP  10/23/2023 9:12:36 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+2023-10-23T09:12:36.6471351Z  HTTP  10/23/2023 9:12:36 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:12:36.7304004Z  HTTP  10/23/2023 9:12:36 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:12:36.7355701Z  HTTP  10/23/2023 9:12:36 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:12:36.7518484Z  HTTP  10/23/2023 9:12:36 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:12:36.7574031Z  HTTP  10/23/2023 9:12:36 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:12:37.2083366Z  HTTP  10/23/2023 9:12:37 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:12:37.2118652Z  HTTP  10/23/2023 9:12:37 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:12:37.6266997Z  HTTP  10/23/2023 9:12:37 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:12:37.6320454Z  HTTP  10/23/2023 9:12:37 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:12:37.8986002Z  HTTP  10/23/2023 9:12:37 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:12:37.9035463Z  HTTP  10/23/2023 9:12:37 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:12:47.6494438Z   [31m  2) Should navigate to flaky guard error details[0m
+2023-10-23T09:12:47.6531437Z 
+2023-10-23T09:12:47.7379641Z 
+2023-10-23T09:12:47.7380964Z [92m [0m[32m 0 passing[0m[90m (1m)[0m
+2023-10-23T09:12:47.7430197Z [31m  2 failing[0m
+2023-10-23T09:12:47.7430527Z 
+2023-10-23T09:12:47.7442205Z [0m  1) gha failed jobs
+2023-10-23T09:12:47.7442729Z        Should display flaky guard table:
+2023-10-23T09:12:47.7443920Z [0m[31m     CypressError: Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document.
+2023-10-23T09:12:47.7444796Z 
+2023-10-23T09:12:47.7445041Z No elements in the current DOM matched your query:
+2023-10-23T09:12:47.7445472Z 
+2023-10-23T09:12:47.7445706Z   > cy.get([data-field=error])[0m[90m
+2023-10-23T09:12:47.7446502Z       at isElement (http://localhost:3000/__cypress/runner/cypress_runner.js:145352:62)
+2023-10-23T09:12:47.7447593Z       at validateType (http://localhost:3000/__cypress/runner/cypress_runner.js:145210:14)
+2023-10-23T09:12:47.7448698Z       at Object.isType (http://localhost:3000/__cypress/runner/cypress_runner.js:145241:7)
+2023-10-23T09:12:47.7449795Z       at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:135627:24)
+2023-10-23T09:12:47.7451308Z       at Object.subjectFn (http://localhost:3000/__cypress/runner/cypress_runner.js:144257:16)
+2023-10-23T09:12:47.7452565Z       at $Cy.verifyUpcomingAssertions (http://localhost:3000/__cypress/runner/cypress_runner.js:143601:31)
+2023-10-23T09:12:47.7453758Z       at onRetry (http://localhost:3000/__cypress/runner/cypress_runner.js:144248:15)
+2023-10-23T09:12:47.7454790Z       at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)
+2023-10-23T09:12:47.7455989Z       at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4315:29)
+2023-10-23T09:12:47.7457186Z       at whenStable (http://localhost:3000/__cypress/runner/cypress_runner.js:144135:68)
+2023-10-23T09:12:47.7458338Z       at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:144076:14)
+2023-10-23T09:12:47.7459388Z       at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)
+2023-10-23T09:12:47.7460622Z       at Promise._settlePromiseFromHandler (http://localhost:3000/__cypress/runner/cypress_runner.js:1519:31)
+2023-10-23T09:12:47.7461918Z       at Promise._settlePromise (http://localhost:3000/__cypress/runner/cypress_runner.js:1576:18)
+2023-10-23T09:12:47.7463135Z       at Promise._settlePromise0 (http://localhost:3000/__cypress/runner/cypress_runner.js:1621:10)
+2023-10-23T09:12:47.7464360Z       at Promise._settlePromises (http://localhost:3000/__cypress/runner/cypress_runner.js:1701:18)
+2023-10-23T09:12:47.7465530Z       at Promise._fulfill (http://localhost:3000/__cypress/runner/cypress_runner.js:1645:18)
+2023-10-23T09:12:47.7466604Z       at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:5450:46)
+2023-10-23T09:12:47.7467356Z   From Your Spec Code:
+2023-10-23T09:12:47.7513634Z       at eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts:11:0)
+2023-10-23T09:12:47.7514653Z   at Array.forEach (<anonymous>)
+2023-10-23T09:12:47.7515827Z       at Context.eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts:9:19)
+2023-10-23T09:12:47.7516784Z [0m
+2023-10-23T09:12:47.7517130Z [0m  2) gha failed jobs
+2023-10-23T09:12:47.7517631Z        Should navigate to flaky guard error details:
+2023-10-23T09:12:47.7519178Z [0m[31m     AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid="go-to-gha-failed-jobs-error"]`, but never found it.[0m[90m
+2023-10-23T09:12:47.7520893Z       at Context.eval (webpack://mergify-dashboard/./cypress/support/commands.ts:143:0)
+2023-10-23T09:12:47.7521704Z [0m
+2023-10-23T09:12:47.7521871Z 
+2023-10-23T09:12:47.7521877Z 
+2023-10-23T09:12:47.7521910Z 
+2023-10-23T09:12:47.7522124Z [31m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:12:47.7522466Z 
+2023-10-23T09:12:47.7528126Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:12:47.7534129Z [90m  │[39m [90mTests:[39m        [31m2[39m                                                                                [90m│[39m
+2023-10-23T09:12:47.7535562Z [90m  │[39m [90mPassing:[39m      [31m0[39m                                                                                [90m│[39m
+2023-10-23T09:12:47.7536802Z [90m  │[39m [90mFailing:[39m      [31m2[39m                                                                                [90m│[39m
+2023-10-23T09:12:47.7595214Z [90m  │[39m [90mPending:[39m      [31m0[39m                                                                                [90m│[39m
+2023-10-23T09:12:47.7597424Z [90m  │[39m [90mSkipped:[39m      [31m0[39m                                                                                [90m│[39m
+2023-10-23T09:12:47.7598969Z [90m  │[39m [90mScreenshots:[39m  [31m6[39m                                                                                [90m│[39m
+2023-10-23T09:12:47.7602663Z [90m  │[39m [90mVideo:[39m        [31mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:12:47.7604257Z [90m  │[39m [90mDuration:[39m     [31m1 minute, 15 seconds[39m                                                             [90m│[39m
+2023-10-23T09:12:47.7608231Z [90m  │[39m [90mSpec Ran:[39m     [31m[31mgha-failed-jobs/GHAFailedJobs.cy.ts[31m[39m                                              [90m│[39m
+2023-10-23T09:12:47.7614941Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:12:47.7626166Z 
+2023-10-23T09:12:47.7626380Z 
+2023-10-23T09:12:47.7629378Z [33m  ([4m[1mScreenshots[22m[24m)[39m
+2023-10-23T09:12:47.7629983Z 
+2023-10-23T09:12:47.7633315Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:12:47.7635232Z [90m [39m    [0m.cy.ts/gha failed jobs -- Should display flaky guard table (failed).png[0m                        
+2023-10-23T09:12:47.7677842Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:12:47.7679643Z [90m [39m    [0m.cy.ts/gha failed jobs -- Should display flaky guard table (failed) (attempt 2).[0m               
+2023-10-23T09:12:47.7680917Z [90m [39m    [0mpng[0m                                                                                            
+2023-10-23T09:12:47.7682411Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:12:47.7684133Z [90m [39m    [0m.cy.ts/gha failed jobs -- Should display flaky guard table (failed) (attempt 3).[0m               
+2023-10-23T09:12:47.7685377Z [90m [39m    [0mpng[0m                                                                                            
+2023-10-23T09:12:47.7686869Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:12:47.7688869Z [90m [39m    [0m.cy.ts/gha failed jobs -- Should navigate to flaky guard error details (failed).[0m               
+2023-10-23T09:12:47.7690138Z [90m [39m    [0mpng[0m                                                                                            
+2023-10-23T09:12:47.7691622Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:12:47.7693338Z [90m [39m    [0m.cy.ts/gha failed jobs -- Should navigate to flaky guard error details (failed) [0m               
+2023-10-23T09:12:47.7694665Z [90m [39m    [0m(attempt 2).png[0m                                                                                
+2023-10-23T09:12:47.7696206Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:12:47.7697937Z [90m [39m    [0m.cy.ts/gha failed jobs -- Should navigate to flaky guard error details (failed) [0m               
+2023-10-23T09:12:47.7699420Z [90m [39m    [0m(attempt 3).png[0m                                                                                
+2023-10-23T09:12:47.7700021Z 
+2023-10-23T09:12:47.7934935Z 
+2023-10-23T09:12:47.7944325Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:12:47.7950101Z                                                                                                     
+2023-10-23T09:12:47.7951341Z   Running:  [90mgha-failed-jobs/GHAFailedJobDetails.cy.ts[39m                                     [90m(11 of 13)[39m
+2023-10-23T09:12:50.5073288Z 
+2023-10-23T09:12:50.5081111Z [0m[0m
+2023-10-23T09:12:50.5128537Z [0m  Testing failed job details panel[0m
+2023-10-23T09:12:50.9788701Z  HTTP  10/23/2023 9:12:50 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17728253792
+2023-10-23T09:12:50.9806941Z  HTTP  10/23/2023 9:12:50 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:12:53.6614217Z  HTTP  10/23/2023 9:12:53 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17728253792
+2023-10-23T09:12:53.6620639Z  HTTP  10/23/2023 9:12:53 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:12:53.7226681Z  HTTP  10/23/2023 9:12:53 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:12:53.7276122Z  HTTP  10/23/2023 9:12:53 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:12:53.7554095Z  HTTP  10/23/2023 9:12:53 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:12:53.7611494Z  HTTP  10/23/2023 9:12:53 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:12:55.0809120Z  HTTP  10/23/2023 9:12:55 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:12:55.0852788Z  HTTP  10/23/2023 9:12:55 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:12:55.3233957Z  HTTP  10/23/2023 9:12:55 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:12:55.3281806Z  HTTP  10/23/2023 9:12:55 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:12:55.5951686Z  HTTP  10/23/2023 9:12:55 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:12:55.5997071Z  HTTP  10/23/2023 9:12:55 AM 127.0.0.1 Returned 200 in 5 ms
+2023-10-23T09:13:25.4466744Z     [33m(Attempt 1 of 3)[0m Should display right date for details panel
+2023-10-23T09:13:26.2334077Z  HTTP  10/23/2023 9:13:26 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17728253792
+2023-10-23T09:13:26.2344903Z  HTTP  10/23/2023 9:13:26 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:13:26.3230019Z  HTTP  10/23/2023 9:13:26 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:13:26.3240991Z  HTTP  10/23/2023 9:13:26 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:13:26.3609015Z  HTTP  10/23/2023 9:13:26 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:13:26.3675892Z  HTTP  10/23/2023 9:13:26 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:13:26.8119400Z  HTTP  10/23/2023 9:13:26 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:13:26.8161952Z  HTTP  10/23/2023 9:13:26 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:13:27.0819839Z  HTTP  10/23/2023 9:13:27 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:13:27.0823301Z  HTTP  10/23/2023 9:13:27 AM 127.0.0.1 Returned 304 in 0 ms
+2023-10-23T09:13:27.4012262Z  HTTP  10/23/2023 9:13:27 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:13:27.4076151Z  HTTP  10/23/2023 9:13:27 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:13:57.2260608Z     [33m(Attempt 2 of 3)[0m Should display right date for details panel
+2023-10-23T09:13:58.2922303Z  HTTP  10/23/2023 9:13:58 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17728253792
+2023-10-23T09:13:58.2930460Z  HTTP  10/23/2023 9:13:58 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:13:58.4426793Z  HTTP  10/23/2023 9:13:58 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:13:58.4467713Z  HTTP  10/23/2023 9:13:58 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:13:58.4726029Z  HTTP  10/23/2023 9:13:58 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:13:58.4761211Z  HTTP  10/23/2023 9:13:58 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:13:58.9594053Z  HTTP  10/23/2023 9:13:58 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:13:58.9605842Z  HTTP  10/23/2023 9:13:58 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:13:59.2504883Z  HTTP  10/23/2023 9:13:59 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:13:59.2537891Z  HTTP  10/23/2023 9:13:59 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:13:59.5023103Z  HTTP  10/23/2023 9:13:59 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:13:59.5035957Z  HTTP  10/23/2023 9:13:59 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:14:29.3595131Z   [31m  1) Should display right date for details panel[0m
+2023-10-23T09:14:29.8007321Z  HTTP  10/23/2023 9:14:29 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17728253792
+2023-10-23T09:14:29.8020235Z  HTTP  10/23/2023 9:14:29 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:14:29.8720491Z  HTTP  10/23/2023 9:14:29 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:14:29.8760763Z  HTTP  10/23/2023 9:14:29 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:14:29.8996713Z  HTTP  10/23/2023 9:14:29 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:14:29.9093398Z  HTTP  10/23/2023 9:14:29 AM 127.0.0.1 Returned 304 in 10 ms
+2023-10-23T09:14:30.3543575Z  HTTP  10/23/2023 9:14:30 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:14:30.3588822Z  HTTP  10/23/2023 9:14:30 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:14:30.5171922Z  HTTP  10/23/2023 9:14:30 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:14:30.5228732Z  HTTP  10/23/2023 9:14:30 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:14:30.6767193Z  HTTP  10/23/2023 9:14:30 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:14:30.6914469Z  HTTP  10/23/2023 9:14:30 AM 127.0.0.1 Returned 304 in 9 ms
+2023-10-23T09:14:40.6187472Z     [33m(Attempt 1 of 3)[0m Should handle next and previous error buttons
+2023-10-23T09:14:41.5887816Z  HTTP  10/23/2023 9:14:41 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17728253792
+2023-10-23T09:14:41.5916482Z  HTTP  10/23/2023 9:14:41 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:14:41.6734381Z  HTTP  10/23/2023 9:14:41 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:14:41.6792124Z  HTTP  10/23/2023 9:14:41 AM 127.0.0.1 Returned 304 in 5 ms
+2023-10-23T09:14:41.7151162Z  HTTP  10/23/2023 9:14:41 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:14:41.7157056Z  HTTP  10/23/2023 9:14:41 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:14:42.1776609Z  HTTP  10/23/2023 9:14:42 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:14:42.1840095Z  HTTP  10/23/2023 9:14:42 AM 127.0.0.1 Returned 304 in 7 ms
+2023-10-23T09:14:42.5581594Z  HTTP  10/23/2023 9:14:42 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:14:42.5594380Z  HTTP  10/23/2023 9:14:42 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:14:42.8038502Z  HTTP  10/23/2023 9:14:42 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:14:42.8048241Z  HTTP  10/23/2023 9:14:42 AM 127.0.0.1 Returned 304 in 2 ms
+2023-10-23T09:14:52.6260164Z     [33m(Attempt 2 of 3)[0m Should handle next and previous error buttons
+2023-10-23T09:14:53.9478924Z  HTTP  10/23/2023 9:14:53 AM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17728253792
+2023-10-23T09:14:53.9554258Z  HTTP  10/23/2023 9:14:53 AM 127.0.0.1 Returned 200 in 8 ms
+2023-10-23T09:14:54.0373466Z  HTTP  10/23/2023 9:14:54 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:14:54.0408640Z  HTTP  10/23/2023 9:14:54 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:14:54.0833925Z  HTTP  10/23/2023 9:14:54 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:14:54.0843614Z  HTTP  10/23/2023 9:14:54 AM 127.0.0.1 Returned 304 in 1 ms
+2023-10-23T09:14:54.8325240Z  HTTP  10/23/2023 9:14:54 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:14:54.8357954Z  HTTP  10/23/2023 9:14:54 AM 127.0.0.1 Returned 304 in 4 ms
+2023-10-23T09:14:55.1374229Z  HTTP  10/23/2023 9:14:55 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:14:55.1395600Z  HTTP  10/23/2023 9:14:55 AM 127.0.0.1 Returned 304 in 3 ms
+2023-10-23T09:14:55.5023340Z  HTTP  10/23/2023 9:14:55 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:14:55.5075327Z  HTTP  10/23/2023 9:14:55 AM 127.0.0.1 Returned 304 in 6 ms
+2023-10-23T09:15:05.2099438Z   [31m  2) Should handle next and previous error buttons[0m
+2023-10-23T09:15:05.2142686Z 
+2023-10-23T09:15:05.3080431Z 
+2023-10-23T09:15:05.3098014Z [92m [0m[32m 0 passing[0m[90m (2m)[0m
+2023-10-23T09:15:05.3098976Z [31m  2 failing[0m
+2023-10-23T09:15:05.3267865Z 
+2023-10-23T09:15:05.3268683Z [0m  1) Testing failed job details panel
+2023-10-23T09:15:05.3269338Z        Should display right date for details panel:
+2023-10-23T09:15:05.3270941Z [0m[31m     CypressError: Timed out retrying after 30000ms: `cy.wait()` timed out waiting `30000ms` for the 1st request to the route: `job-details`. No request ever occurred.
+2023-10-23T09:15:05.3272124Z 
+2023-10-23T09:15:05.3272370Z https://on.cypress.io/wait[0m[90m
+2023-10-23T09:15:05.3273170Z       at cypressErr (http://localhost:3000/__cypress/runner/cypress_runner.js:75215:18)
+2023-10-23T09:15:05.3274299Z       at Object.errByPath (http://localhost:3000/__cypress/runner/cypress_runner.js:75270:10)
+2023-10-23T09:15:05.3275428Z       at checkForXhr (http://localhost:3000/__cypress/runner/cypress_runner.js:135728:84)
+2023-10-23T09:15:05.3276495Z       at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:135751:28)
+2023-10-23T09:15:05.3277557Z       at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)
+2023-10-23T09:15:05.3278758Z       at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4315:29)
+2023-10-23T09:15:05.3279933Z       at whenStable (http://localhost:3000/__cypress/runner/cypress_runner.js:144135:68)
+2023-10-23T09:15:05.3280975Z       at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:144076:14)
+2023-10-23T09:15:05.3282010Z       at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)
+2023-10-23T09:15:05.3283226Z       at Promise._settlePromiseFromHandler (http://localhost:3000/__cypress/runner/cypress_runner.js:1519:31)
+2023-10-23T09:15:05.3284508Z       at Promise._settlePromise (http://localhost:3000/__cypress/runner/cypress_runner.js:1576:18)
+2023-10-23T09:15:05.3285713Z       at Promise._settlePromise0 (http://localhost:3000/__cypress/runner/cypress_runner.js:1621:10)
+2023-10-23T09:15:05.3286932Z       at Promise._settlePromises (http://localhost:3000/__cypress/runner/cypress_runner.js:1701:18)
+2023-10-23T09:15:05.3288109Z       at Promise._fulfill (http://localhost:3000/__cypress/runner/cypress_runner.js:1645:18)
+2023-10-23T09:15:05.3289172Z       at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:5450:46)
+2023-10-23T09:15:05.3289917Z   From Your Spec Code:
+2023-10-23T09:15:05.3290952Z       at Context.eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobDetails.cy.ts:11:0)
+2023-10-23T09:15:05.3291942Z [0m
+2023-10-23T09:15:05.3292341Z [0m  2) Testing failed job details panel
+2023-10-23T09:15:05.3292949Z        Should handle next and previous error buttons:
+2023-10-23T09:15:05.3294362Z [0m[31m     AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid="previous-job"]`, but never found it.[0m[90m
+2023-10-23T09:15:05.3296178Z       at Context.eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobDetails.cy.ts:17:0)
+2023-10-23T09:15:05.3297551Z [0m
+2023-10-23T09:15:05.3297723Z 
+2023-10-23T09:15:05.3297730Z 
+2023-10-23T09:15:05.3297735Z 
+2023-10-23T09:15:05.3297950Z [31m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:15:05.3298294Z 
+2023-10-23T09:15:05.3317264Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:15:05.3325994Z [90m  │[39m [90mTests:[39m        [31m2[39m                                                                                [90m│[39m
+2023-10-23T09:15:05.3327266Z [90m  │[39m [90mPassing:[39m      [31m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:05.3328505Z [90m  │[39m [90mFailing:[39m      [31m2[39m                                                                                [90m│[39m
+2023-10-23T09:15:05.3329741Z [90m  │[39m [90mPending:[39m      [31m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:05.3330975Z [90m  │[39m [90mSkipped:[39m      [31m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:05.3332290Z [90m  │[39m [90mScreenshots:[39m  [31m6[39m                                                                                [90m│[39m
+2023-10-23T09:15:05.3333568Z [90m  │[39m [90mVideo:[39m        [31mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:15:05.3334976Z [90m  │[39m [90mDuration:[39m     [31m2 minutes, 14 seconds[39m                                                            [90m│[39m
+2023-10-23T09:15:05.3336641Z [90m  │[39m [90mSpec Ran:[39m     [31m[31mgha-failed-jobs/GHAFailedJobDetails.cy.ts[31m[39m                                        [90m│[39m
+2023-10-23T09:15:05.3343148Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:15:05.3348361Z 
+2023-10-23T09:15:05.3348385Z 
+2023-10-23T09:15:05.3348619Z [33m  ([4m[1mScreenshots[22m[24m)[39m
+2023-10-23T09:15:05.3349267Z 
+2023-10-23T09:15:05.3350279Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:15:05.3352025Z [90m [39m    [0metails.cy.ts/Testing failed job details panel -- Should display right date for d[0m               
+2023-10-23T09:15:05.3353421Z [90m [39m    [0metails panel (failed).png[0m                                                                      
+2023-10-23T09:15:05.3355021Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:15:05.3356753Z [90m [39m    [0metails.cy.ts/Testing failed job details panel -- Should display right date for d[0m               
+2023-10-23T09:15:05.3360939Z [90m [39m    [0metails panel (failed) (attempt 2).png[0m                                                          
+2023-10-23T09:15:05.3362790Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:15:05.3364778Z [90m [39m    [0metails.cy.ts/Testing failed job details panel -- Should display right date for d[0m               
+2023-10-23T09:15:05.3366231Z [90m [39m    [0metails panel (failed) (attempt 3).png[0m                                                          
+2023-10-23T09:15:05.3367869Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:15:05.3370986Z [90m [39m    [0metails.cy.ts/Testing failed job details panel -- Should handle next and previous[0m               
+2023-10-23T09:15:05.3372475Z [90m [39m    [0m error buttons (failed).png[0m                                                                    
+2023-10-23T09:15:05.3374078Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:15:05.3379007Z [90m [39m    [0metails.cy.ts/Testing failed job details panel -- Should handle next and previous[0m               
+2023-10-23T09:15:05.3380555Z [90m [39m    [0m error buttons (failed) (attempt 2).png[0m                                                        
+2023-10-23T09:15:05.3382208Z [90m [39m -  [0m/__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD[0m     [90m[90m(1280x720)[90m[39m
+2023-10-23T09:15:05.3383948Z [90m [39m    [0metails.cy.ts/Testing failed job details panel -- Should handle next and previous[0m               
+2023-10-23T09:15:05.3385395Z [90m [39m    [0m error buttons (failed) (attempt 3).png[0m                                                        
+2023-10-23T09:15:05.3386113Z 
+2023-10-23T09:15:05.3448043Z 
+2023-10-23T09:15:05.3463704Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:15:05.3469736Z                                                                                                     
+2023-10-23T09:15:05.3471427Z   Running:  [90mFooter.cy.ts[39m                                                                  [90m(12 of 13)[39m
+2023-10-23T09:15:07.6361181Z 
+2023-10-23T09:15:07.6369777Z [0m[0m
+2023-10-23T09:15:07.6398464Z [0m  Footer links[0m
+2023-10-23T09:15:08.1040617Z  HTTP  10/23/2023 9:15:08 AM 127.0.0.1 GET /
+2023-10-23T09:15:08.1075710Z  HTTP  10/23/2023 9:15:08 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:15:10.8080194Z  HTTP  10/23/2023 9:15:10 AM 127.0.0.1 GET /
+2023-10-23T09:15:10.8084699Z  HTTP  10/23/2023 9:15:10 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:15:10.8812530Z  HTTP  10/23/2023 9:15:10 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:15:10.8818183Z  HTTP  10/23/2023 9:15:10 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:15:10.8909452Z  HTTP  10/23/2023 9:15:10 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:15:10.8941922Z  HTTP  10/23/2023 9:15:10 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:15:12.2624097Z  HTTP  10/23/2023 9:15:12 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:15:12.2659081Z  HTTP  10/23/2023 9:15:12 AM 127.0.0.1 Returned 200 in 4 ms
+2023-10-23T09:15:12.4773829Z  HTTP  10/23/2023 9:15:12 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:15:12.4898092Z  HTTP  10/23/2023 9:15:12 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:15:12.6152394Z  HTTP  10/23/2023 9:15:12 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:15:12.6219756Z  HTTP  10/23/2023 9:15:12 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:15:12.6774925Z  HTTP  10/23/2023 9:15:12 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:15:12.6840179Z  HTTP  10/23/2023 9:15:12 AM 127.0.0.1 Returned 200 in 7 ms
+2023-10-23T09:15:13.5879973Z   [32m  ✓[0m[90m Should provide all necessary links[0m[90m (2828ms)[0m
+2023-10-23T09:15:13.5900184Z 
+2023-10-23T09:15:13.6459049Z 
+2023-10-23T09:15:13.6460319Z [92m [0m[32m 1 passing[0m[90m (6s)[0m
+2023-10-23T09:15:13.6461181Z 
+2023-10-23T09:15:13.6468242Z 
+2023-10-23T09:15:13.6468880Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:15:13.6473283Z 
+2023-10-23T09:15:13.6484779Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:15:13.6490882Z [90m  │[39m [90mTests:[39m        [32m1[39m                                                                                [90m│[39m
+2023-10-23T09:15:13.6492408Z [90m  │[39m [90mPassing:[39m      [32m1[39m                                                                                [90m│[39m
+2023-10-23T09:15:13.6493777Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:13.6495324Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:13.6496753Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:13.6498700Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:13.6500138Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:15:13.6617181Z [90m  │[39m [90mDuration:[39m     [32m6 seconds[39m                                                                        [90m│[39m
+2023-10-23T09:15:13.6618707Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mFooter.cy.ts[32m[39m                                                                     [90m│[39m
+2023-10-23T09:15:13.6625063Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:15:13.6630836Z 
+2023-10-23T09:15:13.6671294Z 
+2023-10-23T09:15:13.6683755Z [90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m
+2023-10-23T09:15:13.6689657Z                                                                                                     
+2023-10-23T09:15:13.6690769Z   Running:  [90mNoRepository.cy.ts[39m                                                            [90m(13 of 13)[39m
+2023-10-23T09:15:16.0883842Z 
+2023-10-23T09:15:16.0892827Z [0m[0m
+2023-10-23T09:15:16.0921869Z [0m  Testing no repository activated behavior[0m
+2023-10-23T09:15:16.5302370Z  HTTP  10/23/2023 9:15:16 AM 127.0.0.1 GET /
+2023-10-23T09:15:16.5323922Z  HTTP  10/23/2023 9:15:16 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:15:19.2040940Z  HTTP  10/23/2023 9:15:19 AM 127.0.0.1 GET /
+2023-10-23T09:15:19.2074030Z  HTTP  10/23/2023 9:15:19 AM 127.0.0.1 Returned 200 in 3 ms
+2023-10-23T09:15:19.2701838Z  HTTP  10/23/2023 9:15:19 AM 127.0.0.1 GET /assets/index-70bfb7a2.js
+2023-10-23T09:15:19.2713803Z  HTTP  10/23/2023 9:15:19 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:15:19.3344101Z  HTTP  10/23/2023 9:15:19 AM 127.0.0.1 GET /assets/index-5d832530.css
+2023-10-23T09:15:19.3355973Z  HTTP  10/23/2023 9:15:19 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:15:20.7109440Z  HTTP  10/23/2023 9:15:20 AM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+2023-10-23T09:15:20.7122008Z  HTTP  10/23/2023 9:15:20 AM 127.0.0.1 Returned 200 in 1 ms
+2023-10-23T09:15:20.9331642Z  HTTP  10/23/2023 9:15:20 AM 127.0.0.1 GET /assets/intercom-6060972d.js
+2023-10-23T09:15:20.9393377Z  HTTP  10/23/2023 9:15:20 AM 127.0.0.1 Returned 200 in 6 ms
+2023-10-23T09:15:21.0630709Z  HTTP  10/23/2023 9:15:21 AM 127.0.0.1 GET /assets/logo-test-53971de1.png
+2023-10-23T09:15:21.0754161Z  HTTP  10/23/2023 9:15:21 AM 127.0.0.1 Returned 200 in 9 ms
+2023-10-23T09:15:21.1234870Z  HTTP  10/23/2023 9:15:21 AM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+2023-10-23T09:15:21.1402932Z  HTTP  10/23/2023 9:15:21 AM 127.0.0.1 Returned 200 in 2 ms
+2023-10-23T09:15:21.7232572Z   [32m  ✓[0m[90m Should show message if no repository activated[0m[90m (2869ms)[0m
+2023-10-23T09:15:21.7270569Z 
+2023-10-23T09:15:21.7484704Z 
+2023-10-23T09:15:21.7486005Z [92m [0m[32m 1 passing[0m[90m (6s)[0m
+2023-10-23T09:15:21.7487071Z 
+2023-10-23T09:15:21.7489719Z 
+2023-10-23T09:15:21.7490351Z [32m  ([4m[1mResults[22m[24m)[39m
+2023-10-23T09:15:21.7497433Z 
+2023-10-23T09:15:21.7546206Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:15:21.7552396Z [90m  │[39m [90mTests:[39m        [32m1[39m                                                                                [90m│[39m
+2023-10-23T09:15:21.7553829Z [90m  │[39m [90mPassing:[39m      [32m1[39m                                                                                [90m│[39m
+2023-10-23T09:15:21.7556710Z [90m  │[39m [90mFailing:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:21.7557958Z [90m  │[39m [90mPending:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:21.7559628Z [90m  │[39m [90mSkipped:[39m      [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:21.7560929Z [90m  │[39m [90mScreenshots:[39m  [32m0[39m                                                                                [90m│[39m
+2023-10-23T09:15:21.7562214Z [90m  │[39m [90mVideo:[39m        [32mfalse[39m                                                                            [90m│[39m
+2023-10-23T09:15:21.7563526Z [90m  │[39m [90mDuration:[39m     [32m5 seconds[39m                                                                        [90m│[39m
+2023-10-23T09:15:21.7564984Z [90m  │[39m [90mSpec Ran:[39m     [32m[32mNoRepository.cy.ts[32m[39m                                                               [90m│[39m
+2023-10-23T09:15:21.7571338Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:15:21.7576615Z 
+2023-10-23T09:15:21.7689576Z 
+2023-10-23T09:15:21.8123375Z [90m====================================================================================================[39m
+2023-10-23T09:15:21.8124031Z 
+2023-10-23T09:15:21.8129153Z [0m  ([4m[1mRun Finished[22m[24m)[0m
+2023-10-23T09:15:21.8160528Z 
+2023-10-23T09:15:21.8160563Z 
+2023-10-23T09:15:21.8226363Z [90m   [39m    [90mSpec[39m                                              [90mTests[39m  [90mPassing[39m  [90mFailing[39m  [90mPending[39m  [90mSkipped[39m [90m [39m
+2023-10-23T09:15:21.8233033Z [90m  ┌[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┐[39m
+2023-10-23T09:15:21.8239241Z [90m  │[39m [32m✔[39m  [0mqueued-pull-details/Fallbacks.cy.ts[0m      [90m00:22[39m        [0m6[0m        [32m6[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8245824Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8252218Z [90m  │[39m [32m✔[39m  [0mNewcomerPopup.cy.ts[0m                      [90m00:14[39m        [0m4[0m        [32m4[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8258906Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8264973Z [90m  │[39m [32m✔[39m  [0mOrganizationSelector.cy.ts[0m               [90m00:15[39m        [0m4[0m        [32m4[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8272126Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8278309Z [90m  │[39m [32m✔[39m  [0mPermissions.cy.ts[0m                        [90m00:08[39m        [0m2[0m        [32m2[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8284792Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8290902Z [90m  │[39m [32m✔[39m  [0mSubscription.cy.ts[0m                       [90m00:08[39m        [0m2[0m        [32m2[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8297359Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8303341Z [90m  │[39m [32m✔[39m  [0mSudo.cy.ts[0m                               [90m00:09[39m        [0m2[0m        [32m2[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8314963Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8321627Z [90m  │[39m [32m✔[39m  [0mInstallRequestPopup.cy.ts[0m                [90m00:08[39m        [0m2[0m        [32m2[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8328205Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8334368Z [90m  │[39m [32m✔[39m  [0mApiCallHandling.cy.ts[0m                    [90m00:06[39m        [0m2[0m        [32m2[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8340834Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8346933Z [90m  │[39m [32m✔[39m  [0mHome.cy.ts[0m                               [90m00:06[39m        [0m2[0m        [32m2[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8353794Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8373460Z [90m  │[39m [31m✖[39m  [0mgha-failed-jobs/GHAFailedJobs.cy.ts[0m      [90m01:15[39m        [0m2[0m        [90m-[39m        [31m2[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8380107Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8389671Z [90m  │[39m [31m✖[39m  [0mgha-failed-jobs/GHAFailedJobDetails[0m      [90m02:14[39m        [0m2[0m        [90m-[39m        [31m2[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8393839Z [90m  │[39m    [0m.cy.ts[0m                                                                                      [90m│[39m
+2023-10-23T09:15:21.8430443Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8437254Z [90m  │[39m [32m✔[39m  [0mFooter.cy.ts[0m                             [90m00:06[39m        [0m1[0m        [32m1[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8443738Z [90m  ├[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┤[39m
+2023-10-23T09:15:21.8450420Z [90m  │[39m [32m✔[39m  [0mNoRepository.cy.ts[0m                       [90m00:05[39m        [0m1[0m        [32m1[39m        [90m-[39m        [90m-[39m        [90m-[39m [90m│[39m
+2023-10-23T09:15:21.8456895Z [90m  └[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m─[39m[90m┘[39m
+2023-10-23T09:15:21.8475837Z [90m   [39m [31m✖[39m  [31m2 of 13 failed (15%)[39m                     [90m05:22[39m       [0m32[0m       [32m28[39m        [31m4[39m        [90m-[39m        [90m-[39m [90m [39m
+2023-10-23T09:15:21.8476822Z 
+2023-10-23T09:15:21.9405906Z ##[error]Cypress tests: 4 failed

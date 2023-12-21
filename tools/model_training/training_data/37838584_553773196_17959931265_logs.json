@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "Test Failure",
+        "language": "JavaScript",
+        "filename": "Partitions.cy.ts",
+        "lineno": "125",
+        "error": "AssertionError",
+        "test_framework": "Cypress",
+        "stack_trace": "at Context.eval (webpack://mergify-dashboard/./cypress/support/commands.ts:125:0)"
+    }
+]

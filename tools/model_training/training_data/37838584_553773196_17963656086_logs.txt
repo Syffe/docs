@@ -1,0 +1,587 @@
+ HTTP  10/23/2023 1:50:55 PM 127.0.0.1 GET /assets/error-page-background-f8fc4eec.png
+ HTTP  10/23/2023 1:50:55 PM 127.0.0.1 Returned 200 in 7 ms
+    ✓ Should show fallback for blacklisted accounts (1294ms)
+  2 passing (9s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        2                                                                                │
+  │ Passing:      2                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     9 seconds                                                                        │
+  │ Spec Ran:     Subscription.cy.ts                                                               │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Running:  Sudo.cy.ts                                                                     (6 of 13)
+  Testing dashboard in sudo mode
+ HTTP  10/23/2023 1:50:58 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 1:50:58 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:01 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 1:51:01 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:01 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:51:01 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:01 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:51:01 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:02 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:51:02 PM 127.0.0.1 Returned 200 in 5 ms
+ HTTP  10/23/2023 1:51:03 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:51:03 PM 127.0.0.1 Returned 200 in 7 ms
+ HTTP  10/23/2023 1:51:03 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:51:03 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 1:51:03 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 1:51:03 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 1:51:04 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697464264&end_at=1698069064
+ HTTP  10/23/2023 1:51:04 PM 127.0.0.1 Returned 200 in 5 ms
+    ✓ Should display banner indicating we are in sudo (3510ms)
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 1:51:05 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 1:51:06 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697464266&end_at=1698069066
+ HTTP  10/23/2023 1:51:06 PM 127.0.0.1 Returned 200 in 6 ms
+    ✓ Should not load intercom in sudo (1818ms)
+  2 passing (9s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        2                                                                                │
+  │ Passing:      2                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     8 seconds                                                                        │
+  │ Spec Ran:     Sudo.cy.ts                                                                       │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Running:  InstallRequestPopup.cy.ts                                                      (7 of 13)
+  Install request popup
+ HTTP  10/23/2023 1:51:10 PM 127.0.0.1 GET /github/mergifyio-testing?request=true
+ HTTP  10/23/2023 1:51:10 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:12 PM 127.0.0.1 GET /github/mergifyio-testing?request=true
+ HTTP  10/23/2023 1:51:12 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:12 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:51:12 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:12 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:51:12 PM 127.0.0.1 Returned 200 in 6 ms
+ HTTP  10/23/2023 1:51:14 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:51:14 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:14 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:51:14 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:14 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:51:14 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 1:51:14 PM 127.0.0.1 GET /assets/request-ac675bde.jpg
+ HTTP  10/23/2023 1:51:14 PM 127.0.0.1 Returned 200 in 6 ms
+    ✓ Should show popup (3256ms)
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 GET /github/mergifyio-testing?request=true
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 GET /assets/request-ac675bde.jpg
+ HTTP  10/23/2023 1:51:16 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:51:17 PM 127.0.0.1 GET /front/proxy/engine/v1/repos/mergifyio-testing/functional-testing-repo-AlexandreGaubert/stats/queue_checks_outcome?branch=feature%2Fmulti-branch&start_at=1697464277&end_at=1698069077
+ HTTP  10/23/2023 1:51:17 PM 127.0.0.1 Returned 200 in 2 ms
+    ✓ Should close on confirm (1549ms)
+  2 passing (8s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        2                                                                                │
+  │ Passing:      2                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     8 seconds                                                                        │
+  │ Spec Ran:     InstallRequestPopup.cy.ts                                                        │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Running:  ApiCallHandling.cy.ts                                                          (8 of 13)
+  Testing API calls handling
+ HTTP  10/23/2023 1:51:20 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/event-logs
+ HTTP  10/23/2023 1:51:20 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:23 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/event-logs
+ HTTP  10/23/2023 1:51:23 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 1:51:23 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:51:23 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 1:51:23 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:51:23 PM 127.0.0.1 Returned 200 in 6 ms
+ HTTP  10/23/2023 1:51:25 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:51:25 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 1:51:25 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:51:25 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:25 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:51:25 PM 127.0.0.1 Returned 200 in 7 ms
+    ✓ Should show banner on 402 (2784ms)
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/event-logs
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:51:26 PM 127.0.0.1 Returned 304 in 4 ms
+    ✓ Should show banner on 403 (1114ms)
+  2 passing (7s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        2                                                                                │
+  │ Passing:      2                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     6 seconds                                                                        │
+  │ Spec Ran:     ApiCallHandling.cy.ts                                                            │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Running:  Home.cy.ts                                                                     (9 of 13)
+  Testing Home page
+ HTTP  10/23/2023 1:51:29 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 1:51:29 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:32 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 1:51:32 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:32 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:51:32 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 1:51:32 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:51:32 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 1:51:33 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:51:33 PM 127.0.0.1 Returned 200 in 8 ms
+ HTTP  10/23/2023 1:51:34 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:51:34 PM 127.0.0.1 Returned 200 in 7 ms
+ HTTP  10/23/2023 1:51:34 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:51:34 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:34 PM 127.0.0.1 GET /assets/error-page-background-f8fc4eec.png
+ HTTP  10/23/2023 1:51:34 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:34 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 1:51:34 PM 127.0.0.1 Returned 200 in 1 ms
+    ✓ Should show message if no installations (2484ms)
+ HTTP  10/23/2023 1:51:34 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 1:51:34 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 Returned 304 in 7 ms
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 GET /assets/error-page-background-f8fc4eec.png
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 Returned 304 in 6 ms
+ HTTP  10/23/2023 1:51:35 PM 127.0.0.1 Returned 304 in 2 ms
+    ✓ Enable mergify button should include custom server name (860ms)
+  2 passing (6s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        2                                                                                │
+  │ Passing:      2                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     6 seconds                                                                        │
+  │ Spec Ran:     Home.cy.ts                                                                       │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Running:  gha-failed-jobs/GHAFailedJobs.cy.ts                                           (10 of 13)
+  gha failed jobs
+ HTTP  10/23/2023 1:51:38 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+ HTTP  10/23/2023 1:51:38 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:41 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+ HTTP  10/23/2023 1:51:41 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:41 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:51:41 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:41 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:51:41 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:51:42 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:51:42 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 1:51:42 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:51:42 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 1:51:43 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:51:43 PM 127.0.0.1 Returned 200 in 1 ms
+    (Attempt 1 of 3) Should display flaky guard table
+ HTTP  10/23/2023 1:51:54 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+ HTTP  10/23/2023 1:51:54 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:51:54 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:51:54 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:51:54 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:51:54 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:51:54 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:51:54 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 1:51:55 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:51:55 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 1:51:55 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:51:55 PM 127.0.0.1 Returned 304 in 3 ms
+    (Attempt 2 of 3) Should display flaky guard table
+ HTTP  10/23/2023 1:52:06 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+ HTTP  10/23/2023 1:52:06 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:52:06 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:52:06 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:52:06 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:52:06 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 1:52:06 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:52:06 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 1:52:07 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:52:07 PM 127.0.0.1 Returned 304 in 9 ms
+ HTTP  10/23/2023 1:52:07 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:52:07 PM 127.0.0.1 Returned 304 in 5 ms
+    1) Should display flaky guard table
+ HTTP  10/23/2023 1:52:18 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+ HTTP  10/23/2023 1:52:18 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:52:18 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:52:18 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:52:18 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:52:18 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 1:52:18 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:52:18 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:52:18 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:52:18 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 1:52:19 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:52:19 PM 127.0.0.1 Returned 304 in 7 ms
+    (Attempt 1 of 3) Should navigate to flaky guard error details
+ HTTP  10/23/2023 1:52:30 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+ HTTP  10/23/2023 1:52:30 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 1:52:30 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:52:30 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 1:52:30 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:52:30 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:52:31 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:52:31 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:52:31 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:52:31 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:52:31 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:52:31 PM 127.0.0.1 Returned 304 in 1 ms
+    (Attempt 2 of 3) Should navigate to flaky guard error details
+ HTTP  10/23/2023 1:52:43 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs
+ HTTP  10/23/2023 1:52:43 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:52:43 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:52:43 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:52:43 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:52:43 PM 127.0.0.1 Returned 304 in 9 ms
+ HTTP  10/23/2023 1:52:44 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:52:44 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:52:44 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:52:44 PM 127.0.0.1 Returned 304 in 6 ms
+ HTTP  10/23/2023 1:52:44 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:52:44 PM 127.0.0.1 Returned 304 in 1 ms
+    2) Should navigate to flaky guard error details
+  0 passing (1m)
+  2 failing
+  1) gha failed jobs
+       Should display flaky guard table:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-id="1"]`, but never found it.
+      at eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts:10:0)
+  at Array.forEach (<anonymous>)
+      at Context.eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts:9:15)
+  2) gha failed jobs
+       Should navigate to flaky guard error details:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid="go-to-gha-failed-jobs-error"]`, but never found it.
+      at Context.eval (webpack://mergify-dashboard/./cypress/support/commands.ts:143:0)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        2                                                                                │
+  │ Passing:      0                                                                                │
+  │ Failing:      2                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  6                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 17 seconds                                                             │
+  │ Spec Ran:     gha-failed-jobs/GHAFailedJobs.cy.ts                                              │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Screenshots)
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs     (1280x720)
+     .cy.ts/gha failed jobs -- Should display flaky guard table (failed).png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs     (1280x720)
+     .cy.ts/gha failed jobs -- Should display flaky guard table (failed) (attempt 2).
+     png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs     (1280x720)
+     .cy.ts/gha failed jobs -- Should display flaky guard table (failed) (attempt 3).
+     png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs     (1280x720)
+     .cy.ts/gha failed jobs -- Should navigate to flaky guard error details (failed).
+     png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs     (1280x720)
+     .cy.ts/gha failed jobs -- Should navigate to flaky guard error details (failed)
+     (attempt 2).png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobs     (1280x720)
+     .cy.ts/gha failed jobs -- Should navigate to flaky guard error details (failed)
+     (attempt 3).png
+  Running:  gha-failed-jobs/GHAFailedJobDetails.cy.ts                                     (11 of 13)
+  Testing failed job details panel
+ HTTP  10/23/2023 1:52:58 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17667471878
+ HTTP  10/23/2023 1:52:58 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:53:01 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17667471878
+ HTTP  10/23/2023 1:53:01 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:53:01 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:53:01 PM 127.0.0.1 Returned 200 in 5 ms
+ HTTP  10/23/2023 1:53:01 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:53:01 PM 127.0.0.1 Returned 200 in 14 ms
+ HTTP  10/23/2023 1:53:02 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:53:02 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 1:53:03 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:53:03 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 1:53:03 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:53:03 PM 127.0.0.1 Returned 200 in 2 ms
+    (Attempt 1 of 3) Should display right date for details panel
+ HTTP  10/23/2023 1:53:33 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17667471878
+ HTTP  10/23/2023 1:53:33 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 1:53:34 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:53:34 PM 127.0.0.1 Returned 304 in 4 ms
+ HTTP  10/23/2023 1:53:34 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:53:34 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:53:34 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:53:34 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 1:53:34 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:53:34 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:53:35 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:53:35 PM 127.0.0.1 Returned 304 in 2 ms
+    (Attempt 2 of 3) Should display right date for details panel
+ HTTP  10/23/2023 1:54:06 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17667471878
+ HTTP  10/23/2023 1:54:06 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 1:54:06 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:54:06 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:54:06 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:54:06 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 1:54:06 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:54:06 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:54:06 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:54:06 PM 127.0.0.1 Returned 304 in 3 ms
+ HTTP  10/23/2023 1:54:07 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:54:07 PM 127.0.0.1 Returned 304 in 9 ms
+    1) Should display right date for details panel
+ HTTP  10/23/2023 1:54:37 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17667471878
+ HTTP  10/23/2023 1:54:37 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:54:37 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:54:37 PM 127.0.0.1 Returned 304 in 7 ms
+ HTTP  10/23/2023 1:54:37 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:54:37 PM 127.0.0.1 Returned 304 in 12 ms
+ HTTP  10/23/2023 1:54:38 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:54:38 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:54:38 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:54:38 PM 127.0.0.1 Returned 304 in 6 ms
+ HTTP  10/23/2023 1:54:38 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:54:38 PM 127.0.0.1 Returned 304 in 1 ms
+    (Attempt 1 of 3) Should handle next and previous error buttons
+ HTTP  10/23/2023 1:55:09 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17667471878
+ HTTP  10/23/2023 1:55:09 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:55:09 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:55:09 PM 127.0.0.1 Returned 304 in 7 ms
+ HTTP  10/23/2023 1:55:10 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:55:10 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 1:55:10 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:55:10 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 1:55:10 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:55:10 PM 127.0.0.1 Returned 304 in 5 ms
+ HTTP  10/23/2023 1:55:11 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:55:11 PM 127.0.0.1 Returned 304 in 7 ms
+    (Attempt 2 of 3) Should handle next and previous error buttons
+ HTTP  10/23/2023 1:55:42 PM 127.0.0.1 GET /github/mergifyio-testing/repo/functional-testing-repo-AlexandreGaubert/gha-failed-jobs/1?job=17667471878
+ HTTP  10/23/2023 1:55:42 PM 127.0.0.1 Returned 200 in 5 ms
+ HTTP  10/23/2023 1:55:42 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:55:42 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:55:42 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:55:42 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:55:43 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:55:43 PM 127.0.0.1 Returned 304 in 2 ms
+ HTTP  10/23/2023 1:55:43 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:55:43 PM 127.0.0.1 Returned 304 in 1 ms
+ HTTP  10/23/2023 1:55:43 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:55:43 PM 127.0.0.1 Returned 304 in 2 ms
+    2) Should handle next and previous error buttons
+  0 passing (3m)
+  2 failing
+  1) Testing failed job details panel
+       Should display right date for details panel:
+     CypressError: Timed out retrying after 30000ms: `cy.wait()` timed out waiting `30000ms` for the 1st request to the route: `job-details`. No request ever occurred.
+https://on.cypress.io/wait
+      at cypressErr (http://localhost:3000/__cypress/runner/cypress_runner.js:75215:18)
+      at Object.errByPath (http://localhost:3000/__cypress/runner/cypress_runner.js:75270:10)
+      at checkForXhr (http://localhost:3000/__cypress/runner/cypress_runner.js:135728:84)
+      at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:135751:28)
+      at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)
+      at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4315:29)
+      at whenStable (http://localhost:3000/__cypress/runner/cypress_runner.js:144135:68)
+      at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:144076:14)
+      at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)
+      at Promise._settlePromiseFromHandler (http://localhost:3000/__cypress/runner/cypress_runner.js:1519:31)
+      at Promise._settlePromise (http://localhost:3000/__cypress/runner/cypress_runner.js:1576:18)
+      at Promise._settlePromise0 (http://localhost:3000/__cypress/runner/cypress_runner.js:1621:10)
+      at Promise._settlePromises (http://localhost:3000/__cypress/runner/cypress_runner.js:1701:18)
+      at Promise._fulfill (http://localhost:3000/__cypress/runner/cypress_runner.js:1645:18)
+      at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:5450:46)
+  From Your Spec Code:
+      at Context.eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobDetails.cy.ts:17:0)
+  2) Testing failed job details panel
+       Should handle next and previous error buttons:
+     CypressError: Timed out retrying after 30000ms: `cy.wait()` timed out waiting `30000ms` for the 1st request to the route: `job-details`. No request ever occurred.
+https://on.cypress.io/wait
+      at cypressErr (http://localhost:3000/__cypress/runner/cypress_runner.js:75215:18)
+      at Object.errByPath (http://localhost:3000/__cypress/runner/cypress_runner.js:75270:10)
+      at checkForXhr (http://localhost:3000/__cypress/runner/cypress_runner.js:135728:84)
+      at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:135751:28)
+      at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)
+      at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4315:29)
+      at whenStable (http://localhost:3000/__cypress/runner/cypress_runner.js:144135:68)
+      at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:144076:14)
+      at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)
+      at Promise._settlePromiseFromHandler (http://localhost:3000/__cypress/runner/cypress_runner.js:1519:31)
+      at Promise._settlePromise (http://localhost:3000/__cypress/runner/cypress_runner.js:1576:18)
+      at Promise._settlePromise0 (http://localhost:3000/__cypress/runner/cypress_runner.js:1621:10)
+      at Promise._settlePromises (http://localhost:3000/__cypress/runner/cypress_runner.js:1701:18)
+      at Promise._fulfill (http://localhost:3000/__cypress/runner/cypress_runner.js:1645:18)
+      at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:5450:46)
+  From Your Spec Code:
+      at Context.eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobDetails.cy.ts:23:0)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        2                                                                                │
+  │ Passing:      0                                                                                │
+  │ Failing:      2                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  6                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     3 minutes, 15 seconds                                                            │
+  │ Spec Ran:     gha-failed-jobs/GHAFailedJobDetails.cy.ts                                        │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Screenshots)
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD     (1280x720)
+     etails.cy.ts/Testing failed job details panel -- Should display right date for d
+     etails panel (failed).png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD     (1280x720)
+     etails.cy.ts/Testing failed job details panel -- Should display right date for d
+     etails panel (failed) (attempt 2).png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD     (1280x720)
+     etails.cy.ts/Testing failed job details panel -- Should display right date for d
+     etails panel (failed) (attempt 3).png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD     (1280x720)
+     etails.cy.ts/Testing failed job details panel -- Should handle next and previous
+      error buttons (failed).png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD     (1280x720)
+     etails.cy.ts/Testing failed job details panel -- Should handle next and previous
+      error buttons (failed) (attempt 2).png
+  -  /__w/dashboard-ui/dashboard-ui/cypress/screenshots/gha-failed-jobs/GHAFailedJobD     (1280x720)
+     etails.cy.ts/Testing failed job details panel -- Should handle next and previous
+      error buttons (failed) (attempt 3).png
+  Running:  Footer.cy.ts                                                                  (12 of 13)
+  Footer links
+ HTTP  10/23/2023 1:56:16 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 1:56:16 PM 127.0.0.1 Returned 200 in 4 ms
+ HTTP  10/23/2023 1:56:19 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 1:56:19 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:56:19 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:56:19 PM 127.0.0.1 Returned 200 in 5 ms
+ HTTP  10/23/2023 1:56:19 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:56:19 PM 127.0.0.1 Returned 200 in 0 ms
+ HTTP  10/23/2023 1:56:21 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:56:21 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:56:21 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:56:21 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 1:56:21 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:56:21 PM 127.0.0.1 Returned 200 in 9 ms
+ HTTP  10/23/2023 1:56:21 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 1:56:21 PM 127.0.0.1 Returned 200 in 5 ms
+    ✓ Should provide all necessary links (3018ms)
+  1 passing (6s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        1                                                                                │
+  │ Passing:      1                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     6 seconds                                                                        │
+  │ Spec Ran:     Footer.cy.ts                                                                     │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Running:  NoRepository.cy.ts                                                            (13 of 13)
+  Testing no repository activated behavior
+ HTTP  10/23/2023 1:56:25 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 1:56:25 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:56:28 PM 127.0.0.1 GET /
+ HTTP  10/23/2023 1:56:28 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:56:28 PM 127.0.0.1 GET /assets/index-c3048f4a.js
+ HTTP  10/23/2023 1:56:28 PM 127.0.0.1 Returned 200 in 2 ms
+ HTTP  10/23/2023 1:56:28 PM 127.0.0.1 GET /assets/index-5d832530.css
+ HTTP  10/23/2023 1:56:28 PM 127.0.0.1 Returned 200 in 9 ms
+ HTTP  10/23/2023 1:56:29 PM 127.0.0.1 GET /assets/logo-mergify-black-689de20a.png
+ HTTP  10/23/2023 1:56:29 PM 127.0.0.1 Returned 200 in 1 ms
+ HTTP  10/23/2023 1:56:29 PM 127.0.0.1 GET /assets/intercom-be763f49.js
+ HTTP  10/23/2023 1:56:29 PM 127.0.0.1 Returned 200 in 5 ms
+ HTTP  10/23/2023 1:56:29 PM 127.0.0.1 GET /assets/logo-test-53971de1.png
+ HTTP  10/23/2023 1:56:29 PM 127.0.0.1 Returned 200 in 3 ms
+ HTTP  10/23/2023 1:56:29 PM 127.0.0.1 GET /assets/mergify-logo-light-da6a42c5.png
+ HTTP  10/23/2023 1:56:29 PM 127.0.0.1 Returned 200 in 7 ms
+    ✓ Should show message if no repository activated (2758ms)
+  1 passing (6s)
+  (Results)
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        1                                                                                │
+  │ Passing:      1                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     5 seconds                                                                        │
+  │ Spec Ran:     NoRepository.cy.ts                                                               │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+  (Run Finished)
+       Spec                                              Tests  Passing  Failing  Pending  Skipped
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ✔  queued-pull-details/Fallbacks.cy.ts      00:23        6        6        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  NewcomerPopup.cy.ts                      00:13        4        4        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  OrganizationSelector.cy.ts               00:15        4        4        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  Permissions.cy.ts                        00:08        2        2        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  Subscription.cy.ts                       00:09        2        2        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  Sudo.cy.ts                               00:08        2        2        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  InstallRequestPopup.cy.ts                00:08        2        2        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  ApiCallHandling.cy.ts                    00:06        2        2        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  Home.cy.ts                               00:06        2        2        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✖  gha-failed-jobs/GHAFailedJobs.cy.ts      01:17        2        -        2        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✖  gha-failed-jobs/GHAFailedJobDetails      03:15        2        -        2        -        - │
+  │    .cy.ts                                                                                      │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  Footer.cy.ts                             00:06        1        1        -        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✔  NoRepository.cy.ts                       00:05        1        1        -        -        - │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ✖  2 of 13 failed (15%)                     06:25       32       28        4        -        -
+##[error]Cypress tests: 4 failed

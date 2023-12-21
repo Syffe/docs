@@ -1,0 +1,96 @@
+##[group]Run # NOTE(sileht): maybe run this on AWS Lambda to avoid the network roundtrip
+# NOTE(sileht): maybe run this on AWS Lambda to avoid the network roundtrip
+# between AWS and GitHub Actions
+docker run \
+  --rm \
+  -v "$(pwd):/app" \
+  -e PRODUCTION_DATABASE_BASE_URL \
+  -u postgres \
+  ankane/pgvector:v0.4.4 \
+  /app/tools/run-testing-database-sync.sh
+shell: /usr/bin/bash -e {0}
+env:
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID:
+  AWS_SECRET_ACCESS_KEY:
+  AWS_SESSION_TOKEN:
+##[endgroup]
+Unable to find image 'ankane/pgvector:v0.4.4' locally
+v0.4.4: Pulling from ankane/pgvector
+f03b40093957: Pulling fs layer
+9d674c93414d: Pulling fs layer
+de781e8e259a: Pulling fs layer
+5ea6efaf51f6: Pulling fs layer
+b078d5f4ac82: Pulling fs layer
+97f84fb2a918: Pulling fs layer
+5a6bf2f43fb8: Pulling fs layer
+f1a40e88fea4: Pulling fs layer
+4be673794a1a: Pulling fs layer
+9d72f84fb861: Pulling fs layer
+5d52569da92e: Pulling fs layer
+5d48fbe991ff: Pulling fs layer
+4ae692d11ad3: Pulling fs layer
+6b537c889020: Pulling fs layer
+37d9a4e0164e: Pulling fs layer
+5ea6efaf51f6: Waiting
+b078d5f4ac82: Waiting
+97f84fb2a918: Waiting
+5a6bf2f43fb8: Waiting
+f1a40e88fea4: Waiting
+4be673794a1a: Waiting
+9d72f84fb861: Waiting
+5d52569da92e: Waiting
+5d48fbe991ff: Waiting
+4ae692d11ad3: Waiting
+6b537c889020: Waiting
+37d9a4e0164e: Waiting
+9d674c93414d: Verifying Checksum
+9d674c93414d: Download complete
+de781e8e259a: Verifying Checksum
+de781e8e259a: Download complete
+5ea6efaf51f6: Verifying Checksum
+5ea6efaf51f6: Download complete
+b078d5f4ac82: Verifying Checksum
+b078d5f4ac82: Download complete
+97f84fb2a918: Verifying Checksum
+97f84fb2a918: Download complete
+f03b40093957: Download complete
+5a6bf2f43fb8: Verifying Checksum
+5a6bf2f43fb8: Download complete
+f1a40e88fea4: Verifying Checksum
+f1a40e88fea4: Download complete
+9d72f84fb861: Verifying Checksum
+9d72f84fb861: Download complete
+5d48fbe991ff: Verifying Checksum
+5d48fbe991ff: Download complete
+5d52569da92e: Verifying Checksum
+5d52569da92e: Download complete
+6b537c889020: Verifying Checksum
+6b537c889020: Download complete
+4ae692d11ad3: Verifying Checksum
+4ae692d11ad3: Download complete
+37d9a4e0164e: Verifying Checksum
+37d9a4e0164e: Download complete
+4be673794a1a: Verifying Checksum
+4be673794a1a: Download complete
+f03b40093957: Pull complete
+9d674c93414d: Pull complete
+de781e8e259a: Pull complete
+5ea6efaf51f6: Pull complete
+b078d5f4ac82: Pull complete
+97f84fb2a918: Pull complete
+5a6bf2f43fb8: Pull complete
+f1a40e88fea4: Pull complete
+4be673794a1a: Pull complete
+9d72f84fb861: Pull complete
+5d52569da92e: Pull complete
+5d48fbe991ff: Pull complete
+4ae692d11ad3: Pull complete
+6b537c889020: Pull complete
+37d9a4e0164e: Pull complete
+Digest: sha256:0585ca72120f87c5ff1716d6b81affd8e66df8b0bfad015163078529b35165bb
+Status: Downloaded newer image for ankane/pgvector:v0.4.4
+* Creating the new database...
+psql: error: invalid integer value "engine-db.cop9yw0atqzb.us-east-1.rds.amazonaws.com:5432" for connection option "port"
+##[error]Process completed with exit code 2.

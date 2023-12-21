@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "Semgrep rule violation",
+        "language": "Python",
+        "filename": "mergify_engine/tests/unit/models/test_ci_issue.py",
+        "lineno": "117, 143",
+        "error": "python.sqlalchemy.performance.performance-improvements.len-all-count",
+        "test_framework": "Semgrep",
+        "stack_trace": "Using QUERY.count() instead of len(QUERY.all()) sends less data to the client since the SQLAlchemy method is performed server-side."
+    }
+]

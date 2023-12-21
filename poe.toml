@@ -137,3 +137,8 @@ sequence = [
      "docker build -t mergifyio/custom_postgresql_anonymizer -f dockerfiles/Dockerfile.postgresql_anonymizer .",
      "bash -c 'cat empty_database.sql postgresql_anonymizer_rules.sql | docker run -e LANG=C --rm -i mergifyio/custom_postgresql_anonymizer /anon-custom.sh'"
 ]
+
+[tool.poe.tasks.gpt_fine_tuning]
+deps = ["setup"]
+help = "Generate fine tuning data for fine tune a gpt model"
+cmd = "python3 tools/model_training/generate_fine_tuning_data.py"

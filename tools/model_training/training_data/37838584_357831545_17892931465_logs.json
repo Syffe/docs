@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "NameError in test_api_cursor_redis",
+        "language": "Python",
+        "filename": "mergify_engine/eventlogs.py",
+        "lineno": "362",
+        "error": "NameError",
+        "test_framework": "pytest",
+        "stack_trace": "NameError: name 'settings' is not defined"
+    }
+]

@@ -1,0 +1,31 @@
+##[group]Run npm ci
+npm ci
+npm run eslint
+shell: /usr/bin/bash -e {0}
+##[endgroup]
+added 929 packages, and audited 930 packages in 54s
+222 packages are looking for funding
+  run `npm fund` for details
+found 0 vulnerabilities
+> mergify-dashboard@0.1.0 eslint
+> eslint src cypress tests
+/home/runner/work/dashboard-ui/dashboard-ui/cypress/component/gha-failed-jobs/EmbeddedLog.cy.tsx
+##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/namespace
+##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/order
+##[warning]  1:1   warning  Resolve error: unable to load resolver "alias"                                                                  import/no-duplicates
+##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-unresolved
+##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/default
+##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/extensions
+##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-extraneous-dependencies
+##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-self-import
+##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-cycle
+##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-useless-path-segments
+##[error]  1:1   error    Resolve error: unable to load resolver "alias"                                                                  import/no-relative-packages
+##[warning]  1:1   warning  Resolve error: unable to load resolver "alias"                                                                  import/no-named-as-default
+##[warning]  1:1   warning  Resolve error: unable to load resolver "alias"                                                                  import/no-named-as-default-member
+##[error]  1:25  error    Unable to resolve path to module '../../../src/dashboard/FailedJobs/components/GHAFailedJobsError/EmbeddedLog'  import/no-unresolved
+##[error]  1:25  error    Missing file extension for "../../../src/dashboard/FailedJobs/components/GHAFailedJobsError/EmbeddedLog"        import/extensions
+/home/runner/work/dashboard-ui/dashboard-ui/cypress/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts
+##[error]  11:6  error  Unexpected exclusive mocha test  mocha/no-exclusive-tests
+✖ 16 problems (13 errors, 3 warnings)
+##[error]Process completed with exit code 1.

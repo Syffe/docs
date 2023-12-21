@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "Assertion Error in Test Case",
+        "language": "Python",
+        "filename": "mergify_engine/tests/unit/models/test_ci_issue.py",
+        "lineno": "23",
+        "error": "AssertionError",
+        "test_framework": "pytest",
+        "stack_trace": "AssertionError: assert 'ONEREPO-2' == 'ONEREPO-1'\n - ONEREPO-1\n ?         ^\n + ONEREPO-2\n ?         ^"
+    }
+]

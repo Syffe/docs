@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "Semantic Pull Request Title Error",
+        "language": null,
+        "filename": null,
+        "lineno": null,
+        "error": "No release type found in pull request title",
+        "test_framework": "GitHub Actions",
+        "stack_trace": null
+    }
+]

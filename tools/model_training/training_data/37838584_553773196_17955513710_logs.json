@@ -1,0 +1,38 @@
+[
+    {
+        "problem_type": "CypressError",
+        "language": "JavaScript",
+        "filename": "gha-failed-jobs/GHAFailedJobs.cy.ts",
+        "lineno": "10",
+        "error": "Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document.",
+        "test_framework": "Cypress",
+        "stack_trace": "CypressError: Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document."
+    },
+    {
+        "problem_type": "AssertionError",
+        "language": "JavaScript",
+        "filename": "gha-failed-jobs/GHAFailedJobs.cy.ts",
+        "lineno": null,
+        "error": "Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it.",
+        "test_framework": "Cypress",
+        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it."
+    },
+    {
+        "problem_type": "AssertionError",
+        "language": "JavaScript",
+        "filename": "gha-failed-jobs/GHAFailedJobDetails.cy.ts",
+        "lineno": null,
+        "error": "Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"details-17728253792\"]`, but never found it.",
+        "test_framework": "Cypress",
+        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"details-17728253792\"]`, but never found it."
+    },
+    {
+        "problem_type": "AssertionError",
+        "language": "JavaScript",
+        "filename": "gha-failed-jobs/GHAFailedJobDetails.cy.ts",
+        "lineno": "16",
+        "error": "Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"previous-job\"]`, but never found it.",
+        "test_framework": "Cypress",
+        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"previous-job\"]`, but never found it."
+    }
+]

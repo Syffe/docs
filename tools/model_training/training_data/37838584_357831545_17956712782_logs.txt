@@ -1,0 +1,767 @@
+    558.0/558.0 kB 63.3 MB/s eta 0:00:00
+Downloading rapidfuzz-2.15.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.0 MB)
+    3.0/3.0 MB 104.9 MB/s eta 0:00:00
+Downloading urllib3-2.0.7-py3-none-any.whl (124 kB)
+    124.2/124.2 kB 20.4 MB/s eta 0:00:00
+Downloading jaraco.classes-3.3.0-py3-none-any.whl (5.9 kB)
+Downloading cryptography-41.0.4-cp37-abi3-manylinux_2_28_x86_64.whl (4.4 MB)
+    4.4/4.4 MB 112.0 MB/s eta 0:00:00
+Downloading zipp-3.17.0-py3-none-any.whl (7.4 kB)
+Downloading more_itertools-10.1.0-py3-none-any.whl (55 kB)
+    55.8/55.8 kB 15.9 MB/s eta 0:00:00
+Downloading cffi-1.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (464 kB)
+    464.8/464.8 kB 64.7 MB/s eta 0:00:00
+Installing collected packages: trove-classifiers, ptyprocess, distlib, zipp, urllib3, tomlkit, shellingham, rapidfuzz, pyrsistent, pyproject-hooks, pycparser, poetry-core, platformdirs, pkginfo, pexpect, packaging, msgpack, more-itertools, jeepney, installer, idna, filelock, crashtest, charset-normalizer, certifi, attrs, virtualenv, requests, jsonschema, jaraco.classes, importlib-metadata, dulwich, cleo, cffi, build, requests-toolbelt, cryptography, cachecontrol, SecretStorage, keyring, poetry-plugin-export, poetry
+Successfully installed SecretStorage-3.3.3 attrs-23.1.0 build-0.10.0 cachecontrol-0.13.1 certifi-2023.7.22 cffi-1.16.0 charset-normalizer-3.3.1 cleo-2.0.1 crashtest-0.4.1 cryptography-41.0.4 distlib-0.3.7 dulwich-0.21.6 filelock-3.12.4 idna-3.4 importlib-metadata-6.8.0 installer-0.7.0 jaraco.classes-3.3.0 jeepney-0.8.0 jsonschema-4.17.3 keyring-24.2.0 more-itertools-10.1.0 msgpack-1.0.7 packaging-23.2 pexpect-4.8.0 pkginfo-1.9.6 platformdirs-3.11.0 poetry-1.6.1 poetry-core-1.7.0 poetry-plugin-export-1.5.0 ptyprocess-0.7.0 pycparser-2.21 pyproject-hooks-1.0.0 pyrsistent-0.19.3 rapidfuzz-2.15.2 requests-2.31.0 requests-toolbelt-1.0.0 shellingham-1.5.3 tomlkit-0.12.1 trove-classifiers-2023.10.18 urllib3-2.0.7 virtualenv-20.24.5 zipp-3.17.0
+Creating virtualenv mergify-engine-cHHEL7M--py3.11 in /home/runner/.cache/pypoetry/virtualenvs
+Installing dependencies from lock file
+Package operations: 177 installs, 0 updates, 0 removals
+  Installing pyasn1 (0.5.0)
+  Installing attrs (23.1.0)
+  Installing cachetools (5.3.1)
+  Installing certifi (2023.7.22)
+  Installing charset-normalizer (3.3.1)
+  Installing idna (3.4)
+  Installing protobuf (4.24.4)
+  Installing pyasn1-modules (0.3.0)
+  Installing pycparser (2.21)
+  Installing rpds-py (0.10.6)
+  Installing rsa (4.9)
+  Installing sniffio (1.3.0)
+  Installing typing-extensions (4.8.0)
+  Installing urllib3 (1.26.18)
+  Installing annotated-types (0.6.0)
+  Installing anyio (3.7.1)
+  Installing boltons (21.0.0)
+  Installing cffi (1.16.0)
+  Installing google-auth (2.23.3)
+  Installing googleapis-common-protos (1.61.0)
+  Installing h11 (0.14.0)
+  Installing markupsafe (2.1.3)
+  Installing mdurl (0.1.2)
+  Installing pydantic-core (2.10.1)
+  Installing referencing (0.30.2)
+  Installing requests (2.31.0)
+  Installing wrapt (1.15.0)
+  Installing zipp (3.17.0)
+  Installing alabaster (0.7.13)
+  Installing babel (2.13.0)
+  Installing bracex (2.4)
+  Installing click (8.1.7)
+  Installing cryptography (41.0.4)
+  Installing deprecated (1.2.14)
+  Installing docutils (0.20.1)
+  Installing face (22.0.0)
+  Installing google-api-core (2.12.0)
+  Installing google-crc32c (1.5.0)
+  Installing hpack (4.0.0)
+  Installing httpcore (0.18.0)
+  Installing hyperframe (6.0.1)
+  Installing imagesize (1.4.1)
+  Installing importlib-metadata (6.8.0)
+  Installing iniconfig (2.0.0)
+  Installing jinja2 (3.1.2)
+  Installing jsonschema-specifications (2023.7.1)
+  Installing mako (1.2.4)
+  Installing markdown-it-py (3.0.0)
+  Installing multidict (6.0.4)
+  Installing packaging (23.2)
+  Installing pluggy (1.3.0)
+  Installing pydantic (2.4.2)
+  Installing pygments (2.16.1)
+  Installing ruamel-yaml-clib (0.2.8)
+  Installing six (1.16.0)
+  Installing snowballstemmer (2.2.0)
+  Installing soupsieve (2.5)
+  Installing sphinxcontrib-applehelp (1.0.7)
+  Installing sphinxcontrib-devhelp (1.0.5)
+  Installing sphinxcontrib-htmlhelp (2.0.4)
+  Installing sphinxcontrib-jsmath (1.0.1)
+  Installing sphinxcontrib-qthelp (1.0.6)
+  Installing sphinxcontrib-serializinghtml (1.1.9)
+  Installing sqlalchemy (2.0.22)
+  Installing starlette (0.27.0)
+  Installing ujson (5.8.0)
+  Installing alembic (1.12.0)
+  Installing beautifulsoup4 (4.12.2)
+  Installing bytecode (0.15.1)
+  Installing cattrs (23.1.2)
+  Installing click-option-group (0.5.6)
+  Installing colorama (0.4.6)
+  Installing coverage (7.3.2)
+  Installing ddsketch (2.0.4)
+  Installing defusedxml (0.7.1)
+  Installing dulwich (0.21.6)
+  Installing envier (0.4.0)
+  Installing execnet (2.0.2)
+  Installing fastapi (0.104.0)
+  Installing flupy (1.2.0)
+  Installing glom (22.1.0)
+  Installing google-cloud-core (2.3.3)
+  Installing google-resumable-media (2.6.0)
+  Installing greenlet (3.0.0)
+  Installing h2 (4.1.0)
+  Installing httptools (0.6.1)
+  Installing httpx (0.25.0)
+  Installing itsdangerous (2.1.2)
+  Installing jsonschema (4.19.1)
+  Installing mypy-extensions (1.0.0)
+  Installing numpy (1.26.1)
+  Installing opentelemetry-api (1.20.0)
+  Installing ordered-set (4.1.0)
+  Installing parse (1.19.1)
+  Installing passlib (1.7.4)
+  Installing pastel (0.2.1)
+  Installing pathspec (0.11.2)
+  Installing pbr (5.11.1)
+  Installing peewee (3.17.0)
+  Installing platformdirs (3.11.0)
+  Installing psycopg (3.1.12)
+  Installing psycopg-binary (3.1.12)
+  Installing pyenchant (3.2.2)
+  Installing pytest (7.4.2)
+  Installing python-dotenv (1.0.0)
+  Installing python-json-logger (2.0.7)
+  Installing python-lsp-jsonrpc (1.0.0)
+  Installing pyyaml (6.0.1)
+  Installing regex (2023.10.3)
+  Installing rich (13.6.0)
+  Installing ruamel-yaml (0.17.40)
+  Installing setproctitle (1.3.3)
+  Installing sphinx (7.2.6)
+  Installing tomli (2.0.1)
+  Installing types-pyopenssl (23.2.0.2)
+  Installing uvloop (0.19.0)
+  Installing watchfiles (0.21.0)
+  Installing wcmatch (8.5)
+  Installing websockets (12.0)
+  Installing xmltodict (0.13.0)
+  Installing yarl (1.9.2)
+  Installing aiofiles (23.2.1)
+  Installing alembic-utils (0.8.1)
+  Installing anys (0.3.0)
+  Installing asgi-lifespan (2.1.0)
+  Installing authlib (1.2.1)
+  Installing black (23.10.0)
+  Installing daiquiri (3.2.3)
+  Installing datadog (0.47.0)
+  Installing ddtrace (1.20.2)
+  Installing deepdiff (6.6.1)
+  Installing filelock (3.12.4)
+  Installing first (2.0.2)
+  Installing google-cloud-storage (2.12.0)
+  Installing graphql-utils (0.4)
+  Installing gunicorn (21.2.0)
+  Installing hiredis (2.2.3)
+  Installing honcho (1.1.0)
+  Installing imia (0.5.3)
+  Installing markdownify (0.11.6)
+  Installing msgpack (1.0.7)
+  Installing mypy (1.6.1)
+  Installing pgvector (0.2.3)
+  Installing poethepoet (0.24.1)
+  Installing pydantic-settings (2.0.3)
+  Installing pyjwt (2.8.0)
+  Installing pytest-asyncio (0.21.1)
+  Installing pytest-cov (4.1.0)
+  Installing pytest-flakefinder (1.1.0)
+  Installing pytest-github-actions-annotate-failures (0.2.0)
+  Installing pytest-rerunfailures (12.0)
+  Installing pytest-split (0.8.1)
+  Installing pytest-timeout (2.2.0)
+  Installing pytest-xdist (3.3.1)
+  Installing python-multipart (0.0.6)
+  Installing redis (5.0.0)
+  Installing reno (4.0.0)
+  Installing respx (0.20.2)
+  Installing ruff (0.1.1)
+  Installing semgrep (1.45.0)
+  Installing sentry-sdk (1.32.0)
+  Installing sphinxcontrib-jquery (4.1)
+  Installing sphinxcontrib-spelling (8.0.0)
+  Installing sqlalchemy-utils (0.41.1)
+  Installing starsessions (2.1.3)
+  Installing tenacity (8.2.3)
+  Installing tiktoken (0.5.1)
+  Installing types-first (2.0.5.2)
+  Installing types-pkg-resources (0.1.3)
+  Installing types-python-dateutil (2.8.19.14)
+  Installing types-pyyaml (6.0.12.12)
+  Installing types-redis (4.6.0.7)
+  Installing unidecode (1.3.7)
+  Installing uvicorn (0.23.2)
+  Installing vcrpy (5.1.0)
+  Installing voluptuous (0.13.1)
+  Installing yamllint (1.32.0)
+Installing the current project: mergify_engine (0.0.0)
+Poe => ./tools/poetry-ci-install.sh
+Installing dependencies from lock file
+No dependencies to install or update
+Installing the current project: mergify_engine (0.0.0)
+Poe => ./tools/run-tests.sh pytest -v --timeout_method thread --reruns 3 --only-rerun MissingEventTimeout --splits 10 --group 1 --store-durations --durations-path engine-ci-test-durations --splitting-algorithm=least_duration --reruns 3 --only-rerun MissingEventTimeout
++ PYTHON_EXTRACT_DOCKER_PORT='
+import json, sys
+data = json.load(sys.stdin)
+if isinstance(data, list):
+    publishers = data ['\''Publishers'\'']
+else:
+    publishers = data['\''Publishers'\'']
+for pub in publishers:
+    if pub['\''PublishedPort'\''] > 0:
+        print(pub['\''PublishedPort'\''])
+        sys.exit(0)
+sys.exit(1)
+'
++ '[' true == true ']'
++ REDIS_PORT=6363
++ POSTGRES_PORT=5432
++ GOOGLE_CLOUD_STORAGE_PORT=8000
++ export MERGIFYENGINE_DATABASE_URL=localhost:5432/postgres
++ MERGIFYENGINE_DATABASE_URL=localhost:5432/postgres
++ export MERGIFYENGINE_DEFAULT_REDIS_URL=redis://localhost:6363
++ MERGIFYENGINE_DEFAULT_REDIS_URL=redis://localhost:6363
+++ pwgen -1 48
+./tools/run-tests.sh: line 48: pwgen: command not found
++ export MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT=
++ MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT=
++ export STORAGE_EMULATOR_HOST=http://localhost:8000
++ STORAGE_EMULATOR_HOST=http://localhost:8000
++ docker run --net host --rm redis redis-cli -h localhost -p 6363 keys '*'
++ docker run --net host --rm postgres psql localhost:5432/postgres -c 'select 1 as connected'
+Unable to find image 'postgres:latest' locally
+latest: Pulling from library/postgres
+a378f10b3218: Already exists
+2ebc5690e391: Pulling fs layer
+8fe57f734687: Pulling fs layer
+a2ddbb09cd9a: Pulling fs layer
+5a2499e87ab8: Pulling fs layer
+a45f5c4adf1b: Pulling fs layer
+178017fd978e: Pulling fs layer
+428dff1cb77d: Pulling fs layer
+4667364adfc4: Pulling fs layer
+4eea1f5281a9: Pulling fs layer
+369467411787: Pulling fs layer
+51184495a2bc: Pulling fs layer
+d3e246f01410: Pulling fs layer
+5a2499e87ab8: Waiting
+a45f5c4adf1b: Waiting
+178017fd978e: Waiting
+428dff1cb77d: Waiting
+4667364adfc4: Waiting
+4eea1f5281a9: Waiting
+369467411787: Waiting
+51184495a2bc: Waiting
+d3e246f01410: Waiting
+a2ddbb09cd9a: Verifying Checksum
+a2ddbb09cd9a: Download complete
+2ebc5690e391: Verifying Checksum
+2ebc5690e391: Download complete
+2ebc5690e391: Pull complete
+8fe57f734687: Verifying Checksum
+8fe57f734687: Download complete
+8fe57f734687: Pull complete
+a45f5c4adf1b: Verifying Checksum
+a45f5c4adf1b: Download complete
+178017fd978e: Verifying Checksum
+178017fd978e: Download complete
+5a2499e87ab8: Verifying Checksum
+5a2499e87ab8: Download complete
+a2ddbb09cd9a: Pull complete
+428dff1cb77d: Verifying Checksum
+428dff1cb77d: Download complete
+4eea1f5281a9: Verifying Checksum
+4eea1f5281a9: Download complete
+369467411787: Verifying Checksum
+369467411787: Download complete
+51184495a2bc: Verifying Checksum
+51184495a2bc: Download complete
+5a2499e87ab8: Pull complete
+d3e246f01410: Verifying Checksum
+d3e246f01410: Download complete
+a45f5c4adf1b: Pull complete
+178017fd978e: Pull complete
+428dff1cb77d: Pull complete
+4667364adfc4: Verifying Checksum
+4667364adfc4: Download complete
+4667364adfc4: Pull complete
+4eea1f5281a9: Pull complete
+369467411787: Pull complete
+51184495a2bc: Pull complete
+d3e246f01410: Pull complete
+Digest: sha256:3d9ed832906091d609cfd6f283e79492ace01ba15866b21d8a262e8fd1cdfb55
+Status: Downloaded newer image for postgres:latest
+ connected
+         1
+(1 row)
++ cmd=pytest
++ shift
++ pytest -v --timeout_method thread --reruns 3 --only-rerun MissingEventTimeout --splits 10 --group 1 --store-durations --durations-path engine-ci-test-durations --splitting-algorithm=least_duration --reruns 3 --only-rerun MissingEventTimeout
+[pytest-split] No test durations found. Pytest-split will split tests evenly when no durations are found.
+[pytest-split] You can expect better results in consequent runs, when test timings have been documented.
+ test session starts
+platform linux -- Python 3.11.4, pytest-7.4.2, pluggy-1.3.0 -- /home/runner/.cache/pypoetry/virtualenvs/mergify-engine-cHHEL7M--py3.11/bin/python
+cachedir: .pytest_cache
+rootdir: /home/runner/work/engine/engine
+configfile: pyproject.toml
+testpaths: mergify_engine/tests
+plugins: asyncio-0.21.1, github-actions-annotate-failures-0.2.0, timeout-2.2.0, ddtrace-1.20.2, rerunfailures-12.0, flakefinder-1.1.0, anyio-3.7.1, split-0.8.1, cov-4.1.0, xdist-3.3.1, respx-0.20.2
+asyncio: mode=Mode.AUTO
+timeout: 200.0s
+timeout method: thread
+timeout func_only: False
+collecting ...
+[pytest-split] Splitting tests with algorithm: least_duration
+[pytest-split] Running group 1/10 (estimated duration: 204.00s)
+collected 2031 items / 1827 deselected / 204 selected
+mergify_engine/tests/functional/test_attributes.py::TestAttributes::test_commits_attributes_list_condition_bool PASSED [  0%]
+mergify_engine/tests/functional/test_attributes.py::TestAttributes::test_current_datetime PASSED [  0%]
+mergify_engine/tests/functional/test_attributes.py::TestAttributes::test_review_decision PASSED [  1%]
+mergify_engine/tests/functional/test_engine.py::TestEngineV2Scenario::test_refresh_on_conflict PASSED [  1%]
+mergify_engine/tests/functional/test_engine.py::TestEngineV2Scenario::test_sha_collision PASSED [  2%]
+mergify_engine/tests/functional/test_engine.py::TestEngineV2Scenario::test_teams PASSED [  2%]
+mergify_engine/tests/functional/test_fixtures.py::test_fixture_recorder PASSED [  3%]
+mergify_engine/tests/functional/test_summary.py::TestSummary::test_failed_base_changeable_attributes_rules_in_not_applicable_summary_section_with_basic_conditions PASSED [  3%]
+mergify_engine/tests/functional/test_summary.py::TestQueueCISummary::test_invalid_config_html_escape PASSED [  4%]
+mergify_engine/tests/functional/actions/test_backport.py::TestBackportAction::test_backport_merge_commit PASSED [  4%]
+mergify_engine/tests/functional/actions/test_comment.py::TestCommentAction::test_comment PASSED [  5%]
+mergify_engine/tests/functional/actions/test_copy.py::CopyActionTestBase::test_copy_with_no_matching_branch PASSED [  5%]
+mergify_engine/tests/functional/actions/test_dismiss_review.py::TestDismissReviewsAction::test_dismiss_reviews_custom_message_syntax_error PASSED [  6%]
+mergify_engine/tests/functional/actions/test_edit.py::TestEditAction::test_edit_on_closed_pr PASSED [  6%]
+mergify_engine/tests/functional/actions/test_github_actions.py::GhaActionTestBase::test_gha_success PASSED [  7%]
+mergify_engine/tests/functional/actions/test_label.py::TestLabelAction::test_label_basic PASSED [  7%]
+mergify_engine/tests/functional/actions/test_merge.py::TestMergeAction::test_merge_conflicting_pr PASSED [  8%]
+mergify_engine/tests/functional/actions/test_post_check.py::TestPostCheckAction::test_checks_default PASSED [  8%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_basic_queue PASSED [  9%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_bypass_branch_protections_with_none_injection_mode PASSED [  9%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_merge_queue_refresh PASSED [ 10%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_more_ci_in_pull_request_rules_failure PASSED [ 10%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_pr_with_depends_on_not_queued_if_dependent_pr_is_not_queued PASSED [ 11%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_conditions_empty PASSED [ 11%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_default_merge_method PASSED [ 12%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_inplace_autosquash_true PASSED [ 12%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_manual_merge PASSED [ 13%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_with_rebase_on_githubapp_pr_conf_in_queue_rules PASSED [ 13%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_train_reset_after_unexpected_base_branch_change_while_merging_batch PASSED [ 14%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_unqueue_all_pr_when_unexpected_changes_on_draft_pr PASSED [ 14%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_unqueue_rule_unmatch_with_batch_requeue PASSED [ 15%]
+mergify_engine/tests/functional/actions/test_queue.py::TestQueueActionFeaturesSubscription::test_queue_action_and_command_without_merge_queue_feature_flag PASSED [ 15%]
+mergify_engine/tests/functional/actions/test_queue_with_partition_rules.py::TestQueueWithPartitionRules::test_all_partitions_reset_when_manual_force_push_on_base_branch_without_pr_and_with_fallback_partition PASSED [ 16%]
+mergify_engine/tests/functional/actions/test_queue_with_partition_rules.py::TestQueueWithPartitionRules::test_no_partition_reset_after_queued_merged_pr_with_partition_and_fallback_partition PASSED [ 16%]
+mergify_engine/tests/functional/actions/test_rebase.py::TestRebaseAction::test_rebase_autosquash_fixup_commit PASSED [ 17%]
+mergify_engine/tests/functional/actions/test_request_reviews.py::TestRequestReviewsSubAction::test_request_reviews_users_from_teams PASSED [ 17%]
+mergify_engine/tests/functional/actions/test_update.py::TestUpdateActionWithBot::test_update_action_with_bot PASSED [ 18%]
+mergify_engine/tests/functional/api/test_application.py::test_api_application PASSED [ 18%]
+mergify_engine/tests/functional/api/test_partitions.py::TestPartitionsApi::test_partitions_endpoints_invalid_branch_name PASSED [ 19%]
+mergify_engine/tests/functional/api/test_queue.py::TestQueueApi::test_estimated_time_of_merge_schedule_condition_non_match PASSED [ 19%]
+mergify_engine/tests/functional/api/test_queue_freeze.py::TestQueueFreeze::test_get_list_queue_freeze PASSED [ 20%]
+mergify_engine/tests/functional/api/test_queue_freeze.py::TestQueueFreeze::test_request_error_delete_queue_freeze PASSED [ 20%]
+mergify_engine/tests/functional/api/test_queue_pause.py::TestQueuePause::test_delete_queue_pause PASSED [ 21%]
+mergify_engine/tests/functional/api/test_statistics.py::TestStatisticsEndpoints::test_queue_statistics_branch_name_filter PASSED [ 21%]
+mergify_engine/tests/functional/api/test_statistics.py::TestStatisticsEndpoints::test_start_at_end_at_query_params PASSED [ 22%]
+mergify_engine/tests/functional/api/test_statistics_with_partition_rules.py::TestStatisticsWithPartitionsEndpoints::test_queue_checks_outcome_with_partitions_endpoint PASSED [ 22%]
+mergify_engine/tests/functional/commands/test_backport.py::TestCommandBackport::test_command_backport PASSED [ 23%]
+mergify_engine/tests/functional/commands/test_commands_detection.py::TestCommandsDetection::test_pull_request_locked PASSED [ 23%]
+mergify_engine/tests/functional/commands/test_queue.py::TestQueueCommand::test_command_queue_with_queue_conditions_not_matching_and_fallback PASSED [ 24%]
+mergify_engine/tests/functional/commands/test_queue.py::TestQueueCommand::test_without_config PASSED [ 24%]
+mergify_engine/tests/functional/log_embedder/test_github_action.py::TestLogEmbedderGithubAction::test_log_downloading_with_no_steps PASSED [ 25%]
+mergify_engine/tests/unit/test_behind.py::test_pull_behind[U-A-B-C] PASSED [ 25%]
+mergify_engine/tests/unit/test_clients.py::test_client_installation_HTTP_301 PASSED [ 25%]
+mergify_engine/tests/unit/test_command.py::test_run_command_with_user[None-nothing-@mergifyio something-Sorry but I didn't understand the command. Please consult [the commands documentation](https://docs.mergify.com/commands) \U0001f4da.] PASSED [ 26%]
+mergify_engine/tests/unit/test_command.py::test_run_command_with_no_subscription[squash] PASSED [ 26%]
+mergify_engine/tests/unit/test_command.py::test_commands_restrictions_sender_permission[sender-permission=write-admin-False] PASSED [ 27%]
+mergify_engine/tests/unit/test_context.py::test_context_merge_after_valid[Merge-After: 2023-01-18 08:10[Africa/Sao_Tome]-expected_out8] PASSED [ 27%]
+mergify_engine/tests/unit/test_context.py::test_context_merge_after_invalid[Merge-After: -1-01-18[Australia/Sydney]] PASSED [ 28%]
+mergify_engine/tests/unit/test_context.py::test_context_merge_after_invalid[Merge-After: 2023-01-01 8:10[Europe/Paris]] PASSED [ 28%]
+mergify_engine/tests/unit/test_context.py::test_context_merge_after_invalid[Merge-After: 2023-01-\n18 08:10[Africa/Sao_Tome]] PASSED [ 29%]
+mergify_engine/tests/unit/test_count_seats.py::test_send_seats PASSED    [ 29%]
+mergify_engine/tests/unit/test_count_seats.py::test_store_active_users[membership-event15] PASSED [ 30%]
+mergify_engine/tests/unit/test_count_seats.py::test_store_active_users[workflow_job-event21] PASSED [ 30%]
+mergify_engine/tests/unit/test_count_seats.py::test_get_usage_count_seats[check_run-event1] PASSED [ 31%]
+mergify_engine/tests/unit/test_count_seats.py::test_get_usage_count_seats[pull_request-event16] PASSED [ 31%]
+mergify_engine/tests/unit/test_count_seats.py::test_get_usage_count_seats[workflow_job-event27] PASSED [ 32%]
+mergify_engine/tests/unit/test_crypto.py::test_encrypt PASSED            [ 32%]
+mergify_engine/tests/unit/test_date.py::test_fromisoformat[2021-06-01 18:41:39Z-expected1] PASSED [ 33%]
+mergify_engine/tests/unit/test_date.py::test_pretty_datetime[dt0-2021-06-01 00:00 UTC] PASSED [ 33%]
+mergify_engine/tests/unit/test_date.py::test_time_compare PASSED         [ 34%]
+mergify_engine/tests/unit/test_date.py::test_day_of_week_from_string[WEDNESDAY-3] PASSED [ 34%]
+mergify_engine/tests/unit/test_date.py::test_invalid_date_string[RelativeDatetime-36 ago-Invalid relative date] PASSED [ 35%]
+mergify_engine/tests/unit/test_date.py::test_interval_from_string[1 d-expected_interval2] PASSED [ 35%]
+mergify_engine/tests/unit/test_date.py::test_interval_from_string[1 minutes-expected_interval6] PASSED [ 36%]
+mergify_engine/tests/unit/test_date.py::test_datetime_inside_time_range[time_to_check1-20-10-21-0-False-True] PASSED [ 36%]
+mergify_engine/tests/unit/test_date.py::test_schedule_next_datetime[schedule7-from_time7-expected7] PASSED [ 37%]
+mergify_engine/tests/unit/test_date.py::test_schedule_next_datetime[schedule13-from_time13-expected13] PASSED [ 37%]
+mergify_engine/tests/unit/test_date.py::test_schedule_inequality[schedule10-schedule20] PASSED [ 38%]
+mergify_engine/tests/unit/test_date.py::test_schedule_eq_with_datetime[schedule4-date_to_test4-True] PASSED [ 38%]
+mergify_engine/tests/unit/test_date.py::test_schedule_as_json_dict_only_times_with_timezone PASSED [ 39%]
+mergify_engine/tests/unit/test_date.py::test_fromisoformat_with_zoneinfo[2023-07-13T14:00+02:00-expected_datetime3] PASSED [ 39%]
+mergify_engine/tests/unit/test_date.py::test_datetimerange_fromisoformat_with_zoneinfo[2007-03-01T13:00:00/2008-05-11T15:30:00[Europe/Paris]-expected_dtr5] PASSED [ 40%]
+mergify_engine/tests/unit/test_date.py::test_datetimerange_fromisoformat_with_zoneinfo_invalid[2023-07-13T14:00:00Z] PASSED [ 40%]
+mergify_engine/tests/unit/test_date.py::test_relativedelta[2023-10-16-1-0-2023-11-16] PASSED [ 41%]
+mergify_engine/tests/unit/test_date.py::test_relativedelta[2023-01-31-1-0-2023-02-28] PASSED [ 41%]
+mergify_engine/tests/unit/test_db_populator.py::test_db_populator_dataset[DummyMetaDataset] PASSED [ 42%]
+mergify_engine/tests/unit/test_delayed_refresh.py::test_delayed_refresh_without_time[pull0-expected_refresh0] PASSED [ 42%]
+mergify_engine/tests/unit/test_events_db.py::test_event_action_github_actions_consistency PASSED [ 43%]
+##[error]test_event_as_dict
+AssertionError: assert {'deleted_by'...t': None, ...} == {'deleted_by'...t': None, ...}
+ Omitting 8 identical items, use -vv to show
+ Differing items:
+ {'repository': {'archived': False, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', 'id': 0, ...}} != {'repository': {'archived': False, 'ci_issue_prefix': None, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', ...}}
+ Full diff:
+   {
+    'deleted_by': {'id': 987,
+                   'name': 'cell',
+                   'type': <GithubAuthenticatedActorType.USER: 'user'>},
+    'deleted_by_id': 987,
+    'id': 1,
+    'pull_request': None,
+ -  'received_at': <ANY>,
+ +  'received_at': '',
+    'repository': {'archived': False,
+ -                 'ci_issue_prefix': None,
+                   'default_branch': 'main',
+                   'full_name': 'Mergifyio/mergify-engine',
+                   'id': 0,
+                   'name': 'mergify-engine',
+                   'owner': {'application_keys_count': 0,
+                             'avatar_url': 'https://avatars.githubusercontent.com/u/0?v=4',
+                             'id': 0,
+                             'login': 'Mergifyio',
+ -                           'type': 'User'},
+ +                           'type': <GitHubAccountType.USER: 'User'>},
+ ?                                   +++++++++++++++++++++++++      +
+                   'owner_id': 0,
+                   'private': False},
+    'repository_id': 0,
+    'trigger': 'Rule: my rule',
+    'type': <EventType.QueuePauseDelete: 'queue.pause.delete'>,
+   }
+mergify_engine/tests/unit/test_events_db.py::test_event_as_dict FAILED   [ 43%]
+mergify_engine/tests/unit/test_gcs_client.py::test_gcs_upload PASSED     [ 44%]
+mergify_engine/tests/unit/test_github_events.py::test_filter_and_dispatch[check_run-event1] PASSED [ 44%]
+mergify_engine/tests/unit/test_github_events.py::test_filter_and_dispatch[pull_request-event16] PASSED [ 45%]
+mergify_engine/tests/unit/test_github_events.py::test_filter_and_dispatch[workflow_job-event27] PASSED [ 45%]
+mergify_engine/tests/unit/test_gitter.py::test_gitter PASSED             [ 46%]
+mergify_engine/tests/unit/test_pull_request_finder.py::test_event_status PASSED [ 46%]
+mergify_engine/tests/unit/test_settings.py::test_defaults PASSED         [ 47%]
+mergify_engine/tests/unit/test_settings.py::test_legacy_env_sets PASSED  [ 47%]
+mergify_engine/tests/unit/test_settings.py::test_type_log_level[10-10] PASSED [ 48%]
+mergify_engine/tests/unit/test_settings.py::test_database_url_format[postgresql+psycopg://-postgresql+psycopg:] PASSED [ 48%]
+mergify_engine/tests/unit/test_settings.py::test_error_message PASSED    [ 49%]
+mergify_engine/tests/unit/test_settings.py::test_redis_all_set PASSED    [ 49%]
+mergify_engine/tests/unit/test_subscription.py::test_subscription_on_premise_wrong_token PASSED [ 50%]
+mergify_engine/tests/unit/test_summary.py::test_queue_rules_order_0_depth PASSED [ 50%]
+mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[end-2-\u2026-None] PASSED [ 50%]
+mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[end-5-\u2026-h\u2026] PASSED [ 51%]
+mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[end-23-\u2026-h\xe9 ho! how are you\u2026] PASSED [ 51%]
+mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[middle-1--h] PASSED [ 52%]
+mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[middle-3--h?] PASSED [ 52%]
+mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[middle-50-\u2026-h\xe9 ho! how are you\u221a2?] PASSED [ 53%]
+mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[middle-21-\U0001f60e-h\xe9 ho! h\U0001f60eyou\u221a2?] PASSED [ 53%]
+mergify_engine/tests/unit/test_utils.py::test_strtobool[on-True] PASSED  [ 54%]
+mergify_engine/tests/unit/test_utils.py::test_url_parser_with_pr_ok[https://github.com/mergifyio/mergify-engine/pull/123] PASSED [ 54%]
+mergify_engine/tests/unit/test_utils.py::test_url_parser_with_pr_ok[https://github.com//mergifyio/mergify-engine//pull/123] PASSED [ 55%]
+mergify_engine/tests/unit/test_utils.py::test_url_parser_fail[https://github.com/] PASSED [ 55%]
+mergify_engine/tests/unit/test_web.py::test_push_event[event2-pull_request-202-Event queued] PASSED [ 56%]
+mergify_engine/tests/unit/test_worker.py::test_worker_with_one_task PASSED [ 56%]
+mergify_engine/tests/unit/test_worker.py::test_stream_processor_retrying_stream_failure PASSED [ 57%]
+mergify_engine/tests/unit/test_worker.py::test_start_stop_cycle PASSED   [ 57%]
+mergify_engine/tests/unit/test_worker.py::test_task_unexpected_cancellation PASSED [ 58%]
+mergify_engine/tests/unit/test_worker.py::test_extract_app_from_status[status_event3-github-actions] PASSED [ 58%]
+mergify_engine/tests/unit/test_worker.py::test_extract_app_from_status[status_event15-chromatic] PASSED [ 59%]
+mergify_engine/tests/unit/actions/test_assign.py::test_unassign_assignees PASSED [ 59%]
+mergify_engine/tests/unit/actions/test_github_actions.py::test_github_actions_get_schema_error PASSED [ 60%]
+mergify_engine/tests/unit/actions/test_merge.py::test_merge_commit_message_undefined[Hello world\n\n# Commit Message\n{{foobar}}\n\nhere is my message\non two lines] PASSED [ 60%]
+mergify_engine/tests/unit/actions/test_queue.py::test_get_rule_checks_status[conditions5-❌ failure] PASSED [ 61%]
+mergify_engine/tests/unit/actions/test_queue.py::test_required_status_checks_strict_compatibility_with_queue_rules[queue_rule_config1-queue_executor_config1] PASSED [ 61%]
+mergify_engine/tests/unit/actions/test_queue.py::test_check_method_fastforward_configuration[rebase-None-1-1-False-allow_inplace_checks=False is not compatible with fast-forward merge method-The `merge_method` or the queue configuration must be updated.] PASSED [ 62%]
+mergify_engine/tests/unit/actions/test_queue.py::test_check_subscription_status[queue_rules2-Cannot use `batch_size` with queue action.] PASSED [ 62%]
+mergify_engine/tests/unit/actions/test_request_reviews.py::test_config[config2] PASSED [ 63%]
+mergify_engine/tests/unit/api/test_events.py::test_new_api_db_switch PASSED [ 63%]
+mergify_engine/tests/unit/api/test_exceptions.py::test_handler_exception_mergify_not_installed[/front] PASSED [ 64%]
+mergify_engine/tests/unit/api/test_exceptions.py::test_handler_pagination_invalid_cursor[/front] PASSED [ 64%]
+mergify_engine/tests/unit/api/test_gha_failed_jobs.py::test_api_get_gha_failed_jobs_no_steps PASSED [ 65%]
+mergify_engine/tests/unit/api/test_security.py::test_bad_owner[nop_nop] PASSED [ 65%]
+mergify_engine/tests/unit/api/test_security.py::test_valid_owner_repo[right-123-name/-ok_123.] PASSED [ 66%]
+mergify_engine/tests/unit/ci/test_event_processing.py::test_process_event_stream_workflow_run[workflow_run.no_org.json] PASSED [ 66%]
+mergify_engine/tests/unit/engine/test_actions_runner.py::test_sanitize_action_config[set-config_value2-expected_value2] PASSED [ 67%]
+mergify_engine/tests/unit/front/test_applications.py::test_applications_life_cycle PASSED [ 67%]
+mergify_engine/tests/unit/front/test_auth.py::test_auth_setup[setup_action=install&installation_id=123-200-/github?new=true-False] PASSED [ 68%]
+mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_clean_timestamps[tutu -tutu ] PASSED [ 69%]
+mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_stripping[  * [new ref]             89ba3e87c5c2a94a332c78f22c23d476f6c63f2b -> pull/5770/merge-[new ref] 89ba3e87c5c2a94a332c78f22c23d476f6c63f2b -> pull/5770/merge] PASSED [ 70%]
+mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_space_reduction[   \u2022 Installing pytest-github-actions-annotate-failures (0.1.8)- \u2022 Installing pytest-github-actions-annotate-failures (0.1.8)] PASSED [ 70%]
+mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_clean_stopwords[ If you want to create a new branch to retain commits you create, you may- If want create new branch retain commits create, may] PASSED [ 71%]
+mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_clean_non_alphanumeric_characters[there is no alphanumeric characters in this phrase please dont do nothing-there is no alphanumeric characters in this phrase please dont do nothing] PASSED [ 71%]
+mergify_engine/tests/unit/log_embedder/test_openai.py::test_get_chat_completion_model PASSED [ 72%]
+mergify_engine/tests/unit/merge_train/test_convoy.py::test_convoy_remove_head_merged_multiple_partitions PASSED [ 72%]
+mergify_engine/tests/unit/merge_train/test_deserialization.py::test_deserialize_train[train_with_cars_2.yaml] PASSED [ 73%]
+mergify_engine/tests/unit/merge_train/test_train.py::test_train_remove_duplicates PASSED [ 73%]
+mergify_engine/tests/unit/merge_train/test_train.py::test_train_no_interrupt_add_pull PASSED [ 74%]
+mergify_engine/tests/unit/merge_train/test_train.py::test_train_car_old_serialization[updated-TrainCarChecksType.INPLACE-🟠 pending-CiState.PENDING-TrainCarOutcome.UNKNOWN-False-False-] PASSED [ 74%]
+mergify_engine/tests/unit/merge_train/test_train.py::test_train_car_has_reached_batch_max_failure[1x8-batch-max-failure-0-0] PASSED [ 75%]
+mergify_engine/tests/unit/rules/test_condition_evaluation_result.py::test_markdown[condition0-- [X] `author=me`] PASSED [ 75%]
+mergify_engine/tests/unit/rules/test_filter.py::test_regexp PASSED       [ 75%]
+mergify_engine/tests/unit/rules/test_filter.py::test_contains PASSED     [ 76%]
+mergify_engine/tests/unit/rules/test_filter.py::test_str[BinaryFilter] PASSED [ 76%]
+mergify_engine/tests/unit/rules/test_filter.py::test_parser_group PASSED [ 77%]
+mergify_engine/tests/unit/rules/test_filter.py::test_current_datetime_range_uncertain_date[current-datetime=2023-07-XXT00:00/2023-07-XXT23:59[Europe/Paris]-2023-06-10-2023-07-10-2023-08-01-next_refresh_before_range5-next_refresh_inside_range5-next_refresh_after_range5] PASSED [ 77%]
+mergify_engine/tests/unit/rules/test_filter.py::test_list_values_filter[single value match with "<=" operator] PASSED [ 78%]
+mergify_engine/tests/unit/rules/test_get_rule_checks_status.py::test_rules_checks_status_with_or_conditions PASSED [ 78%]
+mergify_engine/tests/unit/rules/test_merge.py::test_merge_raw_configs_dest_empty PASSED [ 79%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse[queued-at<=2012-01-14T20:32:00+00:00-result25] PASSED [ 79%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse[closed-at>=18:02 ago-result28] PASSED [ 80%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse[assignee : sileht -result42] PASSED [ 80%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse[files : foobar.yaml-result43] PASSED [ 81%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse[author=mergify[bot]-result53] PASSED [ 81%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse[#assignee>=2-result55] PASSED [ 82%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse[check-pending="my double quoted ci"-result71] PASSED [ 82%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse[sender-permission=admin-result77] PASSED [ 83%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse_invalid[body=b"-Unbalanced quotes] PASSED [ 83%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse_invalid[#--Invalid attribute] PASSED [ 84%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse_invalid[sender-permission=foo-Permission must be one of] PASSED [ 84%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse_invalid[-current-datetime<2023-07-13T14:00[Europe/Paris]-`-` modifier is invalid for attribute: `current-datetime`] PASSED [ 85%]
+mergify_engine/tests/unit/rules/test_parser.py::test_parse_invalid[current-datetime>=2023-07-13T14:00/2023-07-13T16:00[Europe/Paris]-Invalid operator] PASSED [ 85%]
+mergify_engine/tests/unit/rules/test_parser.py::test_validate_github_team_name[@\xe9] PASSED [ 86%]
+mergify_engine/tests/unit/rules/test_priority_rules.py::test_queue_effective_priority[labels7-13000] PASSED [ 86%]
+mergify_engine/tests/unit/rules/test_queue_condition_evaluation_result.py::test_markdown[condition5-- `author=me`\n  - [ ] #1 \u26a0\ufe0f Some error] PASSED [ 87%]
+mergify_engine/tests/unit/rules/test_queue_condition_evaluation_result.py::test_condition_dict_serialization_with_default_values PASSED [ 87%]
+mergify_engine/tests/unit/rules/test_rules.py::test_invalid_pull_request_rule[invalid0-extra keys not allowed @ data ['conditions'] ['what']] PASSED [ 88%]
+mergify_engine/tests/unit/rules/test_rules.py::test_same_partition_rules_name PASSED [ 88%]
+mergify_engine/tests/unit/rules/test_rules.py::test_get_mergify_config[\n            defaults:\n              actions:\n                comment:\n                  message: I love Mergify\n                rebase:\n                  bot_account: test-bot-account\n            pull_request_rules:\n              - name: ahah\n                conditions:\n                - base=main\n                actions:\n                  comment:\n                    message: Hey\n                  rebase: {}\n            ] PASSED [ 89%]
+mergify_engine/tests/unit/rules/test_rules.py::test_extends_parsing[repo_name] PASSED [ 89%]
+mergify_engine/tests/unit/rules/test_rules.py::test_pull_request_rule_schema_invalid[invalid1-Invalid condition 'head~=\\(lol'. Invalid regular expression: missing \\), unterminated subpattern at position 0 @ ] PASSED [ 90%]
+mergify_engine/tests/unit/rules/test_rules.py::test_get_pull_request_rules_evaluator PASSED [ 90%]
+mergify_engine/tests/unit/rules/test_rules.py::test_action_queue_with_duplicate_queue PASSED [ 91%]
+mergify_engine/tests/unit/rules/test_rules.py::test_ignorable_root_key PASSED [ 91%]
+mergify_engine/tests/unit/rules/test_rules.py::test_command_only_conditions PASSED [ 92%]
+mergify_engine/tests/unit/rules/test_rules.py::test_rule_condition_operator[condition0-=] PASSED [ 92%]
+mergify_engine/tests/unit/rules/test_rules.py::test_rule_condition_walk_only_failing_conditions PASSED [ 93%]
+mergify_engine/tests/unit/rules/test_rules_evaluator.py::test_pull_request_rules_evaluator[\npull_request_rules:\n  - name: "head do not match and label match"\n    conditions:\n    - head=do-not-match\n    - label=match\n    actions: {}\n-True] PASSED [ 93%]
+mergify_engine/tests/unit/rules/test_rules_evaluator.py::test_pull_request_rules_evaluator[\npull_request_rules:\n  - name: not with head do not match and label match\n    conditions:\n    - not:\n        and:\n          - head=do-not-match\n          - label=match\n    actions: {}\n-False] PASSED [ 94%]
+mergify_engine/tests/unit/rules/test_tenary_filter.py::test_operator_negate[True-False] PASSED [ 94%]
+mergify_engine/tests/unit/rules/test_tenary_filter.py::test_operator_any[values14-True] PASSED [ 95%]
+mergify_engine/tests/unit/rules/test_tenary_filter.py::test_operator_all[values1-False] PASSED [ 95%]
+mergify_engine/tests/unit/rules/test_tenary_filter.py::test_operator_all[values6-False] PASSED [ 96%]
+mergify_engine/tests/unit/rules/test_types.py::test_jinja2_valid[{{ assignee  }}] PASSED [ 96%]
+mergify_engine/tests/unit/rules/test_types.py::test_jinja2_None PASSED   [ 97%]
+mergify_engine/tests/unit/rules/test_types.py::test_github_login_ok[foo-baz] PASSED [ 97%]
+mergify_engine/tests/unit/rules/test_types.py::test_github_team_ok[foo-baz-None-foo-baz] PASSED [ 98%]
+mergify_engine/tests/unit/rules/test_types.py::test_github_team_nok[@arf/-A GitHub team cannot be an empty string] PASSED [ 98%]
+mergify_engine/tests/unit/web/test_estimated_time_to_merge.py::test_compute_estimation_in_schedule PASSED [ 99%]
+mergify_engine/tests/unit/web/test_middlewares.py::test_logging_middleware[0-40] PASSED [ 99%]
+mergify_engine/tests/unit/web/test_middlewares.py::test_with_trusted_hosts PASSED [100%]
+[pytest-split] Stored test durations in engine-ci-test-durations
+ FAILURES
+ test_event_as_dict
+db = <sqlalchemy.ext.asyncio.session.AsyncSession object at 0x7f3f427d9b10>
+fake_repository = Repository(installation=Installation(installation={'id': 12345, 'target_type': 'User', 'permissions': {}, 'account': {...tps://avatars.githubusercontent.com/u/0?v=4'}, 'archived': False, 'url': '', 'html_url': '', 'default_branch': 'main'})
+    async def test_event_as_dict(
+        db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+    ) -> None:
+        await insert_event(
+            fake_repository,
+            "queue.pause.delete",
+            signals.EventQueuePauseDeleteMetadata(
+                deleted_by={"id": 987, "type": "user", "name": "cell"},
+            ),
+            pull_request=None,
+        )
+        event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseDelete))
+        assert event is not None
+>       assert event._as_dict() == typing.cast(
+            models.ORMObjectAsDict,
+            {
+                "id": 1,
+                "deleted_by_id": 987,
+                "type": enumerations.EventType.QueuePauseDelete,
+                "received_at": mock.ANY,
+                "pull_request": None,
+                "trigger": "Rule: my rule",
+                "repository_id": 0,
+                "deleted_by": {
+                    "id": 987,
+                    "type": enumerations.GithubAuthenticatedActorType.USER,
+                    "name": "cell",
+                },
+                "repository": {
+                    "id": 0,
+                    "owner_id": 0,
+                    "name": "mergify-engine",
+                    "private": False,
+                    "default_branch": "main",
+                    "full_name": "Mergifyio/mergify-engine",
+                    "archived": False,
+                    "ci_issue_prefix": None,
+                    "owner": {
+                        "id": 0,
+                        "login": "Mergifyio",
+                        "type": "User",
+                        "avatar_url": "https://avatars.githubusercontent.com/u/0?v=4",
+                        "application_keys_count": 0,
+                    },
+                },
+            },
+        )
+E       AssertionError: assert {'deleted_by'...t': None, ...} == {'deleted_by'...t': None, ...}
+E         Omitting 8 identical items, use -vv to show
+E         Differing items:
+E         {'repository': {'archived': False, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', 'id': 0, ...}} != {'repository': {'archived': False, 'ci_issue_prefix': None, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', ...}}
+E         Full diff:
+E           {
+E            'deleted_by': {'id': 987,
+E                           'name': 'cell',
+E                           'type': <GithubAuthenticatedActorType.USER: 'user'>},
+E            'deleted_by_id': 987,
+E            'id': 1,
+E            'pull_request': None,
+E         -  'received_at': <ANY>,
+E         +  'received_at': '',
+E            'repository': {'archived': False,
+E         -                 'ci_issue_prefix': None,
+E                           'default_branch': 'main',
+E                           'full_name': 'Mergifyio/mergify-engine',
+E                           'id': 0,
+E                           'name': 'mergify-engine',
+E                           'owner': {'application_keys_count': 0,
+E                                     'avatar_url': 'https://avatars.githubusercontent.com/u/0?v=4',
+E                                     'id': 0,
+E                                     'login': 'Mergifyio',
+E         -                           'type': 'User'},
+E         +                           'type': <GitHubAccountType.USER: 'User'>},
+E         ?                                   +++++++++++++++++++++++++      +
+E                           'owner_id': 0,
+E                           'private': False},
+E            'repository_id': 0,
+E            'trigger': 'Rule: my rule',
+E            'type': <EventType.QueuePauseDelete: 'queue.pause.delete'>,
+E           }
+mergify_engine/tests/unit/test_events_db.py:760: AssertionError
+ Captured stdout setup
+  INFO     mergify_engine.logs: ##################### CONFIGURATION ######################
+  INFO     mergify_engine.logs: * OPENAI_API_TOKEN:
+  INFO     mergify_engine.logs: * LOG_EMBEDDER_ENABLED_ORGS:  
+  INFO     mergify_engine.logs: * LOG_EMBEDDER_GCS_BUCKET: bucket-67735f90-b891-4097-83ea-ae9c5d2a4b44
+  INFO     mergify_engine.logs: * LOG_EMBEDDER_GCS_CREDENTIALS:
+  INFO     mergify_engine.logs: * SHARED_STREAM_PROCESSES: 1
+  INFO     mergify_engine.logs: * DEDICATED_STREAM_PROCESSES: 1
+  INFO     mergify_engine.logs: * SHARED_STREAM_TASKS_PER_PROCESS: 7
+  INFO     mergify_engine.logs: * BUCKET_PROCESSING_MAX_SECONDS: 100000
+  INFO     mergify_engine.logs: * MAX_GITTER_CONCURRENT_JOBS: 20
+  INFO     mergify_engine.logs: * CI_DOWNLOAD_FREQUENCY: 1:00:00
+  INFO     mergify_engine.logs: * CI_EVENT_PROCESSING_BATCH_SIZE: 1000
+  INFO     mergify_engine.logs: * CI_EVENT_INGESTION: True
+  INFO     mergify_engine.logs: * CI_DOWNLOAD_BATCH_SIZE: 50
+  INFO     mergify_engine.logs: * GITHUB_IN_POSTGRES_EVENTS_INGESTION: True
+  INFO     mergify_engine.logs: * GITHUB_IN_POSTGRES_PROCESSING_BATCH_SIZE: 1000
+  INFO     mergify_engine.logs: * EVENTLOG_EVENTS_REDIS_INGESTION: True
+  INFO     mergify_engine.logs: * SAAS_MODE: True
+  INFO     mergify_engine.logs: * SUBSCRIPTION_URL: http://localhost:5000
+  INFO     mergify_engine.logs: * ENGINE_TO_SHADOW_OFFICE_API_KEY:
+  INFO     mergify_engine.logs: * SUBSCRIPTION_TOKEN: None
+  INFO     mergify_engine.logs: * SHADOW_OFFICE_TO_ENGINE_API_KEY:
+  INFO     mergify_engine.logs: * SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION: None
+  INFO     mergify_engine.logs: * ACCOUNT_TOKENS:  
+  INFO     mergify_engine.logs: * APPLICATION_APIKEYS: {}
+  INFO     mergify_engine.logs: * DASHBOARD_UI_STATIC_FILES_DIRECTORY: None
+  INFO     mergify_engine.logs: * DASHBOARD_UI_FRONT_URL: http://localhost:3000
+  INFO     mergify_engine.logs: * DASHBOARD_UI_SESSION_EXPIRATION_HOURS: 24
+  INFO     mergify_engine.logs: * DASHBOARD_UI_FEATURES:  
+  INFO     mergify_engine.logs: * DASHBOARD_UI_DATADOG_CLIENT_TOKEN: None
+  INFO     mergify_engine.logs: * DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO:  
+  INFO     mergify_engine.logs: * GITHUB_URL: https://github.com
+  INFO     mergify_engine.logs: * GITHUB_APP_ID: 0
+  INFO     mergify_engine.logs: * GITHUB_PRIVATE_KEY:
+  INFO     mergify_engine.logs: * GITHUB_OAUTH_CLIENT_ID: X
+  INFO     mergify_engine.logs: * GITHUB_OAUTH_CLIENT_SECRET:
+  INFO     mergify_engine.logs: * GITHUB_WEBHOOK_SECRET:
+  INFO     mergify_engine.logs: * GITHUB_WEBHOOK_SECRET_PRE_ROTATION: None
+  INFO     mergify_engine.logs: * GITHUB_WEBHOOK_FORWARD_URL: None
+  INFO     mergify_engine.logs: * GITHUB_WEBHOOK_FORWARD_EVENT_TYPES:  
+  INFO     mergify_engine.logs: * REDIS_SSL_VERIFY_MODE_CERT_NONE: False
+  INFO     mergify_engine.logs: * REDIS_CRYPTO_SECRET_CURRENT:
+  INFO     mergify_engine.logs: * REDIS_CRYPTO_SECRET_OLD: None
+  INFO     mergify_engine.logs: * STORAGE_URL: None
+  INFO     mergify_engine.logs: * DEFAULT_REDIS_URL: redis://localhost:6363
+  INFO     mergify_engine.logs: * ENV_STREAM_URL: redis://localhost:6363?db=3
+  INFO     mergify_engine.logs: * ENV_EVENTLOGS_URL: redis://localhost:6363?db=8
+  INFO     mergify_engine.logs: * ENV_QUEUE_URL: redis://localhost:6363?db=4
+  INFO     mergify_engine.logs: * ENV_CACHE_URL: redis://localhost:6363?db=2
+  INFO     mergify_engine.logs: * ENV_TEAM_PERMISSIONS_CACHE_URL: redis://localhost:6363?db=6
+  INFO     mergify_engine.logs: * ENV_TEAM_MEMBERS_CACHE_URL: redis://localhost:6363?db=5
+  INFO     mergify_engine.logs: * ENV_USER_PERMISSIONS_CACHE_URL: redis://localhost:6363?db=7
+  INFO     mergify_engine.logs: * ENV_ACTIVE_USERS_URL: redis://localhost:6363?db=9
+  INFO     mergify_engine.logs: * ENV_STATISTICS_URL: redis://localhost:6363?db=10
+  INFO     mergify_engine.logs: * ENV_AUTHENTICATION_URL: redis://localhost:6363?db=11
+  INFO     mergify_engine.logs: * LOG_LEVEL: 20
+  INFO     mergify_engine.logs: * LOG_STDOUT: True
+  INFO     mergify_engine.logs: * LOG_STDOUT_LEVEL: None
+  INFO     mergify_engine.logs: * LOG_DATADOG: False
+  INFO     mergify_engine.logs: * LOG_DATADOG_LEVEL: None
+  INFO     mergify_engine.logs: * LOG_DEBUG_LOGGER_NAMES:  
+  INFO     mergify_engine.logs: * SENTRY_URL: None
+  INFO     mergify_engine.logs: * SENTRY_ENVIRONMENT: test
+  INFO     mergify_engine.logs: * DATABASE_URL: postgresql+psycopg://@localhost:5432/postgres0
+  INFO     mergify_engine.logs: * DATABASE_POOL_SIZES: {'worker': 15, 'web': 55}
+  INFO     mergify_engine.logs: * DATABASE_OAUTH_TOKEN_SECRET_CURRENT:
+  INFO     mergify_engine.logs: * DATABASE_OAUTH_TOKEN_SECRET_OLD: None
+  INFO     mergify_engine.logs: * HTTP_TRUSTED_HOSTS: ['*']
+  INFO     mergify_engine.logs: * API_ENABLE: True
+  INFO     mergify_engine.logs: * REDIS_STREAM_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_CACHE_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_QUEUE_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_STATS_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: 50
+  INFO     mergify_engine.logs: * VERSION: dev
+  INFO     mergify_engine.logs: * SHA: unknown
+  INFO     mergify_engine.logs: * HEALTHCHECK_SHARED_TOKEN: None
+  INFO     mergify_engine.logs: * ALLOW_REQUIRE_BRANCH_PROTECTION_QUEUE_ATTRIBUTE: True
+  INFO     mergify_engine.logs: * PATH: /home/runner/.cache/pypoetry/virtualenvs/mergify-engine-cHHEL7M--py3.11/bin:/opt/hostedtoolcache/Python/3.11.4/x64/bin:/opt/hostedtoolcache/Python/3.11.4/x64:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/snap/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+  INFO     mergify_engine.logs: ##########################################################
+ slowest 10 durations
+13.01s call     mergify_engine/tests/functional/api/test_statistics_with_partition_rules.py::TestStatisticsWithPartitionsEndpoints::test_queue_checks_outcome_with_partitions_endpoint
+8.65s call     mergify_engine/tests/functional/api/test_queue.py::TestQueueApi::test_estimated_time_of_merge_schedule_condition_non_match
+6.69s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_manual_merge
+6.53s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_unqueue_rule_unmatch_with_batch_requeue
+6.21s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_basic_queue
+6.16s call     mergify_engine/tests/functional/commands/test_queue.py::TestQueueCommand::test_without_config
+5.25s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_default_merge_method
+5.20s call     mergify_engine/tests/functional/actions/test_queue_with_partition_rules.py::TestQueueWithPartitionRules::test_all_partitions_reset_when_manual_force_push_on_base_branch_without_pr_and_with_fallback_partition
+5.19s call     mergify_engine/tests/functional/api/test_statistics.py::TestStatisticsEndpoints::test_start_at_end_at_query_params
+4.93s call     mergify_engine/tests/functional/api/test_statistics.py::TestStatisticsEndpoints::test_queue_statistics_branch_name_filter
+ short test summary info
+FAILED mergify_engine/tests/unit/test_events_db.py::test_event_as_dict - AssertionError: assert {'deleted_by'...t': None, ...} == {'deleted_by'...t': None, ...}
+  Omitting 8 identical items, use -vv to show
+  Differing items:
+  {'repository': {'archived': False, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', 'id': 0, ...}} != {'repository': {'archived': False, 'ci_issue_prefix': None, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', ...}}
+  Full diff:
+    {
+     'deleted_by': {'id': 987,
+                    'name': 'cell',
+                    'type': <GithubAuthenticatedActorType.USER: 'user'>},
+     'deleted_by_id': 987,
+     'id': 1,
+     'pull_request': None,
+  -  'received_at': <ANY>,
+  +  'received_at': '',
+     'repository': {'archived': False,
+  -                 'ci_issue_prefix': None,
+                    'default_branch': 'main',
+                    'full_name': 'Mergifyio/mergify-engine',
+                    'id': 0,
+                    'name': 'mergify-engine',
+                    'owner': {'application_keys_count': 0,
+                              'avatar_url': 'https://avatars.githubusercontent.com/u/0?v=4',
+                              'id': 0,
+                              'login': 'Mergifyio',
+  -                           'type': 'User'},
+  +                           'type': <GitHubAccountType.USER: 'User'>},
+  ?                                   +++++++++++++++++++++++++      +
+                    'owner_id': 0,
+                    'private': False},
+     'repository_id': 0,
+     'trigger': 'Rule: my rule',
+     'type': <EventType.QueuePauseDelete: 'queue.pause.delete'>,
+    }
+ 1 failed, 203 passed, 1827 deselected in 383.19s (0:06:23)
+##[error]Process completed with exit code 1.

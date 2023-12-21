@@ -1,0 +1,20 @@
+[
+    {
+        "problem_type": "Invalid GitHub login format",
+        "language": "Python",
+        "filename": "mergify_engine/tests/unit/actions/test_request_reviews.py",
+        "lineno": "63",
+        "error": "MultipleInvalid",
+        "test_framework": "pytest",
+        "stack_trace": "GitHub login contains invalid characters: jd @ data['users']"
+    },
+    {
+        "problem_type": "Invalid GitHub organization format",
+        "language": "Python",
+        "filename": "mergify_engine/tests/unit/rules/test_types.py",
+        "lineno": "118",
+        "error": "MultipleInvalid",
+        "test_framework": "pytest",
+        "stack_trace": "GitHub organization contains invalid characters: foo"
+    }
+]

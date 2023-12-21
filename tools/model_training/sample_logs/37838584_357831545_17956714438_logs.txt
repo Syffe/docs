@@ -1,0 +1,934 @@
+2023-10-23T10:21:41.3984750Z ##[group]Run # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+2023-10-23T10:21:41.3986261Z [36;1m# nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip[0m
+2023-10-23T10:21:41.3987271Z [36;1mpip install -r requirements-poetry.txt[0m
+2023-10-23T10:21:41.3988142Z [36;1mtools/poetry-ci-install.sh[0m
+2023-10-23T10:21:41.3988685Z [36;1mpoetry run poe test \[0m
+2023-10-23T10:21:41.3989173Z [36;1m  --splits 10 --group 1 \[0m
+2023-10-23T10:21:41.3989688Z [36;1m  --store-durations \[0m
+2023-10-23T10:21:41.3990289Z [36;1m  --durations-path engine-ci-test-durations \[0m
+2023-10-23T10:21:41.3991010Z [36;1m  --splitting-algorithm=least_duration \[0m
+2023-10-23T10:21:41.3991705Z [36;1m  --reruns 3 --only-rerun MissingEventTimeout[0m
+2023-10-23T10:21:41.4084871Z shell: /usr/bin/bash -e {0}
+2023-10-23T10:21:41.4085462Z env:
+2023-10-23T10:21:41.4085950Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.4/x64
+2023-10-23T10:21:41.4086824Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.4/x64/lib/pkgconfig
+2023-10-23T10:21:41.4087787Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.4/x64
+2023-10-23T10:21:41.4088555Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.4/x64
+2023-10-23T10:21:41.4089317Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.4/x64
+2023-10-23T10:21:41.4090099Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.4/x64/lib
+2023-10-23T10:21:41.4090722Z ##[endgroup]
+2023-10-23T10:21:42.3332554Z Collecting poetry==1.6.1 (from -r requirements-poetry.txt (line 1))
+2023-10-23T10:21:42.4507079Z   Downloading poetry-1.6.1-py3-none-any.whl.metadata (6.8 kB)
+2023-10-23T10:21:42.5194107Z Collecting build<0.11.0,>=0.10.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:42.5225035Z   Downloading build-0.10.0-py3-none-any.whl (17 kB)
+2023-10-23T10:21:42.5725550Z Collecting cachecontrol<0.14.0,>=0.13.0 (from cachecontrol[filecache]<0.14.0,>=0.13.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:42.5771281Z   Downloading cachecontrol-0.13.1-py3-none-any.whl.metadata (3.0 kB)
+2023-10-23T10:21:42.6241223Z Collecting cleo<3.0.0,>=2.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:42.6298170Z   Downloading cleo-2.0.1-py3-none-any.whl (77 kB)
+2023-10-23T10:21:42.6697169Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 77.3/77.3 kB 1.9 MB/s eta 0:00:00
+2023-10-23T10:21:42.6909618Z Collecting crashtest<0.5.0,>=0.4.1 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:42.6964252Z   Downloading crashtest-0.4.1-py3-none-any.whl (7.6 kB)
+2023-10-23T10:21:42.8681338Z Collecting dulwich<0.22.0,>=0.21.2 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:42.8735493Z   Downloading dulwich-0.21.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.3 kB)
+2023-10-23T10:21:42.9108073Z Collecting installer<0.8.0,>=0.7.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:42.9168291Z   Downloading installer-0.7.0-py3-none-any.whl (453 kB)
+2023-10-23T10:21:42.9391613Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 453.8/453.8 kB 23.6 MB/s eta 0:00:00
+2023-10-23T10:21:42.9980986Z Collecting jsonschema<4.18.0,>=4.10.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.0026552Z   Downloading jsonschema-4.17.3-py3-none-any.whl (90 kB)
+2023-10-23T10:21:43.0105445Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.4/90.4 kB 16.9 MB/s eta 0:00:00
+2023-10-23T10:21:43.0897987Z Collecting keyring<25.0.0,>=24.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.0944331Z   Downloading keyring-24.2.0-py3-none-any.whl.metadata (20 kB)
+2023-10-23T10:21:43.1421480Z Collecting packaging>=20.4 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.1468448Z   Downloading packaging-23.2-py3-none-any.whl.metadata (3.2 kB)
+2023-10-23T10:21:43.1712364Z Collecting pexpect<5.0.0,>=4.7.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.1754855Z   Downloading pexpect-4.8.0-py2.py3-none-any.whl (59 kB)
+2023-10-23T10:21:43.1827144Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 59.0/59.0 kB 12.1 MB/s eta 0:00:00
+2023-10-23T10:21:43.2116473Z Collecting pkginfo<2.0.0,>=1.9.4 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.2182441Z   Downloading pkginfo-1.9.6-py3-none-any.whl (30 kB)
+2023-10-23T10:21:43.2583929Z Collecting platformdirs<4.0.0,>=3.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.2642794Z   Downloading platformdirs-3.11.0-py3-none-any.whl.metadata (11 kB)
+2023-10-23T10:21:43.3140828Z Collecting poetry-core==1.7.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.3192484Z   Downloading poetry_core-1.7.0-py3-none-any.whl.metadata (3.4 kB)
+2023-10-23T10:21:43.3545940Z Collecting poetry-plugin-export<2.0.0,>=1.5.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.3591625Z   Downloading poetry_plugin_export-1.5.0-py3-none-any.whl.metadata (2.7 kB)
+2023-10-23T10:21:43.3843846Z Collecting pyproject-hooks<2.0.0,>=1.0.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.3884719Z   Downloading pyproject_hooks-1.0.0-py3-none-any.whl (9.3 kB)
+2023-10-23T10:21:43.4452220Z Collecting requests<3.0,>=2.26 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.4562523Z   Downloading requests-2.31.0-py3-none-any.whl.metadata (4.6 kB)
+2023-10-23T10:21:43.4865948Z Collecting requests-toolbelt<2,>=0.9.1 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.4933099Z   Downloading requests_toolbelt-1.0.0-py2.py3-none-any.whl (54 kB)
+2023-10-23T10:21:43.5001767Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 54.5/54.5 kB 11.1 MB/s eta 0:00:00
+2023-10-23T10:21:43.5350316Z Collecting shellingham<2.0,>=1.5 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.5395611Z   Downloading shellingham-1.5.3-py2.py3-none-any.whl.metadata (3.4 kB)
+2023-10-23T10:21:43.5936053Z Collecting tomlkit<1.0.0,>=0.11.4 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.6002599Z   Downloading tomlkit-0.12.1-py3-none-any.whl.metadata (2.7 kB)
+2023-10-23T10:21:43.6526694Z Collecting trove-classifiers>=2022.5.19 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.6573569Z   Downloading trove_classifiers-2023.10.18-py3-none-any.whl.metadata (2.2 kB)
+2023-10-23T10:21:43.7851313Z Collecting virtualenv<21.0.0,>=20.22.0 (from poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.7900390Z   Downloading virtualenv-20.24.5-py3-none-any.whl.metadata (4.5 kB)
+2023-10-23T10:21:43.9699033Z Collecting msgpack>=0.5.2 (from cachecontrol<0.14.0,>=0.13.0->cachecontrol[filecache]<0.14.0,>=0.13.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:43.9742574Z   Downloading msgpack-1.0.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.1 kB)
+2023-10-23T10:21:44.0425221Z Collecting filelock>=3.8.0 (from cachecontrol[filecache]<0.14.0,>=0.13.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:44.0473553Z   Downloading filelock-3.12.4-py3-none-any.whl.metadata (2.8 kB)
+2023-10-23T10:21:44.7524756Z Collecting rapidfuzz<3.0.0,>=2.2.0 (from cleo<3.0.0,>=2.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:44.7574331Z   Downloading rapidfuzz-2.15.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.0 kB)
+2023-10-23T10:21:44.8396455Z Collecting urllib3>=1.25 (from dulwich<0.22.0,>=0.21.2->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:44.8454235Z   Downloading urllib3-2.0.7-py3-none-any.whl.metadata (6.6 kB)
+2023-10-23T10:21:44.9250730Z Collecting attrs>=17.4.0 (from jsonschema<4.18.0,>=4.10.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:44.9328178Z   Downloading attrs-23.1.0-py3-none-any.whl (61 kB)
+2023-10-23T10:21:44.9405675Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.2/61.2 kB 11.4 MB/s eta 0:00:00
+2023-10-23T10:21:44.9848047Z Collecting pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,>=0.14.0 (from jsonschema<4.18.0,>=4.10.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:44.9893203Z   Downloading pyrsistent-0.19.3-py3-none-any.whl (57 kB)
+2023-10-23T10:21:44.9964087Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.5/57.5 kB 11.1 MB/s eta 0:00:00
+2023-10-23T10:21:45.1028821Z Collecting jaraco.classes (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:45.1077028Z   Downloading jaraco.classes-3.3.0-py3-none-any.whl.metadata (2.9 kB)
+2023-10-23T10:21:45.1880403Z Collecting importlib-metadata>=4.11.4 (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:45.1924468Z   Downloading importlib_metadata-6.8.0-py3-none-any.whl.metadata (5.1 kB)
+2023-10-23T10:21:45.2219886Z Collecting SecretStorage>=3.2 (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:45.2285560Z   Downloading SecretStorage-3.3.3-py3-none-any.whl (15 kB)
+2023-10-23T10:21:45.2574338Z Collecting jeepney>=0.4.2 (from keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:45.2673266Z   Downloading jeepney-0.8.0-py3-none-any.whl (48 kB)
+2023-10-23T10:21:45.2740300Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 48.4/48.4 kB 10.0 MB/s eta 0:00:00
+2023-10-23T10:21:45.3002688Z Collecting ptyprocess>=0.5 (from pexpect<5.0.0,>=4.7.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:45.3076228Z   Downloading ptyprocess-0.7.0-py2.py3-none-any.whl (13 kB)
+2023-10-23T10:21:45.4700499Z Collecting charset-normalizer<4,>=2 (from requests<3.0,>=2.26->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:45.4767456Z   Downloading charset_normalizer-3.3.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (33 kB)
+2023-10-23T10:21:45.5094857Z Collecting idna<4,>=2.5 (from requests<3.0,>=2.26->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:45.5144819Z   Downloading idna-3.4-py3-none-any.whl (61 kB)
+2023-10-23T10:21:45.5216631Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.5/61.5 kB 12.3 MB/s eta 0:00:00
+2023-10-23T10:21:45.5696197Z Collecting certifi>=2017.4.17 (from requests<3.0,>=2.26->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:45.5810970Z   Downloading certifi-2023.7.22-py3-none-any.whl.metadata (2.2 kB)
+2023-10-23T10:21:45.6746891Z Collecting distlib<1,>=0.3.7 (from virtualenv<21.0.0,>=20.22.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:45.6792100Z   Downloading distlib-0.3.7-py2.py3-none-any.whl.metadata (5.1 kB)
+2023-10-23T10:21:45.8586203Z Collecting zipp>=0.5 (from importlib-metadata>=4.11.4->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:45.8632695Z   Downloading zipp-3.17.0-py3-none-any.whl.metadata (3.7 kB)
+2023-10-23T10:21:46.1708011Z Collecting cryptography>=2.0 (from SecretStorage>=3.2->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:46.1753428Z   Downloading cryptography-41.0.4-cp37-abi3-manylinux_2_28_x86_64.whl.metadata (5.2 kB)
+2023-10-23T10:21:46.2611379Z Collecting more-itertools (from jaraco.classes->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:46.2702023Z   Downloading more_itertools-10.1.0-py3-none-any.whl.metadata (33 kB)
+2023-10-23T10:21:46.4596092Z Collecting cffi>=1.12 (from cryptography>=2.0->SecretStorage>=3.2->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:46.4641936Z   Downloading cffi-1.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.5 kB)
+2023-10-23T10:21:46.6102720Z Collecting pycparser (from cffi>=1.12->cryptography>=2.0->SecretStorage>=3.2->keyring<25.0.0,>=24.0.0->poetry==1.6.1->-r requirements-poetry.txt (line 1))
+2023-10-23T10:21:46.6147267Z   Downloading pycparser-2.21-py2.py3-none-any.whl (118 kB)
+2023-10-23T10:21:46.6220784Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 118.7/118.7 kB 25.2 MB/s eta 0:00:00
+2023-10-23T10:21:46.6528188Z Downloading poetry-1.6.1-py3-none-any.whl (232 kB)
+2023-10-23T10:21:46.6638360Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 232.8/232.8 kB 29.8 MB/s eta 0:00:00
+2023-10-23T10:21:46.6705941Z Downloading poetry_core-1.7.0-py3-none-any.whl (426 kB)
+2023-10-23T10:21:46.6849805Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 426.4/426.4 kB 40.0 MB/s eta 0:00:00
+2023-10-23T10:21:46.6893683Z Downloading cachecontrol-0.13.1-py3-none-any.whl (22 kB)
+2023-10-23T10:21:46.7008801Z Downloading dulwich-0.21.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (513 kB)
+2023-10-23T10:21:46.7135808Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 513.8/513.8 kB 53.2 MB/s eta 0:00:00
+2023-10-23T10:21:46.7177769Z Downloading keyring-24.2.0-py3-none-any.whl (37 kB)
+2023-10-23T10:21:46.7265387Z Downloading packaging-23.2-py3-none-any.whl (53 kB)
+2023-10-23T10:21:46.7329924Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 53.0/53.0 kB 11.7 MB/s eta 0:00:00
+2023-10-23T10:21:46.7375381Z Downloading platformdirs-3.11.0-py3-none-any.whl (17 kB)
+2023-10-23T10:21:46.7466074Z Downloading poetry_plugin_export-1.5.0-py3-none-any.whl (10 kB)
+2023-10-23T10:21:46.7546096Z Downloading requests-2.31.0-py3-none-any.whl (62 kB)
+2023-10-23T10:21:46.7613353Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.6/62.6 kB 13.9 MB/s eta 0:00:00
+2023-10-23T10:21:46.7658057Z Downloading shellingham-1.5.3-py2.py3-none-any.whl (9.7 kB)
+2023-10-23T10:21:46.7737294Z Downloading tomlkit-0.12.1-py3-none-any.whl (37 kB)
+2023-10-23T10:21:46.7825832Z Downloading trove_classifiers-2023.10.18-py3-none-any.whl (13 kB)
+2023-10-23T10:21:46.7933033Z Downloading virtualenv-20.24.5-py3-none-any.whl (3.7 MB)
+2023-10-23T10:21:46.8652723Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.7/3.7 MB 56.0 MB/s eta 0:00:00
+2023-10-23T10:21:46.8703109Z Downloading certifi-2023.7.22-py3-none-any.whl (158 kB)
+2023-10-23T10:21:46.8781702Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 158.3/158.3 kB 29.5 MB/s eta 0:00:00
+2023-10-23T10:21:46.8833798Z Downloading charset_normalizer-3.3.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (137 kB)
+2023-10-23T10:21:46.8938264Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 137.5/137.5 kB 19.3 MB/s eta 0:00:00
+2023-10-23T10:21:46.8997754Z Downloading distlib-0.3.7-py2.py3-none-any.whl (468 kB)
+2023-10-23T10:21:46.9135952Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 468.9/468.9 kB 45.1 MB/s eta 0:00:00
+2023-10-23T10:21:46.9186429Z Downloading filelock-3.12.4-py3-none-any.whl (11 kB)
+2023-10-23T10:21:46.9263936Z Downloading importlib_metadata-6.8.0-py3-none-any.whl (22 kB)
+2023-10-23T10:21:46.9361466Z Downloading msgpack-1.0.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (557 kB)
+2023-10-23T10:21:46.9477972Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 558.0/558.0 kB 61.3 MB/s eta 0:00:00
+2023-10-23T10:21:46.9566100Z Downloading rapidfuzz-2.15.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.0 MB)
+2023-10-23T10:21:46.9938764Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.0/3.0 MB 88.2 MB/s eta 0:00:00
+2023-10-23T10:21:46.9985903Z Downloading urllib3-2.0.7-py3-none-any.whl (124 kB)
+2023-10-23T10:21:47.0065437Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 124.2/124.2 kB 23.1 MB/s eta 0:00:00
+2023-10-23T10:21:47.0110375Z Downloading jaraco.classes-3.3.0-py3-none-any.whl (5.9 kB)
+2023-10-23T10:21:47.0191860Z Downloading cryptography-41.0.4-cp37-abi3-manylinux_2_28_x86_64.whl (4.4 MB)
+2023-10-23T10:21:47.0843299Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.4/4.4 MB 70.9 MB/s eta 0:00:00
+2023-10-23T10:21:47.0888564Z Downloading zipp-3.17.0-py3-none-any.whl (7.4 kB)
+2023-10-23T10:21:47.0970654Z Downloading more_itertools-10.1.0-py3-none-any.whl (55 kB)
+2023-10-23T10:21:47.1040754Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 55.8/55.8 kB 11.3 MB/s eta 0:00:00
+2023-10-23T10:21:47.1121168Z Downloading cffi-1.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (464 kB)
+2023-10-23T10:21:47.1248527Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 464.8/464.8 kB 46.9 MB/s eta 0:00:00
+2023-10-23T10:21:47.6539768Z Installing collected packages: trove-classifiers, ptyprocess, distlib, zipp, urllib3, tomlkit, shellingham, rapidfuzz, pyrsistent, pyproject-hooks, pycparser, poetry-core, platformdirs, pkginfo, pexpect, packaging, msgpack, more-itertools, jeepney, installer, idna, filelock, crashtest, charset-normalizer, certifi, attrs, virtualenv, requests, jsonschema, jaraco.classes, importlib-metadata, dulwich, cleo, cffi, build, requests-toolbelt, cryptography, cachecontrol, SecretStorage, keyring, poetry-plugin-export, poetry
+2023-10-23T10:21:51.6568955Z Successfully installed SecretStorage-3.3.3 attrs-23.1.0 build-0.10.0 cachecontrol-0.13.1 certifi-2023.7.22 cffi-1.16.0 charset-normalizer-3.3.1 cleo-2.0.1 crashtest-0.4.1 cryptography-41.0.4 distlib-0.3.7 dulwich-0.21.6 filelock-3.12.4 idna-3.4 importlib-metadata-6.8.0 installer-0.7.0 jaraco.classes-3.3.0 jeepney-0.8.0 jsonschema-4.17.3 keyring-24.2.0 more-itertools-10.1.0 msgpack-1.0.7 packaging-23.2 pexpect-4.8.0 pkginfo-1.9.6 platformdirs-3.11.0 poetry-1.6.1 poetry-core-1.7.0 poetry-plugin-export-1.5.0 ptyprocess-0.7.0 pycparser-2.21 pyproject-hooks-1.0.0 pyrsistent-0.19.3 rapidfuzz-2.15.2 requests-2.31.0 requests-toolbelt-1.0.0 shellingham-1.5.3 tomlkit-0.12.1 trove-classifiers-2023.10.18 urllib3-2.0.7 virtualenv-20.24.5 zipp-3.17.0
+2023-10-23T10:21:52.8218867Z Creating virtualenv mergify-engine-cHHEL7M--py3.11 in /home/runner/.cache/pypoetry/virtualenvs
+2023-10-23T10:21:53.4741304Z Installing dependencies from lock file
+2023-10-23T10:21:54.5145784Z 
+2023-10-23T10:21:54.5147134Z Package operations: 177 installs, 0 updates, 0 removals
+2023-10-23T10:21:54.5149144Z 
+2023-10-23T10:21:54.5158178Z   • Installing pyasn1 (0.5.0)
+2023-10-23T10:21:55.0224987Z   • Installing attrs (23.1.0)
+2023-10-23T10:21:55.0243165Z   • Installing cachetools (5.3.1)
+2023-10-23T10:21:55.0264202Z   • Installing certifi (2023.7.22)
+2023-10-23T10:21:55.0290315Z   • Installing charset-normalizer (3.3.1)
+2023-10-23T10:21:55.0360801Z   • Installing idna (3.4)
+2023-10-23T10:21:55.0390996Z   • Installing protobuf (4.24.4)
+2023-10-23T10:21:55.0953881Z   • Installing pyasn1-modules (0.3.0)
+2023-10-23T10:21:55.1277332Z   • Installing pycparser (2.21)
+2023-10-23T10:21:55.1636774Z   • Installing rpds-py (0.10.6)
+2023-10-23T10:21:55.3020495Z   • Installing rsa (4.9)
+2023-10-23T10:21:55.3276312Z   • Installing sniffio (1.3.0)
+2023-10-23T10:21:55.3466568Z   • Installing typing-extensions (4.8.0)
+2023-10-23T10:21:55.3721355Z   • Installing urllib3 (1.26.18)
+2023-10-23T10:21:56.0015778Z   • Installing annotated-types (0.6.0)
+2023-10-23T10:21:56.0031189Z   • Installing anyio (3.7.1)
+2023-10-23T10:21:56.0047140Z   • Installing boltons (21.0.0)
+2023-10-23T10:21:56.0067261Z   • Installing cffi (1.16.0)
+2023-10-23T10:21:56.0079369Z   • Installing google-auth (2.23.3)
+2023-10-23T10:21:56.0096506Z   • Installing googleapis-common-protos (1.61.0)
+2023-10-23T10:21:56.1398489Z   • Installing h11 (0.14.0)
+2023-10-23T10:21:56.1578389Z   • Installing markupsafe (2.1.3)
+2023-10-23T10:21:56.2100476Z   • Installing mdurl (0.1.2)
+2023-10-23T10:21:56.2302512Z   • Installing pydantic-core (2.10.1)
+2023-10-23T10:21:56.2669280Z   • Installing referencing (0.30.2)
+2023-10-23T10:21:56.2903589Z   • Installing requests (2.31.0)
+2023-10-23T10:21:56.2965644Z   • Installing wrapt (1.15.0)
+2023-10-23T10:21:56.3494621Z   • Installing zipp (3.17.0)
+2023-10-23T10:21:56.5817044Z   • Installing alabaster (0.7.13)
+2023-10-23T10:21:56.5830163Z   • Installing babel (2.13.0)
+2023-10-23T10:21:56.5852383Z   • Installing click (8.1.7)
+2023-10-23T10:21:56.5861824Z   • Installing bracex (2.4)
+2023-10-23T10:21:56.5877652Z   • Installing cryptography (41.0.4)
+2023-10-23T10:21:56.5907790Z   • Installing deprecated (1.2.14)
+2023-10-23T10:21:56.6682785Z   • Installing docutils (0.20.1)
+2023-10-23T10:21:56.6866922Z   • Installing face (22.0.0)
+2023-10-23T10:21:56.6932534Z   • Installing google-api-core (2.12.0)
+2023-10-23T10:21:56.7355869Z   • Installing google-crc32c (1.5.0)
+2023-10-23T10:21:56.8027225Z   • Installing hpack (4.0.0)
+2023-10-23T10:21:56.8922883Z   • Installing httpcore (0.18.0)
+2023-10-23T10:21:56.8962330Z   • Installing hyperframe (6.0.1)
+2023-10-23T10:21:56.9093988Z   • Installing imagesize (1.4.1)
+2023-10-23T10:21:56.9599826Z   • Installing importlib-metadata (6.8.0)
+2023-10-23T10:21:57.0060677Z   • Installing iniconfig (2.0.0)
+2023-10-23T10:21:57.0394946Z   • Installing jinja2 (3.1.2)
+2023-10-23T10:21:57.0697441Z   • Installing jsonschema-specifications (2023.7.1)
+2023-10-23T10:21:57.1117673Z   • Installing mako (1.2.4)
+2023-10-23T10:21:57.1660068Z   • Installing markdown-it-py (3.0.0)
+2023-10-23T10:21:57.2601313Z   • Installing multidict (6.0.4)
+2023-10-23T10:21:57.3043889Z   • Installing packaging (23.2)
+2023-10-23T10:21:57.3968201Z   • Installing pluggy (1.3.0)
+2023-10-23T10:21:57.4195237Z   • Installing pydantic (2.4.2)
+2023-10-23T10:21:57.4260251Z   • Installing pygments (2.16.1)
+2023-10-23T10:21:57.4951234Z   • Installing ruamel-yaml-clib (0.2.8)
+2023-10-23T10:21:57.5843526Z   • Installing six (1.16.0)
+2023-10-23T10:21:57.6476801Z   • Installing snowballstemmer (2.2.0)
+2023-10-23T10:21:57.6991505Z   • Installing soupsieve (2.5)
+2023-10-23T10:21:57.7694399Z   • Installing sphinxcontrib-applehelp (1.0.7)
+2023-10-23T10:21:57.7826914Z   • Installing sphinxcontrib-devhelp (1.0.5)
+2023-10-23T10:21:57.8317946Z   • Installing sphinxcontrib-htmlhelp (2.0.4)
+2023-10-23T10:21:58.0619980Z   • Installing sphinxcontrib-jsmath (1.0.1)
+2023-10-23T10:21:58.0842482Z   • Installing sphinxcontrib-qthelp (1.0.6)
+2023-10-23T10:21:58.1137964Z   • Installing sphinxcontrib-serializinghtml (1.1.9)
+2023-10-23T10:21:58.1761040Z   • Installing sqlalchemy (2.0.22)
+2023-10-23T10:21:58.4217167Z   • Installing starlette (0.27.0)
+2023-10-23T10:21:58.4329189Z   • Installing ujson (5.8.0)
+2023-10-23T10:21:59.1341958Z   • Installing alembic (1.12.0)
+2023-10-23T10:21:59.1356910Z   • Installing beautifulsoup4 (4.12.2)
+2023-10-23T10:21:59.1369285Z   • Installing cattrs (23.1.2)
+2023-10-23T10:21:59.1380667Z   • Installing bytecode (0.15.1)
+2023-10-23T10:21:59.1412783Z   • Installing click-option-group (0.5.6)
+2023-10-23T10:21:59.1457175Z   • Installing colorama (0.4.6)
+2023-10-23T10:21:59.2073623Z   • Installing coverage (7.3.2)
+2023-10-23T10:21:59.2373267Z   • Installing ddsketch (2.0.4)
+2023-10-23T10:21:59.2959777Z   • Installing defusedxml (0.7.1)
+2023-10-23T10:21:59.2989596Z   • Installing dulwich (0.21.6)
+2023-10-23T10:21:59.3714650Z   • Installing envier (0.4.0)
+2023-10-23T10:21:59.3751492Z   • Installing execnet (2.0.2)
+2023-10-23T10:21:59.4146364Z   • Installing fastapi (0.104.0)
+2023-10-23T10:21:59.4313270Z   • Installing flupy (1.2.0)
+2023-10-23T10:21:59.4604796Z   • Installing glom (22.1.0)
+2023-10-23T10:21:59.4663198Z   • Installing google-cloud-core (2.3.3)
+2023-10-23T10:21:59.5263089Z   • Installing google-resumable-media (2.6.0)
+2023-10-23T10:21:59.5829536Z   • Installing greenlet (3.0.0)
+2023-10-23T10:21:59.6156031Z   • Installing h2 (4.1.0)
+2023-10-23T10:21:59.6426570Z   • Installing httptools (0.6.1)
+2023-10-23T10:21:59.6871159Z   • Installing httpx (0.25.0)
+2023-10-23T10:21:59.7558915Z   • Installing itsdangerous (2.1.2)
+2023-10-23T10:21:59.7682578Z   • Installing jsonschema (4.19.1)
+2023-10-23T10:21:59.7994698Z   • Installing mypy-extensions (1.0.0)
+2023-10-23T10:21:59.8639750Z   • Installing numpy (1.26.1)
+2023-10-23T10:21:59.8750771Z   • Installing opentelemetry-api (1.20.0)
+2023-10-23T10:21:59.8978417Z   • Installing ordered-set (4.1.0)
+2023-10-23T10:21:59.9531819Z   • Installing parse (1.19.1)
+2023-10-23T10:22:00.0003893Z   • Installing passlib (1.7.4)
+2023-10-23T10:22:00.1780094Z   • Installing pastel (0.2.1)
+2023-10-23T10:22:00.1986824Z   • Installing pathspec (0.11.2)
+2023-10-23T10:22:00.2662550Z   • Installing pbr (5.11.1)
+2023-10-23T10:22:00.2860776Z   • Installing peewee (3.17.0)
+2023-10-23T10:22:00.3227131Z   • Installing platformdirs (3.11.0)
+2023-10-23T10:22:00.4231137Z   • Installing psycopg (3.1.12)
+2023-10-23T10:22:00.4876257Z   • Installing psycopg-binary (3.1.12)
+2023-10-23T10:22:00.5866562Z   • Installing pyenchant (3.2.2)
+2023-10-23T10:22:00.6243669Z   • Installing pytest (7.4.2)
+2023-10-23T10:22:00.6869322Z   • Installing python-dotenv (1.0.0)
+2023-10-23T10:22:00.7681872Z   • Installing python-json-logger (2.0.7)
+2023-10-23T10:22:00.8568833Z   • Installing python-lsp-jsonrpc (1.0.0)
+2023-10-23T10:22:00.9222603Z   • Installing pyyaml (6.0.1)
+2023-10-23T10:22:00.9955231Z   • Installing regex (2023.10.3)
+2023-10-23T10:22:01.2979005Z   • Installing rich (13.6.0)
+2023-10-23T10:22:01.3294098Z   • Installing ruamel-yaml (0.17.40)
+2023-10-23T10:22:01.4771027Z   • Installing setproctitle (1.3.3)
+2023-10-23T10:22:01.5248719Z   • Installing sphinx (7.2.6)
+2023-10-23T10:22:01.6206367Z   • Installing tomli (2.0.1)
+2023-10-23T10:22:01.6349031Z   • Installing types-pyopenssl (23.2.0.2)
+2023-10-23T10:22:01.6944277Z   • Installing uvloop (0.19.0)
+2023-10-23T10:22:01.7024844Z   • Installing watchfiles (0.21.0)
+2023-10-23T10:22:02.2349588Z   • Installing wcmatch (8.5)
+2023-10-23T10:22:02.3640536Z   • Installing websockets (12.0)
+2023-10-23T10:22:02.6283000Z   • Installing xmltodict (0.13.0)
+2023-10-23T10:22:02.6819938Z   • Installing yarl (1.9.2)
+2023-10-23T10:22:15.9344730Z   • Installing aiofiles (23.2.1)
+2023-10-23T10:22:15.9364826Z   • Installing alembic-utils (0.8.1)
+2023-10-23T10:22:15.9379598Z   • Installing anys (0.3.0)
+2023-10-23T10:22:15.9395371Z   • Installing asgi-lifespan (2.1.0)
+2023-10-23T10:22:15.9423484Z   • Installing authlib (1.2.1)
+2023-10-23T10:22:15.9500837Z   • Installing black (23.10.0)
+2023-10-23T10:22:16.0113311Z   • Installing daiquiri (3.2.3)
+2023-10-23T10:22:16.0586720Z   • Installing datadog (0.47.0)
+2023-10-23T10:22:16.0708225Z   • Installing ddtrace (1.20.2)
+2023-10-23T10:22:16.1118793Z   • Installing deepdiff (6.6.1)
+2023-10-23T10:22:16.2849949Z   • Installing filelock (3.12.4)
+2023-10-23T10:22:16.4157788Z   • Installing first (2.0.2)
+2023-10-23T10:22:16.4188165Z   • Installing google-cloud-storage (2.12.0)
+2023-10-23T10:22:16.4790452Z   • Installing graphql-utils (0.4)
+2023-10-23T10:22:16.5216219Z   • Installing gunicorn (21.2.0)
+2023-10-23T10:22:16.5285079Z   • Installing hiredis (2.2.3)
+2023-10-23T10:22:16.6350440Z   • Installing honcho (1.1.0)
+2023-10-23T10:22:16.6882084Z   • Installing imia (0.5.3)
+2023-10-23T10:22:16.7536315Z   • Installing markdownify (0.11.6)
+2023-10-23T10:22:16.7572497Z   • Installing msgpack (1.0.7)
+2023-10-23T10:22:16.7647460Z   • Installing mypy (1.6.1)
+2023-10-23T10:22:16.8272374Z   • Installing pgvector (0.2.3)
+2023-10-23T10:22:16.8882280Z   • Installing poethepoet (0.24.1)
+2023-10-23T10:22:16.9111187Z   • Installing pydantic-settings (2.0.3)
+2023-10-23T10:22:16.9767986Z   • Installing pyjwt (2.8.0)
+2023-10-23T10:22:17.0648697Z   • Installing pytest-asyncio (0.21.1)
+2023-10-23T10:22:17.0878330Z   • Installing pytest-cov (4.1.0)
+2023-10-23T10:22:17.1374183Z   • Installing pytest-flakefinder (1.1.0)
+2023-10-23T10:22:17.1638197Z   • Installing pytest-github-actions-annotate-failures (0.2.0)
+2023-10-23T10:22:17.1772261Z   • Installing pytest-rerunfailures (12.0)
+2023-10-23T10:22:17.2103687Z   • Installing pytest-split (0.8.1)
+2023-10-23T10:22:17.2204469Z   • Installing pytest-timeout (2.2.0)
+2023-10-23T10:22:17.2481207Z   • Installing pytest-xdist (3.3.1)
+2023-10-23T10:22:17.2965504Z   • Installing python-multipart (0.0.6)
+2023-10-23T10:22:17.2998535Z   • Installing redis (5.0.0)
+2023-10-23T10:22:17.3896869Z   • Installing reno (4.0.0)
+2023-10-23T10:22:17.4417606Z   • Installing respx (0.20.2)
+2023-10-23T10:22:17.5508013Z   • Installing ruff (0.1.1)
+2023-10-23T10:22:17.5649272Z   • Installing semgrep (1.45.0)
+2023-10-23T10:22:17.5921836Z   • Installing sentry-sdk (1.32.0)
+2023-10-23T10:22:17.8823653Z   • Installing sphinxcontrib-jquery (4.1)
+2023-10-23T10:22:17.9463719Z   • Installing sphinxcontrib-spelling (8.0.0)
+2023-10-23T10:22:18.0518691Z   • Installing sqlalchemy-utils (0.41.1)
+2023-10-23T10:22:18.2841481Z   • Installing starsessions (2.1.3)
+2023-10-23T10:22:18.3597958Z   • Installing tenacity (8.2.3)
+2023-10-23T10:22:18.4243609Z   • Installing tiktoken (0.5.1)
+2023-10-23T10:22:18.8462191Z   • Installing types-first (2.0.5.2)
+2023-10-23T10:22:18.9076731Z   • Installing types-pkg-resources (0.1.3)
+2023-10-23T10:22:18.9594985Z   • Installing types-python-dateutil (2.8.19.14)
+2023-10-23T10:22:19.0343823Z   • Installing types-pyyaml (6.0.12.12)
+2023-10-23T10:22:19.1068695Z   • Installing types-redis (4.6.0.7)
+2023-10-23T10:22:19.1230079Z   • Installing unidecode (1.3.7)
+2023-10-23T10:22:19.1407766Z   • Installing uvicorn (0.23.2)
+2023-10-23T10:22:19.3259435Z   • Installing vcrpy (5.1.0)
+2023-10-23T10:22:19.3699769Z   • Installing voluptuous (0.13.1)
+2023-10-23T10:22:19.4636110Z   • Installing yamllint (1.32.0)
+2023-10-23T10:22:21.8828502Z 
+2023-10-23T10:22:21.8830150Z Installing the current project: mergify_engine (0.0.0)
+2023-10-23T10:22:22.8148504Z Poe => ./tools/poetry-ci-install.sh
+2023-10-23T10:22:23.9885288Z Installing dependencies from lock file
+2023-10-23T10:22:25.0518603Z 
+2023-10-23T10:22:25.0519595Z No dependencies to install or update
+2023-10-23T10:22:25.0720804Z 
+2023-10-23T10:22:25.0725848Z Installing the current project: mergify_engine (0.0.0)
+2023-10-23T10:22:25.2077155Z Poe => ./tools/run-tests.sh pytest -v --timeout_method thread --reruns 3 --only-rerun MissingEventTimeout --splits 10 --group 1 --store-durations --durations-path engine-ci-test-durations --splitting-algorithm=least_duration --reruns 3 --only-rerun MissingEventTimeout
+2023-10-23T10:22:25.7859346Z + PYTHON_EXTRACT_DOCKER_PORT='
+2023-10-23T10:22:25.7860478Z import json, sys
+2023-10-23T10:22:25.7861406Z data = json.load(sys.stdin)
+2023-10-23T10:22:25.7861979Z if isinstance(data, list):
+2023-10-23T10:22:25.7862808Z     publishers = data[0]['\''Publishers'\'']
+2023-10-23T10:22:25.7995166Z else:
+2023-10-23T10:22:25.7996071Z     publishers = data['\''Publishers'\'']
+2023-10-23T10:22:25.7996499Z 
+2023-10-23T10:22:25.7996679Z for pub in publishers:
+2023-10-23T10:22:25.7997218Z     if pub['\''PublishedPort'\''] > 0:
+2023-10-23T10:22:25.7997863Z         print(pub['\''PublishedPort'\''])
+2023-10-23T10:22:25.7998883Z         sys.exit(0)
+2023-10-23T10:22:25.7999120Z 
+2023-10-23T10:22:25.7999263Z sys.exit(1)
+2023-10-23T10:22:25.7999609Z '
+2023-10-23T10:22:25.7999973Z + '[' true == true ']'
+2023-10-23T10:22:25.8000369Z + REDIS_PORT=6363
+2023-10-23T10:22:25.8000756Z + POSTGRES_PORT=5432
+2023-10-23T10:22:25.8001181Z + GOOGLE_CLOUD_STORAGE_PORT=8000
+2023-10-23T10:22:25.8007420Z + export MERGIFYENGINE_DATABASE_URL=***localhost:5432/postgres
+2023-10-23T10:22:25.8008603Z + MERGIFYENGINE_DATABASE_URL=***localhost:5432/postgres
+2023-10-23T10:22:25.8009520Z + export MERGIFYENGINE_DEFAULT_REDIS_URL=redis://localhost:6363
+2023-10-23T10:22:25.8010366Z + MERGIFYENGINE_DEFAULT_REDIS_URL=redis://localhost:6363
+2023-10-23T10:22:25.8011094Z ++ pwgen -1 48
+2023-10-23T10:22:25.8011696Z ./tools/run-tests.sh: line 48: pwgen: command not found
+2023-10-23T10:22:25.8012490Z + export MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT=
+2023-10-23T10:22:25.8013235Z + MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT=
+2023-10-23T10:22:25.8013997Z + export STORAGE_EMULATOR_HOST=http://localhost:8000
+2023-10-23T10:22:25.8014857Z + STORAGE_EMULATOR_HOST=http://localhost:8000
+2023-10-23T10:22:25.8015913Z + docker run --net host --rm redis redis-cli -h localhost -p 6363 keys '*'
+2023-10-23T10:22:27.7044016Z 
+2023-10-23T10:22:27.7866926Z + docker run --net host --rm postgres psql ***localhost:5432/postgres -c 'select 1 as connected'
+2023-10-23T10:22:27.8063398Z Unable to find image 'postgres:latest' locally
+2023-10-23T10:22:28.8773570Z latest: Pulling from library/postgres
+2023-10-23T10:22:29.1457518Z a378f10b3218: Already exists
+2023-10-23T10:22:29.1480117Z 2ebc5690e391: Pulling fs layer
+2023-10-23T10:22:29.1481094Z 8fe57f734687: Pulling fs layer
+2023-10-23T10:22:29.1481696Z a2ddbb09cd9a: Pulling fs layer
+2023-10-23T10:22:29.1482285Z 5a2499e87ab8: Pulling fs layer
+2023-10-23T10:22:29.1482879Z a45f5c4adf1b: Pulling fs layer
+2023-10-23T10:22:29.1483444Z 178017fd978e: Pulling fs layer
+2023-10-23T10:22:29.1484373Z 428dff1cb77d: Pulling fs layer
+2023-10-23T10:22:29.1484938Z 4667364adfc4: Pulling fs layer
+2023-10-23T10:22:29.1485652Z 4eea1f5281a9: Pulling fs layer
+2023-10-23T10:22:29.1486195Z 369467411787: Pulling fs layer
+2023-10-23T10:22:29.1486790Z 51184495a2bc: Pulling fs layer
+2023-10-23T10:22:29.1487522Z d3e246f01410: Pulling fs layer
+2023-10-23T10:22:29.1490836Z 428dff1cb77d: Waiting
+2023-10-23T10:22:29.1491419Z 4667364adfc4: Waiting
+2023-10-23T10:22:29.1492000Z 4eea1f5281a9: Waiting
+2023-10-23T10:22:29.1494899Z 369467411787: Waiting
+2023-10-23T10:22:29.1495691Z 51184495a2bc: Waiting
+2023-10-23T10:22:29.1496815Z d3e246f01410: Waiting
+2023-10-23T10:22:29.1497211Z 5a2499e87ab8: Waiting
+2023-10-23T10:22:29.1497576Z a45f5c4adf1b: Waiting
+2023-10-23T10:22:29.1497950Z 178017fd978e: Waiting
+2023-10-23T10:22:29.4161738Z 2ebc5690e391: Verifying Checksum
+2023-10-23T10:22:29.4163690Z 2ebc5690e391: Download complete
+2023-10-23T10:22:29.4351906Z a2ddbb09cd9a: Verifying Checksum
+2023-10-23T10:22:29.4362457Z a2ddbb09cd9a: Download complete
+2023-10-23T10:22:29.4589224Z 2ebc5690e391: Pull complete
+2023-10-23T10:22:29.4621573Z 8fe57f734687: Verifying Checksum
+2023-10-23T10:22:29.4622141Z 8fe57f734687: Download complete
+2023-10-23T10:22:29.7161947Z 178017fd978e: Verifying Checksum
+2023-10-23T10:22:29.7162606Z 178017fd978e: Download complete
+2023-10-23T10:22:29.7205099Z 8fe57f734687: Pull complete
+2023-10-23T10:22:29.7682323Z a45f5c4adf1b: Verifying Checksum
+2023-10-23T10:22:29.7683324Z a45f5c4adf1b: Download complete
+2023-10-23T10:22:29.7928078Z 5a2499e87ab8: Verifying Checksum
+2023-10-23T10:22:29.7929444Z 5a2499e87ab8: Download complete
+2023-10-23T10:22:29.8640314Z a2ddbb09cd9a: Pull complete
+2023-10-23T10:22:29.9914576Z 428dff1cb77d: Verifying Checksum
+2023-10-23T10:22:29.9915963Z 428dff1cb77d: Download complete
+2023-10-23T10:22:30.0885542Z 4eea1f5281a9: Verifying Checksum
+2023-10-23T10:22:30.0888480Z 4eea1f5281a9: Download complete
+2023-10-23T10:22:30.2736577Z 369467411787: Verifying Checksum
+2023-10-23T10:22:30.2737244Z 369467411787: Download complete
+2023-10-23T10:22:30.4032709Z 51184495a2bc: Verifying Checksum
+2023-10-23T10:22:30.4033390Z 51184495a2bc: Download complete
+2023-10-23T10:22:30.6711341Z 5a2499e87ab8: Pull complete
+2023-10-23T10:22:30.7904996Z d3e246f01410: Verifying Checksum
+2023-10-23T10:22:30.7905667Z d3e246f01410: Download complete
+2023-10-23T10:22:30.8567035Z a45f5c4adf1b: Pull complete
+2023-10-23T10:22:30.8872160Z 178017fd978e: Pull complete
+2023-10-23T10:22:30.9279578Z 428dff1cb77d: Pull complete
+2023-10-23T10:22:31.0271959Z 4667364adfc4: Verifying Checksum
+2023-10-23T10:22:31.0275706Z 4667364adfc4: Download complete
+2023-10-23T10:22:35.4103782Z 4667364adfc4: Pull complete
+2023-10-23T10:22:35.4711677Z 4eea1f5281a9: Pull complete
+2023-10-23T10:22:36.6810362Z 369467411787: Pull complete
+2023-10-23T10:22:36.7011986Z 51184495a2bc: Pull complete
+2023-10-23T10:22:36.7259019Z d3e246f01410: Pull complete
+2023-10-23T10:22:36.7326738Z Digest: sha256:3d9ed832906091d609cfd6f283e79492ace01ba15866b21d8a262e8fd1cdfb55
+2023-10-23T10:22:36.7352347Z Status: Downloaded newer image for postgres:latest
+2023-10-23T10:22:36.9826027Z  connected 
+2023-10-23T10:22:36.9827422Z -----------
+2023-10-23T10:22:36.9833951Z          1
+2023-10-23T10:22:36.9834284Z (1 row)
+2023-10-23T10:22:36.9834462Z 
+2023-10-23T10:22:37.0288290Z + cmd=pytest
+2023-10-23T10:22:37.0289262Z + shift
+2023-10-23T10:22:37.0291641Z + pytest -v --timeout_method thread --reruns 3 --only-rerun MissingEventTimeout --splits 10 --group 1 --store-durations --durations-path engine-ci-test-durations --splitting-algorithm=least_duration --reruns 3 --only-rerun MissingEventTimeout
+2023-10-23T10:22:51.8000925Z 
+2023-10-23T10:22:51.8002395Z [pytest-split] No test durations found. Pytest-split will split tests evenly when no durations are found. 
+2023-10-23T10:22:51.8004070Z [pytest-split] You can expect better results in consequent runs, when test timings have been documented.
+2023-10-23T10:22:51.8004901Z 
+2023-10-23T10:22:51.8005199Z ============================= test session starts ==============================
+2023-10-23T10:22:51.8006841Z platform linux -- Python 3.11.4, pytest-7.4.2, pluggy-1.3.0 -- /home/runner/.cache/pypoetry/virtualenvs/mergify-engine-cHHEL7M--py3.11/bin/python
+2023-10-23T10:22:51.8008091Z cachedir: .pytest_cache
+2023-10-23T10:22:51.8008565Z rootdir: /home/runner/work/engine/engine
+2023-10-23T10:22:51.8009112Z configfile: pyproject.toml
+2023-10-23T10:22:51.8009565Z testpaths: mergify_engine/tests
+2023-10-23T10:22:51.8011380Z plugins: asyncio-0.21.1, github-actions-annotate-failures-0.2.0, timeout-2.2.0, ddtrace-1.20.2, rerunfailures-12.0, flakefinder-1.1.0, anyio-3.7.1, split-0.8.1, cov-4.1.0, xdist-3.3.1, respx-0.20.2
+2023-10-23T10:22:51.8012999Z asyncio: mode=Mode.AUTO
+2023-10-23T10:22:51.8013448Z timeout: 200.0s
+2023-10-23T10:22:51.8013832Z timeout method: thread
+2023-10-23T10:22:51.8014260Z timeout func_only: False
+2023-10-23T10:23:06.5495233Z collecting ... 
+2023-10-23T10:23:06.5495836Z 
+2023-10-23T10:23:06.5496666Z [pytest-split] Splitting tests with algorithm: least_duration
+2023-10-23T10:23:06.5497922Z [pytest-split] Running group 1/10 (estimated duration: 204.00s)
+2023-10-23T10:23:06.5499327Z 
+2023-10-23T10:23:06.5499698Z collected 2031 items / 1827 deselected / 204 selected
+2023-10-23T10:23:06.5500266Z 
+2023-10-23T10:23:12.3053822Z mergify_engine/tests/functional/test_attributes.py::TestAttributes::test_commits_attributes_list_condition_bool PASSED [  0%]
+2023-10-23T10:23:18.4147052Z mergify_engine/tests/functional/test_attributes.py::TestAttributes::test_current_datetime PASSED [  0%]
+2023-10-23T10:23:23.8914981Z mergify_engine/tests/functional/test_attributes.py::TestAttributes::test_review_decision PASSED [  1%]
+2023-10-23T10:23:29.0964549Z mergify_engine/tests/functional/test_engine.py::TestEngineV2Scenario::test_refresh_on_conflict PASSED [  1%]
+2023-10-23T10:23:34.9564520Z mergify_engine/tests/functional/test_engine.py::TestEngineV2Scenario::test_sha_collision PASSED [  2%]
+2023-10-23T10:23:39.3176175Z mergify_engine/tests/functional/test_engine.py::TestEngineV2Scenario::test_teams PASSED [  2%]
+2023-10-23T10:23:39.6220483Z mergify_engine/tests/functional/test_fixtures.py::test_fixture_recorder PASSED [  3%]
+2023-10-23T10:23:44.5956888Z mergify_engine/tests/functional/test_summary.py::TestSummary::test_failed_base_changeable_attributes_rules_in_not_applicable_summary_section_with_basic_conditions PASSED [  3%]
+2023-10-23T10:23:48.8036354Z mergify_engine/tests/functional/test_summary.py::TestQueueCISummary::test_invalid_config_html_escape PASSED [  4%]
+2023-10-23T10:23:55.1826737Z mergify_engine/tests/functional/actions/test_backport.py::TestBackportAction::test_backport_merge_commit PASSED [  4%]
+2023-10-23T10:24:01.1282162Z mergify_engine/tests/functional/actions/test_comment.py::TestCommentAction::test_comment PASSED [  5%]
+2023-10-23T10:24:05.5123524Z mergify_engine/tests/functional/actions/test_copy.py::CopyActionTestBase::test_copy_with_no_matching_branch PASSED [  5%]
+2023-10-23T10:24:09.9084019Z mergify_engine/tests/functional/actions/test_dismiss_review.py::TestDismissReviewsAction::test_dismiss_reviews_custom_message_syntax_error PASSED [  6%]
+2023-10-23T10:24:15.2056857Z mergify_engine/tests/functional/actions/test_edit.py::TestEditAction::test_edit_on_closed_pr PASSED [  6%]
+2023-10-23T10:24:20.2888683Z mergify_engine/tests/functional/actions/test_github_actions.py::GhaActionTestBase::test_gha_success PASSED [  7%]
+2023-10-23T10:24:26.3657291Z mergify_engine/tests/functional/actions/test_label.py::TestLabelAction::test_label_basic PASSED [  7%]
+2023-10-23T10:24:31.4595375Z mergify_engine/tests/functional/actions/test_merge.py::TestMergeAction::test_merge_conflicting_pr PASSED [  8%]
+2023-10-23T10:24:36.6029871Z mergify_engine/tests/functional/actions/test_post_check.py::TestPostCheckAction::test_checks_default PASSED [  8%]
+2023-10-23T10:24:47.8458444Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_basic_queue PASSED [  9%]
+2023-10-23T10:24:53.4233603Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_bypass_branch_protections_with_none_injection_mode PASSED [  9%]
+2023-10-23T10:25:01.7652279Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_merge_queue_refresh PASSED [ 10%]
+2023-10-23T10:25:08.8852863Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_more_ci_in_pull_request_rules_failure PASSED [ 10%]
+2023-10-23T10:25:15.7028197Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_pr_with_depends_on_not_queued_if_dependent_pr_is_not_queued PASSED [ 11%]
+2023-10-23T10:25:23.0425355Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_conditions_empty PASSED [ 11%]
+2023-10-23T10:25:32.2479868Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_default_merge_method PASSED [ 12%]
+2023-10-23T10:25:39.3088964Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_inplace_autosquash_true PASSED [ 12%]
+2023-10-23T10:25:50.3131536Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_manual_merge PASSED [ 13%]
+2023-10-23T10:25:56.2348225Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_with_rebase_on_githubapp_pr_conf_in_queue_rules PASSED [ 13%]
+2023-10-23T10:26:03.9893123Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_train_reset_after_unexpected_base_branch_change_while_merging_batch PASSED [ 14%]
+2023-10-23T10:26:11.3182799Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_unqueue_all_pr_when_unexpected_changes_on_draft_pr PASSED [ 14%]
+2023-10-23T10:26:23.4554126Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_unqueue_rule_unmatch_with_batch_requeue PASSED [ 15%]
+2023-10-23T10:26:28.9826962Z mergify_engine/tests/functional/actions/test_queue.py::TestQueueActionFeaturesSubscription::test_queue_action_and_command_without_merge_queue_feature_flag PASSED [ 15%]
+2023-10-23T10:26:39.5959423Z mergify_engine/tests/functional/actions/test_queue_with_partition_rules.py::TestQueueWithPartitionRules::test_all_partitions_reset_when_manual_force_push_on_base_branch_without_pr_and_with_fallback_partition PASSED [ 16%]
+2023-10-23T10:26:46.7162627Z mergify_engine/tests/functional/actions/test_queue_with_partition_rules.py::TestQueueWithPartitionRules::test_no_partition_reset_after_queued_merged_pr_with_partition_and_fallback_partition PASSED [ 16%]
+2023-10-23T10:26:51.6364115Z mergify_engine/tests/functional/actions/test_rebase.py::TestRebaseAction::test_rebase_autosquash_fixup_commit PASSED [ 17%]
+2023-10-23T10:26:56.1373863Z mergify_engine/tests/functional/actions/test_request_reviews.py::TestRequestReviewsSubAction::test_request_reviews_users_from_teams PASSED [ 17%]
+2023-10-23T10:27:02.8280528Z mergify_engine/tests/functional/actions/test_update.py::TestUpdateActionWithBot::test_update_action_with_bot PASSED [ 18%]
+2023-10-23T10:27:05.8676720Z mergify_engine/tests/functional/api/test_application.py::test_api_application PASSED [ 18%]
+2023-10-23T10:27:10.3089957Z mergify_engine/tests/functional/api/test_partitions.py::TestPartitionsApi::test_partitions_endpoints_invalid_branch_name PASSED [ 19%]
+2023-10-23T10:27:24.0457674Z mergify_engine/tests/functional/api/test_queue.py::TestQueueApi::test_estimated_time_of_merge_schedule_condition_non_match PASSED [ 19%]
+2023-10-23T10:27:29.9506683Z mergify_engine/tests/functional/api/test_queue_freeze.py::TestQueueFreeze::test_get_list_queue_freeze PASSED [ 20%]
+2023-10-23T10:27:34.3170123Z mergify_engine/tests/functional/api/test_queue_freeze.py::TestQueueFreeze::test_request_error_delete_queue_freeze PASSED [ 20%]
+2023-10-23T10:27:40.8423183Z mergify_engine/tests/functional/api/test_queue_pause.py::TestQueuePause::test_delete_queue_pause PASSED [ 21%]
+2023-10-23T10:27:51.5895663Z mergify_engine/tests/functional/api/test_statistics.py::TestStatisticsEndpoints::test_queue_statistics_branch_name_filter PASSED [ 21%]
+2023-10-23T10:28:00.7489448Z mergify_engine/tests/functional/api/test_statistics.py::TestStatisticsEndpoints::test_start_at_end_at_query_params PASSED [ 22%]
+2023-10-23T10:28:19.4984843Z mergify_engine/tests/functional/api/test_statistics_with_partition_rules.py::TestStatisticsWithPartitionsEndpoints::test_queue_checks_outcome_with_partitions_endpoint PASSED [ 22%]
+2023-10-23T10:28:26.3119903Z mergify_engine/tests/functional/commands/test_backport.py::TestCommandBackport::test_command_backport PASSED [ 23%]
+2023-10-23T10:28:30.9531975Z mergify_engine/tests/functional/commands/test_commands_detection.py::TestCommandsDetection::test_pull_request_locked PASSED [ 23%]
+2023-10-23T10:28:36.3860114Z mergify_engine/tests/functional/commands/test_queue.py::TestQueueCommand::test_command_queue_with_queue_conditions_not_matching_and_fallback PASSED [ 24%]
+2023-10-23T10:28:48.6732804Z mergify_engine/tests/functional/commands/test_queue.py::TestQueueCommand::test_without_config PASSED [ 24%]
+2023-10-23T10:28:53.5241374Z mergify_engine/tests/functional/log_embedder/test_github_action.py::TestLogEmbedderGithubAction::test_log_downloading_with_no_steps PASSED [ 25%]
+2023-10-23T10:28:53.8365919Z mergify_engine/tests/unit/test_behind.py::test_pull_behind[U-A-B-C] PASSED [ 25%]
+2023-10-23T10:28:54.1588811Z mergify_engine/tests/unit/test_clients.py::test_client_installation_HTTP_301 PASSED [ 25%]
+2023-10-23T10:28:54.4782278Z mergify_engine/tests/unit/test_command.py::test_run_command_with_user[None-nothing-@mergifyio something-Sorry but I didn't understand the command. Please consult [the commands documentation](https://docs.mergify.com/commands) \U0001f4da.] PASSED [ 26%]
+2023-10-23T10:28:54.8139566Z mergify_engine/tests/unit/test_command.py::test_run_command_with_no_subscription[squash] PASSED [ 26%]
+2023-10-23T10:28:55.1385202Z mergify_engine/tests/unit/test_command.py::test_commands_restrictions_sender_permission[sender-permission=write-admin-False] PASSED [ 27%]
+2023-10-23T10:28:55.3377753Z mergify_engine/tests/unit/test_context.py::test_context_merge_after_valid[Merge-After: 2023-01-18 08:10[Africa/Sao_Tome]-expected_out8] PASSED [ 27%]
+2023-10-23T10:28:55.5409326Z mergify_engine/tests/unit/test_context.py::test_context_merge_after_invalid[Merge-After: -1-01-18[Australia/Sydney]] PASSED [ 28%]
+2023-10-23T10:28:55.7334744Z mergify_engine/tests/unit/test_context.py::test_context_merge_after_invalid[Merge-After: 2023-01-01 8:10[Europe/Paris]] PASSED [ 28%]
+2023-10-23T10:28:55.9359499Z mergify_engine/tests/unit/test_context.py::test_context_merge_after_invalid[Merge-After: 2023-01-\n18 08:10[Africa/Sao_Tome]] PASSED [ 29%]
+2023-10-23T10:28:56.2355170Z mergify_engine/tests/unit/test_count_seats.py::test_send_seats PASSED    [ 29%]
+2023-10-23T10:28:56.5146173Z mergify_engine/tests/unit/test_count_seats.py::test_store_active_users[membership-event15] PASSED [ 30%]
+2023-10-23T10:28:56.7428488Z mergify_engine/tests/unit/test_count_seats.py::test_store_active_users[workflow_job-event21] PASSED [ 30%]
+2023-10-23T10:28:59.0136425Z mergify_engine/tests/unit/test_count_seats.py::test_get_usage_count_seats[check_run-event1] PASSED [ 31%]
+2023-10-23T10:29:01.2729502Z mergify_engine/tests/unit/test_count_seats.py::test_get_usage_count_seats[pull_request-event16] PASSED [ 31%]
+2023-10-23T10:29:03.5351181Z mergify_engine/tests/unit/test_count_seats.py::test_get_usage_count_seats[workflow_job-event27] PASSED [ 32%]
+2023-10-23T10:29:03.7376766Z mergify_engine/tests/unit/test_crypto.py::test_encrypt PASSED            [ 32%]
+2023-10-23T10:29:03.9361406Z mergify_engine/tests/unit/test_date.py::test_fromisoformat[2021-06-01 18:41:39Z-expected1] PASSED [ 33%]
+2023-10-23T10:29:04.1462540Z mergify_engine/tests/unit/test_date.py::test_pretty_datetime[dt0-2021-06-01 00:00 UTC] PASSED [ 33%]
+2023-10-23T10:29:04.4004014Z mergify_engine/tests/unit/test_date.py::test_time_compare PASSED         [ 34%]
+2023-10-23T10:29:04.6042174Z mergify_engine/tests/unit/test_date.py::test_day_of_week_from_string[WEDNESDAY-3] PASSED [ 34%]
+2023-10-23T10:29:04.8031697Z mergify_engine/tests/unit/test_date.py::test_invalid_date_string[RelativeDatetime-36 ago-Invalid relative date] PASSED [ 35%]
+2023-10-23T10:29:05.0047139Z mergify_engine/tests/unit/test_date.py::test_interval_from_string[1 d-expected_interval2] PASSED [ 35%]
+2023-10-23T10:29:05.2018800Z mergify_engine/tests/unit/test_date.py::test_interval_from_string[1 minutes-expected_interval6] PASSED [ 36%]
+2023-10-23T10:29:05.4078550Z mergify_engine/tests/unit/test_date.py::test_datetime_inside_time_range[time_to_check1-20-10-21-0-False-True] PASSED [ 36%]
+2023-10-23T10:29:05.6109844Z mergify_engine/tests/unit/test_date.py::test_schedule_next_datetime[schedule7-from_time7-expected7] PASSED [ 37%]
+2023-10-23T10:29:05.8061052Z mergify_engine/tests/unit/test_date.py::test_schedule_next_datetime[schedule13-from_time13-expected13] PASSED [ 37%]
+2023-10-23T10:29:06.0738869Z mergify_engine/tests/unit/test_date.py::test_schedule_inequality[schedule10-schedule20] PASSED [ 38%]
+2023-10-23T10:29:06.2742150Z mergify_engine/tests/unit/test_date.py::test_schedule_eq_with_datetime[schedule4-date_to_test4-True] PASSED [ 38%]
+2023-10-23T10:29:06.4721082Z mergify_engine/tests/unit/test_date.py::test_schedule_as_json_dict_only_times_with_timezone PASSED [ 39%]
+2023-10-23T10:29:06.6713947Z mergify_engine/tests/unit/test_date.py::test_fromisoformat_with_zoneinfo[2023-07-13T14:00+02:00-expected_datetime3] PASSED [ 39%]
+2023-10-23T10:29:06.8784733Z mergify_engine/tests/unit/test_date.py::test_datetimerange_fromisoformat_with_zoneinfo[2007-03-01T13:00:00/2008-05-11T15:30:00[Europe/Paris]-expected_dtr5] PASSED [ 40%]
+2023-10-23T10:29:07.0828988Z mergify_engine/tests/unit/test_date.py::test_datetimerange_fromisoformat_with_zoneinfo_invalid[2023-07-13T14:00:00Z] PASSED [ 40%]
+2023-10-23T10:29:07.2965919Z mergify_engine/tests/unit/test_date.py::test_relativedelta[2023-10-16-1-0-2023-11-16] PASSED [ 41%]
+2023-10-23T10:29:07.4962222Z mergify_engine/tests/unit/test_date.py::test_relativedelta[2023-01-31-1-0-2023-02-28] PASSED [ 41%]
+2023-10-23T10:29:08.5064504Z mergify_engine/tests/unit/test_db_populator.py::test_db_populator_dataset[DummyMetaDataset] PASSED [ 42%]
+2023-10-23T10:29:08.8692918Z mergify_engine/tests/unit/test_delayed_refresh.py::test_delayed_refresh_without_time[pull0-expected_refresh0] PASSED [ 42%]
+2023-10-23T10:29:09.9755969Z mergify_engine/tests/unit/test_events_db.py::test_event_action_github_actions_consistency PASSED [ 43%]
+2023-10-23T10:29:10.9085120Z 
+2023-10-23T10:29:10.9115580Z ##[error]test_event_as_dict
+
+AssertionError: assert {'deleted_by'...t': None, ...} == {'deleted_by'...t': None, ...}
+  Omitting 8 identical items, use -vv to show
+  Differing items:
+  {'repository': {'archived': False, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', 'id': 0, ...}} != {'repository': {'archived': False, 'ci_issue_prefix': None, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', ...}}
+  Full diff:
+    {
+     'deleted_by': {'id': 987,
+                    'name': 'cell',
+                    'type': <GithubAuthenticatedActorType.USER: 'user'>},
+     'deleted_by_id': 987,
+     'id': 1,
+     'pull_request': None,
+  -  'received_at': <ANY>,
+  +  'received_at': '2023-10-23T10:29:10.730983Z',
+     'repository': {'archived': False,
+  -                 'ci_issue_prefix': None,
+                    'default_branch': 'main',
+                    'full_name': 'Mergifyio/mergify-engine',
+                    'id': 0,
+                    'name': 'mergify-engine',
+                    'owner': {'application_keys_count': 0,
+                              'avatar_url': 'https://avatars.githubusercontent.com/u/0?v=4',
+                              'id': 0,
+                              'login': 'Mergifyio',
+  -                           'type': 'User'},
+  +                           'type': <GitHubAccountType.USER: 'User'>},
+  ?                                   +++++++++++++++++++++++++      +
+                    'owner_id': 0,
+                    'private': False},
+     'repository_id': 0,
+     'trigger': 'Rule: my rule',
+     'type': <EventType.QueuePauseDelete: 'queue.pause.delete'>,
+    }
+2023-10-23T10:29:11.5570069Z mergify_engine/tests/unit/test_events_db.py::test_event_as_dict FAILED   [ 43%]
+2023-10-23T10:29:11.5571293Z mergify_engine/tests/unit/test_gcs_client.py::test_gcs_upload PASSED     [ 44%]
+2023-10-23T10:29:11.6990361Z mergify_engine/tests/unit/test_github_events.py::test_filter_and_dispatch[check_run-event1] PASSED [ 44%]
+2023-10-23T10:29:11.9203225Z mergify_engine/tests/unit/test_github_events.py::test_filter_and_dispatch[pull_request-event16] PASSED [ 45%]
+2023-10-23T10:29:12.1346494Z mergify_engine/tests/unit/test_github_events.py::test_filter_and_dispatch[workflow_job-event27] PASSED [ 45%]
+2023-10-23T10:29:12.4489970Z mergify_engine/tests/unit/test_gitter.py::test_gitter PASSED             [ 46%]
+2023-10-23T10:29:12.7640320Z mergify_engine/tests/unit/test_pull_request_finder.py::test_event_status PASSED [ 46%]
+2023-10-23T10:29:12.9797610Z mergify_engine/tests/unit/test_settings.py::test_defaults PASSED         [ 47%]
+2023-10-23T10:29:13.1764952Z mergify_engine/tests/unit/test_settings.py::test_legacy_env_sets PASSED  [ 47%]
+2023-10-23T10:29:13.3758937Z mergify_engine/tests/unit/test_settings.py::test_type_log_level[10-10] PASSED [ 48%]
+2023-10-23T10:29:13.5814850Z mergify_engine/tests/unit/test_settings.py::test_database_url_format[postgresql+psycopg://-postgresql+psycopg:] PASSED [ 48%]
+2023-10-23T10:29:13.7949168Z mergify_engine/tests/unit/test_settings.py::test_error_message PASSED    [ 49%]
+2023-10-23T10:29:14.0079470Z mergify_engine/tests/unit/test_settings.py::test_redis_all_set PASSED    [ 49%]
+2023-10-23T10:29:14.3013839Z mergify_engine/tests/unit/test_subscription.py::test_subscription_on_premise_wrong_token PASSED [ 50%]
+2023-10-23T10:29:14.5025190Z mergify_engine/tests/unit/test_summary.py::test_queue_rules_order_0_depth PASSED [ 50%]
+2023-10-23T10:29:14.7087262Z mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[end-2-\u2026-None] PASSED [ 50%]
+2023-10-23T10:29:14.9119453Z mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[end-5-\u2026-h\u2026] PASSED [ 51%]
+2023-10-23T10:29:15.1264020Z mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[end-23-\u2026-h\xe9 ho! how are you\u2026] PASSED [ 51%]
+2023-10-23T10:29:15.3276610Z mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[middle-1--h] PASSED [ 52%]
+2023-10-23T10:29:15.5366903Z mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[middle-3--h?] PASSED [ 52%]
+2023-10-23T10:29:15.7364818Z mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[middle-50-\u2026-h\xe9 ho! how are you\u221a2?] PASSED [ 53%]
+2023-10-23T10:29:15.9369007Z mergify_engine/tests/unit/test_utils.py::test_unicode_truncate[middle-21-\U0001f60e-h\xe9 ho! h\U0001f60eyou\u221a2?] PASSED [ 53%]
+2023-10-23T10:29:16.1579272Z mergify_engine/tests/unit/test_utils.py::test_strtobool[on-True] PASSED  [ 54%]
+2023-10-23T10:29:16.3552844Z mergify_engine/tests/unit/test_utils.py::test_url_parser_with_pr_ok[https://github.com/mergifyio/mergify-engine/pull/123] PASSED [ 54%]
+2023-10-23T10:29:16.5577963Z mergify_engine/tests/unit/test_utils.py::test_url_parser_with_pr_ok[https://github.com//mergifyio/mergify-engine//pull/123] PASSED [ 55%]
+2023-10-23T10:29:16.7574185Z mergify_engine/tests/unit/test_utils.py::test_url_parser_fail[https://github.com/] PASSED [ 55%]
+2023-10-23T10:29:21.3328454Z mergify_engine/tests/unit/test_web.py::test_push_event[event2-pull_request-202-Event queued] PASSED [ 56%]
+2023-10-23T10:29:22.9322822Z mergify_engine/tests/unit/test_worker.py::test_worker_with_one_task PASSED [ 56%]
+2023-10-23T10:29:23.6297845Z mergify_engine/tests/unit/test_worker.py::test_stream_processor_retrying_stream_failure PASSED [ 57%]
+2023-10-23T10:29:25.6763216Z mergify_engine/tests/unit/test_worker.py::test_start_stop_cycle PASSED   [ 57%]
+2023-10-23T10:29:25.8805883Z mergify_engine/tests/unit/test_worker.py::test_task_unexpected_cancellation PASSED [ 58%]
+2023-10-23T10:29:26.0807021Z mergify_engine/tests/unit/test_worker.py::test_extract_app_from_status[status_event3-github-actions] PASSED [ 58%]
+2023-10-23T10:29:26.2964498Z mergify_engine/tests/unit/test_worker.py::test_extract_app_from_status[status_event15-chromatic] PASSED [ 59%]
+2023-10-23T10:29:26.5976783Z mergify_engine/tests/unit/actions/test_assign.py::test_unassign_assignees PASSED [ 59%]
+2023-10-23T10:29:26.8144950Z mergify_engine/tests/unit/actions/test_github_actions.py::test_github_actions_get_schema_error PASSED [ 60%]
+2023-10-23T10:29:27.1193712Z mergify_engine/tests/unit/actions/test_merge.py::test_merge_commit_message_undefined[Hello world\n\n# Commit Message\n{{foobar}}\n\nhere is my message\non two lines] PASSED [ 60%]
+2023-10-23T10:29:27.4705468Z mergify_engine/tests/unit/actions/test_queue.py::test_get_rule_checks_status[conditions5-❌ failure] PASSED [ 61%]
+2023-10-23T10:29:27.6859890Z mergify_engine/tests/unit/actions/test_queue.py::test_required_status_checks_strict_compatibility_with_queue_rules[queue_rule_config1-queue_executor_config1] PASSED [ 61%]
+2023-10-23T10:29:27.9891238Z mergify_engine/tests/unit/actions/test_queue.py::test_check_method_fastforward_configuration[rebase-None-1-1-False-allow_inplace_checks=False is not compatible with fast-forward merge method-The `merge_method` or the queue configuration must be updated.] PASSED [ 62%]
+2023-10-23T10:29:28.2988536Z mergify_engine/tests/unit/actions/test_queue.py::test_check_subscription_status[queue_rules2-Cannot use `batch_size` with queue action.] PASSED [ 62%]
+2023-10-23T10:29:28.5005965Z mergify_engine/tests/unit/actions/test_request_reviews.py::test_config[config2] PASSED [ 63%]
+2023-10-23T10:29:34.3406978Z mergify_engine/tests/unit/api/test_events.py::test_new_api_db_switch PASSED [ 63%]
+2023-10-23T10:29:36.5315455Z mergify_engine/tests/unit/api/test_exceptions.py::test_handler_exception_mergify_not_installed[/front] PASSED [ 64%]
+2023-10-23T10:29:38.7010395Z mergify_engine/tests/unit/api/test_exceptions.py::test_handler_pagination_invalid_cursor[/front] PASSED [ 64%]
+2023-10-23T10:29:42.2617276Z mergify_engine/tests/unit/api/test_gha_failed_jobs.py::test_api_get_gha_failed_jobs_no_steps PASSED [ 65%]
+2023-10-23T10:29:44.4700883Z mergify_engine/tests/unit/api/test_security.py::test_bad_owner[nop_nop] PASSED [ 65%]
+2023-10-23T10:29:46.6750422Z mergify_engine/tests/unit/api/test_security.py::test_valid_owner_repo[right-123-name/-ok_123.] PASSED [ 66%]
+2023-10-23T10:29:47.8011719Z mergify_engine/tests/unit/ci/test_event_processing.py::test_process_event_stream_workflow_run[workflow_run.no_org.json] PASSED [ 66%]
+2023-10-23T10:29:48.0057534Z mergify_engine/tests/unit/engine/test_actions_runner.py::test_sanitize_action_config[set-config_value2-expected_value2] PASSED [ 67%]
+2023-10-23T10:29:54.0054370Z mergify_engine/tests/unit/front/test_applications.py::test_applications_life_cycle PASSED [ 67%]
+2023-10-23T10:29:57.4112971Z mergify_engine/tests/unit/front/test_auth.py::test_auth_setup[setup_action=install&installation_id=123-200-/github?new=true-False] PASSED [ 68%]
+2023-10-23T10:29:57.6188410Z mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_resolving_deltas_lines[remote: Compressing objects:  73% (93/127)-False] PASSED [ 68%]
+2023-10-23T10:29:57.8151345Z mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_clean_manipulating_objects_lines[2023-04-25T07:49:01.5394728Z Resolving deltas:  31% (26790/84650)-False0] PASSED [ 69%]
+2023-10-23T10:29:58.0190791Z mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_clean_timestamps[tutu 1990-12-31T15:59:60-08:00-tutu ] PASSED [ 69%]
+2023-10-23T10:29:58.2445590Z mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_stripping[2023-04-25T07:49:14.5401980Z  * [new ref]             89ba3e87c5c2a94a332c78f22c23d476f6c63f2b -> pull/5770/merge-[new ref] 89ba3e87c5c2a94a332c78f22c23d476f6c63f2b -> pull/5770/merge] PASSED [ 70%]
+2023-10-23T10:29:58.4474119Z mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_space_reduction[2023-04-25T07:49:49.5137532Z   \u2022 Installing pytest-github-actions-annotate-failures (0.1.8)-2023-04-25T07:49:49.5137532Z \u2022 Installing pytest-github-actions-annotate-failures (0.1.8)] PASSED [ 70%]
+2023-10-23T10:29:58.6424203Z mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_clean_stopwords[2023-04-25T07:49:15.4321821Z If you want to create a new branch to retain commits you create, you may-2023-04-25T07:49:15.4321821Z If want create new branch retain commits create, may] PASSED [ 71%]
+2023-10-23T10:29:58.8406106Z mergify_engine/tests/unit/log_embedder/test_log_cleaner.py::test_clean_non_alphanumeric_characters[there is no alphanumeric characters in this phrase please dont do nothing-there is no alphanumeric characters in this phrase please dont do nothing] PASSED [ 71%]
+2023-10-23T10:30:04.5450195Z mergify_engine/tests/unit/log_embedder/test_openai.py::test_get_chat_completion_model PASSED [ 72%]
+2023-10-23T10:30:04.9809345Z mergify_engine/tests/unit/merge_train/test_convoy.py::test_convoy_remove_head_merged_multiple_partitions PASSED [ 72%]
+2023-10-23T10:30:05.2825168Z mergify_engine/tests/unit/merge_train/test_deserialization.py::test_deserialize_train[train_with_cars_2.yaml] PASSED [ 73%]
+2023-10-23T10:30:05.6426549Z mergify_engine/tests/unit/merge_train/test_train.py::test_train_remove_duplicates PASSED [ 73%]
+2023-10-23T10:30:06.0042195Z mergify_engine/tests/unit/merge_train/test_train.py::test_train_no_interrupt_add_pull PASSED [ 74%]
+2023-10-23T10:30:06.2120190Z mergify_engine/tests/unit/merge_train/test_train.py::test_train_car_old_serialization[updated-TrainCarChecksType.INPLACE-🟠 pending-CiState.PENDING-TrainCarOutcome.UNKNOWN-False-False-] PASSED [ 74%]
+2023-10-23T10:30:06.5957299Z mergify_engine/tests/unit/merge_train/test_train.py::test_train_car_has_reached_batch_max_failure[1x8-batch-max-failure-0-0] PASSED [ 75%]
+2023-10-23T10:30:06.8061030Z mergify_engine/tests/unit/rules/test_condition_evaluation_result.py::test_markdown[condition0-- [X] `author=me`] PASSED [ 75%]
+2023-10-23T10:30:07.0267443Z mergify_engine/tests/unit/rules/test_filter.py::test_regexp PASSED       [ 75%]
+2023-10-23T10:30:07.2478781Z mergify_engine/tests/unit/rules/test_filter.py::test_contains PASSED     [ 76%]
+2023-10-23T10:30:07.4561560Z mergify_engine/tests/unit/rules/test_filter.py::test_str[BinaryFilter] PASSED [ 76%]
+2023-10-23T10:30:07.6500991Z mergify_engine/tests/unit/rules/test_filter.py::test_parser_group PASSED [ 77%]
+2023-10-23T10:30:07.9428185Z mergify_engine/tests/unit/rules/test_filter.py::test_current_datetime_range_uncertain_date[current-datetime=2023-07-XXT00:00/2023-07-XXT23:59[Europe/Paris]-2023-06-10-2023-07-10-2023-08-01-next_refresh_before_range5-next_refresh_inside_range5-next_refresh_after_range5] PASSED [ 77%]
+2023-10-23T10:30:08.1597803Z mergify_engine/tests/unit/rules/test_filter.py::test_list_values_filter[single value match with "<=" operator] PASSED [ 78%]
+2023-10-23T10:30:08.3897402Z mergify_engine/tests/unit/rules/test_get_rule_checks_status.py::test_rules_checks_status_with_or_conditions PASSED [ 78%]
+2023-10-23T10:30:08.5989234Z mergify_engine/tests/unit/rules/test_merge.py::test_merge_raw_configs_dest_empty PASSED [ 79%]
+2023-10-23T10:30:08.8350571Z mergify_engine/tests/unit/rules/test_parser.py::test_parse[queued-at<=2012-01-14T20:32:00+00:00-result25] PASSED [ 79%]
+2023-10-23T10:30:09.0638879Z mergify_engine/tests/unit/rules/test_parser.py::test_parse[closed-at>=18:02 ago-result28] PASSED [ 80%]
+2023-10-23T10:30:09.2990495Z mergify_engine/tests/unit/rules/test_parser.py::test_parse[assignee : sileht -result42] PASSED [ 80%]
+2023-10-23T10:30:09.5301400Z mergify_engine/tests/unit/rules/test_parser.py::test_parse[files : foobar.yaml-result43] PASSED [ 81%]
+2023-10-23T10:30:09.7726882Z mergify_engine/tests/unit/rules/test_parser.py::test_parse[author=mergify[bot]-result53] PASSED [ 81%]
+2023-10-23T10:30:10.0046081Z mergify_engine/tests/unit/rules/test_parser.py::test_parse[#assignee>=2-result55] PASSED [ 82%]
+2023-10-23T10:30:10.2303019Z mergify_engine/tests/unit/rules/test_parser.py::test_parse[check-pending="my double quoted ci"-result71] PASSED [ 82%]
+2023-10-23T10:30:10.4569659Z mergify_engine/tests/unit/rules/test_parser.py::test_parse[sender-permission=admin-result77] PASSED [ 83%]
+2023-10-23T10:30:10.6619582Z mergify_engine/tests/unit/rules/test_parser.py::test_parse_invalid[body=b"-Unbalanced quotes] PASSED [ 83%]
+2023-10-23T10:30:10.8528237Z mergify_engine/tests/unit/rules/test_parser.py::test_parse_invalid[#--Invalid attribute] PASSED [ 84%]
+2023-10-23T10:30:11.0444688Z mergify_engine/tests/unit/rules/test_parser.py::test_parse_invalid[sender-permission=foo-Permission must be one of] PASSED [ 84%]
+2023-10-23T10:30:11.2384380Z mergify_engine/tests/unit/rules/test_parser.py::test_parse_invalid[-current-datetime<2023-07-13T14:00[Europe/Paris]-`-` modifier is invalid for attribute: `current-datetime`] PASSED [ 85%]
+2023-10-23T10:30:11.4297494Z mergify_engine/tests/unit/rules/test_parser.py::test_parse_invalid[current-datetime>=2023-07-13T14:00/2023-07-13T16:00[Europe/Paris]-Invalid operator] PASSED [ 85%]
+2023-10-23T10:30:11.6361261Z mergify_engine/tests/unit/rules/test_parser.py::test_validate_github_team_name[@\xe9] PASSED [ 86%]
+2023-10-23T10:30:11.9599705Z mergify_engine/tests/unit/rules/test_priority_rules.py::test_queue_effective_priority[labels7-13000] PASSED [ 86%]
+2023-10-23T10:30:12.1578440Z mergify_engine/tests/unit/rules/test_queue_condition_evaluation_result.py::test_markdown[condition5-- `author=me`\n  - [ ] #1 \u26a0\ufe0f Some error] PASSED [ 87%]
+2023-10-23T10:30:12.3554745Z mergify_engine/tests/unit/rules/test_queue_condition_evaluation_result.py::test_condition_dict_serialization_with_default_values PASSED [ 87%]
+2023-10-23T10:30:12.5509736Z mergify_engine/tests/unit/rules/test_rules.py::test_invalid_pull_request_rule[invalid0-extra keys not allowed @ data[0]['conditions'][0]['what']] PASSED [ 88%]
+2023-10-23T10:30:12.7651877Z mergify_engine/tests/unit/rules/test_rules.py::test_same_partition_rules_name PASSED [ 88%]
+2023-10-23T10:30:13.0976881Z mergify_engine/tests/unit/rules/test_rules.py::test_get_mergify_config[\n            defaults:\n              actions:\n                comment:\n                  message: I love Mergify\n                rebase:\n                  bot_account: test-bot-account\n            pull_request_rules:\n              - name: ahah\n                conditions:\n                - base=main\n                actions:\n                  comment:\n                    message: Hey\n                  rebase: {}\n            ] PASSED [ 89%]
+2023-10-23T10:30:13.3013282Z mergify_engine/tests/unit/rules/test_rules.py::test_extends_parsing[repo_name] PASSED [ 89%]
+2023-10-23T10:30:13.5106626Z mergify_engine/tests/unit/rules/test_rules.py::test_pull_request_rule_schema_invalid[invalid1-Invalid condition 'head~=\\(lol'. Invalid regular expression: missing \\), unterminated subpattern at position 0 @ ] PASSED [ 90%]
+2023-10-23T10:30:13.9244062Z mergify_engine/tests/unit/rules/test_rules.py::test_get_pull_request_rules_evaluator PASSED [ 90%]
+2023-10-23T10:30:14.1340149Z mergify_engine/tests/unit/rules/test_rules.py::test_action_queue_with_duplicate_queue PASSED [ 91%]
+2023-10-23T10:30:14.3573169Z mergify_engine/tests/unit/rules/test_rules.py::test_ignorable_root_key PASSED [ 91%]
+2023-10-23T10:30:14.6981207Z mergify_engine/tests/unit/rules/test_rules.py::test_command_only_conditions PASSED [ 92%]
+2023-10-23T10:30:14.8941584Z mergify_engine/tests/unit/rules/test_rules.py::test_rule_condition_operator[condition0-=] PASSED [ 92%]
+2023-10-23T10:30:15.1018532Z mergify_engine/tests/unit/rules/test_rules.py::test_rule_condition_walk_only_failing_conditions PASSED [ 93%]
+2023-10-23T10:30:15.4225899Z mergify_engine/tests/unit/rules/test_rules_evaluator.py::test_pull_request_rules_evaluator[\npull_request_rules:\n  - name: "head do not match and label match"\n    conditions:\n    - head=do-not-match\n    - label=match\n    actions: {}\n-True] PASSED [ 93%]
+2023-10-23T10:30:15.7502626Z mergify_engine/tests/unit/rules/test_rules_evaluator.py::test_pull_request_rules_evaluator[\npull_request_rules:\n  - name: not with head do not match and label match\n    conditions:\n    - not:\n        and:\n          - head=do-not-match\n          - label=match\n    actions: {}\n-False] PASSED [ 94%]
+2023-10-23T10:30:15.9489409Z mergify_engine/tests/unit/rules/test_tenary_filter.py::test_operator_negate[True-False] PASSED [ 94%]
+2023-10-23T10:30:16.1564557Z mergify_engine/tests/unit/rules/test_tenary_filter.py::test_operator_any[values14-True] PASSED [ 95%]
+2023-10-23T10:30:16.3630245Z mergify_engine/tests/unit/rules/test_tenary_filter.py::test_operator_all[values1-False] PASSED [ 95%]
+2023-10-23T10:30:16.5702475Z mergify_engine/tests/unit/rules/test_tenary_filter.py::test_operator_all[values6-False] PASSED [ 96%]
+2023-10-23T10:30:16.7719986Z mergify_engine/tests/unit/rules/test_types.py::test_jinja2_valid[{{ assignee[0] }}] PASSED [ 96%]
+2023-10-23T10:30:16.9818228Z mergify_engine/tests/unit/rules/test_types.py::test_jinja2_None PASSED   [ 97%]
+2023-10-23T10:30:17.1864467Z mergify_engine/tests/unit/rules/test_types.py::test_github_login_ok[foo-baz] PASSED [ 97%]
+2023-10-23T10:30:17.3845694Z mergify_engine/tests/unit/rules/test_types.py::test_github_team_ok[foo-baz-None-foo-baz] PASSED [ 98%]
+2023-10-23T10:30:17.5928041Z mergify_engine/tests/unit/rules/test_types.py::test_github_team_nok[@arf/-A GitHub team cannot be an empty string] PASSED [ 98%]
+2023-10-23T10:30:17.8343457Z mergify_engine/tests/unit/web/test_estimated_time_to_merge.py::test_compute_estimation_in_schedule PASSED [ 99%]
+2023-10-23T10:30:18.0460086Z mergify_engine/tests/unit/web/test_middlewares.py::test_logging_middleware[0-40] PASSED [ 99%]
+2023-10-23T10:30:20.0765111Z mergify_engine/tests/unit/web/test_middlewares.py::test_with_trusted_hosts PASSED [100%]
+2023-10-23T10:30:20.0766510Z 
+2023-10-23T10:30:20.0907448Z [pytest-split] Stored test durations in engine-ci-test-durations
+2023-10-23T10:30:20.0908561Z 
+2023-10-23T10:30:20.0908601Z 
+2023-10-23T10:30:20.0908867Z =================================== FAILURES ===================================
+2023-10-23T10:30:20.0909625Z ______________________________ test_event_as_dict ______________________________
+2023-10-23T10:30:20.0910433Z 
+2023-10-23T10:30:20.0911538Z db = <sqlalchemy.ext.asyncio.session.AsyncSession object at 0x7fe0e23ba950>
+2023-10-23T10:30:20.0914736Z fake_repository = Repository(installation=Installation(installation={'id': 12345, 'target_type': 'User', 'permissions': {}, 'account': {...tps://avatars.githubusercontent.com/u/0?v=4'}, 'archived': False, 'url': '', 'html_url': '', 'default_branch': 'main'})
+2023-10-23T10:30:20.0916669Z 
+2023-10-23T10:30:20.0916850Z     async def test_event_as_dict(
+2023-10-23T10:30:20.0917690Z         db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+2023-10-23T10:30:20.0918567Z     ) -> None:
+2023-10-23T10:30:20.0918977Z         await insert_event(
+2023-10-23T10:30:20.0919452Z             fake_repository,
+2023-10-23T10:30:20.0920129Z             "queue.pause.delete",
+2023-10-23T10:30:20.0920722Z             signals.EventQueuePauseDeleteMetadata(
+2023-10-23T10:30:20.0921466Z                 deleted_by={"id": 987, "type": "user", "name": "cell"},
+2023-10-23T10:30:20.0922252Z             ),
+2023-10-23T10:30:20.0922654Z             pull_request=None,
+2023-10-23T10:30:20.0923118Z         )
+2023-10-23T10:30:20.0923753Z         event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseDelete))
+2023-10-23T10:30:20.0924555Z     
+2023-10-23T10:30:20.0924921Z         assert event is not None
+2023-10-23T10:30:20.0925459Z >       assert event._as_dict() == typing.cast(
+2023-10-23T10:30:20.0926063Z             models.ORMObjectAsDict,
+2023-10-23T10:30:20.0926633Z             {
+2023-10-23T10:30:20.0927443Z                 "id": 1,
+2023-10-23T10:30:20.0928390Z                 "deleted_by_id": 987,
+2023-10-23T10:30:20.0929060Z                 "type": enumerations.EventType.QueuePauseDelete,
+2023-10-23T10:30:20.0929729Z                 "received_at": mock.ANY,
+2023-10-23T10:30:20.0930283Z                 "pull_request": None,
+2023-10-23T10:30:20.0930838Z                 "trigger": "Rule: my rule",
+2023-10-23T10:30:20.0931376Z                 "repository_id": 0,
+2023-10-23T10:30:20.0931882Z                 "deleted_by": {
+2023-10-23T10:30:20.0932389Z                     "id": 987,
+2023-10-23T10:30:20.0933031Z                     "type": enumerations.GithubAuthenticatedActorType.USER,
+2023-10-23T10:30:20.0933761Z                     "name": "cell",
+2023-10-23T10:30:20.0934441Z                 },
+2023-10-23T10:30:20.0934812Z                 "repository": {
+2023-10-23T10:30:20.0935263Z                     "id": 0,
+2023-10-23T10:30:20.0935887Z                     "owner_id": 0,
+2023-10-23T10:30:20.0936536Z                     "name": "mergify-engine",
+2023-10-23T10:30:20.0937301Z                     "private": False,
+2023-10-23T10:30:20.0938087Z                     "default_branch": "main",
+2023-10-23T10:30:20.0938798Z                     "full_name": "Mergifyio/mergify-engine",
+2023-10-23T10:30:20.0939431Z                     "archived": False,
+2023-10-23T10:30:20.0939991Z                     "ci_issue_prefix": None,
+2023-10-23T10:30:20.0940515Z                     "owner": {
+2023-10-23T10:30:20.0940977Z                         "id": 0,
+2023-10-23T10:30:20.0941807Z                         "login": "Mergifyio",
+2023-10-23T10:30:20.0942371Z                         "type": "User",
+2023-10-23T10:30:20.0943116Z                         "avatar_url": "https://avatars.githubusercontent.com/u/0?v=4",
+2023-10-23T10:30:20.0943943Z                         "application_keys_count": 0,
+2023-10-23T10:30:20.0944513Z                     },
+2023-10-23T10:30:20.0944892Z                 },
+2023-10-23T10:30:20.0945267Z             },
+2023-10-23T10:30:20.0945629Z         )
+2023-10-23T10:30:20.0946439Z E       AssertionError: assert {'deleted_by'...t': None, ...} == {'deleted_by'...t': None, ...}
+2023-10-23T10:30:20.0947501Z E         Omitting 8 identical items, use -vv to show
+2023-10-23T10:30:20.0949722Z E         Differing items:
+2023-10-23T10:30:20.0951668Z E         {'repository': {'archived': False, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', 'id': 0, ...}} != {'repository': {'archived': False, 'ci_issue_prefix': None, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', ...}}
+2023-10-23T10:30:20.0954629Z E         Full diff:
+2023-10-23T10:30:20.0955032Z E           {
+2023-10-23T10:30:20.0955493Z E            'deleted_by': {'id': 987,
+2023-10-23T10:30:20.0956116Z E                           'name': 'cell',
+2023-10-23T10:30:20.0956957Z E                           'type': <GithubAuthenticatedActorType.USER: 'user'>},
+2023-10-23T10:30:20.0957782Z E            'deleted_by_id': 987,
+2023-10-23T10:30:20.0958302Z E            'id': 1,
+2023-10-23T10:30:20.0958821Z E            'pull_request': None,
+2023-10-23T10:30:20.0959404Z E         -  'received_at': <ANY>,
+2023-10-23T10:30:20.0960066Z E         +  'received_at': '2023-10-23T10:29:10.730983Z',
+2023-10-23T10:30:20.0960798Z E            'repository': {'archived': False,
+2023-10-23T10:30:20.0961519Z E         -                 'ci_issue_prefix': None,
+2023-10-23T10:30:20.0962251Z E                           'default_branch': 'main',
+2023-10-23T10:30:20.0963029Z E                           'full_name': 'Mergifyio/mergify-engine',
+2023-10-23T10:30:20.0963797Z E                           'id': 0,
+2023-10-23T10:30:20.0964469Z E                           'name': 'mergify-engine',
+2023-10-23T10:30:20.0965223Z E                           'owner': {'application_keys_count': 0,
+2023-10-23T10:30:20.0966237Z E                                     'avatar_url': 'https://avatars.githubusercontent.com/u/0?v=4',
+2023-10-23T10:30:20.0967132Z E                                     'id': 0,
+2023-10-23T10:30:20.0967820Z E                                     'login': 'Mergifyio',
+2023-10-23T10:30:20.0968558Z E         -                           'type': 'User'},
+2023-10-23T10:30:20.0969430Z E         +                           'type': <GitHubAccountType.USER: 'User'>},
+2023-10-23T10:30:20.0970176Z E         ?                                   +++++++++++++++++++++++++      +
+2023-10-23T10:30:20.0970892Z E                           'owner_id': 0,
+2023-10-23T10:30:20.0971554Z E                           'private': False},
+2023-10-23T10:30:20.0972221Z E            'repository_id': 0,
+2023-10-23T10:30:20.0972818Z E            'trigger': 'Rule: my rule',
+2023-10-23T10:30:20.0973659Z E            'type': <EventType.QueuePauseDelete: 'queue.pause.delete'>,
+2023-10-23T10:30:20.0974371Z E           }
+2023-10-23T10:30:20.0974591Z 
+2023-10-23T10:30:20.0974923Z mergify_engine/tests/unit/test_events_db.py:760: AssertionError
+2023-10-23T10:30:20.0976260Z ---------------------------- Captured stdout setup -----------------------------
+2023-10-23T10:30:20.0977723Z 2023-10-23 10:29:10,137 [2951] INFO     mergify_engine.logs: [1m##################### CONFIGURATION ######################[0m
+2023-10-23T10:30:20.0979799Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* OPENAI_API_TOKEN: [0m
+2023-10-23T10:30:20.0981453Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* LOG_EMBEDDER_ENABLED_ORGS: [][0m
+2023-10-23T10:30:20.0983089Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* LOG_EMBEDDER_GCS_BUCKET: bucket-d4220bf7-369d-437b-8f12-57ed6c4598ba[0m
+2023-10-23T10:30:20.0985542Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* LOG_EMBEDDER_GCS_CREDENTIALS: **********[0m
+2023-10-23T10:30:20.0988223Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* SHARED_STREAM_PROCESSES: 1[0m
+2023-10-23T10:30:20.0990346Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* DEDICATED_STREAM_PROCESSES: 1[0m
+2023-10-23T10:30:20.0991927Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* SHARED_STREAM_TASKS_PER_PROCESS: 7[0m
+2023-10-23T10:30:20.0993374Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* BUCKET_PROCESSING_MAX_SECONDS: 100000[0m
+2023-10-23T10:30:20.0994822Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* MAX_GITTER_CONCURRENT_JOBS: 20[0m
+2023-10-23T10:30:20.0996922Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* CI_DOWNLOAD_FREQUENCY: 1:00:00[0m
+2023-10-23T10:30:20.1000185Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* CI_EVENT_PROCESSING_BATCH_SIZE: 1000[0m
+2023-10-23T10:30:20.1001574Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* CI_EVENT_INGESTION: True[0m
+2023-10-23T10:30:20.1002909Z 2023-10-23 10:29:10,138 [2951] INFO     mergify_engine.logs: [1m* CI_DOWNLOAD_BATCH_SIZE: 50[0m
+2023-10-23T10:30:20.1004498Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* GITHUB_IN_POSTGRES_EVENTS_INGESTION: True[0m
+2023-10-23T10:30:20.1006215Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* GITHUB_IN_POSTGRES_PROCESSING_BATCH_SIZE: 1000[0m
+2023-10-23T10:30:20.1008472Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* EVENTLOG_EVENTS_REDIS_INGESTION: True[0m
+2023-10-23T10:30:20.1009916Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* SAAS_MODE: True[0m
+2023-10-23T10:30:20.1011345Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* SUBSCRIPTION_URL: http://localhost:5000[0m
+2023-10-23T10:30:20.1012901Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* ENGINE_TO_SHADOW_OFFICE_API_KEY: **********[0m
+2023-10-23T10:30:20.1014376Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* SUBSCRIPTION_TOKEN: None[0m
+2023-10-23T10:30:20.1015839Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* SHADOW_OFFICE_TO_ENGINE_API_KEY: **********[0m
+2023-10-23T10:30:20.1017444Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION: None[0m
+2023-10-23T10:30:20.1018848Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* ACCOUNT_TOKENS: [][0m
+2023-10-23T10:30:20.1020143Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* APPLICATION_APIKEYS: {}[0m
+2023-10-23T10:30:20.1021584Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* DASHBOARD_UI_STATIC_FILES_DIRECTORY: None[0m
+2023-10-23T10:30:20.1023191Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* DASHBOARD_UI_FRONT_URL: http://localhost:3000[0m
+2023-10-23T10:30:20.1024788Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* DASHBOARD_UI_SESSION_EXPIRATION_HOURS: 24[0m
+2023-10-23T10:30:20.1026299Z 2023-10-23 10:29:10,139 [2951] INFO     mergify_engine.logs: [1m* DASHBOARD_UI_FEATURES: [][0m
+2023-10-23T10:30:20.1028608Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* DASHBOARD_UI_DATADOG_CLIENT_TOKEN: None[0m
+2023-10-23T10:30:20.1030173Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO: [][0m
+2023-10-23T10:30:20.1031734Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* GITHUB_URL: https://github.com[0m
+2023-10-23T10:30:20.1033065Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* GITHUB_APP_ID: 0[0m
+2023-10-23T10:30:20.1034446Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* GITHUB_PRIVATE_KEY: **********[0m
+2023-10-23T10:30:20.1036141Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* GITHUB_OAUTH_CLIENT_ID: X[0m
+2023-10-23T10:30:20.1038303Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* GITHUB_OAUTH_CLIENT_SECRET: **********[0m
+2023-10-23T10:30:20.1039809Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* GITHUB_WEBHOOK_SECRET: **********[0m
+2023-10-23T10:30:20.1041276Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* GITHUB_WEBHOOK_SECRET_PRE_ROTATION: None[0m
+2023-10-23T10:30:20.1042752Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* GITHUB_WEBHOOK_FORWARD_URL: None[0m
+2023-10-23T10:30:20.1044224Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* GITHUB_WEBHOOK_FORWARD_EVENT_TYPES: [][0m
+2023-10-23T10:30:20.1045720Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* REDIS_SSL_VERIFY_MODE_CERT_NONE: False[0m
+2023-10-23T10:30:20.1047542Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* REDIS_CRYPTO_SECRET_CURRENT: **********[0m
+2023-10-23T10:30:20.1049245Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* REDIS_CRYPTO_SECRET_OLD: None[0m
+2023-10-23T10:30:20.1050503Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* STORAGE_URL: None[0m
+2023-10-23T10:30:20.1051890Z 2023-10-23 10:29:10,140 [2951] INFO     mergify_engine.logs: [1m* DEFAULT_REDIS_URL: redis://localhost:6363[0m
+2023-10-23T10:30:20.1053589Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* ENV_STREAM_URL: redis://localhost:6363?db=3[0m
+2023-10-23T10:30:20.1055235Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* ENV_EVENTLOGS_URL: redis://localhost:6363?db=8[0m
+2023-10-23T10:30:20.1056817Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* ENV_QUEUE_URL: redis://localhost:6363?db=4[0m
+2023-10-23T10:30:20.1058347Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* ENV_CACHE_URL: redis://localhost:6363?db=2[0m
+2023-10-23T10:30:20.1060041Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* ENV_TEAM_PERMISSIONS_CACHE_URL: redis://localhost:6363?db=6[0m
+2023-10-23T10:30:20.1061802Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* ENV_TEAM_MEMBERS_CACHE_URL: redis://localhost:6363?db=5[0m
+2023-10-23T10:30:20.1063619Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* ENV_USER_PERMISSIONS_CACHE_URL: redis://localhost:6363?db=7[0m
+2023-10-23T10:30:20.1065308Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* ENV_ACTIVE_USERS_URL: redis://localhost:6363?db=9[0m
+2023-10-23T10:30:20.1066955Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* ENV_STATISTICS_URL: redis://localhost:6363?db=10[0m
+2023-10-23T10:30:20.1068897Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* ENV_AUTHENTICATION_URL: redis://localhost:6363?db=11[0m
+2023-10-23T10:30:20.1070335Z 2023-10-23 10:29:10,141 [2951] INFO     mergify_engine.logs: [1m* LOG_LEVEL: 20[0m
+2023-10-23T10:30:20.1071533Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* LOG_STDOUT: True[0m
+2023-10-23T10:30:20.1072829Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* LOG_STDOUT_LEVEL: None[0m
+2023-10-23T10:30:20.1074091Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* LOG_DATADOG: False[0m
+2023-10-23T10:30:20.1075351Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* LOG_DATADOG_LEVEL: None[0m
+2023-10-23T10:30:20.1076682Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* LOG_DEBUG_LOGGER_NAMES: [][0m
+2023-10-23T10:30:20.1077954Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* SENTRY_URL: None[0m
+2023-10-23T10:30:20.1079527Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* SENTRY_ENVIRONMENT: test[0m
+2023-10-23T10:30:20.1082007Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* DATABASE_URL: postgresql+psycopg://***@localhost:5432/postgres0[0m
+2023-10-23T10:30:20.1084643Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* DATABASE_POOL_SIZES: {'worker': 15, 'web': 55}[0m
+2023-10-23T10:30:20.1086253Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* DATABASE_OAUTH_TOKEN_SECRET_CURRENT: **********[0m
+2023-10-23T10:30:20.1087767Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* DATABASE_OAUTH_TOKEN_SECRET_OLD: None[0m
+2023-10-23T10:30:20.1090332Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* HTTP_TRUSTED_HOSTS: ['*'][0m
+2023-10-23T10:30:20.1091634Z 2023-10-23 10:29:10,142 [2951] INFO     mergify_engine.logs: [1m* API_ENABLE: True[0m
+2023-10-23T10:30:20.1092996Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* REDIS_STREAM_WEB_MAX_CONNECTIONS: 50[0m
+2023-10-23T10:30:20.1094447Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* REDIS_CACHE_WEB_MAX_CONNECTIONS: 50[0m
+2023-10-23T10:30:20.1096213Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* REDIS_QUEUE_WEB_MAX_CONNECTIONS: 50[0m
+2023-10-23T10:30:20.1097721Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: 50[0m
+2023-10-23T10:30:20.1099210Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* REDIS_STATS_WEB_MAX_CONNECTIONS: 50[0m
+2023-10-23T10:30:20.1101041Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS: 50[0m
+2023-10-23T10:30:20.1102552Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: 50[0m
+2023-10-23T10:30:20.1103862Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* VERSION: dev[0m
+2023-10-23T10:30:20.1105687Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* SHA: unknown[0m
+2023-10-23T10:30:20.1107124Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* HEALTHCHECK_SHARED_TOKEN: None[0m
+2023-10-23T10:30:20.1108844Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* ALLOW_REQUIRE_BRANCH_PROTECTION_QUEUE_ATTRIBUTE: True[0m
+2023-10-23T10:30:20.1115227Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m* PATH: /home/runner/.cache/pypoetry/virtualenvs/mergify-engine-cHHEL7M--py3.11/bin:/opt/hostedtoolcache/Python/3.11.4/x64/bin:/opt/hostedtoolcache/Python/3.11.4/x64:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/snap/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin[0m
+2023-10-23T10:30:20.1120505Z 2023-10-23 10:29:10,143 [2951] INFO     mergify_engine.logs: [1m##########################################################[0m
+2023-10-23T10:30:20.1121602Z ============================= slowest 10 durations =============================
+2023-10-23T10:30:20.1123396Z 15.48s call     mergify_engine/tests/functional/api/test_statistics_with_partition_rules.py::TestStatisticsWithPartitionsEndpoints::test_queue_checks_outcome_with_partitions_endpoint
+2023-10-23T10:30:20.1126654Z 10.53s call     mergify_engine/tests/functional/api/test_queue.py::TestQueueApi::test_estimated_time_of_merge_schedule_condition_non_match
+2023-10-23T10:30:20.1128577Z 7.72s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_manual_merge
+2023-10-23T10:30:20.1130133Z 7.66s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_unqueue_rule_unmatch_with_batch_requeue
+2023-10-23T10:30:20.1132737Z 7.43s call     mergify_engine/tests/functional/actions/test_queue_with_partition_rules.py::TestQueueWithPartitionRules::test_all_partitions_reset_when_manual_force_push_on_base_branch_without_pr_and_with_fallback_partition
+2023-10-23T10:30:20.1134682Z 7.21s call     mergify_engine/tests/functional/commands/test_queue.py::TestQueueCommand::test_without_config
+2023-10-23T10:30:20.1136161Z 7.10s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_basic_queue
+2023-10-23T10:30:20.1138029Z 6.06s call     mergify_engine/tests/functional/actions/test_queue.py::TestQueueAction::test_queue_default_merge_method
+2023-10-23T10:30:20.1140085Z 5.96s call     mergify_engine/tests/functional/api/test_statistics.py::TestStatisticsEndpoints::test_start_at_end_at_query_params
+2023-10-23T10:30:20.1141933Z 5.84s call     mergify_engine/tests/functional/api/test_statistics.py::TestStatisticsEndpoints::test_queue_statistics_branch_name_filter
+2023-10-23T10:30:20.1143408Z =========================== short test summary info ============================
+2023-10-23T10:30:20.1145201Z FAILED mergify_engine/tests/unit/test_events_db.py::test_event_as_dict - AssertionError: assert {'deleted_by'...t': None, ...} == {'deleted_by'...t': None, ...}
+2023-10-23T10:30:20.1146858Z   Omitting 8 identical items, use -vv to show
+2023-10-23T10:30:20.1147812Z   Differing items:
+2023-10-23T10:30:20.1150246Z   {'repository': {'archived': False, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', 'id': 0, ...}} != {'repository': {'archived': False, 'ci_issue_prefix': None, 'default_branch': 'main', 'full_name': 'Mergifyio/mergify-engine', ...}}
+2023-10-23T10:30:20.1151949Z   Full diff:
+2023-10-23T10:30:20.1152308Z     {
+2023-10-23T10:30:20.1152734Z      'deleted_by': {'id': 987,
+2023-10-23T10:30:20.1153274Z                     'name': 'cell',
+2023-10-23T10:30:20.1154214Z                     'type': <GithubAuthenticatedActorType.USER: 'user'>},
+2023-10-23T10:30:20.1154950Z      'deleted_by_id': 987,
+2023-10-23T10:30:20.1155628Z      'id': 1,
+2023-10-23T10:30:20.1156226Z      'pull_request': None,
+2023-10-23T10:30:20.1156899Z   -  'received_at': <ANY>,
+2023-10-23T10:30:20.1157503Z   +  'received_at': '2023-10-23T10:29:10.730983Z',
+2023-10-23T10:30:20.1158183Z      'repository': {'archived': False,
+2023-10-23T10:30:20.1158815Z   -                 'ci_issue_prefix': None,
+2023-10-23T10:30:20.1159501Z                     'default_branch': 'main',
+2023-10-23T10:30:20.1160248Z                     'full_name': 'Mergifyio/mergify-engine',
+2023-10-23T10:30:20.1160905Z                     'id': 0,
+2023-10-23T10:30:20.1161479Z                     'name': 'mergify-engine',
+2023-10-23T10:30:20.1162192Z                     'owner': {'application_keys_count': 0,
+2023-10-23T10:30:20.1163138Z                               'avatar_url': 'https://avatars.githubusercontent.com/u/0?v=4',
+2023-10-23T10:30:20.1163985Z                               'id': 0,
+2023-10-23T10:30:20.1164631Z                               'login': 'Mergifyio',
+2023-10-23T10:30:20.1165294Z   -                           'type': 'User'},
+2023-10-23T10:30:20.1166082Z   +                           'type': <GitHubAccountType.USER: 'User'>},
+2023-10-23T10:30:20.1166819Z   ?                                   +++++++++++++++++++++++++      +
+2023-10-23T10:30:20.1167484Z                     'owner_id': 0,
+2023-10-23T10:30:20.1168044Z                     'private': False},
+2023-10-23T10:30:20.1168652Z      'repository_id': 0,
+2023-10-23T10:30:20.1169178Z      'trigger': 'Rule: my rule',
+2023-10-23T10:30:20.1169927Z      'type': <EventType.QueuePauseDelete: 'queue.pause.delete'>,
+2023-10-23T10:30:20.1170612Z     }
+2023-10-23T10:30:20.1171179Z ========== 1 failed, 203 passed, 1827 deselected in 448.29s (0:07:28) ==========
+2023-10-23T10:30:28.4115998Z ##[error]Process completed with exit code 1.

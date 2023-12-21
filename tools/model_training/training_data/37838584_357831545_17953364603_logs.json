@@ -1,0 +1,11 @@
+[
+    {
+        "problem_type": "Network timeout during HTTP request",
+        "language": "Python",
+        "filename": "/home/runner/work/_actions/Mergifyio/add-linear-author-as-reviewer/main/linear-extract-reviewers.py",
+        "lineno": "52",
+        "error": "httpx.ReadTimeout",
+        "test_framework": null,
+        "stack_trace": "Traceback (most recent call last): ... httpx.ReadTimeout: The read operation timed out"
+    }
+]
