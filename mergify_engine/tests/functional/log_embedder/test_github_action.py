@@ -362,7 +362,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     settings.LOG_EMBEDDER_GCS_CREDENTIALS,
                 )
 
-                log = await gha_embedder.get_log(gcs_client, job)
+                log = await gha_embedder.fetch_and_store_log(gcs_client, job)
 
                 assert (
                     job.log_extract

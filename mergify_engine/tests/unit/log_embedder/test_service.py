@@ -21,6 +21,7 @@ from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.clients import google_cloud_storage
 from mergify_engine.log_embedder import github_action
+from mergify_engine.log_embedder import log as logm
 from mergify_engine.log_embedder import openai_api
 from mergify_engine.models import ci_issue
 from mergify_engine.models import github as gh_models
@@ -899,11 +900,8 @@ async def test_embed_logs_with_log_embedding_life_cycle(
     first_try_mock_log(respx_mock, owner, repo, job)
     first_try_mock_embedding(respx_mock)
 
-    gcs_client = google_cloud_storage.GoogleCloudStorageClient(
-        settings.LOG_EMBEDDER_GCS_CREDENTIALS,
-    )
-
-    await github_action.embed_logs_with_log_embedding(redis_links, gcs_client)
+    await github_action.download_logs_for_failed_jobs()
+    await github_action.embed_logs_with_log_embedding(redis_links)
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
     assert job.log_status == first_try_log_status
@@ -913,7 +911,8 @@ async def test_embed_logs_with_log_embedding_life_cycle(
     second_try_mock_log(respx_mock, owner, repo, job)
     second_try_mock_embedding(respx_mock)
 
-    await github_action.embed_logs_with_log_embedding(redis_links, gcs_client)
+    await github_action.download_logs_for_failed_jobs()
+    await github_action.embed_logs_with_log_embedding(redis_links)
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
     assert job.log_status == second_try_log_status
@@ -1128,11 +1127,8 @@ async def test_embed_logs_with_extracted_metadata_life_cycle(
     first_try_mock_log(respx_mock, owner, repo, job)
     first_try_mock_extracting(respx_mock)
 
-    gcs_client = google_cloud_storage.GoogleCloudStorageClient(
-        settings.LOG_EMBEDDER_GCS_CREDENTIALS,
-    )
-
-    await github_action.embed_logs_with_extracted_metadata(redis_links, gcs_client)
+    await github_action.download_logs_for_failed_jobs()
+    await github_action.embed_logs_with_extracted_metadata(redis_links)
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
     assert job.log_status == first_try_log_status
@@ -1142,7 +1138,8 @@ async def test_embed_logs_with_extracted_metadata_life_cycle(
     second_try_mock_log(respx_mock, owner, repo, job)
     second_try_mock_extracting(respx_mock)
 
-    await github_action.embed_logs_with_extracted_metadata(redis_links, gcs_client)
+    await github_action.download_logs_for_failed_jobs()
+    await github_action.embed_logs_with_extracted_metadata(redis_links)
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
     assert job.log_status == second_try_log_status
@@ -1470,22 +1467,24 @@ async def test_log_exception_and_maybe_retry_on_database_error(
             gh_models.WorkflowJobLogMetadata(),
         ]
 
-    async def get_log_lines_raise_data_error_for_job_3(
+    async def fetch_and_store_log_lines_raise_data_error_for_job_3(
         gcs_client: google_cloud_storage.GoogleCloudStorageClient,
         job: gh_models.WorkflowJob,
-    ) -> list[str]:
+    ) -> logm.Log:
         if job.id == 3:
             # This nul byte in a text field will lead to a DataError when we try to
             # flush or commit this job to db
             job.log_extract = "\x00"
+        else:
+            job.log_extract = "some log"
         job.log_status = gh_models.WorkflowJobLogStatus.DOWNLOADED
-        return ["toto"]
+        return logm.Log.from_content(job.log_extract)
 
     with mock.patch.multiple(
         github_action,
         embed_log=embed_log_raise_data_error_for_job_1,
         create_job_log_metadata=create_job_log_metadata_raise_data_error_for_job_2,
-        get_log=get_log_lines_raise_data_error_for_job_3,
+        fetch_and_store_log=fetch_and_store_log_lines_raise_data_error_for_job_3,
     ):
         await github_action.process_failed_jobs(redis_links)
 

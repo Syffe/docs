@@ -136,23 +136,6 @@ async def fetch_and_store_log(
     return log
 
 
-async def get_log(
-    gcs_client: google_cloud_storage.GoogleCloudStorageClient,
-    job: gh_models.WorkflowJob,
-) -> logm.Log:
-    if job.log_status == gh_models.WorkflowJobLogStatus.DOWNLOADED:
-        if job.log_extract is None:
-            LOG.error(
-                "Downloaded log is missing from database, re-downloading",
-                **job.as_log_extras(),
-            )
-            return await fetch_and_store_log(gcs_client, job)
-
-        return logm.Log.from_content(job.log_extract)
-
-    return await fetch_and_store_log(gcs_client, job)
-
-
 async def embed_log(
     openai_client: openai_api.OpenAIClient,
     job: gh_models.WorkflowJob,
@@ -422,12 +405,6 @@ def get_job_processing_base_query() -> sqlalchemy.Select[tuple[gh_models.Workflo
                 gh_models.WorkflowJob.log_processing_retry_after.is_(None),
                 gh_models.WorkflowJob.log_processing_retry_after <= date.utcnow(),
             ),
-            gh_models.WorkflowJob.log_status.notin_(
-                (
-                    gh_models.WorkflowJobLogStatus.GONE,
-                    gh_models.WorkflowJobLogStatus.ERROR,
-                ),
-            ),
         )
         .order_by(gh_models.WorkflowJob.completed_at.asc())
         .limit(LOG_EMBEDDER_JOBS_BATCH_SIZE)
@@ -436,7 +413,6 @@ def get_job_processing_base_query() -> sqlalchemy.Select[tuple[gh_models.Workflo
 
 async def embed_logs_with_log_embedding(
     redis_links: redis_utils.RedisLinks,
-    gcs_client: google_cloud_storage.GoogleCloudStorageClient,
 ) -> bool:
     async with database.create_session() as session:
         stmt = (
@@ -445,20 +421,24 @@ async def embed_logs_with_log_embedding(
                 orm.joinedload(gh_models.WorkflowJob.ci_issue),
             )
             .where(
-                gh_models.WorkflowJob.log_embedding_status
-                != gh_models.WorkflowJobLogEmbeddingStatus.ERROR,
+                gh_models.WorkflowJob.log_status
+                == gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 sqlalchemy.or_(
                     gh_models.WorkflowJob.log_embedding_status
                     == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
-                    gh_models.WorkflowJob.log_status
-                    == gh_models.WorkflowJobLogStatus.UNKNOWN,
-                    gh_models.WorkflowJob.ci_issue_id.is_(None),
+                    sqlalchemy.and_(
+                        gh_models.WorkflowJob.log_embedding_status
+                        == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+                        gh_models.WorkflowJob.ci_issue_id.is_(None),
+                    ),
                 ),
             )
         )
 
         jobs = (await session.scalars(stmt)).all()
-        # We detach jobs from the session to avoid these instances to be updated
+        # We detach jobs from the session to prevent these instances from being updated.
+        # Therefore we can have a reservoir of jobs at their initial state to be able
+        # to handle DatabaseError
         session.expunge_all()
 
         LOG.info("log-embedder: %d jobs to embed", len(jobs))
@@ -467,41 +447,36 @@ async def embed_logs_with_log_embedding(
             refresh_ready_job_ids = []
             for job in jobs:
                 job_for_update = await session.merge(job, load=False)
-                try:
-                    log = await get_log(gcs_client, job_for_update)
-                    await try_commit_or_rollback(session)
-                except gh_models.WorkflowJob.UnableToRetrieveLog:
-                    session.expunge(job_for_update)
-                    job_for_error = await session.merge(job, load=False)
-                    job_for_error.log_status = gh_models.WorkflowJobLogStatus.GONE
+
+                if job_for_update.log_extract is None:
+                    LOG.error(
+                        "log-embedder: Job log_status is DOWNLOADED but log-extract is `None`",
+                        exc_info=True,
+                        **job.as_log_extras(),
+                    )
+                    job_for_update.log_embedding_status = (
+                        gh_models.WorkflowJobLogEmbeddingStatus.ERROR
+                    )
                     await try_commit_or_rollback(session)
                     continue
+
+                try:
+                    await embed_log(
+                        openai_client,
+                        job_for_update,
+                        logm.Log.from_content(job_for_update.log_extract),
+                    )
+                    await try_commit_or_rollback(session)
                 except Exception as e:
                     session.expunge(job_for_update)
                     job_for_error = await session.merge(job, load=False)
                     retry = log_exception_and_maybe_retry(e, job_for_error)
                     if not retry:
-                        job_for_error.log_status = gh_models.WorkflowJobLogStatus.ERROR
+                        job_for_error.log_embedding_status = (
+                            gh_models.WorkflowJobLogEmbeddingStatus.ERROR
+                        )
                     await try_commit_or_rollback(session)
                     continue
-
-                if (
-                    job_for_update.log_embedding_status
-                    == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN
-                ):
-                    try:
-                        await embed_log(openai_client, job_for_update, log)
-                        await try_commit_or_rollback(session)
-                    except Exception as e:
-                        session.expunge(job_for_update)
-                        job_for_error = await session.merge(job, load=False)
-                        retry = log_exception_and_maybe_retry(e, job_for_error)
-                        if not retry:
-                            job_for_error.log_embedding_status = (
-                                gh_models.WorkflowJobLogEmbeddingStatus.ERROR
-                            )
-                        await try_commit_or_rollback(session)
-                        continue
 
                 if job_for_update.ci_issue_id is None:
                     await ci_issue.CiIssue.link_job_to_ci_issue(session, job_for_update)
@@ -515,7 +490,6 @@ async def embed_logs_with_log_embedding(
 
 async def embed_logs_with_extracted_metadata(
     redis_links: redis_utils.RedisLinks,
-    gcs_client: google_cloud_storage.GoogleCloudStorageClient,
 ) -> bool:
     async with database.create_session() as session:
         stmt = (
@@ -525,21 +499,25 @@ async def embed_logs_with_extracted_metadata(
                 orm.joinedload(gh_models.WorkflowJob.log_metadata),
             )
             .where(
-                gh_models.WorkflowJob.log_metadata_extracting_status
-                != gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+                gh_models.WorkflowJob.log_status
+                == gh_models.WorkflowJobLogStatus.DOWNLOADED,
                 sqlalchemy.or_(
-                    gh_models.WorkflowJob.log_status
-                    == gh_models.WorkflowJobLogStatus.UNKNOWN,
                     gh_models.WorkflowJob.log_metadata_extracting_status
                     == gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
-                    # FIXME(sileht): should it be status like other?
-                    ~gh_models.WorkflowJob.ci_issues_gpt.any(),
+                    sqlalchemy.and_(
+                        gh_models.WorkflowJob.log_metadata_extracting_status
+                        == gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
+                        # FIXME(sileht): should it be status like other?
+                        ~gh_models.WorkflowJob.ci_issues_gpt.any(),
+                    ),
                 ),
             )
         )
 
         jobs = (await session.scalars(stmt)).unique().all()
-        # We detach jobs from the session to avoid these instances to be updated
+        # We detach jobs from the session to prevent these instances from being updated.
+        # Therefore we can have a reservoir of jobs at their initial state to be able
+        # to handle DatabaseError
         session.expunge_all()
 
         LOG.info(
@@ -550,35 +528,27 @@ async def embed_logs_with_extracted_metadata(
         async with openai_api.OpenAIClient() as openai_client:
             for job in jobs:
                 job_for_update = await session.merge(job, load=False)
-                try:
-                    log = await get_log(gcs_client, job_for_update)
-                    await try_commit_or_rollback(session)
-                except gh_models.WorkflowJob.UnableToRetrieveLog:
-                    session.expunge(job_for_update)
-                    job_for_error = await session.merge(job, load=False)
-                    job_for_error.log_status = gh_models.WorkflowJobLogStatus.GONE
-                    await try_commit_or_rollback(session)
-                    continue
-                except Exception as e:
-                    session.expunge(job_for_update)
-                    job_for_error = await session.merge(job, load=False)
-                    retry = log_exception_and_maybe_retry(e, job_for_error)
-                    if not retry:
-                        job_for_error.log_status = gh_models.WorkflowJobLogStatus.ERROR
+
+                if job_for_update.log_extract is None:
+                    LOG.error(
+                        "log-embedder: Job log_status is DOWNLOADED but log-extract is `None`",
+                        exc_info=True,
+                        **job.as_log_extras(),
+                    )
+                    job_for_update.log_metadata_extracting_status = (
+                        gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR
+                    )
                     await try_commit_or_rollback(session)
                     continue
 
-                if job_for_update.log_metadata_extracting_status == (
-                    gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN
-                ):
+                try:
                     try:
                         await create_job_log_metadata(
                             openai_client,
                             session,
                             job_for_update,
-                            log,
+                            logm.Log.from_content(job_for_update.log_extract),
                         )
-                        await try_commit_or_rollback(session)
                     except UnableToExtractLogMetadata:
                         session.expunge(job_for_update)
                         job_for_error = await session.merge(job, load=False)
@@ -587,16 +557,17 @@ async def embed_logs_with_extracted_metadata(
                         )
                         await try_commit_or_rollback(session)
                         continue
-                    except Exception as e:
-                        session.expunge(job_for_update)
-                        job_for_error = await session.merge(job, load=False)
-                        retry = log_exception_and_maybe_retry(e, job_for_error)
-                        if not retry:
-                            job_for_error.log_metadata_extracting_status = (
-                                gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR
-                            )
-                        await try_commit_or_rollback(session)
-                        continue
+                    await try_commit_or_rollback(session)
+                except Exception as e:
+                    session.expunge(job_for_update)
+                    job_for_error = await session.merge(job, load=False)
+                    retry = log_exception_and_maybe_retry(e, job_for_error)
+                    if not retry:
+                        job_for_error.log_metadata_extracting_status = (
+                            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR
+                        )
+                    await try_commit_or_rollback(session)
+                    continue
 
                 if not job_for_update.ci_issues_gpt:
                     await ci_issue.CiIssueGPT.link_job_to_ci_issues(
@@ -612,24 +583,65 @@ async def embed_logs_with_extracted_metadata(
         return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
 
 
+async def download_logs_for_failed_jobs() -> bool:
+    async with database.create_session() as session:
+        stmt = get_job_processing_base_query().where(
+            gh_models.WorkflowJob.log_status == gh_models.WorkflowJobLogStatus.UNKNOWN,
+        )
+
+        jobs = (await session.scalars(stmt)).unique().all()
+        # We detach jobs from the session to prevent these instances from being updated.
+        # Therefore we can have a reservoir of jobs at their initial state to be able
+        # to handle DatabaseError
+        session.expunge_all()
+
+        LOG.info(
+            "log-embedder: %d jobs to downloads logs",
+            len(jobs),
+        )
+
+        if not jobs:
+            return False
+
+        gcs_client = google_cloud_storage.GoogleCloudStorageClient(
+            settings.LOG_EMBEDDER_GCS_CREDENTIALS,
+        )
+
+        for job in jobs:
+            job_for_update = await session.merge(job, load=False)
+            try:
+                try:
+                    await fetch_and_store_log(gcs_client, job_for_update)
+                except gh_models.WorkflowJob.UnableToRetrieveLog:
+                    session.expunge(job_for_update)
+                    job_for_error = await session.merge(job, load=False)
+                    job_for_error.log_status = gh_models.WorkflowJobLogStatus.GONE
+                await try_commit_or_rollback(session)
+            except Exception as e:
+                session.expunge(job_for_update)
+                job_for_error = await session.merge(job, load=False)
+                retry = log_exception_and_maybe_retry(e, job_for_error)
+                if not retry:
+                    job_for_error.log_status = gh_models.WorkflowJobLogStatus.ERROR
+                await try_commit_or_rollback(session)
+                continue
+
+        return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
+
+
 @tracer.wrap("process-failed-jobs")
 async def process_failed_jobs(redis_links: redis_utils.RedisLinks) -> bool:
     if not settings.LOG_EMBEDDER_ENABLED_ORGS:
         return False
 
-    gcs_client = google_cloud_storage.GoogleCloudStorageClient(
-        settings.LOG_EMBEDDER_GCS_CREDENTIALS,
-    )
-
     return any(
         (
+            await download_logs_for_failed_jobs(),
             await embed_logs_with_extracted_metadata(
                 redis_links,
-                gcs_client,
             ),
             await embed_logs_with_log_embedding(
                 redis_links,
-                gcs_client,
             ),
         ),
     )
