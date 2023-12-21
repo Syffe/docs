@@ -1,5 +1,6 @@
 from unittest import mock
 
+import anys
 import pytest
 
 from mergify_engine import redis_utils
@@ -45,9 +46,9 @@ async def test_redis_stream_processor_ok(
     assert await redis_links.stream.xlen("test") == 0
     assert processor.call_count == 3
     assert processor.mock_calls == [
-        mock.call({b"foo": b"bar1"}),
-        mock.call({b"foo": b"bar2"}),
-        mock.call({b"foo": b"bar3"}),
+        mock.call(anys.ANY_BYTES, {b"foo": b"bar1"}),
+        mock.call(anys.ANY_BYTES, {b"foo": b"bar2"}),
+        mock.call(anys.ANY_BYTES, {b"foo": b"bar3"}),
     ]
 
 
@@ -73,9 +74,9 @@ async def test_redis_stream_processor_error(
 
     assert processor.call_count == 3
     assert processor.mock_calls == [
-        mock.call({b"foo": b"bar1"}),
-        mock.call({b"foo": b"bar2"}),
-        mock.call({b"foo": b"bar3"}),
+        mock.call(anys.ANY_BYTES, {b"foo": b"bar1"}),
+        mock.call(anys.ANY_BYTES, {b"foo": b"bar2"}),
+        mock.call(anys.ANY_BYTES, {b"foo": b"bar3"}),
     ]
 
     # Failed event are still there

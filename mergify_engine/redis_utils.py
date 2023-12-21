@@ -335,7 +335,7 @@ async def process_stream(
     redis_stream: RedisStream,
     redis_key: str,
     batch_size: int,
-    event_processor: abc.Callable[[dict[bytes, bytes]], abc.Awaitable[None]],
+    event_processor: abc.Callable[[bytes, dict[bytes, bytes]], abc.Awaitable[None]],
     redis_payload_data_key: bytes = b"data",
 ) -> bool:
     events_count = 0
@@ -348,7 +348,7 @@ async def process_stream(
         ):
             events_count += 1
             try:
-                await event_processor(event)
+                await event_processor(event_id, event)
             except Exception as e:
                 if not exceptions.should_be_ignored(e):
                     log_level = (

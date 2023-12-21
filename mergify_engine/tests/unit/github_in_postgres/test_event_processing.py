@@ -198,7 +198,7 @@ async def test_pull_request_event_commits_endpoint_return_404(
     assert len(pull_request_commits) == 0
 
 
-@pytest.mark.ignored_logging_errors("Event can't be processed")
+@pytest.mark.ignored_logging_errors("unprocessable github-in-postgres event")
 async def test_unexpected_exception(
     redis_links: redis_utils.RedisLinks,
     respx_mock: respx.MockRouter,

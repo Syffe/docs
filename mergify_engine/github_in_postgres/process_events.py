@@ -1,3 +1,5 @@
+import dataclasses
+
 import daiquiri
 import msgpack
 import pydantic_core
@@ -20,73 +22,53 @@ EVENT_TO_MODEL_MAPPING: dict[str, HandledModelsT] = {
 }
 
 
-async def store_redis_events_in_pg(redis_links: redis_utils.RedisLinks) -> None:
-    async for event_id, event in redis_utils.iter_stream(
+@dataclasses.dataclass
+class UnhandledEventType(Exception):
+    message: str
+    event_type: str
+
+
+async def store_redis_events_in_pg(redis_links: redis_utils.RedisLinks) -> bool:
+    return await redis_utils.process_stream(
+        "github-in-postgres",
         redis_links.stream,
-        "github_in_postgres",
-        settings.GITHUB_IN_POSTGRES_PROCESSING_BATCH_SIZE,
-    ):
-        event_type = event[b"event_type"].decode()
-        LOG.info("processing event '%s', id=%s", event_type, event_id)
+        redis_key="github_in_postgres",
+        batch_size=settings.GITHUB_IN_POSTGRES_PROCESSING_BATCH_SIZE,
+        event_processor=store_redis_event_in_pg,
+    )
 
-        if event_type not in EVENT_TO_MODEL_MAPPING:
-            LOG.error(
-                "Found unhandled event_type '%s' in 'github_in_postgres' stream",
-                event_type,
-                event=event,
-                event_id=event_id,
-            )
-            continue
 
-        event_data = msgpack.unpackb(event[b"data"])
-        model = EVENT_TO_MODEL_MAPPING[event_type]
+async def store_redis_event_in_pg(event_id: bytes, event: dict[bytes, bytes]) -> None:
+    event_type = event[b"event_type"].decode()
+    LOG.info("processing event '%s', id=%s", event_type, event_id)
+
+    if event_type not in EVENT_TO_MODEL_MAPPING:
+        raise UnhandledEventType(
+            "Found unhandled event_type '%s' in 'github_in_postgres' stream"
+            % event_type,
+            event_type,
+        )
+
+    event_data = msgpack.unpackb(event[b"data"])
+    model = EVENT_TO_MODEL_MAPPING[event_type]
+    try:
+        typed_event_data = model.type_adapter.validate_python(event_data)
+    except pydantic_core.ValidationError:
+        LOG.warning(
+            "Dropping event %s/id=%s because it cannot be validated by its model's type adapter",
+            event_type,
+            event_id,
+            raw_event=event,
+            event_data=event_data,
+        )
+        return
+
+    async with database.create_session() as session:
         try:
-            typed_event_data = model.type_adapter.validate_python(event_data)
-        except pydantic_core.ValidationError:
-            LOG.warning(
-                "Dropping event %s/id=%s because it cannot be validated by its model's type adapter",
-                event_type,
-                event_id,
-                raw_event=event,
-                event_data=event_data,
-            )
-            await redis_links.stream.xdel("github_in_postgres", event_id)
-            continue
-
-        async with database.create_session() as session:
-            try:
-                # mypy thinks the typed_event_data can be, for example,
-                # `CheckRun` for a "pull_request" event.
-                await model.insert_or_update(session, typed_event_data)  # type: ignore[arg-type]
-            except exceptions.MergifyNotInstalled:
-                # Just ignore event for uninstalled repository
-                pass
-            except Exception as e:
-                if exceptions.should_be_ignored(e):
-                    pass
-                elif exceptions.need_retry_in(e):
-                    # TODO(sileht): We should retry later, not on next iteration
-                    LOG.warning(
-                        "Event need to be retried",
-                        event_type=event_type,
-                        event_id=event_id,
-                        raw_event=event,
-                        event_data=event_data,
-                        exc_info=True,
-                    )
-                    continue
-                else:
-                    # TODO(sileht): We should have a better retry mechanism
-                    LOG.error(
-                        "Event can't be processed",
-                        event_type=event_type,
-                        event_id=event_id,
-                        raw_event=event,
-                        event_data=event_data,
-                        exc_info=True,
-                    )
-                    continue
-            else:
-                await session.commit()
-
-        await redis_links.stream.xdel("github_in_postgres", event_id)
+            # mypy thinks the typed_event_data can be, for example,
+            # `CheckRun` for a "pull_request" event.
+            await model.insert_or_update(session, typed_event_data)  # type: ignore[arg-type]
+        except exceptions.MergifyNotInstalled:
+            # Just ignore event for uninstalled repository
+            return
+        await session.commit()
