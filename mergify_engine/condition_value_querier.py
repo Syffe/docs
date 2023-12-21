@@ -254,6 +254,18 @@ class BasePullRequest:
                 # the rule should just evaluate to false.
                 return None
 
+        if name == "queue-frozen":
+            embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])
+            if not embarked_pulls:
+                return False
+            if len(embarked_pulls) != 1:
+                # NOTE(charly): Attribute not yet handled for multiple queues
+                raise PullRequestAttributeError(name)
+
+            return await convoy.is_queue_frozen(
+                embarked_pulls[0].embarked_pull.config["name"],
+            )
+
         raise PullRequestAttributeError(name)
 
     @staticmethod

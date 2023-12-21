@@ -1584,3 +1584,43 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         assert "queued: hotfix" in [
             label["name"] for label in labelled_p2["pull_request"]["labels"]
         ]
+
+    async def test_queue_frozen(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Add to merge queue",
+                    "conditions": ["label=queue"],
+                    "actions": {"queue": {}},
+                },
+                {
+                    "name": "Label queue name",
+                    "conditions": ["queue-frozen"],
+                    "actions": {"label": {"toggle": ["frozen"]}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+
+        await self._create_queue_freeze(
+            queue_name="default",
+            freeze_payload={"reason": "holidays!"},
+        )
+
+        await self.run_engine()
+        labelled_p1 = await self.wait_for_pull_request(action="labeled")
+        assert "frozen" in [
+            label["name"] for label in labelled_p1["pull_request"]["labels"]
+        ]
+
+        await self._delete_queue_freeze(
+            queue_name="default",
+        )
+        await self.run_engine()
+        unlabelled_p1 = await self.wait_for_pull_request(action="unlabeled")
+        assert "frozen" not in [
+            label["name"] for label in unlabelled_p1["pull_request"]["labels"]
+        ]

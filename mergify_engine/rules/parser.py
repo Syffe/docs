@@ -119,6 +119,7 @@ CONDITION_PARSERS = {
     "partition-name": Parser.TEXT,
     "current-datetime": Parser.TIMESTAMP,
     "queue-name": Parser.TEXT,
+    "queue-frozen": Parser.BOOL,
 }
 COMMAND_ONLY_ATTRIBUTES = ("sender", "sender-permission")
 CONDITION_ENUMS = {

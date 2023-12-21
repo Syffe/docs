@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Add new Boolean attribute `queue-frozen` for pull request, indicating if
+    they are in a queue that is frozen.
