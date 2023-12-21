@@ -19,37 +19,37 @@ from mergify_engine.web.api.statistics import utils
 router = fastapi.APIRouter()
 
 
-class MergedInInterval(typing_extensions.TypedDict):
+class RuntimeInInterval(typing_extensions.TypedDict):
     start: datetime.datetime
     end: datetime.datetime
-    merged: int
+    runtime: float
 
 
-class MergedGroupResponse(typing_extensions.TypedDict):
+class CIRuntimeGroupResponse(typing_extensions.TypedDict):
     base_ref: github_types.GitHubRefType
-    partition_names: list[partr_config.PartitionRuleName]
+    partition_name: partr_config.PartitionRuleName
     queue_name: queue_rules.QueueName
-    stats: list[MergedInInterval]
+    stats: list[RuntimeInInterval]
 
 
-class MergedCountResponse(typing_extensions.TypedDict):
-    groups: list[MergedGroupResponse]
+class CIAverageRuntimeResponse(typing_extensions.TypedDict):
+    groups: list[CIRuntimeGroupResponse]
 
 
-def format_response(result: list[dict[str, typing.Any]]) -> MergedCountResponse:
-    group_func = operator.itemgetter("base_ref", "partition_names", "queue_name")
+def format_response(result: list[dict[str, typing.Any]]) -> CIAverageRuntimeResponse:
+    group_func = operator.itemgetter("base_ref", "partition_name", "queue_name")
 
-    return MergedCountResponse(
+    return CIAverageRuntimeResponse(
         groups=[
-            MergedGroupResponse(
+            CIRuntimeGroupResponse(
                 base_ref=group_key[0],
-                partition_names=group_key[1],
+                partition_name=group_key[1],
                 queue_name=group_key[2],
                 stats=[
-                    MergedInInterval(
+                    RuntimeInInterval(
                         start=interval["start"],
                         end=interval["end"],
-                        merged=interval["merged"],
+                        runtime=interval["runtime"],
                     )
                     for interval in group
                 ],
@@ -63,12 +63,12 @@ def format_response(result: list[dict[str, typing.Any]]) -> MergedCountResponse:
 
 
 @router.get(
-    "/repos/{owner}/{repository}/stats/queues_merged_count",
-    summary="Get the count of pull requests merged by queues",
-    description="Queues pull requests merged by intervals of time",
+    "/repos/{owner}/{repository}/stats/average_ci_runtime",
+    summary="Get the average CI runtime",
+    description="Runtime of your CI running on queued pull requests by intervals of time",
     responses=api.default_responses,
 )
-async def get_queues_pull_requests_merged_count(
+async def get_average_ci_runtime(
     session: database.Session,
     repository: security.Repository,
     start_end: utils.StatsStartEnd,
@@ -84,19 +84,21 @@ async def get_queues_pull_requests_merged_count(
         list[queue_rules.QueueName] | None,
         fastapi.Query(description="Name of the merge queue(s) for the pull requests"),
     ] = None,
-) -> MergedCountResponse:
+) -> CIAverageRuntimeResponse:
     start_at = typing.cast(datetime.datetime, start_end[0])
     end_at = typing.cast(datetime.datetime, start_end[1])
 
-    result = await evt_models.EventActionQueueMerged.get_merged_count_by_interval(
-        session,
-        repository,
-        start_at,
-        end_at,
-        utils.get_interval(end_at - start_at),
-        base_ref,
-        partition_name,
-        queue_name,
+    result = (
+        await evt_models.EventActionQueueChecksEnd.get_average_ci_runtime_by_interval(
+            session,
+            repository,
+            start_at,
+            end_at,
+            utils.get_interval(end_at - start_at),
+            base_ref,
+            partition_name,
+            queue_name,
+        )
     )
 
     return format_response([r._asdict() for r in result])

@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Added a new statistics endpoint that returns the average
+    CI runtime.
+    The endpoint path is "/v1/repos/{repository_owner}/{repository_name}/stats/average_ci_runtime".

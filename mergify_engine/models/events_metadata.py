@@ -7,6 +7,7 @@ import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.asyncio
+import sqlalchemy.ext.hybrid
 
 from mergify_engine import models
 from mergify_engine.models import enumerations
@@ -69,3 +70,20 @@ class SpeculativeCheckPullRequest(models.Base):
         index=True,
         anonymizer_config=None,
     )
+
+    @sqlalchemy.ext.hybrid.hybrid_property
+    def ci_runtime(self) -> float | None:
+        if self.checks_ended_at is not None and self.checks_started_at is not None:
+            return (self.checks_ended_at - self.checks_started_at).total_seconds()
+        return None
+
+    @ci_runtime.inplace.expression
+    @classmethod
+    def _ci_runtime_expression(cls) -> sqlalchemy.ColumnElement[float]:
+        return sqlalchemy.type_coerce(
+            sqlalchemy.extract(
+                "epoch",
+                cls.checks_ended_at - cls.checks_started_at,
+            ),
+            sqlalchemy.Float,
+        )

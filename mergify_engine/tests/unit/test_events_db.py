@@ -508,6 +508,7 @@ async def test_event_action_queue_checks_end_consistency(
         },
     )
 
+    now = date.utcnow()
     await insert_event(
         fake_repository,
         "action.queue.checks_end",
@@ -527,8 +528,8 @@ async def test_event_action_queue_checks_end_consistency(
                     "in_place": True,
                     "checks_timed_out": False,
                     "checks_conclusion": "failure",
-                    "checks_started_at": date.utcnow(),
-                    "checks_ended_at": date.utcnow(),
+                    "checks_ended_at": now,
+                    "checks_started_at": now - datetime.timedelta(hours=1),
                     "unsuccessful_checks": [unsuccessful_check],
                 },
             },
@@ -556,6 +557,8 @@ async def test_event_action_queue_checks_end_consistency(
     assert spec_check_pr.checks_ended_at == anys.ANY_AWARE_DATETIME
     assert spec_check_pr.unsuccessful_checks == [unsuccessful_check]
     assert spec_check_pr.event_id == 1
+    # property
+    assert spec_check_pr.ci_runtime == 3600.0
 
 
 async def test_event_action_request_reviews_consistency(
