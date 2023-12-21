@@ -594,6 +594,8 @@ pull_requests:
             name="Rule: Automatic merge (queue)",
             conclusion="cancelled",
         )
+        assert check_run["check_run"]["output"]["summary"] is not None
+        assert check_run["check_run"]["output"]["title"] is not None
         assert check_run["check_run"]["output"]["title"].startswith(
             "The pull request has been removed from the queue",
         )

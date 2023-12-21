@@ -127,6 +127,7 @@ class TestConfiguration(base.FunctionalTestBase):
             config_changed_check["output"]["title"]
             == "The new Mergify configuration is invalid"
         )
+        assert config_changed_check["output"]["summary"] is not None
         assert config_changed_check["output"]["summary"].startswith(
             """In the rule `foobar`, the action `request_reviews` configuration is invalid:
 Invalid requested teams
@@ -399,6 +400,7 @@ did not find expected alphabetic or numeric character
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"]["title"] == "1 potential rule"
+        assert summary["output"]["summary"] is not None
         assert """### Rule: nothing (merge)
 - [ ] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]
 """ in summary["output"]["summary"]
@@ -564,6 +566,7 @@ did not find expected alphabetic or numeric character
 
         summary_event = await self.wait_for_check_run(name=constants.SUMMARY_NAME)
         summary = summary_event["check_run"]
+        assert summary["output"]["title"] is not None
         assert (
             "no rules configured, just listening for commands"
             in summary["output"]["title"]
@@ -579,6 +582,7 @@ did not find expected alphabetic or numeric character
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["title"] is not None
         assert (
             "no rules configured, just listening for commands"
             in summary["output"]["title"]
@@ -598,6 +602,7 @@ did not find expected alphabetic or numeric character
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["title"] is not None
         assert (
             "no rules configured, just listening for commands"
             in summary["output"]["title"]
@@ -618,6 +623,8 @@ did not find expected alphabetic or numeric character
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["title"] is not None
+        assert summary["output"]["summary"] is not None
         assert (
             summary["output"]["title"]
             == "Multiple Mergify configurations have been found in the repository"
@@ -815,6 +822,8 @@ did not find expected alphabetic or numeric character
         ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         summary_check = checks[0]
+        assert summary_check["output"]["title"] is not None
+        assert summary_check["output"]["summary"] is not None
         assert (
             summary_check["output"]["title"]
             == "The current Mergify configuration is invalid"
@@ -842,6 +851,7 @@ did not find expected alphabetic or numeric character
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(name="Summary", conclusion="failure")
+        assert check_run["check_run"]["output"]["summary"] is not None
         assert (
             check_run["check_run"]["output"]["title"]
             == "The current Mergify configuration is invalid"
@@ -890,6 +900,7 @@ did not find expected alphabetic or numeric character
             check_run["check_run"]["output"]["title"]
             == "The current Mergify configuration is invalid"
         )
+        assert check_run["check_run"]["output"]["summary"] is not None
         assert (
             "Extended configuration repository `.github` doesn't have a Mergify configuration file."
             in check_run["check_run"]["output"]["summary"]

@@ -277,8 +277,8 @@ async def _ensure_summary_on_head_sha(ctxt: context.Context) -> None:
         await ctxt.set_summary_check(
             check_api.Result(
                 check_api.Conclusion(previous_summary["conclusion"]),
-                title=previous_summary["output"]["title"],
-                summary=previous_summary["output"]["summary"],
+                title=previous_summary["output"]["title"] or "",
+                summary=previous_summary["output"]["summary"] or "",
             ),
         )
     elif previous_summary:

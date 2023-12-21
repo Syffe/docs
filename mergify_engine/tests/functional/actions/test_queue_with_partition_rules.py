@@ -301,6 +301,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             conclusion="failure",
         )
 
+        assert check_run_p1["check_run"]["output"]["summary"] is not None
         assert (
             "The queue conditions cannot be satisfied due to failing checks"
             in check_run_p1["check_run"]["output"]["summary"]
@@ -381,6 +382,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             conclusion="failure",
         )
 
+        assert check_run_p1["check_run"]["output"]["summary"] is not None
         assert "**Partition projA**:" in check_run_p1["check_run"]["output"]["summary"]
         assert "**Partition projB**:" in check_run_p1["check_run"]["output"]["summary"]
         assert (

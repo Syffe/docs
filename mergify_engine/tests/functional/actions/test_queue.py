@@ -123,6 +123,7 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Queue (queue)",
         )
         assert check is not None
+        assert check["output"]["title"] is not None
         assert check["output"]["title"].startswith(
             "The pull request has been removed from the queue",
         )
@@ -143,6 +144,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        assert check["output"]["summary"] is not None
         assert (
             f"The following conditions don't match anymore:\n- [ ] `depends-on=#{p1['number']}`"
             in check["output"]["summary"]
@@ -210,6 +212,7 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Queue (queue)",
         )
         assert check is not None
+        assert check["output"]["title"] is not None
         assert check["output"]["title"].startswith(
             "The pull request has been removed from the queue",
         )
@@ -230,6 +233,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        assert check["output"]["summary"] is not None
         assert (
             f"The following conditions don't match anymore:\n- [ ] `depends-on=#{p1['number']}`"
             in check["output"]["summary"]
@@ -295,6 +299,7 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Queue (queue)",
         )
         assert check is not None
+        assert check["output"]["title"] is not None
         assert check["output"]["title"].startswith(
             "The pull request has been removed from the queue",
         )
@@ -315,6 +320,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        assert check["output"]["summary"] is not None
         assert (
             f"The following conditions don't match anymore:\n- [ ] `depends-on=#{p1['number']}`"
             in check["output"]["summary"]
@@ -603,6 +609,7 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"]
             == "The pull request is the 1st in the queue to be merged"
         )
+        assert check["output"]["summary"] is not None
         assert (
             "**Required conditions of queue** `hotfix` **for merge:**"
             in check["output"]["summary"]
@@ -651,6 +658,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = await self.wait_for_check_run(name="Summary", conclusion="success")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
+        assert check["check_run"]["output"]["summary"] is not None
         assert """- [ ] any of: [🔀 queue conditions]
   - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `label=tata`
@@ -707,6 +715,7 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"]
             == "The pull request is the 1st in the queue to be merged"
         )
+        assert check["output"]["summary"] is not None
         assert (
             "**Required conditions of queue** `default` **"
             in check["output"]["summary"]
@@ -795,6 +804,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = await self.wait_for_check_run(name="Summary")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
+        assert check["check_run"]["output"]["summary"] is not None
         expected_summary = f"""- [ ] any of: [🔀 queue conditions]
   - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `files~=^dummy/`
@@ -858,6 +868,7 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"]
             == "The pull request has been removed from the queue `default`"
         )
+        assert check["output"]["summary"] is not None
         assert (
             "The queue conditions cannot be satisfied due to failing checks."
             in check["output"]["summary"]
@@ -1095,6 +1106,7 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"]
             == "The pull request is the 1st in the queue to be merged"
         )
+        assert check["output"]["summary"] is not None
         assert (
             "**Required conditions of queue** `default` **for merge:**"
             in check["output"]["summary"]
@@ -1139,6 +1151,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = await self.wait_for_check_run(name="Summary", conclusion="success")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
+        assert check["check_run"]["output"]["summary"] is not None
         assert """- [ ] any of: [🔀 queue conditions]
   - [ ] all of: [📌 queue conditions of queue `default`]
     - [ ] `label=will-not-be-set`
@@ -1194,6 +1207,7 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Queue (queue)",
         )
         assert check_summary is not None
+        assert check_summary["output"]["summary"] is not None
         assert (
             f"""
 - `status-success=continuous-integration/fake-ci-queue`
@@ -1513,6 +1527,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         summary = await self.wait_for_check_run(name="Summary")
+        assert summary["check_run"]["output"]["summary"] is not None
         assert """Rule: Merge default (queue)
 - [ ] any of: [🔀 queue conditions]
   - [ ] all of: [📌 queue conditions of queue `default`]
@@ -1535,6 +1550,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
+        assert check_run["check_run"]["output"]["summary"] is not None
         assert """**Required conditions of queue** `default` **for merge:**
 
 - [ ] `#review-threads-unresolved=0` [🛡 GitHub branch protection]
@@ -1598,6 +1614,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
+        assert check_run["check_run"]["output"]["summary"] is not None
         assert """**Required conditions of queue** `default` **for merge:**
 
 - [ ] `#review-threads-unresolved=0` [🛡 GitHub branch protection]
@@ -1684,6 +1701,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
+        assert check_run["check_run"]["output"]["summary"] is not None
         assert """**Required conditions of queue** `default` **for merge:**
 
 - [ ] `#review-threads-unresolved=0` [🛡 GitHub branch protection]
@@ -1749,6 +1767,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(name="Rule: Merge default (queue)")
+        assert check_run["check_run"]["output"]["summary"] is not None
         assert (
             "Cannot use `branch_protection_injection_mode` set to `none` without using a `merge_bot_account` with the `queue` action"
             in check_run["check_run"]["output"]["summary"]
@@ -1796,6 +1815,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         summary = await self.wait_for_check_run(name="Summary")
+        assert summary["check_run"]["output"]["summary"] is not None
         assert (
             actions_runner.REQUIRE_BRANCH_PROTECTION_DEPRECATION_SAAS
             in summary["check_run"]["output"]["summary"]
@@ -3032,6 +3052,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         summary = check["output"]["summary"]
+        assert summary is not None
         assert (
             """- [X] `status-success=another-ci`
 
@@ -3551,6 +3572,8 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["conclusion"] == "cancelled"
+        assert check["output"]["title"] is not None
+        assert check["output"]["summary"] is not None
         assert check["output"]["title"].startswith(
             "The pull request has been removed from the queue",
         )
@@ -4562,6 +4585,7 @@ previous_failed_batches:
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
         assert check is not None
+        assert check["output"]["title"] is not None
         assert check["output"]["title"].startswith(
             "The pull request has been removed from the queue",
         )
@@ -4570,6 +4594,7 @@ previous_failed_batches:
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
         assert check is not None
+        assert check["output"]["title"] is not None
         assert check["output"]["title"].startswith(
             "The pull request has been removed from the queue",
         )
@@ -5932,6 +5957,7 @@ previous_failed_batches:
         assert (
             check["output"]["title"] == "This pull request cannot be embarked for merge"
         )
+        assert check["output"]["summary"] is not None
         assert (
             "The merge queue pull request can't be created\n"
             f"Details:\n> The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n"
@@ -6049,6 +6075,7 @@ previous_failed_batches:
         assert (
             check["output"]["title"] == "This pull request cannot be embarked for merge"
         )
+        assert check["output"]["summary"] is not None
         assert (
             "The merge queue pull request can't be created\n"
             f"Details:\n> The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n"
@@ -7348,12 +7375,14 @@ previous_failed_batches:
                 match check_run["check_run"]["name"]:
                     case "Rule: queue (queue)":
                         found_queue_rule = True
+                        assert check_run["check_run"]["output"]["title"] is not None
                         assert check_run["check_run"]["output"]["title"].startswith(
                             "The pull request has been removed from the queue",
                         )
                         assert check_run["check_run"]["conclusion"] == "cancelled"
                     case "Queue: Embarked in merge queue":
                         found_embarked_train = True
+                        assert check_run["check_run"]["output"]["summary"] is not None
                         assert (
                             "checks have timed out"
                             in check_run["check_run"]["output"]["summary"]
@@ -7445,12 +7474,14 @@ previous_failed_batches:
                 match check_run["check_run"]["name"]:
                     case "Rule: queue (queue)":
                         found_queue_rule = True
+                        assert check_run["check_run"]["output"]["title"] is not None
                         assert check_run["check_run"]["output"]["title"].startswith(
                             "The pull request has been removed from the queue",
                         )
                         assert check_run["check_run"]["conclusion"] == "cancelled"
                     case "Queue: Embarked in merge queue":
                         found_embarked_train = True
+                        assert check_run["check_run"]["output"]["summary"] is not None
                         assert (
                             "checks have timed out"
                             in check_run["check_run"]["output"]["summary"]
@@ -7528,6 +7559,7 @@ previous_failed_batches:
                 key=lambda c: c["name"] == "Rule: queue (queue)",
             )
             assert check is not None
+            assert check["output"]["title"] is not None
             assert check["output"]["title"].startswith(
                 "The pull request has been removed from the queue",
             )
@@ -7536,6 +7568,7 @@ previous_failed_batches:
                 key=lambda c: c["name"] == "Queue: Embarked in merge queue",
             )
             assert check is not None
+            assert check["output"]["summary"] is not None
             assert "checks have timed out" in check["output"]["summary"]
 
     async def test_queue_ci_timeout_outside_schedule(self) -> None:
@@ -7595,6 +7628,7 @@ previous_failed_batches:
 
             # In case of lag on the recording machine, the expected `20:10` might be a few minutes
             # late.
+            assert check["output"]["summary"] is not None
             match = re.search(
                 r"The checks have to pass before 20:1(\d) UTC",
                 check["output"]["summary"],
@@ -7621,6 +7655,7 @@ previous_failed_batches:
             ctxt_p1._caches.pull_check_runs.delete()
             check = await ctxt_p1.get_engine_check_run("Rule: queue (queue)")
             assert check is not None
+            assert check["output"]["title"] is not None
             assert check["output"]["title"].startswith(
                 "The pull request has been removed from the queue",
             )
@@ -7633,6 +7668,7 @@ previous_failed_batches:
                 check["output"]["title"]
                 == "The queue conditions cannot be satisfied due to checks timeout"
             )
+            assert check["output"]["summary"] is not None
             assert "checks have timed out" in check["output"]["summary"]
 
     async def test_queue_ci_timeout_ignored_outside_schedule(self) -> None:
@@ -8168,6 +8204,7 @@ pull_request_rules:
             check["output"]["title"]
             == "The pull request is the 2nd in the queue to be merged"
         )
+        assert check["output"]["summary"] is not None
         assert (
             "Required conditions of queue** `new_default` **for merge"
             in check["output"]["summary"]
@@ -8729,6 +8766,7 @@ pull_request_rules:
             == f"Pull request #{p1['number']} has been dequeued"
         )
 
+        assert check_run["check_run"]["output"]["summary"] is not None
         assert " by a `dequeue` command" in check_run["check_run"]["output"]["summary"]
 
     async def test_unqueue_then_requeue_not_in_first_place_check_run(self) -> None:
@@ -8876,6 +8914,8 @@ pull_request_rules:
             constants.MERGE_QUEUE_SUMMARY_NAME,
         )
         assert queue_summary_check_run is not None
+        assert queue_summary_check_run["output"]["title"] is not None
+        assert queue_summary_check_run["output"]["summary"] is not None
         assert (
             "This pull request cannot be embarked for merge"
             in queue_summary_check_run["output"]["title"]
@@ -8947,6 +8987,7 @@ pull_request_rules:
             queue_summary_check_run["output"]["title"]
             == "This pull request cannot be embarked for merge"
         )
+        assert queue_summary_check_run["output"]["summary"] is not None
         assert (
             f"The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}"
             in queue_summary_check_run["output"]["summary"]

@@ -278,6 +278,7 @@ class TestQueuePause(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
+        assert check["output"]["summary"] is not None
         assert (
             "⏸️ Checks are suspended, the merge queue is currently paused on this repository, for the following reason: `test pause reason` ⏸️"
             in check["output"]["summary"]
@@ -316,6 +317,7 @@ class TestQueuePause(base.FunctionalTestBase):
             check["output"]["title"]
             == "⏸️ Checks are suspended, the merge queue is currently paused on this repository, for the following reason: `test pause reason` ⏸️"
         )
+        assert check["output"]["summary"] is not None
         assert "is queued for merge" in check["output"]["summary"]
 
         r = await self._delete_queue_pause(expected_status_code=204)
@@ -509,6 +511,7 @@ class TestQueuePause(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
+        assert check["output"]["summary"] is not None
         assert (
             "⏸️ Checks are suspended, the merge queue is currently paused on this repository, for the following reason: `test pause reason` ⏸️"
             in check["output"]["summary"]
@@ -558,6 +561,7 @@ class TestQueuePause(base.FunctionalTestBase):
             check["output"]["title"]
             == "⏸️ Checks are suspended, the merge queue is currently paused on this repository, for the following reason: `test pause reason` ⏸️"
         )
+        assert check["output"]["summary"] is not None
         assert "is queued for merge" in check["output"]["summary"]
 
     async def test_create_queue_pause_inplace(self) -> None:
@@ -710,6 +714,7 @@ class TestQueuePause(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check is not None
+        assert check["output"]["summary"] is not None
         assert (
             "⏸️ Checks are suspended, the merge queue is currently paused on this repository, for the following reason: `test pause reason` ⏸️"
             in check["output"]["summary"]
@@ -759,6 +764,7 @@ class TestQueuePause(base.FunctionalTestBase):
             check["output"]["title"]
             == "⏸️ Checks are suspended, the merge queue is currently paused on this repository, for the following reason: `test pause reason` ⏸️"
         )
+        assert check["output"]["summary"] is not None
         assert "is queued for merge" in check["output"]["summary"]
 
     async def test_update_queue_pause(self) -> None:
@@ -1024,6 +1030,7 @@ class TestQueuePause(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check
+        assert check["output"]["title"] is not None
         assert (
             "The pull request is the 1st in the queue to be merged"
             in check["output"]["title"]
@@ -1034,6 +1041,7 @@ class TestQueuePause(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check
+        assert check["output"]["summary"] is not None
         assert (
             "⏸️ Checks are suspended, the merge queue is currently paused on this repository, for the following reason: `test pause reason` ⏸️"
             not in check["output"]["summary"]

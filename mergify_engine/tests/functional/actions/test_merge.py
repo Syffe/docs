@@ -339,6 +339,7 @@ class TestMergeAction(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
 
+        assert summary["output"]["summary"] is not None
         assert (
             "- [ ] `#review-threads-unresolved=0` [🛡 GitHub branch protection]"
             in summary["output"]["summary"]
@@ -359,6 +360,7 @@ class TestMergeAction(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
 
+        assert summary["output"]["summary"] is not None
         assert (
             "- [X] `#review-threads-unresolved=0` [🛡 GitHub branch protection]"
             in summary["output"]["summary"]
@@ -505,6 +507,7 @@ superRP!"""
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary
+        assert summary["output"]["summary"] is not None
         assert """
 ‼️ **Action Required** ‼️
 
@@ -603,6 +606,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         ctxt = context.Context(self.repository_ctxt, p2, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         assert "[ ] `#commits-behind=0`" in summary["output"]["summary"]
 
         await self.create_comment_as_admin(p2["number"], "@mergifyio update")
@@ -621,6 +625,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         ctxt = context.Context(self.repository_ctxt, p2, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         assert "[X] `#commits-behind=0`" in summary["output"]["summary"]
 
         p2 = await self.get_pull(p2["number"])
@@ -744,6 +749,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         assert check is None
         check = await ctxt_p2.get_engine_check_run("Summary")
         assert check is not None
+        assert check["output"]["summary"] is not None
         assert "[ ] `-conflict`" in check["output"]["summary"]
 
     async def test_default_merge_method(self) -> None:

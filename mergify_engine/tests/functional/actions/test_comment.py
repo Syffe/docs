@@ -247,6 +247,7 @@ Unknown pull request attribute: hello
             check_run["check_run"]["output"]["title"]
             == "The current Mergify configuration is invalid"
         )
+        assert check_run["check_run"]["output"]["summary"] is not None
         assert check_run["check_run"]["output"]["summary"].startswith(
             "In the rule `comment without default message`, the action `comment` configuration is invalid:\nCannot have `comment` action with no `message",
         )

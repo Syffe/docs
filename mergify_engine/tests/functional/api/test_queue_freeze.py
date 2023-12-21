@@ -204,6 +204,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["title"]
@@ -214,6 +215,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["summary"]
@@ -241,6 +243,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             status="in_progress",
         )
         assert check_run_p3["check_run"]["pull_requests"][0]["number"] == p3["number"]
+        assert check_run_p3["check_run"]["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p3["check_run"]["output"]["title"]
@@ -272,6 +275,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["title"]
@@ -282,6 +286,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["summary"]
@@ -292,6 +297,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge low (queue)",
         )
         assert check
+        assert check["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check["output"]["title"]
@@ -573,6 +579,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             status="in_progress",
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
+        assert check_run_p1["check_run"]["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["check_run"]["output"]["title"]
@@ -583,6 +590,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             status="in_progress",
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
+        assert check_run_p1["check_run"]["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["check_run"]["output"]["summary"]
@@ -606,6 +614,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check
+        assert check["output"]["title"] is not None
         assert (
             "The pull request is the 1st in the queue to be merged"
             in check["output"]["title"]
@@ -616,6 +625,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check
+        assert check["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             not in check["output"]["summary"]
@@ -933,6 +943,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             status="in_progress",
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
+        assert check_run_p1["check_run"]["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["check_run"]["output"]["title"]
@@ -943,6 +954,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             status="in_progress",
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
+        assert check_run_p1["check_run"]["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["check_run"]["output"]["summary"]
@@ -1023,6 +1035,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             status="in_progress",
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
+        assert check_run_p1["check_run"]["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["check_run"]["output"]["title"]
@@ -1033,6 +1046,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             status="in_progress",
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
+        assert check_run_p1["check_run"]["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["check_run"]["output"]["summary"]
@@ -1134,6 +1148,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["title"]
@@ -1144,6 +1159,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["summary"]
@@ -1199,6 +1215,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["title"]
@@ -1209,6 +1226,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["summary"]
@@ -1260,6 +1278,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["title"]
@@ -1270,6 +1289,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["summary"]
@@ -1490,6 +1510,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["title"]
@@ -1500,6 +1521,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["summary"]
@@ -1511,6 +1533,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge low (queue)",
         )
         assert check_run_p2
+        assert check_run_p2["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `urgent`, for the following reason: `urgent test freeze reason`"
             in check_run_p2["output"]["title"]
@@ -1538,6 +1561,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["title"]
@@ -1548,6 +1572,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["summary"]
@@ -1559,6 +1584,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge low (queue)",
         )
         assert check_run_p2
+        assert check_run_p2["output"]["title"] is not None
         assert (
             "The pull request is the 1st in the queue to be merged"
             in check_run_p2["output"]["title"]
@@ -1569,6 +1595,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p2
+        assert check_run_p2["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             not in check_run_p2["output"]["summary"]
@@ -1597,6 +1624,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["title"]
@@ -1607,6 +1635,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["summary"]
@@ -1726,6 +1755,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge low (queue)",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["title"]
@@ -1736,6 +1766,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
             in check_run_p1["output"]["summary"]
@@ -1757,6 +1788,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge low (queue)",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `urgent`, for the following reason: `urgent test freeze reason`"
             in check_run_p1["output"]["title"]
@@ -1767,6 +1799,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Queue: Embarked in merge queue",
         )
         assert check_run_p1
+        assert check_run_p1["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `urgent`, for the following reason: `urgent test freeze reason`"
             in check_run_p1["output"]["summary"]

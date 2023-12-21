@@ -106,6 +106,8 @@ class TestUnqueueCommand(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["conclusion"] == "cancelled"
+        assert check["output"]["title"] is not None
+        assert check["output"]["summary"] is not None
         assert check["output"]["title"].startswith(
             "The pull request has been removed from the queue",
         )
@@ -138,6 +140,7 @@ class TestUnqueueCommand(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["conclusion"] is None
+        assert check["output"]["title"] is not None
         assert check["output"]["title"].startswith("The pull request is embarked with")
 
         check = first(

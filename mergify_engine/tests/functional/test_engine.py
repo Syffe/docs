@@ -159,6 +159,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"]["title"] == "2 faulty rules and 2 potential rules"
+        assert summary["output"]["summary"] is not None
         for message in (
             "Team `@mergifyio-testing/noexists` does not exist",
             "Team `@another-org/testing` is not part of the organization `mergifyio-testing`",
@@ -346,6 +347,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             status="completed",
             name="Summary",
         )
+        assert check_run_summary_p["check_run"]["output"]["summary"] is not None
         assert (
             f"""### Rule: merge (merge)
 - [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]

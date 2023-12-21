@@ -119,6 +119,7 @@ class TestAttributes(base.FunctionalTestBase):
         assert (await self.get_pull(pr["number"]))["state"] == "open"
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         expected = (
             "### Rule: ~~merge (close)~~\n:no_entry_sign: **Disabled: code freeze**\n"
         )
@@ -1237,6 +1238,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         repo_url = ctxt.pull["base"]["repo"]["html_url"]
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         expected = f"""### Rule: merge (merge)
 - [ ] `depends-on=#{pr1['number']}` [⛓️ **test_depends_on: pull request n1 from integration** ([#{pr1['number']}]({repo_url}/pull/{pr1['number']}))]
 - [ ] `depends-on=#9999999` [⛓️ ⚠️ *pull request not found* (#9999999)]
@@ -1282,6 +1284,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
             summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
             assert summary is not None
+            assert summary["output"]["summary"] is not None
             expected = f"""### Rule: merge (merge)
 - [ ] `current-datetime>=2023-04-19T00:00:00` [🕒 Merge-After: 2023-04-19T00:00:00+00:00]
 - [X] `-conflict` [📌 merge requirement]

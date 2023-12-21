@@ -451,4 +451,5 @@ class TestPostCheckActionNoSub(base.FunctionalTestBase):
         assert (
             check["output"]["title"] == "The current Mergify configuration is invalid"
         )
+        assert check["output"]["summary"] is not None
         assert "Custom checks are disabled" in check["output"]["summary"]

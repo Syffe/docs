@@ -55,6 +55,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"]["title"] == "1 rule matches"
+        assert summary["output"]["summary"] is not None
         assert "1 not applicable rule" in summary["output"]["summary"]
 
     async def test_failed_base_changeable_attributes_rules_in_not_applicable_summary_section_with_or_condition(
@@ -95,6 +96,7 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"]["title"] == "1 rule matches"
+        assert summary["output"]["summary"] is not None
         assert "1 not applicable rule" in summary["output"]["summary"]
 
     @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
@@ -119,6 +121,7 @@ class TestSummary(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         assert (
             f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-conflict` [📌 merge requirement]\n- [X] `-draft` [📌 merge requirement]\n- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
             in summary["output"]["summary"]
@@ -130,6 +133,7 @@ class TestSummary(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         assert (
             f"### ✅ Rule: test (merge)\n- [X] `-conflict` [📌 merge requirement]\n- [X] `-draft` [📌 merge requirement]\n- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] `label=test`\n"
             in summary["output"]["summary"]
@@ -162,6 +166,7 @@ class TestSummary(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         assert (
             f"### Rule: test (merge)\n- [ ] `label=test`\n- [ ] all of:\n  - [ ] `label=test2`\n  - [ ] `label=test3`\n- [X] `-conflict` [📌 merge requirement]\n- [X] `-draft` [📌 merge requirement]\n- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
             in summary["output"]["summary"]
@@ -173,6 +178,7 @@ class TestSummary(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         assert (
             f"\n### Rule: test (merge)\n- [ ] `label=test`\n- [ ] all of:\n  - [ ] `label=test3`\n  - [X] `label=test2`\n- [X] `-conflict` [📌 merge requirement]\n- [X] `-draft` [📌 merge requirement]\n- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
             in summary["output"]["summary"]
@@ -184,6 +190,7 @@ class TestSummary(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         assert (
             f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-conflict` [📌 merge requirement]\n- [X] `-draft` [📌 merge requirement]\n- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] all of:\n  - [X] `label=test2`\n  - [X] `label=test3`\n"
             in summary["output"]["summary"]
@@ -216,6 +223,7 @@ class TestSummary(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         assert (
             f"### Rule: test (merge)\n- [ ] `label=test`\n- [ ] any of:\n  - [ ] `label=test2`\n  - [ ] `label=test3`\n- [X] `-conflict` [📌 merge requirement]\n- [X] `-draft` [📌 merge requirement]\n- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
             in summary["output"]["summary"]
@@ -227,6 +235,7 @@ class TestSummary(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         assert (
             f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-conflict` [📌 merge requirement]\n- [X] `-draft` [📌 merge requirement]\n- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] any of:\n  - [X] `label=test2`\n  - [ ] `label=test3`\n"
             in summary["output"]["summary"]
@@ -238,6 +247,7 @@ class TestSummary(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["summary"] is not None
         assert (
             f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-conflict` [📌 merge requirement]\n- [X] `-draft` [📌 merge requirement]\n- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] any of:\n  - [X] `label=test2`\n  - [X] `label=test3`\n"
             in summary["output"]["summary"]
@@ -316,6 +326,8 @@ class TestQueueCISummary(base.FunctionalTestBase):
 
         assert len(check_runs) == 3
         assert check_runs[0]["name"] == "Queue: Embarked in merge queue"
+        assert check_runs[0]["output"]["summary"] is not None
+
         regex = rf"Check-runs and statuses of the embarked pull request #{tmp_pull_1['number']}:.*The CI is failure.*The CI is pending.*The CI is success"
         assert (
             re.search(regex, check_runs[0]["output"]["summary"], flags=re.DOTALL)
@@ -347,6 +359,7 @@ class TestQueueCISummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"] is not None
+        assert summary["output"]["summary"] is not None
         assert (
             f"""
 ### Rule: no &lt;i&gt;manual&lt;/i&gt; merge (comment)

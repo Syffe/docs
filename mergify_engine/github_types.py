@@ -715,8 +715,8 @@ GitHubCheckRunConclusion = typing.Literal[
 
 
 class GitHubCheckRunOutput(typing_extensions.TypedDict):
-    title: str
-    summary: str
+    title: str | None
+    summary: str | None
     text: str | None
     annotations_count: int
     annotations_url: str
