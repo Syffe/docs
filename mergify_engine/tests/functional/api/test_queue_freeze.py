@@ -590,7 +590,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         r = await self._delete_queue_freeze(
             queue_name=queue_name,
-            expected_status_code=204,
         )
 
         queue_freeze_data_default = await freeze.QueueFreeze.get(
@@ -875,7 +874,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         await self._delete_queue_freeze(
             queue_name="low-priority",
-            expected_status_code=204,
         )
         r = await self._get_all_queue_freeze()
         assert r.json() == {
@@ -1524,7 +1522,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
         assert check_run_p2 is None
 
-        await self._delete_queue_freeze(queue_name="urgent", expected_status_code=204)
+        await self._delete_queue_freeze(queue_name="urgent")
 
         queue_freeze_data_urgent = await freeze.QueueFreeze.get(
             self.repository_ctxt,
@@ -1743,7 +1741,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             in check_run_p1["output"]["summary"]
         )
 
-        await self._delete_queue_freeze(queue_name="default", expected_status_code=204)
+        await self._delete_queue_freeze(queue_name="default")
 
         queue_freeze_data_urgent = await freeze.QueueFreeze.get(
             self.repository_ctxt,

@@ -2217,7 +2217,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     async def _delete_queue_freeze(
         self,
         queue_name: str,
-        expected_status_code: int = 200,
+        expected_status_code: int = 204,
     ) -> httpx.Response:
         r = await self.admin_app.delete(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
