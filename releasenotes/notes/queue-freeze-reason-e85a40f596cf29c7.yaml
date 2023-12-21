@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Add `queue-freeze-reason` attribute.

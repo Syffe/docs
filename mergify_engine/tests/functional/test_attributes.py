@@ -370,6 +370,7 @@ class TestAttributes(base.FunctionalTestBase):
             "#files": 1,
             "number": pr["number"],
             "queue-dequeue-reason": None,
+            "queue-freeze-reason": None,
             "closed": False,
             "locked": False,
             "assignee": [],
@@ -1594,9 +1595,12 @@ class TestAttributesWithSub(base.FunctionalTestBase):
                     "actions": {"queue": {}},
                 },
                 {
-                    "name": "Label queue name",
+                    "name": "Label and comment queue frozen",
                     "conditions": ["queue-frozen"],
-                    "actions": {"label": {"toggle": ["frozen"]}},
+                    "actions": {
+                        "label": {"toggle": ["frozen"]},
+                        "comment": {"message": "Freeze! {{queue_freeze_reason}}"},
+                    },
                 },
             ],
         }
@@ -1615,6 +1619,10 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         assert "frozen" in [
             label["name"] for label in labelled_p1["pull_request"]["labels"]
         ]
+
+        comment_e = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        comment = await self.get_comment(comment_e["comment"]["id"])
+        assert comment["body"] == "Freeze! holidays!"
 
         await self._delete_queue_freeze(
             queue_name="default",

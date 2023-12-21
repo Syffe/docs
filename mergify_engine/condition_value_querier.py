@@ -266,6 +266,22 @@ class BasePullRequest:
                 embarked_pulls[0].embarked_pull.config["name"],
             )
 
+        if name == "queue-freeze-reason":
+            embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])
+            if not embarked_pulls:
+                return None
+            if len(embarked_pulls) != 1:
+                # NOTE(charly): Attribute not yet handled for multiple queues
+                raise PullRequestAttributeError(name)
+
+            freeze = await convoy.get_current_queue_freeze(
+                embarked_pulls[0].embarked_pull.config["name"],
+            )
+            if freeze is None:
+                return None
+
+            return freeze.reason
+
         raise PullRequestAttributeError(name)
 
     @staticmethod
@@ -668,6 +684,7 @@ class PullRequest(BasePullRequest):
         "repository-full-name",
         "queue-dequeue-reason",
         "queue-name",
+        "queue-freeze-reason",
     }
 
     LIST_ATTRIBUTES: typing.ClassVar[set[str]] = {

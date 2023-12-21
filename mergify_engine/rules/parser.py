@@ -120,6 +120,7 @@ CONDITION_PARSERS = {
     "current-datetime": Parser.TIMESTAMP,
     "queue-name": Parser.TEXT,
     "queue-frozen": Parser.BOOL,
+    "queue-freeze-reason": Parser.TEXT,
 }
 COMMAND_ONLY_ATTRIBUTES = ("sender", "sender-permission")
 CONDITION_ENUMS = {

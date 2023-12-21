@@ -2219,7 +2219,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
             json=freeze_payload,
         )
-        assert r.status_code == expected_status_code
+        assert r.status_code == expected_status_code, r.json()
         return r
 
     async def _delete_queue_freeze(
