@@ -194,16 +194,16 @@ async def query_issues(
 
     # NOTE(Kontrolix): We use an OrderedDict here to be sure to keep the sorting of
     # the SQL query
-    reponses: OrderedDict[int, CiIssueResponse] = OrderedDict()
+    responses: OrderedDict[int, CiIssueResponse] = OrderedDict()
     for result in await session.execute(stmt):
         # NOTE(Kontrolix): Filter out ci_issue link to only one PR
         if result.pull_requests and len(result.pull_requests) == 1:
             continue
 
-        if result.id in reponses:
-            reponse = reponses[result.id]
+        if result.id in responses:
+            response = responses[result.id]
         else:
-            reponse = CiIssueResponse(
+            response = CiIssueResponse(
                 id=result.id,
                 short_id=result.short_id,
                 name=result.name or f"Failure of {result.job_name}",
@@ -211,9 +211,9 @@ async def query_issues(
                 status=result.status,
                 events=[],
             )
-            reponses[result.id] = reponse
+            responses[result.id] = response
 
-        reponse.events.append(
+        response.events.append(
             CiIssueEvent(
                 id=result.event_id,
                 run_id=result.workflow_run_id,
@@ -223,10 +223,10 @@ async def query_issues(
             ),
         )
 
-    if issue_id is not None and len(reponses) > 1:
+    if issue_id is not None and len(responses) > 1:
         raise RuntimeError("This should never happens")
 
-    return list(reponses.values())
+    return list(responses.values())
 
 
 @router.get(
@@ -314,15 +314,15 @@ async def get_ci_issue(
         fastapi.Path(description="The ID of the CI Issue"),
     ],
 ) -> CiIssueResponse:
-    reponses = await query_issues(
+    responses = await query_issues(
         session,
         repository_ctxt.repo["id"],
         limit=1,
         issue_id=ci_issue_id,
     )
-    if len(reponses) == 0:
+    if len(responses) == 0:
         raise fastapi.HTTPException(404)
-    return reponses[0]
+    return responses[0]
 
 
 @router.patch(
