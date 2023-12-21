@@ -783,68 +783,375 @@ async def test_embed_logs_on_various_data(
 @pytest.mark.parametrize(
     (
         "first_try_mock_log",
-        "first_try_mock_embedding",
         "first_try_log_status",
-        "first_try_embedding_status",
         "second_try_mock_log",
-        "second_try_mock_embedding",
         "second_try_log_status",
-        "second_try_embedding_status",
         "log_errors",
     ),
     (
         (
             mock_log_downloaded,
-            mock_embedding_embedded,
             gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
-            noop,
             noop,
             gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
             [],
         ),
         (
             mock_log_gone,
+            gh_models.WorkflowJobLogStatus.GONE,
             noop,
             gh_models.WorkflowJobLogStatus.GONE,
-            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
-            noop,
-            noop,
-            gh_models.WorkflowJobLogStatus.GONE,
-            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
             [],
         ),
         (
             mock_log_error,
-            noop,
             gh_models.WorkflowJobLogStatus.UNKNOWN,
-            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
-            noop,
             noop,
             gh_models.WorkflowJobLogStatus.ERROR,
-            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
-            ["log-embedder: too many unexpected failures, giving up"],
+            [
+                "log-embedder: too many unexpected failures, giving up",
+            ],
         ),
         (
+            mock_log_error,
+            gh_models.WorkflowJobLogStatus.UNKNOWN,
             mock_log_downloaded,
-            mock_embedding_error,
             gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
+            [],
+        ),
+    ),
+)
+@pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
+async def test_download_logs_for_failed_jobs_life_cycle(
+    _: None,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    first_try_mock_log: typing.Callable[
+        [
+            respx.MockRouter,
+            gh_models.GitHubAccount,
+            gh_models.GitHubRepository,
+            gh_models.WorkflowJob,
+        ],
+        None,
+    ],
+    first_try_log_status: gh_models.WorkflowJobLogStatus,
+    second_try_mock_log: typing.Callable[
+        [
+            respx.MockRouter,
+            gh_models.GitHubAccount,
+            gh_models.GitHubRepository,
+            gh_models.WorkflowJob,
+        ],
+        None,
+    ],
+    second_try_log_status: gh_models.WorkflowJobLogStatus,
+    log_errors: list[str],
+) -> None:
+    owner, repo, job = await _status_life_cycle_base(db, respx_mock, monkeypatch)
+
+    respx_mock.get(
+        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation",
+    ).respond(
+        200,
+        json=github_types.GitHubInstallation(  # type: ignore[arg-type]
+            {
+                "id": github_types.GitHubInstallationIdType(0),
+                "target_type": "Organization",
+                "suspended_at": None,
+                "permissions": {},
+                "account": {
+                    "id": github_types.GitHubAccountIdType(1),
+                    "login": github_types.GitHubLogin("owner"),
+                    "type": "User",
+                    "avatar_url": "",
+                },
+            },
+        ),
+    )
+    respx_mock.post(
+        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens",
+    ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
+
+    job = await db.get_one(gh_models.WorkflowJob, 1)
+    assert job.log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
+
+    db.expunge_all()
+
+    first_try_mock_log(respx_mock, owner, repo, job)
+
+    await github_action.download_logs_for_failed_jobs()
+
+    job = await db.get_one(gh_models.WorkflowJob, 1)
+    assert job.log_status == first_try_log_status
+    db.expunge_all()
+
+    second_try_mock_log(respx_mock, owner, repo, job)
+
+    await github_action.download_logs_for_failed_jobs()
+
+    job = await db.get_one(gh_models.WorkflowJob, 1)
+    assert job.log_status == second_try_log_status
+
+    assert [
+        r.message for r in caplog.get_records(when="call") if r.levelname == "ERROR"
+    ] == log_errors
+
+
+@pytest.mark.ignored_logging_errors(
+    "log-embedder: unexpected failure, retrying later",
+    "log-embedder: too many unexpected failures, giving up",
+    "log-embedder: Job log_status is DOWNLOADED but log-extract is `None`",
+)
+@mock.patch.object(
+    exceptions,
+    "need_retry_in",
+    return_value=datetime.timedelta(seconds=-60),
+)
+@pytest.mark.parametrize(
+    (
+        "log_status",
+        "log_extract",
+        "first_try_mock_extracting",
+        "first_try_metadata_status",
+        "second_try_mock_extracting",
+        "second_try_metadata_status",
+        "log_errors",
+    ),
+    (
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_extracting_metadata_extracted,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
             noop,
-            mock_embedding_embedded,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
+            [],
+        ),
+        (
             gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            None,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            ["log-embedder: Job log_status is DOWNLOADED but log-extract is `None`"],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.GONE,
+            None,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
+            [],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.ERROR,
+            None,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
+            [],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_extracting_metadata_misformated,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
+            mock_extracting_metadata_extracted,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
+            ["log-embedder: unexpected failure, retrying later"],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_extracting_metadata_misformated,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            [
+                "log-embedder: unexpected failure, retrying later",
+                "log-embedder: too many unexpected failures, giving up",
+            ],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_extracting_metadata_invalid_json,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
+            mock_extracting_metadata_error,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            [
+                "log-embedder: unexpected failure, retrying later",
+                "log-embedder: too many unexpected failures, giving up",
+            ],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_extracting_metadata_empty_failures,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            [],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_extracting_metadata_none_failures,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            [],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_extracting_metadata_finish_reason_length,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            [],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_extracting_metadata_error_in_prompt,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            noop,
+            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
+            [],
+        ),
+    ),
+)
+async def test_extract_metadata_from_logs_life_cycle(
+    _: None,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    log_status: gh_models.WorkflowJobLogStatus,
+    log_extract: str,
+    first_try_mock_extracting: typing.Callable[
+        [respx.MockRouter],
+        None,
+    ],
+    first_try_metadata_status: gh_models.WorkflowJobLogMetadataExtractingStatus,
+    second_try_mock_extracting: typing.Callable[
+        [respx.MockRouter],
+        None,
+    ],
+    second_try_metadata_status: gh_models.WorkflowJobLogMetadataExtractingStatus,
+    log_errors: list[str],
+) -> None:
+    job = (await _status_life_cycle_base(db, respx_mock, monkeypatch))[2]
+
+    job = await db.get_one(gh_models.WorkflowJob, 1)
+    job.log_status = log_status
+    job.log_extract = log_extract
+    assert (
+        job.log_metadata_extracting_status
+        == gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN
+    )
+    await db.commit()
+    db.expunge_all()
+
+    first_try_mock_extracting(respx_mock)
+
+    await github_action.extract_metadata_from_logs()
+
+    job = await db.get_one(gh_models.WorkflowJob, 1)
+    assert job.log_metadata_extracting_status == first_try_metadata_status
+    db.expunge_all()
+
+    second_try_mock_extracting(respx_mock)
+
+    await github_action.extract_metadata_from_logs()
+
+    job = await db.get_one(gh_models.WorkflowJob, 1)
+    assert job.log_metadata_extracting_status == second_try_metadata_status
+
+    assert [
+        r.message for r in caplog.get_records(when="call") if r.levelname == "ERROR"
+    ] == log_errors
+
+
+@pytest.mark.ignored_logging_errors(
+    "log-embedder: unexpected failure, retrying later",
+    "log-embedder: too many unexpected failures, giving up",
+    "log-embedder: Job log_status is DOWNLOADED but log-extract is `None`",
+)
+@mock.patch.object(
+    exceptions,
+    "need_retry_in",
+    return_value=datetime.timedelta(seconds=-60),
+)
+@pytest.mark.parametrize(
+    (
+        "log_status",
+        "log_extract",
+        "first_try_mock_embedding",
+        "first_try_embedding_status",
+        "second_try_mock_embedding",
+        "second_try_embedding_status",
+        "log_errors",
+    ),
+    (
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_embedding_embedded,
+            gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+            noop,
             gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
             [],
         ),
         (
-            mock_log_downloaded,
-            mock_embedding_error,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            gh_models.WorkflowJobLogStatus.GONE,
+            None,
+            noop,
             gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
             noop,
-            noop,
+            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
+            [],
+        ),
+        (
             gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            None,
+            noop,
+            gh_models.WorkflowJobLogEmbeddingStatus.ERROR,
+            noop,
+            gh_models.WorkflowJobLogEmbeddingStatus.ERROR,
+            ["log-embedder: Job log_status is DOWNLOADED but log-extract is `None`"],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.ERROR,
+            None,
+            noop,
+            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
+            noop,
+            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
+            [],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_embedding_error,
+            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
+            mock_embedding_embedded,
+            gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+            [],
+        ),
+        (
+            gh_models.WorkflowJobLogStatus.DOWNLOADED,
+            "",
+            mock_embedding_error,
+            gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
+            noop,
             gh_models.WorkflowJobLogEmbeddingStatus.ERROR,
             ["log-embedder: too many unexpected failures, giving up"],
         ),
@@ -856,294 +1163,48 @@ async def test_get_logs_embedding_life_cycle(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     monkeypatch: pytest.MonkeyPatch,
-    redis_links: redis_utils.RedisLinks,
     caplog: pytest.LogCaptureFixture,
-    first_try_mock_log: typing.Callable[
-        [
-            respx.MockRouter,
-            gh_models.GitHubAccount,
-            gh_models.GitHubRepository,
-            gh_models.WorkflowJob,
-        ],
-        None,
-    ],
+    log_status: gh_models.WorkflowJobLogStatus,
+    log_extract: str,
     first_try_mock_embedding: typing.Callable[
         [respx.MockRouter],
         None,
     ],
-    first_try_log_status: gh_models.WorkflowJobLogStatus,
     first_try_embedding_status: gh_models.WorkflowJobLogEmbeddingStatus,
-    second_try_mock_log: typing.Callable[
-        [
-            respx.MockRouter,
-            gh_models.GitHubAccount,
-            gh_models.GitHubRepository,
-            gh_models.WorkflowJob,
-        ],
-        None,
-    ],
     second_try_mock_embedding: typing.Callable[
         [respx.MockRouter],
         None,
     ],
-    second_try_log_status: gh_models.WorkflowJobLogStatus,
     second_try_embedding_status: gh_models.WorkflowJobLogEmbeddingStatus,
     log_errors: list[str],
 ) -> None:
-    owner, repo, job = await _status_life_cycle_base(db, respx_mock, monkeypatch)
+    job = (await _status_life_cycle_base(db, respx_mock, monkeypatch))[2]
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
-    assert job.log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
+    job.log_status = log_status
+    job.log_extract = log_extract
     assert job.log_embedding_status == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN
-    db.expunge_all()
-
-    first_try_mock_log(respx_mock, owner, repo, job)
-    first_try_mock_embedding(respx_mock)
-
-    await github_action.download_logs_for_failed_jobs()
-    await github_action.get_logs_embedding()
-
-    job = await db.get_one(gh_models.WorkflowJob, 1)
-    assert job.log_status == first_try_log_status
-    assert job.log_embedding_status == first_try_embedding_status
-    db.expunge_all()
-
-    second_try_mock_log(respx_mock, owner, repo, job)
-    second_try_mock_embedding(respx_mock)
-
-    await github_action.download_logs_for_failed_jobs()
-    await github_action.get_logs_embedding()
-
-    job = await db.get_one(gh_models.WorkflowJob, 1)
-    assert job.log_status == second_try_log_status
-    assert job.log_embedding_status == second_try_embedding_status
-
-    assert [
-        r.message for r in caplog.get_records(when="call") if r.levelname == "ERROR"
-    ] == log_errors
-
-
-@pytest.mark.ignored_logging_errors(
-    "log-embedder: unexpected failure, retrying later",
-    "log-embedder: too many unexpected failures, giving up",
-)
-@mock.patch.object(
-    exceptions,
-    "need_retry_in",
-    return_value=datetime.timedelta(seconds=-60),
-)
-@pytest.mark.parametrize(
-    (
-        "first_try_mock_log",
-        "first_try_mock_extracting",
-        "first_try_log_status",
-        "first_try_metadata_status",
-        "second_try_mock_log",
-        "second_try_mock_extracting",
-        "second_try_log_status",
-        "second_try_metadata_status",
-        "log_errors",
-    ),
-    (
-        (
-            mock_log_downloaded,
-            mock_extracting_metadata_extracted,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
-            noop,
-            noop,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
-            [],
-        ),
-        (
-            mock_log_gone,
-            noop,
-            gh_models.WorkflowJobLogStatus.GONE,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
-            noop,
-            noop,
-            gh_models.WorkflowJobLogStatus.GONE,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
-            [],
-        ),
-        (
-            mock_log_error,
-            noop,
-            gh_models.WorkflowJobLogStatus.UNKNOWN,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
-            noop,
-            noop,
-            gh_models.WorkflowJobLogStatus.ERROR,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
-            ["log-embedder: too many unexpected failures, giving up"],
-        ),
-        (
-            mock_log_downloaded,
-            mock_extracting_metadata_misformated,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
-            noop,
-            mock_extracting_metadata_extracted,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
-            ["log-embedder: unexpected failure, retrying later"],
-        ),
-        (
-            mock_log_downloaded,
-            mock_extracting_metadata_misformated,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
-            noop,
-            noop,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
-            [
-                "log-embedder: unexpected failure, retrying later",
-                "log-embedder: too many unexpected failures, giving up",
-            ],
-        ),
-        (
-            mock_log_downloaded,
-            mock_extracting_metadata_invalid_json,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
-            noop,
-            mock_extracting_metadata_error,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
-            [
-                "log-embedder: unexpected failure, retrying later",
-                "log-embedder: too many unexpected failures, giving up",
-            ],
-        ),
-        (
-            mock_log_downloaded,
-            mock_extracting_metadata_empty_failures,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
-            noop,
-            noop,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
-            [],
-        ),
-        (
-            mock_log_downloaded,
-            mock_extracting_metadata_none_failures,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
-            noop,
-            noop,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
-            [],
-        ),
-        (
-            mock_log_downloaded,
-            mock_extracting_metadata_finish_reason_length,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
-            noop,
-            noop,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
-            [],
-        ),
-        (
-            mock_log_downloaded,
-            mock_extracting_metadata_error_in_prompt,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
-            noop,
-            noop,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.ERROR,
-            [],
-        ),
-        (
-            mock_log_downloaded,
-            mock_extracting_metadata_lineno_int,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
-            noop,
-            noop,
-            gh_models.WorkflowJobLogStatus.DOWNLOADED,
-            gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
-            [],
-        ),
-    ),
-)
-@pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
-async def test_extract_metadata_from_logs_life_cycle(
-    _: None,
-    db: sqlalchemy.ext.asyncio.AsyncSession,
-    respx_mock: respx.MockRouter,
-    monkeypatch: pytest.MonkeyPatch,
-    redis_links: redis_utils.RedisLinks,
-    caplog: pytest.LogCaptureFixture,
-    first_try_mock_log: typing.Callable[
-        [
-            respx.MockRouter,
-            gh_models.GitHubAccount,
-            gh_models.GitHubRepository,
-            gh_models.WorkflowJob,
-        ],
-        None,
-    ],
-    first_try_mock_extracting: typing.Callable[
-        [respx.MockRouter],
-        None,
-    ],
-    first_try_log_status: gh_models.WorkflowJobLogStatus,
-    first_try_metadata_status: gh_models.WorkflowJobLogMetadataExtractingStatus,
-    second_try_mock_log: typing.Callable[
-        [
-            respx.MockRouter,
-            gh_models.GitHubAccount,
-            gh_models.GitHubRepository,
-            gh_models.WorkflowJob,
-        ],
-        None,
-    ],
-    second_try_mock_extracting: typing.Callable[
-        [respx.MockRouter],
-        None,
-    ],
-    second_try_log_status: gh_models.WorkflowJobLogStatus,
-    second_try_metadata_status: gh_models.WorkflowJobLogMetadataExtractingStatus,
-    log_errors: list[str],
-) -> None:
-    owner, repo, job = await _status_life_cycle_base(db, respx_mock, monkeypatch)
-
-    job = await db.get_one(gh_models.WorkflowJob, 1)
-    assert job.log_status == gh_models.WorkflowJobLogStatus.UNKNOWN
     assert (
         job.log_metadata_extracting_status
         == gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN
     )
+    await db.commit()
     db.expunge_all()
 
-    first_try_mock_log(respx_mock, owner, repo, job)
-    first_try_mock_extracting(respx_mock)
+    first_try_mock_embedding(respx_mock)
 
-    await github_action.download_logs_for_failed_jobs()
-    await github_action.extract_metadata_from_logs()
+    await github_action.get_logs_embedding()
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
-    assert job.log_status == first_try_log_status
-    assert job.log_metadata_extracting_status == first_try_metadata_status
+    assert job.log_embedding_status == first_try_embedding_status
     db.expunge_all()
 
-    second_try_mock_log(respx_mock, owner, repo, job)
-    second_try_mock_extracting(respx_mock)
+    second_try_mock_embedding(respx_mock)
 
-    await github_action.download_logs_for_failed_jobs()
-    await github_action.extract_metadata_from_logs()
+    await github_action.get_logs_embedding()
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
-    assert job.log_status == second_try_log_status
-    assert job.log_metadata_extracting_status == second_try_metadata_status
+    assert job.log_embedding_status == second_try_embedding_status
 
     assert [
         r.message for r in caplog.get_records(when="call") if r.levelname == "ERROR"
@@ -1176,29 +1237,6 @@ async def _status_life_cycle_base(
     db.add(job)
     await db.commit()
     db.expunge_all()
-
-    respx_mock.get(
-        f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation",
-    ).respond(
-        200,
-        json=github_types.GitHubInstallation(  # type: ignore[arg-type]
-            {
-                "id": github_types.GitHubInstallationIdType(0),
-                "target_type": "Organization",
-                "suspended_at": None,
-                "permissions": {},
-                "account": {
-                    "id": github_types.GitHubAccountIdType(1),
-                    "login": github_types.GitHubLogin("owner"),
-                    "type": "User",
-                    "avatar_url": "",
-                },
-            },
-        ),
-    )
-    respx_mock.post(
-        f"{settings.GITHUB_REST_API_URL}/app/installations/0/access_tokens",
-    ).respond(200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"})
 
     monkeypatch.setattr(settings, "LOG_EMBEDDER_ENABLED_ORGS", [owner.login])
     monkeypatch.setattr(github_action, "LOG_EMBEDDER_MAX_ATTEMPTS", 2)
