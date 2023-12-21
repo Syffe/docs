@@ -411,9 +411,7 @@ def get_job_processing_base_query() -> sqlalchemy.Select[tuple[gh_models.Workflo
     )
 
 
-async def embed_logs_with_log_embedding(
-    redis_links: redis_utils.RedisLinks,
-) -> bool:
+async def get_logs_embedding() -> bool:
     async with database.create_session() as session:
         stmt = (
             get_job_processing_base_query()
@@ -423,15 +421,8 @@ async def embed_logs_with_log_embedding(
             .where(
                 gh_models.WorkflowJob.log_status
                 == gh_models.WorkflowJobLogStatus.DOWNLOADED,
-                sqlalchemy.or_(
-                    gh_models.WorkflowJob.log_embedding_status
-                    == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
-                    sqlalchemy.and_(
-                        gh_models.WorkflowJob.log_embedding_status
-                        == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
-                        gh_models.WorkflowJob.ci_issue_id.is_(None),
-                    ),
-                ),
+                gh_models.WorkflowJob.log_embedding_status
+                == gh_models.WorkflowJobLogEmbeddingStatus.UNKNOWN,
             )
         )
 
@@ -444,7 +435,6 @@ async def embed_logs_with_log_embedding(
         LOG.info("log-embedder: %d jobs to embed", len(jobs))
 
         async with openai_api.OpenAIClient() as openai_client:
-            refresh_ready_job_ids = []
             for job in jobs:
                 job_for_update = await session.merge(job, load=False)
 
@@ -478,10 +468,33 @@ async def embed_logs_with_log_embedding(
                     await try_commit_or_rollback(session)
                     continue
 
-                if job_for_update.ci_issue_id is None:
-                    await ci_issue.CiIssue.link_job_to_ci_issue(session, job_for_update)
-                    await try_commit_or_rollback(session)
-                    refresh_ready_job_ids.append(job_for_update.id)
+        return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
+
+
+async def link_jobs_to_ci_issue(redis_links: redis_utils.RedisLinks) -> bool:
+    async with database.create_session() as session:
+        stmt = (
+            get_job_processing_base_query()
+            .options(
+                orm.joinedload(gh_models.WorkflowJob.ci_issue),
+            )
+            .where(
+                gh_models.WorkflowJob.log_embedding_status
+                == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+                # FIXME(sileht/Kontrolix): should it be status like other?
+                gh_models.WorkflowJob.ci_issue_id.is_(None),
+            )
+        )
+
+        jobs = (await session.scalars(stmt)).all()
+
+        LOG.info("log-embedder: %d jobs to link to ci_issue", len(jobs))
+
+        refresh_ready_job_ids = []
+        for job in jobs:
+            await ci_issue.CiIssue.link_job_to_ci_issue(session, job)
+            await try_commit_or_rollback(session)
+            refresh_ready_job_ids.append(job.id)
 
         await flaky_check.send_pull_refresh_for_jobs(redis_links, refresh_ready_job_ids)
 
@@ -654,8 +667,7 @@ async def process_failed_jobs(redis_links: redis_utils.RedisLinks) -> bool:
             await download_logs_for_failed_jobs(),
             await extract_metadata_from_logs(),
             await link_jobs_to_ci_issue_gpt(),
-            await embed_logs_with_log_embedding(
-                redis_links,
-            ),
+            await get_logs_embedding(),
+            await link_jobs_to_ci_issue(redis_links),
         ),
     )

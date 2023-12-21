@@ -851,7 +851,7 @@ async def test_embed_logs_on_various_data(
     ),
 )
 @pytest.mark.usefixtures("_prepare_google_cloud_storage_setup")
-async def test_embed_logs_with_log_embedding_life_cycle(
+async def test_get_logs_embedding_life_cycle(
     _: None,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
@@ -901,7 +901,7 @@ async def test_embed_logs_with_log_embedding_life_cycle(
     first_try_mock_embedding(respx_mock)
 
     await github_action.download_logs_for_failed_jobs()
-    await github_action.embed_logs_with_log_embedding(redis_links)
+    await github_action.get_logs_embedding()
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
     assert job.log_status == first_try_log_status
@@ -912,7 +912,7 @@ async def test_embed_logs_with_log_embedding_life_cycle(
     second_try_mock_embedding(respx_mock)
 
     await github_action.download_logs_for_failed_jobs()
-    await github_action.embed_logs_with_log_embedding(redis_links)
+    await github_action.get_logs_embedding()
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
     assert job.log_status == second_try_log_status
@@ -1569,3 +1569,56 @@ async def test_link_jobs_to_ci_issue_gpt(
         await populated_db.execute(count_job_ready_with_no_ci_issues_stmt)
     ).scalar_one() == 0
     assert (await populated_db.execute(count_ci_issue_created_stmt)).scalar_one() == 4
+
+
+@pytest.mark.populated_db_datasets("TestApiGhaFailedJobsDataset")
+async def test_link_jobs_to_ci_issue(
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    count_job_ready_with_no_ci_issues_stmt = (
+        sqlalchemy.select(sqlalchemy.func.count())
+        .select_from(gh_models.WorkflowJob)
+        .where(
+            gh_models.WorkflowJob.log_embedding_status
+            == gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED,
+            gh_models.WorkflowJob.ci_issue_id.is_(None),
+        )
+    )
+
+    count_ci_issue_created_stmt = sqlalchemy.select(
+        sqlalchemy.func.count(),
+    ).select_from(ci_issue.CiIssue)
+
+    await populated_db.commit()
+
+    assert (
+        await populated_db.execute(count_job_ready_with_no_ci_issues_stmt)
+    ).scalar_one() == 5
+
+    assert (await populated_db.execute(count_ci_issue_created_stmt)).scalar_one() == 0
+
+    logins = set()
+    for job in (
+        await populated_db.execute(sqlalchemy.select(gh_models.WorkflowJob))
+    ).scalars():
+        logins.add(job.repository.owner.login)
+
+    monkeypatch.setattr(
+        settings,
+        "LOG_EMBEDDER_ENABLED_ORGS",
+        list(logins),
+    )
+    monkeypatch.setattr(github_action, "LOG_EMBEDDER_JOBS_BATCH_SIZE", 3)
+
+    pending_work = await github_action.link_jobs_to_ci_issue(redis_links)
+    assert pending_work
+    pending_work = await github_action.link_jobs_to_ci_issue(redis_links)
+    assert not pending_work
+
+    assert (
+        await populated_db.execute(count_job_ready_with_no_ci_issues_stmt)
+    ).scalar_one() == 0
+
+    assert (await populated_db.execute(count_ci_issue_created_stmt)).scalar_one() == 3
