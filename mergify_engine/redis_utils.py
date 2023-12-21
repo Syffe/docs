@@ -360,7 +360,9 @@ async def process_stream(
                         log_level,
                         "unprocessable %s event",
                         event_name,
-                        stream_event=event,
+                        # FIXME(sileht): we need to find another way to get the event data
+                        # that make the processing failing.
+                        # stream_event=event,
                         stream_event_id=event_id,
                         exc_info=True,
                     )

@@ -55,11 +55,13 @@ async def store_redis_event_in_pg(event_id: bytes, event: dict[bytes, bytes]) ->
         typed_event_data = model.type_adapter.validate_python(event_data)
     except pydantic_core.ValidationError:
         LOG.warning(
-            "Dropping event %s/id=%s because it cannot be validated by its model's type adapter",
-            event_type,
-            event_id,
-            raw_event=event,
-            event_data=event_data,
+            "Dropping event because it cannot be validated by its model's type adapter",
+            event_type=event_type,
+            event_id=event_id,
+            # FIXME(sileht): we need to find another way to get the event data
+            # that make the processing failing.
+            # raw_event=event,
+            # event_data=event_data,
         )
         return
 
