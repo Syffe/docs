@@ -81,9 +81,7 @@ class BranchPartitions:
     summary="Get all the partitions",
     description="Get the list of pull requests queued in each merge queue, organized by partition name",
     response_model=list[BranchPartitions],
-    responses={
-        **api.default_responses,  # type: ignore[dict-item]
-    },
+    responses=api.default_responses,
 )
 async def repository_partitions(
     session: database.Session,
@@ -182,9 +180,7 @@ async def repository_partitions(
     summary="Get all the partitions of a specific branch",
     description="Get the list of pull requests queued in each merge queue, organized by partition name",
     response_model=BranchPartitions,
-    responses={
-        **api.default_responses,  # type: ignore[dict-item]
-    },
+    responses=api.default_responses,
 )
 async def repository_partitions_branch(
     session: database.Session,
@@ -259,9 +255,7 @@ async def repository_partitions_branch(
     summary="Get a partition's merge queues",
     description="Get the list of pull requests queued in each merge queue of a partition",
     response_model=Partition | None,
-    responses={
-        **api.default_responses,  # type: ignore[dict-item]
-    },
+    responses=api.default_responses,
 )
 async def repository_partition_branch(
     session: database.Session,

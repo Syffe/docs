@@ -235,9 +235,7 @@ async def query_issues(
     description="Get CI issues",
     response_model=CiIssuesResponse,
     include_in_schema=False,
-    responses={
-        **api.default_responses,  # type: ignore[dict-item]
-    },
+    responses=api.default_responses,
 )
 async def get_ci_issues(
     session: database.Session,
@@ -273,9 +271,7 @@ async def get_ci_issues(
     summary="Partially update CI issues",
     description="Update some properties of several CI issues",
     include_in_schema=False,
-    responses={
-        **api.default_responses,  # type: ignore[dict-item]
-    },
+    responses=api.default_responses,
 )
 async def patch_ci_issues(
     session: database.Session,

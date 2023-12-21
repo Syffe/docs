@@ -85,9 +85,7 @@ class SimulatorResponse:
     summary="Get a Mergify simulation for a pull request",
     description="Get a simulation of what Mergify will do on a pull request",
     response_model=SimulatorResponse,
-    responses={
-        **api.default_responses,  # type: ignore[dict-item]
-    },
+    responses=api.default_responses,
 )
 async def simulator_pull(
     body: SimulatorPayload,
@@ -128,9 +126,7 @@ async def simulator_pull(
     response_model=SimulatorResponse,
     # checkout repository permissions
     dependencies=[fastapi.Depends(security.get_repository_context)],
-    responses={
-        **api.default_responses,  # type: ignore[dict-item]
-    },
+    responses=api.default_responses,
 )
 async def simulator_repo(
     body: SimulatorPayload,

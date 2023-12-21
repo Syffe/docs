@@ -303,9 +303,7 @@ class PullRequestSummaryResponse(PullRequestSummarySerializerMixin):
     description="Get the list of actions that Mergify will do on a pull request",
     include_in_schema=False,
     response_model=PullRequestSummaryResponse,
-    responses={
-        **api.default_responses,  # type: ignore[dict-item]
-    },
+    responses=api.default_responses,
 )
 async def get_pull_request_summary(
     number: typing.Annotated[

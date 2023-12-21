@@ -265,9 +265,7 @@ async def get_queue_freeze(
     description="Get the list of frozen queues inside the requested repository",
     response_model=QueueFreezeResponse,
     dependencies=[fastapi.Depends(security.check_subscription_feature_queue_freeze)],
-    responses={
-        **api.default_responses,  # type: ignore[dict-item]
-    },
+    responses=api.default_responses,
 )
 async def get_list_queue_freeze(
     repository_ctxt: security.RepositoryWithConfig,
