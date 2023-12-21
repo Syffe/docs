@@ -46,7 +46,7 @@ async def test_process_event_stream_workflow_run(
         fields=stream_event,  # type: ignore[arg-type]
     )
 
-    await event_processing.process_event_streams(redis_links)
+    await event_processing.process_workflow_run_stream(redis_links)
 
     workflow_runs = list(await db.scalars(sqlalchemy.select(gh_models.WorkflowRun)))
     assert len(workflow_runs) == 1
@@ -113,7 +113,7 @@ async def test_process_event_stream_workflow_job(
         fields=stream_event,  # type: ignore[arg-type]
     )
 
-    await event_processing.process_event_streams(redis_links)
+    await event_processing.process_workflow_job_stream(redis_links)
 
     sql = sqlalchemy.select(gh_models.WorkflowJob)
     result = await db.scalars(sql)
@@ -159,7 +159,7 @@ async def test_process_event_stream_broken_workflow_job(
     stream_events = await redis_links.stream.xrange("gha_workflow_job")
     assert len(stream_events) == 1
 
-    await event_processing.process_event_streams(redis_links)
+    await event_processing.process_workflow_job_stream(redis_links)
 
     sql = sqlalchemy.select(gh_models.WorkflowJob)
     result = await db.scalars(sql)
@@ -196,7 +196,7 @@ async def test_delete_workflow_job(
         "gha_workflow_job",
         fields=outdated_job_stream_event,  # type: ignore[arg-type]
     )
-    await event_processing.process_event_streams(redis_links)
+    await event_processing.process_workflow_job_stream(redis_links)
 
     outdated_log_metadata = gh_models.WorkflowJobLogMetadata(
         workflow_job_id=outdated_job_slim_event["workflow_job"]["id"],
@@ -216,7 +216,7 @@ async def test_delete_workflow_job(
         "gha_workflow_job",
         fields=job_stream_event,  # type: ignore[arg-type]
     )
-    await event_processing.process_event_streams(redis_links)
+    await event_processing.process_workflow_job_stream(redis_links)
 
     log_metadata = gh_models.WorkflowJobLogMetadata(
         workflow_job_id=job_slim_event["workflow_job"]["id"],

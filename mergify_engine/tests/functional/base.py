@@ -746,10 +746,18 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         if additionnal_services and "ci-event-processing" in additionnal_services:
             LOG.info("Running ci-event-processing")
-            while (await self.redis_links.stream.xlen("gha_workflow_job")) > 0 or (
-                await self.redis_links.stream.xlen("gha_workflow_run")
+            while (
+                await self.redis_links.stream.xlen(
+                    event_processing.GHA_WORKFLOW_RUN_REDIS_KEY,
+                )
             ) > 0:
-                await event_processing.process_event_streams(self.redis_links)
+                await event_processing.process_workflow_run_stream(self.redis_links)
+            while (
+                await self.redis_links.stream.xlen(
+                    event_processing.GHA_WORKFLOW_JOB_REDIS_KEY,
+                )
+            ) > 0:
+                await event_processing.process_workflow_job_stream(self.redis_links)
             LOG.info("ci-event-processing finished")
 
         if additionnal_services and "log-embedder" in additionnal_services:
