@@ -1,3 +1,4 @@
+import functools
 import typing
 
 import daiquiri
@@ -39,35 +40,35 @@ async def forward(redis_links: redis_utils.RedisLinks) -> bool:
     async with http.AsyncClient(
         base_url=settings.GITHUB_WEBHOOK_FORWARD_URL,
     ) as client:
-        ids_to_delete: list[bytes] = []
-        async for event_id, raw_info in redis_utils.iter_stream(
+        return await redis_utils.process_stream(
+            "event-forwarder",
             redis_links.stream,
-            EVENT_FORWARDER_REDIS_KEY,
+            redis_key=EVENT_FORWARDER_REDIS_KEY,
             batch_size=EVENT_FORWARDER_BATCH_SIZE,
-        ):
-            ids_to_delete.append(event_id)
-            info = typing.cast(ForwardInfo, msgpack.unpackb(raw_info[b"info"]))
+            event_processor=functools.partial(forward_event, client=client),
+        )
 
-            try:
-                await client.post(
-                    "",
-                    content=info["body"],
-                    headers={
-                        "X-GitHub-Event": info["headers"]["x-github-event"],
-                        "X-GitHub-Delivery": info["headers"]["x-github-delivery"],
-                        "X-Hub-Signature": info["headers"]["x-hub-signature"],
-                        "User-Agent": info["headers"]["user-agent"],
-                        "Content-Type": info["headers"]["content-type"],
-                    },
-                )
-            except httpx.HTTPError:
-                LOG.warning(
-                    "Fail to forward GitHub event",
-                    event_type=info["headers"]["x-github-event"],
-                    event_id=info["headers"]["x-github-delivery"],
-                )
 
-        if ids_to_delete:
-            await redis_links.stream.xdel(EVENT_FORWARDER_REDIS_KEY, *ids_to_delete)
-
-    return len(ids_to_delete) == EVENT_FORWARDER_BATCH_SIZE
+async def forward_event(
+    event: dict[bytes, bytes],
+    client: http.AsyncClient,
+) -> None:
+    github_event = msgpack.unpackb(event[b"info"])
+    try:
+        await client.post(
+            "",
+            content=github_event["body"],
+            headers={
+                "X-GitHub-Event": github_event["headers"]["x-github-event"],
+                "X-GitHub-Delivery": github_event["headers"]["x-github-delivery"],
+                "X-Hub-Signature": github_event["headers"]["x-hub-signature"],
+                "User-Agent": github_event["headers"]["user-agent"],
+                "Content-Type": github_event["headers"]["content-type"],
+            },
+        )
+    except httpx.HTTPError:
+        LOG.warning(
+            "Fail to forward GitHub github_event",
+            github_event_type=github_event["headers"]["x-github-event"],
+            github_event_id=github_event["headers"]["x-github-delivery"],
+        )

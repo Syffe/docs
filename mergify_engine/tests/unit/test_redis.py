@@ -1,3 +1,7 @@
+from unittest import mock
+
+import pytest
+
 from mergify_engine import redis_utils
 
 
@@ -19,3 +23,60 @@ async def test_redis_connection_error_workaround_for_broken_behavior(
         f"Error connecting to {conn.host}:{conn.port}. Connection reset by peer"
         == conn._error_message(ConnectionResetError())
     )
+
+
+async def test_redis_stream_processor_ok(
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    await redis_links.stream.xadd("test", {"foo": "bar1"})
+    await redis_links.stream.xadd("test", {"foo": "bar2"})
+    await redis_links.stream.xadd("test", {"foo": "bar3"})
+
+    processor = mock.AsyncMock()
+    await redis_utils.process_stream(
+        "awesome-task",
+        redis_links.stream,
+        "test",
+        batch_size=2,
+        event_processor=processor,
+        redis_payload_data_key=b"foo",
+    )
+
+    assert await redis_links.stream.xlen("test") == 0
+    assert processor.call_count == 3
+    assert processor.mock_calls == [
+        mock.call({b"foo": b"bar1"}),
+        mock.call({b"foo": b"bar2"}),
+        mock.call({b"foo": b"bar3"}),
+    ]
+
+
+@pytest.mark.ignored_logging_errors("unprocessable awesome-task event")
+async def test_redis_stream_processor_error(
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    await redis_links.stream.xadd("test", {"foo": "bar1"})
+    await redis_links.stream.xadd("test", {"foo": "bar2"})
+    await redis_links.stream.xadd("test", {"foo": "bar3"})
+
+    processor = mock.AsyncMock(
+        side_effect=[mock.Mock(), Exception("boom"), Exception("boom")],
+    )
+    await redis_utils.process_stream(
+        "awesome-task",
+        redis_links.stream,
+        "test",
+        batch_size=2,
+        event_processor=processor,
+        redis_payload_data_key=b"foo",
+    )
+
+    assert processor.call_count == 3
+    assert processor.mock_calls == [
+        mock.call({b"foo": b"bar1"}),
+        mock.call({b"foo": b"bar2"}),
+        mock.call({b"foo": b"bar3"}),
+    ]
+
+    # Failed event are still there
+    assert await redis_links.stream.xlen("test") == 2

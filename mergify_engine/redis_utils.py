@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import hashlib
+import logging
 import typing
 import uuid
 
@@ -12,6 +13,7 @@ import redis.asyncio as redispy
 from redis.asyncio import retry
 
 from mergify_engine import date
+from mergify_engine import exceptions
 from mergify_engine import service
 from mergify_engine import settings
 
@@ -326,3 +328,48 @@ async def iter_stream_reverse(
             yield entry_id, entry_data
 
         max_stream_event_id = f"({entry_id.decode()}"
+
+
+async def process_stream(
+    event_name: str,
+    redis_stream: RedisStream,
+    redis_key: str,
+    batch_size: int,
+    event_processor: abc.Callable[[dict[bytes, bytes]], abc.Awaitable[None]],
+    redis_payload_data_key: bytes = b"data",
+) -> bool:
+    events_count = 0
+    ids_to_delete: set[bytes] = set()
+    try:
+        async for event_id, event in iter_stream(
+            redis_stream,
+            redis_key,
+            batch_size=batch_size,
+        ):
+            events_count += 1
+            try:
+                await event_processor(event)
+            except Exception as e:
+                if not exceptions.should_be_ignored(e):
+                    log_level = (
+                        logging.ERROR
+                        if exceptions.need_retry_in(e) is None
+                        else logging.INFO
+                    )
+                    LOG.log(
+                        log_level,
+                        "unprocessable %s event",
+                        event_name,
+                        stream_event=event,
+                        stream_event_id=event_id,
+                        exc_info=True,
+                    )
+                    continue
+
+            ids_to_delete.add(event_id)
+
+    finally:
+        if ids_to_delete:
+            await redis_stream.xdel(redis_key, *ids_to_delete)
+
+    return events_count == batch_size
