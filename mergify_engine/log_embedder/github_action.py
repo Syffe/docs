@@ -488,29 +488,18 @@ async def embed_logs_with_log_embedding(
         return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
 
 
-async def embed_logs_with_extracted_metadata(
-    redis_links: redis_utils.RedisLinks,
-) -> bool:
+async def extract_metadata_from_logs() -> bool:
     async with database.create_session() as session:
         stmt = (
             get_job_processing_base_query()
             .options(
-                orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt),
                 orm.joinedload(gh_models.WorkflowJob.log_metadata),
             )
             .where(
                 gh_models.WorkflowJob.log_status
                 == gh_models.WorkflowJobLogStatus.DOWNLOADED,
-                sqlalchemy.or_(
-                    gh_models.WorkflowJob.log_metadata_extracting_status
-                    == gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
-                    sqlalchemy.and_(
-                        gh_models.WorkflowJob.log_metadata_extracting_status
-                        == gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
-                        # FIXME(sileht): should it be status like other?
-                        ~gh_models.WorkflowJob.ci_issues_gpt.any(),
-                    ),
-                ),
+                gh_models.WorkflowJob.log_metadata_extracting_status
+                == gh_models.WorkflowJobLogMetadataExtractingStatus.UNKNOWN,
             )
         )
 
@@ -569,12 +558,38 @@ async def embed_logs_with_extracted_metadata(
                     await try_commit_or_rollback(session)
                     continue
 
-                if not job_for_update.ci_issues_gpt:
-                    await ci_issue.CiIssueGPT.link_job_to_ci_issues(
-                        session,
-                        job_for_update,
-                    )
-                    await try_commit_or_rollback(session)
+        return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0
+
+
+async def link_jobs_to_ci_issue_gpt() -> bool:
+    async with database.create_session() as session:
+        stmt = (
+            get_job_processing_base_query()
+            .options(
+                orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt),
+                orm.joinedload(gh_models.WorkflowJob.log_metadata),
+            )
+            .where(
+                gh_models.WorkflowJob.log_metadata_extracting_status
+                == gh_models.WorkflowJobLogMetadataExtractingStatus.EXTRACTED,
+                # FIXME(sileht): should it be status like other?
+                ~gh_models.WorkflowJob.ci_issues_gpt.any(),
+            )
+        )
+
+        jobs = (await session.scalars(stmt)).unique().all()
+
+        LOG.info(
+            "log-embedder: %d jobs to link to ci_issue_gpt",
+            len(jobs),
+        )
+
+        for job in jobs:
+            await ci_issue.CiIssueGPT.link_job_to_ci_issues(
+                session,
+                job,
+            )
+            await try_commit_or_rollback(session)
 
         # FIXME(Kontrolix): For now, flacky_check is link to ci_issue when it will be link
         # to ci_issue_gpt adapte this method. I keep it here to not forget.
@@ -637,9 +652,8 @@ async def process_failed_jobs(redis_links: redis_utils.RedisLinks) -> bool:
     return any(
         (
             await download_logs_for_failed_jobs(),
-            await embed_logs_with_extracted_metadata(
-                redis_links,
-            ),
+            await extract_metadata_from_logs(),
+            await link_jobs_to_ci_issue_gpt(),
             await embed_logs_with_log_embedding(
                 redis_links,
             ),
