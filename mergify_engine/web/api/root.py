@@ -94,7 +94,7 @@ def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
         ),
         servers=[{"url": "https://api.mergify.com/v1", "description": "default"}],
         dependencies=[fastapi.Depends(api_enabled)],
-        reponses=api.default_responses,
+        responses=api.default_responses,
         debug=debug,
     )
     if cors_enabled:
