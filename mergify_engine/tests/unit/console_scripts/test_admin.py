@@ -38,8 +38,13 @@ def test_check_connectivity(
         "ENV_CACHE_URL",
         types.RedisDSN.parse("redis://not-exists.localhost:12345"),
     )
-    monkeypatch.setattr(connectivity_check, "TIMEOUT", 0.1)
-    respx_mock.get("/app").respond(401)
+    monkeypatch.setattr(
+        settings,
+        "GITHUB_URL",
+        types.NormalizedUrl("https://github.example.com"),
+    )
+    monkeypatch.setattr(connectivity_check, "TIMEOUT", 0.2)
+    respx_mock.get("https://github.example.com/api/v3/app").respond(418)
 
     result = utils.test_console_scripts(admin_cli.admin_cli, ["connectivity-check"])
     assert result.exit_code == 0, result.output
@@ -48,7 +53,7 @@ def test_check_connectivity(
 > Error .*not-exists\.localhost:12345.*
 Postgres: connected
 GitHub server: failed to connect
-> 401 Client Error: Unauthorized for url `https://api\.github\.com/app`
+> 418 Client Error: I'm a teapot for url `https://github\.example\.com/api/v3/app`
 > Details: <empty-response>
 """,
         result.output,
