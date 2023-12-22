@@ -384,6 +384,7 @@ class TestAttributes(base.FunctionalTestBase):
             "status-neutral": [],
             "co-authors": set(),
             "commented-reviews-by": [],
+            "commits-behind": [None, None],
             "commits-unverified": [
                 "test_draft_attribute: pull request n2 from integration",
             ],
@@ -1633,3 +1634,32 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         assert "frozen" not in [
             label["name"] for label in unlabelled_p1["pull_request"]["labels"]
         ]
+
+    async def test_length_attribute_template(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "comment",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {
+                        "comment": {
+                            "message": "Number of files changed: {{ files | length }}\n"
+                            "Number of commits: {{ commits | length }}\n"
+                            "Number of commits behind main: {{ commits_behind | length }}",
+                        },
+                    },
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr()
+        await self.run_engine()
+
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert comment["comment"]["body"] == (
+            "Number of files changed: 1\n"
+            "Number of commits: 1\n"
+            "Number of commits behind main: 0"
+        )

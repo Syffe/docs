@@ -60,6 +60,7 @@ PullRequestAttributeType = (
     | list["partr_config.PartitionRuleName"]
     | github_types.GitHubRepositoryPermission
     | set[CommitAuthor]
+    | list[None]
 )
 
 CommitListAttributeType = (
@@ -359,6 +360,9 @@ class BasePullRequest:
 
         if name == "#commits-behind":
             return await ctxt.commits_behind_count
+
+        if name == "commits-behind":
+            return [None for _ in range(await ctxt.commits_behind_count)]
 
         if name == "conflict":
             return await ctxt.is_conflicting()
@@ -717,6 +721,7 @@ class PullRequest(BasePullRequest):
         "modified-files",
         "removed-files",
         "co-authors",
+        "commits-behind",
     }
 
     LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION: typing.ClassVar[set[str]] = {
