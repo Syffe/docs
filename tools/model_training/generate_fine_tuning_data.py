@@ -110,6 +110,7 @@ async def main() -> None:
         f.writelines(
             [json.dumps({"messages": data}) + "\n" for data in fine_tuning_data],
         )
+        f.write("\n")
 
 
 if __name__ == "__main__":
