@@ -665,6 +665,7 @@ class PullRequest(BasePullRequest):
         "linear-history",
         "conflict",
         "branch-protection-review-decision",
+        "queue-frozen",
     }
     NUMBER_ATTRIBUTES: typing.ClassVar[set[str]] = {
         "number",

@@ -420,6 +420,7 @@ class TestAttributes(base.FunctionalTestBase):
             "check-skipped": [],
             "check-timed-out": [],
             "queue-name": None,
+            "queue-frozen": False,
         }
 
     async def test_repo_name_full_right(self) -> None:
