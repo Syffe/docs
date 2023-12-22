@@ -97,44 +97,6 @@ async def get_filtered_issues_cte(
     )
 
 
-async def get_pr_linked_to_ci_issue_cte(
-    repository_id: github_types.GitHubRepositoryIdType,
-) -> sqlalchemy.CTE:
-    return (
-        sqlalchemy.select(
-            sqlalchemy.func.array_agg(gh_models.PullRequest.id.distinct()).label(
-                "pull_requests",
-            ),
-            CiIssueGPT.id,
-        )
-        .select_from(CiIssueGPT)
-        .join(
-            gh_models.WorkflowJobLogMetadata,
-            gh_models.WorkflowJobLogMetadata.ci_issue_id == CiIssueGPT.id,
-        )
-        .join(
-            gh_models.WorkflowJob,
-            sqlalchemy.and_(
-                gh_models.WorkflowJobLogMetadata.workflow_job_id
-                == gh_models.WorkflowJob.id,
-                gh_models.WorkflowJob.repository_id == repository_id,
-            ),
-        )
-        .join(
-            gh_models.PullRequest,
-            sqlalchemy.and_(
-                gh_models.PullRequest.head_sha_history.any(
-                    PullRequestHeadShaHistory.head_sha
-                    == gh_models.WorkflowJob.head_sha,
-                ),
-                gh_models.PullRequest.base_repository_id
-                == gh_models.WorkflowJob.repository_id,
-            ),
-        )
-        .group_by(CiIssueGPT.id)
-    ).cte("pr_linked_to_ci_issue")
-
-
 async def query_issues(
     session: database.Session,
     repository_id: github_types.GitHubRepositoryIdType,
@@ -151,10 +113,6 @@ async def query_issues(
         cursor,
     )
 
-    pr_linked_to_ci_issue = await get_pr_linked_to_ci_issue_cte(
-        repository_id,
-    )
-
     stmt = (
         sqlalchemy.select(
             filtered_issues_cte.id,
@@ -167,7 +125,10 @@ async def query_issues(
             WorkflowJobEnhanced.started_at,
             WorkflowJobEnhanced.flaky,
             WorkflowJobEnhanced.failed_run_count,
-            pr_linked_to_ci_issue.c.pull_requests,
+            sqlalchemy.func.array_remove(
+                sqlalchemy.func.array_agg(gh_models.PullRequest.number.distinct()),
+                None,
+            ).label("pull_requests"),
         )
         .join(
             gh_models.GitHubRepository,
@@ -186,8 +147,27 @@ async def query_issues(
             ),
         )
         .outerjoin(
-            pr_linked_to_ci_issue,
-            pr_linked_to_ci_issue.c.id == filtered_issues_cte.id,
+            gh_models.PullRequest,
+            sqlalchemy.and_(
+                gh_models.PullRequest.head_sha_history.any(
+                    PullRequestHeadShaHistory.head_sha == WorkflowJobEnhanced.head_sha,
+                ),
+                gh_models.PullRequest.base_repository_id
+                == WorkflowJobEnhanced.repository_id,
+            ),
+        )
+        .group_by(
+            filtered_issues_cte.id,
+            filtered_issues_cte.short_id_suffix,
+            filtered_issues_cte.name,
+            filtered_issues_cte.status,
+            WorkflowJobEnhanced.name_without_matrix,
+            WorkflowJobEnhanced.workflow_run_id,
+            WorkflowJobEnhanced.started_at,
+            WorkflowJobEnhanced.flaky,
+            WorkflowJobEnhanced.failed_run_count,
+            gh_models.WorkflowJobLogMetadata.id,
+            gh_models.GitHubRepository.name,
         )
         .order_by(WorkflowJobEnhanced.started_at.desc())
     )
@@ -195,13 +175,11 @@ async def query_issues(
     # NOTE(Kontrolix): We use an OrderedDict here to be sure to keep the sorting of
     # the SQL query
     responses: OrderedDict[int, CiIssueResponse] = OrderedDict()
+    pr_linked_to_ci_issues: OrderedDict[int, set[int]] = OrderedDict()
     for result in await session.execute(stmt):
-        # NOTE(Kontrolix): Filter out ci_issue link to only one PR
-        if result.pull_requests and len(result.pull_requests) == 1:
-            continue
-
         if result.id in responses:
             response = responses[result.id]
+            pr_linked_to_ci_issues[result.id].update(result.pull_requests)
         else:
             response = CiIssueResponse(
                 id=result.id,
@@ -212,6 +190,7 @@ async def query_issues(
                 events=[],
             )
             responses[result.id] = response
+            pr_linked_to_ci_issues[result.id] = set(result.pull_requests)
 
         response.events.append(
             CiIssueEvent(
@@ -226,7 +205,12 @@ async def query_issues(
     if issue_id is not None and len(responses) > 1:
         raise RuntimeError("This should never happens")
 
-    return list(responses.values())
+    # NOTE(Kontrolix): Filter out ci_issue linked to only one PR
+    return [
+        responses[ci_issue_id]
+        for ci_issue_id, prs_linked in pr_linked_to_ci_issues.items()
+        if len(prs_linked) != 1
+    ]
 
 
 @router.get(
