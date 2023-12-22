@@ -68,13 +68,17 @@ async def test_get_chat_completion(
 
     async with openai_api.OpenAIClient() as client:
         chat_completion = await client.get_chat_completion(
-            openai_api.ChatCompletionQuery(
-                "gpt-4-1106-preview",
-                "user",
-                "hello",
-                0,
-                0,
-                0,
+            openai_api.ChatCompletion(
+                model="gpt-4-1106-preview",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": "hello",
+                    },
+                ],
+                response_format={"type": "text"},
+                seed=0,
+                temperature=0,
             ),
         )
 
@@ -84,56 +88,42 @@ async def test_get_chat_completion(
     )
 
 
-async def test_get_query_json() -> None:
-    query = openai_api.ChatCompletionQuery(
-        "gpt-4-1106-preview",
-        "user",
-        "hello",
-        0,
-        0,
-        0,
+def test_get_chat_completion_token_size() -> None:
+    assert (
+        openai_api.get_chat_completion_token_size(
+            openai_api.ChatCompletion(
+                model="gpt-4-1106-preview",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": "hello",
+                    },
+                ],
+                response_format={"type": "text"},
+                seed=0,
+                temperature=0,
+            ),
+        )
+        == 8
     )
-
-    assert query.json() == {
-        "model": "gpt-4-1106-preview",
-        "messages": [{"role": "user", "content": "hello"}],
-        "response_format": {"type": "text"},
-        "seed": 0,
-        "temperature": 0,
-    }
-
-    query = openai_api.ChatCompletionQuery(
-        "gpt-4-1106-preview",
-        "user",
-        "hello",
-        0,
-        0,
-        0,
-        "json_object",
+    assert (
+        openai_api.get_chat_completion_token_size(
+            openai_api.ChatCompletion(
+                model="gpt-4-1106-preview",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "you are a bot",
+                    },
+                    {
+                        "role": "user",
+                        "content": "hello",
+                    },
+                ],
+                response_format={"type": "text"},
+                seed=0,
+                temperature=0,
+            ),
+        )
+        == 13
     )
-
-    assert query.json() == {
-        "model": "gpt-4-1106-preview",
-        "messages": [{"role": "user", "content": "hello"}],
-        "response_format": {"type": "json_object"},
-        "seed": 0,
-        "temperature": 0,
-    }
-
-    query = openai_api.ChatCompletionQuery(
-        "gpt-4-1106-preview",
-        "user",
-        "hello",
-        0,
-        5,
-        1,
-        "json_object",
-    )
-
-    assert query.json() == {
-        "model": "gpt-4-1106-preview",
-        "messages": [{"role": "user", "content": "hello"}],
-        "response_format": {"type": "json_object"},
-        "seed": 5,
-        "temperature": 1,
-    }

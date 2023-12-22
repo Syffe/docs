@@ -12,7 +12,6 @@ if not os.environ.get("MERGIFYENGINE_OPENAI_API_TOKEN"):
         )
     os.environ["MERGIFYENGINE_OPENAI_API_TOKEN"] = os.environ["OPENAI_API_KEY"]
 
-from mergify_engine import settings
 from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import log as logm
 from mergify_engine.log_embedder import openai_api
@@ -96,25 +95,16 @@ async def main() -> None:
 
         extracted_data = await get_extracted_data(sample_log_path, is_cleaned_log_new)
 
-        query = openai_api.ChatCompletionQuery(
-            model=settings.LOG_EMBEDDER_METADATA_EXTRACT_MODEL,
-            role=github_action.EXTRACT_DATA_QUERY_TEMPLATE.role,
-            content=f"{github_action.EXTRACT_DATA_QUERY_TEMPLATE.content}{cleaned_log}",
-            answer_size=github_action.EXTRACT_DATA_QUERY_TEMPLATE.answer_size,
-            seed=github_action.EXTRACT_DATA_QUERY_TEMPLATE.seed,
-            temperature=github_action.EXTRACT_DATA_QUERY_TEMPLATE.temperature,
-            response_format=github_action.EXTRACT_DATA_QUERY_TEMPLATE.response_format,
-        )
-        messages = query.json()["messages"]
+        query = github_action.get_completion_query(cleaned_log)
 
-        messages.append(
+        query["messages"].append(
             openai_api.ChatCompletionMessage(
                 role="assistant",
                 content=json.dumps(extracted_data),
             ),
         )
 
-        fine_tuning_data.append(messages)
+        fine_tuning_data.append(query["messages"])
 
     with open(os.path.join(MODEL_TRAINING_DIR, "fine_tuning.jsonl"), "w") as f:
         f.writelines(

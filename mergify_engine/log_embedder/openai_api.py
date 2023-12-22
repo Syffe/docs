@@ -1,5 +1,4 @@
 import base64
-import dataclasses
 import importlib.resources  # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
 import typing
 
@@ -79,7 +78,7 @@ class ChatCompletionResponseFormat(typing.TypedDict):
     type: typing.Literal["text", "json_object"]
 
 
-class ChatCompletionJson(typing.TypedDict):
+class ChatCompletion(typing.TypedDict):
     model: types.OpenAIModel
     messages: list[ChatCompletionMessage]
     response_format: ChatCompletionResponseFormat
@@ -100,43 +99,30 @@ class ChatCompletionChoice(typing.TypedDict):
     ]
 
 
-class ChatCompletionObject(typing.TypedDict):
+class ChatCompletionResponse(typing.TypedDict):
     model: str
     choices: list[ChatCompletionChoice]
 
 
-@dataclasses.dataclass
-class ChatCompletionQuery:
-    model: types.OpenAIModel
-    role: ChatCompletionRole
-    content: str
-    answer_size: int
-    seed: int
-    temperature: float
-    response_format: typing.Literal["text", "json_object"] = "text"
-
-    def json(self) -> ChatCompletionJson:
-        return ChatCompletionJson(
-            {
-                "model": self.model,
-                "messages": [
-                    ChatCompletionMessage(role=self.role, content=self.content),
-                ],
-                "response_format": ChatCompletionResponseFormat(
-                    type=self.response_format,
-                ),
-                "seed": self.seed,
-                "temperature": self.temperature,
-            },
+def get_chat_completion_token_size(completion: ChatCompletion) -> int:
+    return (
+        sum(
+            (
+                (
+                    len(TIKTOKEN_ENCODING.encode(msg["content"]))
+                    if msg["content"] is not None
+                    else 0
+                )
+                + (
+                    len(TIKTOKEN_ENCODING.encode(msg["role"]))
+                    if msg["role"] is not None
+                    else 0
+                )
+            )
+            for msg in completion["messages"]
         )
-
-    def get_tokens_size(self) -> int:
-        return (
-            len(TIKTOKEN_ENCODING.encode(self.content))
-            + len(TIKTOKEN_ENCODING.encode(self.role))
-            + self.answer_size
-            + OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
-        )
+        + OPENAI_CHAT_COMPLETION_FEW_EXTRA_TOKEN
+    )
 
 
 class OpenAIClient(http.AsyncClient):
@@ -154,11 +140,10 @@ class OpenAIClient(http.AsyncClient):
 
     async def get_chat_completion(
         self,
-        query: ChatCompletionQuery,
-    ) -> ChatCompletionObject:
-        payload = query.json()
-        response = await self.post("chat/completions", json=payload)
-        return typing.cast(ChatCompletionObject, response.json())
+        query: ChatCompletion,
+    ) -> ChatCompletionResponse:
+        response = await self.post("chat/completions", json=query)
+        return typing.cast(ChatCompletionResponse, response.json())
 
     async def get_embedding(
         self,

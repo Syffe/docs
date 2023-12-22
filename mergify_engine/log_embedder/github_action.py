@@ -1,3 +1,4 @@
+import copy
 import dataclasses
 import datetime
 import io
@@ -38,37 +39,53 @@ LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 LOG_EMBEDDER_MAX_ATTEMPTS = 5
 
 JSON_STRUCTURE = {
-    "problem_type": "What is the root cause",
-    "language": "The programming language of the program that produces these logs",
-    "filename": "The filename where the error was raised.",
-    "lineno": "The line number where the error was raised",
-    "error": "The precise error type",
-    "test_framework": "The framework that was running when the error was raised",
-    "stack_trace": "The stack trace of the error",
+    "problem_type": "The type of problem that caused the failure",
+    "language": "The programming language of the program that produced the error",
+    "filename": "The filename where the error was raised, null if no file is detected",
+    "lineno": "The line number where the error was raised as an integer, null otherwise",
+    "error": "The precise error type, null otherwise",
+    "test_framework": "The framework that was running when the error was raised if any, null otherwise",
+    "stack_trace": "The stack trace of the error if any, null otherwise",
 }
 
-EXTRACT_DATA_QUERY_TEMPLATE = openai_api.ChatCompletionQuery(
+_EXTRACT_DATA_QUERY_TEMPLATE = openai_api.ChatCompletion(
     model=settings.LOG_EMBEDDER_METADATA_EXTRACT_MODEL,
-    role="user",
-    content=f"""Analyze the program logs I will provide you and identify the root cause of the program's failure.
-Your response must be an array of json object matching the following json structure.
-If you find only one failure, add only one object to the array.
-If you identify multiple source of failure, add multiple objects in the array.
-If you don't find the requested information, don't speculate, fill the field with json `null` value.
-JSON response structure: {{"failures: [{{json object}}]"}}
-JSON object structure: {json.dumps(JSON_STRUCTURE)}
-Logs:
-""",
-    answer_size=500,
+    messages=[
+        openai_api.ChatCompletionMessage(
+            role="system",
+            content=f"""You are a CI software engineer. Analyze the program logs provided as input and identify the root causes of the job failure.
+Your response must be an array of JSON objects matching the following requirements:
+- If you find only one failure, add only one object to the array.
+- If you identify multiple source of failure, add multiple objects in the array.
+- If you don't find the requested information, don't speculate, return an empty array.
+
+JSON response structure: {{"failures": [{{json object}}]}}
+JSON object structure: {json.dumps(JSON_STRUCTURE)}""",
+        ),
+    ],
     seed=1,
     temperature=0,
-    response_format="json_object",
+    response_format={"type": "json_object"},
 )
+
+# https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
+# Token limit is shared between prompt and completion so we need to take that
+# into account and reserve a few tokens for the answer.
+MINIMUM_ANSWER_RESERVED_TOKEN = 500
 
 MAX_LOGS_TOKENS = (
     openai_api.OPENAI_CHAT_COMPLETION_MODEL_MAX_TOKENS
-    - EXTRACT_DATA_QUERY_TEMPLATE.get_tokens_size()
+    - openai_api.get_chat_completion_token_size(_EXTRACT_DATA_QUERY_TEMPLATE)
+    - MINIMUM_ANSWER_RESERVED_TOKEN
 )
+
+
+def get_completion_query(log_content: str) -> openai_api.ChatCompletion:
+    query = copy.deepcopy(_EXTRACT_DATA_QUERY_TEMPLATE)
+    query["messages"].append(
+        openai_api.ChatCompletionMessage(role="user", content=log_content),
+    )
+    return query
 
 
 @dataclasses.dataclass
@@ -79,7 +96,7 @@ class UnexpectedLogEmbedderError(Exception):
 
 @dataclasses.dataclass
 class UnableToExtractLogMetadata(Exception):
-    chat_completion_result: openai_api.ChatCompletionObject | None
+    chat_completion_result: openai_api.ChatCompletionResponse | None
 
 
 class ExtractedDataObject(typing.TypedDict):
@@ -247,15 +264,7 @@ async def extract_data_from_log(
     log: logm.Log,
 ) -> list[ExtractedDataObject]:
     cleaned_log = get_cleaned_log(log)
-    query = openai_api.ChatCompletionQuery(
-        model=settings.LOG_EMBEDDER_METADATA_EXTRACT_MODEL,
-        role=EXTRACT_DATA_QUERY_TEMPLATE.role,
-        content=f"{EXTRACT_DATA_QUERY_TEMPLATE.content}{cleaned_log}",
-        answer_size=EXTRACT_DATA_QUERY_TEMPLATE.answer_size,
-        seed=EXTRACT_DATA_QUERY_TEMPLATE.seed,
-        temperature=EXTRACT_DATA_QUERY_TEMPLATE.temperature,
-        response_format=EXTRACT_DATA_QUERY_TEMPLATE.response_format,
-    )
+    query = get_completion_query(cleaned_log)
 
     try:
         chat_completion = await openai_client.get_chat_completion(query)
