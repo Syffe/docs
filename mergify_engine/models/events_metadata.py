@@ -86,4 +86,4 @@ class SpeculativeCheckPullRequest(models.Base):
                 cls.checks_ended_at - cls.checks_started_at,
             ),
             sqlalchemy.Float,
-        )
+        ).label("ci_runtime")

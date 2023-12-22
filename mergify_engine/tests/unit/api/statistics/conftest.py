@@ -133,3 +133,61 @@ async def _insert_action_checks_end_event(
             ),
         )
     await db.commit()
+
+
+def get_request_param_evt_queue_leave_defaults(
+    pull_request: int,
+    received_at: str,
+    queued_at: str,
+    seconds_waiting_for_freeze: int = 0,
+    base_ref: str = "main",
+    partition_name: str = "default",
+    queue_name: str = "default",
+) -> typing.Any:
+    return {
+        "pull_request": pull_request,
+        "received_at": received_at,
+        "queued_at": queued_at,
+        "base_ref": base_ref,
+        "partition_name": partition_name,
+        "queue_name": queue_name,
+        "seconds_waiting_for_freeze": seconds_waiting_for_freeze,
+    }
+
+
+@pytest.fixture()
+async def _insert_action_queue_leave(
+    request: fixtures.SubRequest,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    fake_repository: context.Repository,
+) -> None:
+    repo = await github_repository.GitHubRepository.get_or_create(
+        db,
+        fake_repository.repo,
+    )
+
+    for row in request.param:
+        defaults = get_request_param_evt_queue_leave_defaults(**row)
+
+        db.add(
+            evt_models.EventActionQueueLeave(
+                repository=repo,
+                pull_request=github_types.GitHubPullRequestNumber(
+                    defaults["pull_request"],
+                ),
+                received_at=defaults["received_at"],
+                base_ref=github_types.GitHubRefType(defaults["base_ref"]),
+                trigger="Rule: some rule",
+                partition_name=defaults["partition_name"],
+                queue_name=defaults["queue_name"],
+                branch="main",
+                position=1,
+                queued_at=defaults["queued_at"],
+                merged=True,
+                reason="whatever",
+                seconds_waiting_for_schedule=0,
+                seconds_waiting_for_freeze=defaults["seconds_waiting_for_freeze"],
+            ),
+        )
+
+    await db.commit()

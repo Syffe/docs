@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Added a new statistics endpoint that returns the average
+    idle time spent in queue for pull requests.
+    The endpoint path is "/v1/repos/{repository_owner}/{repository_name}/stats/average_queue_time".
