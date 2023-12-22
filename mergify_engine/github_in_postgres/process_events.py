@@ -62,6 +62,7 @@ async def store_redis_event_in_pg(event_id: bytes, event: dict[bytes, bytes]) ->
             # that make the processing failing.
             # raw_event=event,
             # event_data=event_data,
+            exc_info=True,
         )
         return
 
