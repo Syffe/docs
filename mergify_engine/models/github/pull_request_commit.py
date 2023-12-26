@@ -102,8 +102,11 @@ class PullRequestCommit(models.Base):
         data_for_obj: dict[str, typing.Any] = validated_data.copy()  # type: ignore[assignment]
 
         committer = data_for_obj.pop("committer")
-        data_for_obj["committer_id"] = committer["id"]
-        await gh_account_model.GitHubAccount.create_or_update(session, committer)
+        if committer is not None:
+            data_for_obj["committer_id"] = committer["id"]
+            await gh_account_model.GitHubAccount.create_or_update(session, committer)
+        else:
+            data_for_obj["committer_id"] = None
 
         author = data_for_obj.pop("author", None)
         data_for_obj["author_id"] = author["id"] if author else None
