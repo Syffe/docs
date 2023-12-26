@@ -166,3 +166,33 @@ def test_jinja2_template_with_all_attributes(
 
         value = types_dummy_context.DUMMY_PR.render_template(tmpl_attr, None)
         assert value == expectation
+
+
+@pytest.mark.parametrize(
+    "name",
+    ("foo", "foo-bar", "fop.bar"),
+)
+def test_repository_name_format_valid(name: str) -> None:
+    assert name == voluptuous.Schema(types.GitHubRepositoryName)(name)
+
+
+@pytest.mark.parametrize(
+    "name",
+    ("../../foobar", "foo bar", "fop%20bar"),
+)
+def test_repository_name_format_invalid(name: str) -> None:
+    with pytest.raises(voluptuous.Invalid) as x:
+        voluptuous.Schema(types.GitHubRepositoryName)(name)
+
+    assert x.value.error_message == r"does not match regular expression ^[\w\-.]+$"
+
+
+@pytest.mark.parametrize(
+    "name",
+    ("..", ".", ".git"),
+)
+def test_repository_name_format_forbidden_name(name: str) -> None:
+    with pytest.raises(voluptuous.Invalid) as x:
+        voluptuous.Schema(types.GitHubRepositoryName)(name)
+
+    assert x.value.error_message == f"Repository name '{name}' is forbidden"

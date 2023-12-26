@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import re
 import typing
 
 import voluptuous
@@ -163,3 +164,20 @@ class _GitHubTeam:
 
 
 GitHubTeam = voluptuous.All(str, voluptuous.Coerce(_GitHubTeam.from_string))
+
+# NOTE(sileht): cf the error message from GitHub repository creation:
+# The repository name can only contain ASCII letters, digits, and the characters ., -, and _.
+
+
+def check_forbidden_repository_name(v: str) -> str:
+    if v in (".", "..", ".git"):
+        raise voluptuous.Invalid(f"Repository name '{v}' is forbidden")
+    return v
+
+
+GitHubRepositoryName = voluptuous.All(
+    str,
+    voluptuous.Length(min=1),
+    voluptuous.Match(re.compile(r"^[\w\-.]+$")),
+    check_forbidden_repository_name,
+)

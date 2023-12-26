@@ -77,10 +77,7 @@ def UserConfigurationSchema(
     schema = {
         voluptuous.Required("extends", default=None): voluptuous.Any(
             None,
-            voluptuous.All(
-                str,
-                voluptuous.Length(min=1),
-            ),
+            types.GitHubRepositoryName,
         ),
         voluptuous.Required(
             "pull_request_rules",
