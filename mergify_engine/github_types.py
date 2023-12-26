@@ -186,7 +186,7 @@ class GitHubBranchCommit(typing_extensions.TypedDict):
     sha: SHAType
     parents: list[GitHubBranchCommitParent]
     commit: GitHubBranchCommitCommit
-    committer: GitHubAccount
+    committer: GitHubAccount | None
     author: GitHubAccount | None
 
 

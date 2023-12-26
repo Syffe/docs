@@ -67,9 +67,10 @@ class PullRequestCommit(models.Base):
 
     committer_id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.ForeignKey("github_account.id"),
+        nullable=True,
         anonymizer_config="anon.random_int_between(1,100000)",
     )
-    committer: orm.Mapped[gh_account_model.GitHubAccount] = orm.relationship(
+    committer: orm.Mapped[gh_account_model.GitHubAccount | None] = orm.relationship(
         lazy="joined",
         foreign_keys=[committer_id],
     )
