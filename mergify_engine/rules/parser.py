@@ -518,6 +518,20 @@ def get_jinja_template_wrapper(value: str) -> filter.JinjaTemplateWrapper:
             f"Invalid template, unexpected variables {unexpected_variables}",
         )
 
+    # Circular import
+    from mergify_engine.rules import types_dummy_context
+
+    sync_env = jinja2.sandbox.ImmutableSandboxedEnvironment(
+        undefined=jinja2.StrictUndefined,
+    )
+
+    # We check it's rendearable with fake data
+    infos = {k: getattr(types_dummy_context.DUMMY_PR, k) for k in used_variables}
+    try:
+        sync_env.from_string(value).render(**infos)
+    except jinja2.exceptions.TemplateError:
+        raise ConditionParsingError("Invalid template")
+
     return filter.JinjaTemplateWrapper(JINJA_ENV, value, used_variables)
 
 

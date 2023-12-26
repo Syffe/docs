@@ -645,6 +645,10 @@ def test_validate_github_login(value: str) -> None:
         (r"{{ foo bar }}", "Invalid template"),
         (r"{% for x in my_list %}{{x.foo}}{% wtf %}", "Invalid template"),
         (r"{% for x in my_list %}{{x.foo}}{% endfor %", "Invalid template"),
+        (
+            r"{{ ''.__class__.__mro__[1].__subclasses__.__str__()[0] }}",
+            "Invalid template",
+        ),
         (r"{# comment", "Invalid template"),
         (
             r"{{ unknown_attr }}",
