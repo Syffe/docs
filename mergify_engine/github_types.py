@@ -738,7 +738,7 @@ class GitHubStatus(typing_extensions.TypedDict):
     avatar_url: str
 
 
-GitHubCheckRunStatus = typing.Literal["queued", "in_progress", "completed"]
+GitHubCheckRunStatus = typing.Literal["pending", "queued", "in_progress", "completed"]
 
 
 class GitHubCheckRunCheckSuite(typing_extensions.TypedDict):
