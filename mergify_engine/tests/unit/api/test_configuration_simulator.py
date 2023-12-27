@@ -399,7 +399,7 @@ pull_request_rules:
         method: squash
 """
 
-    respx_mock.get("https://api.github.com/repos/Mergifyio/engine/pulls/404").respond(
+    respx_mock.get("https://api.github.com/repositories/0/pulls/404").respond(
         404,
         json={"message": "Not found"},
     )

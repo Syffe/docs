@@ -212,8 +212,7 @@ async def update_with_api(
             refreshed_pull = await pull_request_getter.get_pull_request(
                 ctxt.client,
                 ctxt.pull["number"],
-                repo_owner=ctxt.repo_owner_login,
-                repo_name=ctxt.repo_name,
+                repo_id=ctxt.repository.repo["id"],
                 force_new=True,
             )
             if refreshed_pull["head"]["sha"] != ctxt.pull["head"]["sha"]:

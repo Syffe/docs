@@ -145,8 +145,8 @@ async def get_pull_requests(
                 pull_with_all_data = await pull_request_getter.get_pull_request(
                     repository.installation.client,
                     pull["number"],
+                    repository.repo["id"],
                     repo_owner=repository.installation.owner_login,
-                    repo_name=repository.repo["name"],
                 )
                 pull_context = context.Context(repository, pull_with_all_data)
             else:

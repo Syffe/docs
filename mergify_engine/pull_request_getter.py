@@ -60,37 +60,11 @@ async def _find_pull_in_db(
     return None
 
 
-@typing.overload
 async def get_pull_request(
     client: gh_clients.AsyncGitHubClient,
     pull_number: github_types.GitHubPullRequestNumber,
-    *,
     repo_id: github_types.GitHubRepositoryIdType,
-    force_new: bool = False,
-    **client_kwargs: typing.Any,
-) -> github_types.GitHubPullRequest:
-    ...
-
-
-@typing.overload
-async def get_pull_request(
-    client: gh_clients.AsyncGitHubClient,
-    pull_number: github_types.GitHubPullRequestNumber,
-    *,
-    repo_owner: github_types.GitHubLogin,
-    repo_name: github_types.GitHubRepositoryName,
-    force_new: bool = False,
-    **client_kwargs: typing.Any,
-) -> github_types.GitHubPullRequest:
-    ...
-
-
-async def get_pull_request(
-    client: gh_clients.AsyncGitHubClient,
-    pull_number: github_types.GitHubPullRequestNumber,
-    repo_id: github_types.GitHubRepositoryIdType | None = None,
     repo_owner: github_types.GitHubLogin | None = None,
-    repo_name: github_types.GitHubRepositoryName | None = None,
     force_new: bool = False,
     **client_kwargs: typing.Any,
 ) -> github_types.GitHubPullRequest:
@@ -98,35 +72,14 @@ async def get_pull_request(
         repo_id,
         repo_owner,
     ):
-        if repo_id:
-            pull_from_db = await _find_pull_in_db(pull_number, repo_id=repo_id)
-        elif repo_owner and repo_name:
-            pull_from_db = await _find_pull_in_db(
-                pull_number,
-                repo_owner=repo_owner,
-                repo_name=repo_name,
-            )
-        else:
-            raise RuntimeError(
-                "`get_pull_request` needs to have either `repo_id` or both `repo_owner` and `repo_name` specified",
-            )
-
+        pull_from_db = await _find_pull_in_db(pull_number, repo_id=repo_id)
         if pull_from_db is not None:
             return pull_from_db
-
-    if repo_id:
-        return typing.cast(
-            github_types.GitHubPullRequest,
-            await client.item(
-                f"/repositories/{repo_id}/pulls/{pull_number}",
-                **client_kwargs,
-            ),
-        )
 
     return typing.cast(
         github_types.GitHubPullRequest,
         await client.item(
-            f"/repos/{repo_owner}/{repo_name}/pulls/{pull_number}",
+            f"/repositories/{repo_id}/pulls/{pull_number}",
             **client_kwargs,
         ),
     )

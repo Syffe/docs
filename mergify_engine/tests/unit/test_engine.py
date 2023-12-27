@@ -257,7 +257,8 @@ CONFIGURATION_CHANGED_CHECK = github_types.GitHubCheckRun(
     },
 )
 
-BASE_URL = f"/repos/{GH_OWNER['login']}/{GH_REPO['name']}"
+BASE_URL_OWNER_NAME = f"/repos/{GH_OWNER['login']}/{GH_REPO['name']}"
+BASE_URL_ID = f"/repositories/{GH_REPO['id']}"
 
 
 async def test_configuration_changed(
@@ -279,14 +280,17 @@ async def test_configuration_changed(
             "suspended_at": None,
         },
     )
-    github_server.get(f"{BASE_URL}/pulls/1").respond(
+    github_server.get(f"{BASE_URL_ID}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
 
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
     github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
+        respx.patterns.M(
+            method="GET",
+            path=f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml",
+        )
         & ~qs_ref,
     ).respond(
         200,
@@ -308,7 +312,10 @@ async def test_configuration_changed(
 
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
     github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
+        respx.patterns.M(
+            method="GET",
+            path=f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml",
+        )
         & qs_ref,
     ).respond(
         200,
@@ -328,7 +335,7 @@ async def test_configuration_changed(
         ),
     )
 
-    github_server.get(f"{BASE_URL}/pulls/1/files").respond(
+    github_server.get(f"{BASE_URL_OWNER_NAME}/pulls/1/files").respond(
         200,
         json=[
             github_types.GitHubFile(
@@ -336,7 +343,7 @@ async def test_configuration_changed(
                     "raw_url": "",
                     "blob_url": "",
                     "patch": "",
-                    "contents_url": f"{BASE_URL}/contents/.mergify.yml?ref={GH_PULL['merge_commit_sha']}",
+                    "contents_url": f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml?ref={GH_PULL['merge_commit_sha']}",
                     "status": "changed",
                     "additions": 2,
                     "deletions": 0,
@@ -352,10 +359,10 @@ async def test_configuration_changed(
     )
 
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
+        f"{BASE_URL_OWNER_NAME}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(200, json={"check_runs": []})
 
-    github_server.post(f"{BASE_URL}/check-runs").respond(
+    github_server.post(f"{BASE_URL_OWNER_NAME}/check-runs").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], CHECK_RUN),
     )
@@ -409,14 +416,17 @@ async def test_configuration_duplicated(
         },
     )
 
-    github_server.get(f"{BASE_URL}/pulls/1").respond(
+    github_server.get(f"{BASE_URL_ID}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
 
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
     github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
+        respx.patterns.M(
+            method="GET",
+            path=f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml",
+        )
         & ~qs_ref,
     ).respond(
         200,
@@ -436,7 +446,7 @@ async def test_configuration_duplicated(
         ),
     )
 
-    github_server.get(f"{BASE_URL}/pulls/1/files").respond(
+    github_server.get(f"{BASE_URL_OWNER_NAME}/pulls/1/files").respond(
         200,
         json=[
             github_types.GitHubFile(
@@ -444,7 +454,7 @@ async def test_configuration_duplicated(
                     "raw_url": "",
                     "blob_url": "",
                     "patch": "",
-                    "contents_url": f"{BASE_URL}/contents/.github/mergify.yml?ref={GH_PULL['merge_commit_sha']}",
+                    "contents_url": f"{BASE_URL_OWNER_NAME}/contents/.github/mergify.yml?ref={GH_PULL['merge_commit_sha']}",
                     "status": "added",
                     "additions": 2,
                     "deletions": 0,
@@ -460,7 +470,7 @@ async def test_configuration_duplicated(
     )
 
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
+        f"{BASE_URL_OWNER_NAME}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(200, json={"check_runs": []})
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
@@ -511,19 +521,22 @@ async def test_configuration_not_changed(
             "suspended_at": None,
         },
     )
-    github_server.get(f"{BASE_URL}/pulls/1").respond(
+    github_server.get(f"{BASE_URL_ID}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
 
-    github_server.get(f"{BASE_URL}/pulls/1/files").respond(
+    github_server.get(f"{BASE_URL_OWNER_NAME}/pulls/1/files").respond(
         200,
         json=[],
     )
 
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
     github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
+        respx.patterns.M(
+            method="GET",
+            path=f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml",
+        )
         & ~qs_ref,
     ).respond(
         200,
@@ -544,7 +557,7 @@ async def test_configuration_not_changed(
     )
 
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
+        f"{BASE_URL_OWNER_NAME}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(200, json={"check_runs": []})
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
@@ -595,12 +608,12 @@ async def test_configuration_initial(
             "suspended_at": None,
         },
     )
-    github_server.get(f"{BASE_URL}/pulls/1").respond(
+    github_server.get(f"{BASE_URL_ID}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
 
-    github_server.get(f"{BASE_URL}/pulls/1/files").respond(
+    github_server.get(f"{BASE_URL_OWNER_NAME}/pulls/1/files").respond(
         200,
         json=[
             github_types.GitHubFile(
@@ -608,7 +621,7 @@ async def test_configuration_initial(
                     "raw_url": "",
                     "blob_url": "",
                     "patch": "",
-                    "contents_url": f"{BASE_URL}/contents/.mergify.yml?ref={GH_PULL['merge_commit_sha']}",
+                    "contents_url": f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml?ref={GH_PULL['merge_commit_sha']}",
                     "status": "changed",
                     "additions": 2,
                     "deletions": 0,
@@ -623,22 +636,34 @@ async def test_configuration_initial(
         ],
     )
     github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
+        respx.patterns.M(
+            method="GET",
+            path=f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml",
+        )
         & ~respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]}),
     ).respond(404)
 
     github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify/config.yml")
+        respx.patterns.M(
+            method="GET",
+            path=f"{BASE_URL_OWNER_NAME}/contents/.mergify/config.yml",
+        )
         & ~respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]}),
     ).respond(404)
 
     github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.github/mergify.yml")
+        respx.patterns.M(
+            method="GET",
+            path=f"{BASE_URL_OWNER_NAME}/contents/.github/mergify.yml",
+        )
         & ~respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]}),
     ).respond(404)
 
     github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
+        respx.patterns.M(
+            method="GET",
+            path=f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml",
+        )
         & respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]}),
     ).respond(
         200,
@@ -659,10 +684,10 @@ async def test_configuration_initial(
     )
 
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
+        f"{BASE_URL_OWNER_NAME}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(200, json={"check_runs": []})
 
-    github_server.post(f"{BASE_URL}/check-runs").respond(
+    github_server.post(f"{BASE_URL_OWNER_NAME}/check-runs").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], CHECK_RUN),
     )
@@ -714,11 +739,11 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
             "suspended_at": None,
         },
     )
-    github_server.get(f"{BASE_URL}/pulls/1").respond(
+    github_server.get(f"{BASE_URL_ID}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
-    github_server.get(f"{BASE_URL}/contents/.mergify.yml").respond(
+    github_server.get(f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml").respond(
         200,
         json=typing.cast(
             dict[typing.Any, typing.Any],
@@ -738,7 +763,7 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
 
     # Summary is present, no need to redo the check
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
+        f"{BASE_URL_OWNER_NAME}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(
         200,
         json={"check_runs": [SUMMARY_CHECK]},
@@ -790,9 +815,9 @@ async def test_configuration_check_not_needed_with_configuration_changed(
         },
     )
     github_server.get(
-        f"{BASE_URL}/pulls/1",
+        f"{BASE_URL_ID}/pulls/1",
     ).respond(200, json=typing.cast(dict[typing.Any, typing.Any], GH_PULL))
-    github_server.get(f"{BASE_URL}/contents/.mergify.yml").respond(
+    github_server.get(f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml").respond(
         200,
         json=typing.cast(
             dict[typing.Any, typing.Any],
@@ -812,7 +837,7 @@ async def test_configuration_check_not_needed_with_configuration_changed(
 
     # Summary is present, no need to redo the check
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
+        f"{BASE_URL_OWNER_NAME}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(
         200,
         json={"check_runs": [SUMMARY_CHECK, CONFIGURATION_CHANGED_CHECK]},
@@ -863,11 +888,11 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
             "suspended_at": None,
         },
     )
-    github_server.get(f"{BASE_URL}/pulls/1").respond(
+    github_server.get(f"{BASE_URL_ID}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
-    github_server.get(f"{BASE_URL}/contents/.mergify.yml").respond(
+    github_server.get(f"{BASE_URL_OWNER_NAME}/contents/.mergify.yml").respond(
         200,
         json=typing.cast(
             dict[typing.Any, typing.Any],
@@ -887,7 +912,7 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
 
     # Summary is present, no need to redo the check
     github_server.get(
-        f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs",
+        f"{BASE_URL_OWNER_NAME}/commits/{GH_PULL['head']['sha']}/check-runs",
     ).respond(
         200,
         json={"check_runs": [SUMMARY_CHECK, CONFIGURATION_DELETED_CHECK]},

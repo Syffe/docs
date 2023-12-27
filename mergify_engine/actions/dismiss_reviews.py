@@ -158,8 +158,8 @@ class DismissReviewsExecutor(
             updated_pull = await pull_request_getter.get_pull_request(
                 self.ctxt.client,
                 self.ctxt.pull["number"],
+                self.ctxt.repository.repo["id"],
                 repo_owner=self.ctxt.repo_owner_login,
-                repo_name=self.ctxt.repo_name,
             )
             updated_requested_reviewers_login = {
                 rr["login"] for rr in updated_pull["requested_reviewers"]
@@ -170,8 +170,7 @@ class DismissReviewsExecutor(
                 updated_pull = await pull_request_getter.get_pull_request(
                     self.ctxt.client,
                     self.ctxt.pull["number"],
-                    repo_owner=self.ctxt.repo_owner_login,
-                    repo_name=self.ctxt.repo_name,
+                    self.ctxt.repository.repo["id"],
                     force_new=True,
                 )
                 updated_requested_reviewers_login = {

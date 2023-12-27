@@ -1335,8 +1335,8 @@ class Train:
         pull = await pull_request_getter.get_pull_request(
             self.convoy.repository.installation.client,
             self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number,
+            self.convoy.repository.repo["id"],
             repo_owner=self.convoy.repository.installation.owner_login,
-            repo_name=self.convoy.repository.repo["name"],
         )
         return pull["merged"] and base_sha == pull["merge_commit_sha"]
 

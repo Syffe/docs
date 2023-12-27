@@ -165,7 +165,7 @@ class Installation:
         pull = await pull_request_getter.get_pull_request(
             self.client,
             pull_number,
-            repo_id=repo_id,
+            repo_id,
             force_new=force_new,
         )
         repository = self.get_repository_from_github_data(pull["base"]["repo"])
@@ -627,8 +627,8 @@ class Repository:
                 pull = await pull_request_getter.get_pull_request(
                     self.installation.client,
                     pull_number,
-                    repo_owner=self.installation.owner_login,
-                    repo_name=self.repo["name"],
+                    self.repo["id"],
+                    repo_owner=self.repo["owner"]["login"],
                     force_new=force_new,
                 )
             elif pull["number"] != pull_number:
@@ -1312,10 +1312,6 @@ class Context:
     def repo_owner_login(self) -> github_types.GitHubLogin:
         return self.repository.repo["owner"]["login"]
 
-    @property
-    def repo_name(self) -> github_types.GitHubRepositoryName:
-        return self.repository.repo["name"]
-
     async def retrieve_unverified_commits(self) -> list[str]:
         return [
             commit.commit_message
@@ -1876,8 +1872,8 @@ class Context:
             self.pull = await pull_request_getter.get_pull_request(
                 self.client,
                 self.pull["number"],
+                self.repository.repo["id"],
                 repo_owner=self.repo_owner_login,
-                repo_name=self.repo_name,
             )
 
     def _is_data_complete(self) -> bool:

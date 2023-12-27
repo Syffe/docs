@@ -430,8 +430,7 @@ class MergeUtilsMixin:
                 new_pull = await pull_request_getter.get_pull_request(
                     ctxt.client,
                     ctxt.pull["number"],
-                    repo_owner=ctxt.repo_owner_login,
-                    repo_name=ctxt.repo_name,
+                    ctxt.repository.repo["id"],
                     force_new=True,
                 )
                 if new_pull["head"]["sha"] != ctxt.pull["head"]["sha"]:
