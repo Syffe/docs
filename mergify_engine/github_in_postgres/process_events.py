@@ -14,11 +14,14 @@ from mergify_engine.models import github as gh_models
 LOG = daiquiri.getLogger(__name__)
 
 
-HandledModelsT = type[gh_models.PullRequest] | type[gh_models.CheckRun]
+HandledModelsT = (
+    type[gh_models.PullRequest] | type[gh_models.CheckRun] | type[gh_models.Status]
+)
 
 EVENT_TO_MODEL_MAPPING: dict[str, HandledModelsT] = {
     "pull_request": gh_models.PullRequest,
     "check_run": gh_models.CheckRun,
+    "status": gh_models.Status,
 }
 
 

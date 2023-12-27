@@ -975,8 +975,10 @@ Instructions
 
 async def test_check_runs_ordering(
     a_pull_request: github_types.GitHubPullRequest,
+    fake_repository: context.Repository,
 ) -> None:
     repo = mock.Mock()
+    repo.repo = fake_repository.repo
     repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
     repo.mergify_config = rules.UserConfigurationSchema({})
     repo.installation.client.items = mock.MagicMock(__aiter__=[])

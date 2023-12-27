@@ -85,8 +85,10 @@ async def test_flaky_check_get_consolidate_data(
     pending_checks: list[str],
     failure_cheks: list[str],
     flaky_checks_to_rerun: list[flaky_check.CheckToRerunResult],
+    fake_repository: context.Repository,
 ) -> None:
     repo = mock.Mock()
+    repo.repo = fake_repository.repo
     repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
     repo.installation.client.items = mock.MagicMock(__aiter__=[])
     repo.mergify_config = rules.UserConfigurationSchema(mergify_conf)

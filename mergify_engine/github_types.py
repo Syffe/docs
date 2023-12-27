@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import enum
 import functools
@@ -109,7 +111,7 @@ class GitHubRepositoryPermission(enum.Enum):
     level: int
     _ignore_ = "level"
 
-    def __new__(cls, permission: str) -> "GitHubRepositoryPermission":
+    def __new__(cls, permission: str) -> GitHubRepositoryPermission:
         member = object.__new__(cls)
         member._value_ = permission
         member.level = len(cls.__members__)
@@ -128,14 +130,14 @@ class GitHubRepositoryPermission(enum.Enum):
         raise ValueError(f"Permission must be one of ({allowed_permissions_str})")
 
     @classmethod
-    def default(cls) -> "GitHubRepositoryPermission":
+    def default(cls) -> GitHubRepositoryPermission:
         return cls.NONE
 
     @classmethod
     def permissions_above(
         cls,
-        permission: "GitHubRepositoryPermission",
-    ) -> list["GitHubRepositoryPermission"]:
+        permission: GitHubRepositoryPermission,
+    ) -> list[GitHubRepositoryPermission]:
         """Return all permissions including the permission and above it"""
         return [p for p in cls.__members__.values() if p >= permission]
 
@@ -704,14 +706,6 @@ class GitHubEventPush(GitHubEventWithRepository):
     head_commit: GitHubEventPushCommit
 
 
-class GitHubEventStatus(GitHubEventWithRepository):
-    sha: SHAType
-    state: typing.Literal["pending", "success", "failure", "error"]
-    name: str
-    context: str
-    target_url: str
-
-
 class GitHubApp(typing_extensions.TypedDict):
     id: int
     name: str
@@ -749,11 +743,27 @@ GitHubStatusState = typing.Literal[
 
 
 class GitHubStatus(typing_extensions.TypedDict):
+    id: int
     context: str
     state: GitHubStatusState
-    description: str
-    target_url: str
-    avatar_url: str
+    description: str | None
+    target_url: str | None
+    avatar_url: str | None
+    created_at: ISODateTimeType
+    updated_at: ISODateTimeType
+
+
+class GitHubEventStatusBase(GitHubStatus):
+    sha: SHAType
+    name: str
+    repository: GitHubRepository
+
+
+class GitHubEventStatus(
+    GitHubEvent,
+    GitHubEventStatusBase,
+):
+    pass
 
 
 GitHubCheckRunStatus = typing.Literal["pending", "queued", "in_progress", "completed"]

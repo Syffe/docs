@@ -38,6 +38,7 @@ from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 from mergify_engine.github_in_postgres import utils as ghinpg_utils
+from mergify_engine.models.github import commit_status as status_model
 from mergify_engine.models.github import pull_request_commit as prcommit_model
 from mergify_engine.rules.config import mergify as mergify_conf
 
@@ -1783,18 +1784,28 @@ class Context:
     async def pull_statuses(self) -> list[github_types.GitHubStatus]:
         statuses = self._caches.pull_statuses.get()
         if statuses is cache.Unset:
-            statuses = [
-                s
-                async for s in typing.cast(
-                    abc.AsyncIterable[github_types.GitHubStatus],
-                    self.client.items(
-                        f"{self.base_url}/commits/{self.pull['head']['sha']}/status",
-                        list_items="statuses",
-                        resource_name="statuses",
-                        page_limit=10,
-                    ),
-                )
-            ]
+            if await ghinpg_utils.can_repo_use_github_in_pg_data(
+                repo_owner=self.repository.repo["owner"]["login"],
+            ):
+                async with database.create_session() as session:
+                    statuses = await status_model.Status.get_pull_request_statuses(
+                        session,
+                        self.pull,
+                        self.repository.repo["id"],
+                    )
+            else:
+                statuses = [
+                    s
+                    async for s in typing.cast(
+                        abc.AsyncIterable[github_types.GitHubStatus],
+                        self.client.items(
+                            f"{self.base_url}/commits/{self.pull['head']['sha']}/status",
+                            list_items="statuses",
+                            resource_name="statuses",
+                            page_limit=10,
+                        ),
+                    )
+                ]
             self._caches.pull_statuses.set(statuses)
         return statuses
 

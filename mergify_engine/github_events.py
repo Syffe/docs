@@ -502,7 +502,7 @@ async def event_classifier(
     if event_type == "status":
         event = typing.cast(github_types.GitHubEventStatus, event)
         return EventToRoute(
-            EventRoute.STREAM,
+            EventRoute.STREAM | EventRoute.GITHUB_IN_POSTGRES,
             event_type,
             event_id,
             event,

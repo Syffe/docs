@@ -131,11 +131,18 @@ async def test_merge_commit_message(
         [
             github_types.GitHubStatus(
                 {
+                    "id": 1,
                     "target_url": "http://example.com",
                     "context": "my CI",
                     "state": "success",
                     "description": "foobar",
                     "avatar_url": "",
+                    "created_at": github_types.ISODateTimeType(
+                        "2023-12-26 15:59:27.976414",
+                    ),
+                    "updated_at": github_types.ISODateTimeType(
+                        "2023-12-26 15:59:27.976414",
+                    ),
                 },
             ),
         ],

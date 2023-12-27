@@ -1510,11 +1510,14 @@ async def test_get_pull_request_rules_evaluator(
     get_checks: list[github_types.GitHubCheckRun] = []
     get_statuses: list[github_types.GitHubStatus] = [
         {
+            "id": 1,
             "context": "continuous-integration/fake-ci",
             "state": "success",
             "description": "foobar",
             "target_url": "http://example.com",
             "avatar_url": "",
+            "created_at": github_types.ISODateTimeType("2023-12-26 15:59:27.976414"),
+            "updated_at": github_types.ISODateTimeType("2023-12-26 15:59:27.976414"),
         },
     ]
 
