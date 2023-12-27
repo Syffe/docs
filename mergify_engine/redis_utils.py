@@ -336,7 +336,6 @@ async def process_stream(
     redis_key: str,
     batch_size: int,
     event_processor: abc.Callable[[bytes, dict[bytes, bytes]], abc.Awaitable[None]],
-    redis_payload_data_key: bytes = b"data",
 ) -> bool:
     events_count = 0
     ids_to_delete: set[bytes] = set()

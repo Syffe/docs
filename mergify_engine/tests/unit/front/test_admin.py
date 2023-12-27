@@ -153,7 +153,6 @@ async def test_sudo_debug(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     web_client: conftest.CustomTestClient,
     monkeypatch: pytest.MonkeyPatch,
-    respx_mock: respx.MockRouter,
 ) -> None:
     monkeypatch.setattr(settings, "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", [2644])
 
@@ -176,7 +175,7 @@ async def test_sudo_debug(
 
     await web_client.log_as(admin_account.id)
 
-    def fake_debug(url: str) -> None:
+    def fake_debug(_url: str) -> None:
         print("hello world")  # noqa: T201
 
     with mock.patch.object(debug, "report", side_effect=fake_debug):

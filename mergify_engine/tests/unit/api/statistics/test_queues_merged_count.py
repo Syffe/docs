@@ -33,7 +33,7 @@ from mergify_engine.tests.unit.api import conftest as tests_api_conftest
     indirect=True,
 )
 async def test_api_simple_filters(
-    fake_repository: context.Repository,
+    fake_repository: context.Repository,  # noqa: ARG001
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
     _insert_merged_event: None,
@@ -96,7 +96,7 @@ async def test_api_simple_filters(
     indirect=True,
 )
 async def test_api_partitions_list_filters(
-    fake_repository: context.Repository,
+    fake_repository: context.Repository,  # noqa: ARG001
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
     _insert_merged_event: None,
@@ -180,7 +180,7 @@ async def test_api_invalid_start_at_end_at(
     indirect=True,
 )
 async def test_api_response_1_value_per_hour(
-    fake_repository: context.Repository,
+    fake_repository: context.Repository,  # noqa: ARG001
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
     _insert_merged_event: None,
@@ -233,7 +233,7 @@ async def test_api_response_1_value_per_hour(
     indirect=True,
 )
 async def test_api_response_1_value_per_4_hours(
-    fake_repository: context.Repository,
+    fake_repository: context.Repository,  # noqa: ARG001
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
     _insert_merged_event: None,
@@ -286,7 +286,7 @@ async def test_api_response_1_value_per_4_hours(
     indirect=True,
 )
 async def test_api_response_1_value_per_day(
-    fake_repository: context.Repository,
+    fake_repository: context.Repository,  # noqa: ARG001
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
     _insert_merged_event: None,
@@ -339,7 +339,7 @@ async def test_api_response_1_value_per_day(
     indirect=True,
 )
 async def test_api_response_1_value_per_2_days(
-    fake_repository: context.Repository,
+    fake_repository: context.Repository,  # noqa: ARG001
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
     _insert_merged_event: None,
@@ -390,7 +390,7 @@ async def test_api_response_1_value_per_2_days(
     indirect=True,
 )
 async def test_at_intervals_edge(
-    fake_repository: context.Repository,
+    fake_repository: context.Repository,  # noqa: ARG001
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
     _insert_merged_event: None,

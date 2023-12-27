@@ -32,8 +32,8 @@ class DumperWithIndentedList(yaml.SafeDumper):
     def increase_indent(
         self,
         flow: bool = False,
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *args: typing.Any,  # noqa: ARG002
+        **kwargs: typing.Any,  # noqa: ARG002
     ) -> typing.Any:
         return super().increase_indent(flow=flow, indentless=False)
 

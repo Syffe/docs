@@ -44,7 +44,7 @@ GHA_CI_LOGS_ZIP_BUFFER.seek(0)
 GHA_CI_LOGS_ZIP = GHA_CI_LOGS_ZIP_BUFFER.read()
 
 
-def noop(*args: typing.Any, **kwargs: typing.Any) -> None:
+def noop(*_args: typing.Any, **_kwargs: typing.Any) -> None:
     pass
 
 
@@ -850,7 +850,7 @@ async def test_download_logs_for_failed_jobs_life_cycle(
     second_try_log_status: gh_models.WorkflowJobLogStatus,
     log_errors: list[str],
 ) -> None:
-    owner, repo, job = await _status_life_cycle_base(db, respx_mock, monkeypatch)
+    owner, repo, job = await _status_life_cycle_base(db, monkeypatch)
 
     respx_mock.get(
         f"{settings.GITHUB_REST_API_URL}/users/{owner.login}/installation",
@@ -1048,7 +1048,7 @@ async def test_extract_metadata_from_logs_life_cycle(
     second_try_metadata_status: gh_models.WorkflowJobLogMetadataExtractingStatus,
     log_errors: list[str],
 ) -> None:
-    job = (await _status_life_cycle_base(db, respx_mock, monkeypatch))[2]
+    job = (await _status_life_cycle_base(db, monkeypatch))[2]
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
     job.log_status = log_status
@@ -1178,7 +1178,7 @@ async def test_get_logs_embedding_life_cycle(
     second_try_embedding_status: gh_models.WorkflowJobLogEmbeddingStatus,
     log_errors: list[str],
 ) -> None:
-    job = (await _status_life_cycle_base(db, respx_mock, monkeypatch))[2]
+    job = (await _status_life_cycle_base(db, monkeypatch))[2]
 
     job = await db.get_one(gh_models.WorkflowJob, 1)
     job.log_status = log_status
@@ -1213,7 +1213,6 @@ async def test_get_logs_embedding_life_cycle(
 
 async def _status_life_cycle_base(
     db: sqlalchemy.ext.asyncio.AsyncSession,
-    respx_mock: respx.MockRouter,
     monkeypatch: pytest.MonkeyPatch,
 ) -> tuple[gh_models.GitHubAccount, gh_models.GitHubRepository, gh_models.WorkflowJob]:
     owner = gh_models.GitHubAccount(id=1, login="owner", avatar_url="https://dummy.com")
@@ -1477,9 +1476,9 @@ async def test_log_exception_and_maybe_retry_on_database_error(
     monkeypatch.setattr(github_action, "LOG_EMBEDDER_MAX_ATTEMPTS", 1)
 
     async def embed_log_raise_data_error_for_job_1(
-        openai_client: openai_api.OpenAIClient,
+        openai_client: openai_api.OpenAIClient,  # noqa: ARG001
         job: gh_models.WorkflowJob,
-        log_lines: list[str],
+        log_lines: list[str],  # noqa: ARG001
     ) -> None:
         if job.id == 1:
             # This nul byte in a text field will lead to a DataError when we try to
@@ -1489,10 +1488,10 @@ async def test_log_exception_and_maybe_retry_on_database_error(
         job.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
 
     async def create_job_log_metadata_raise_data_error_for_job_2(
-        openai_client: openai_api.OpenAIClient,
-        session: sqlalchemy.ext.asyncio.AsyncSession,
+        openai_client: openai_api.OpenAIClient,  # noqa: ARG001
+        session: sqlalchemy.ext.asyncio.AsyncSession,  # noqa: ARG001
         job: gh_models.WorkflowJob,
-        log_lines: list[str],
+        log_lines: list[str],  # noqa: ARG001
     ) -> None:
         if job.id == 2:
             # This nul byte in a text field will lead to a DataError when we try to
@@ -1506,7 +1505,7 @@ async def test_log_exception_and_maybe_retry_on_database_error(
         ]
 
     async def fetch_and_store_log_lines_raise_data_error_for_job_3(
-        gcs_client: google_cloud_storage.GoogleCloudStorageClient,
+        gcs_client: google_cloud_storage.GoogleCloudStorageClient,  # noqa: ARG001
         job: gh_models.WorkflowJob,
     ) -> logm.Log:
         if job.id == 3:

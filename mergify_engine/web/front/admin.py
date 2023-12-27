@@ -134,7 +134,6 @@ async def sudo_debug(
     login: github_types.GitHubLogin,
     repository: github_types.GitHubRepositoryName,
     pull_number: github_types.GitHubPullRequestNumber,
-    session: database.Session,
 ) -> fastapi.Response:
     from_user = imia.impersonation.get_original_user(request).login
 

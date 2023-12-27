@@ -30,7 +30,7 @@ class DequeueExecutor(
     @classmethod
     async def create(
         cls,
-        action: DequeueCommand,
+        _action: DequeueCommand,
         ctxt: context.Context,
         rule: prr_config.EvaluatedPullRequestRule,
     ) -> DequeueExecutor:

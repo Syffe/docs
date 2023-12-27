@@ -50,7 +50,6 @@ _RawGitHubAccountId = typing.Annotated[
 
 async def _get_validated_github_account_id(
     github_account_id: _RawGitHubAccountId,
-    logged_user: CurrentUser,
 ) -> github_types.GitHubAccountIdType:
     # NOTE(sileht): We get the installation only to check the account still exists and Mergify is still installed
     await github.get_installation_from_account_id(github_account_id)

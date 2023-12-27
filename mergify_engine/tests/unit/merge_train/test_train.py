@@ -908,8 +908,7 @@ def test_train_batch_split(
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
 async def test_train_queue_splitted_on_failure_1x2(
-    report_failure: mock.Mock,
-    fake_client: mock.Mock,
+    __set_creation_failure: mock.Mock,
     context_getter: conftest.ContextGetterFixture,
     convoy: merge_train.Convoy,
 ) -> None:
@@ -987,7 +986,7 @@ async def test_train_queue_splitted_on_failure_1x2(
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
 async def test_train_queue_splitted_on_failure_1x5(
-    report_failure: mock.Mock,
+    __set_creation_failure: mock.Mock,
     fake_client: mock.Mock,
     context_getter: conftest.ContextGetterFixture,
     convoy: merge_train.Convoy,
@@ -1126,7 +1125,7 @@ async def test_train_queue_splitted_on_failure_1x5(
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
 async def test_train_queue_splitted_on_failure_2x5(
-    report_failure: mock.Mock,
+    __set_creation_failure: mock.Mock,
     fake_client: mock.Mock,
     context_getter: conftest.ContextGetterFixture,
     convoy: merge_train.Convoy,
@@ -1284,7 +1283,7 @@ async def test_train_queue_splitted_on_failure_2x5(
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
 async def test_train_queue_splitted_on_failure_5x3(
-    report_failure: mock.Mock,
+    __set_creation_failure: mock.Mock,
     context_getter: conftest.ContextGetterFixture,
     fake_client: mock.Mock,
     convoy: merge_train.Convoy,
@@ -1738,7 +1737,7 @@ async def test_train_batch_max_wait_time(
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
 async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x5(
-    report_failure: mock.Mock,
+    __set_creation_failure: mock.Mock,
     context_getter: conftest.ContextGetterFixture,
     fake_client: mock.Mock,
     convoy: merge_train.Convoy,
@@ -1796,7 +1795,7 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
 async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x5(
-    report_failure: mock.Mock,
+    __set_creation_failure: mock.Mock,
     context_getter: conftest.ContextGetterFixture,
     fake_client: mock.Mock,
     convoy: merge_train.Convoy,
@@ -1890,7 +1889,6 @@ def test_embarked_pull_old_serialization() -> None:
 
 
 async def test_train_load_from_redis_with_None_partition_name(
-    context_getter: conftest.ContextGetterFixture,
     repository: context.Repository,
 ) -> None:
     repository._caches.mergify_config.set(

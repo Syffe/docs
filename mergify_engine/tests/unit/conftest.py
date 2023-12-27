@@ -388,7 +388,7 @@ def sample_ci_events_to_process(
 
 @pytest.fixture(autouse=True)
 async def _clear_redis_database_between_tests(
-    redis_links: redis_utils.RedisLinks,
+    redis_links: redis_utils.RedisLinks,  # noqa: ARG001
 ) -> None:
     # No need to do anything else, the code in `redis_links` fixture
     # already cleans everything

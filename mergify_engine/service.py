@@ -31,7 +31,7 @@ def ddtrace_hook(span: ddtrace.Span) -> None:
 
 def sentry_before_send(
     event: dict[str, typing.Any],
-    hint: dict[str, typing.Any],
+    hint: dict[str, typing.Any],  # noqa: ARG001
 ) -> dict[str, typing.Any] | None:
     # NOTE(sileht): malicious user can craft a traceparent header with an invalid version, this is logged as an exception
     # by ddtrace

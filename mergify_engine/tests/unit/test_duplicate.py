@@ -9,9 +9,9 @@ from mergify_engine.tests.unit import conftest
 
 async def fake_get_github_pulls_from_sha(
     url: str,
-    resource_name: str,
-    page_limit: str,
-    api_version: None | str = None,
+    resource_name: str,  # noqa: ARG001
+    page_limit: str,  # noqa: ARG001
+    api_version: None | str = None,  # noqa: ARG001
 ) -> abc.AsyncGenerator[github_types.GitHubPullRequest, None]:
     pr = github_types.GitHubPullRequest(
         {
@@ -234,7 +234,7 @@ async def test_get_commits_to_cherry_pick_rebase(
 
     async def fake_get_github_commit_from_sha(
         url: str,
-        api_version: None | str = None,
+        _api_version: None | str = None,
     ) -> github_types.GitHubBranchCommit:
         if url.endswith("/commits/rebased_c1"):
             return rebased_c1

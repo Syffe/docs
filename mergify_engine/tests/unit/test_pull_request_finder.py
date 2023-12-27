@@ -113,7 +113,6 @@ async def test_event_status(
 
 async def test_fetch_open_pull_requests_fallback(
     redis_links: redis_utils.RedisLinks,
-    context_getter: conftest.ContextGetterFixture,
 ) -> None:
     await _do_test_event_to_pull(
         redis_links,

@@ -174,7 +174,7 @@ async def test_security_middleware() -> None:
     app.add_middleware(SecurityMiddleware)
 
     @app.get("/")
-    def root(request: fastapi.Request) -> starlette.responses.PlainTextResponse:
+    def root() -> starlette.responses.PlainTextResponse:
         return starlette.responses.PlainTextResponse(content="", status_code=200)
 
     client = fastapi.testclient.TestClient(app)
@@ -289,7 +289,7 @@ async def test_saas_addons_middleware(monkeypatch: pytest.MonkeyPatch) -> None:
     app.add_middleware(SaasSecurityMiddleware)
 
     @app.get("/")
-    async def root(request: fastapi.Request) -> starlette.responses.PlainTextResponse:
+    async def root() -> starlette.responses.PlainTextResponse:
         return starlette.responses.PlainTextResponse(content="hello", status_code=200)
 
     client = fastapi.testclient.TestClient(app)

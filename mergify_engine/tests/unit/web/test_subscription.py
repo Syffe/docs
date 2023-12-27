@@ -62,9 +62,8 @@ async def test_subscription_cache_update(web_client: httpx.AsyncClient) -> None:
     assert reply.content == b"Cache updated"
 
 
-async def test_subscription_user_oauth_token_unauthororized(
+async def test_subscription_user_oauth_token_unauthorized(
     web_client: conftest.CustomTestClient,
-    db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     reply = await web_client.get("/subscriptions/user-oauth-access-token/42")
     assert reply.status_code == 403

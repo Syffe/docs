@@ -266,7 +266,7 @@ class Filter(typing.Generic[FilterResultT]):
     def _eval_binary_op(
         self,
         op: BinaryOperatorT[FilterResultT],
-        attribute_name: str,
+        _attribute_name: str,
         attribute_values: list[typing.Any],
         ref_values_expanded: list[typing.Any],
     ) -> FilterResultT:
@@ -502,11 +502,11 @@ def _as_datetime(value: typing.Any) -> datetime.datetime:
     return date.DT_MAX
 
 
-def _dt_max(value: typing.Any, ref: typing.Any) -> datetime.datetime:
+def _dt_max(_value: typing.Any, _ref: typing.Any) -> datetime.datetime:
     return date.DT_MAX
 
 
-def _dt_identity_max(value: typing.Any) -> datetime.datetime:
+def _dt_identity_max(_value: typing.Any) -> datetime.datetime:
     return date.DT_MAX
 
 
@@ -803,9 +803,9 @@ class FixedAttributesFilter(TernaryFilter):
 
     def is_known(
         self,
-        op: BinaryOperatorT[FilterResultT],
+        _op: BinaryOperatorT[FilterResultT],
         attribute_name: str,
-        ref_values: list[typing.Any],
+        _ref_values: list[typing.Any],
     ) -> bool:
         real_attr_name = attribute_name.lstrip(Filter.LENGTH_OPERATOR)
         return real_attr_name in self.fixed_attributes

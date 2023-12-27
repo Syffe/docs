@@ -44,7 +44,7 @@ def test_valid_condition() -> None:
     assert str(c) == "head~=bar"
 
 
-def fake_expander(v: str) -> list[str]:
+def fake_expander(_v: str) -> list[str]:
     return ["foo", "bar"]
 
 
@@ -568,8 +568,8 @@ async def test_get_mergify_config(
     fake_repository: context.Repository,
 ) -> None:
     async def item(
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> github_types.GitHubContentFile:
         return github_types.GitHubContentFile(
             {
@@ -621,8 +621,8 @@ pull_request_rules:
 """
 
     async def item(
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> github_types.GitHubContentFile:
         return github_types.GitHubContentFile(
             {
@@ -820,8 +820,8 @@ async def test_get_mergify_config_invalid(
     fake_repository: context.Repository,
 ) -> None:
     async def item(
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> github_types.GitHubContentFile:
         return github_types.GitHubContentFile(
             {
@@ -1428,8 +1428,8 @@ async def test_queue_rules_evaluator_with_users_or_team(
 
     async def client_item(
         url: str,
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> dict[str, str] | None:
         if url == "/repos/Mergifyio/mergify-engine/collaborators/sileht/permission":
             return {"permission": "write"}
@@ -1450,8 +1450,8 @@ async def test_queue_rules_evaluator_with_users_or_team(
 
     async def client_items(
         url: str,
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> abc.AsyncGenerator[dict[str, typing.Any], None] | None:
         if url == "/repos/Mergifyio/mergify-engine/pulls/1/reviews":
             for r in get_reviews:
@@ -1520,8 +1520,8 @@ async def test_get_pull_request_rules_evaluator(
 
     async def client_item(
         url: str,
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> dict[str, str] | github_types.GitHubContentFile | None:
         if url == "/repos/Mergifyio/mergify-engine/collaborators/sileht/permission":
             return {"permission": "write"}
@@ -1555,8 +1555,8 @@ async def test_get_pull_request_rules_evaluator(
 
     async def client_items(
         url: str,
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> abc.AsyncGenerator[dict[str, typing.Any], None] | None:
         if url == "/repos/Mergifyio/mergify-engine/pulls/1/reviews":
             for r in get_reviews:
@@ -1923,8 +1923,8 @@ async def test_get_pull_request_rules_evaluator(
     # branch protection
     async def client_item_with_branch_protection_enabled(
         url: str,
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> None | (dict[str, dict[str, list[str] | bool]]):
         if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
             return {
@@ -2464,9 +2464,7 @@ async def test_rule_condition_negation_extract_raw_filter_tree() -> None:
     assert pr_conditions.extract_raw_filter_tree() == expected_tree
 
 
-async def test_command_only_conditions(
-    context_getter: conftest.ContextGetterFixture,
-) -> None:
+async def test_command_only_conditions() -> None:
     with pytest.raises(mergify_conf.InvalidRules) as e:
         await utils.load_mergify_config(
             """

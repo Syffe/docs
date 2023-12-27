@@ -11,14 +11,14 @@ async def test_summary_synchronization_cache(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     async def items(
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> abc.AsyncGenerator[None, None]:
         for _ in []:
             yield
         return
 
-    async def post_check(*args: typing.Any, **kwargs: typing.Any) -> mock.Mock:
+    async def post_check(*_args: typing.Any, **_kwargs: typing.Any) -> mock.Mock:
         return mock.Mock(
             status_code=200,
             json=mock.Mock(

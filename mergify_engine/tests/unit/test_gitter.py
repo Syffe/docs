@@ -35,7 +35,6 @@ async def test_gitter(
 
 async def test_gitter_init_fails(
     monkeypatch: pytest.MonkeyPatch,
-    redis_links: redis_utils.RedisLinks,
 ) -> None:
     monkeypatch.delenv("PATH")
     git = gitter.Gitter(mock.Mock())

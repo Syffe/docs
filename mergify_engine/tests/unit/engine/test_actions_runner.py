@@ -120,7 +120,6 @@ async def test_get_already_merged_summary(
 
 async def test_get_already_merged_summary_without_rules(
     context_getter: conftest.ContextGetterFixture,
-    fake_mergify_bot: github_types.GitHubAccount,
 ) -> None:
     merged_by = github_types.GitHubLogin("foobar")
     merged_by_id = github_types.GitHubAccountIdType(1)

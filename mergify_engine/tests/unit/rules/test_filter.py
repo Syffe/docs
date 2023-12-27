@@ -157,7 +157,7 @@ async def test_does_not_contain() -> None:
 
 async def test_set_value_expanders_does_not_contain() -> None:
     f = filter.BinaryFilter({"!=": ("foo", "@bar")})
-    f.value_expanders["foo"] = lambda x: ["foobaz", "foobar"]
+    f.value_expanders["foo"] = lambda _: ["foobaz", "foobar"]
     assert not await f(FakePR({"foo": "foobar"}))
     assert not await f(FakePR({"foo": "foobaz"}))
     assert await f(FakePR({"foo": "foobiz"}))

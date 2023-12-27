@@ -388,7 +388,7 @@ async def test_api_cursor_pg(
 
 
 async def test_api_links_with_query_params(
-    fake_repository: context.Repository,
+    fake_repository: context.Repository,  # noqa: ARG001
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
 ) -> None:

@@ -28,7 +28,7 @@ def saas_root_endpoint() -> fastapi.Response:
 
 
 @contextlib.asynccontextmanager
-async def lifespan(app: fastapi.FastAPI) -> typing.AsyncGenerator[None, None]:
+async def lifespan(_app: fastapi.FastAPI) -> typing.AsyncGenerator[None, None]:
     await redis.startup()
     # NOTE(sileht): Warm GitHubAppInfo cache
     redis_links = redis.get_redis_links()

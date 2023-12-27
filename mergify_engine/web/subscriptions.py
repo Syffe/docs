@@ -112,7 +112,6 @@ async def subscription_details_cache_delete(
 )
 async def get_user_oauth_access_token(
     github_account_id: github_types.GitHubAccountIdType,
-    redis_links: redis.RedisLinks,
     session: database.Session,
 ) -> responses.Response:
     user = await github_user.GitHubUser.get_by_id(session, github_account_id)

@@ -95,16 +95,16 @@ async def test_pull_behind(
 ) -> None:
     expected, commits = commits_tree_generator
 
-    async def get_commits(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+    async def get_commits(*_args: typing.Any, **_kwargs: typing.Any) -> typing.Any:
         # /pulls/X/commits
         for c in commits:
             yield c
 
-    async def item(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+    async def item(*_args: typing.Any, **_kwargs: typing.Any) -> typing.Any:
         # /branch/#foo
         return {"commit": {"sha": "base"}}
 
-    async def get_compare(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+    async def get_compare(*_args: typing.Any, **_kwargs: typing.Any) -> typing.Any:
         return github_types.GitHubCompareCommits(
             {"behind_by": 0 if expected else 100, "status": "behind"},
         )

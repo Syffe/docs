@@ -386,7 +386,6 @@ pull_request_rules:
 async def test_pull_request_configuration_simulator_error_not_found(
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
-    context_getter: tests_unit_conftest.ContextGetterFixture,
     respx_mock: respx.MockRouter,
 ) -> None:
     mergify_yml = """
@@ -418,7 +417,6 @@ async def test_pull_request_configuration_simulator_invalid_body(
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
     context_getter: tests_unit_conftest.ContextGetterFixture,
-    respx_mock: respx.MockRouter,
 ) -> None:
     with mock.patch.object(
         context.Repository,

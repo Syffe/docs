@@ -27,7 +27,6 @@ def _enable_tracer() -> abc.Generator[None, None, None]:
 
 def test_logging(
     monkeypatch: pytest.MonkeyPatch,
-    request: pytest.FixtureRequest,
     _enable_tracer: typing.Literal[None],
 ) -> None:
     monkeypatch.setenv("HEROKU_RELEASE_VERSION", "v1234")

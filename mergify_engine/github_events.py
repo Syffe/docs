@@ -116,7 +116,6 @@ class EventToRoute:
 async def clean_and_fill_caches(
     redis_links: redis_utils.RedisLinks,
     event_type: github_types.GitHubEventType,
-    event_id: str,
     event: github_types.GitHubEvent,
 ) -> None:
     if event_type == "pull_request":
@@ -311,7 +310,6 @@ async def event_preprocessing(
     background_tasks: fastapi.BackgroundTasks,
     redis_links: redis_utils.RedisLinks,
     event_type: github_types.GitHubEventType,
-    event_id: str,
     event: github_types.GitHubEvent,
 ) -> None:
     if event_type == "pull_request":
@@ -649,7 +647,7 @@ async def filter_and_dispatch(
         )
         raise
 
-    await clean_and_fill_caches(redis_links, event_type, event_id, event)
+    await clean_and_fill_caches(redis_links, event_type, event)
 
     classified_event.set_sentry_info()
 
@@ -658,7 +656,6 @@ async def filter_and_dispatch(
             background_tasks,
             redis_links,
             event_type,
-            event_id,
             event,
         )
 

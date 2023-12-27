@@ -67,7 +67,7 @@ class DummyPullRequest(condition_value_querier.PullRequest):
             return env.from_string(template).render(**infos)
 
     @staticmethod
-    def dummy_get_section(v: str, section: str, default: str | None = None) -> str:
+    def dummy_get_section(v: str, section: str, default: str | None = None) -> str:  # noqa: ARG004
         return v
 
 

@@ -130,7 +130,6 @@ class PullRequestCommit(models.Base):
         session: sqlalchemy.ext.asyncio.AsyncSession,
         pull_request_id: int,
         pull_head_sha: github_types.SHAType,
-        repo_id: github_types.GitHubRepositoryIdType,
     ) -> list[github_types.GitHubBranchCommit]:
         # Circular import
         from mergify_engine.models.github.pull_request import PullRequest

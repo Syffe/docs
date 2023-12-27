@@ -123,7 +123,7 @@ class GitHubRepositoryPermission(enum.Enum):
     ADMIN = "admin"
 
     @classmethod
-    def _missing_(cls, value: object) -> None:
+    def _missing_(cls, _value: object) -> None:
         allowed_permissions_str = ", ".join(map(str.lower, cls.__members__.keys()))
         raise ValueError(f"Permission must be one of ({allowed_permissions_str})")
 

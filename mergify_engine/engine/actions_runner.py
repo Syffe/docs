@@ -117,7 +117,6 @@ def _sanitize_action_config(config_key: str, config_value: typing.Any) -> typing
 
 
 async def gen_summary_rules(
-    ctxt: context.Context,
     _rules: list[prr_config.EvaluatedPullRequestRule],
     display_action_configs: bool,
 ) -> str:
@@ -179,9 +178,8 @@ async def gen_summary(
             matching_rules_to_display.remove(rule)
             not_applicable_base_changeable_attributes_rules_to_display.append(rule)
 
-    summary += await gen_summary_rules(ctxt, match.faulty_rules, display_action_configs)
+    summary += await gen_summary_rules(match.faulty_rules, display_action_configs)
     summary += await gen_summary_rules(
-        ctxt,
         matching_rules_to_display,
         display_action_configs,
     )
@@ -212,14 +210,12 @@ async def gen_summary(
 
         if ignored_rules_count > 0:
             summary += await gen_summary_rules(
-                ctxt,
                 ignored_rules,
                 display_action_configs,
             )
 
         if not_applicable_base_changeable_attributes_rules_to_display_count > 0:
             summary += await gen_summary_rules(
-                ctxt,
                 not_applicable_base_changeable_attributes_rules_to_display,
                 display_action_configs,
             )

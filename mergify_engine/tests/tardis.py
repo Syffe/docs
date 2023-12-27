@@ -651,14 +651,14 @@ class _time_travel:
             orig_tearDownClass = klass.tearDownClass
 
             @classmethod  # type: ignore[misc]
-            def setUpClass(cls) -> None:  # type: ignore[no-untyped-def]
+            def setUpClass(cls) -> None:  # type: ignore[no-untyped-def]  # noqa: ARG001
                 self.start()
                 if orig_setUpClass is not None:
                     orig_setUpClass()
                 self.stop()
 
             @classmethod  # type: ignore[misc]
-            def tearDownClass(cls) -> None:  # type: ignore[no-untyped-def]
+            def tearDownClass(cls) -> None:  # type: ignore[no-untyped-def]  # noqa: ARG001
                 self.start()
                 if orig_tearDownClass is not None:
                     orig_tearDownClass()
@@ -822,7 +822,7 @@ class _time_travel:
         event_loop.close()
         EventLoopClass = type(event_loop)
         self.undo_changes.append((EventLoopClass, "time", EventLoopClass.time))
-        EventLoopClass.time = lambda self: real_monotonic()  # type: ignore[method-assign]
+        EventLoopClass.time = lambda self: real_monotonic()  # type: ignore[method-assign]  # noqa: ARG005
 
         return freeze_factory
 

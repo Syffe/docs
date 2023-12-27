@@ -912,7 +912,7 @@ async def test_rules_checks_status_ceph() -> None:
         all_checks=pull.attrs["check"],  # type: ignore[arg-type]
     )
 
-    async def fake_get_team_members(*args: typing.Any) -> list[str]:
+    async def fake_get_team_members(*_args: typing.Any) -> list[str]:
         return ["me", "other", "foo", "bar"]
 
     repo_with_team = mock.Mock(

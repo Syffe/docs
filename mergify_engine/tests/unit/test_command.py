@@ -339,7 +339,6 @@ DO NOT EDIT
 async def test_run_command_with_wrong_arg(
     context_getter: conftest.ContextGetterFixture,
     respx_mock: respx.MockRouter,
-    fake_mergify_bot: None,
 ) -> None:
     user = create_fake_user()
 
@@ -404,7 +403,6 @@ DO NOT EDIT
 async def test_run_command_with_no_subscription(
     context_getter: conftest.ContextGetterFixture,
     respx_mock: respx.MockRouter,
-    fake_mergify_bot: None,
     command_name: str,
 ) -> None:
     user = create_fake_user()
@@ -485,7 +483,6 @@ async def test_commands_restrictions_sender_permission(
     is_command_allowed: bool,
     context_getter: conftest.ContextGetterFixture,
     respx_mock: respx.MockRouter,
-    fake_mergify_bot: None,
 ) -> None:
     config = (
         ""

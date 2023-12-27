@@ -259,7 +259,7 @@ async def get_ci_issues(
 )
 async def patch_ci_issues(
     session: database.Session,
-    repository_ctxt: security.Repository,
+    _repository_ctxt: security.Repository,
     ci_issue_ids: typing.Annotated[
         list[int],
         fastapi.Query(description="IDs of CI Issues", default_factory=list, alias="id"),
@@ -317,7 +317,7 @@ async def get_ci_issue(
 )
 async def patch_ci_issue(
     session: database.Session,
-    repository_ctxt: security.Repository,
+    _repository_ctxt: security.Repository,
     ci_issue_id: typing.Annotated[
         int,
         fastapi.Path(description="The ID of the CI Issue"),

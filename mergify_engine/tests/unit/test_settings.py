@@ -37,7 +37,6 @@ def _setup_mandatory_envs(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_defaults(
     _unset_testing_env: None,
     _setup_mandatory_envs: None,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     conf = config.EngineSettings()
     assert str(conf.DATABASE_URL) == "postgresql+psycopg://localhost:5432"

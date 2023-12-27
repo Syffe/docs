@@ -43,7 +43,7 @@ class BackportAction(copy.CopyAction):
 
     async def get_conditions_requirements(
         self,
-        ctxt: context.Context,
+        _ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
         return [
             conditions.RuleCondition.from_tree(

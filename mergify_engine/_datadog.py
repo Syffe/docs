@@ -15,11 +15,11 @@ class Signal(signals.SignalBase):
     async def __call__(
         self,
         repository: "context.Repository",
-        pull_request: github_types.GitHubPullRequestNumber | None,
-        base_ref: github_types.GitHubRefType | None,
+        _pull_request: github_types.GitHubPullRequestNumber | None,
+        _base_ref: github_types.GitHubRefType | None,
         event: signals.EventName,
-        metadata: signals.EventMetadata,
-        trigger: str,
+        _metadata: signals.EventMetadata,
+        _trigger: str,
     ) -> None:
         if event.startswith("action"):
             tags = [

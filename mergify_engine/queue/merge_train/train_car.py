@@ -856,7 +856,7 @@ class TrainCar:
                 extensions={
                     "retry": lambda response: response.status_code == 422
                     and "Validation Failed" in http.extract_message(response),
-                    "retry_log": lambda retry_state: self.train.log.info(
+                    "retry_log": lambda _retry_state: self.train.log.info(
                         "retrying to create a merge queue pull request",
                         head=branch_name,
                         title=title,
@@ -953,7 +953,7 @@ class TrainCar:
                 extensions={
                     "retry": lambda response: response.status_code == 422
                     and "Reference already exists" in http.extract_message(response),
-                    "retry_log": lambda retry_state: self.train.log.info(
+                    "retry_log": lambda _retry_state: self.train.log.info(
                         "retrying to create the merge-queue branch",
                         branch_name=branch_name,
                         sha=base_sha,
@@ -1020,7 +1020,7 @@ class TrainCar:
                     "Base does not exist" in http.extract_message(response)
                     or "Head does not exist" in http.extract_message(response)
                 ),
-                "retry_log": lambda retry_state: self.repository.log.info(
+                "retry_log": lambda _retry_state: self.repository.log.info(
                     "fail to merge pull request into draft pr branch",
                     gh_pull=pull_number,
                     queue_branch_name=self.queue_branch_name,
@@ -1041,7 +1041,7 @@ class TrainCar:
                 json={"new_name": new_branch_name},
                 extensions={
                     "retry": lambda response: response.status_code == 404,
-                    "retry_log": lambda retry_state: self.train.log.info(
+                    "retry_log": lambda _retry_state: self.train.log.info(
                         "retrying to rename merge-queue branch",
                         current_branch_name=current_branch_name,
                         new_branch_name=new_branch_name,
@@ -1365,7 +1365,6 @@ class TrainCar:
         self,
         *,
         for_queue_pull_request: bool = False,
-        show_queue: bool = True,
         headline: str | None = None,
         pull_rule: prr_config.EvaluatedPullRequestRule | None = None,
     ) -> str:
@@ -1494,7 +1493,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
             body = await self.build_draft_pr_summary(
                 for_queue_pull_request=True,
                 headline=headline,
-                show_queue=False,
             )
 
             if tmp_pull_ctxt.body != body:
@@ -1788,7 +1786,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def get_reset_event(
         self,
-        queue_rule: qr_config.QueueRule,
         paused: pause.QueuePause | None,
     ) -> MergeQueueReset | None:
         if self.queue_pull_request_number is None:
@@ -1907,10 +1904,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         queue_rule = self.get_queue_rule()
 
-        reset_event = await self.get_reset_event(
-            queue_rule,
-            self.train_car_state.paused_by,
-        )
+        reset_event = await self.get_reset_event(self.train_car_state.paused_by)
         if reset_event is not None:
             reason = queue_utils.QueueReset(str(reset_event))
             checked_ctxt.log.info(
@@ -2548,7 +2542,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def get_draft_pr_summary(self) -> str:
         headline: str | None = None
-        show_queue = False
 
         if self.train_car_state.frozen_by is not None:
             if len(self.initial_embarked_pulls) == 1:
@@ -2631,7 +2624,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 headline = f"⏳ The pull request {self._get_user_refs()} is embarked for merge and currently being checked. ⏳"
             else:
                 headline = f"⏳ The pull requests {self._get_user_refs()} are embarked for merge and currently being checked. ⏳"
-            show_queue = True
 
         else:
             raise RuntimeError(
@@ -2641,7 +2633,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
         return await self.build_draft_pr_summary(
             for_queue_pull_request=True,
             headline=headline,
-            show_queue=show_queue,
         )
 
     def get_checked_pull(self) -> github_types.GitHubPullRequestNumber | None:

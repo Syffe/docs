@@ -99,7 +99,6 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
     async def __call__(  # type: ignore[override]
         self,
         request: fastapi.Request,
-        redis_links: redis.RedisLinks,
         session: database.Session,
     ) -> application_keys.ApplicationKey | None:
         credentials = await super().__call__(request)

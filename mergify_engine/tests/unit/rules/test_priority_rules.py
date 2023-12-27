@@ -40,7 +40,6 @@ async def test_queue_effective_priority(
     context_getter: conftest.ContextGetterFixture,
     labels: list[str],
     expected_priority: int,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = await utils.load_mergify_config(
         """queue_rules:

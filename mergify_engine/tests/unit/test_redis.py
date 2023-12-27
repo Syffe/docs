@@ -40,7 +40,6 @@ async def test_redis_stream_processor_ok(
         "test",
         batch_size=2,
         event_processor=processor,
-        redis_payload_data_key=b"foo",
     )
 
     assert await redis_links.stream.xlen("test") == 0
@@ -69,7 +68,6 @@ async def test_redis_stream_processor_error(
         "test",
         batch_size=2,
         event_processor=processor,
-        redis_payload_data_key=b"foo",
     )
 
     assert processor.call_count == 3

@@ -19,7 +19,7 @@ class RedisStore(SessionStore):
     ) -> str:
         return f"fastapi-session/{session_id}/{purpose}"
 
-    async def read(self, session_id: str, lifetime: int) -> bytes:
+    async def read(self, session_id: str, lifetime: int) -> bytes:  # noqa: ARG002
         redis_links = redis.get_redis_links()
         pipe = await redis_links.authentication.pipeline()
         await pipe.get(self.get_redis_key(session_id, purpose="data"))
@@ -70,7 +70,7 @@ class RedisStore(SessionStore):
 class ImiaUserProvider(imia.user_providers.UserProvider):  # type: ignore[misc]
     async def find_by_id(
         self,
-        connection: starlette.requests.HTTPConnection,
+        _connection: starlette.requests.HTTPConnection,
         identifier: typing.Any,
     ) -> imia.protocols.UserLike | None:
         async with database.create_session() as session:

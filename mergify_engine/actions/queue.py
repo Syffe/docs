@@ -189,8 +189,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _queue_branch_merge_pull_request(
         self,
         convoy: merge_train.Convoy,
-        queue_freeze: freeze.QueueFreeze | None,
-        queue_pause: pause.QueuePause | None,
         # "cars" is not used but needed because this func is used in 'merge' property
         # with another func that need this attribute.
         cars: list[merge_train.TrainCar],
@@ -234,8 +232,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _queue_branch_merge_fastforward(
         self,
         convoy: merge_train.Convoy,
-        queue_freeze: freeze.QueueFreeze | None,
-        queue_pause: pause.QueuePause | None,
         cars: list[merge_train.TrainCar],
     ) -> check_api.Result:
         if not cars:
@@ -331,12 +327,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     def _merge(
         self,
     ) -> abc.Callable[
-        [
-            merge_train.Convoy,
-            freeze.QueueFreeze | None,
-            pause.QueuePause | None,
-            list[merge_train.TrainCar],
-        ],
+        [merge_train.Convoy, list[merge_train.TrainCar]],
         abc.Coroutine[typing.Any, typing.Any, check_api.Result],
     ]:
         queue_branch_merge_method = self.queue_rule.config["queue_branch_merge_method"]
@@ -613,7 +604,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 partition_names,
             ):
                 try:
-                    result = await self._merge(convoy, queue_freeze, queue_pause, cars)
+                    result = await self._merge(convoy, cars)
                 except merge_base.MergeNeedRetry:
                     result = await self.get_pending_queue_status(
                         convoy=convoy,
@@ -889,7 +880,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         try:
             await self._check_subscription_status(
-                config=self.config,
                 queue_rule=self.queue_rule,
                 queue_rules=self.queue_rules,
                 partition_rules=self.partition_rules,
@@ -1187,7 +1177,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
     @staticmethod
     async def _check_subscription_status(
-        config: QueueExecutorConfig,
         queue_rule: qr_config.QueueRule,
         queue_rules: qr_config.QueueRules,
         partition_rules: partr_config.PartitionRules,

@@ -11,8 +11,8 @@ from mergify_engine.tests.functional import base
 class TestSubscription(base.FunctionalTestBase):
     async def test_subscription(self) -> None:
         async def fake_subscription(
-            redis_cache: redis_utils.RedisCache,
-            owner_id: github_types.GitHubAccountIdType,
+            _redis_cache: redis_utils.RedisCache,
+            _owner_id: github_types.GitHubAccountIdType,
         ) -> subscription.Subscription:
             if self.SUBSCRIPTION_ACTIVE:
                 features = frozenset(

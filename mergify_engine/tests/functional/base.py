@@ -420,7 +420,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         # NOTE(sileht): We mock this method because when we replay test, the
         # timing maybe not the same as when we record it, making the formatted
         # elapsed time different in the merge queue summary.
-        def fake_pretty_datetime(dt: datetime.datetime) -> str:
+        def fake_pretty_datetime(_dt: datetime.datetime) -> str:
             return "<fake_pretty_datetime()>"
 
         self.register_mock(

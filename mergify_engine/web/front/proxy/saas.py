@@ -169,7 +169,7 @@ async def saas_subscription(
 @router.get("/saas/github-account/{github_account_id}/stripe-customer-portal")
 async def saas_generic_with_github_account_id(
     request: fastapi.Request,
-    github_account_id: security.GitHubAccountId,
+    github_account_id: security.GitHubAccountId,  # noqa: ARG001
     current_user: security.CurrentUser,
 ) -> fastapi.responses.Response:
     # NOTE(sileht): We need to validate the github_account_id before processing

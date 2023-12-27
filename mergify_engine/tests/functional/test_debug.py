@@ -25,7 +25,7 @@ class TestDebugger(base.FunctionalTestBase):
 
         async def mocked_get_all(
             self: typing.Any,
-            pattern_branch_filter: str | None = None,
+            pattern_branch_filter: str | None = None,  # noqa: ARG001
         ) -> list[github_graphql_types.GraphqlBranchProtectionRule]:
             return await real_get_all_branch_protection_rules(
                 self,

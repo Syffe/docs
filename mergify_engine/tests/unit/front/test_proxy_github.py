@@ -1,4 +1,3 @@
-import pytest
 import respx
 import sqlalchemy
 
@@ -9,7 +8,6 @@ from mergify_engine.tests import conftest
 
 
 async def test_github_proxy(
-    monkeypatch: pytest.MonkeyPatch,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
@@ -58,7 +56,6 @@ async def test_github_proxy(
 
 
 async def test_text_html_github_proxy(
-    monkeypatch: pytest.MonkeyPatch,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,

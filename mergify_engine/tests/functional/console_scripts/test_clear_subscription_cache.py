@@ -7,7 +7,6 @@ from mergify_engine.tests.functional import conftest as func_conftest
 
 @pytest.mark.recorder()
 def test_clear_subscription_cache(
-    shadow_office: func_conftest.SubscriptionFixture,
     recorder: func_conftest.RecorderFixture,
     _setup_database: None,
 ) -> None:

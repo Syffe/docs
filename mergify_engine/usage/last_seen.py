@@ -22,11 +22,11 @@ class Signal(signals.SignalBase):
     async def __call__(
         self,
         repository: "context.Repository",
-        pull_request: github_types.GitHubPullRequestNumber | None,
-        base_ref: github_types.GitHubRefType | None,
-        event: signals.EventName,
-        metadata: signals.EventMetadata,
-        trigger: str,
+        _pull_request: github_types.GitHubPullRequestNumber | None,
+        _base_ref: github_types.GitHubRefType | None,
+        _event: signals.EventName,
+        _metadata: signals.EventMetadata,
+        _trigger: str,
     ) -> None:
         key = get_last_seen_key(repository.installation.owner_id)
         now = date.utcnow().isoformat()

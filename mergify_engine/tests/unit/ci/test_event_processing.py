@@ -139,7 +139,6 @@ async def test_process_event_stream_broken_workflow_job(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, typing.Any],
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
     stream_event = {
         "event_type": "workflow_job",

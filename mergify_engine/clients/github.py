@@ -578,7 +578,7 @@ class AsyncGitHubInstallationClient(AsyncGitHubClient):
         self,
         request: httpx.Request,
         *,
-        stream: bool = False,
+        stream: bool = False,  # noqa: ARG002
         auth: httpx._types.AuthTypes
         | httpx._client.UseClientDefault
         | None = httpx._client.USE_CLIENT_DEFAULT,

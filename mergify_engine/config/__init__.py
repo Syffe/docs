@@ -588,11 +588,11 @@ def _extract_field_info(
 
 
 def _prepare_field_value(
-    self: pydantic_settings.EnvSettingsSource,
+    pydantic_self: pydantic_settings.EnvSettingsSource,  # noqa: ARG001
     field_name: str,
-    field: pydantic.fields.FieldInfo,
+    field: pydantic.fields.FieldInfo,  # noqa: ARG001
     value: typing.Any,
-    value_is_complex: bool,
+    value_is_complex: bool,  # noqa: ARG001
 ) -> typing.Any:
     if field_name == "APPLICATION_APIKEYS":
         return types.ApplicationAPIKeys(value or "")
@@ -638,10 +638,10 @@ class EngineSettings(
     def settings_customise_sources(
         cls,
         settings_cls: type[pydantic_settings.BaseSettings],
-        init_settings: pydantic_settings.PydanticBaseSettingsSource,
-        env_settings: pydantic_settings.PydanticBaseSettingsSource,
-        dotenv_settings: pydantic_settings.PydanticBaseSettingsSource,
-        file_secret_settings: pydantic_settings.PydanticBaseSettingsSource,
+        init_settings: pydantic_settings.PydanticBaseSettingsSource,  # noqa: ARG003
+        env_settings: pydantic_settings.PydanticBaseSettingsSource,  # noqa: ARG003
+        dotenv_settings: pydantic_settings.PydanticBaseSettingsSource,  # noqa: ARG003
+        file_secret_settings: pydantic_settings.PydanticBaseSettingsSource,  # noqa: ARG003
     ) -> tuple[pydantic_settings.PydanticBaseSettingsSource, ...]:
         # Order is taken into account, we load values from dotenv file first,
         # then from the env if not found in the dotenv file

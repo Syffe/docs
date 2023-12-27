@@ -78,7 +78,7 @@ async def test_api_auth_scoped(
 @pytest.mark.recorder()
 async def test_api_auth_invalid_token(
     web_client: httpx.AsyncClient,
-    shadow_office: func_conftest.SubscriptionFixture,
+    shadow_office: func_conftest.SubscriptionFixture,  # noqa: ARG001
     recorder: func_conftest.RecorderFixture,
 ) -> None:
     # invalid header
@@ -117,7 +117,7 @@ async def test_api_auth_invalid_token(
 @pytest.mark.recorder()
 async def test_api_auth_no_token(
     web_client: httpx.AsyncClient,
-    shadow_office: func_conftest.SubscriptionFixture,
+    shadow_office: func_conftest.SubscriptionFixture,  # noqa: ARG001
     recorder: func_conftest.RecorderFixture,
 ) -> None:
     r = await web_client.get(
@@ -206,7 +206,6 @@ async def test_api_repository_auth_cached(
     await github_events.clean_and_fill_caches(
         redis_links,
         "installation_repositories",
-        "123eventid",
         # This is a slim event with just the data required to make sure the
         # authentication cache clearing mechanism work.
         github_types.GitHubEventInstallationRepositories(  # type: ignore[typeddict-item]

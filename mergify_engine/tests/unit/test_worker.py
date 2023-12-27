@@ -85,7 +85,7 @@ async def legacy_push(
     )
 
 
-async def fake_get_subscription(*args: typing.Any, **kwargs: typing.Any) -> mock.Mock:
+async def fake_get_subscription(*_args: typing.Any, **_kwargs: typing.Any) -> mock.Mock:
     sub = mock.Mock()
     sub.has_feature.return_value = False
     return sub
@@ -120,10 +120,9 @@ HTTP_500_EXCEPTION = http.HTTPServerSideError(
 
 
 async def just_run_once(
-    self: task.TaskRetriedForever,
-    name: str,
+    _self: task.TaskRetriedForever,
+    _name: str,
     func: task.TaskRetriedForeverFuncT,
-    sleep_time: float,
 ) -> None:
     await func()
 
@@ -1374,11 +1373,11 @@ async def test_stream_processor_priority(
     received = []
 
     def fake_engine(
-        installation: context.Installation,
-        repo_id: github_types.GitHubRepositoryIdType,
-        repo: github_types.GitHubRepositoryName,
+        _installation: context.Installation,
+        _repo_id: github_types.GitHubRepositoryIdType,
+        _repo: github_types.GitHubRepositoryName,
         pull_number: github_types.GitHubPullRequestNumber,
-        sources: list[context.T_PayloadEventSource],
+        _sources: list[context.T_PayloadEventSource],
     ) -> None:
         received.append(pull_number)
 
@@ -1492,10 +1491,10 @@ async def test_stream_processor_date_scheduling(
 
     def fake_engine(
         installation: context.Installation,
-        repo_id: github_types.GitHubRepositoryIdType,
-        repo: github_types.GitHubRepositoryName,
-        pull_number: github_types.GitHubPullRequestNumber,
-        sources: list[context.T_PayloadEventSource],
+        _repo_id: github_types.GitHubRepositoryIdType,
+        _repo: github_types.GitHubRepositoryName,
+        _pull_number: github_types.GitHubPullRequestNumber,
+        _sources: list[context.T_PayloadEventSource],
     ) -> None:
         received.append(installation.owner_login)
 
@@ -1752,7 +1751,7 @@ async def _test_worker_stuck_shutdown(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
 
-    async def fake_engine(*args: typing.Any, **kwargs: typing.Any) -> None:
+    async def fake_engine(*_args: typing.Any, **_kwargs: typing.Any) -> None:
         await asyncio.sleep(10000000)
 
     run_engine.side_effect = fake_engine
@@ -1800,13 +1799,13 @@ async def test_dedicated_worker_scaleup_scaledown(
 
     tracker = []
 
-    async def track_context(*args: typing.Any, **kwargs: typing.Any) -> None:
+    async def track_context(*_args: typing.Any, **_kwargs: typing.Any) -> None:
         tracker.append(str(logs.WORKER_ID.get(None)))
 
     run_engine.side_effect = track_context
 
     async def fake_get_subscription_dedicated(
-        redis: redis_utils.RedisStream,
+        _redis: redis_utils.RedisStream,
         owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
@@ -1818,8 +1817,8 @@ async def test_dedicated_worker_scaleup_scaledown(
         return sub
 
     async def fake_get_subscription_shared(
-        redis: redis_utils.RedisStream,
-        owner_id: github_types.GitHubAccountIdType,
+        _redis: redis_utils.RedisStream,
+        _owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         sub.has_feature.return_value = False
@@ -1977,13 +1976,13 @@ async def test_dedicated_worker_process_scaleup_scaledown(
 
     tracker = []
 
-    async def track_context(*args: typing.Any, **kwargs: typing.Any) -> None:
+    async def track_context(*_args: typing.Any, **_kwargs: typing.Any) -> None:
         tracker.append(str(logs.WORKER_ID.get(None)))
 
     run_engine.side_effect = track_context
 
     async def fake_get_subscription_dedicated(
-        redis: redis_utils.RedisStream,
+        _redis: redis_utils.RedisStream,
         owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
@@ -1995,8 +1994,8 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         return sub
 
     async def fake_get_subscription_shared(
-        redis: redis_utils.RedisStream,
-        owner_id: github_types.GitHubAccountIdType,
+        _redis: redis_utils.RedisStream,
+        _owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         sub.has_feature.return_value = False
@@ -2157,13 +2156,13 @@ async def test_separate_dedicated_worker(
 
     tracker = []
 
-    async def track_context(*args: typing.Any, **kwargs: typing.Any) -> None:
+    async def track_context(*_args: typing.Any, **_kwargs: typing.Any) -> None:
         tracker.append(str(logs.WORKER_ID.get(None)))
 
     run_engine.side_effect = track_context
 
     async def fake_get_subscription_dedicated(
-        redis: redis_utils.RedisStream,
+        _redis: redis_utils.RedisStream,
         owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
@@ -2175,8 +2174,8 @@ async def test_separate_dedicated_worker(
         return sub
 
     async def fake_get_subscription_shared(
-        redis: redis_utils.RedisStream,
-        owner_id: github_types.GitHubAccountIdType,
+        _redis: redis_utils.RedisStream,
+        _owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         sub.has_feature.return_value = False
@@ -2280,7 +2279,7 @@ def test_worker_start_all_tasks(
     dedicated_workers_spawner_task: mock.Mock,
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
-    setup_signals: mock.Mock,
+    _setup_signals: mock.Mock,
     _reset_database_state: None,
 ) -> None:
     loop_and_sleep_forever.side_effect = just_run_once
@@ -2321,7 +2320,7 @@ def test_worker_start_just_shared(
     dedicated_workers_spawner_task: mock.Mock,
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
-    setup_signals: mock.Mock,
+    _setup_signals: mock.Mock,
     _reset_database_state: None,
 ) -> None:
     loop_and_sleep_forever.side_effect = just_run_once
@@ -2362,7 +2361,7 @@ def test_worker_start_except_shared(
     dedicated_workers_spawner_task: mock.Mock,
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
-    setup_signals: mock.Mock,
+    _setup_signals: mock.Mock,
     _reset_database_state: None,
 ) -> None:
     loop_and_sleep_forever.side_effect = just_run_once
@@ -2422,7 +2421,6 @@ async def test_get_shared_worker_ids(
 
 async def test_get_my_dedicated_worker_ids(
     monkeypatch: pytest.MonkeyPatch,
-    redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
 ) -> None:
     owners_cache = {
@@ -2536,7 +2534,7 @@ def test_score_priority_helpers(
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
 @mock.patch("mergify_engine.worker.stream.run_engine")
 async def test_dedicated_multiple_processes(
-    run_engine: mock.Mock,
+    _run_engine: mock.Mock,
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
@@ -2592,7 +2590,7 @@ async def test_dedicated_multiple_processes(
     assert serv2 is not None
 
     async def fake_get_subscription_dedicated(
-        redis: redis_utils.RedisStream,
+        _redis: redis_utils.RedisStream,
         owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
@@ -2604,8 +2602,8 @@ async def test_dedicated_multiple_processes(
         return sub
 
     async def fake_get_subscription_shared(
-        redis: redis_utils.RedisStream,
-        owner_id: github_types.GitHubAccountIdType,
+        _redis: redis_utils.RedisStream,
+        _owner_id: github_types.GitHubAccountIdType,
     ) -> mock.Mock:
         sub = mock.Mock()
         sub.has_feature.return_value = False
@@ -2692,11 +2690,7 @@ async def test_dedicated_multiple_processes(
     assert set(serv2._dedicated_worker_tasks.keys()) == set()
 
 
-async def test_start_stop_cycle(
-    redis_links: redis_utils.RedisLinks,
-    request: pytest.FixtureRequest,
-    _setup_database: None,
-) -> None:
+async def test_start_stop_cycle(_setup_database: None) -> None:
     w = manager.ServiceManager(
         shared_stream_tasks_per_process=3,
         worker_idle_time=0.01,
@@ -3074,7 +3068,6 @@ async def test_postgres_cleaner_service_sleep_before(
 @mock.patch.object(statsd, "timing")
 async def test_monitoring_service(
     statd_timing: mock.Mock,
-    monkeypatch: pytest.MonkeyPatch,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     # Prepare some fake data

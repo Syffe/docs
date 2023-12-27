@@ -12,7 +12,7 @@ from mergify_engine.tests import conftest
 async def test_healthcheck(
     web_client: conftest.CustomTestClient,
     monkeypatch: pytest.MonkeyPatch,
-    db: None,
+    db: None,  # noqa: ARG001
 ) -> None:
     r = await web_client.get("/healthcheck")
     assert r.status_code == 404

@@ -38,7 +38,7 @@ PostgresText = typing.Annotated[
 def setup_exception_handlers(app: fastapi.FastAPI) -> None:
     @app.exception_handler(sqlalchemy.exc.DBAPIError)
     def postgres_errors(
-        request: requests.Request,
+        _request: requests.Request,
         exc: sqlalchemy.exc.DBAPIError,
     ) -> responses.Response:
         if exc.connection_invalidated:
@@ -48,7 +48,7 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
         raise exc
 
     def redis_errors(
-        request: requests.Request,
+        _request: requests.Request,
         exc: redis_exceptions.ConnectionError | redis_exceptions.TimeoutError,
     ) -> responses.Response:
         statsd.increment("redis.client.connection.errors")
@@ -60,8 +60,8 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
 
     @app.exception_handler(engine_exceptions.RateLimited)
     def rate_limited_handler(
-        request: requests.Request,
-        exc: engine_exceptions.RateLimited,
+        _request: requests.Request,
+        _exc: engine_exceptions.RateLimited,
     ) -> responses.JSONResponse:
         return responses.JSONResponse(
             status_code=403,
@@ -70,8 +70,8 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
 
     @app.exception_handler(engine_exceptions.MergifyNotInstalled)
     def mergify_not_installed_handler(
-        request: requests.Request,
-        exc: engine_exceptions.MergifyNotInstalled,
+        _request: requests.Request,
+        _exc: engine_exceptions.MergifyNotInstalled,
     ) -> responses.JSONResponse:
         return responses.JSONResponse(
             status_code=403,
@@ -82,7 +82,7 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
 
     @app.exception_handler(pagination.InvalidCursor)
     def pagination_handler(
-        request: requests.Request,
+        _request: requests.Request,
         exc: pagination.InvalidCursor,
     ) -> responses.JSONResponse:
         return responses.JSONResponse(
@@ -92,8 +92,8 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
 
     @app.exception_handler(requests.ClientDisconnect)
     def client_disconnected(
-        request: requests.Request,
-        exc: requests.ClientDisconnect,
+        _request: requests.Request,
+        _exc: requests.ClientDisconnect,
     ) -> responses.PlainTextResponse:
         return responses.PlainTextResponse(
             status_code=503,

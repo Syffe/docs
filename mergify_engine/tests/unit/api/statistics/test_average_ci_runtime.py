@@ -37,7 +37,7 @@ from mergify_engine.tests.unit.api import conftest as tests_api_conftest
     indirect=True,
 )
 async def test_basic_api_response(
-    fake_repository: context.Repository,
+    fake_repository: context.Repository,  # noqa: ARG001
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
     _insert_action_checks_end_event: None,
@@ -108,7 +108,7 @@ async def test_basic_api_response(
     indirect=True,
 )
 async def test_api_simple_filters(
-    fake_repository: context.Repository,
+    fake_repository: context.Repository,  # noqa: ARG001
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
     _insert_action_checks_end_event: None,

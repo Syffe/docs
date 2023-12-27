@@ -2065,7 +2065,6 @@ class Context:
                     session,
                     self.pull["id"],
                     self.pull["head"]["sha"],
-                    self.repository.repo["id"],
                 )
             )
 

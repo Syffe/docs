@@ -50,7 +50,7 @@ async def forward(redis_links: redis_utils.RedisLinks) -> bool:
 
 
 async def forward_event(
-    event_id: bytes,
+    _event_id: bytes,
     event: dict[bytes, bytes],
     client: http.AsyncClient,
 ) -> None:

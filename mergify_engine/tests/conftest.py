@@ -59,7 +59,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_fixture_setup(
-    fixturedef: typing.Any,
+    fixturedef: typing.Any,  # noqa: ARG001
     request: pytest.FixtureRequest,
 ) -> abc.Generator[None, None, None]:
     start = time.monotonic()
@@ -99,9 +99,7 @@ original_os_environ = os.environ.copy()
 # mergify_engine.cli:setup() sanitize the environment variables
 # so this fixtures always restore the previous environment variables
 @pytest.fixture(autouse=True)
-def _original_environment_variables(
-    monkeypatch: pytest.MonkeyPatch,
-) -> abc.Generator[None, None, None]:
+def _original_environment_variables() -> abc.Generator[None, None, None]:
     current = os.environ.copy()
     os.environ.clear()
     os.environ.update(original_os_environ)
@@ -344,9 +342,7 @@ def _reset_app_tokens_storage(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture()
-async def github_server(
-    monkeypatch: pytest.MonkeyPatch,
-) -> abc.AsyncGenerator[respx.MockRouter, None]:
+async def github_server() -> abc.AsyncGenerator[respx.MockRouter, None]:
     async with respx.mock(base_url=settings.GITHUB_REST_API_URL) as respx_mock:
         respx_mock.post("/app/installations/12345/access_tokens").respond(
             200,

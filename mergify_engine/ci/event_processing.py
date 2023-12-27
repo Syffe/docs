@@ -30,7 +30,7 @@ async def process_workflow_run_stream(redis_links: redis_utils.RedisLinks) -> bo
 
 @tracer.wrap("ci.workflow_run_processing")
 async def _process_workflow_run_event(
-    event_id: bytes,
+    _event_id: bytes,
     event: dict[bytes, bytes],
 ) -> None:
     workflow_run_event = typing.cast(
@@ -65,7 +65,7 @@ async def process_workflow_job_stream(redis_links: redis_utils.RedisLinks) -> bo
 
 @tracer.wrap("ci.workflow_job_processing")
 async def _process_workflow_job_event(
-    event_id: bytes,
+    _event_id: bytes,
     event: dict[bytes, bytes],
 ) -> None:
     event_data = msgpack.unpackb(event[b"data"])

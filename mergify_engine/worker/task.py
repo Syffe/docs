@@ -36,12 +36,12 @@ class TaskRetriedForever:
     def __post_init__(self) -> None:
         LOG.info("%s starting", self.name)
         self.task = asyncio.create_task(
-            self.loop_and_sleep_forever(self.name, self.func, self.sleep_time),
+            self.loop_and_sleep_forever(self.name, self.func),
             name=self.name,
         )
         self.task.add_done_callback(self._exited)
 
-    def _exited(self, fut: asyncio.Future[None]) -> None:
+    def _exited(self, _fut: asyncio.Future[None]) -> None:
         LOG.info("%s task exited", self.name)
 
     async def _sleep(self) -> None:
@@ -53,7 +53,6 @@ class TaskRetriedForever:
         self,
         name: str,
         func: TaskRetriedForeverFuncT,
-        sleep_time: float,
     ) -> None:
         logs.WORKER_TASK.set(name)
         with sentry_sdk.Hub(sentry_sdk.Hub.current):

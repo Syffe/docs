@@ -21,7 +21,7 @@ class RefreshExecutor(actions.ActionExecutor["RefreshCommand", RefreshExecutorCo
     @classmethod
     async def create(
         cls,
-        action: RefreshCommand,
+        _action: RefreshCommand,
         ctxt: context.Context,
         rule: prr_config.EvaluatedPullRequestRule,
     ) -> RefreshExecutor:

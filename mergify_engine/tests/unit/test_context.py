@@ -40,8 +40,8 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
         async def item(
             self,
             url: str,
-            *args: typing.Any,
-            **kwargs: typing.Any,
+            *_args: typing.Any,
+            **_kwargs: typing.Any,
         ) -> dict[str, str] | None:
             self.called += 1
             if self.repo == "test":
@@ -230,8 +230,8 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
         async def items(
             self,
             url: str,
-            *args: typing.Any,
-            **kwargs: typing.Any,
+            *_args: typing.Any,
+            **_kwargs: typing.Any,
         ) -> abc.AsyncGenerator[dict[str, str], None] | None:
             self.called += 1
             if url == f"/orgs/{self.owner}/teams/team1/members":
@@ -380,8 +380,8 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
         async def get(  # type: ignore[override]
             self,
             url: str,
-            *args: typing.Any,
-            **kwargs: typing.Any,
+            *_args: typing.Any,
+            **_kwargs: typing.Any,
         ) -> dict[typing.Any, typing.Any] | None:
             self.called += 1
             if (
@@ -1194,12 +1194,12 @@ async def test_reviews_filtering(
     async def fake_client_items(
         url: str,
         *,
-        resource_name: str,
-        page_limit: int,
-        api_version: github_types.GitHubApiVersion | None = None,
-        oauth_token: github_types.GitHubOAuthToken | None = None,
-        list_items: str | None = None,
-        params: dict[str, str] | None = None,
+        resource_name: str,  # noqa: ARG001
+        page_limit: int,  # noqa: ARG001
+        api_version: github_types.GitHubApiVersion | None = None,  # noqa: ARG001
+        oauth_token: github_types.GitHubOAuthToken | None = None,  # noqa: ARG001
+        list_items: str | None = None,  # noqa: ARG001
+        params: dict[str, str] | None = None,  # noqa: ARG001
     ) -> typing.Any:
         if url.endswith("/pulls/6/reviews"):
             for review in all_reviews:

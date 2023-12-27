@@ -138,7 +138,7 @@ class RebaseAction(actions.Action):
 
     async def get_conditions_requirements(
         self,
-        ctxt: context.Context,
+        _ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
         description = "📌 rebase requirement"
         conds: list[conditions.RuleConditionNode] = [

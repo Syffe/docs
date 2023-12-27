@@ -29,8 +29,8 @@ def pull_request_rule_from_list(lst: typing.Any) -> prr_config.PullRequestRules:
 def fake_client() -> mock.Mock:
     async def items_call(
         url: str,
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> abc.AsyncGenerator[github_types.GitHubCheckRun, None]:
         if url == "/repos/Mergifyio/mergify-engine/commits/the-head-sha/status":
             return
@@ -184,8 +184,8 @@ def fake_client() -> mock.Mock:
 
     def item_call(
         url: str,
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> github_types.GitHubBranch | github_types.GitHubContentFile:
         if url == "/repos/Mergifyio/mergify-engine/branches/main":
             return github_types.GitHubBranch(
@@ -765,7 +765,6 @@ async def test_check_subscription_status(
 
     with pytest.raises(queue.InvalidQueueConfiguration) as e:
         await executor._check_subscription_status(
-            config=executor.config,
             queue_rule=executor.queue_rule,
             queue_rules=executor.queue_rules,
             partition_rules=executor.partition_rules,

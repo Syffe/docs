@@ -98,7 +98,7 @@ class BasePullRequest:
         relative_time: bool,
     ) -> CommitListAttributeType:
         return_values = [
-            cls._get_commit_attribute(ctxt, commit, commit_attribute, relative_time)
+            cls._get_commit_attribute(commit, commit_attribute, relative_time)
             for commit in await ctxt.commits
         ]
 
@@ -124,7 +124,6 @@ class BasePullRequest:
 
     @staticmethod
     def _get_commit_attribute(
-        ctxt: context_mod.Context,
         commit: github_types.CachedGitHubBranchCommit,
         commit_attribute: str,
         relative_time: bool,
@@ -442,7 +441,6 @@ class BasePullRequest:
                 return None
 
             return cls._get_commit_attribute(
-                ctxt,
                 commit,
                 commit_attribute,
                 relative_time,

@@ -230,12 +230,12 @@ class Action(abc.ABC):
         self.executor = await self.executor_class.create(self, ctxt, rule)
 
     @staticmethod
-    def command_to_config(string: str) -> dict[str, typing.Any]:
+    def command_to_config(_string: str) -> dict[str, typing.Any]:
         """Convert string to dict config"""
         return {}
 
     async def get_conditions_requirements(
         self,
-        ctxt: context.Context,
+        _ctxt: context.Context,
     ) -> list[conditions.RuleConditionNode]:
         return []

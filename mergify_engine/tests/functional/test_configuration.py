@@ -720,7 +720,6 @@ did not find expected alphabetic or numeric character
         await github_events.clean_and_fill_caches(
             self.redis_links,
             "installation_repositories",
-            "123eventid",
             # This is a slim event with just the data required to make sure the
             # authentication cache clearing mechanism work.
             github_types.GitHubEventInstallationRepositories(  # type: ignore[typeddict-item]

@@ -7,7 +7,7 @@ from mergify_engine.tests.functional import conftest as func_conftest
 
 @pytest.mark.recorder()
 def test_merge_queue_reset(
-    shadow_office: func_conftest.SubscriptionFixture,
+    shadow_office: func_conftest.SubscriptionFixture,  # noqa: ARG001
     recorder: func_conftest.RecorderFixture,
     _setup_database: None,
 ) -> None:

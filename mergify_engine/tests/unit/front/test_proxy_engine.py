@@ -13,7 +13,6 @@ async def prepare_respx_mock(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     permission: github_types.GitHubRepositoryPermissionLiteral,
-    web_client: conftest.CustomTestClient,
     will_access_to_repo: bool,
     will_ask_for_user_perm: bool = True,
     private_repository: bool = False,
@@ -130,7 +129,6 @@ async def test_engine_proxy_get_queue_freeze(
         db,
         respx_mock,
         permission,
-        web_client,
         expected_status_code == 200,
         not private_repository,
         private_repository,
@@ -168,7 +166,6 @@ async def test_engine_proxy_update_queue_freeze(
         db,
         respx_mock,
         permission,
-        web_client,
         expected_status_code == 200,
         not private_repository
         or expected_status_code == 200
@@ -205,7 +202,6 @@ async def test_engine_proxy_delete_queue_freeze(
         db,
         respx_mock,
         permission,
-        web_client,
         expected_status_code != 403,
         True,
         False,

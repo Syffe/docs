@@ -300,6 +300,7 @@ class AsyncClient(httpx.AsyncClient):
             base_url=base_url,
             headers=final_headers,
             timeout=timeout,
+            transport=transport,
             follow_redirects=True,
         )
 

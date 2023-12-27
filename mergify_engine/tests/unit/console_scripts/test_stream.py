@@ -40,9 +40,9 @@ async def test_stream_status(
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
 @mock.patch("mergify_engine.worker.stream.run_engine")
 async def test_stream_reschedule(
-    run_engine: mock.Mock,
+    _run_engine: mock.Mock,
     get_installation_from_account_id: mock.Mock,
-    get_subscription: mock.AsyncMock,
+    _get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -55,7 +55,7 @@ SHUTUPVCR = utils.strtobool(os.getenv("SHUTUPVCR", "true"))
 
 
 class ShutUpVcrCannotOverwriteExistingCassetteException(Exception):
-    def __init__(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+    def __init__(self, *args, **kwargs):  # type: ignore[no-untyped-def]  # noqa: ARG002
         self.cassette = kwargs["cassette"]
         self.failed_request = kwargs["failed_request"]
         message = self._get_message(kwargs["cassette"], kwargs["failed_request"])  # type: ignore[no-untyped-call]

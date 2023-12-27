@@ -16,11 +16,6 @@ from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
-@pytest.fixture(autouse=True)
-def _setup_fake_mergify_bot_user(fake_mergify_bot: None) -> None:
-    pass
-
-
 @pytest.fixture(autouse=True, scope="package")
 def _mock_signals() -> abc.Generator[None, None, None]:
     # We don't check signal sending in this folder, so we can just mock
@@ -191,8 +186,8 @@ def fake_client() -> mock.Mock:
 
     def item_call(
         url: str,
-        *args: typing.Any,
-        **kwargs: typing.Any,
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
     ) -> dict[str, typing.Any]:
         if url == "/repos/Mergifyio/mergify-engine/contents/.mergify.yml":
             return {
@@ -231,14 +226,14 @@ def repository(
 
 
 @pytest.fixture(autouse=True)
-def _autoload_redis(redis_cache: redis_utils.RedisCache) -> None:
+def _autoload_redis(redis_cache: redis_utils.RedisCache) -> None:  # noqa: ARG001
     # Just always load redis_cache to load all redis scripts
     pass
 
 
 async def fake_train_car_start_checking_with_draft(
     inner_self: merge_train.TrainCar,
-    previous_car: merge_train.TrainCar | None,
+    previous_car: merge_train.TrainCar | None,  # noqa: ARG001
 ) -> None:
     inner_self.train_car_state.checks_type = merge_train.TrainCarChecksType.DRAFT
     inner_self.queue_pull_request_number = github_types.GitHubPullRequestNumber(
@@ -253,22 +248,22 @@ async def fake_train_car_start_checking_inplace(
 
 
 async def fake_train_car_check_mergeability(
-    inner_self: merge_train.TrainCar,
-    origin: typing.Literal[
+    inner_self: merge_train.TrainCar,  # noqa: ARG001
+    origin: typing.Literal[  # noqa: ARG001
         "original_pull_request",
         "draft_pull_request",
         "batch_split",
     ],
-    original_pull_request_rule: prr_config.EvaluatedPullRequestRule | None,
-    original_pull_request_number: github_types.GitHubPullRequestNumber | None,
+    original_pull_request_rule: prr_config.EvaluatedPullRequestRule | None,  # noqa: ARG001
+    original_pull_request_number: github_types.GitHubPullRequestNumber | None,  # noqa: ARG001
 ) -> None:
     pass
 
 
 async def fake_train_car_end_checking(
-    inner_self: merge_train.TrainCar,
-    reason: queue_utils.BaseDequeueReason,
-    not_reembarked_pull_requests: dict[
+    inner_self: merge_train.TrainCar,  # noqa: ARG001
+    reason: queue_utils.BaseDequeueReason,  # noqa: ARG001
+    not_reembarked_pull_requests: dict[  # noqa: ARG001
         github_types.GitHubPullRequestNumber,
         queue_utils.BaseDequeueReason,
     ],
@@ -277,9 +272,9 @@ async def fake_train_car_end_checking(
 
 
 async def fake_convoy_update_user_pull_request_summary(
-    inner_self: merge_train.Convoy,
-    user_pull_request_number: github_types.GitHubPullRequestNumber,
-    temporary_car: merge_train.TrainCar,
+    inner_self: merge_train.Convoy,  # noqa: ARG001
+    user_pull_request_number: github_types.GitHubPullRequestNumber,  # noqa: ARG001
+    temporary_car: merge_train.TrainCar,  # noqa: ARG001
 ) -> None:
     pass
 

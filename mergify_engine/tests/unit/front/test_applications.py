@@ -6,7 +6,6 @@ import sqlalchemy.orm
 
 from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.config import types
 from mergify_engine.models import application_keys
@@ -516,9 +515,8 @@ async def test_applications_permissions_for_orgs(
 
 
 async def test_application_tokens_via_env(
-    db: sqlalchemy.ext.asyncio.AsyncSession,
+    db: sqlalchemy.ext.asyncio.AsyncSession,  # noqa: ARG001
     monkeypatch: pytest.MonkeyPatch,
-    redis_cache: redis_utils.RedisCache,
     web_client: conftest.CustomTestClient,
     respx_mock: respx.MockRouter,
 ) -> None:
