@@ -276,9 +276,6 @@ class AsyncClient(httpx.AsyncClient):
         headers: httpx_types.HeaderTypes | None = None,
         timeout: httpx_types.TimeoutTypes = DEFAULT_TIMEOUT,
         base_url: httpx_types.URLTypes = "",
-        # FIXME: This should be passed in the __init__ but it breaks production
-        # INC-116
-        transport: httpx.AsyncBaseTransport | None = None,  # noqa: ARG002
         retry_stop_after_attempt: int | None = None,
         retry_exponential_multiplier: float | None = None,
     ) -> None:

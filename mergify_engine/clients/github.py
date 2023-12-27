@@ -338,12 +338,6 @@ def _check_rate_limit(client: http.AsyncClient, response: httpx.Response) -> Non
         raise exceptions.SecondaryRateLimited(datetime.timedelta(seconds=30), 0)
 
 
-DEFAULT_GITHUB_TRANSPORT = httpx.AsyncHTTPTransport(
-    limits=httpx.Limits(max_connections=None, max_keepalive_connections=20),
-    http2=True,
-)
-
-
 class AsyncGitHubClient(http.AsyncClient):
     auth: (github_app.GitHubBearerAuth | GitHubAppInstallationAuth | GitHubTokenAuth)
 
@@ -359,7 +353,6 @@ class AsyncGitHubClient(http.AsyncClient):
             base_url=settings.GITHUB_REST_API_URL,
             auth=auth,
             headers={"Accept": "application/vnd.github.machine-man-preview+json"},
-            transport=DEFAULT_GITHUB_TRANSPORT,
             retry_stop_after_attempt=retry_stop_after_attempt,
             retry_exponential_multiplier=retry_exponential_multiplier,
         )
