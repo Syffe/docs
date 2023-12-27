@@ -41,6 +41,7 @@ class TestUpdateActionWithoutBot(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 2
+        assert commits[-1]["commit"]["author"] is not None
         assert (
             commits[-1]["commit"]["author"]["name"]
             == self.RECORD_CONFIG["app_user_login"]
@@ -81,6 +82,7 @@ class TestUpdateActionWithoutBot(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 2
+        assert commits[-1]["commit"]["author"] is not None
         assert (
             commits[-1]["commit"]["author"]["name"]
             == self.RECORD_CONFIG["app_user_login"]
@@ -176,5 +178,6 @@ class TestUpdateActionWithBot(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 2
+        assert commits[-1]["commit"]["author"] is not None
         assert commits[-1]["commit"]["author"]["name"] == "mergify-test4"
         assert commits[-1]["commit"]["message"].startswith("Merge branch")

@@ -35,8 +35,8 @@ COMMITS_ARRAY_ATTRIBUTE_RE = re.compile(r"^commits\[(-?\d+|\*)\]\.([\-\w]+)$")
 
 
 class CommitAuthor(typing.NamedTuple):
-    name: str
-    email: str
+    name: str | None
+    email: str | None
 
 
 PullRequestAttributeType = (
@@ -624,7 +624,7 @@ class BasePullRequest:
                 for commit in await ctxt.commits
                 if commit.gh_author_login != ctxt.pull["user"]["login"]
                 and len(commit.parents) == 1
-                and not commit.author.endswith("[bot]")
+                and (commit.author is None or not commit.author.endswith("[bot]"))
             }
 
         raise PullRequestAttributeError(name)

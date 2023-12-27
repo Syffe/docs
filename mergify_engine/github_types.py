@@ -178,8 +178,8 @@ class GitHubAuthorCommitterCommitWithUsername(GitHubAuthorCommitterCommit):
 class GitHubBranchCommitCommit(typing_extensions.TypedDict):
     message: str
     verification: GitHubBranchCommitVerification
-    author: GitHubAuthorCommitterCommit
-    committer: GitHubAuthorCommitterCommit
+    author: GitHubAuthorCommitterCommit | None
+    committer: GitHubAuthorCommitterCommit | None
 
 
 class GitHubBranchCommit(typing_extensions.TypedDict):
@@ -196,12 +196,12 @@ class CachedGitHubBranchCommit:
     parents: list[SHAType]
     commit_message: str
     commit_verification_verified: bool
-    author: str
-    committer: str
-    date_author: ISODateTimeType
-    date_committer: ISODateTimeType
-    email_author: str
-    email_committer: str
+    author: str | None
+    committer: str | None
+    date_author: ISODateTimeType | None
+    date_committer: ISODateTimeType | None
+    email_author: str | None
+    email_committer: str | None
     gh_author_login: GitHubLogin | None
 
     __string_like__ = True
@@ -216,17 +216,35 @@ def to_cached_github_branch_commit(
     author = commit["author"]
     gh_author_login = None if author is None else author.get("login")
 
+    if commit["commit"]["author"] is None:
+        commit_author_name = None
+        commit_author_email = None
+        commit_author_date = None
+    else:
+        commit_author_name = commit["commit"]["author"]["name"]
+        commit_author_email = commit["commit"]["author"]["email"]
+        commit_author_date = commit["commit"]["author"]["date"]
+
+    if commit["commit"]["committer"] is None:
+        commit_committer_name = None
+        commit_committer_email = None
+        commit_committer_date = None
+    else:
+        commit_committer_name = commit["commit"]["committer"]["name"]
+        commit_committer_email = commit["commit"]["committer"]["email"]
+        commit_committer_date = commit["commit"]["committer"]["date"]
+
     return CachedGitHubBranchCommit(
         sha=commit["sha"],
         commit_message=commit["commit"]["message"],
         commit_verification_verified=commit["commit"]["verification"]["verified"],
         parents=[p["sha"] for p in commit["parents"]],
-        author=commit["commit"]["author"]["name"],
-        committer=commit["commit"]["committer"]["name"],
-        email_author=commit["commit"]["author"]["email"],
-        email_committer=commit["commit"]["committer"]["email"],
-        date_author=commit["commit"]["author"]["date"],
-        date_committer=commit["commit"]["committer"]["date"],
+        author=commit_author_name,
+        committer=commit_committer_name,
+        email_author=commit_author_email,
+        email_committer=commit_committer_email,
+        date_author=commit_author_date,
+        date_committer=commit_committer_date,
         gh_author_login=gh_author_login,
     )
 

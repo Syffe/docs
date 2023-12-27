@@ -2700,6 +2700,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert p1["head"]["sha"] != head_sha  # ensure it has been rebased
         commits = await self.get_commits(p1["number"])
         assert len(commits) == 1
+        assert commits[0]["commit"]["committer"] is not None
         assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
 
     # The 2 tests below this comment are the same, just the rules are differents.
@@ -2833,6 +2834,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert p1["head"]["sha"] != head_sha  # ensure it has been rebased
         commits = await self.get_commits(p1["number"])
         assert len(commits) == 1
+        assert commits[0]["commit"]["committer"] is not None
         assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
 
         await self.run_engine()
@@ -2872,7 +2874,9 @@ class TestQueueAction(base.FunctionalTestBase):
         assert p2["head"]["sha"] != head_sha  # ensure it has been rebased
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 2
+        assert commits[0]["commit"]["committer"] is not None
         assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
+        assert commits[1]["commit"]["committer"] is not None
         assert commits[1]["commit"]["committer"]["name"] == "mergify-test4"
 
         await self.create_status(p2)
