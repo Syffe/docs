@@ -34,7 +34,6 @@ class TestCommandCopy(base.FunctionalTestBase):
         ]
         assert len(reactions) == 1
         assert reactions[0]["content"] == "+1"
-        await self.run_engine()
 
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},

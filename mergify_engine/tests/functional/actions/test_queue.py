@@ -387,7 +387,6 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # pr labeled after dequeue condition matches
-        await self.run_engine()
         pr_labeled = await self.wait_for_pull_request("labeled")
         assert pr_labeled is not None
         assert "dequeued" in [
@@ -7281,7 +7280,6 @@ previous_failed_batches:
         p1 = await self.get_pull(p1["number"])
         assert p1["head"]["sha"] != head_sha  # ensure it have been rebased
 
-        await self.run_engine()
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: merge default (queue)",

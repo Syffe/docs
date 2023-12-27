@@ -706,7 +706,6 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         # Check that initial summary is not created on merge queue pr
         await self.create_command(pr["number"], "@mergifyio queue", as_="admin")
-        await self.run_engine()
         draft_pr = await self.wait_for_pull_request("opened")
         assert queue_utils.is_merge_queue_pr(draft_pr["pull_request"])
         assert [] == (await self.get_check_runs(draft_pr["pull_request"]))
@@ -985,7 +984,6 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.add_label(pr2["number"], "queue")
         await self.add_label(pr2["number"], "merge")
         await self.create_command(pr2["number"], "@Mergifyio refresh", as_="admin")
-        await self.run_engine()
         pr2 = await self.get_pull(pr2["number"])
 
         assert pr2["merged"] is False
@@ -997,7 +995,6 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         # Now pr2 can be merged
         await self.create_command(pr2["number"], "@Mergifyio refresh", as_="admin")
-        await self.run_engine()
         await self.wait_for_pull_request("closed", pr2["number"], merged=True)
 
     @pytest.mark.subscription(

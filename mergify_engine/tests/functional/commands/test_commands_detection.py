@@ -30,7 +30,6 @@ class TestCommandsDetection(base.FunctionalTestBase):
             as_="admin",
         )
         assert await self.hide_comment(p1["number"], comment_id)
-        await self.run_engine({"delayed-refresh"})
 
         # NOTE(greesb): We could also just wait_for "issue_comment/created", and check
         # that it times out (with the raised exceptions).
@@ -73,8 +72,6 @@ class TestCommandsDetection(base.FunctionalTestBase):
             {"action": "deleted"},
             test_id=p1["number"],
         )
-
-        await self.run_engine()
 
         if settings.TESTING_RECORD:
             await asyncio.sleep(15)

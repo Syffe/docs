@@ -264,7 +264,6 @@ did not find expected alphabetic or numeric character
         await self.setup_repo(yaml.dump(rules_default))
         assert self.git.repository is not None
         await self.repository_ctxt.get_mergify_config_file()
-        await self.run_engine()
 
         cached_config_file = await self.repository_ctxt.get_cached_config_file()
         assert cached_config_file is not None
@@ -326,7 +325,6 @@ did not find expected alphabetic or numeric character
         await self.git("add", ".mergify.yml")
         await self.git("commit", "--no-edit", "-m", "conf update")
         await self.git("push", "--quiet", "origin", self.main_branch_name)
-        await self.run_engine()
 
         await self.git("branch", "save-point")
         # Create a PR on outdated repo to get a wierd base.sha
@@ -345,7 +343,6 @@ did not find expected alphabetic or numeric character
         await self.git("add", ".mergify.yml")
         await self.git("commit", "--no-edit", "-m", "conf update")
         await self.git("push", "--quiet", "origin", self.main_branch_name)
-        await self.run_engine()
 
         # we didn't change the pull request no configuration must be detected
         p = await self.get_pull(p["number"])
@@ -784,7 +781,6 @@ did not find expected alphabetic or numeric character
             return await real_client_get(self, url, *args, **kwargs)
 
         with mock.patch.object(github.AsyncGitHubClient, "get", mocked_client_get):
-            await self.run_engine()
             await self.repository_ctxt.load_mergify_config()
 
         assert len(self.repository_ctxt.mergify_config["queue_rules"].rules) == 2

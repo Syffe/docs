@@ -275,7 +275,7 @@ Awesome body
                 },
             )
         ).json()
-        await self.wait_for("pull_request", {"action": "opened"})
+        await self.wait_for_pull_request("opened")
         await self.run_engine()
 
         # First squash by fork client, who can't do it as he is not the author

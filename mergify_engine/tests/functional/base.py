@@ -721,6 +721,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 )
                 assert log_embedder_serv is not None
 
+            did_something = False
+
             async def keep_going() -> bool:
                 return bool(
                     (await w._redis_links.stream.zcard("streams")) > 0
@@ -758,7 +760,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 )
 
             while await keep_going():
+                did_something = True
                 await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
+
+            if not did_something:
+                raise RuntimeError("A `run_engine` did not do anything.")
         finally:
             w.stop()
             await w.wait_shutdown_complete()
@@ -1441,7 +1447,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         comment_id = await self.create_comment(pull_number, command, as_=as_)
         await self.run_engine()
         await self.wait_for_issue_comment(str(pull_number), "created")
-        await self.run_engine()
         return comment_id
 
     async def get_gql_id_of_comment_to_hide(
