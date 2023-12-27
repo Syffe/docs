@@ -441,6 +441,7 @@ async def test_worker_expanded_events(
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
+    _setup_database: None,
 ) -> None:
     logs.setup_logging()
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
@@ -655,6 +656,7 @@ async def test_consume_unexisting_stream(
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
     stream_processor: stream.Processor,
+    _setup_database: None,
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
@@ -676,6 +678,7 @@ async def test_consume_good_stream(
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
+    _setup_database: None,
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
@@ -819,6 +822,7 @@ async def test_stream_processor_retrying_pull(
     logger_class: mock.MagicMock,
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
+    _setup_database: None,
 ) -> None:
     logs.setup_logging()
     logger = logger_class.return_value
@@ -1022,6 +1026,7 @@ async def test_stream_processor_retrying_stream_recovered(
     logger: mock.MagicMock,
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
+    _setup_database: None,
 ) -> None:
     logs.setup_logging()
 
@@ -1141,6 +1146,7 @@ async def test_stream_processor_retrying_stream_failure(
     logger: mock.MagicMock,
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
+    _setup_database: None,
 ) -> None:
     logs.setup_logging()
 
@@ -1272,6 +1278,7 @@ async def test_stream_processor_pull_unexpected_error(
     logger_class: mock.MagicMock,
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
+    _setup_database: None,
 ) -> None:
     logs.setup_logging()
     logger = logger_class.return_value
@@ -1332,6 +1339,7 @@ async def test_stream_processor_priority(
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
     request: pytest.FixtureRequest,
+    _setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -1427,6 +1435,7 @@ async def test_stream_processor_date_scheduling(
     redis_links: redis_utils.RedisLinks,
     stream_processor: stream.Processor,
     request: pytest.FixtureRequest,
+    _setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -1678,6 +1687,7 @@ async def test_worker_with_multiple_workers(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
+    _setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -1781,6 +1791,7 @@ async def test_dedicated_worker_scaleup_scaledown(
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
+    _setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
@@ -1940,6 +1951,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
+    _setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
@@ -2134,6 +2146,7 @@ async def test_separate_dedicated_worker(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
+    _setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
@@ -2539,6 +2552,7 @@ async def test_dedicated_multiple_processes(
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
     request: pytest.FixtureRequest,
+    _setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
@@ -2613,11 +2627,11 @@ async def test_dedicated_multiple_processes(
         # worker hash == 2
         await worker_pusher.push(
             redis_links.stream,
-            github_types.GitHubAccountIdType(4446),
-            github_types.GitHubLogin("owner-4446"),
-            github_types.GitHubRepositoryIdType(4446),
+            github_types.GitHubAccountIdType(4447),
+            github_types.GitHubLogin("owner-4447"),
+            github_types.GitHubRepositoryIdType(4447),
             github_types.GitHubRepositoryName("repo"),
-            github_types.GitHubPullRequestNumber(4446),
+            github_types.GitHubPullRequestNumber(4447),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
             priority=worker_pusher.Priority.immediate,
@@ -2660,7 +2674,7 @@ async def test_dedicated_multiple_processes(
         github_types.GitHubAccountIdType(1),
     }
     assert set(serv2._dedicated_worker_tasks.keys()) == {
-        github_types.GitHubAccountIdType(4446),
+        github_types.GitHubAccountIdType(4447),
     }
 
     LOG.log(42, "should move everything in shared process 0")
@@ -2679,7 +2693,7 @@ async def test_dedicated_multiple_processes(
         github_types.GitHubAccountIdType(1),
     }
     assert set(serv2._dedicated_worker_tasks.keys()) == {
-        github_types.GitHubAccountIdType(4446),
+        github_types.GitHubAccountIdType(4447),
     }
 
     get_subscription.side_effect = fake_get_subscription_shared
