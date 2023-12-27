@@ -264,6 +264,6 @@ async def test_link_job_to_ci_issues_gpt(
 
         assert issue.jobs is not None
 
-        assert [job.id for job in issue.jobs] == [
+        assert {job.id for job in issue.jobs} == {
             DbPopulator.internal_ref[nghb_job] for nghb_job in internal_ref_nghb_jobs
-        ]
+        }
