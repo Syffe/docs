@@ -110,9 +110,6 @@ class EventReader:
         self._app = app
         self._session = http.AsyncClient()
         self._handled_events: asyncio.Queue[ForwardedEvent] = asyncio.Queue()
-        # Events that were received during the call to `receive_and_forward_all_events_to_engine`
-        # and needs to be treated before receiving new ones.
-        self._events_already_received: list[ForwardedEvent] = []
         self._counter = 0
 
         hostname = settings.GITHUB_URL.host
@@ -185,42 +182,6 @@ class EventReader:
 
         received_events = []
 
-        max_idx_stop = -1
-        for idx, event in enumerate(self._events_already_received):
-            for expected_event_data in expected_events:
-                if event["type"] == expected_event_data["event_type"] and _match(
-                    event["payload"],
-                    expected_event_data["payload"],
-                ):
-                    LOG.log(
-                        42,
-                        "FOUND EVENT `%s/%s: %s` IN ALREADY STORED EVENTS: %s",
-                        expected_event_data["event_type"],
-                        expected_event_data["payload"].get("action"),
-                        expected_event_data["payload"],
-                        _remove_useless_links(copy.deepcopy(event)),
-                    )
-
-                    received_events.append(
-                        EventReceived(event_type=event["type"], event=event["payload"]),
-                    )
-                    expected_events.remove(expected_event_data)
-
-                    # Remove the event we found to not be able to reuse it
-                    max_idx_stop = idx
-                    break
-
-        if max_idx_stop > -1:
-            # Clear all the events until the last one we found, this way we do not
-            # reuse events already used and keep the ones that have not been found/searched yet.
-            self._events_already_received = self._events_already_received[
-                max_idx_stop + 1 :
-            ]
-        else:
-            # We didn't find the events we wanted in the ones we stored,
-            # clear everything and go get new events with the loop below
-            self._events_already_received = []
-
         started_at = time.monotonic()
         while time.monotonic() - started_at < self.EVENTS_WAITING_TIME_SECONDS:
             if not expected_events:
@@ -267,45 +228,6 @@ class EventReader:
             )
 
         return received_events
-
-    async def receive_and_forward_all_events_to_engine(self) -> None:
-        LOG.log(42, "RECEIVING AND FORWARDING EVENTS TO ENGINE")
-        # NOTE(Greesb): For now we have no need to handle the fact that we
-        # can `wait_for` some events without forwarding them to the engine,
-        # as we have no scenario in which that is the case. If need be, a refactor
-        # of this will be needed.
-        try:
-            # Empty the queue first in case some events were left in it
-            while not self._handled_events.empty():
-                event = self._handled_events.get_nowait()
-                LOG.log(
-                    42,
-                    "RECEIVED EVENT %s: %s",
-                    event["type"],
-                    event["payload"].get("action"),
-                )
-                self._events_already_received.append(event)
-                await self._process_event(event, forward_to_engine=True)
-        except asyncio.QueueEmpty:
-            pass
-
-        # NOTE(Greesb): Need to do the same number of loops between record and non-record
-        # or we get a vcr exception because we didn't record some of those requests.
-        # And if we go too far then we'll drain the future `_get_events` requests.
-        for _ in range(20):
-            for event in await self._get_events():
-                LOG.log(
-                    42,
-                    "RECEIVED EVENT %s: %s",
-                    event["type"],
-                    event["payload"].get("action"),
-                )
-                self._events_already_received.append(event)
-                await self._process_event(event, forward_to_engine=True)
-
-            await asyncio.sleep(self.EVENTS_POLLING_INTERVAL_SECONDS)
-
-        LOG.log(42, "DONE RECEIVING AND FORWARDING EVENTS TO ENGINE")
 
     async def _get_events(self, test_id: str | None = None) -> list[ForwardedEvent]:
         # NOTE(sileht): we use a counter to make each call unique in cassettes

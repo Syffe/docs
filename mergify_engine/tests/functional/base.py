@@ -532,9 +532,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     ) -> list[event_reader.EventReceived]:
         return await self._event_reader.wait_for_all(*args, **kwargs)
 
-    async def receive_and_forward_all_events_to_engine(self) -> None:
-        return await self._event_reader.receive_and_forward_all_events_to_engine()
-
     async def wait_for_push(
         self,
         ref: str | None = None,
