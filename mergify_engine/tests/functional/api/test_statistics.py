@@ -182,12 +182,12 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             # Create status for the schedule to be the only condition not valid
             await self.create_status(tmp_mq_pr["pull_request"])
             # Run the engine for it to update train state
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
         with time_travel(start_date + datetime.timedelta(days=3), tick=True):
             # We are in schedule again, PR should be updated itself because
             # of delayed refresh
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
@@ -601,13 +601,13 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             p4 = await self.create_pr()
 
             await self.add_label(p4["number"], "queue")
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             draft_pr = await self.wait_for_pull_request("opened")
             await self.create_status(draft_pr["pull_request"])
 
         with time_travel("2022-08-18T12:00:00", tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             await self.wait_for_pull_request("closed", draft_pr["number"])
             await self.wait_for_pull_request("closed", p4["number"])

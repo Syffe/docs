@@ -1171,7 +1171,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
             await self.add_label(pr["number"], "queue")
 
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             await self.create_status(pr, "continuous-integration/fake-ci")
             await self.create_status(
@@ -1188,7 +1188,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
             )
 
             with time_travel(date.utcnow() + datetime.timedelta(minutes=15), tick=True):
-                await self.run_full_engine()
+                await self.run_engine({"delayed-refresh"})
 
                 r = await self.admin_app.get(
                     f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr['number']}",

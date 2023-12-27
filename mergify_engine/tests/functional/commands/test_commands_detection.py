@@ -30,7 +30,7 @@ class TestCommandsDetection(base.FunctionalTestBase):
             as_="admin",
         )
         assert await self.hide_comment(p1["number"], comment_id)
-        await self.run_full_engine()
+        await self.run_engine({"delayed-refresh"})
 
         # NOTE(greesb): We could also just wait_for "issue_comment/created", and check
         # that it times out (with the raised exceptions).
@@ -47,7 +47,7 @@ class TestCommandsDetection(base.FunctionalTestBase):
             p1["number"],
             "test",
         )
-        await self.run_full_engine()
+        await self.run_engine({"delayed-refresh"})
 
         comments = await self.get_issue_comments(p1["number"])
         assert len(comments) == 2

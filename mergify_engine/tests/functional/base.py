@@ -43,7 +43,7 @@ from mergify_engine.actions import merge_base
 from mergify_engine.ci import event_processing
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.github_in_postgres import process_events as github_event_processing
+from mergify_engine.github_in_postgres import process_events as ghinpg_process_events
 from mergify_engine.log_embedder import github_action
 from mergify_engine.queue import merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -51,14 +51,10 @@ from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import conftest as func_conftest
 from mergify_engine.tests.functional import event_reader
 from mergify_engine.tests.functional import utils as tests_utils
-from mergify_engine.worker import dedicated_workers_cache_syncer_service
-from mergify_engine.worker import dedicated_workers_spawner_service
 from mergify_engine.worker import gitter_service
+from mergify_engine.worker import log_embedder_service
 from mergify_engine.worker import manager
-from mergify_engine.worker import shared_workers_spawner_service
 from mergify_engine.worker import stream
-from mergify_engine.worker import stream_lua
-from mergify_engine.worker import task
 
 
 if typing.TYPE_CHECKING:
@@ -68,6 +64,10 @@ if typing.TYPE_CHECKING:
 LOG = daiquiri.getLogger(__name__)
 
 real_consume_method = stream.Processor.consume
+real_store_redis_events_in_pg = ghinpg_process_events.store_redis_events_in_pg
+real_process_failed_jobs = github_action.process_failed_jobs
+real_process_workflow_run_stream = event_processing.process_workflow_run_stream
+real_process_workflow_job_stream = event_processing.process_workflow_job_stream
 
 
 class MergeQueueCarMatcher(typing.NamedTuple):
@@ -616,151 +616,153 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             await self.wait_for("pull_request_review", wait_for_payload),
         )
 
-    async def run_full_engine(self) -> None:
-        LOG.log(42, "RUNNING FULL ENGINE")
-
-        async def mocked_tracked_consume(
-            inner_self: stream.Processor,
-            bucket_org_key: stream_lua.BucketOrgKeyType,
-            owner_id: github_types.GitHubAccountIdType,
-            owner_login_for_tracing: github_types.GitHubLoginForTracing,
-        ) -> None:
-            self.worker_concurrency_works += 1
-            try:
-                await real_consume_method(
-                    inner_self,
-                    bucket_org_key,
-                    owner_id,
-                    owner_login_for_tracing,
-                )
-            finally:
-                self.worker_concurrency_works -= 1
-
-        with mock.patch.object(
-            stream.Processor,
-            "consume",
-            mocked_tracked_consume,
-        ):
-            w = manager.ServiceManager(
-                worker_idle_time=self.WORKER_IDLE_TIME,
-                enabled_services={
-                    "shared-workers-spawner",
-                    "dedicated-workers-spawner",
-                    "delayed-refresh",
-                    "gitter",
-                },
-                delayed_refresh_idle_time=0.01,
-                dedicated_workers_spawner_idle_time=0.01,
-                dedicated_workers_cache_syncer_idle_time=0.01,
-                retry_handled_exception_forever=False,
-                gitter_concurrent_jobs=1,
-                ci_event_processing_idle_time=0.01,
-            )
-            try:
-                await w.start()
-                gitter_serv = w.get_service(gitter_service.GitterService)
-                assert gitter_serv is not None
-
-                while (
-                    (await w._redis_links.stream.zcard("streams")) > 0
-                    or self.worker_concurrency_works > 0
-                    or len(gitter_serv._jobs) > 0
-                    or len(
-                        await delayed_refresh.get_list_of_refresh_to_send(
-                            self.redis_links,
-                        ),
-                    )
-                    > 0
-                ):
-                    await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
-            finally:
-                w.stop()
-                await w.wait_shutdown_complete()
-
     async def run_engine(
         self,
         additionnal_services: manager.ServiceNamesT | None = None,
     ) -> None:
         LOG.log(42, "RUNNING ENGINE")
 
-        gitter_serv = gitter_service.GitterService(
-            self.redis_links,
-            gitter_worker_idle_time=0.01,
-            gitter_concurrent_jobs=0,
-            idle_time=60,
-        )
+        async def mocked_tracked_consume(*args, **kwargs):  # type: ignore[no-untyped-def]
+            self.worker_concurrency_works += 1
+            try:
+                await real_consume_method(*args, **kwargs)
+            finally:
+                self.worker_concurrency_works -= 1
 
-        syncer_service = (
-            dedicated_workers_cache_syncer_service.DedicatedWorkersCacheSyncerService(
-                self.redis_links,
-                idle_time=0.01,
-            )
-        )
+        async def mocked_store_redis_events_in_pg(*args, **kwargs):  # type: ignore[no-untyped-def]
+            self.worker_concurrency_works += 1
+            try:
+                return await real_store_redis_events_in_pg(*args, **kwargs)
+            finally:
+                self.worker_concurrency_works -= 1
 
-        shared_service = shared_workers_spawner_service.SharedStreamService(
-            self.redis_links,
-            idle_time=0,
-            worker_idle_time=0,
-            service_dedicated_workers_cache_syncer=syncer_service,
-            process_index=0,
+        async def mocked_process_failed_jobs(*args, **kwargs):  # type: ignore[no-untyped-def]
+            self.worker_concurrency_works += 1
+            try:
+                return await real_process_failed_jobs(*args, **kwargs)
+            finally:
+                self.worker_concurrency_works -= 1
+
+        async def mocked_process_workflow_run_stream(*args, **kwargs):  # type: ignore[no-untyped-def]
+            self.worker_concurrency_works += 1
+            try:
+                return await real_process_workflow_run_stream(*args, **kwargs)
+            finally:
+                self.worker_concurrency_works -= 1
+
+        async def mocked_process_workflow_job_stream(*args, **kwargs):  # type: ignore[no-untyped-def]
+            self.worker_concurrency_works += 1
+            try:
+                return await real_process_workflow_job_stream(*args, **kwargs)
+            finally:
+                self.worker_concurrency_works -= 1
+
+        services: manager.ServiceNamesT = {
+            "shared-workers-spawner",
+            "dedicated-workers-spawner",
+            "gitter",
+        }
+
+        if additionnal_services:
+            services.update(additionnal_services)
+
+        with mock.patch.object(
+            stream.Processor,
+            "consume",
+            mocked_tracked_consume,
+        ), mock.patch.object(
+            ghinpg_process_events,
+            "store_redis_events_in_pg",
+            mocked_store_redis_events_in_pg,
+        ), mock.patch.object(
+            github_action,
+            "process_failed_jobs",
+            mocked_process_failed_jobs,
+        ), mock.patch.object(
+            event_processing,
+            "process_workflow_run_stream",
+            mocked_process_workflow_run_stream,
+        ), mock.patch.object(
+            event_processing,
+            "process_workflow_job_stream",
+            mocked_process_workflow_job_stream,
+        ):
+            await self._run_workers(services)
+
+        LOG.log(42, "END RUNNING ENGINE")
+
+    async def _run_workers(self, services: manager.ServiceNamesT) -> None:
+        w = manager.ServiceManager(
+            worker_idle_time=self.WORKER_IDLE_TIME,
+            enabled_services=services,
+            delayed_refresh_idle_time=0.01,
+            dedicated_workers_spawner_idle_time=0.01,
+            dedicated_workers_cache_syncer_idle_time=0.01,
+            log_embedder_idle_time=0.01,
+            github_in_postgres_idle_time=0.01,
+            ci_event_processing_idle_time=0.01,
             shared_stream_processes=1,
-            shared_stream_tasks_per_process=0,
+            shared_stream_tasks_per_process=1,
+            gitter_idle_time=0.5,
+            gitter_concurrent_jobs=1,
+            gitter_worker_idle_time=0.01,
             retry_handled_exception_forever=False,
         )
-
-        dedicated_service = dedicated_workers_spawner_service.DedicatedStreamService(
-            self.redis_links,
-            idle_time=0,
-            worker_idle_time=0,
-            service_dedicated_workers_cache_syncer=syncer_service,
-            process_index=0,
-            dedicated_stream_processes=0,
-            retry_handled_exception_forever=False,
-        )
-
-        services = [syncer_service, dedicated_service, shared_service, gitter_serv]
-
-        shared_service.shared_stream_tasks_per_process = 1
-
-        if additionnal_services and "github-in-postgres" in additionnal_services:
-            LOG.info("Running github-in-postgres")
-            while await self.redis_links.stream.xlen("github_in_postgres"):
-                await github_event_processing.store_redis_events_in_pg(self.redis_links)
-            LOG.info("github-in-postgres finished")
-
         try:
-            while (await self.redis_links.stream.zcard("streams")) > 0:
-                await shared_service.shared_stream_worker_task(0)
-                await dedicated_service.dedicated_stream_worker_task(
-                    settings.TESTING_ORGANIZATION_ID,
+            await w.start()
+
+            gitter_serv = w.get_service(gitter_service.GitterService)
+            assert gitter_serv is not None
+
+            log_embedder_serv = None
+            if services and "log-embedder" in services:
+                log_embedder_serv = w.get_service(
+                    log_embedder_service.LogEmbedderService,
                 )
-                while not gitter_serv._queue.empty():
-                    await gitter_serv._gitter_worker("gitter-worker-0")
+                assert log_embedder_serv is not None
+
+            async def keep_going() -> bool:
+                return bool(
+                    (await w._redis_links.stream.zcard("streams")) > 0
+                    or self.worker_concurrency_works > 0
+                    or len(gitter_serv._jobs) > 0
+                    or (
+                        "delayed-refresh" in services
+                        and len(
+                            await delayed_refresh.get_list_of_refresh_to_send(
+                                self.redis_links,
+                            ),
+                        )
+                    )
+                    or (
+                        "github-in-postgres" in services
+                        and await self.redis_links.stream.xlen("github_in_postgres")
+                    )
+                    or (
+                        "ci-event-processing" in services
+                        and await self.redis_links.stream.xlen(
+                            event_processing.GHA_WORKFLOW_RUN_REDIS_KEY,
+                        )
+                        and await self.redis_links.stream.xlen(
+                            event_processing.GHA_WORKFLOW_JOB_REDIS_KEY,
+                        )
+                    )
+                    or (
+                        "log-embedder" in services
+                        # Just to please mypy, but it's impossible to have this case
+                        # because we assert that the service is not `None` if `log-embedder` is
+                        # in `services`.
+                        and log_embedder_serv is not None
+                        and log_embedder_serv.has_pending_work
+                    ),
+                )
+
+            while await keep_going():
+                await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
         finally:
-            await task.stop_and_wait(
-                list(itertools.chain.from_iterable([s.tasks for s in services])),
-            )
-
-        if additionnal_services and "ci-event-processing" in additionnal_services:
-            LOG.info("Running ci-event-processing")
-            while (
-                await self.redis_links.stream.xlen(
-                    event_processing.GHA_WORKFLOW_RUN_REDIS_KEY,
-                )
-            ) > 0:
-                await event_processing.process_workflow_run_stream(self.redis_links)
-            while (
-                await self.redis_links.stream.xlen(
-                    event_processing.GHA_WORKFLOW_JOB_REDIS_KEY,
-                )
-            ) > 0:
-                await event_processing.process_workflow_job_stream(self.redis_links)
-            LOG.info("ci-event-processing finished")
-
-        if additionnal_services and "log-embedder" in additionnal_services:
-            pending_work = True
-            while pending_work:
-                pending_work = await github_action.process_failed_jobs(self.redis_links)
+            w.stop()
+            await w.wait_shutdown_complete()
+            self.worker_concurrency_works = 0
 
     def get_gitter(
         self,

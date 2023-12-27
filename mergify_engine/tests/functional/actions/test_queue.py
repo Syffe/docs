@@ -3321,7 +3321,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         tmp_pull_1 = await self.wait_for_pull_request("opened")
-        await self.run_full_engine()
+        await self.run_engine({"delayed-refresh"})
 
         q = await self.get_train()
         assert p_closed["pull_request"]["merge_commit_sha"] is not None
@@ -5118,7 +5118,7 @@ previous_failed_batches:
 
         await self.add_label(p1["number"], "queue")
         await self.create_status(p1)
-        await self.run_full_engine()
+        await self.run_engine({"delayed-refresh"})
 
         p1_synced = await self.wait_for_pull_request("synchronize", p1["number"])
         await self.create_status(p1_synced["pull_request"])
@@ -5127,7 +5127,7 @@ previous_failed_batches:
             "_send_queue_leave_signal",
             autospec=True,
         ) as mocked_queue_leave:
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
         # p1 should not have been removed from the train due to anything
         mocked_queue_leave.assert_not_called()
@@ -7331,10 +7331,10 @@ previous_failed_batches:
             # To force others to be rebased
             p = await self.create_pr()
             await self.merge_pull(p["number"])
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             await self.create_status(p1)
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             check_run = await self.wait_for_check_run(
                 name="Rule: queue (queue)",
@@ -7346,7 +7346,7 @@ previous_failed_batches:
                 == "The pull request is the 1st in the queue to be merged"
             )
             await self.wait_for_pull_request("synchronize", p1["number"])
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             pulls_to_refresh: list[
                 tuple[bytes, float]
@@ -7359,7 +7359,7 @@ previous_failed_batches:
             assert len(pulls_to_refresh) == 1
 
         with time_travel("2021-05-30T10:12:00", tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             # Check-runs arrive in random order, so we need to retrieve all of them and check
             # if the event we retrieved are the ones we expected.
@@ -7433,7 +7433,7 @@ previous_failed_batches:
             p = await self.create_pr()
             await self.merge_pull(p["number"])
             await self.create_status(p1)
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             check_run = await self.wait_for_check_run(
                 name="Rule: queue (queue)",
@@ -7445,7 +7445,7 @@ previous_failed_batches:
                 == "The pull request is the 1st in the queue to be merged"
             )
             await self.wait_for_pull_request("synchronize", p1["number"])
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             pulls_to_refresh: list[
                 tuple[bytes, float]
@@ -7458,7 +7458,7 @@ previous_failed_batches:
             assert len(pulls_to_refresh) == 1
 
         with time_travel("2021-05-30T10:12:00", tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             # Check-runs arrive in random order, so we need to retrieve all of them and check
             # if the event we retrieved are the ones we expected.
@@ -7532,10 +7532,10 @@ previous_failed_batches:
             p1 = await self.create_pr()
 
             await self.create_status(p1)
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             await self.wait_for("pull_request", {"action": "opened"})
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -7557,7 +7557,7 @@ previous_failed_batches:
             assert len(pulls_to_refresh) == 1
 
         with time_travel("2021-05-30T10:12:00", tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
                 key=lambda c: c["name"] == "Rule: queue (queue)",
@@ -7612,10 +7612,10 @@ previous_failed_batches:
             p1 = await self.create_pr()
 
             await self.create_status(p1)
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             await self.wait_for_pull_request("opened")
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             ctxt_p1 = context.Context(self.repository_ctxt, p1)
             check = await ctxt_p1.get_engine_check_run("Rule: queue (queue)")
@@ -7655,7 +7655,7 @@ previous_failed_batches:
             start_date + datetime.timedelta(minutes=12 + minutes_delay),
             tick=True,
         ):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             ctxt_p1._caches.pull_check_runs.delete()
             check = await ctxt_p1.get_engine_check_run("Rule: queue (queue)")
             assert check is not None
@@ -7711,10 +7711,10 @@ previous_failed_batches:
             p1 = await self.create_pr()
 
             await self.create_status(p1)
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             tmp_pull = await self.wait_for_pull_request("opened")
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -7737,7 +7737,7 @@ previous_failed_batches:
             await self.create_status(tmp_pull["pull_request"])
 
         with time_travel("2021-05-30T20:12:00", tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
                 key=lambda c: c["name"] == "Rule: queue (queue)",
@@ -7815,7 +7815,7 @@ previous_failed_batches:
         assert pr["merged"] is False
 
         with time_travel("2023-07-03T08:10:00", tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
         await self.wait_for_pull_request("closed", pr_number=pr["number"], merged=True)
 
@@ -8611,7 +8611,7 @@ pull_request_rules:
                 "is_head_sha_outdated",
                 return_value=False,
             ):
-                await self.run_full_engine()
+                await self.run_engine({"delayed-refresh"})
 
         # PR should still be in the queue since the merge conditions do not match anymore
         # after the inplace update of the PR (the status success should be reset)
@@ -9243,14 +9243,14 @@ pull_request_rules:
             p1 = await self.create_pr()
 
             await self.add_label(p1["number"], "queue")
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             await self.wait_for_pull_request("opened")
 
         with time_travel(start_date + datetime.timedelta(hours=3), tick=True):
             # The delayed_refresh should refresh the train car and add a
             # value to `train_car_state.seconds_spent_outside_schedule_start_dates`
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             train = await self.get_train()
             assert len(train._cars) == 1
@@ -9278,7 +9278,7 @@ pull_request_rules:
         ):
             # The delayed_refresh should refresh the train car and add a
             # value to `train_car_state.seconds_spent_outside_schedule_end_dates`
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             train = await self.get_train()
             assert len(train._cars) == 1
@@ -9422,7 +9422,7 @@ pull_request_rules:
             pull["number"],
             ("rebase",),
         ):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
         await self.wait_for_pull_request(
             action="closed",
             pr_number=pull["number"],

@@ -837,7 +837,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
 
             await self.add_label(p5["number"], "queuedefault")
             await self.add_label(p6["number"], "queuedefault")
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
         with time_travel(
             start_date + datetime.timedelta(hours=1, minutes=10),
@@ -845,7 +845,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
         ):
             # Travel a few minutes after the run_engine so the batch max wait time is elapsed and
             # the draft PR is created with only 2 PR out of the 3 possible in the batch
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             tmp_pr_queue_default = await self.wait_for_pull_request("opened")
 
             await self.add_label(p7["number"], "queuedefault")

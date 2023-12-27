@@ -81,7 +81,7 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
             name="unit-tests",
             pr_number=pr["number"],
         )
-        await self.run_engine(additionnal_services={"ci-event-processing"})
+        await self.run_engine({"ci-event-processing"})
         await self.wait_for_pull_request("closed", pr["number"], merged=True)
 
     @pytest.mark.skip(
@@ -155,7 +155,7 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
             ],
         )
 
-        await self.run_engine(additionnal_services={"ci-event-processing"})
+        await self.run_engine({"ci-event-processing"})
 
         async with database.create_session() as session:
             # Set the embedding to the same value on the failed jobs to make them
@@ -183,7 +183,7 @@ class TestRerunFlakyCheck(base.FunctionalTestBase):
 
         # Run engine with log-embedder up since it's the one that will send the
         # send_pull_refresh signal that will make the pending PR reevaluated
-        await self.run_engine(additionnal_services={"log-embedder"})
+        await self.run_engine({"log-embedder"})
 
         # Run engine once again to take the send_pull_refresh into account
         await self.run_engine()

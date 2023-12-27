@@ -1206,13 +1206,13 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
 
             await self.add_label(p2["number"], "queue")
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             await self.wait_for_pull_request("opened")
 
         # Friday, 18:00 UTC
         with time_travel(start_date + datetime.timedelta(hours=3), tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
@@ -1235,7 +1235,7 @@ class TestQueueApi(base.FunctionalTestBase):
             datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.UTC),
             tick=True,
         ):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",

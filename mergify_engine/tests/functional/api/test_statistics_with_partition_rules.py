@@ -209,12 +209,12 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             # Create status for the schedule to be the only condition not valid
             await self.create_status(tmp_mq_pr["pull_request"])
             # Run the engine for it to update train state
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
         with time_travel(start_date + datetime.timedelta(days=3), tick=True):
             # We are in schedule again, PR should be updated itself because
             # of delayed refresh
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             await self.wait_for_pull_request("closed", tmp_mq_pr["number"])
             await self.wait_for("pull_request", {"action": "closed"})
@@ -490,13 +490,13 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             # Create ChecksDuration for SUCCESS
             p4 = await self.create_pr(files={"projA/test4.txt": "test"})
             await self.add_label(p4["number"], "queue")
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             draft_pr = await self.wait_for_pull_request("opened")
             await self.create_status(draft_pr["pull_request"])
 
         with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             await self.wait_for_pull_request("closed", draft_pr["number"])
             await self.wait_for_pull_request("closed", p4["number"])

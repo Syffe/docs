@@ -72,10 +72,10 @@ class TestAttributes(base.FunctionalTestBase):
             await self.merge_pull(pr_force_rebase["number"])
             await self.wait_for_push(branch_name=self.main_branch_name)
 
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             pr_queue = await self.wait_for_pull_request("opened")
 
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             await self.wait_for(
                 "pull_request",
                 {"action": "closed", "number": pr_queue["number"]},
@@ -142,7 +142,7 @@ class TestAttributes(base.FunctionalTestBase):
             comments = await self.get_issue_comments(pr["number"])
             assert len(comments) == 0
 
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             comments = await self.get_issue_comments(pr["number"])
             assert len(comments) == 0
 
@@ -150,7 +150,7 @@ class TestAttributes(base.FunctionalTestBase):
 
         # Wednesday
         with time_travel("2021-06-02T14:00:00", tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
             assert comment["comment"]["body"] == "it's time"
@@ -173,7 +173,7 @@ class TestAttributes(base.FunctionalTestBase):
             comments = await self.get_issue_comments(pr["number"])
             assert len(comments) == 0
 
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             comments = await self.get_issue_comments(pr["number"])
             assert len(comments) == 0
 
@@ -182,7 +182,7 @@ class TestAttributes(base.FunctionalTestBase):
         # Sunday 21:00 for UTC
         # Monday 09:00 for NZST (Auckland)
         with time_travel("2022-09-04T21:00:00+00:00", tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
             assert comment["comment"]["body"] == "it's time"
 
@@ -612,10 +612,10 @@ class TestAttributes(base.FunctionalTestBase):
         with time_travel(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr(commit_date=start_date)
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
         with time_travel(start_date + datetime.timedelta(days=2), tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
             assert comment["comment"]["body"] == "long time no see"
@@ -1116,14 +1116,14 @@ class TestAttributes(base.FunctionalTestBase):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr()
 
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             comments = await self.get_issue_comments(pr["number"])
             assert len(comments) == 0
 
             assert await self.redis_links.cache.zcard("delayed-refresh") == 1
 
         with time_travel("2024-01-01T00:00:00Z", tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
             assert comment["comment"]["body"] == "Happy New Year!"
@@ -1145,14 +1145,14 @@ class TestAttributes(base.FunctionalTestBase):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr()
 
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
             comments = await self.get_issue_comments(pr["number"])
             assert len(comments) == 0
 
             assert await self.redis_links.cache.zcard("delayed-refresh") == 1
 
         with time_travel("2024-01-01T00:00+01", tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
             assert comment["comment"]["body"] == "Happy New Year!"
@@ -1302,7 +1302,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             assert not pr["merged"]
 
         with time_travel(start_date + datetime.timedelta(days=1), tick=True):
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             p_merged = await self.wait_for_pull_request("closed", pr["number"])
             assert p_merged["pull_request"]["merged"]

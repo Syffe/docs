@@ -241,7 +241,7 @@ class TestBranchProtection(base.FunctionalTestBase):
         )
 
         await self.add_label(pr2["number"], "queue")
-        await self.run_full_engine()
+        await self.run_engine({"delayed-refresh"})
 
         # pr2 should be merged because not created by a bot
         await self.wait_for_pull_request("synchronize", pr2["number"])

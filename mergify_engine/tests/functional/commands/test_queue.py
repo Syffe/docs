@@ -707,7 +707,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         assert len(train._waiting_pulls) == 0
 
         await self.create_status(p1, state="failure")
-        await self.run_full_engine()
+        await self.run_engine({"delayed-refresh"})
 
         train = await self.get_train()
         assert len(train._cars) == 0

@@ -25,7 +25,6 @@ from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATAS
 from mergify_engine.tests.openai_embedding_dataset import (
     OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT,
 )
-from mergify_engine.worker.manager import ServicesSet
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -135,7 +134,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         )
         pr = await self.create_pr()
         job_event = await self.wait_for("workflow_job", {"action": "completed"})
-        await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
+        await self.run_engine({"ci-event-processing"})
 
         return typing.cast(github_types.GitHubEventWorkflowJob, job_event), pr
 
@@ -188,7 +187,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
             github_types.GitHubEventWorkflowJob,
             await self.wait_for("workflow_job", {"action": "completed"}),
         )
-        await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
+        await self.run_engine({"ci-event-processing"})
 
         await download_and_check_log(job_event, 2)
 
@@ -231,7 +230,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         )
         assert job_event["workflow_job"] is not None
 
-        await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
+        await self.run_engine({"ci-event-processing"})
 
         async with database.create_session() as session:
             job = await session.scalar(
@@ -278,7 +277,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         await self.wait_for("workflow_job", {"action": "completed"})
         await self.wait_for("workflow_job", {"action": "completed"})
 
-        await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
+        await self.run_engine({"ci-event-processing"})
 
         async with database.create_session() as session:
             jobs = (
@@ -516,7 +515,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         for _ in range(nb_jobs):
             await self.wait_for("workflow_job", {"action": "completed"})
 
-        await self.run_engine(additionnal_services=ServicesSet("ci-event-processing"))
+        await self.run_engine({"ci-event-processing"})
 
         async with database.create_session() as session:
             jobs = (

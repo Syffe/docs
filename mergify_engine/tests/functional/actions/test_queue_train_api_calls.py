@@ -519,7 +519,7 @@ pull_requests:
             await self.run_engine()
 
             tmp_pull_1 = await self.wait_for_pull_request("opened")
-            await self.run_full_engine()
+            await self.run_engine({"delayed-refresh"})
 
             q = await self.get_train()
             assert p_closed["pull_request"]["merge_commit_sha"] is not None

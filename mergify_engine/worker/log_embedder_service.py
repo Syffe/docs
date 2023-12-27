@@ -6,9 +6,13 @@ from mergify_engine.worker import task
 
 @dataclasses.dataclass
 class LogEmbedderService(task.SimpleService):
+    has_pending_work: bool = dataclasses.field(init=False, default=False)
+
     async def work(self) -> None:
         while not self.main_task.shutdown_requested.is_set():
-            pending_work = await github_action.process_failed_jobs(self.redis_links)
-            if not pending_work:
+            self.has_pending_work = await github_action.process_failed_jobs(
+                self.redis_links,
+            )
+            if not self.has_pending_work:
                 # NOTE(sileht): nothing to do, sleep a bit
                 return

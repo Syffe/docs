@@ -480,7 +480,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
 
-        await self.run_full_engine()
+        await self.run_engine({"delayed-refresh"})
 
         ctxt = context.Context(
             self.repository_ctxt,
@@ -500,7 +500,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(p["number"], "@mergifyio refresh")
 
-        await self.run_full_engine()
+        await self.run_engine({"delayed-refresh"})
 
         comment = await self.wait_for_issue_comment(str(p["number"]), "created")
         assert (
