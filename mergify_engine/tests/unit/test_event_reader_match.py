@@ -3,7 +3,6 @@ import typing
 import pytest
 
 from mergify_engine import github_types
-from mergify_engine.tests.functional import event_reader
 from mergify_engine.tests.functional import utils as tests_utils
 
 
@@ -55,9 +54,9 @@ from mergify_engine.tests.functional import utils as tests_utils
         ),
     ),
 )
-def test_event_reader_match(
+def test_match_expected_data(
     data: typing.Any,
     expected_data: typing.Any,
     should_match: bool,
 ) -> None:
-    assert event_reader._match(data, expected_data) == should_match
+    assert tests_utils.match_expected_data(data, expected_data) == should_match

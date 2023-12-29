@@ -3532,24 +3532,16 @@ class TestQueueAction(base.FunctionalTestBase):
                     "payload": tests_utils.get_issue_comment_event_payload(
                         action="created",
                     ),
-                    "test_id": p1["number"],
+                    "test_id": str(p1["number"]),
                 },
             ],
+            sort_received_events=True,
         )
 
-        for event in events:
-            if event.event_type == "pull_request":
-                tmp_pull_2 = typing.cast(
-                    github_types.GitHubPullRequest,
-                    typing.cast(github_types.GitHubEventPullRequest, event.event)[
-                        "pull_request"
-                    ],
-                )
-                break
-        else:
-            raise RuntimeError(
-                "Received events but did not find the correct event for tmp_pull_2",
-            )
+        tmp_pull_2 = typing.cast(
+            github_types.GitHubEventPullRequest,
+            events[0].event,
+        )
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(
@@ -4003,7 +3995,7 @@ previous_failed_batches:
         await self.create_status(tmp_pull_2["pull_request"], state="failure")
         await self.run_engine()
 
-        await self.wait_for_all(
+        events = await self.wait_for_all(
             [
                 {
                     "event_type": "pull_request",
@@ -4019,10 +4011,17 @@ previous_failed_batches:
                         pr_number=tmp_pull_2["number"],
                     ),
                 },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="opened",
+                    ),
+                },
             ],
+            sort_received_events=True,
         )
 
-        tmp_pull_3 = await self.wait_for_pull_request("opened")
+        tmp_pull_3 = typing.cast(github_types.GitHubEventPullRequest, events[-1].event)
 
         assert p1_merged["pull_request"]["merge_commit_sha"] is not None
         # Thing move on and restart from p3 but based on p1 merge commit
@@ -4157,7 +4156,7 @@ previous_failed_batches:
         await self.create_status(tmp_pull_4["pull_request"])
         await self.run_engine()
 
-        await self.wait_for_all(
+        events = await self.wait_for_all(
             [
                 {
                     "event_type": "pull_request",
@@ -4194,10 +4193,17 @@ previous_failed_batches:
                         pr_number=tmp_pull_4["number"],
                     ),
                 },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="opened",
+                    ),
+                },
             ],
+            sort_received_events=True,
         )
 
-        tmp_pull_6 = await self.wait_for_pull_request("opened")
+        tmp_pull_6 = typing.cast(github_types.GitHubEventPullRequest, events[-1].event)
 
         p2 = await self.get_pull(p2["number"])
         assert p2["merge_commit_sha"] is not None
@@ -8663,7 +8669,7 @@ pull_request_rules:
                     "payload": tests_utils.get_issue_comment_event_payload(
                         action="created",
                     ),
-                    "test_id": p1["number"],
+                    "test_id": str(p1["number"]),
                 },
                 {
                     "event_type": "pull_request",
@@ -8715,14 +8721,14 @@ pull_request_rules:
                     "payload": tests_utils.get_issue_comment_event_payload(
                         action="created",
                     ),
-                    "test_id": p1["number"],
+                    "test_id": str(p1["number"]),
                 },
                 {
                     "event_type": "issue_comment",
                     "payload": tests_utils.get_issue_comment_event_payload(
                         action="created",
                     ),
-                    "test_id": p1["number"],
+                    "test_id": str(p1["number"]),
                 },
                 {
                     "event_type": "check_run",
@@ -8733,27 +8739,14 @@ pull_request_rules:
                     ),
                 },
             ],
+            sort_received_events=True,
         )
 
-        # The unqueue comment should always be the last of the two issue_comment events
-        if events[0].event_type == "check_run":
-            check_run = typing.cast(github_types.GitHubEventCheckRun, events[0].event)
-            comment_unqueue = typing.cast(
-                github_types.GitHubEventIssueComment,
-                events[-1].event,
-            )
-        elif events[1].event_type == "check_run":
-            check_run = typing.cast(github_types.GitHubEventCheckRun, events[1].event)
-            comment_unqueue = typing.cast(
-                github_types.GitHubEventIssueComment,
-                events[-1].event,
-            )
-        else:
-            check_run = typing.cast(github_types.GitHubEventCheckRun, events[2].event)
-            comment_unqueue = typing.cast(
-                github_types.GitHubEventIssueComment,
-                events[1].event,
-            )
+        check_run = typing.cast(github_types.GitHubEventCheckRun, events[-1].event)
+        comment_unqueue = typing.cast(
+            github_types.GitHubEventIssueComment,
+            events[1].event,
+        )
 
         assert (
             "The pull request has been removed from the queue `default`"

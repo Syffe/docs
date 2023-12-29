@@ -559,7 +559,7 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
         # Workflow is triggered twice because of the necessary push trigger, see note in the first test
         # most recent one is dispatched
         workflow_job_events = [
-            typing.cast(github_types.GitHubEventWorkflowJob, wf[-1])
+            typing.cast(github_types.GitHubEventWorkflowJob, wf.event)
             for wf in await self.wait_for_all(
                 expected_events=[
                     {

@@ -11,6 +11,7 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import http
+from mergify_engine.tests.functional import utils as tests_utils
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -20,55 +21,6 @@ FAKE_HMAC = utils.compute_hmac(
     FAKE_DATA.encode("utf8"),
     settings.GITHUB_WEBHOOK_SECRET.get_secret_value(),
 )
-
-
-def _match(data: github_types.GitHubEvent, expected_data: typing.Any) -> bool:
-    if isinstance(expected_data, dict):
-        for key, expected in expected_data.items():
-            if key not in data:
-                return False
-            if not _match(data[key], expected):  # type: ignore[literal-required]
-                return False
-        return True
-
-    return bool(data == expected_data)
-
-
-def _remove_useless_links(data: typing.Any) -> typing.Any:
-    if isinstance(data, dict):
-        data.pop("installation", None)
-        data.pop("sender", None)
-        data.pop("repository", None)
-        data.pop("id", None)
-        data.pop("node_id", None)
-        data.pop("tree_id", None)
-        data.pop("repo", None)
-        data.pop("organization", None)
-        data.pop("pusher", None)
-        data.pop("_links", None)
-        data.pop("user", None)
-        data.pop("body", None)
-        data.pop("after", None)
-        data.pop("before", None)
-        data.pop("app", None)
-        data.pop("timestamp", None)
-        data.pop("external_id", None)
-
-        if "check_run" in data:
-            data["check_run"].pop("check_suite", None)
-
-        for key, value in list(data.items()):
-            if key.endswith(("url", "_at")):
-                del data[key]
-            else:
-                data[key] = _remove_useless_links(value)
-
-        return data
-
-    if isinstance(data, list):
-        return [_remove_useless_links(elem) for elem in data]
-
-    return data
 
 
 class MissingEventTimeout(Exception):
@@ -203,7 +155,9 @@ class EventReader:
                 continue
 
             for expected_event_data in expected_events:
-                if event["type"] == expected_event_data["event_type"] and _match(
+                if event["type"] == expected_event_data[
+                    "event_type"
+                ] and tests_utils.match_expected_data(
                     event["payload"],
                     expected_event_data["payload"],
                 ):
@@ -262,7 +216,7 @@ class EventReader:
             event["type"],
             payload.get("action"),
             extra,
-            _remove_useless_links(copy.deepcopy(event)),
+            tests_utils.remove_useless_links(copy.deepcopy(event)),
         )
         if forward_to_engine:
             await self._app.post(

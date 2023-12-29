@@ -528,10 +528,15 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     async def wait_for_all(
         self,
-        *args: typing.Any,
+        expected_events: list[event_reader.WaitForAllEvent],
+        sort_received_events: bool = False,
         **kwargs: typing.Any,
     ) -> list[event_reader.EventReceived]:
-        return await self._event_reader.wait_for_all(*args, **kwargs)
+        events = await self._event_reader.wait_for_all(expected_events, **kwargs)
+        if sort_received_events and len(events) > 1:
+            return tests_utils.sort_events(expected_events, events)
+
+        return events
 
     async def wait_for_push(
         self,
