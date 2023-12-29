@@ -24,6 +24,7 @@ import pytest
 import respx
 
 from mergify_engine import branch_updater
+from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import delayed_refresh
@@ -1260,7 +1261,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         pull: github_types.GitHubPullRequest,
         name: str = "continuous-integration/fake-ci",
         conclusion: github_types.GitHubCheckRunConclusion = "success",
-        external_id: str | None = None,
+        external_id: str | None = check_api.USER_CREATED_CHECKS,
     ) -> github_types.GitHubEventCheckRun:
         http_payload: dict[str, typing.Any] = {
             "name": name,

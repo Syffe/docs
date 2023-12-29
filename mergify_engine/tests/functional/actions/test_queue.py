@@ -976,7 +976,6 @@ class TestQueueAction(base.FunctionalTestBase):
             p1_rebased,
             name="check",
             conclusion="failure",
-            external_id=check_api.USER_CREATED_CHECKS,
         )
 
         await self.run_engine()
@@ -1046,7 +1045,6 @@ class TestQueueAction(base.FunctionalTestBase):
             p1_rebased,
             name="check",
             conclusion="success",
-            external_id=check_api.USER_CREATED_CHECKS,
         )
 
         await self.run_engine()
@@ -1144,7 +1142,6 @@ class TestQueueAction(base.FunctionalTestBase):
             p,
             name="some-pending-check-in-ci",
             conclusion=None,
-            external_id=check_api.USER_CREATED_CHECKS,
         )
         await self.run_engine()
 
@@ -9156,7 +9153,6 @@ pull_request_rules:
             pr,
             name="pending_check",
             conclusion=None,
-            external_id=check_api.USER_CREATED_CHECKS,
         )
 
         # a queue freeze is created
