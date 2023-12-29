@@ -193,126 +193,7 @@ class WorkflowJobFailedStep(typing.TypedDict):
     name: str
 
 
-class WorkflowJobColumnMixin:
-    id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger,
-        primary_key=True,
-        autoincrement=False,
-        anonymizer_config=None,
-    )
-    workflow_run_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger,
-        anonymizer_config=None,
-    )
-    name_without_matrix: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.String,
-        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
-    )
-    started_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
-        sqlalchemy.DateTime(timezone=True),
-        anonymizer_config="anon.dnoise(started_at, ''1 hour'')",
-    )
-    completed_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
-        sqlalchemy.DateTime(timezone=True),
-        anonymizer_config="anon.dnoise(completed_at, ''1 hour'')",
-        index=True,
-    )
-    conclusion: orm.Mapped[WorkflowJobConclusion] = orm.mapped_column(
-        sqlalchemy.Enum(WorkflowJobConclusion),
-        anonymizer_config="anon.random_in_enum(conclusion)",
-    )
-    labels: orm.Mapped[list[str]] = orm.mapped_column(
-        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
-        anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
-    )
-
-    log_embedding: orm.Mapped[npt.NDArray[np.float32] | None] = orm.mapped_column(
-        Vector(constants.OPENAI_EMBEDDING_DIMENSION),
-        nullable=True,
-        anonymizer_config=None,
-    )
-
-    repository_id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_repository.id"),
-        anonymizer_config=None,
-    )
-
-    @orm.declared_attr
-    def repository(self) -> orm.Mapped[gh_repository.GitHubRepository]:
-        return orm.relationship(lazy="joined")
-
-    run_attempt: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger,
-        anonymizer_config=None,
-    )
-
-    steps: orm.Mapped[
-        list[github_types.GitHubWorkflowJobStep] | None
-    ] = orm.mapped_column(sqlalchemy.JSON, anonymizer_config=None, nullable=True)
-
-    failed_step_number: orm.Mapped[int | None] = orm.mapped_column(
-        sqlalchemy.Integer,
-        anonymizer_config=None,
-    )
-    failed_step_name: orm.Mapped[str | None] = orm.mapped_column(
-        sqlalchemy.String,
-        anonymizer_config=None,
-    )
-
-    log_extract: orm.Mapped[str | None] = orm.mapped_column(
-        sqlalchemy.String,
-        anonymizer_config="anon.lorem_ipsum( words := 20 )",
-    )
-
-    log_status: orm.Mapped[WorkflowJobLogStatus] = orm.mapped_column(
-        sqlalchemy.Enum(WorkflowJobLogStatus),
-        server_default=WorkflowJobLogStatus.UNKNOWN.name,
-        anonymizer_config=None,
-    )
-    matrix: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
-
-    head_sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
-        sqlalchemy.String,
-        anonymizer_config=None,
-        index=True,
-    )
-
-    ci_issue_id: orm.Mapped[int | None] = orm.mapped_column(
-        sqlalchemy.ForeignKey("ci_issue.id"),
-        anonymizer_config=None,
-        index=True,
-    )
-
-    @orm.declared_attr
-    def ci_issue(self) -> orm.Mapped[ci_issue_model.CiIssue]:
-        return orm.relationship("CiIssue", lazy="raise_on_sql")
-
-    log_embedding_status: orm.Mapped[WorkflowJobLogEmbeddingStatus] = orm.mapped_column(
-        sqlalchemy.Enum(WorkflowJobLogEmbeddingStatus),
-        server_default=WorkflowJobLogEmbeddingStatus.UNKNOWN.name,
-        anonymizer_config=None,
-    )
-    log_metadata_extracting_status: orm.Mapped[
-        WorkflowJobLogMetadataExtractingStatus
-    ] = orm.mapped_column(
-        sqlalchemy.Enum(WorkflowJobLogMetadataExtractingStatus),
-        server_default=WorkflowJobLogMetadataExtractingStatus.UNKNOWN.name,
-        anonymizer_config=None,
-    )
-
-    log_processing_attempts: orm.Mapped[int] = orm.mapped_column(
-        server_default="0",
-        anonymizer_config=None,
-    )
-    log_processing_retry_after: orm.Mapped[
-        datetime.datetime | None
-    ] = orm.mapped_column(
-        nullable=True,
-        anonymizer_config=None,
-    )
-
-
-class WorkflowJob(models.Base, WorkflowJobColumnMixin):
+class WorkflowJob(models.Base):
     __tablename__ = "gha_workflow_job"
 
     __table_args__ = (
@@ -374,6 +255,124 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
         "run_attempt",
         "steps",
         "head_sha",
+    )
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.BigInteger,
+        primary_key=True,
+        autoincrement=False,
+        anonymizer_config=None,
+    )
+    workflow_run_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.BigInteger,
+        anonymizer_config=None,
+    )
+    name_without_matrix: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.String,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
+    )
+    started_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
+        sqlalchemy.DateTime(timezone=True),
+        anonymizer_config="anon.dnoise(started_at, ''1 hour'')",
+    )
+    completed_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
+        sqlalchemy.DateTime(timezone=True),
+        anonymizer_config="anon.dnoise(completed_at, ''1 hour'')",
+        index=True,
+    )
+    conclusion: orm.Mapped[WorkflowJobConclusion] = orm.mapped_column(
+        sqlalchemy.Enum(WorkflowJobConclusion),
+        anonymizer_config="anon.random_in_enum(conclusion)",
+    )
+    labels: orm.Mapped[list[str]] = orm.mapped_column(
+        postgresql.ARRAY(sqlalchemy.Text, dimensions=1),
+        anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
+    )
+
+    log_embedding: orm.Mapped[npt.NDArray[np.float32] | None] = orm.mapped_column(
+        Vector(constants.OPENAI_EMBEDDING_DIMENSION),
+        nullable=True,
+        anonymizer_config=None,
+    )
+
+    repository_id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
+        sqlalchemy.ForeignKey("github_repository.id"),
+        anonymizer_config=None,
+    )
+
+    repository: orm.Mapped[gh_repository.GitHubRepository] = orm.relationship(
+        lazy="joined",
+    )
+
+    run_attempt: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.BigInteger,
+        anonymizer_config=None,
+    )
+
+    steps: orm.Mapped[
+        list[github_types.GitHubWorkflowJobStep] | None
+    ] = orm.mapped_column(sqlalchemy.JSON, anonymizer_config=None, nullable=True)
+
+    failed_step_number: orm.Mapped[int | None] = orm.mapped_column(
+        sqlalchemy.Integer,
+        anonymizer_config=None,
+    )
+    failed_step_name: orm.Mapped[str | None] = orm.mapped_column(
+        sqlalchemy.String,
+        anonymizer_config=None,
+    )
+
+    log_extract: orm.Mapped[str | None] = orm.mapped_column(
+        sqlalchemy.String,
+        anonymizer_config="anon.lorem_ipsum( words := 20 )",
+    )
+
+    log_status: orm.Mapped[WorkflowJobLogStatus] = orm.mapped_column(
+        sqlalchemy.Enum(WorkflowJobLogStatus),
+        server_default=WorkflowJobLogStatus.UNKNOWN.name,
+        anonymizer_config=None,
+    )
+    matrix: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)
+
+    head_sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
+        sqlalchemy.String,
+        anonymizer_config=None,
+        index=True,
+    )
+
+    ci_issue_id: orm.Mapped[int | None] = orm.mapped_column(
+        sqlalchemy.ForeignKey("ci_issue.id"),
+        anonymizer_config=None,
+        index=True,
+    )
+
+    ci_issue: orm.Mapped[ci_issue_model.CiIssue] = orm.relationship(
+        "CiIssue",
+        lazy="raise_on_sql",
+    )
+
+    log_embedding_status: orm.Mapped[WorkflowJobLogEmbeddingStatus] = orm.mapped_column(
+        sqlalchemy.Enum(WorkflowJobLogEmbeddingStatus),
+        server_default=WorkflowJobLogEmbeddingStatus.UNKNOWN.name,
+        anonymizer_config=None,
+    )
+    log_metadata_extracting_status: orm.Mapped[
+        WorkflowJobLogMetadataExtractingStatus
+    ] = orm.mapped_column(
+        sqlalchemy.Enum(WorkflowJobLogMetadataExtractingStatus),
+        server_default=WorkflowJobLogMetadataExtractingStatus.UNKNOWN.name,
+        anonymizer_config=None,
+    )
+
+    log_processing_attempts: orm.Mapped[int] = orm.mapped_column(
+        server_default="0",
+        anonymizer_config=None,
+    )
+    log_processing_retry_after: orm.Mapped[
+        datetime.datetime | None
+    ] = orm.mapped_column(
+        nullable=True,
+        anonymizer_config=None,
     )
 
     log_metadata: orm.Mapped[list[WorkflowJobLogMetadata]] = orm.relationship(
