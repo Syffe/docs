@@ -37,10 +37,7 @@ LOG = daiquiri.getLogger(__name__)
 NAME_AND_MATRIX_RE = re.compile(r"^([\w|-]+) \((.+)\)$")
 
 
-# TODO(sileht): typing Literal should be enough here
-class FlakyStatus(enum.Enum):
-    FLAKY = "flaky"
-    UNKNOWN = "unknown"
+FlakyStatusT = typing.Literal["flaky", "unknown"]
 
 
 class GitHubWorkflowJobDict(typing.TypedDict):
@@ -458,7 +455,7 @@ class WorkflowJob(models.Base):
             .scalar_subquery(),
         )
 
-    flaky: orm.Mapped[typing.Literal["flaky", "unknown"]] = orm.query_expression()
+    flaky: orm.Mapped[FlakyStatusT] = orm.query_expression()
 
     @classmethod
     def with_flaky_column(cls) -> orm.strategy_options._AbstractLoad:
@@ -468,8 +465,8 @@ class WorkflowJob(models.Base):
             cls.flaky,
             sqlalchemy.select(
                 sqlalchemy.case(
-                    (sqlalchemy.func.count() >= 1, FlakyStatus.FLAKY.value),
-                    else_=FlakyStatus.UNKNOWN.value,
+                    (sqlalchemy.func.count() >= 1, "flaky"),
+                    else_="unknown",
                 ),
             )
             .where(

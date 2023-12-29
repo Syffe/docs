@@ -12,7 +12,6 @@ from mergify_engine import pagination
 from mergify_engine.models import github as gh_models
 from mergify_engine.models.ci_issue import CiIssueGPT
 from mergify_engine.models.ci_issue import CiIssueStatus
-from mergify_engine.models.github.workflows import FlakyStatus
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
@@ -27,7 +26,7 @@ class CiIssueEvent:
     id: int
     run_id: int
     started_at: github_types.ISODateTimeType
-    flaky: FlakyStatus
+    flaky: typing.Literal["flaky", "unknown"]
     failed_run_count: int
 
 
@@ -141,7 +140,7 @@ async def get_ci_issues(
                     started_at=github_types.ISODateTimeType(
                         job.started_at.isoformat(),
                     ),
-                    flaky=FlakyStatus(job.flaky),
+                    flaky=job.flaky,
                     failed_run_count=job.failed_run_count,
                 ),
             )
@@ -262,7 +261,7 @@ async def get_ci_issue(
                 started_at=github_types.ISODateTimeType(
                     job.started_at.isoformat(),
                 ),
-                flaky=FlakyStatus(job.flaky),
+                flaky=job.flaky,
                 failed_run_count=job.failed_run_count,
             ),
         )
@@ -377,7 +376,7 @@ async def get_ci_issue_event_detail(
         started_at=github_types.ISODateTimeType(
             log_metadata.workflow_job.started_at.isoformat(),
         ),
-        flaky=FlakyStatus(log_metadata.workflow_job.flaky),
+        flaky=log_metadata.workflow_job.flaky,
         failed_run_count=log_metadata.workflow_job.failed_run_count,
         log_extract=log_metadata.workflow_job.log_extract or "",
         run_attempt=log_metadata.workflow_job.run_attempt,
