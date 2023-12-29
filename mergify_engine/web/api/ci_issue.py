@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import dataclasses
 import typing
 
@@ -6,7 +5,6 @@ import daiquiri
 import fastapi
 import pydantic
 import sqlalchemy
-from sqlalchemy import orm
 
 from mergify_engine import database
 from mergify_engine import github_types
@@ -14,9 +12,7 @@ from mergify_engine import pagination
 from mergify_engine.models import github as gh_models
 from mergify_engine.models.ci_issue import CiIssueGPT
 from mergify_engine.models.ci_issue import CiIssueStatus
-from mergify_engine.models.github.pull_request import PullRequestHeadShaHistory
 from mergify_engine.models.github.workflows import FlakyStatus
-from mergify_engine.models.views.workflows import WorkflowJobEnhanced
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
@@ -58,164 +54,6 @@ class CiIssueBody(pydantic.BaseModel):
     status: CiIssueStatus
 
 
-async def get_filtered_issues_cte(
-    repository_id: github_types.GitHubRepositoryIdType,
-    limit: int,
-    issue_id: int | None = None,
-    statuses: tuple[CiIssueStatus, ...] | None = None,
-    cursor: pagination.Cursor | None = None,
-) -> type[CiIssueGPT]:
-    if cursor is None:
-        cursor = pagination.Cursor("")
-
-    # NOTE(charly): subquery to filter and limit issues, for pagination mainly
-    filtered_issues = (
-        sqlalchemy.select(CiIssueGPT)
-        .where(CiIssueGPT.repository_id == repository_id)
-        .order_by(
-            CiIssueGPT.id.desc() if cursor.forward else CiIssueGPT.id.asc(),
-        )
-        .limit(limit)
-    )
-
-    if issue_id is not None:
-        filtered_issues = filtered_issues.where(CiIssueGPT.id == issue_id)
-    if statuses is not None:
-        filtered_issues = filtered_issues.where(CiIssueGPT.status.in_(statuses))
-
-    if cursor.value:
-        try:
-            cursor_issue_id = int(cursor.value)
-        except ValueError:
-            raise pagination.InvalidCursor(cursor)
-
-        if cursor.forward:
-            filtered_issues = filtered_issues.where(CiIssueGPT.id < cursor_issue_id)
-        else:
-            filtered_issues = filtered_issues.where(CiIssueGPT.id > cursor_issue_id)
-
-    return orm.aliased(
-        CiIssueGPT,
-        filtered_issues.cte("filtered_issues"),
-    )
-
-
-async def query_issues(
-    session: database.Session,
-    repository_id: github_types.GitHubRepositoryIdType,
-    limit: int,
-    issue_id: int | None = None,
-    statuses: tuple[CiIssueStatus, ...] | None = None,
-    cursor: pagination.Cursor | None = None,
-) -> list[CiIssueResponse]:
-    filtered_issues_cte = await get_filtered_issues_cte(
-        repository_id,
-        limit,
-        issue_id,
-        statuses,
-        cursor,
-    )
-
-    stmt = (
-        sqlalchemy.select(
-            filtered_issues_cte.id,
-            filtered_issues_cte.short_id,
-            filtered_issues_cte.name,
-            filtered_issues_cte.status,
-            gh_models.WorkflowJobLogMetadata.id.label("event_id"),
-            WorkflowJobEnhanced.name_without_matrix.label("job_name"),
-            WorkflowJobEnhanced.workflow_run_id,
-            WorkflowJobEnhanced.started_at,
-            WorkflowJobEnhanced.flaky,
-            WorkflowJobEnhanced.failed_run_count,
-            sqlalchemy.func.array_remove(
-                sqlalchemy.func.array_agg(gh_models.PullRequest.number.distinct()),
-                None,
-            ).label("pull_requests"),
-        )
-        .join(
-            gh_models.GitHubRepository,
-            gh_models.GitHubRepository.id == filtered_issues_cte.repository_id,
-        )
-        .join(
-            gh_models.WorkflowJobLogMetadata,
-            gh_models.WorkflowJobLogMetadata.ci_issue_id == filtered_issues_cte.id,
-        )
-        .join(
-            WorkflowJobEnhanced,
-            sqlalchemy.and_(
-                gh_models.WorkflowJobLogMetadata.workflow_job_id
-                == WorkflowJobEnhanced.id,
-                WorkflowJobEnhanced.repository_id == repository_id,
-            ),
-        )
-        .outerjoin(
-            gh_models.PullRequest,
-            sqlalchemy.and_(
-                gh_models.PullRequest.head_sha_history.any(
-                    PullRequestHeadShaHistory.head_sha == WorkflowJobEnhanced.head_sha,
-                ),
-                gh_models.PullRequest.base_repository_id
-                == WorkflowJobEnhanced.repository_id,
-            ),
-        )
-        .group_by(
-            filtered_issues_cte.id,
-            filtered_issues_cte.short_id_suffix,
-            filtered_issues_cte.name,
-            filtered_issues_cte.status,
-            WorkflowJobEnhanced.name_without_matrix,
-            WorkflowJobEnhanced.workflow_run_id,
-            WorkflowJobEnhanced.started_at,
-            WorkflowJobEnhanced.flaky,
-            WorkflowJobEnhanced.failed_run_count,
-            gh_models.WorkflowJobLogMetadata.id,
-            gh_models.GitHubRepository.name,
-        )
-        .order_by(WorkflowJobEnhanced.started_at.desc())
-    )
-
-    # NOTE(Kontrolix): We use an OrderedDict here to be sure to keep the sorting of
-    # the SQL query
-    responses: OrderedDict[int, CiIssueResponse] = OrderedDict()
-    pr_linked_to_ci_issues: OrderedDict[int, set[int]] = OrderedDict()
-    for result in await session.execute(stmt):
-        if result.id in responses:
-            response = responses[result.id]
-            pr_linked_to_ci_issues[result.id].update(result.pull_requests)
-        else:
-            response = CiIssueResponse(
-                id=result.id,
-                short_id=result.short_id,
-                name=result.name or f"Failure of {result.job_name}",
-                job_name=result.job_name,
-                status=result.status,
-                events=[],
-            )
-            responses[result.id] = response
-            pr_linked_to_ci_issues[result.id] = set(result.pull_requests)
-
-        response.events.append(
-            CiIssueEvent(
-                id=result.event_id,
-                run_id=result.workflow_run_id,
-                started_at=github_types.ISODateTimeType(result.started_at.isoformat()),
-                flaky=result.flaky,
-                failed_run_count=result.failed_run_count,
-            ),
-        )
-
-    if issue_id is not None and len(responses) > 1:
-        raise RuntimeError("This should never happens")
-
-    # NOTE(Kontrolix): Filter out ci_issue linked to only one PR
-    return [
-        responses[ci_issue_id]
-        for ci_issue_id, prs_linked in pr_linked_to_ci_issues.items()
-        if len(prs_linked) != 1
-    ]
-
-
 @router.get(
     "/repos/{owner}/{repository}/ci_issues",
     summary="Get CI issues",
@@ -233,13 +71,96 @@ async def get_ci_issues(
         fastapi.Query(description="CI issue status"),
     ] = (CiIssueStatus.UNRESOLVED,),
 ) -> CiIssuesResponse:
-    issues = await query_issues(
-        session,
-        repository_ctxt.repo["id"],
-        limit=page.per_page,
-        statuses=status,
-        cursor=page.cursor,
+    stmt = (
+        sqlalchemy.select(CiIssueGPT)
+        .options(
+            sqlalchemy.orm.joinedload(CiIssueGPT.log_metadata)
+            .load_only(gh_models.WorkflowJobLogMetadata.id)
+            .options(
+                sqlalchemy.orm.joinedload(
+                    gh_models.WorkflowJobLogMetadata.workflow_job.of_type(
+                        gh_models.WorkflowJob,
+                    ),
+                )
+                .load_only(
+                    # NOTE(sileht): Only what needed as some columns are quite big
+                    gh_models.WorkflowJob.id,
+                    gh_models.WorkflowJob.started_at,
+                    gh_models.WorkflowJob.workflow_run_id,
+                    gh_models.WorkflowJob.name_without_matrix,
+                    gh_models.WorkflowJob.matrix,
+                    # NOTE(sileht): required of pull_requests
+                    # WorkflowsJobForEvents.repository_id,
+                    gh_models.WorkflowJob.head_sha,
+                )
+                .options(
+                    gh_models.WorkflowJob.with_pull_requests_column(),
+                    gh_models.WorkflowJob.with_flaky_column(),
+                    gh_models.WorkflowJob.with_failed_run_count_column(),
+                ),
+            ),
+        )
+        .where(
+            CiIssueGPT.repository_id == repository_ctxt.repo["id"],
+            CiIssueGPT.log_metadata.any(),
+        )
     )
+
+    if status is not None:
+        stmt = stmt.where(CiIssueGPT.status.in_(status))
+
+    if page.cursor.value:
+        try:
+            cursor_issue_id = int(page.cursor.value)
+        except ValueError:
+            raise pagination.InvalidCursor(page.cursor)
+
+        if page.cursor.forward:
+            stmt = stmt.where(CiIssueGPT.id > cursor_issue_id)
+        else:
+            stmt = stmt.where(CiIssueGPT.id < cursor_issue_id)
+
+    # FIXME(sileht): default order should be the most recent issue first
+    stmt = stmt.order_by(
+        CiIssueGPT.id.asc() if page.cursor.forward else CiIssueGPT.id.desc(),
+    ).limit(page.per_page)
+
+    result = await session.execute(stmt)
+    issues = []
+    for ci_issue in result.unique().scalars():
+        events = []
+        pull_requests = set()
+        for log_metadata in ci_issue.log_metadata:
+            job = log_metadata.workflow_job
+            if job.pull_requests:
+                pull_requests.update(job.pull_requests)
+            events.append(
+                CiIssueEvent(
+                    id=log_metadata.id,
+                    run_id=job.workflow_run_id,
+                    started_at=github_types.ISODateTimeType(
+                        job.started_at.isoformat(),
+                    ),
+                    flaky=FlakyStatus(job.flaky),
+                    failed_run_count=job.failed_run_count,
+                ),
+            )
+
+        # FIXME(sileht): This should be filterout in the SQL query, otherwise the pagination is wrong
+        if len(pull_requests) == 1:
+            continue
+
+        issues.append(
+            CiIssueResponse(
+                id=ci_issue.id,
+                short_id=ci_issue.short_id,
+                name=ci_issue.name or "<unknown>",
+                job_name=ci_issue.log_metadata[0].workflow_job.name_without_matrix,
+                status=ci_issue.status,
+                # TODO(sileht): make the order by with ORM
+                events=sorted(events, key=lambda e: e.started_at, reverse=True),
+            ),
+        )
 
     first_issue_id = issues[0].id if issues else None
     last_issue_id = issues[-1].id if issues else None

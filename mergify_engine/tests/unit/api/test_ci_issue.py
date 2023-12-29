@@ -18,6 +18,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
     web_client: conftest.CustomTestClient,
 ) -> None:
     await populated_db.commit()
+    populated_db.expunge_all()
     await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock,
         populated_db,
@@ -158,6 +159,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
     web_client: conftest.CustomTestClient,
 ) -> None:
     await populated_db.commit()
+    populated_db.expunge_all()
     await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock,
         populated_db,

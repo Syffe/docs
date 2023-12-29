@@ -25,6 +25,7 @@ from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.flaky_check.utils import NeedRerunStatus
 from mergify_engine.models.github import account as gh_account
+from mergify_engine.models.github import pull_request as gh_pull_request
 from mergify_engine.models.github import repository as gh_repository
 
 
@@ -431,6 +432,30 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
                 ),
                 WorkflowJobSibling.conclusion == WorkflowJobConclusion.FAILURE,
             )
+            .scalar_subquery(),
+        )
+
+    pull_requests: orm.Mapped[
+        list[github_types.GitHubPullRequestNumber]
+    ] = orm.query_expression()
+
+    @classmethod
+    def with_pull_requests_column(cls) -> orm.strategy_options._AbstractLoad:
+        return orm.with_expression(
+            cls.pull_requests,
+            sqlalchemy.select(
+                sqlalchemy.func.array_agg(
+                    gh_pull_request.PullRequest.number.distinct(),
+                ),
+            )
+            .where(
+                gh_pull_request.PullRequest.base_repository_id == cls.repository_id,
+                gh_pull_request.PullRequest.head_sha_history.any(
+                    gh_pull_request.PullRequestHeadShaHistory.head_sha == cls.head_sha,
+                ),
+            )
+            .group_by(gh_pull_request.PullRequest.base_repository_id)
+            .correlate(WorkflowJob)
             .scalar_subquery(),
         )
 
