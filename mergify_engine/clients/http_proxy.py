@@ -79,13 +79,19 @@ async def proxy(
     if extra_headers:
         headers.update(extra_headers)
 
-    proxy_request = client.build_request(
-        method=request.method,
-        url=url,
-        params=request.url.query,
-        headers=headers,
-        content=await request.body(),
-    )
+    try:
+        proxy_request = client.build_request(
+            method=request.method,
+            url=url,
+            params=request.url.query,
+            headers=headers,
+            content=await request.body(),
+        )
+    except httpx.InvalidURL:
+        raise fastapi.HTTPException(
+            status_code=422,
+            detail={"messages": "Invalid request"},
+        )
 
     try:
         proxy_response = await client.send(
@@ -93,11 +99,6 @@ async def proxy(
             follow_redirects=follow_redirects,
         )
         http.raise_for_status(proxy_response)
-    except httpx.InvalidURL:
-        raise fastapi.HTTPException(
-            status_code=422,
-            detail={"messages": "Invalid request"},
-        )
     except httpx.HTTPStatusError as e:
         proxy_response = e.response
     except httpx.RequestError:
