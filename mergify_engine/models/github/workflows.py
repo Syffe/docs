@@ -589,51 +589,68 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
         job_id: int,
         max_rerun: int,
     ) -> NeedRerunStatus:
-        # Avoid circular import
-        from mergify_engine.models.views.workflows import WorkflowJobEnhanced
-
-        stmt = sqlalchemy.select(
-            cls.run_attempt,
-            cls.conclusion,
-            cls.ci_issue_id,
-            sqlalchemy.func.exists(
-                sqlalchemy.select(sqlalchemy.literal_column("1", sqlalchemy.INT))
-                .select_from(WorkflowJobEnhanced)
-                .where(
-                    WorkflowJobEnhanced.ci_issue_id == cls.ci_issue_id,
-                    WorkflowJobEnhanced.repository_id == cls.repository_id,
-                    WorkflowJobEnhanced.flaky == FlakyStatus.FLAKY.value,
-                )
-                .scalar_subquery(),
-            ).label("flaky_neighb"),
-        ).where(cls.id == job_id)
-
-        try:
-            result = (await session.execute(stmt)).one()
-        except sqlalchemy.exc.NoResultFound:
+        stmt_job = (
+            sqlalchemy.select(cls)
+            .options(sqlalchemy.orm.load_only(cls.id, cls.conclusion, cls.run_attempt))
+            .where(
+                cls.id == job_id,
+            )
+        )
+        job = (await session.execute(stmt_job)).scalar_one_or_none()
+        if job is None:
             # NOTE(Kontrolix): We haven't yet received the job
             return NeedRerunStatus.UNKONWN
 
-        if result.ci_issue_id is None:
+        if job.conclusion == WorkflowJobConclusion.SUCCESS:
             # NOTE(Kontrolix): Safety in case we would have called this method with a
             # succesful job. Normaly we should never enter this.
-            if result.conclusion == WorkflowJobConclusion.SUCCESS:
-                return NeedRerunStatus.DONT_NEED_RERUN
+            # FIXME(sileht): This is not supposed to happen, but we have tests that assert this behavior...
+            # We should: raise RuntimeError("is_rerun_needed called on a successful job")
+            return NeedRerunStatus.DONT_NEED_RERUN
 
-            # NOTE(Kontrolix): Job is not yet linked to a ci issue
+        if job.ci_issue_id is None:
+            # NOTE(sileht): Not yet associated to a CI issue
             return NeedRerunStatus.UNKONWN
+
+        # Circular import
+        from mergify_engine.models import ci_issue as ci_issue_model
+
+        # FIXME(sileht): Use CiIssueGPT here
+        # The SQL request is far from been ideal as we list all jobs but only require one to mark issue as flaky
+        # Since is use the old CiIssue table, and an unused feature, we don't really care for now.
+        stmt_issue = (
+            sqlalchemy.select(ci_issue_model.CiIssue)
+            .options(
+                sqlalchemy.orm.load_only(ci_issue_model.CiIssue.id),
+                sqlalchemy.orm.joinedload(ci_issue_model.CiIssue.jobs)
+                .load_only(cls.id)
+                .options(cls.with_flaky_column()),
+            )
+            .where(
+                ci_issue_model.CiIssue.id == job.ci_issue_id,
+            )
+        )
+
+        issue = (await session.execute(stmt_issue)).unique().scalar_one_or_none()
+        if issue is None:
+            # CiIssue vanished since last SQL request
+            return NeedRerunStatus.UNKONWN
+
+        issue_is_flaky = any(job.flaky == "flaky" for job in issue.jobs)
 
         # NOTE(Kontrolix): We use the run_attempt value to know how many time
         # this job has been rerun. It's imperfect because if a human rerun manually
         # the job it will be taken into account as if Mergify already rerun it
 
         # NOTE(Konrolix): Case where there is a known flaky job as neighbour
-        if result.flaky_neighb is True and result.run_attempt < max_rerun:
+        if issue_is_flaky and job.run_attempt < max_rerun:
             return NeedRerunStatus.NEED_RERUN
 
         # NOTE(Kontrolix): Case where there is no known flaky neighbour so we
         # rerun once to try
-        if not result.flaky_neighb and result.run_attempt == 1:
+        # NOTE(sileht): Why are we doing this? This does not make sense to me, it should
+        # be user choice, not ours.
+        if not issue_is_flaky and job.run_attempt == 1:
             return NeedRerunStatus.NEED_RERUN
 
         return NeedRerunStatus.DONT_NEED_RERUN
