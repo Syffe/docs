@@ -36,6 +36,12 @@ LOG = daiquiri.getLogger(__name__)
 NAME_AND_MATRIX_RE = re.compile(r"^([\w|-]+) \((.+)\)$")
 
 
+# TODO(sileht): typing Literal should be enough here
+class FlakyStatus(enum.Enum):
+    FLAKY = "flaky"
+    UNKNOWN = "unknown"
+
+
 class GitHubWorkflowJobDict(typing.TypedDict):
     id: int
     workflow_run_id: int
@@ -400,6 +406,64 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
             else_=cls.name_without_matrix,
         )
 
+    failed_run_count: orm.Mapped[int] = orm.query_expression()
+
+    @classmethod
+    def with_failed_run_count_column(cls) -> orm.strategy_options._AbstractLoad:
+        # NOTE(sileht): we can't use column_property due to self referencing GitHubWorkflowJob
+        WorkflowJobSibling = orm.aliased(
+            WorkflowJob,
+            name="workflow_job_sibling_failed_run_count",
+        )
+        return orm.with_expression(
+            cls.failed_run_count,
+            sqlalchemy.select(sqlalchemy.func.count())
+            .where(
+                WorkflowJobSibling.repository_id == cls.repository_id,
+                WorkflowJobSibling.workflow_run_id == cls.workflow_run_id,
+                WorkflowJobSibling.name_without_matrix == cls.name_without_matrix,
+                sqlalchemy.or_(
+                    sqlalchemy.and_(
+                        WorkflowJobSibling.matrix.is_(None),
+                        cls.matrix.is_(None),
+                    ),
+                    WorkflowJobSibling.matrix == cls.matrix,
+                ),
+                WorkflowJobSibling.conclusion == WorkflowJobConclusion.FAILURE,
+            )
+            .scalar_subquery(),
+        )
+
+    flaky: orm.Mapped[typing.Literal["flaky", "unknown"]] = orm.query_expression()
+
+    @classmethod
+    def with_flaky_column(cls) -> orm.strategy_options._AbstractLoad:
+        # NOTE(sileht): we can't use column_property due to self referencing GitHubWorkflowJob
+        WorkflowJobSibling = orm.aliased(WorkflowJob, name="workflow_job_sibling_flaky")
+        return orm.with_expression(
+            cls.flaky,
+            sqlalchemy.select(
+                sqlalchemy.case(
+                    (sqlalchemy.func.count() >= 1, FlakyStatus.FLAKY.value),
+                    else_=FlakyStatus.UNKNOWN.value,
+                ),
+            )
+            .where(
+                WorkflowJobSibling.conclusion == WorkflowJobConclusion.SUCCESS,
+                WorkflowJobSibling.repository_id == cls.repository_id,
+                WorkflowJobSibling.workflow_run_id == cls.workflow_run_id,
+                WorkflowJobSibling.name_without_matrix == cls.name_without_matrix,
+                sqlalchemy.or_(
+                    sqlalchemy.and_(
+                        WorkflowJobSibling.matrix.is_(None),
+                        cls.matrix.is_(None),
+                    ),
+                    WorkflowJobSibling.matrix == cls.matrix,
+                ),
+            )
+            .scalar_subquery(),
+        )
+
     def as_log_extras(self) -> dict[str, typing.Any]:
         return {
             "gh_owner": self.repository.owner.login,
@@ -501,7 +565,6 @@ class WorkflowJob(models.Base, WorkflowJobColumnMixin):
         max_rerun: int,
     ) -> NeedRerunStatus:
         # Avoid circular import
-        from mergify_engine.models.views.workflows import FlakyStatus
         from mergify_engine.models.views.workflows import WorkflowJobEnhanced
 
         stmt = sqlalchemy.select(

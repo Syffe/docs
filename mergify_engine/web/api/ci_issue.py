@@ -2,6 +2,7 @@ from collections import OrderedDict
 import dataclasses
 import typing
 
+import daiquiri
 import fastapi
 import pydantic
 import sqlalchemy
@@ -14,11 +15,13 @@ from mergify_engine.models import github as gh_models
 from mergify_engine.models.ci_issue import CiIssueGPT
 from mergify_engine.models.ci_issue import CiIssueStatus
 from mergify_engine.models.github.pull_request import PullRequestHeadShaHistory
-from mergify_engine.models.views.workflows import FlakyStatus
+from mergify_engine.models.github.workflows import FlakyStatus
 from mergify_engine.models.views.workflows import WorkflowJobEnhanced
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
+
+LOG = daiquiri.getLogger(__name__)
 
 router = fastapi.APIRouter(tags=["ci_issues"])
 
@@ -197,7 +200,7 @@ async def query_issues(
                 id=result.event_id,
                 run_id=result.workflow_run_id,
                 started_at=github_types.ISODateTimeType(result.started_at.isoformat()),
-                flaky=FlakyStatus(result.flaky),
+                flaky=result.flaky,
                 failed_run_count=result.failed_run_count,
             ),
         )
@@ -294,15 +297,64 @@ async def get_ci_issue(
         fastapi.Path(description="The ID of the CI Issue"),
     ],
 ) -> CiIssueResponse:
-    responses = await query_issues(
-        session,
-        repository_ctxt.repo["id"],
-        limit=1,
-        issue_id=ci_issue_id,
+    stmt = (
+        sqlalchemy.select(CiIssueGPT)
+        .options(
+            sqlalchemy.orm.joinedload(CiIssueGPT.log_metadata)
+            .load_only(gh_models.WorkflowJobLogMetadata.id)
+            .options(
+                sqlalchemy.orm.joinedload(
+                    gh_models.WorkflowJobLogMetadata.workflow_job,
+                )
+                .load_only(
+                    # NOTE(sileht): Only what needed as some columns are quite big
+                    gh_models.WorkflowJob.id,
+                    gh_models.WorkflowJob.started_at,
+                    gh_models.WorkflowJob.workflow_run_id,
+                    gh_models.WorkflowJob.name_without_matrix,
+                    gh_models.WorkflowJob.matrix,
+                )
+                .options(
+                    gh_models.WorkflowJob.with_flaky_column(),
+                    gh_models.WorkflowJob.with_failed_run_count_column(),
+                ),
+            ),
+        )
+        .where(
+            CiIssueGPT.repository_id == repository_ctxt.repo["id"],
+            CiIssueGPT.id == ci_issue_id,
+        )
     )
-    if len(responses) == 0:
+
+    result = await session.execute(stmt)
+    ci_issue = result.unique().scalar_one_or_none()
+    if ci_issue is None:
         raise fastapi.HTTPException(404)
-    return responses[0]
+
+    events = []
+    for log_metadata in ci_issue.log_metadata:
+        job = log_metadata.workflow_job
+        events.append(
+            CiIssueEvent(
+                id=log_metadata.id,
+                run_id=job.workflow_run_id,
+                started_at=github_types.ISODateTimeType(
+                    job.started_at.isoformat(),
+                ),
+                flaky=FlakyStatus(job.flaky),
+                failed_run_count=job.failed_run_count,
+            ),
+        )
+
+    return CiIssueResponse(
+        id=ci_issue.id,
+        short_id=ci_issue.short_id,
+        name=ci_issue.name or "<unknown>",
+        job_name=ci_issue.log_metadata[0].workflow_job.name_without_matrix,
+        status=ci_issue.status,
+        # TODO(sileht): make the order by with ORM
+        events=sorted(events, key=lambda e: e.started_at, reverse=True),
+    )
 
 
 @router.patch(

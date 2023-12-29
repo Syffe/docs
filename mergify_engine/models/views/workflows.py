@@ -1,15 +1,8 @@
-import enum
-
 import sqlalchemy
 from sqlalchemy import orm
 
 from mergify_engine import models
 from mergify_engine.models.github import workflows as wf
-
-
-class FlakyStatus(enum.Enum):
-    FLAKY = "flaky"
-    UNKNOWN = "unknown"
 
 
 class WorkflowJobEnhanced(models.Base, wf.WorkflowJobColumnMixin):
@@ -31,9 +24,9 @@ class WorkflowJobEnhanced(models.Base, wf.WorkflowJobColumnMixin):
                             == wf.WorkflowJobConclusion.FAILURE,
                         ),
                     ),
-                    FlakyStatus.FLAKY.value,
+                    wf.FlakyStatus.FLAKY.value,
                 ),
-                else_=FlakyStatus.UNKNOWN.value,
+                else_=wf.FlakyStatus.UNKNOWN.value,
             ).label("flaky"),
             sqlalchemy.func.sum(
                 sqlalchemy.case(
@@ -79,5 +72,5 @@ class WorkflowJobEnhanced(models.Base, wf.WorkflowJobColumnMixin):
         .cte("workflow_job_enhanced")
     )
 
-    flaky: orm.Mapped[FlakyStatus]
+    flaky: orm.Mapped[wf.FlakyStatus]
     failed_run_count: orm.Mapped[int]

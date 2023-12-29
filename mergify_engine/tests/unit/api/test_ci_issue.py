@@ -274,6 +274,7 @@ async def test_api_ci_issue_get_ci_issue(
 
     assert len(job.ci_issues_gpt) == 1
     ci_issue = job.ci_issues_gpt[0]
+    populated_db.expunge_all()
 
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
@@ -341,6 +342,7 @@ async def test_api_ci_issue_get_ci_issue(
 
     assert len(job.ci_issues_gpt) == 1
     ci_issue = job.ci_issues_gpt[0]
+    populated_db.expunge_all()
 
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.id}",
