@@ -30,6 +30,8 @@ sequence = [
   "bash -n onpremise/entrypoint.sh",
   "bash -n datadog-wrapper.sh"
 ]
+[tool.poe.tasks.linters.env]
+IMPORT_CHECKS_TEST_DEV_DEPS = "1"
 
 [tool.poe.tasks.test]
 deps = ["setup"]
