@@ -421,51 +421,44 @@ async def get_ci_issue_event_detail(
     event_id: typing.Annotated[int, fastapi.Path(description="The ID of the Event")],
 ) -> CiIssueEventDetailResponse:
     stmt = (
-        sqlalchemy.select(
-            gh_models.WorkflowJobLogMetadata.id,
-            WorkflowJobEnhanced.name_without_matrix.label("name"),
-            WorkflowJobEnhanced.workflow_run_id,
-            WorkflowJobEnhanced.started_at,
-            WorkflowJobEnhanced.completed_at,
-            WorkflowJobEnhanced.steps,
-            WorkflowJobEnhanced.failed_step_number,
-            WorkflowJobEnhanced.flaky,
-            WorkflowJobEnhanced.failed_run_count,
-            WorkflowJobEnhanced.log_extract,
-            WorkflowJobEnhanced.ci_issue_id,
-            WorkflowJobEnhanced.run_attempt,
-        )
-        .join(
-            gh_models.WorkflowJobLogMetadata,
-            sqlalchemy.and_(
-                gh_models.WorkflowJobLogMetadata.ci_issue_id == ci_issue_id,
-                gh_models.WorkflowJobLogMetadata.workflow_job_id
-                == WorkflowJobEnhanced.id,
+        sqlalchemy.select(gh_models.WorkflowJobLogMetadata)
+        .join(gh_models.WorkflowJobLogMetadata.workflow_job)
+        .options(
+            sqlalchemy.orm.joinedload(
+                gh_models.WorkflowJobLogMetadata.workflow_job,
+            ).options(
+                gh_models.WorkflowJob.with_flaky_column(),
+                gh_models.WorkflowJob.with_failed_run_count_column(),
             ),
         )
         .where(
-            WorkflowJobEnhanced.repository_id == repository_ctxt.repo["id"],
             gh_models.WorkflowJobLogMetadata.id == event_id,
+            # NOTE(sileht): For security purpose:
+            gh_models.WorkflowJob.repository_id == repository_ctxt.repo["id"],
+            gh_models.WorkflowJobLogMetadata.ci_issue_id == ci_issue_id,
         )
     )
 
-    event_detail = (await session.execute(stmt)).one_or_none()
+    result = await session.execute(stmt)
+    log_metadata = result.unique().scalar_one_or_none()
 
-    if event_detail is None:
+    if log_metadata is None:
         raise fastapi.HTTPException(404)
 
     return CiIssueEventDetailResponse(
-        id=event_detail.id,
-        run_id=event_detail.workflow_run_id,
-        steps=event_detail.steps,
-        failed_step_number=event_detail.failed_step_number,
+        id=log_metadata.id,
+        run_id=log_metadata.workflow_job.workflow_run_id,
+        steps=log_metadata.workflow_job.steps or [],
+        failed_step_number=log_metadata.workflow_job.failed_step_number,
         completed_at=github_types.ISODateTimeType(
-            event_detail.completed_at.isoformat(),
+            log_metadata.workflow_job.completed_at.isoformat(),
         ),
-        started_at=github_types.ISODateTimeType(event_detail.started_at.isoformat()),
-        flaky=FlakyStatus(event_detail.flaky),
-        failed_run_count=event_detail.failed_run_count,
-        log_extract=event_detail.log_extract,
-        run_attempt=event_detail.run_attempt,
-        name=event_detail.name,
+        started_at=github_types.ISODateTimeType(
+            log_metadata.workflow_job.started_at.isoformat(),
+        ),
+        flaky=FlakyStatus(log_metadata.workflow_job.flaky),
+        failed_run_count=log_metadata.workflow_job.failed_run_count,
+        log_extract=log_metadata.workflow_job.log_extract or "",
+        run_attempt=log_metadata.workflow_job.run_attempt,
+        name=log_metadata.workflow_job.name_without_matrix,
     )
