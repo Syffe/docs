@@ -51,6 +51,19 @@ class WaitForAllEvent(typing.TypedDict):
     test_id: typing.NotRequired[str | None]
 
 
+def _get_test_ids_from_expected_events(
+    expected_events: list[WaitForAllEvent],
+) -> list[str | None]:
+    # Use a list because set are unordered, which could lead to
+    # the iteration not being the same between record and replay.
+    test_ids: list[str | None] = []
+    for event_data in expected_events:
+        if event_data.get("test_id") not in test_ids:
+            test_ids.append(event_data.get("test_id"))
+
+    return test_ids
+
+
 class EventReader:
     def __init__(
         self,
@@ -118,7 +131,6 @@ class EventReader:
         expected_events: list[WaitForAllEvent],
         forward_to_engine: bool = True,
     ) -> list[EventReceived]:
-        test_ids: set[str | None] = set()
         for event_data in expected_events:
             LOG.log(
                 42,
@@ -127,7 +139,8 @@ class EventReader:
                 event_data["payload"].get("action"),
                 event_data["payload"],
             )
-            test_ids.add(event_data.get("test_id"))
+
+        test_ids = _get_test_ids_from_expected_events(expected_events)
 
         # NOTE(Kontrolix): Copy events to not alter the orignal list
         expected_events = list(expected_events)
@@ -171,7 +184,7 @@ class EventReader:
 
                     if expected_events:
                         # Reconstruct the set to not query useless test_ids
-                        test_ids = {d.get("test_id") for d in expected_events}
+                        test_ids = _get_test_ids_from_expected_events(expected_events)
 
                     break
 
@@ -186,17 +199,13 @@ class EventReader:
     async def _get_events(self, test_id: str | None = None) -> list[ForwardedEvent]:
         # NOTE(sileht): we use a counter to make each call unique in cassettes
         self._counter += 1
-        return typing.cast(
-            list[ForwardedEvent],
-            (
-                await self._session.request(
-                    "GET",
-                    f"{self.get_events_forwarder_url(test_id)}?counter={self._counter}",
-                    content=FAKE_DATA,
-                    headers={"X-Hub-Signature": "sha1=" + FAKE_HMAC},
-                )
-            ).json(),
+        resp = await self._session.request(
+            "GET",
+            f"{self.get_events_forwarder_url(test_id)}?counter={self._counter}",
+            content=FAKE_DATA,
+            headers={"X-Hub-Signature": "sha1=" + FAKE_HMAC},
         )
+        return typing.cast(list[ForwardedEvent], resp.json())
 
     async def _process_event(self, event: typing.Any, forward_to_engine: bool) -> None:
         payload = event["payload"]
