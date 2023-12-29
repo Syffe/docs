@@ -48,7 +48,7 @@ cmd = "./tools/run-tests.sh pytest -v --timeout_method thread mergify_engine/tes
 [tool.poe.tasks.record.env]
 MERGIFYENGINE_TEST_SETTINGS = "test.env"
 MERGIFYENGINE_TESTING_RECORD = "1"
-MERGIFYENGINE_TESTING_RECORD_EVENTS_WAITING_TIME.default = "30"
+MERGIFYENGINE_TESTING_RECORD_EVENTS_WAITING_TIME.default = "15"
 DD_DOGSTATSD_DISABLE = "1"
 DD_TRACE_ENABLED = "0"
 PYTEST_TIMEOUT = "3600"
@@ -60,7 +60,7 @@ cmd = "./tools/run-tests.sh pytest -vv --timeout_method thread -n auto --dist=lo
 [tool.poe.tasks.record-parallel.env]
 MERGIFYENGINE_TEST_SETTINGS = "test.env"
 MERGIFYENGINE_TESTING_RECORD = "1"
-MERGIFYENGINE_TESTING_RECORD_EVENTS_WAITING_TIME.default = "180"
+MERGIFYENGINE_TESTING_RECORD_EVENTS_WAITING_TIME.default = "30"
 DD_DOGSTATSD_DISABLE = "1"
 DD_TRACE_ENABLED = "0"
 PYTEST_TIMEOUT = "5400"
