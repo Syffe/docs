@@ -517,6 +517,9 @@ def dequeue_reason_from_outcome(
     outcome: train_car.TrainCarOutcome,
     pull_request: github_types.GitHubPullRequestNumber,
 ) -> queue_utils.BaseDequeueReason:
+    if outcome == merge_train.TrainCarOutcome.CONDITIONS_FAILED:
+        return queue_utils.PrDequeued(pull_request, ", merge conditions unmatch")
+
     if outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
         return queue_utils.ChecksFailed()
 

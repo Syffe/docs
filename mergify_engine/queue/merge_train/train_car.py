@@ -99,6 +99,7 @@ class TrainCarOutcome(enum.Enum):
 
     # Definitive failures
     CHECKS_TIMEOUT = "checks_timeout"
+    CONDITIONS_FAILED = "conditions_failed"
     CHECKS_FAILED = "checks_failed"
     DRAFT_PR_CHANGE = "draft_pr_change"
     UPDATED_PR_CHANGE = "updated_pr_change"
@@ -125,6 +126,7 @@ class TrainCarOutcome(enum.Enum):
 
     def is_failure(self) -> bool:
         return self in (
+            TrainCarOutcome.CONDITIONS_FAILED,
             TrainCarOutcome.CHECKS_FAILED,
             TrainCarOutcome.BRANCH_UPDATE_FAILED,
             TrainCarOutcome.DRAFT_PR_CHANGE,
@@ -1542,6 +1544,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
             if check.state not in ("success", "neutral")
         ]
 
+        # TODO(sileht): like we do for checks failure and related_checks,
+        # we can returns related_conditions for CONDITIONS_FAILED
         if (
             self.train_car_state.outcome
             in (
@@ -1961,8 +1965,48 @@ You don't need to do anything. Mergify will close this pull request automaticall
             self.checks_ended_timestamp = date.utcnow()
 
         if self.train_car_state.outcome.is_failure():
+            if self.train_car_state.outcome == TrainCarOutcome.CONDITIONS_FAILED:
+                # NOTE(sileht): Let's find which pull requests have a condition that unmatch
+                drop_pull_requests = set()
+                for pull_request in pull_requests:
+                    partial_outcome_from_conditions = (
+                        await checks_status.get_outcome_from_conditions(
+                            checked_ctxt.log,
+                            checked_ctxt.repository,
+                            [pull_request],
+                            evaluated_queue_rule.merge_conditions,
+                        )
+                    )
+                    if (
+                        partial_outcome_from_conditions
+                        == TrainCarOutcome.CONDITIONS_FAILED
+                    ):
+                        drop_pull_requests.add(
+                            typing.cast(
+                                condition_value_querier.QueuePullRequest
+                                | condition_value_querier.PullRequest,
+                                pull_request,
+                            ).context.pull["number"],
+                        )
+            else:
+                drop_pull_requests = {
+                    ep.user_pull_request_number
+                    for ep in self.still_queued_embarked_pulls
+                }
+
+            # circular import
+            from mergify_engine.queue.merge_train import train_car_state
+
+            dequeue_reasons = {
+                pull_request: train_car_state.dequeue_reason_from_outcome(
+                    self.train_car_state.outcome,
+                    pull_request,
+                )
+                for pull_request in drop_pull_requests
+            }
+
             # NOTE(sileht): This car failed and PRs inside are the culprit, report the failure and remove this car.
-            await self.train.remove_failed_car(self)
+            await self.train.remove_failed_car(self, dequeue_reasons)
         else:
             for pull_request in pull_requests:
                 await delayed_refresh.plan_next_refresh(
@@ -2094,6 +2138,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
         elif self.train_car_state.outcome == TrainCarOutcome.WAITING_FOR_CI:
             self.train_car_state.ci_state = merge_train_types.CiState.PENDING
             self.train_car_state.ci_ended_at = None
+        elif self.train_car_state.outcome == TrainCarOutcome.CONDITIONS_FAILED:
+            return
         else:
             raise RuntimeError(
                 f"Unhandled outcome_from_conditions: {self.train_car_state.outcome}",
@@ -2564,6 +2610,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 headline = f"🎉 This pull request has been checked successfully and will be merged {headline_detail}. 🎉"
             else:
                 headline = f"🎉 This combination of pull requests has been checked successfully and will be merged {headline_detail}. 🎉"
+
+        elif self.train_car_state.outcome == TrainCarOutcome.CONDITIONS_FAILED:
+            if len(self.initial_embarked_pulls) == 1:
+                headline = f"❌ This pull request has failed conditions. {self._get_user_refs()} will be removed from the queue. ❌"
+            else:
+                headline = f"❌ This combination of pull requests has failed conditions. One of {self._get_user_refs()} will be removed from the queue. ❌"
 
         elif self.train_car_state.outcome == TrainCarOutcome.CHECKS_FAILED:
             if len(self.initial_embarked_pulls) == 1:

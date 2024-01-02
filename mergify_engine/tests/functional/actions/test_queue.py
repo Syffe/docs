@@ -3275,6 +3275,119 @@ class TestQueueAction(base.FunctionalTestBase):
             == f"Pull request #{p2['number']} has been dequeued"
         )
 
+    async def test_unqueue_conditions_failed(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                        "label=queue",
+                    ],
+                    "speculative_checks": 1,
+                    "allow_inplace_checks": True,
+                    "batch_size": 3,
+                    "batch_max_wait_time": "0 s",
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "default merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr(two_commits=True)
+        p3 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.add_label(p3["number"], "queue")
+
+        # To force others to be rebased
+        p = await self.create_pr()
+        p_closed = await self.merge_pull(p["number"])
+        await self.run_engine()
+
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+        await self.run_engine()
+
+        q = await self.get_train()
+        assert p_closed["pull_request"]["merge_commit_sha"] is not None
+        await self.assert_merge_queue_contents(
+            q,
+            p_closed["pull_request"]["merge_commit_sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"], p2["number"], p3["number"]],
+                    [],
+                    p_closed["pull_request"]["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.DRAFT,
+                    tmp_pull_1["number"],
+                ),
+            ],
+        )
+
+        await self.remove_label(p1["number"], "queue")
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.run_engine()
+
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p_closed["pull_request"]["merge_commit_sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p2["number"], p3["number"]],
+                    [],
+                    p_closed["pull_request"]["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.DRAFT,
+                    tmp_pull_2["number"],
+                ),
+            ],
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request has been removed from the queue `default`"
+        )
+        assert check["output"]["summary"] is not None
+        assert check["output"]["summary"].startswith(
+            f"Pull request #{p1['number']} has been dequeued, merge conditions unmatch.",
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p3).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+
     async def test_unqueue_rule_unmatch_with_batch_requeue(self) -> None:
         rules = {
             "queue_rules": [

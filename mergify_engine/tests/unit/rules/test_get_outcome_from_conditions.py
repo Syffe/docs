@@ -116,14 +116,20 @@ async def test_rules_checks_basic() -> None:
     )
     conds = ["check-success=fake-ci", "label=foobar", "schedule=MON-FRI"]
 
-    # FIXME(sileht): add a new outcome when it not CI or schedule?
     # Label missing and nothing reported
-    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.CONDITIONS_FAILED,
+    )
 
-    # FIXME(sileht): add a new outcome when it not CI or schedule?
     # Label missing and success
     pull.attrs["check-success"] = ["fake-ci"]
-    await assert_queue_rule_checks_status(conds, pull, TrainCarOutcome.CHECKS_FAILED)
+    await assert_queue_rule_checks_status(
+        conds,
+        pull,
+        TrainCarOutcome.CONDITIONS_FAILED,
+    )
 
     # label ok and nothing reported
     pull.attrs["label"] = ["foobar"]

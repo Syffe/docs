@@ -745,14 +745,14 @@ class Train:
             additional_pull_requests=[pr_number],
         )
 
-    async def remove_failed_car(self, car: train_car.TrainCar) -> None:
-        dequeue_reasons = {
-            ep.user_pull_request_number: tcs_import.dequeue_reason_from_outcome(
-                car.train_car_state.outcome,
-                ep.user_pull_request_number,
-            )
-            for ep in car.still_queued_embarked_pulls
-        }
+    async def remove_failed_car(
+        self,
+        car: train_car.TrainCar,
+        dequeue_reasons: dict[
+            github_types.GitHubPullRequestNumber,
+            queue_utils.BaseDequeueReason,
+        ],
+    ) -> None:
         other_prs_reason = queue_utils.PrAheadDequeued(
             pr_number=car.still_queued_embarked_pulls[0].user_pull_request_number,
         )
@@ -764,13 +764,14 @@ class Train:
             drop_pull_requests=dequeue_reasons,
         )
         for i, ep in enumerate(car.still_queued_embarked_pulls):
-            await self._send_queue_leave_signal(
-                position + i,
-                ep,
-                car,
-                "merge queue internal",
-                dequeue_reasons[ep.user_pull_request_number],
-            )
+            if ep.user_pull_request_number in dequeue_reasons:
+                await self._send_queue_leave_signal(
+                    position + i,
+                    ep,
+                    car,
+                    "merge queue internal",
+                    dequeue_reasons[ep.user_pull_request_number],
+                )
 
         await self.save()
         await self.refresh_pulls(

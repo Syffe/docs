@@ -266,8 +266,7 @@ def fake_client() -> mock.Mock:
         ),
         (
             ["title!=awesome", "check-neutral:neutral", "check-success:success"],
-            # CONDITIONS_FAILED?
-            merge_queue.merge_train.TrainCarOutcome.CHECKS_FAILED,
+            merge_queue.merge_train.TrainCarOutcome.CONDITIONS_FAILED,
         ),
         (
             ["title=awesome", "check-neutral:neutral", "check-success:pending"],
@@ -283,7 +282,10 @@ def fake_client() -> mock.Mock:
         ),
         (
             ["title=awesome", "check-neutral:failure", "check-success:success"],
-            # CONDITIONS_FAILED?
+            merge_queue.merge_train.TrainCarOutcome.CHECKS_FAILED,
+        ),
+        (
+            ["title=awesome", "check-neutral:neutral", "check-success:failure"],
             merge_queue.merge_train.TrainCarOutcome.CHECKS_FAILED,
         ),
         (
@@ -306,7 +308,7 @@ def fake_client() -> mock.Mock:
                     ],
                 },
             ],
-            merge_queue.merge_train.TrainCarOutcome.CHECKS_FAILED,
+            merge_queue.merge_train.TrainCarOutcome.CONDITIONS_FAILED,
         ),
         (
             [

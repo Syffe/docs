@@ -157,6 +157,4 @@ async def get_outcome_from_conditions(
 
         raise RuntimeError("Unexpected _get_checks_result() return value")
 
-    # FIXME(sileht): this should be CONDITION_FAILED and then we should return which pull requests
-    # has a missing label or something to only unqueue this one.
-    return TrainCarOutcome.CHECKS_FAILED
+    return TrainCarOutcome.CONDITIONS_FAILED
