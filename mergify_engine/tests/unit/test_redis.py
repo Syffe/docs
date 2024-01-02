@@ -32,17 +32,18 @@ async def test_redis_stream_processor_ok(
     await redis_links.stream.xadd("test", {"foo": "bar1"})
     await redis_links.stream.xadd("test", {"foo": "bar2"})
     await redis_links.stream.xadd("test", {"foo": "bar3"})
+    await redis_links.stream.xadd("test", {"foo": "bar4"})
 
     processor = mock.AsyncMock()
     await redis_utils.process_stream(
         "awesome-task",
         redis_links.stream,
         "test",
-        batch_size=2,
+        batch_size=3,
         event_processor=processor,
     )
 
-    assert await redis_links.stream.xlen("test") == 0
+    assert await redis_links.stream.xlen("test") == 1
     assert processor.call_count == 3
     assert processor.mock_calls == [
         mock.call(anys.ANY_BYTES, {b"foo": b"bar1"}),
@@ -66,7 +67,7 @@ async def test_redis_stream_processor_error(
         "awesome-task",
         redis_links.stream,
         "test",
-        batch_size=2,
+        batch_size=3,
         event_processor=processor,
     )
 

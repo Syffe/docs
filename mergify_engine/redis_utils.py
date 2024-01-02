@@ -294,24 +294,6 @@ def get_expiration_minid(retention: datetime.timedelta) -> int:
     return int((date.utcnow() - retention).timestamp() * 1000)
 
 
-async def iter_stream(
-    stream: RedisStream,
-    stream_key: str,
-    batch_size: int,
-) -> abc.AsyncGenerator[tuple[bytes, dict[bytes, bytes]], None]:
-    min_stream_event_id = "-"
-
-    while stream_entry := await stream.xrange(
-        stream_key,
-        min=min_stream_event_id,
-        count=batch_size,
-    ):
-        for entry_id, entry_data in stream_entry:
-            yield entry_id, entry_data
-
-        min_stream_event_id = f"({entry_id.decode()}"
-
-
 async def iter_stream_reverse(
     stream: RedisStream,
     stream_key: str,
@@ -349,10 +331,9 @@ async def process_stream(
             event_name=event_name,
         )
     try:
-        async for event_id, event in iter_stream(
-            redis_stream,
+        for event_id, event in await redis_stream.xrange(
             redis_key,
-            batch_size=batch_size,
+            count=batch_size,
         ):
             events_count += 1
             try:
