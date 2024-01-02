@@ -1909,6 +1909,7 @@
     "VulnerabilityID": "CVE-2023-47038",
     "PkgName": "libperl5.32",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
     "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
     "Severity": "HIGH",
@@ -1918,6 +1919,7 @@
     "VulnerabilityID": "CVE-2023-47038",
     "PkgName": "perl",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
     "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
     "Severity": "HIGH",
@@ -1927,6 +1929,7 @@
     "VulnerabilityID": "CVE-2023-47038",
     "PkgName": "perl-base",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
     "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
     "Severity": "HIGH",
@@ -1936,6 +1939,7 @@
     "VulnerabilityID": "CVE-2023-47038",
     "PkgName": "perl-modules-5.32",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
     "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
     "Severity": "HIGH",
@@ -2103,5 +2107,14 @@
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-12-23T13:15:07.573Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-7104",
+    "PkgName": "libsqlite3-0",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7104",
+    "Title": "sqlite: heap-buffer-overflow at sessionfuzz",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-12-29T10:15:13.89Z"
   }
 ]
