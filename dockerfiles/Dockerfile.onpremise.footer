@@ -1,7 +1,7 @@
-FROM mergifyio/dashboard:${MERGIFYUI_VERSION} as js-ui
+FROM us-east1-docker.pkg.dev/on-premise-408210/pre-releases/dashboard:${MERGIFYUI_VERSION} as js-ui
 
 # hadolint ignore=DL3007
-FROM mergifyio/installer:${MERGIFYINSTALLER_VERSION} as js-installer
+FROM us-east1-docker.pkg.dev/on-premise-408210/pre-releases/installer:${MERGIFYINSTALLER_VERSION} as js-installer
 
 ### ON PREMISE ###
 # hadolint ignore=DL3006
