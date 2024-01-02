@@ -1,8 +1,5 @@
-import typing
 from unittest import mock
 
-from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine.tests.functional import base
@@ -10,37 +7,19 @@ from mergify_engine.tests.functional import base
 
 class TestSubscription(base.FunctionalTestBase):
     async def test_subscription(self) -> None:
-        async def fake_subscription(
-            _redis_cache: redis_utils.RedisCache,
-            _owner_id: github_types.GitHubAccountIdType,
-        ) -> subscription.Subscription:
-            if self.SUBSCRIPTION_ACTIVE:
-                features = frozenset(
-                    getattr(subscription.Features, f)
-                    for f in subscription.Features.__members__
-                )
-                all_features = [
-                    typing.cast(subscription.FeaturesLiteralT, f.value)
-                    for f in subscription.Features
-                ]
-            else:
-                features = frozenset([])
-                all_features = []
-
-            return subscription.Subscription(
-                self.redis_links.cache,
-                settings.TESTING_ORGANIZATION_ID,
-                "Abuse",
-                features,
-                all_features,
-            )
-
-        patcher = mock.patch(
-            "mergify_engine.subscription.Subscription._retrieve_subscription_from_db",
-            side_effect=fake_subscription,
+        self.register_mock(
+            mock.patch.object(
+                subscription.Subscription,
+                "_retrieve_subscription_from_db",
+                return_value=subscription.Subscription(
+                    self.redis_links.cache,
+                    settings.TESTING_ORGANIZATION_ID,
+                    "Abuse",
+                    frozenset([subscription.Features.PRIVATE_REPOSITORY]),
+                    [],
+                ),
+            ),
         )
-        patcher.start()
-        self.addCleanup(patcher.stop)
 
         await self.setup_repo()
         await self.create_pr()
