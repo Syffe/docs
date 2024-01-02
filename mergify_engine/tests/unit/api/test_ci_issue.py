@@ -1,3 +1,6 @@
+from collections import abc
+from unittest import mock
+
 import anys
 import pytest
 import respx
@@ -5,10 +8,22 @@ import sqlalchemy
 from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import settings
+from mergify_engine.config import types as config_types
 from mergify_engine.models import github as gh_models
 from mergify_engine.tests import conftest
 from mergify_engine.tests import utils as tests_utils
 from mergify_engine.tests.db_populator import DbPopulator
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _enable_ci_issues() -> abc.Generator[None, None, None]:
+    with mock.patch.object(
+        settings,
+        "LOG_EMBEDDER_ENABLED_ORGS",
+        config_types.StrListFromStrWithComma(["OneAccount", "colliding-account-1"]),
+    ):
+        yield
 
 
 @pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")

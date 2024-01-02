@@ -9,6 +9,7 @@ import sqlalchemy
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import pagination
+from mergify_engine import settings
 from mergify_engine.models import github as gh_models
 from mergify_engine.models.ci_issue import CiIssueGPT
 from mergify_engine.models.ci_issue import CiIssueStatus
@@ -18,7 +19,19 @@ from mergify_engine.web.api import security
 
 LOG = daiquiri.getLogger(__name__)
 
-router = fastapi.APIRouter(tags=["ci_issues"])
+
+async def has_log_embedder_enabled(
+    repository_ctxt: security.Repository,
+) -> None:
+    if repository_ctxt.installation.owner_login in settings.LOG_EMBEDDER_ENABLED_ORGS:
+        return
+    raise fastapi.HTTPException(403)
+
+
+router = fastapi.APIRouter(
+    tags=["ci_issues"],
+    dependencies=[fastapi.Security(has_log_embedder_enabled)],
+)
 
 
 @pydantic.dataclasses.dataclass
