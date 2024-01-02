@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import typing
 
 import daiquiri
@@ -363,11 +364,16 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
 
                 log = await gha_embedder.fetch_and_store_log(gcs_client, job)
 
+                assert job.log_extract is not None
                 assert (
-                    job.log_extract
-                    == "2023-11-21T16:30:32.4617760Z ##[group]Run echo I will fail on sha 841ec6924dab3ee7fdf09da82017dd30692a20cd run_attempt:1;exit 1\n2023-11-21T16:30:32.4619158Z \x1b[36;1mecho I will fail on sha 841ec6924dab3ee7fdf09da82017dd30692a20cd run_attempt:1;exit 1\x1b[0m\n2023-11-21T16:30:32.4633563Z shell: /usr/bin/bash -e {0}\n2023-11-21T16:30:32.4634022Z ##[endgroup]\n2023-11-21T16:30:32.4666136Z I will fail on sha 841ec6924dab3ee7fdf09da82017dd30692a20cd run_attempt:1\n2023-11-21T16:30:32.4668467Z ##[error]Process completed with exit code 1."
+                    len(
+                        re.findall(
+                            rf"I will fail on sha {pr['head']['sha']}",
+                            job.log_extract,
+                        ),
+                    )
+                    == 3
                 )
-
                 async with openai_api.OpenAIClient() as openai_client:
                     await gha_embedder.embed_log(openai_client, job, log)
 
