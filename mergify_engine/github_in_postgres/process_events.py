@@ -38,6 +38,7 @@ async def store_redis_events_in_pg(redis_links: redis_utils.RedisLinks) -> bool:
         redis_key="github_in_postgres",
         batch_size=settings.GITHUB_IN_POSTGRES_PROCESSING_BATCH_SIZE,
         event_processor=store_redis_event_in_pg,
+        trace=True,
     )
 
 
@@ -52,8 +53,10 @@ async def store_redis_event_in_pg(event_id: bytes, event: dict[bytes, bytes]) ->
             event_type,
         )
 
+    LOG.info("unpacking event '%s', id=%s", event_type, event_id)
     event_data = msgpack.unpackb(event[b"data"])
     model = EVENT_TO_MODEL_MAPPING[event_type]
+    LOG.info("validating event '%s', id=%s", event_type, event_id)
     try:
         typed_event_data = model.type_adapter.validate_python(event_data)
     except pydantic_core.ValidationError:
@@ -70,6 +73,7 @@ async def store_redis_event_in_pg(event_id: bytes, event: dict[bytes, bytes]) ->
         return
 
     async with database.create_session() as session:
+        LOG.info("inserting or updating event '%s', id=%s", event_type, event_id)
         try:
             # mypy thinks the typed_event_data can be, for example,
             # `CheckRun` for a "pull_request" event.
@@ -77,4 +81,6 @@ async def store_redis_event_in_pg(event_id: bytes, event: dict[bytes, bytes]) ->
         except exceptions.MergifyNotInstalled:
             # Just ignore event for uninstalled repository
             return
+        LOG.info("commiting event '%s', id=%s", event_type, event_id)
         await session.commit()
+    LOG.info("event proceed '%s', id=%s", event_type, event_id)
