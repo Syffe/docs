@@ -593,7 +593,7 @@ class CopyAction(actions.Action):
                 None,
                 types.Jinja2,
             ),
-            voluptuous.Required("branches", default=list): [str],
+            voluptuous.Required("branches", default=list): [types.BranchName],
             voluptuous.Required("regexes", default=list): [voluptuous.Coerce(Regex)],
             voluptuous.Required("ignore_conflicts", default=True): bool,
             voluptuous.Required("assignees", default=list): [types.Jinja2],

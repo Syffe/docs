@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import curses.ascii
 import dataclasses
 import re
 import typing
@@ -41,6 +42,54 @@ class LineColumnPath:
         if self.column is None:
             return f"line {self.line}"
         return f"line {self.line}, column {self.column}"
+
+
+def BranchName(value: typing.Any) -> str:
+    if value is None:
+        raise voluptuous.Invalid("Branch name cannot be null")
+    if not isinstance(value, str):
+        raise voluptuous.Invalid("Branch name must be a string")
+
+    # NOTE(sileht): From https://git-scm.com/docs/git-check-ref-format
+
+    # From 1.
+    if value.startswith(".") or value.endswith(".lock"):
+        raise voluptuous.Invalid("Branch name is invalid")
+
+    for forbidden in (
+        "..",  # From 3.,
+        "^",  # From 4.,
+        "~",  # From 4.,
+        ":",  # From 4.,
+        " ",  # From 4.,
+        "?",  # From 5.
+        "*",  # From 5.
+        "[",  # From 5.
+        "//",  # From 6.
+        "@{",  # From 8.
+        "\\",  # From 10.
+    ):
+        if forbidden in value:
+            raise voluptuous.Invalid("Branch name is invalid")
+
+    # From 4.
+    for char in value:
+        if curses.ascii.iscntrl(char):
+            raise voluptuous.Invalid("Branch name is invalid")
+
+    # From 6.
+    if value.startswith("/") or value.endswith("/"):
+        raise voluptuous.Invalid("Branch name is invalid")
+
+    # From 7.
+    if value.endswith("."):
+        raise voluptuous.Invalid("Branch name is invalid")
+
+    # From 9.
+    if value == "@":
+        raise voluptuous.Invalid("Branch name is invalid")
+
+    return value
 
 
 def Jinja2(

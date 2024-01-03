@@ -196,3 +196,45 @@ def test_repository_name_format_forbidden_name(name: str) -> None:
         voluptuous.Schema(types.GitHubRepositoryName)(name)
 
     assert x.value.error_message == f"Repository name '{name}' is forbidden"
+
+
+@pytest.mark.parametrize(
+    "name",
+    (
+        "foobar",
+        "foo/bar",
+        "foo/bar/bar",
+        "foo.bar",
+    ),
+)
+def test_branch_name_format_valid_name(name: str) -> None:
+    assert name == voluptuous.Schema(types.BranchName)(name)
+
+
+@pytest.mark.parametrize(
+    "name",
+    (
+        "foo..bar",
+        "foo bar",
+        ".yo",
+        ".lock",
+        "\x00sowrong\x00",
+        "hidden\x1fhidden",
+        "foo~bar",
+        "foo^bar",
+        "@",
+        "foo@{bar",
+        "foo?bar",
+        "/foobar",
+        "foo//bar",
+        "/foo/bar",
+        "foobar/",
+        "foo/bar/",
+        "\\escapedslack",
+    ),
+)
+def test_branch_name_format_invalid_name(name: str) -> None:
+    with pytest.raises(voluptuous.Invalid) as x:
+        voluptuous.Schema(types.BranchName)(name)
+
+    assert x.value.error_message == "Branch name is invalid"
