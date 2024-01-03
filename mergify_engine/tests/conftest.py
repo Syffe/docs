@@ -12,6 +12,7 @@ from unittest import mock
 import uuid
 
 import asgi_lifespan
+from datadog import statsd  # type: ignore[attr-defined]
 import fastapi
 import httpx
 import imia
@@ -523,3 +524,8 @@ def _prepare_google_cloud_storage_setup(
         yield
     finally:
         bucket.delete(force=True)
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _mock_datadog() -> None:
+    statsd.socket = mock.Mock()  # type: ignore[assignment]
