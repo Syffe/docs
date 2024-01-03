@@ -242,6 +242,16 @@ class CiIssueGPT(models.Base, CiIssueMixin):
         lazy="raise_on_sql",
     )
 
+    @sqlalchemy.orm.declared_attr
+    def events_count(cls) -> orm.Mapped[int]:
+        return orm.deferred(
+            sqlalchemy.select(sqlalchemy.func.count())
+            .where(
+                gh_models.WorkflowJobLogMetadata.ci_issue_id == cls.id,
+            )
+            .scalar_subquery(),
+        )
+
     @classmethod
     async def insert(
         cls,

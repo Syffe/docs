@@ -44,7 +44,7 @@ class CiIssueEvent:
 
 
 @pydantic.dataclasses.dataclass
-class CiIssueResponse:
+class CiIssueDetailResponse:
     id: int
     short_id: str
     name: str
@@ -55,9 +55,22 @@ class CiIssueResponse:
     )
 
 
-class CiIssuesResponse(pagination.PageResponse[CiIssueResponse]):
+@pydantic.dataclasses.dataclass
+class CiIssueListResponse:
+    id: int
+    short_id: str
+    name: str
+    job_name: str
+    status: CiIssueStatus
+    events_count: int
+    events: list[CiIssueEvent] = dataclasses.field(
+        metadata={"description": "Event link to this CiIssue"},
+    )
+
+
+class CiIssuesListResponse(pagination.PageResponse[CiIssueListResponse]):
     items_key: typing.ClassVar[str] = "issues"
-    issues: list[CiIssueResponse] = dataclasses.field(
+    issues: list[CiIssueListResponse] = dataclasses.field(
         metadata={"description": "List of CiIssue"},
     )
 
@@ -70,7 +83,7 @@ class CiIssueBody(pydantic.BaseModel):
     "/repos/{owner}/{repository}/ci_issues",
     summary="Get CI issues",
     description="Get CI issues",
-    response_model=CiIssuesResponse,
+    response_model=CiIssuesListResponse,
     include_in_schema=False,
     responses=api.default_responses,
 )
@@ -82,10 +95,11 @@ async def get_ci_issues(
         tuple[CiIssueStatus, ...],
         fastapi.Query(description="CI issue status"),
     ] = (CiIssueStatus.UNRESOLVED,),
-) -> CiIssuesResponse:
+) -> CiIssuesListResponse:
     stmt = (
         sqlalchemy.select(CiIssueGPT)
         .options(
+            sqlalchemy.orm.undefer(CiIssueGPT.events_count),
             sqlalchemy.orm.joinedload(CiIssueGPT.log_metadata)
             .load_only(gh_models.WorkflowJobLogMetadata.id)
             .options(
@@ -163,12 +177,13 @@ async def get_ci_issues(
             continue
 
         issues.append(
-            CiIssueResponse(
+            CiIssueListResponse(
                 id=ci_issue.id,
                 short_id=ci_issue.short_id,
                 name=ci_issue.name or "<unknown>",
                 job_name=ci_issue.log_metadata[0].workflow_job.name_without_matrix,
                 status=ci_issue.status,
+                events_count=ci_issue.events_count,
                 # TODO(sileht): make the order by with ORM
                 events=sorted(events, key=lambda e: e.started_at, reverse=True),
             ),
@@ -177,13 +192,13 @@ async def get_ci_issues(
     first_issue_id = issues[0].id if issues else None
     last_issue_id = issues[-1].id if issues else None
 
-    page_response: pagination.Page[CiIssueResponse] = pagination.Page(
+    page_response: pagination.Page[CiIssueListResponse] = pagination.Page(
         items=issues,
         current=page,
         cursor_prev=page.cursor.previous(first_issue_id, last_issue_id),
         cursor_next=page.cursor.next(first_issue_id, last_issue_id),
     )
-    return CiIssuesResponse(page=page_response)  # type: ignore[call-arg]
+    return CiIssuesListResponse(page=page_response)  # type: ignore[call-arg]
 
 
 @router.patch(
@@ -215,7 +230,7 @@ async def patch_ci_issues(
     "/repos/{owner}/{repository}/ci_issues/{ci_issue_id}",
     summary="Get a CI issue",
     description="Get a CI issue",
-    response_model=CiIssueResponse,
+    response_model=CiIssueDetailResponse,
     include_in_schema=False,
     responses={
         **api.default_responses,  # type: ignore[dict-item]
@@ -229,7 +244,7 @@ async def get_ci_issue(
         int,
         fastapi.Path(description="The ID of the CI Issue"),
     ],
-) -> CiIssueResponse:
+) -> CiIssueDetailResponse:
     stmt = (
         sqlalchemy.select(CiIssueGPT)
         .options(
@@ -279,7 +294,7 @@ async def get_ci_issue(
             ),
         )
 
-    return CiIssueResponse(
+    return CiIssueDetailResponse(
         id=ci_issue.id,
         short_id=ci_issue.short_id,
         name=ci_issue.name or "<unknown>",
