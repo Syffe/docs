@@ -95,6 +95,7 @@ def init_sqlalchemy(service_name: str) -> None:
             json.loads,
             object_hook=decode_database_json,
         ),
+        connect_args={"application_name": "engine"},
     )
     ddtrace.Pin.override(async_engine.sync_engine, service="engine-db")
 
