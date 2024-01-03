@@ -107,7 +107,7 @@ jobs:
       - name: Run Trivy secrets scanner 🔍
         # yamllint disable-line rule:line-length
         # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
-        uses: aquasecurity/trivy-action@0.16.0
+        uses: aquasecurity/trivy-action@0.16.1
         with:
           scan-type: fs
           scan-ref: ./zfixtures/cassettes
