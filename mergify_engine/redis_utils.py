@@ -318,18 +318,9 @@ async def process_stream(
     redis_key: str,
     batch_size: int,
     event_processor: abc.Callable[[bytes, dict[bytes, bytes]], abc.Awaitable[None]],
-    trace: bool = False,
 ) -> bool:
     events_count = 0
     ids_to_delete: set[bytes] = set()
-
-    if trace:
-        LOG.info(
-            "itering stream '%s'",
-            redis_key,
-            batch_size=batch_size,
-            event_name=event_name,
-        )
     try:
         for event_id, event in await redis_stream.xrange(
             redis_key,
@@ -339,8 +330,6 @@ async def process_stream(
             try:
                 await event_processor(event_id, event)
             except Exception as e:
-                if trace:
-                    LOG.info("processing event id=%s failed", event_id, exc_info=True)
                 if not exceptions.should_be_ignored(e):
                     log_level = (
                         logging.ERROR
@@ -363,16 +352,6 @@ async def process_stream(
 
     finally:
         if ids_to_delete:
-            LOG.info("deleting %d event to delete", len(ids_to_delete))
             await redis_stream.xdel(redis_key, *ids_to_delete)
 
-    if trace:
-        LOG.info(
-            "stream processing resume",
-            event_name=event_name,
-            redis_key=redis_key,
-            events_delete=len(ids_to_delete),
-            events_count=events_count,
-            batch_size=batch_size,
-        )
     return events_count == batch_size
