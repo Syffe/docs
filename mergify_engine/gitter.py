@@ -97,7 +97,7 @@ GIT_MESSAGE_TO_EXCEPTION: dict[
 @dataclasses.dataclass
 class Gitter:
     logger: "logging.LoggerAdapter[logging.Logger]"
-    _temporary_directory: str | None = dataclasses.field(default=None, init=False)
+    _temporary_directory: str | None = dataclasses.field(init=False, default=None)
     _messages: list[tuple[str, dict[str, typing.Any]]] = dataclasses.field(
         init=False,
         default_factory=list,
@@ -107,6 +107,11 @@ class Gitter:
     GIT_COMMAND_TIMEOUT: float = dataclasses.field(
         init=False,
         default=datetime.timedelta(minutes=10).total_seconds(),
+    )
+    # This is just so the tests can modify this value if needed
+    CREDENTIALS_CACHE_TIMEOUT_SECONDS: int = dataclasses.field(
+        init=False,
+        default=int(datetime.timedelta(minutes=5).total_seconds()),
     )
 
     def __post_init__(self) -> None:
@@ -161,7 +166,7 @@ class Gitter:
             await self(
                 "config",
                 "credential.helper",
-                f"cache --timeout=300 --socket={self._temporary_directory}/.git-creds-socket",
+                f"cache --timeout={self.CREDENTIALS_CACHE_TIMEOUT_SECONDS} --socket={self._temporary_directory}/.git-creds-socket",
             )
             # Setting the number of checkout workers to 0 will use as many workers
             # as there are logical cores on the machine.

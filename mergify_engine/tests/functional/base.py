@@ -101,6 +101,8 @@ class Record(RecordExc):
 class GitterRecorder(gitter.Gitter):
     cassette_library_dir: dataclasses.InitVar[str]
     cassette_library_dir_suffix: dataclasses.InitVar[str]
+    _credentials_cache_timeout_seconds: int | None = dataclasses.field(default=None)
+
     cassette_path: str = dataclasses.field(init=False)
     records: list[Record] = dataclasses.field(init=False)
 
@@ -118,6 +120,11 @@ class GitterRecorder(gitter.Gitter):
             self.records: list[Record] = []
         else:
             self.load_records()
+
+        if self._credentials_cache_timeout_seconds:
+            self.CREDENTIALS_CACHE_TIMEOUT_SECONDS = (
+                self._credentials_cache_timeout_seconds
+            )
 
     def load_records(self) -> None:
         if not os.path.exists(self.cassette_path):
@@ -372,7 +379,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         signals.register()
         self.addCleanup(signals.unregister)
 
-        self.git = self.get_gitter(LOG)
+        self.git = self.get_gitter(LOG, creds_cache_timeout=900)
         await self.git.init()
         self.addAsyncCleanup(self.git.cleanup)
 
@@ -779,9 +786,16 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     def get_gitter(
         self,
         logger: "logging.LoggerAdapter[logging.Logger]",
+        # `None` = use default value inside `gitter.Gitter`
+        creds_cache_timeout: int | None = None,
     ) -> GitterRecorder:
         self.git_counter += 1
-        return GitterRecorder(logger, self.cassette_library_dir, str(self.git_counter))
+        return GitterRecorder(
+            logger,
+            self.cassette_library_dir,
+            str(self.git_counter),
+            creds_cache_timeout,
+        )
 
     async def setup_repo(
         self,

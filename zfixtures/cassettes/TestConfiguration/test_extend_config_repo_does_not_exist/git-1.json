@@ -45,7 +45,7 @@
         "args": [
             "config",
             "credential.helper",
-            "cache --timeout=300 --socket=/tmp/mergify-gitter<random>/.git-creds-socket"
+            "cache --timeout=900 --socket=/tmp/mergify-gitter<random>/.git-creds-socket"
         ],
         "kwargs": {},
         "out": ""
