@@ -228,7 +228,7 @@ def fake_full_pull_request(
         "assignees": [],
         "requested_reviewers": [
             {
-                "id": github_types.GitHubAccountIdType(123),
+                "id": github_types.GitHubAccountIdType(789),
                 "type": "User",
                 "login": github_types.GitHubLogin("jd"),
                 "avatar_url": "",
