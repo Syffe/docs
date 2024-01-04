@@ -2444,7 +2444,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # Check event logs
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=5",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=10",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -2480,6 +2480,21 @@ class TestQueueAction(base.FunctionalTestBase):
                     "repository": self.repository_ctxt.repo["full_name"],
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: Merge",
+                },
+                {
+                    "base_ref": self.main_branch_name,
+                    "id": anys.ANY_INT,
+                    "metadata": {
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
+                        "queue_name": "default",
+                        "running_checks": 0,
+                        "size": 0,
+                    },
+                    "pull_request": p1["number"],
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
+                    "repository": p1["base"]["repo"]["full_name"],
+                    "trigger": "Rule: Merge",
+                    "type": "action.queue.change",
                 },
                 {
                     "id": anys.ANY_INT,
@@ -2554,9 +2569,24 @@ class TestQueueAction(base.FunctionalTestBase):
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: Queue",
                 },
+                {
+                    "base_ref": self.main_branch_name,
+                    "id": anys.ANY_INT,
+                    "metadata": {
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
+                        "queue_name": "default",
+                        "running_checks": 0,
+                        "size": 1,
+                    },
+                    "pull_request": p1["number"],
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
+                    "repository": p1["base"]["repo"]["full_name"],
+                    "trigger": "Rule: Queue",
+                    "type": "action.queue.change",
+                },
             ],
-            "per_page": 5,
-            "size": 5,
+            "per_page": 10,
+            "size": 7,
         }
 
     async def test_basic_queue(self) -> None:
@@ -3066,7 +3096,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # Check event logs
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=5",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=10",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -3106,6 +3136,21 @@ class TestQueueAction(base.FunctionalTestBase):
                     "repository": self.repository_ctxt.repo["full_name"],
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: default merge",
+                },
+                {
+                    "base_ref": self.main_branch_name,
+                    "id": anys.ANY_INT,
+                    "metadata": {
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
+                        "queue_name": "default",
+                        "running_checks": 0,
+                        "size": 1,
+                    },
+                    "pull_request": p1["number"],
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
+                    "repository": p1["base"]["repo"]["full_name"],
+                    "trigger": "Rule: default merge",
+                    "type": "action.queue.change",
                 },
                 {
                     "id": anys.ANY_INT,
@@ -3178,9 +3223,24 @@ class TestQueueAction(base.FunctionalTestBase):
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: default merge",
                 },
+                {
+                    "base_ref": self.main_branch_name,
+                    "id": anys.ANY_INT,
+                    "metadata": {
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
+                        "queue_name": "default",
+                        "running_checks": 0,
+                        "size": 1,
+                    },
+                    "pull_request": p1["number"],
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
+                    "repository": p1["base"]["repo"]["full_name"],
+                    "trigger": "Rule: default merge",
+                    "type": "action.queue.change",
+                },
             ],
-            "per_page": 5,
-            "size": 5,
+            "per_page": 10,
+            "size": 7,
         }
 
     async def test_unqueue_rule_unmatches(self) -> None:
@@ -3501,7 +3561,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=2",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=3",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -3527,6 +3587,21 @@ class TestQueueAction(base.FunctionalTestBase):
                     "base_ref": self.main_branch_name,
                     "received_at": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "Rule: default merge",
+                },
+                {
+                    "base_ref": self.main_branch_name,
+                    "id": anys.ANY_INT,
+                    "metadata": {
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
+                        "queue_name": "default",
+                        "running_checks": 0,
+                        "size": 2,
+                    },
+                    "pull_request": p1["number"],
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
+                    "repository": p1["base"]["repo"]["full_name"],
+                    "trigger": "Rule: default merge",
+                    "type": "action.queue.change",
                 },
                 {
                     "id": anys.ANY_INT,
@@ -3565,8 +3640,8 @@ class TestQueueAction(base.FunctionalTestBase):
                     "trigger": "merge queue internal",
                 },
             ],
-            "per_page": 2,
-            "size": 2,
+            "per_page": 3,
+            "size": 3,
         }
 
     async def test_unqueue_command_with_batch_requeue(self) -> None:
@@ -9034,7 +9109,7 @@ pull_request_rules:
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p2['number']}&per_page=5",
         )
-        assert len(r.json()["events"]) == 3
+        assert len(r.json()["events"]) == 5
         assert r.json()["events"][1]["type"] == "action.queue.leave"
         assert r.json()["events"][1]["metadata"]["reason"] == (
             "The pull request conflicts with the base branch"

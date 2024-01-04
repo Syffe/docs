@@ -502,7 +502,7 @@ async def send(
 @typing.overload
 async def send(
     repository: "context.Repository",
-    pull_request: None,
+    pull_request: github_types.GitHubPullRequestNumber | None,
     base_ref: github_types.GitHubRefType,
     event: typing.Literal["action.queue.change"],
     metadata: EventQueueChangeMetadata,

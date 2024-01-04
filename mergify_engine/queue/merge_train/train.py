@@ -177,8 +177,8 @@ class Train:
         await pipe.execute()
         return False
 
-    def get_queue_names(self) -> list[qr_config.QueueName]:
-        return [p.config["name"] for p, _ in self._iter_embarked_pulls()]
+    def get_queue_names(self) -> set[qr_config.QueueName]:
+        return {p.config["name"] for p, _ in self._iter_embarked_pulls()}
 
     def get_car(self, ctxt: context.Context) -> train_car.TrainCar | None:
         return first.first(
@@ -600,6 +600,12 @@ class Train:
                 queue_name=config["name"],
                 **self.log_queue_extras,
             )
+
+            await self._send_queue_change_signal(
+                pull_request=ctxt.pull["number"],
+                signal_trigger=signal_trigger,
+            )
+
             await signals.send(
                 ctxt.repository,
                 ctxt.pull["number"],
@@ -651,6 +657,8 @@ class Train:
         signal_trigger: str,
         dequeue_reason: queue_utils.PrMerged,
     ) -> None:
+        queue_names_before_change = self.get_queue_names()
+
         embarked_pull = self._cars[0].still_queued_embarked_pulls[0]
         if embarked_pull.user_pull_request_number != pr_number:
             raise RuntimeError("The head of train is not the expected pull_request")
@@ -702,6 +710,12 @@ class Train:
             priority_first_pull_request=worker_pusher.Priority.immediate,
         )
 
+        await self._send_queue_change_signal(
+            queue_names_before_change,
+            pr_number,
+            signal_trigger,
+        )
+
         await signals.send(
             self.convoy.repository,
             pr_number,
@@ -717,6 +731,8 @@ class Train:
         signal_trigger: str,
         dequeue_reason: queue_utils.BaseDequeueReason,
     ) -> None:
+        queue_names_before_change = self.get_queue_names()
+
         position, embarked_pull_with_car = self.find_embarked_pull(pr_number)
         if position is None or embarked_pull_with_car is None:
             return
@@ -739,6 +755,7 @@ class Train:
             embarked_pull_with_car.car,
             signal_trigger,
             dequeue_reason,
+            queue_names_before_change,
         )
         await self.refresh_pulls(
             source=f"pull {pr_number} removed from queue",
@@ -753,6 +770,8 @@ class Train:
             queue_utils.BaseDequeueReason,
         ],
     ) -> None:
+        queue_names_before_change = self.get_queue_names()
+
         other_prs_reason = queue_utils.PrAheadDequeued(
             pr_number=car.still_queued_embarked_pulls[0].user_pull_request_number,
         )
@@ -771,6 +790,7 @@ class Train:
                     car,
                     "merge queue internal",
                     dequeue_reasons[ep.user_pull_request_number],
+                    queue_names_before_change,
                 )
 
         await self.save()
@@ -787,7 +807,14 @@ class Train:
         signal_trigger: str,
         # FIXME(jd): This should accept only BaseDequeueReason
         dequeue_reason: queue_utils.BaseQueueCancelReason,
+        queue_names_before_change: typing.Iterable[qr_config.QueueName],
     ) -> None:
+        await self._send_queue_change_signal(
+            queue_names_before_change,
+            embarked_pull.user_pull_request_number,
+            signal_trigger,
+        )
+
         event_metadata = signals.EventQueueLeaveMetadata(
             {
                 "branch": self.convoy.ref,
@@ -1530,6 +1557,8 @@ class Train:
     async def _send_queue_change_signal(
         self,
         queue_names_before_change: typing.Iterable[qr_config.QueueName] = (),
+        pull_request: github_types.GitHubPullRequestNumber | None = None,
+        signal_trigger: str = "merge queue internal",
     ) -> None:
         @dataclasses.dataclass
         class _QueueData:
@@ -1566,9 +1595,9 @@ class Train:
             )
             await signals.send(
                 self.convoy.repository,
-                None,
+                pull_request,
                 self.convoy.ref,
                 "action.queue.change",
                 event_metadata,
-                "merge queue internal",
+                signal_trigger,
             )

@@ -348,6 +348,21 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "trigger": "Rule: queueit",
             },
             {
+                "base_ref": self.main_branch_name,
+                "id": anys.ANY_INT,
+                "metadata": {
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
+                    "queue_name": "default",
+                    "running_checks": 0,
+                    "size": 0,
+                },
+                "pull_request": p1["number"],
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
+                "repository": p1["base"]["repo"]["full_name"],
+                "trigger": "Rule: queueit",
+                "type": "action.queue.change",
+            },
+            {
                 "id": anys.ANY_INT,
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
@@ -418,6 +433,21 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 },
                 "trigger": "Rule: queueit",
             },
+            {
+                "base_ref": self.main_branch_name,
+                "id": anys.ANY_INT,
+                "metadata": {
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
+                    "queue_name": "default",
+                    "running_checks": 0,
+                    "size": 1,
+                },
+                "pull_request": p1["number"],
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
+                "repository": p1["base"]["repo"]["full_name"],
+                "trigger": "Rule: queueit",
+                "type": "action.queue.change",
+            },
         ]
 
         repo_expected_events = [
@@ -455,6 +485,21 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "seconds_waiting_for_freeze": mock.ANY,
                 },
                 "trigger": "Rule: queueit",
+            },
+            {
+                "base_ref": self.main_branch_name,
+                "id": anys.ANY_INT,
+                "metadata": {
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
+                    "queue_name": "default",
+                    "running_checks": 0,
+                    "size": 0,
+                },
+                "pull_request": p1["number"],
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
+                "repository": p1["base"]["repo"]["full_name"],
+                "trigger": "Rule: queueit",
+                "type": "action.queue.change",
             },
             {
                 "id": anys.ANY_INT,
@@ -597,26 +642,41 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 },
                 "trigger": "Rule: queueit",
             },
+            {
+                "base_ref": self.main_branch_name,
+                "id": anys.ANY_INT,
+                "metadata": {
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
+                    "queue_name": "default",
+                    "running_checks": 0,
+                    "size": 1,
+                },
+                "pull_request": p1["number"],
+                "received_at": anys.ANY_AWARE_DATETIME_STR,
+                "repository": p1["base"]["repo"]["full_name"],
+                "trigger": "Rule: queueit",
+                "type": "action.queue.change",
+            },
         ]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p1['number']}&per_page=20",
         )
         assert r.status_code == 200
         assert r.json() == {
             "events": p1_expected_events,
-            "per_page": 10,
-            "size": 5,
+            "per_page": 20,
+            "size": 7,
         }
 
         r = await self.admin_app.get(
-            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?per_page=20",
         )
         assert r.status_code == 200
         assert r.json() == {
             "events": repo_expected_events,
-            "per_page": 10,
-            "size": 9,
+            "per_page": 20,
+            "size": 11,
         }
 
     async def test_incomplete_eventlogs_metadata(self) -> None:
