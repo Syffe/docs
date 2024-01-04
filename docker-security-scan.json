@@ -7,6 +7,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2005-2541",
     "Title": "tar: does not properly warn the user when extracting setuid or setgid files",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2005-08-10T04:00:00Z"
   },
   {
@@ -17,6 +22,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2243",
     "Title": "OpenSSH 4.6 and earlier, when ChallengeResponseAuthentication is enabl ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2007-04-25T16:19:00Z"
   },
   {
@@ -27,6 +36,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2243",
     "Title": "OpenSSH 4.6 and earlier, when ChallengeResponseAuthentication is enabl ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2007-04-25T16:19:00Z"
   },
   {
@@ -37,6 +50,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2243",
     "Title": "OpenSSH 4.6 and earlier, when ChallengeResponseAuthentication is enabl ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2007-04-25T16:19:00Z"
   },
   {
@@ -47,6 +64,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2768",
     "Title": "OpenSSH, when using OPIE (One-Time Passwords in Everything) for PAM, a ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2007-05-21T20:30:00Z"
   },
   {
@@ -57,6 +79,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2768",
     "Title": "OpenSSH, when using OPIE (One-Time Passwords in Everything) for PAM, a ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2007-05-21T20:30:00Z"
   },
   {
@@ -67,6 +94,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2768",
     "Title": "OpenSSH, when using OPIE (One-Time Passwords in Everything) for PAM, a ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2007-05-21T20:30:00Z"
   },
   {
@@ -77,6 +109,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-5686",
     "Title": "initscripts in rPath Linux 1 sets insecure permissions for the /var/lo ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2007-10-28T17:08:00Z"
   },
   {
@@ -87,6 +123,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-5686",
     "Title": "initscripts in rPath Linux 1 sets insecure permissions for the /var/lo ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2007-10-28T17:08:00Z"
   },
   {
@@ -97,6 +137,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-6755",
     "Title": "Dual_EC_DRBG: weak pseudo random number generator",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2013-10-11T22:55:33.58Z"
   },
   {
@@ -107,6 +152,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-6755",
     "Title": "Dual_EC_DRBG: weak pseudo random number generator",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2013-10-11T22:55:33.58Z"
   },
   {
@@ -117,6 +167,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2008-3234",
     "Title": "sshd in OpenSSH 4 on Debian GNU/Linux, and the 20070303 OpenSSH snapsh ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2008-07-18T16:41:00Z"
   },
   {
@@ -127,6 +181,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2008-3234",
     "Title": "sshd in OpenSSH 4 on Debian GNU/Linux, and the 20070303 OpenSSH snapsh ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2008-07-18T16:41:00Z"
   },
   {
@@ -137,6 +195,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2008-3234",
     "Title": "sshd in OpenSSH 4 on Debian GNU/Linux, and the 20070303 OpenSSH snapsh ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2008-07-18T16:41:00Z"
   },
   {
@@ -147,6 +209,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-0928",
     "Title": "openssl: RSA authentication weakness",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2010-03-05T19:30:00.797Z"
   },
   {
@@ -157,6 +224,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-0928",
     "Title": "openssl: RSA authentication weakness",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2010-03-05T19:30:00.797Z"
   },
   {
@@ -167,6 +239,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-4651",
     "Title": "patch: directory traversal flaw allows for arbitrary file creation",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2011-03-11T22:55:02.09Z"
   },
   {
@@ -177,6 +255,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-4756",
     "Title": "glibc: glob implementation can cause excessive CPU and memory consumption due to crafted glob expressions",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2011-03-02T20:00:01.037Z"
   },
   {
@@ -187,6 +270,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-4756",
     "Title": "glibc: glob implementation can cause excessive CPU and memory consumption due to crafted glob expressions",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2011-03-02T20:00:01.037Z"
   },
   {
@@ -197,6 +285,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-3389",
     "Title": "HTTPS: block-wise chosen-plaintext attack against SSL/TLS (BEAST)",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 4,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 4,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2011-09-06T19:55:03.197Z"
   },
   {
@@ -207,6 +303,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
     "Title": "perl: File::Temp insecure temporary file handling",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2020-01-31T18:15:11.343Z"
   },
   {
@@ -217,6 +318,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
     "Title": "perl: File::Temp insecure temporary file handling",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2020-01-31T18:15:11.343Z"
   },
   {
@@ -227,6 +333,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
     "Title": "perl: File::Temp insecure temporary file handling",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2020-01-31T18:15:11.343Z"
   },
   {
@@ -237,6 +348,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
     "Title": "perl: File::Temp insecure temporary file handling",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2020-01-31T18:15:11.343Z"
   },
   {
@@ -247,6 +363,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2012-2663",
     "Title": "iptables: --syn flag bypass",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2014-02-15T14:57:07.423Z"
   },
   {
@@ -257,6 +378,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2012-2663",
     "Title": "iptables: --syn flag bypass",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2014-02-15T14:57:07.423Z"
   },
   {
@@ -267,6 +393,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-0340",
     "Title": "expat: internal entity expansion",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2014-01-21T18:55:09.117Z"
   },
   {
@@ -277,6 +409,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4235",
     "Title": "shadow-utils: TOCTOU race conditions by copying and removing directory trees",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2019-12-03T15:15:10.963Z"
   },
   {
@@ -287,6 +426,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4235",
     "Title": "shadow-utils: TOCTOU race conditions by copying and removing directory trees",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2019-12-03T15:15:10.963Z"
   },
   {
@@ -297,6 +443,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
     "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 2
+    },
     "PublishedDate": "2013-10-28T22:55:03.773Z"
   },
   {
@@ -307,6 +458,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
     "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 2
+    },
     "PublishedDate": "2013-10-28T22:55:03.773Z"
   },
   {
@@ -317,6 +473,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
     "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 2
+    },
     "PublishedDate": "2013-10-28T22:55:03.773Z"
   },
   {
@@ -327,6 +488,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
     "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 2
+    },
     "PublishedDate": "2013-10-28T22:55:03.773Z"
   },
   {
@@ -337,6 +503,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2015-3276",
     "Title": "incorrect multi-keyword mode cipherstring parsing",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2015-12-07T20:59:03.023Z"
   },
   {
@@ -347,6 +521,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-1585",
     "Title": "In all versions of AppArmor mount rules are accidentally widened when  ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 1,
+      "debian": 1,
+      "nvd": 4,
+      "ubuntu": 2
+    },
     "PublishedDate": "2019-04-22T16:29:01.303Z"
   },
   {
@@ -357,6 +537,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-20012",
     "Title": "openssh: Public key information leak",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2021-09-15T20:15:07.31Z"
   },
   {
@@ -367,6 +554,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-20012",
     "Title": "openssh: Public key information leak",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2021-09-15T20:15:07.31Z"
   },
   {
@@ -377,6 +571,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-20012",
     "Title": "openssh: Public key information leak",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2021-09-15T20:15:07.31Z"
   },
   {
@@ -387,6 +588,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-11164",
     "Title": "OP_KETRMAX feature in the match function in pcre_exec.c",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "photon": 3,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2017-07-11T03:29:00.277Z"
   },
   {
@@ -397,6 +605,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-14159",
     "Title": "openldap: Privilege escalation via PID file manipulation",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2017-09-05T18:29:00.133Z"
   },
   {
@@ -407,6 +620,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-16231",
     "Title": "pcre: self-recursive call in match() in pcre_exec.c leads to denial of service",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2019-03-21T15:59:56.217Z"
   },
   {
@@ -417,6 +636,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-17740",
     "Title": "openldap: contrib/slapd-modules/nops/nops.c attempts to free stack buffer allowing remote attackers to cause a denial of service",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2017-12-18T06:29:00.397Z"
   },
   {
@@ -427,6 +651,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-18018",
     "Title": "coreutils: race condition vulnerability in chown and chgrp",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2018-01-04T04:29:00.19Z"
   },
   {
@@ -437,6 +666,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-7245",
     "Title": "stack-based buffer overflow write in pcre32_copy_substring",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2017-03-23T21:59:00.193Z"
   },
   {
@@ -447,6 +681,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-7246",
     "Title": "stack-based buffer overflow write in pcre32_copy_substring",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2017-03-23T21:59:00.223Z"
   },
   {
@@ -457,6 +696,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-1000021",
     "Title": "client prints server-sent ANSI escape codes to the terminal, allowing for unverified messages to potentially execute arbitrary commands",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2018-02-09T23:29:00.557Z"
   },
   {
@@ -467,6 +712,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-1000021",
     "Title": "client prints server-sent ANSI escape codes to the terminal, allowing for unverified messages to potentially execute arbitrary commands",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2018-02-09T23:29:00.557Z"
   },
   {
@@ -477,6 +728,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
     "Title": "User enumeration via malformed packets in authentication requests",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2018-08-28T08:29:00.207Z"
   },
   {
@@ -487,6 +743,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
     "Title": "User enumeration via malformed packets in authentication requests",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2018-08-28T08:29:00.207Z"
   },
   {
@@ -497,6 +758,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
     "Title": "User enumeration via malformed packets in authentication requests",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2018-08-28T08:29:00.207Z"
   },
   {
@@ -507,6 +773,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-20796",
     "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2019-02-26T02:29:00.45Z"
   },
   {
@@ -517,6 +789,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-20796",
     "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2019-02-26T02:29:00.45Z"
   },
   {
@@ -527,6 +805,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
     "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2018-01-16T09:29:00.5Z"
   },
   {
@@ -537,6 +820,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
     "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2018-01-16T09:29:00.5Z"
   },
   {
@@ -547,6 +835,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
     "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2018-01-16T09:29:00.5Z"
   },
   {
@@ -557,6 +850,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-6829",
     "Title": "libgcrypt: ElGamal implementation doesn't have semantic security due to incorrectly encoded plaintexts possibly allowing to obtain sensitive information",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2018-02-07T23:29:01.703Z"
   },
   {
@@ -567,6 +865,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-6951",
     "Title": "patch: NULL pointer dereference in pch.c:intuit_diff_type() causes a crash",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "photon": 3,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2018-02-13T19:29:00.51Z"
   },
   {
@@ -577,6 +883,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-6952",
     "Title": "patch: Double free of memory in pch.c:another_hunk() causes a crash",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 3,
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "oracle-oval": 1,
+      "photon": 3,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2018-02-13T19:29:00.573Z"
   },
   {
@@ -587,6 +903,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010022",
     "Title": "glibc: stack guard protection bypass",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 4
+    },
     "PublishedDate": "2019-07-15T04:15:13.317Z"
   },
   {
@@ -597,6 +917,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010022",
     "Title": "glibc: stack guard protection bypass",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 4
+    },
     "PublishedDate": "2019-07-15T04:15:13.317Z"
   },
   {
@@ -607,6 +931,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010023",
     "Title": "glibc: running ldd on malicious ELF leads to code execution because of wrong size computation",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2019-07-15T04:15:13.397Z"
   },
   {
@@ -617,6 +946,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010023",
     "Title": "glibc: running ldd on malicious ELF leads to code execution because of wrong size computation",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2019-07-15T04:15:13.397Z"
   },
   {
@@ -627,6 +961,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010024",
     "Title": "glibc: ASLR bypass using cache of thread stack and heap",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2019-07-15T04:15:13.473Z"
   },
   {
@@ -637,6 +976,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010024",
     "Title": "glibc: ASLR bypass using cache of thread stack and heap",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2019-07-15T04:15:13.473Z"
   },
   {
@@ -647,6 +991,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010025",
     "Title": "glibc: information disclosure of heap addresses of pthread_created thread",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2019-07-15T04:15:13.537Z"
   },
   {
@@ -657,6 +1006,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010025",
     "Title": "glibc: information disclosure of heap addresses of pthread_created thread",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2019-07-15T04:15:13.537Z"
   },
   {
@@ -667,6 +1021,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-19882",
     "Title": "shadow-utils: local users can obtain root access because setuid programs are misconfigured",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 3
+    },
     "PublishedDate": "2019-12-18T16:15:26.963Z"
   },
   {
@@ -677,6 +1036,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-19882",
     "Title": "shadow-utils: local users can obtain root access because setuid programs are misconfigured",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 3
+    },
     "PublishedDate": "2019-12-18T16:15:26.963Z"
   },
   {
@@ -687,6 +1051,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-20838",
     "Title": "pcre: Buffer over-read in JIT when UTF is disabled and \\X or \\R has fixed quantifier greater than 1",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 1,
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "oracle-oval": 1,
+      "photon": 3,
+      "redhat": 1,
+      "rocky": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2020-06-15T17:15:09.683Z"
   },
   {
@@ -697,6 +1072,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-6110",
     "Title": "openssh: Acceptance and display of arbitrary stderr allows for spoofing of scp client output",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2019-01-31T18:29:00.807Z"
   },
   {
@@ -707,6 +1088,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-6110",
     "Title": "openssh: Acceptance and display of arbitrary stderr allows for spoofing of scp client output",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2019-01-31T18:29:00.807Z"
   },
   {
@@ -717,6 +1104,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-6110",
     "Title": "openssh: Acceptance and display of arbitrary stderr allows for spoofing of scp client output",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2019-01-31T18:29:00.807Z"
   },
   {
@@ -727,6 +1120,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-8457",
     "Title": "heap out-of-bound read in function rtreenode()",
     "Severity": "CRITICAL",
+    "VendorSeverity": {
+      "nvd": 4,
+      "oracle-oval": 2,
+      "photon": 4,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2019-05-30T16:29:01.84Z"
   },
   {
@@ -737,6 +1137,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-9192",
     "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2019-02-26T18:29:00.34Z"
   },
   {
@@ -747,6 +1153,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-9192",
     "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2019-02-26T18:29:00.34Z"
   },
   {
@@ -757,6 +1169,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
     "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-05-10T16:15:07.373Z"
   },
   {
@@ -767,6 +1189,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
     "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-05-10T16:15:07.373Z"
   },
   {
@@ -777,6 +1209,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
     "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-05-10T16:15:07.373Z"
   },
   {
@@ -787,6 +1229,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
     "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-05-10T16:15:07.373Z"
   },
   {
@@ -797,6 +1249,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-14145",
     "Title": "openssh: Observable discrepancy leading to an information leak in the algorithm negotiation",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2020-06-29T18:15:11.94Z"
   },
   {
@@ -807,6 +1269,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-14145",
     "Title": "openssh: Observable discrepancy leading to an information leak in the algorithm negotiation",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2020-06-29T18:15:11.94Z"
   },
   {
@@ -817,6 +1289,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-14145",
     "Title": "openssh: Observable discrepancy leading to an information leak in the algorithm negotiation",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2020-06-29T18:15:11.94Z"
   },
   {
@@ -827,6 +1309,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15719",
     "Title": "openldap: Certificate validation incorrectly matches name against CN-ID",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "bitnami": 2,
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2020-07-14T14:15:17.667Z"
   },
   {
@@ -837,6 +1325,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15778",
     "Title": "openssh: scp allows command injection when using backtick characters in the destination argument",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2020-07-24T14:15:12.45Z"
   },
   {
@@ -847,6 +1341,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15778",
     "Title": "openssh: scp allows command injection when using backtick characters in the destination argument",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2020-07-24T14:15:12.45Z"
   },
   {
@@ -857,6 +1357,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15778",
     "Title": "openssh: scp allows command injection when using backtick characters in the destination argument",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2020-07-24T14:15:12.45Z"
   },
   {
@@ -867,6 +1373,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
     "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 2,
+      "nvd": 3,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2021-12-13T18:15:07.943Z"
   },
   {
@@ -877,6 +1389,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
     "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 2,
+      "nvd": 3,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2021-12-13T18:15:07.943Z"
   },
   {
@@ -887,6 +1405,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
     "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 2,
+      "nvd": 3,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2021-12-13T18:15:07.943Z"
   },
   {
@@ -897,6 +1421,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
     "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 2,
+      "nvd": 3,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2021-12-13T18:15:07.943Z"
   },
   {
@@ -907,6 +1437,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-22218",
     "Title": "libssh2: use-of-uninitialized-value in _libssh2_transport_read",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 3,
+      "cbl-mariner": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-08-22T19:16:19.12Z"
   },
   {
@@ -917,6 +1456,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
     "Title": "Content not matching hash in Metalink is not being discarded",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2021-08-05T21:15:11.173Z"
   },
   {
@@ -927,6 +1475,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
     "Title": "Content not matching hash in Metalink is not being discarded",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2021-08-05T21:15:11.173Z"
   },
   {
@@ -937,6 +1494,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
     "Title": "Content not matching hash in Metalink is not being discarded",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2021-08-05T21:15:11.173Z"
   },
   {
@@ -947,6 +1513,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
     "Title": "Metalink download sends credentials",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2021-08-05T21:15:11.293Z"
   },
   {
@@ -957,6 +1532,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
     "Title": "Metalink download sends credentials",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2021-08-05T21:15:11.293Z"
   },
   {
@@ -967,6 +1551,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
     "Title": "Metalink download sends credentials",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2021-08-05T21:15:11.293Z"
   },
   {
@@ -977,6 +1570,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-31239",
     "Title": "sqlite: denial of service via the appendvfs.c function",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "bitnami": 3,
+      "nvd": 3,
+      "photon": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2023-05-09T02:15:08.907Z"
   },
   {
@@ -987,6 +1586,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-33294",
     "Title": "an infinite loop was found in the function handle_symtab in readelf.c which causes denial of service",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 1,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-07-18T14:15:11.673Z"
   },
   {
@@ -997,6 +1604,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-33560",
     "Title": "mishandles ElGamal encryption because it lacks exponent blinding to address a side-channel attack against mpi_powm",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "cbl-mariner": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-06-08T11:15:07.767Z"
   },
   {
@@ -1007,6 +1624,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36084",
     "Title": "libsepol: use-after-free in __cil_verify_classperms()",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "nvd": 1,
+      "oracle-oval": 2,
+      "photon": 1,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-07-01T03:15:08.717Z"
   },
   {
@@ -1017,6 +1644,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36085",
     "Title": "libsepol: use-after-free in __cil_verify_classperms()",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "nvd": 1,
+      "oracle-oval": 2,
+      "photon": 1,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-07-01T03:15:08.75Z"
   },
   {
@@ -1027,6 +1664,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36086",
     "Title": "use-after-free in cil_reset_classpermission()",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "nvd": 1,
+      "oracle-oval": 2,
+      "photon": 1,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-07-01T03:15:08.783Z"
   },
   {
@@ -1037,6 +1684,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36087",
     "Title": "libsepol: heap-based buffer overflow in ebitmap_match_any()",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "nvd": 1,
+      "oracle-oval": 2,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-07-01T03:15:08.817Z"
   },
   {
@@ -1047,6 +1703,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36368",
     "Title": "openssh: possible bypass of fido 2 devices and ssh-askpass",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 1,
+      "debian": 1,
+      "nvd": 1
+    },
     "PublishedDate": "2022-03-13T00:15:07.937Z"
   },
   {
@@ -1057,6 +1718,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36368",
     "Title": "openssh: possible bypass of fido 2 devices and ssh-askpass",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 1,
+      "debian": 1,
+      "nvd": 1
+    },
     "PublishedDate": "2022-03-13T00:15:07.937Z"
   },
   {
@@ -1067,6 +1733,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36368",
     "Title": "openssh: possible bypass of fido 2 devices and ssh-askpass",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 1,
+      "debian": 1,
+      "nvd": 1
+    },
     "PublishedDate": "2022-03-13T00:15:07.937Z"
   },
   {
@@ -1077,6 +1748,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36690",
     "Title": "A segmentation fault can occur in the sqlite3.exe command-line compone ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "bitnami": 3,
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-08-24T14:15:09.797Z"
   },
   {
@@ -1087,6 +1765,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45261",
     "Title": "Invalid Pointer via another_hunk function",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2021-12-22T18:15:08.1Z"
   },
   {
@@ -1097,6 +1781,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45346",
     "Title": "sqlite: crafted SQL query allows a malicious user to obtain sensitive information",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "bitnami": 2,
+      "debian": 1,
+      "nvd": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2022-02-14T19:15:07.793Z"
   },
   {
@@ -1107,6 +1797,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45940",
     "Title": "libbpf: heap-based buffer overflow (4 bytes) in __bpf_object__open",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "nvd": 2,
+      "redhat": 1,
+      "ubuntu": 2
+    },
     "PublishedDate": "2022-01-01T01:15:08.94Z"
   },
   {
@@ -1117,6 +1812,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45941",
     "Title": "libbpf: heap-based buffer overflow (8 bytes) in __bpf_object__open",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "nvd": 2,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2022-01-01T01:15:08.99Z"
   },
   {
@@ -1127,6 +1827,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
     "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2022-02-21T19:15:08.393Z"
   },
   {
@@ -1137,6 +1845,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
     "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2022-02-21T19:15:08.393Z"
   },
   {
@@ -1147,6 +1863,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
     "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2022-02-21T19:15:08.393Z"
   },
   {
@@ -1157,6 +1881,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
     "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2022-02-21T19:15:08.393Z"
   },
   {
@@ -1167,6 +1899,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
     "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2022-02-21T19:15:08.393Z"
   },
   {
@@ -1177,6 +1917,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
     "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2022-02-21T19:15:08.393Z"
   },
   {
@@ -1187,6 +1935,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
     "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2022-02-21T19:15:08.393Z"
   },
   {
@@ -1197,6 +1953,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
     "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "cbl-mariner": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2022-04-14T21:15:08.49Z"
   },
   {
@@ -1207,6 +1974,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
     "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "cbl-mariner": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2022-04-14T21:15:08.49Z"
   },
   {
@@ -1217,6 +1995,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
     "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "cbl-mariner": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2022-04-14T21:15:08.49Z"
   },
   {
@@ -1227,6 +2016,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
     "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "cbl-mariner": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2022-04-14T21:15:08.49Z"
   },
   {
@@ -1237,6 +2037,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
     "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "cbl-mariner": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2022-04-14T21:15:08.49Z"
   },
   {
@@ -1247,6 +2058,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-24975",
     "Title": "git: The --mirror option for git leaks secret for deleted content, aka the \"GitBleed\"",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "photon": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2022-02-11T20:15:07.507Z"
   },
   {
@@ -1257,6 +2074,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-24975",
     "Title": "git: The --mirror option for git leaks secret for deleted content, aka the \"GitBleed\"",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 3,
+      "photon": 3,
+      "redhat": 1
+    },
     "PublishedDate": "2022-02-11T20:15:07.507Z"
   },
   {
@@ -1267,6 +2090,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1277,6 +2106,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1287,6 +2122,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1297,6 +2138,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1307,6 +2154,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1317,6 +2170,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1327,6 +2186,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1337,6 +2202,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1347,6 +2218,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1357,6 +2234,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1367,6 +2250,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
     "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 1,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-02-23T20:15:12.393Z"
   },
   {
@@ -1377,6 +2266,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3534",
     "Title": "Kernel: use-after-free in btf_dump_name_dups in tools/lib/bpf/btf_dump.c",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 3,
+      "nvd": 3,
+      "photon": 3,
+      "redhat": 1,
+      "ubuntu": 2
+    },
     "PublishedDate": "2022-10-17T09:15:12.75Z"
   },
   {
@@ -1387,6 +2283,20 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-35737",
     "Title": "sqlite: an array-bounds overflow if billions of bytes are used in a string argument to a C API",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "bitnami": 3,
+      "cbl-mariner": 3,
+      "debian": 1,
+      "ghsa": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2022-08-03T06:15:07.69Z"
   },
   {
@@ -1397,6 +2307,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3606",
     "Title": "kernel: libbpf: NULL pointer dereference in find_prog_by_sec_insn",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "amazon": 3,
+      "cbl-mariner": 1,
+      "nvd": 2,
+      "redhat": 1,
+      "ubuntu": 2
+    },
     "PublishedDate": "2022-10-19T09:15:10.037Z"
   },
   {
@@ -1407,6 +2324,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3715",
     "Title": "a heap-buffer-overflow in valid_parameter_transform",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 2,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-01-05T15:15:10.41Z"
   },
   {
@@ -1417,6 +2343,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-41409",
     "Title": "Integer overflow vulnerability in pcre2test before 10.41 allows attack ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "amazon": 1,
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "photon": 3
+    },
     "PublishedDate": "2023-07-18T14:15:12.197Z"
   },
   {
@@ -1427,6 +2360,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48303",
     "Title": "heap buffer overflow at from_header() in list.c via specially crafted checksum",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "debian": 1,
+      "nvd": 2,
+      "oracle-oval": 2,
+      "photon": 2,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-01-30T04:15:08.03Z"
   },
   {
@@ -1437,6 +2381,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4899",
     "Title": "zstd: mysql: buffer overrun in util.c",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 2,
+      "ghsa": 3,
+      "nvd": 3,
+      "photon": 3,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-03-31T20:15:07.213Z"
   },
   {
@@ -1447,6 +2399,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25652",
     "Title": "git: by feeding specially crafted input to `git apply --reject`, a path outside the working tree can be overwritten with partially controlled contents",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 3,
+      "amazon": 2,
+      "nvd": 3,
+      "oracle-oval": 3,
+      "redhat": 3,
+      "rocky": 3,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-04-25T20:15:09.933Z"
   },
   {
@@ -1457,6 +2418,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25652",
     "Title": "git: by feeding specially crafted input to `git apply --reject`, a path outside the working tree can be overwritten with partially controlled contents",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 3,
+      "amazon": 2,
+      "nvd": 3,
+      "oracle-oval": 3,
+      "redhat": 3,
+      "rocky": 3,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-04-25T20:15:09.933Z"
   },
   {
@@ -1467,6 +2437,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25815",
     "Title": "git: malicious placement of crafted messages when git was compiled with runtime prefix",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 3,
+      "nvd": 1,
+      "oracle-oval": 3,
+      "redhat": 1,
+      "rocky": 3,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-04-25T20:15:09.997Z"
   },
   {
@@ -1477,6 +2455,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25815",
     "Title": "git: malicious placement of crafted messages when git was compiled with runtime prefix",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 3,
+      "nvd": 1,
+      "oracle-oval": 3,
+      "redhat": 1,
+      "rocky": 3,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-04-25T20:15:09.997Z"
   },
   {
@@ -1487,6 +2473,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
     "Title": "libcap: Memory Leak on pthread_create() Error",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 1,
+      "cbl-mariner": 1,
+      "nvd": 1,
+      "oracle-oval": 2,
+      "photon": 1,
+      "redhat": 1,
+      "rocky": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-06-06T20:15:12.76Z"
   },
   {
@@ -1497,6 +2494,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
     "Title": "libcap: Memory Leak on pthread_create() Error",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 1,
+      "cbl-mariner": 1,
+      "nvd": 1,
+      "oracle-oval": 2,
+      "photon": 1,
+      "redhat": 1,
+      "rocky": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-06-06T20:15:12.76Z"
   },
   {
@@ -1507,6 +2515,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
     "Title": "libcap: Memory Leak on pthread_create() Error",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 1,
+      "cbl-mariner": 1,
+      "nvd": 1,
+      "oracle-oval": 2,
+      "photon": 1,
+      "redhat": 1,
+      "rocky": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-06-06T20:15:12.76Z"
   },
   {
@@ -1517,6 +2536,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
     "Title": "libcap: Integer Overflow in _libcap_strdup()",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "cbl-mariner": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-06-06T20:15:13.187Z"
   },
   {
@@ -1527,6 +2556,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
     "Title": "libcap: Integer Overflow in _libcap_strdup()",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "cbl-mariner": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-06-06T20:15:13.187Z"
   },
   {
@@ -1537,6 +2576,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
     "Title": "libcap: Integer Overflow in _libcap_strdup()",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "cbl-mariner": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2,
+      "rocky": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-06-06T20:15:13.187Z"
   },
   {
@@ -1547,6 +2596,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
     "Title": "siglongjmp race condition may lead to crash",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2023-05-26T21:15:15.937Z"
   },
   {
@@ -1557,6 +2613,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
     "Title": "siglongjmp race condition may lead to crash",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2023-05-26T21:15:15.937Z"
   },
   {
@@ -1567,6 +2630,13 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
     "Title": "siglongjmp race condition may lead to crash",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "cbl-mariner": 2,
+      "debian": 1,
+      "nvd": 2,
+      "photon": 2,
+      "redhat": 1
+    },
     "PublishedDate": "2023-05-26T21:15:15.937Z"
   },
   {
@@ -1577,6 +2647,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29007",
     "Title": "git: arbitrary configuration injection when renaming or deleting a section from a configuration file",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 3,
+      "amazon": 2,
+      "nvd": 3,
+      "oracle-oval": 3,
+      "redhat": 3,
+      "rocky": 3,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-04-25T21:15:10.403Z"
   },
   {
@@ -1587,6 +2666,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29007",
     "Title": "git: arbitrary configuration injection when renaming or deleting a section from a configuration file",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 3,
+      "amazon": 2,
+      "nvd": 3,
+      "oracle-oval": 3,
+      "redhat": 3,
+      "rocky": 3,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-04-25T21:15:10.403Z"
   },
   {
@@ -1597,6 +2685,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29383",
     "Title": "Improper input validation in shadow-utils package utility chfn",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "nvd": 1,
+      "photon": 1,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-04-14T22:15:07.68Z"
   },
   {
@@ -1607,6 +2701,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29383",
     "Title": "Improper input validation in shadow-utils package utility chfn",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "nvd": 1,
+      "photon": 1,
+      "redhat": 2,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-04-14T22:15:07.68Z"
   },
   {
@@ -1617,6 +2717,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2953",
     "Title": "null pointer dereference in  ber_memalloc_x  function",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 2,
+      "bitnami": 3,
+      "nvd": 3,
+      "photon": 3,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-05-30T22:15:10.613Z"
   },
   {
@@ -1627,6 +2735,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31437",
     "Title": "An issue was discovered in systemd 253. An attacker can modify a seale ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.657Z"
   },
   {
@@ -1637,6 +2749,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31437",
     "Title": "An issue was discovered in systemd 253. An attacker can modify a seale ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.657Z"
   },
   {
@@ -1647,6 +2763,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31437",
     "Title": "An issue was discovered in systemd 253. An attacker can modify a seale ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.657Z"
   },
   {
@@ -1657,6 +2777,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31437",
     "Title": "An issue was discovered in systemd 253. An attacker can modify a seale ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.657Z"
   },
   {
@@ -1667,6 +2791,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31438",
     "Title": "An issue was discovered in systemd 253. An attacker can truncate a sea ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.707Z"
   },
   {
@@ -1677,6 +2805,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31438",
     "Title": "An issue was discovered in systemd 253. An attacker can truncate a sea ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.707Z"
   },
   {
@@ -1687,6 +2819,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31438",
     "Title": "An issue was discovered in systemd 253. An attacker can truncate a sea ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.707Z"
   },
   {
@@ -1697,6 +2833,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31438",
     "Title": "An issue was discovered in systemd 253. An attacker can truncate a sea ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.707Z"
   },
   {
@@ -1707,6 +2847,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31439",
     "Title": "An issue was discovered in systemd 253. An attacker can modify the con ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.753Z"
   },
   {
@@ -1717,6 +2861,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31439",
     "Title": "An issue was discovered in systemd 253. An attacker can modify the con ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.753Z"
   },
   {
@@ -1727,6 +2875,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31439",
     "Title": "An issue was discovered in systemd 253. An attacker can modify the con ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.753Z"
   },
   {
@@ -1737,6 +2889,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31439",
     "Title": "An issue was discovered in systemd 253. An attacker can modify the con ...",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "debian": 1,
+      "nvd": 2
+    },
     "PublishedDate": "2023-06-13T17:15:14.753Z"
   },
   {
@@ -1747,6 +2903,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
     "Title": "perl: CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-04-29T00:15:09Z"
   },
   {
@@ -1757,6 +2921,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
     "Title": "perl: CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-04-29T00:15:09Z"
   },
   {
@@ -1767,6 +2939,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
     "Title": "perl: CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-04-29T00:15:09Z"
   },
   {
@@ -1777,6 +2957,14 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
     "Title": "perl: CPAN.pm does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-04-29T00:15:09Z"
   },
   {
@@ -1787,6 +2975,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
     "Title": "http-tiny: insecure TLS cert default",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2023-04-29T00:15:09.083Z"
   },
   {
@@ -1797,6 +2995,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
     "Title": "http-tiny: insecure TLS cert default",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2023-04-29T00:15:09.083Z"
   },
   {
@@ -1807,6 +3015,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
     "Title": "http-tiny: insecure TLS cert default",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2023-04-29T00:15:09.083Z"
   },
   {
@@ -1817,6 +3035,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
     "Title": "http-tiny: insecure TLS cert default",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 2,
+      "amazon": 3,
+      "cbl-mariner": 3,
+      "debian": 1,
+      "nvd": 3,
+      "oracle-oval": 2,
+      "photon": 3,
+      "redhat": 2
+    },
     "PublishedDate": "2023-04-29T00:15:09.083Z"
   },
   {
@@ -1825,7 +3053,11 @@
     "Status": "affected",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-39804",
     "Title": "tar: Incorrectly handled extension attributes in PAX archives can lead to a crash",
-    "Severity": "LOW"
+    "Severity": "LOW",
+    "VendorSeverity": {
+      "redhat": 1,
+      "ubuntu": 2
+    }
   },
   {
     "VulnerabilityID": "CVE-2023-4016",
@@ -1835,6 +3067,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4016",
     "Title": "procps: ps buffer overflow",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 1,
+      "nvd": 1,
+      "oracle-oval": 1,
+      "photon": 2,
+      "redhat": 1,
+      "rocky": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-08-02T05:15:09.85Z"
   },
   {
@@ -1845,6 +3086,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4016",
     "Title": "procps: ps buffer overflow",
     "Severity": "LOW",
+    "VendorSeverity": {
+      "alma": 1,
+      "nvd": 1,
+      "oracle-oval": 1,
+      "photon": 2,
+      "redhat": 1,
+      "rocky": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-08-02T05:15:09.85Z"
   },
   {
@@ -1855,6 +3105,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
     "Title": "gcc: -fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "nvd": 2,
+      "oracle-oval": 1
+    },
     "PublishedDate": "2023-09-13T09:15:15.69Z"
   },
   {
@@ -1865,6 +3121,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
     "Title": "gcc: -fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "nvd": 2,
+      "oracle-oval": 1
+    },
     "PublishedDate": "2023-09-13T09:15:15.69Z"
   },
   {
@@ -1875,6 +3137,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
     "Title": "gcc: -fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "nvd": 2,
+      "oracle-oval": 1
+    },
     "PublishedDate": "2023-09-13T09:15:15.69Z"
   },
   {
@@ -1885,6 +3153,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4039",
     "Title": "gcc: -fstack-protector fails to guard dynamic stack allocations on ARM64",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "nvd": 2,
+      "oracle-oval": 1
+    },
     "PublishedDate": "2023-09-13T09:15:15.69Z"
   },
   {
@@ -1894,6 +3168,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4641",
     "Title": "shadow-utils: possible password leak during passwd(1) change",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "alma": 1,
+      "amazon": 1,
+      "oracle-oval": 1,
+      "redhat": 1
+    },
     "PublishedDate": "2023-12-27T16:15:13.363Z"
   },
   {
@@ -1903,6 +3183,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4641",
     "Title": "shadow-utils: possible password leak during passwd(1) change",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "alma": 1,
+      "amazon": 1,
+      "oracle-oval": 1,
+      "redhat": 1
+    },
     "PublishedDate": "2023-12-27T16:15:13.363Z"
   },
   {
@@ -1913,6 +3199,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
     "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 2,
+      "nvd": 3,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-12-18T14:15:08.933Z"
   },
   {
@@ -1923,6 +3215,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
     "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 2,
+      "nvd": 3,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-12-18T14:15:08.933Z"
   },
   {
@@ -1933,6 +3231,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
     "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 2,
+      "nvd": 3,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-12-18T14:15:08.933Z"
   },
   {
@@ -1943,6 +3247,12 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-47038",
     "Title": "perl: Write past buffer end via illegal user-defined Unicode property",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "amazon": 2,
+      "nvd": 3,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-12-18T14:15:08.933Z"
   },
   {
@@ -1953,6 +3263,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4806",
     "Title": "glibc: potential use-after-free in getaddrinfo()",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "alma": 3,
+      "amazon": 3,
+      "cbl-mariner": 2,
+      "nvd": 2,
+      "oracle-oval": 3,
+      "photon": 2,
+      "redhat": 2,
+      "rocky": 3,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-09-18T17:15:55.813Z"
   },
   {
@@ -1963,6 +3284,17 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4806",
     "Title": "glibc: potential use-after-free in getaddrinfo()",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "alma": 3,
+      "amazon": 3,
+      "cbl-mariner": 2,
+      "nvd": 2,
+      "oracle-oval": 3,
+      "photon": 2,
+      "redhat": 2,
+      "rocky": 3,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-09-18T17:15:55.813Z"
   },
   {
@@ -1973,6 +3305,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4813",
     "Title": "glibc: potential use-after-free in gaih_inet()",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "alma": 3,
+      "amazon": 3,
+      "nvd": 2,
+      "oracle-oval": 3,
+      "redhat": 2,
+      "rocky": 3,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-09-12T22:15:08.277Z"
   },
   {
@@ -1983,6 +3324,15 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4813",
     "Title": "glibc: potential use-after-free in gaih_inet()",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "alma": 3,
+      "amazon": 3,
+      "nvd": 2,
+      "oracle-oval": 3,
+      "redhat": 2,
+      "rocky": 3,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-09-12T22:15:08.277Z"
   },
   {
@@ -1993,6 +3343,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-50495",
     "Title": "ncurses: segmentation fault via _nc_wrap_entry()",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "nvd": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2023-12-12T15:15:07.867Z"
   },
   {
@@ -2003,6 +3357,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-50495",
     "Title": "ncurses: segmentation fault via _nc_wrap_entry()",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "nvd": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2023-12-12T15:15:07.867Z"
   },
   {
@@ -2013,6 +3371,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-50495",
     "Title": "ncurses: segmentation fault via _nc_wrap_entry()",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "nvd": 2,
+      "redhat": 2
+    },
     "PublishedDate": "2023-12-12T15:15:07.867Z"
   },
   {
@@ -2022,6 +3384,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-51767",
     "Title": "openssh: authentication bypass via row hammer attack",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-12-24T07:15:07.41Z"
   },
   {
@@ -2031,6 +3397,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-51767",
     "Title": "openssh: authentication bypass via row hammer attack",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-12-24T07:15:07.41Z"
   },
   {
@@ -2040,6 +3410,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-51767",
     "Title": "openssh: authentication bypass via row hammer attack",
     "Severity": "HIGH",
+    "VendorSeverity": {
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-12-24T07:15:07.41Z"
   },
   {
@@ -2050,6 +3424,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-5678",
     "Title": "openssl: Generating excessively long X9.42 DH keys or checking excessively long X9.42 DH keys or parameters may be very slow",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "alma": 1,
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "nvd": 2,
+      "oracle-oval": 1,
+      "photon": 2,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-11-06T16:15:42.67Z"
   },
   {
@@ -2060,6 +3444,16 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-5678",
     "Title": "openssl: Generating excessively long X9.42 DH keys or checking excessively long X9.42 DH keys or parameters may be very slow",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "alma": 1,
+      "amazon": 2,
+      "cbl-mariner": 2,
+      "nvd": 2,
+      "oracle-oval": 1,
+      "photon": 2,
+      "redhat": 1,
+      "ubuntu": 1
+    },
     "PublishedDate": "2023-11-06T16:15:42.67Z"
   },
   {
@@ -2070,6 +3464,11 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-5981",
     "Title": "gnutls: timing side-channel in the RSA-PSK authentication",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "nvd": 2,
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-11-28T12:15:07.04Z"
   },
   {
@@ -2079,6 +3478,9 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7008",
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "redhat": 2
+    },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
   },
   {
@@ -2088,6 +3490,9 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7008",
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "redhat": 2
+    },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
   },
   {
@@ -2097,6 +3502,9 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7008",
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "redhat": 2
+    },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
   },
   {
@@ -2106,6 +3514,9 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7008",
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "redhat": 2
+    },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
   },
   {
@@ -2115,6 +3526,10 @@
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7104",
     "Title": "sqlite: heap-buffer-overflow at sessionfuzz",
     "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "redhat": 2,
+      "ubuntu": 2
+    },
     "PublishedDate": "2023-12-29T10:15:13.89Z"
   }
 ]
