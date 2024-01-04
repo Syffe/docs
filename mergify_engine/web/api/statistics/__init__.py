@@ -6,6 +6,7 @@ from mergify_engine.web.api.statistics import average_queue_time
 from mergify_engine.web.api.statistics import checks_duration
 from mergify_engine.web.api.statistics import pull_requests_merged
 from mergify_engine.web.api.statistics import queue_checks_outcome
+from mergify_engine.web.api.statistics import queue_size
 from mergify_engine.web.api.statistics import time_to_merge
 
 
@@ -23,3 +24,4 @@ router.include_router(checks_duration.router)
 router.include_router(pull_requests_merged.router)
 router.include_router(average_ci_runtime.router)
 router.include_router(average_queue_time.router)
+router.include_router(queue_size.router)

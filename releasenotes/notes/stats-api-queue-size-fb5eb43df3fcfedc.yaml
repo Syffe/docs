@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Added a new statistics endpoint that returns the average, max and min
+    queue size by intervals of time.
+    The endpoint path is "/v1/repos/{repository_owner}/{repository_name}/stats/queue_size".

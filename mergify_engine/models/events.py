@@ -717,6 +717,60 @@ class EventActionQueueChange(Event):
         anonymizer_config=None,
     )
 
+    @classmethod
+    async def get_queue_size_by_interval(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository_ctxt: context.Repository,
+        start_at: datetime.datetime,
+        end_at: datetime.datetime,
+        interval: tuple[sqlalchemy.sql.functions.Function[postgresql.INTERVAL], ...],
+        base_ref: list[github_types.GitHubRefType] | None = None,
+        partition_name: list[partition_rules.PartitionRuleName] | None = None,
+        queue_name: list[qr_config.QueueName] | None = None,
+    ) -> typing.Sequence[sqlalchemy.engine.row.Row[typing.Any]]:
+        filters = {
+            cls.received_at >= start_at,
+            cls.received_at <= end_at,
+            cls.repository_id == repository_ctxt.repo["id"],
+        }
+
+        if base_ref is not None:
+            filters.add(cls.base_ref.in_(base_ref))
+        if partition_name is not None:
+            filters.add(cls.partition_name.in_(partition_name))
+        if queue_name is not None:
+            filters.add(cls.queue_name.in_(queue_name))
+
+        chunk = func.date_bin(
+            sqlalchemy.cast(interval[0], postgresql.INTERVAL),
+            sqlalchemy.cast(cls.received_at, postgresql.TIMESTAMP(timezone=True)),
+            sqlalchemy.cast(date.EPOCH, postgresql.TIMESTAMP(timezone=True)),
+        )
+
+        stmt = (
+            sqlalchemy.select(
+                chunk.label("start"),
+                (chunk + interval[1]).label("end"),
+                sqlalchemy.func.avg(cls.size).label("avg_size"),
+                sqlalchemy.func.max(cls.size).label("max_size"),
+                sqlalchemy.func.min(cls.size).label("min_size"),
+                cls.base_ref,
+                cls.partition_name,
+                cls.queue_name,
+            )
+            .where(*filters)
+            .group_by(
+                chunk,
+                cls.base_ref,
+                cls.partition_name,
+                cls.queue_name,
+            )
+        )
+
+        result = await session.execute(stmt)
+        return result.all()
+
 
 class EventActionSquash(Event):
     __tablename__ = "event_action_squash"
