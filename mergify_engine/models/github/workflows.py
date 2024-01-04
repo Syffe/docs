@@ -139,14 +139,16 @@ class WorkflowRun(models.Base):
             sqlalchemy.select(cls).where(cls.id == workflow_run_data["id"]),
         )
         if result.scalar_one_or_none() is None:
-            if "triggering_actor" in workflow_run_data:
+            if (
+                triggering_actor_data := workflow_run_data.get("triggering_actor")
+            ) is not None:
                 triggering_actor = await gh_account.GitHubAccount.get_or_create(
                     session,
-                    workflow_run_data["triggering_actor"],
+                    triggering_actor_data,
                 )
                 session.add(triggering_actor)
             else:
-                triggering_actor = None  # type: ignore[unreachable]
+                triggering_actor = None
 
             repo = await gh_repository.GitHubRepository.get_or_create(
                 session,

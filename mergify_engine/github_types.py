@@ -989,9 +989,22 @@ class GitHubMembership(typing_extensions.TypedDict):
 GitHubWorkflowRunConclusionType = typing.Literal[
     "success",
     "failure",
+    "neutral",
     "skipped",
     "cancelled",
+    "timed_out",
+    "action_required",
+    "stale",
     None,
+]
+
+GitHubWorkflowRunStatusType = typing.Literal[
+    "requested",
+    "in_progress",
+    "completed",
+    "queued",
+    "pending",
+    "waiting",
 ]
 
 
@@ -1018,10 +1031,11 @@ class GitHubWorkflowRunPullRequest(typing_extensions.TypedDict):
 class GitHubWorkflowRun(typing_extensions.TypedDict):
     id: int
     workflow_id: int
-    name: str
+    name: str | None
+    status: GitHubWorkflowRunStatusType
     event: GitHubWorkflowTriggerEventType
     conclusion: GitHubWorkflowRunConclusionType
-    triggering_actor: GitHubAccount
+    triggering_actor: GitHubAccount | None
     jobs_url: str
     head_sha: SHAType
     repository: GitHubRepository
@@ -1030,8 +1044,15 @@ class GitHubWorkflowRun(typing_extensions.TypedDict):
     pull_requests: list[GitHubWorkflowRunPullRequest]
 
 
+GitHubEventWorkflowRunActionType = typing.Literal[
+    "completed",
+    "in_progress",
+    "requested",
+]
+
+
 class GitHubEventWorkflowRun(GitHubEventWithRepository):
-    action: GitHubEventPullRequestActionType
+    action: GitHubEventWorkflowRunActionType
     workflow_run: GitHubWorkflowRun
 
 
@@ -1073,6 +1094,14 @@ class GitHubWorkflowJob(typing_extensions.TypedDict):
     head_sha: SHAType
 
 
+GitHubEventWorkflowJobActionType = typing.Literal[
+    "completed",
+    "in_progress",
+    "queued",
+    "waiting",
+]
+
+
 class GitHubEventWorkflowJob(GitHubEventWithRepository):
-    action: GitHubEventPullRequestActionType
+    action: GitHubEventWorkflowJobActionType
     workflow_job: GitHubWorkflowJob | None
