@@ -781,6 +781,9 @@ class PullRequest(BasePullRequest):
 
             infos = {}
             for k in sorted(used_variables):
+                # TODO(sileht): get rid of __getattr__ to avoid such security hack
+                if k.startswith("__"):
+                    raise jinja2.exceptions.TemplateError("Invalid variable name")
                 if extra_variables and k in extra_variables:
                     infos[k] = extra_variables[k]
                 else:

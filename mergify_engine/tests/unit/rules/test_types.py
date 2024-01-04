@@ -38,6 +38,11 @@ def test_jinja2_invalid() -> None:
         == "unexpected end of template, expected 'end of print statement'."
     )
 
+    with pytest.raises(voluptuous.Invalid) as x:
+        types.Jinja2WithNone("{{ __class__ }}")
+    assert str(x.value) == "Template syntax error"
+    assert str(x.value.error_message) == "Invalid variable name"
+
 
 def test_jinja2_None() -> None:
     with pytest.raises(voluptuous.Invalid) as x:
