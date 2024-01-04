@@ -30,6 +30,7 @@ from mergify_engine import logs
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import utils
+from mergify_engine import worker_pusher
 from mergify_engine.clients import github
 from mergify_engine.clients import google_cloud_storage
 from mergify_engine.config import types as config_types
@@ -529,3 +530,8 @@ def _prepare_google_cloud_storage_setup(
 @pytest.fixture(autouse=True, scope="session")
 def _mock_datadog() -> None:
     statsd.socket = mock.Mock()  # type: ignore[assignment]
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _reduce_worker_processing_delay() -> None:
+    worker_pusher.WORKER_PROCESSING_DELAY = 0.01
