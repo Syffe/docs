@@ -11,6 +11,7 @@ from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -346,8 +347,9 @@ async def prepare_branch(
                 raise DuplicateNeedRetry(
                     f"Git reported the following error:\n```\n{e.output}\n```\n",
                 )
-            raise DuplicateUnexpectedError(
-                f"Git reported the following error:\n```\n{e.output}\n```\n",
+            raise DuplicateFailed(
+                f"Git reported the following error:\n```\n{e.output}\n```\n\n"
+                f"`{on_behalf.login}` token is maybe invalid, make sure `{on_behalf.login}` can still log in on the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL}).",
             )
         except gitter.GitErrorRetriable as e:
             raise DuplicateNeedRetry(
