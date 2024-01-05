@@ -41,7 +41,7 @@ def test_jinja2_invalid() -> None:
     with pytest.raises(voluptuous.Invalid) as x:
         types.Jinja2WithNone("{{ __class__ }}")
     assert str(x.value) == "Template syntax error"
-    assert str(x.value.error_message) == "Invalid variable name"
+    assert str(x.value.error_message) == "Unknown pull request attribute: --class--"
 
 
 def test_jinja2_None() -> None:

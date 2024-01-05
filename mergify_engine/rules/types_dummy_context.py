@@ -60,9 +60,6 @@ class DummyPullRequest(condition_value_querier.PullRequest):
             used_variables = jinja2.meta.find_undeclared_variables(env.parse(template))
             infos: dict[str, condition_value_querier.PullRequestAttributeType] = {}
             for k in used_variables:
-                # TODO(sileht): get rid of __getattr__ to avoid such security hack
-                if k.startswith("__"):
-                    raise jinja2.exceptions.TemplateError("Invalid variable name")
                 if extra_variables and k in extra_variables:
                     infos[k] = extra_variables[k]
                 else:
