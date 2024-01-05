@@ -180,7 +180,7 @@ class Event(models.Base):
         retention_time: datetime.timedelta,
     ) -> None:
         stmt = sqlalchemy.delete(cls).where(
-            (date.utcnow() - cls.received_at) > retention_time,
+            cls.received_at < (date.utcnow() - retention_time),
         )
         await session.execute(stmt)
 
