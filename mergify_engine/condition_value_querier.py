@@ -34,6 +34,15 @@ MARKDOWN_COMMENT_RE = re.compile("(<!--.*?-->)", flags=re.DOTALL | re.IGNORECASE
 COMMITS_ARRAY_ATTRIBUTE_RE = re.compile(r"^commits\[(-?\d+|\*)\]\.([\-\w]+)$")
 
 
+class StringLikeProtocol(typing.Protocol):
+    __string_like__: typing.ClassVar[typing.Literal[True]]
+
+
+class StringLikeList(list[StringLikeProtocol]):
+    def __str__(self) -> str:
+        return "\n".join(str(item) for item in self)
+
+
 class CommitAuthor(typing.NamedTuple):
     name: str | None
     email: str | None
@@ -61,6 +70,7 @@ PullRequestAttributeType = (
     | github_types.GitHubRepositoryPermission
     | set[CommitAuthor]
     | list[None]
+    | StringLikeList
 )
 
 CommitListAttributeType = (
@@ -414,7 +424,7 @@ class BasePullRequest:
             return ctxt.pull["commits"]
 
         if name == "commits":
-            return await ctxt.commits
+            return StringLikeList(await ctxt.commits)
 
         if name.startswith("commits["):
             match = COMMITS_ARRAY_ATTRIBUTE_RE.match(name)

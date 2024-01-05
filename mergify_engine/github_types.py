@@ -206,7 +206,7 @@ class CachedGitHubBranchCommit:
     email_committer: str | None
     gh_author_login: GitHubLogin | None
 
-    __string_like__ = True
+    __string_like__: typing.ClassVar[typing.Literal[True]] = True
 
     def __str__(self) -> str:
         return self.commit_message

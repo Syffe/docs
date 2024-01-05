@@ -1479,6 +1479,10 @@ Yo!
 ### Commits:
 
 # COMMIT LIST:
+
+{{ commits }}
+
+# COMMIT LIST DETAILS:
 {% for commit in commits %}
     - {{ commit.author }}
     - {{ commit.date_author }}
@@ -1541,6 +1545,12 @@ Yo!
 ### Commits:
 
 # COMMIT LIST:
+
+first commit to do something
+second commit to do something
+third commit to do something
+
+# COMMIT LIST DETAILS:
 
     - someone
     - 2012-04-14T16:00:49Z
