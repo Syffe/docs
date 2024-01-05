@@ -363,6 +363,14 @@ class CiIssueGPT(models.Base, CiIssueMixin):
                     else_=0,
                 )
                 + sqlalchemy.case(
+                    (
+                        gh_models.WorkflowJobLogMetadata.test_name
+                        == metadata.test_name,
+                        1,
+                    ),
+                    else_=0,
+                )
+                + sqlalchemy.case(
                     (gh_models.WorkflowJobLogMetadata.language == metadata.language, 1),
                     else_=0,
                 )

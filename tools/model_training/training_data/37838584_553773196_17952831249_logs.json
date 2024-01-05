@@ -1,36 +1,40 @@
 [
     {
-        "problem_type": "Assertion Error",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should display flaky guard table",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobs.cy.ts",
-        "lineno": "11",
+        "lineno": null,
         "error": "CypressError",
         "test_framework": "Cypress",
-        "stack_trace": "CypressError: Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document.\nNo elements in the current DOM matched your query:\n  > cy.get([data-field=error])"
+        "stack_trace": "CypressError: Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document."
     },
     {
-        "problem_type": "Assertion Error",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should navigate to flaky guard error details",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobs.cy.ts",
-        "lineno": "null",
+        "lineno": null,
         "error": "AssertionError",
         "test_framework": "Cypress",
         "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it."
     },
     {
-        "problem_type": "Assertion Error",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should display right date for details panel",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobDetails.cy.ts",
-        "lineno": "null",
+        "lineno": null,
         "error": "AssertionError",
         "test_framework": "Cypress",
         "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"details-17728253792\"]`, but never found it."
     },
     {
-        "problem_type": "Assertion Error",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should handle next and previous error buttons",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobDetails.cy.ts",
-        "lineno": "17",
+        "lineno": null,
         "error": "AssertionError",
         "test_framework": "Cypress",
         "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"previous-job\"]`, but never found it."

@@ -64,15 +64,15 @@ async def test_get_tokenized_cleaned_log(
         (
             ["hello\n"] * github_action.MAX_LOGS_TOKENS,
             # NOTE(Kontrolix): Divide by 2 because 'hello\n' is 2 token
-            "\n".join(["hello"] * (int(github_action.MAX_LOGS_TOKENS / 2) + 1)),
-            github_action.MAX_LOGS_TOKENS,
+            "\n".join(["hello"] * (int(github_action.MAX_LOGS_TOKENS / 2))),
+            github_action.MAX_LOGS_TOKENS - 1,
         ),
         (
             ["Tokens that will be removed at the beginning\n"]
             + (["hello\n"] * github_action.MAX_LOGS_TOKENS),
             # NOTE(Kontrolix): Divide by 2 because 'hello\n' is 2 token
-            "\n".join(["hello"] * (int(github_action.MAX_LOGS_TOKENS / 2) + 1)),
-            github_action.MAX_LOGS_TOKENS,
+            "\n".join(["hello"] * (int(github_action.MAX_LOGS_TOKENS / 2))),
+            github_action.MAX_LOGS_TOKENS - 1,
         ),
     ],
     ids=["one_token_string", "max_input_token_string", "too_long_input_token_string"],

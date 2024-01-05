@@ -1,38 +1,42 @@
 [
     {
-        "problem_type": "AssertionError",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should display flaky guard table",
         "language": "JavaScript",
         "filename": "GHAFailedJobs.cy.ts",
-        "lineno": "10",
-        "error": "Expected to find element: `[data-id=\"1\"]`, but never found it.",
+        "lineno": 10,
+        "error": "AssertionError",
         "test_framework": "Cypress",
-        "stack_trace": "at eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts:10:0)"
+        "stack_trace": "Expected to find element: `[data-id=\"1\"]`, but never found it."
     },
     {
-        "problem_type": "AssertionError",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should navigate to flaky guard error details",
         "language": "JavaScript",
         "filename": "GHAFailedJobs.cy.ts",
-        "lineno": "143",
-        "error": "Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it.",
+        "lineno": null,
+        "error": "AssertionError",
         "test_framework": "Cypress",
-        "stack_trace": "at Context.eval (webpack://mergify-dashboard/./cypress/support/commands.ts:143:0)"
+        "stack_trace": "Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it."
     },
     {
-        "problem_type": "CypressError",
+        "problem_type": "Timeout",
+        "test_name": "Should display right date for details panel",
         "language": "JavaScript",
         "filename": "GHAFailedJobDetails.cy.ts",
-        "lineno": "17",
-        "error": "Timed out retrying after 30000ms: `cy.wait()` timed out waiting `30000ms` for the 1st request to the route: `job-details`. No request ever occurred.",
+        "lineno": 17,
+        "error": "CypressError",
         "test_framework": "Cypress",
-        "stack_trace": "at Context.eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobDetails.cy.ts:17:0)"
+        "stack_trace": "`cy.wait()` timed out waiting `30000ms` for the 1st request to the route: `job-details`. No request ever occurred."
     },
     {
-        "problem_type": "CypressError",
+        "problem_type": "Timeout",
+        "test_name": "Should handle next and previous error buttons",
         "language": "JavaScript",
         "filename": "GHAFailedJobDetails.cy.ts",
-        "lineno": "23",
-        "error": "Timed out retrying after 30000ms: `cy.wait()` timed out waiting `30000ms` for the 1st request to the route: `job-details`. No request ever occurred.",
+        "lineno": 23,
+        "error": "CypressError",
         "test_framework": "Cypress",
-        "stack_trace": "at Context.eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobDetails.cy.ts:23:0)"
+        "stack_trace": "`cy.wait()` timed out waiting `30000ms` for the 1st request to the route: `job-details`. No request ever occurred."
     }
 ]

@@ -1,38 +1,42 @@
 [
     {
-        "problem_type": "CypressError",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should display flaky guard table",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobs.cy.ts",
-        "lineno": "10",
-        "error": "Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document.",
+        "lineno": 10,
+        "error": "CypressError",
         "test_framework": "Cypress",
-        "stack_trace": "CypressError: Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document.\n      at isElement (http://localhost:3000/__cypress/runner/cypress_runner.js:145352:62)\n      at validateType (http://localhost:3000/__cypress/runner/cypress_runner.js:145210:14)\n      at Object.isType (http://localhost:3000/__cypress/runner/cypress_runner.js:145241:7)\n      at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:135627:24)\n      at Object.subjectFn (http://localhost:3000/__cypress/runner/cypress_runner.js:144257:16)\n      at $Cy.verifyUpcomingAssertions (http://localhost:3000/__cypress/runner/cypress_runner.js:143601:31)\n      at onRetry (http://localhost:3000/__cypress/runner/cypress_runner.js:144248:15)\n      at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)\n      at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4315:29)\n      at whenStable (http://localhost:3000/__cypress/runner/cypress_runner.js:144135:68)\n      at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:144076:14)\n      at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1807:23)\n      at Promise._settlePromiseFromHandler (http://localhost:3000/__cypress/runner/cypress_runner.js:1519:31)\n      at Promise._settlePromise (http://localhost:3000/__cypress/runner/cypress_runner.js:1576:18)\n      at Promise._settlePromise0 (http://localhost:3000/__cypress/runner/cypress_runner.js:1621:10)\n      at Promise._settlePromises (http://localhost:3000/__cypress/runner/cypress_runner.js:1701:18)\n      at Promise._fulfill (http://localhost:3000/__cypress/runner/cypress_runner.js:1645:18)\n      at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:5450:46)\n  From Your Spec Code:\n      at eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts:10:0)\n  at Array.forEach (<anonymous>)\n      at Context.eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobs.cy.ts:8:15)"
+        "stack_trace": "CypressError: Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document."
     },
     {
-        "problem_type": "AssertionError",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should navigate to flaky guard error details",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobs.cy.ts",
-        "lineno": null,
-        "error": "Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it.",
+        "lineno": 10,
+        "error": "AssertionError",
         "test_framework": "Cypress",
-        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it.\n      at Context.eval (webpack://mergify-dashboard/./cypress/support/commands.ts:143:0)"
+        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it."
     },
     {
-        "problem_type": "AssertionError",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should display right date for details panel",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobDetails.cy.ts",
-        "lineno": null,
-        "error": "Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"details-17728253792\"]`, but never found it.",
+        "lineno": 16,
+        "error": "AssertionError",
         "test_framework": "Cypress",
-        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"details-17728253792\"]`, but never found it.\n      at Context.eval (webpack://mergify-dashboard/./cypress/support/commands.ts:143:0)"
+        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"details-17728253792\"]`, but never found it."
     },
     {
-        "problem_type": "AssertionError",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should handle next and previous error buttons",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobDetails.cy.ts",
-        "lineno": "16",
-        "error": "Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"previous-job\"]`, but never found it.",
+        "lineno": 16,
+        "error": "AssertionError",
         "test_framework": "Cypress",
-        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"previous-job\"]`, but never found it.\n      at Context.eval (webpack://mergify-dashboard/./cypress/e2e/gha-failed-jobs/GHAFailedJobDetails.cy.ts:16:0)"
+        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"previous-job\"]`, but never found it."
     }
 ]

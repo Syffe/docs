@@ -1,11 +1,12 @@
 [
     {
-        "problem_type": "Static type checking error",
+        "problem_type": "Static Type Checking Error",
+        "test_name": null,
         "language": "Python",
         "filename": "mergify_shadow_office/clients/loops.py",
         "lineno": 187,
-        "error": "mypy",
+        "error": "Argument 1 to \"to_isoformat\" has incompatible type \"datetime | None\"; expected \"date | datetime\"",
         "test_framework": "mypy",
-        "stack_trace": "Argument 1 to \"to_isoformat\" has incompatible type \"datetime | None\"; expected \"date | datetime\""
+        "stack_trace": null
     }
 ]

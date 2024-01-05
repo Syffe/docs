@@ -40,6 +40,7 @@ LOG_EMBEDDER_MAX_ATTEMPTS = 5
 
 JSON_STRUCTURE = {
     "problem_type": "The type of problem that caused the failure",
+    "test_name": "Name of the test that failed if any, null otherwise",
     "language": "The programming language of the program that produced the error",
     "filename": "The filename where the error was raised, null if no file is detected",
     "lineno": "The line number where the error was raised as an integer, null otherwise",
@@ -101,6 +102,7 @@ class UnableToExtractLogMetadata(Exception):
 
 class ExtractedDataObject(typing.TypedDict):
     problem_type: str | None
+    test_name: str | None
     language: str | None
     filename: str | None
     lineno: str | None

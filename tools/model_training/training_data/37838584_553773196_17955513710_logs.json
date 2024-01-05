@@ -1,37 +1,41 @@
 [
     {
-        "problem_type": "CypressError",
+        "problem_type": "Test Failure",
+        "test_name": "Should display flaky guard table",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobs.cy.ts",
-        "lineno": "10",
-        "error": "Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document.",
+        "lineno": 10,
+        "error": "CypressError",
         "test_framework": "Cypress",
         "stack_trace": "CypressError: Timed out retrying after 10000ms: `cy.eq()` failed because it requires a DOM element or document."
     },
     {
-        "problem_type": "AssertionError",
+        "problem_type": "Test Failure",
+        "test_name": "Should navigate to flaky guard error details",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobs.cy.ts",
-        "lineno": null,
-        "error": "Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it.",
+        "lineno": 10,
+        "error": "AssertionError",
         "test_framework": "Cypress",
         "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"go-to-gha-failed-jobs-error\"]`, but never found it."
     },
     {
-        "problem_type": "AssertionError",
+        "problem_type": "Test Failure",
+        "test_name": "Should display right date for details panel",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobDetails.cy.ts",
-        "lineno": null,
-        "error": "Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"details-17728253792\"]`, but never found it.",
+        "lineno": 16,
+        "error": "AssertionError",
         "test_framework": "Cypress",
         "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"details-17728253792\"]`, but never found it."
     },
     {
-        "problem_type": "AssertionError",
+        "problem_type": "Test Failure",
+        "test_name": "Should handle next and previous error buttons",
         "language": "JavaScript",
         "filename": "gha-failed-jobs/GHAFailedJobDetails.cy.ts",
-        "lineno": "16",
-        "error": "Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"previous-job\"]`, but never found it.",
+        "lineno": 16,
+        "error": "AssertionError",
         "test_framework": "Cypress",
         "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected to find element: `[data-testid=\"previous-job\"]`, but never found it."
     }

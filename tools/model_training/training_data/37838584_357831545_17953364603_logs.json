@@ -1,11 +1,12 @@
 [
     {
         "problem_type": "Network timeout during HTTP request",
+        "test_name": null,
         "language": "Python",
-        "filename": "/home/runner/work/_actions/Mergifyio/add-linear-author-as-reviewer/main/linear-extract-reviewers.py",
-        "lineno": "52",
+        "filename": "linear-extract-reviewers.py",
+        "lineno": null,
         "error": "httpx.ReadTimeout",
         "test_framework": null,
-        "stack_trace": "Traceback (most recent call last): ... httpx.ReadTimeout: The read operation timed out"
+      "stack_trace": "Traceback (most recent call last):\n  File "/home/runner/work/_actions/Mergifyio/add-linear-author-as-reviewer/main/linear-extract-reviewers.py", line 52, in <module>\n    main()\n  File "/home/runner/work/_actions/Mergifyio/add-linear-author-as-reviewer/main/linear-extract-reviewers.py", line 38, in main\n    responses = linear.post("/graphql", json=query).json()\n  File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 1132, in post\n    return self.request(\n  File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 814, in request\n    return self.send(request, auth=auth, follow_redirects=follow_redirects)\n  File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 901, in send\n    response = self._send_handling_auth(\n  File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 929, in _send_handling_auth\n    response = self._send_handling_redirects(\n  File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 966, in _send_handling_redirects\n    response = self._send_single_request(request)\n  File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_client.py", line 1002, in _send_single_request\n    response = transport.handle_request(request)\n  File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_transports/default.py", line 227, in handle_request\n    with map_httpcore_exceptions():\n  File "/usr/lib/python3.10/contextlib.py", line 153, in __exit__\n    self.gen.throw(typ, value, traceback)\n  File "/home/runner/work/engine/engine/venv/lib/python3.10/site-packages/httpx/_transports/default.py", line 83, in map_httpcore_exceptions\n    raise mapped_exc(message) from exc\nhttpx.ReadTimeout: The read operation timed out"
     }
 ]

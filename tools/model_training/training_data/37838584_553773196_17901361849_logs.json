@@ -1,6 +1,7 @@
 [
     {
         "problem_type": "ESLint configuration error",
+        "test_name": null,
         "language": "JavaScript",
         "filename": "EmbeddedLog.cy.tsx",
         "lineno": "1",
@@ -9,7 +10,8 @@
         "stack_trace": null
     },
     {
-        "problem_type": "Module resolution error",
+        "problem_type": "Import resolution error",
+        "test_name": null,
         "language": "JavaScript",
         "filename": "EmbeddedLog.cy.tsx",
         "lineno": "1",
@@ -19,6 +21,7 @@
     },
     {
         "problem_type": "Mocha exclusive test error",
+        "test_name": null,
         "language": "JavaScript",
         "filename": "GHAFailedJobs.cy.ts",
         "lineno": "11",

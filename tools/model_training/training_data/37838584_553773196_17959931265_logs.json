@@ -1,11 +1,12 @@
 [
     {
         "problem_type": "Test Failure",
+        "test_name": "Should handle partitions even if nothing queued",
         "language": "JavaScript",
         "filename": "Partitions.cy.ts",
-        "lineno": "125",
+        "lineno": null,
         "error": "AssertionError",
         "test_framework": "Cypress",
-        "stack_trace": "at Context.eval (webpack://mergify-dashboard/./cypress/support/commands.ts:125:0)"
+        "stack_trace": "CypressError: Timed out retrying after 30000ms: `cy.wait()` timed out waiting `30000ms` for the 1st request to the route: `pull`. No request ever occurred."
     }
 ]

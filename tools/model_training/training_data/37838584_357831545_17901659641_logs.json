@@ -1,29 +1,82 @@
 [
     {
-        "problem_type": "Missing Event Timeout",
-        "language": "Python",
-        "filename": "mergify_engine/tests/functional/log_embedder/test_github_action.py",
-        "lineno": null,
-        "error": "MissingEventTimeout",
-        "test_framework": "pytest",
-        "stack_trace": "Never got event `workflow_job` with payload `{'action': 'completed'}` (timeout)"
-    },
-    {
-        "problem_type": "Assertion Error",
+        "problem_type": "Test Failure",
+        "test_name": "TestQueueFreeze.test_create_queue_freeze_without_cascading_effect",
         "language": "Python",
         "filename": "mergify_engine/tests/functional/api/test_queue_freeze.py",
         "lineno": null,
         "error": "AssertionError",
         "test_framework": "pytest",
-        "stack_trace": "assert 'The pull request is the 2nd in the queue to be merged' == 'The pull request is the 1st in the queue to be merged'"
+        "stack_trace": "AssertionError: assert 'The pull request is the 2nd in the queue to be merged' == 'The pull request is the 1st in the queue to be merged'"
     },
     {
-        "problem_type": "Assertion Error",
+        "problem_type": "Test Failure",
+        "test_name": "TestQueueCommand.test_queue_command_unqueue_pr_after_ci_failure",
         "language": "Python",
         "filename": "mergify_engine/tests/functional/commands/test_queue.py",
         "lineno": null,
         "error": "AssertionError",
         "test_framework": "pytest",
-        "stack_trace": "assert 'The pull request has been removed from the queue' in '> queue\n\n#### \ud83d\udfe0 The pull request is the 1st in the queue to be merged\n\n<details>\n\nBranch 20231020155112/test_queue_command_unqueue_pr_after_ci_failure/main (ee9214a) and [#68138](/mergifyio-testing/functional-testing-repo/pull/68138) are embarked together for merge.\n\nRequired conditions of queue `default` for merge:\n\n- [ ] all of [\ud83d\udcc3 From pull request rule queue]:\n  - [ ] any of [:twisted_rightwards_arrows: queue conditions]:\n    - [ ] all of [:pushpin: queue conditions of queue `default`]:\n      - [ ] any of [\ud83d\udee1 GitHub branch protection]:\n        - [ ] `check-neutral=continuous-integration/fake-ci`\n        - [ ] `check-skipped=continuous-integration/fake-ci`\n        - [ ] `check-success=continuous-integration/fake-ci`\n  - `-draft` [:pushpin: queue requirement]\n    - [X] #68138\n  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    - [X] #68138\n- [ ] any of [\ud83d\udee1 GitHub branch protection]:\n  - [ ] `check-neutral=continuous-integration/fake-ci`\n  - [ ] `check-skipped=continuous-integration/fake-ci`\n  - [ ] `check-success=continuous-integration/fake-ci`\n\nRequired conditions to stay...fault`]:\n      - [ ] any of [\ud83d\udee1 GitHub branch protection]:\n        - `check-neutral=continuous-integration/fake-ci`\n          - [ ] #68138\n        - `check-skipped=continuous-integration/fake-ci`\n          - [ ] #68138\n        - `check-success=continuous-integration/fake-ci`\n          - [ ] #68138\n  - `-draft` [:pushpin: queue requirement]\n    - [X] #68138\n  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    - [X] #68138\n- [ ] any of [\ud83d\udee1 GitHub branch protection]:\n  - `check-neutral=continuous-integration/fake-ci`\n    - [ ] #68138\n  - `check-skipped=continuous-integration/fake-ci`\n    - [ ] #68138\n  - `check-success=continuous-integration/fake-ci`\n    - [ ] #68138\n\nVisit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo/queues/partitions/__default__?queues=default&branch=20231020155112%2Ftest_queue_command_unqueue_pr_after_ci_failure%2Fmain) to check the state of the queue `default`.\n\n</details>\n\n\n<!\nDO NOT EDIT\n-*- Mergify Payload -*-\n{\"command\": \"queue\", \"conclusion\": null, \"action_is_running\": true}\n-*- Mergify Payload End -*-\n-->'"
+        "stack_trace": "assert 'The pull request has been removed from the queue' in '...'"
+    },
+    {
+        "problem_type": "Test Failure",
+        "test_name": "TestLogEmbedderGithubAction.test_log_downloading",
+        "language": "Python",
+        "filename": "mergify_engine/tests/functional/log_embedder/test_github_action.py",
+        "lineno": null,
+        "error": "MissingEventTimeout",
+        "test_framework": "pytest",
+        "stack_trace": "MissingEventTimeout: Never got event `workflow_job` with payload `{'action': 'completed'}` (timeout)"
+    },
+    {
+        "problem_type": "Test Failure",
+        "test_name": "TestLogEmbedderGithubAction.test_log_downloading_with_matrix",
+        "language": "Python",
+        "filename": "mergify_engine/tests/functional/log_embedder/test_github_action.py",
+        "lineno": null,
+        "error": "MissingEventTimeout",
+        "test_framework": "pytest",
+        "stack_trace": "MissingEventTimeout: Never got event `workflow_job` with payload `{'action': 'completed'}` (timeout)"
+    },
+    {
+        "problem_type": "Test Failure",
+        "test_name": "TestLogEmbedderGithubAction.test_log_downloading_with_no_steps",
+        "language": "Python",
+        "filename": "mergify_engine/tests/functional/log_embedder/test_github_action.py",
+        "lineno": null,
+        "error": "AssertionError",
+        "test_framework": "pytest",
+        "stack_trace": "assert None is not None"
+    },
+    {
+        "problem_type": "Test Failure",
+        "test_name": "TestLogEmbedderGithubAction.test_log_embedding",
+        "language": "Python",
+        "filename": "mergify_engine/tests/functional/log_embedder/test_github_action.py",
+        "lineno": null,
+        "error": "MissingEventTimeout",
+        "test_framework": "pytest",
+        "stack_trace": "MissingEventTimeout: Never got event `workflow_job` with payload `{'action': 'completed'}` (timeout)"
+    },
+    {
+        "problem_type": "Test Failure",
+        "test_name": "TestLogEmbedderGithubAction.test_log_embedding_matrix",
+        "language": "Python",
+        "filename": "mergify_engine/tests/functional/log_embedder/test_github_action.py",
+        "lineno": null,
+        "error": "MissingEventTimeout",
+        "test_framework": "pytest",
+        "stack_trace": "MissingEventTimeout: Never got event `workflow_job` with payload `{'action': 'completed'}` (timeout)"
+    },
+    {
+        "problem_type": "Test Failure",
+        "test_name": "TestLogEmbedderGithubAction.test_log_step_name_to_zip_filenames",
+        "language": "Python",
+        "filename": "mergify_engine/tests/functional/log_embedder/test_github_action.py",
+        "lineno": null,
+        "error": "MissingEventTimeout",
+        "test_framework": "pytest",
+        "stack_trace": "MissingEventTimeout: Never got event `workflow_job` with payload `{'action': 'completed'}` (timeout)"
     }
 ]

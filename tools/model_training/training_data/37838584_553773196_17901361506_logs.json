@@ -1,9 +1,10 @@
 [
     {
-        "problem_type": "TypeScript Compilation Error",
+        "problem_type": "Compilation Error",
+        "test_name": null,
         "language": "TypeScript",
         "filename": "src/dashboard/CIMonitoring/components/Issue/Main.tsx",
-        "lineno": "124",
+        "lineno": 124,
         "error": "TS2740",
         "test_framework": null,
         "stack_trace": "Type '{ id: number; run_id: number; started_at: string; flaky: string; failed_run_count: number; }' is missing the following properties from type '{ name: string; error_description: string | null; id: number; run_id: number; steps: { name: string; status: 'queued' | 'in_progress' | 'completed'; conclusion: 'success' | 'failure' | 'neutral' | ... 4 more ... | null; number: number; started_at: string | null; completed_at: string | null; } ; ... 5 more ...; fail...': name, error_description, steps, failed_step_number, and 3 more."

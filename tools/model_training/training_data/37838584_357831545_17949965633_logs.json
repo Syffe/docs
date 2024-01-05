@@ -1,10 +1,11 @@
 [
     {
-        "problem_type": "Invalid database port configuration",
+        "problem_type": "Configuration Error",
+        "test_name": null,
         "language": "Shell",
         "filename": "run-testing-database-sync.sh",
         "lineno": null,
-        "error": "invalid integer value for connection option 'port'",
+        "error": "Invalid Connection Port",
         "test_framework": null,
         "stack_trace": "psql: error: invalid integer value \"engine-db.cop9yw0atqzb.us-east-1.rds.amazonaws.com:5432\" for connection option \"port\""
     }

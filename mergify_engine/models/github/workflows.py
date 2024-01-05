@@ -749,3 +749,5 @@ class WorkflowJobLogMetadata(models.Base):
         sqlalchemy.ForeignKey("ci_issue_gpt.id"),
         anonymizer_config=None,
     )
+
+    test_name: orm.Mapped[str | None] = orm.mapped_column(anonymizer_config=None)

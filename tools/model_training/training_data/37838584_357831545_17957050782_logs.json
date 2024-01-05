@@ -1,11 +1,32 @@
 [
     {
-        "problem_type": "Semgrep rule violation",
-        "language": "Python",
+        "problem_type": "Static Analysis Violation",
+        "test_name": null,
+        "language": "python",
         "filename": "mergify_engine/tests/unit/models/test_ci_issue.py",
-        "lineno": "117, 143",
+        "lineno": 101,
         "error": "performance-improvements.len-all-count",
-        "test_framework": "Semgrep",
+        "test_framework": "semgrep",
         "stack_trace": "Using QUERY.count() instead of len(QUERY.all()) sends less data to the client since the SQLAlchemy method is performed server-side."
+    },
+    {
+        "problem_type": "Static Analysis Violation",
+        "test_name": null,
+        "language": "python",
+        "filename": "mergify_engine/tests/unit/models/test_ci_issue.py",
+        "lineno": 127,
+        "error": "performance-improvements.len-all-count",
+        "test_framework": "semgrep",
+        "stack_trace": "Using QUERY.count() instead of len(QUERY.all()) sends less data to the client since the SQLAlchemy method is performed server-side."
+    },
+    {
+        "problem_type": "Static Analysis Timeout",
+        "test_name": null,
+        "language": "python",
+        "filename": "mergify_engine/tests/functional/actions/test_queue.py",
+        "lineno": null,
+        "error": "insecure-transport.requests.request-with-http.request-with-http",
+        "test_framework": "semgrep",
+        "stack_trace": "1 timeout error(s) in mergify_engine/tests/functional/actions/test_queue.py when running the rule [python.lang.security.audit.insecure-transport.requests.request-with-http.request-with-http]"
     }
 ]

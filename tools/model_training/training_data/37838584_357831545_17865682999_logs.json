@@ -1,9 +1,10 @@
 [
     {
         "problem_type": "Linting error",
+        "test_name": null,
         "language": "YAML",
         "filename": "./releasenotes/notes/events-logs-note-815eb9edb27c4e40.yaml",
-        "lineno": "5",
+        "lineno": 5,
         "error": "line-length",
         "test_framework": "yamllint",
         "stack_trace": null

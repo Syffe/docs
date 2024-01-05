@@ -1,11 +1,12 @@
 [
     {
-        "problem_type": "AssertionError",
+        "problem_type": "Assertion Failure",
+        "test_name": "Should show pull request history",
         "language": "JavaScript",
         "filename": "QueuedPullDetails.cy.ts",
-        "lineno": "39",
-        "error": "Timed out retrying after 10000ms: Expected <div.timeline-item> not to exist in the DOM, but it was continuously found.",
+        "lineno": 39,
+        "error": "AssertionError",
         "test_framework": "Cypress",
-        "stack_trace": "at eval (webpack://mergify-dashboard/./cypress/e2e/queued-pull-details/QueuedPullDetails.cy.ts:39:59)\n at Context.eval (webpack://mergify-dashboard/./cypress/e2e/queued-pull-details/QueuedPullDetails.cy.ts:34:0)"
+        "stack_trace": "AssertionError: Timed out retrying after 10000ms: Expected <div.timeline-item> not to exist in the DOM, but it was continuously found."
     }
 ]

@@ -1,11 +1,12 @@
 [
     {
-        "problem_type": "Assertion Error in Test",
+        "problem_type": "Assertion Error",
+        "test_name": "test_event_as_dict",
         "language": "Python",
         "filename": "mergify_engine/tests/unit/test_events_db.py",
-        "lineno": "760",
+        "lineno": 760,
         "error": "AssertionError",
         "test_framework": "pytest",
-        "stack_trace": "The test `test_event_as_dict` failed due to an assertion error comparing two dictionaries for equality. The `repository` key contains differing items, specifically the `ci_issue_prefix` key is missing in the actual output, and the `type` key under `repository.owner` has a different representation of the `User` type."
+        "stack_trace": "assert {'deleted_by'...t': None, ...} == {'deleted_by'...t': None, ...}"
     }
 ]
