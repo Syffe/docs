@@ -845,6 +845,9 @@ class PullRequest(BasePullRequest):
             # but KeyError from this formatter are not converted into a TemplateError
             # NOTE(sileht): we cannot use the KeyError message to avoid code/html injection
             raise RenderTemplateFailure("invalid arguments passed to format()")
+        except jinja2.exceptions.SecurityError:
+            # avoid message like: access to attribute '__class__' of 'DummyList' object is unsafe.
+            raise RenderTemplateFailure("invalid template")
         except jinja2.exceptions.TemplateSyntaxError as tse:
             raise RenderTemplateFailure(tse.message or "", tse.lineno)
         except jinja2.exceptions.TemplateError as te:
