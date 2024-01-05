@@ -44,6 +44,14 @@ class CiIssueEvent:
 
 
 @pydantic.dataclasses.dataclass
+class CiIssuePullRequestData:
+    number: int
+    title: str
+    author: str
+    events_count: int
+
+
+@pydantic.dataclasses.dataclass
 class CiIssueDetailResponse:
     id: int
     short_id: str
@@ -52,6 +60,9 @@ class CiIssueDetailResponse:
     status: CiIssueStatus
     events: list[CiIssueEvent] = dataclasses.field(
         metadata={"description": "Event link to this CiIssue"},
+    )
+    pull_requests_impacted: list[CiIssuePullRequestData] = dataclasses.field(
+        metadata={"description": "List of pull requests impacted by this CiIssue"},
     )
 
 
@@ -248,6 +259,7 @@ async def get_ci_issue(
     stmt = (
         sqlalchemy.select(CiIssueGPT)
         .options(
+            CiIssueGPT.with_pull_requests_impacted_column(),
             sqlalchemy.orm.joinedload(CiIssueGPT.log_metadata)
             .load_only(gh_models.WorkflowJobLogMetadata.id)
             .options(
@@ -302,6 +314,12 @@ async def get_ci_issue(
         status=ci_issue.status,
         # TODO(sileht): make the order by with ORM
         events=sorted(events, key=lambda e: e.started_at, reverse=True),
+        pull_requests_impacted=[
+            CiIssuePullRequestData(**pull_request_api_data)
+            for pull_request_api_data in ci_issue.pull_requests_impacted
+        ]
+        if ci_issue.pull_requests_impacted
+        else [],
     )
 
 

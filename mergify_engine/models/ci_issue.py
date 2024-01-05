@@ -12,6 +12,7 @@ import sqlalchemy.ext.hybrid
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.models import github as gh_models
+from mergify_engine.models.github import pull_request as gh_pull_request
 
 
 COSINE_SIMILARITY_THRESHOLD = 0.97
@@ -218,6 +219,13 @@ class CiIssue(models.Base, CiIssueMixin):
             job.ci_issue_id = ci_issue_id
 
 
+class PullRequestImpacted(typing.TypedDict):
+    number: int
+    title: str
+    author: str
+    events_count: int
+
+
 class CiIssueGPT(models.Base, CiIssueMixin):
     __tablename__ = "ci_issue_gpt"
 
@@ -241,6 +249,68 @@ class CiIssueGPT(models.Base, CiIssueMixin):
         "WorkflowJobLogMetadata",
         lazy="raise_on_sql",
     )
+
+    pull_requests_impacted: orm.Mapped[
+        list[PullRequestImpacted] | None
+    ] = orm.query_expression()
+
+    @classmethod
+    def with_pull_requests_impacted_column(cls) -> orm.strategy_options._AbstractLoad:
+        distinct_subquery = (
+            sqlalchemy.select(
+                gh_pull_request.PullRequest.number,
+                gh_pull_request.PullRequest.title,
+                gh_models.GitHubAccount.login,
+                sqlalchemy.func.count(
+                    gh_models.WorkflowJobLogMetadata.id.distinct(),
+                ).label("events"),
+            )
+            .select_from(gh_pull_request.PullRequest)
+            .join(
+                gh_models.WorkflowJobLogMetadata,
+                gh_models.WorkflowJobLogMetadata.ci_issue_id == cls.id,
+            )
+            .join(
+                gh_models.WorkflowJob,
+                gh_models.WorkflowJob.id
+                == gh_models.WorkflowJobLogMetadata.workflow_job_id,
+            )
+            .join(
+                gh_models.GitHubAccount,
+                gh_models.GitHubAccount.id == gh_pull_request.PullRequest.user_id,
+            )
+            .where(
+                gh_pull_request.PullRequest.base_repository_id == cls.repository_id,
+                gh_pull_request.PullRequest.head_sha_history.any(
+                    gh_pull_request.PullRequestHeadShaHistory.head_sha
+                    == gh_models.WorkflowJob.head_sha,
+                ),
+            )
+            .group_by(gh_pull_request.PullRequest.id, gh_models.GitHubAccount.id)
+            .order_by(
+                sqlalchemy.desc("events"),
+                gh_pull_request.PullRequest.number,
+            )
+            .correlate(CiIssueGPT)
+            .subquery()
+        )
+        return orm.with_expression(
+            cls.pull_requests_impacted,
+            sqlalchemy.select(
+                sqlalchemy.func.json_agg(
+                    sqlalchemy.func.json_build_object(
+                        "number",
+                        distinct_subquery.c.number,
+                        "title",
+                        distinct_subquery.c.title,
+                        "author",
+                        distinct_subquery.c.login,
+                        "events_count",
+                        distinct_subquery.c.events,
+                    ),
+                ),
+            ).scalar_subquery(),
+        )
 
     @sqlalchemy.orm.declared_attr
     def events_count(cls) -> orm.Mapped[int]:

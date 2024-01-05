@@ -270,8 +270,12 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
     }
 
 
-@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
+@pytest.mark.populated_db_datasets(
+    "TestGhaFailedJobsLinkToCissueGPTDataset",
+    "TestGhaFailedJobsPullRequestsDataset",
+)
 async def test_api_ci_issue_get_ci_issue(
+    _mock_gh_pull_request_commits_insert_in_pg: None,
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
@@ -299,6 +303,11 @@ async def test_api_ci_issue_get_ci_issue(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
     )
 
+    # NOTE(Kontrolix): We have 3 events in this payload but the sum of events_count is 5
+    # on pull_request_impacted, because PR 123 and 789 share the same Head SHA.
+    # Therefore, events OneAccount/OneRepo/flaky_failed_job_attempt_2/metadata/1 and
+    # OneAccount/OneRepo/flaky_failed_job_attempt_1/metadata/1 are counted twice, once for
+    # each PR.
     assert reply.json() == {
         "events": [
             {
@@ -334,6 +343,26 @@ async def test_api_ci_issue_get_ci_issue(
         "name": "Error on test: my_awesome_test",
         "short_id": ci_issue.short_id,
         "status": "unresolved",
+        "pull_requests_impacted": [
+            {
+                "author": "contributor",
+                "events_count": 2,
+                "number": 123,
+                "title": "awesome",
+            },
+            {
+                "author": "contributor",
+                "events_count": 2,
+                "number": 789,
+                "title": "awesome",
+            },
+            {
+                "author": "contributor",
+                "events_count": 1,
+                "number": 234,
+                "title": "awesome",
+            },
+        ],
     }
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
@@ -382,6 +411,7 @@ async def test_api_ci_issue_get_ci_issue(
         "name": "Error on test: my_awesome_test",
         "short_id": ci_issue.short_id,
         "status": "unresolved",
+        "pull_requests_impacted": [],
     }
 
 
@@ -546,6 +576,7 @@ async def test_api_ci_issue_patch_ci_issue(
         "job_name": "A job",
         "status": "unresolved",
         "events": anys.ANY_LIST,
+        "pull_requests_impacted": [],
     }
 
     response = await web_client.patch(
@@ -566,6 +597,7 @@ async def test_api_ci_issue_patch_ci_issue(
         "job_name": "A job",
         "status": "resolved",
         "events": anys.ANY_LIST,
+        "pull_requests_impacted": [],
     }
 
     # Patch unknown issue
