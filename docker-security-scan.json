@@ -2308,7 +2308,7 @@
     "Title": "kernel: libbpf: NULL pointer dereference in find_prog_by_sec_insn",
     "Severity": "MEDIUM",
     "VendorSeverity": {
-      "amazon": 3,
+      "amazon": 2,
       "cbl-mariner": 1,
       "nvd": 2,
       "redhat": 1,
