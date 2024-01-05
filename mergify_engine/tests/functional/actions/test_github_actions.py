@@ -9,6 +9,7 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import utils as tests_utils
 
 
 class GhaActionTestBase(base.FunctionalTestBase):
@@ -83,6 +84,7 @@ class GhaActionTestBase(base.FunctionalTestBase):
                                         "inputs": {
                                             "some_boolean": True,
                                         },
+                                        "ref": self.main_branch_name,
                                     },
                                     {
                                         "workflow": "ci_workflow.yaml",
@@ -90,6 +92,7 @@ class GhaActionTestBase(base.FunctionalTestBase):
                                             "some_string": "Hello",
                                             "some_number": "11",
                                         },
+                                        "ref": self.main_branch_name,
                                     },
                                 ],
                             },
@@ -109,26 +112,47 @@ class GhaActionTestBase(base.FunctionalTestBase):
 
         p = await self.create_pr()
 
-        async def assert_workflows_ran() -> None:
-            expected_workflows = ["continuous_integration", "pep8"]
-            for _ in range(2):
-                evt = await self.wait_for("workflow_job", {"action": "completed"})
-                assert evt is not None
-                evt = typing.cast(github_types.GitHubEventWorkflowJob, evt)
-                assert evt["workflow_job"] is not None
-                assert (
-                    wf := evt["workflow_job"]["workflow_name"]
-                ) in expected_workflows
-                expected_workflows.remove(wf)
-
-        await assert_workflows_ran()
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "workflow_run",
+                    "payload": tests_utils.get_workflow_run_event_payload(
+                        name="pep8",
+                        action="completed",
+                    ),
+                },
+                {
+                    "event_type": "workflow_run",
+                    "payload": tests_utils.get_workflow_run_event_payload(
+                        name="continuous_integration",
+                        action="completed",
+                    ),
+                },
+            ],
+        )
 
         # Add label and run the action
         await self.add_label(p["number"], "dispatch")
-        await self.run_engine()
 
-        # both workflows successfully dispatched by the action
-        await assert_workflows_ran()
+        await self.run_engine()
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "workflow_run",
+                    "payload": tests_utils.get_workflow_run_event_payload(
+                        name="pep8",
+                        action="completed",
+                    ),
+                },
+                {
+                    "event_type": "workflow_run",
+                    "payload": tests_utils.get_workflow_run_event_payload(
+                        name="continuous_integration",
+                        action="completed",
+                    ),
+                },
+            ],
+        )
 
     async def test_gha_unknown_workflow(self) -> None:
         rules = {
@@ -144,6 +168,7 @@ class GhaActionTestBase(base.FunctionalTestBase):
                                 "dispatch": [
                                     {
                                         "workflow": "unknown.yaml",
+                                        "ref": self.main_branch_name,
                                     },
                                 ],
                             },
@@ -185,6 +210,7 @@ class GhaActionTestBase(base.FunctionalTestBase):
                                 "dispatch": [
                                     {
                                         "workflow": "no_dispatch_workflow.yaml",
+                                        "ref": self.main_branch_name,
                                     },
                                 ],
                             },
@@ -247,7 +273,11 @@ class GhaActionTestBase(base.FunctionalTestBase):
                         "github_actions": {
                             "workflow": {
                                 "dispatch": [
-                                    {"workflow": "inputs_required.yaml", "inputs": {}},
+                                    {
+                                        "workflow": "inputs_required.yaml",
+                                        "inputs": {},
+                                        "ref": self.main_branch_name,
+                                    },
                                 ],
                             },
                         },
@@ -327,9 +357,7 @@ class GhaActionTestBase(base.FunctionalTestBase):
             "on": {
                 "pull_request": {"branches": self.main_branch_name},
                 "workflow_dispatch": {
-                    "inputs": {
-                        "some_string": {"required": True, "type": "string"},
-                    },
+                    "inputs": {"some_string": {"required": True, "type": "string"}},
                 },
             },
             "jobs": {
@@ -358,12 +386,14 @@ class GhaActionTestBase(base.FunctionalTestBase):
                                 "dispatch": [
                                     {
                                         "workflow": "multiple_workflows_success.yaml",
+                                        "ref": self.main_branch_name,
                                     },
                                     {
                                         "workflow": "multiple_workflows_error.yaml",
                                         "inputs": {
                                             "some_string": 666,
                                         },
+                                        "ref": self.main_branch_name,
                                     },
                                 ],
                             },
@@ -446,6 +476,7 @@ Workflow successfully dispatched:
                                 "dispatch": [
                                     {
                                         "workflow": "workflow_dispatch_forbidden.yaml",
+                                        "ref": self.main_branch_name,
                                     },
                                 ],
                             },
@@ -536,6 +567,7 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
                                         "inputs": {
                                             "author": "{{author}}",
                                         },
+                                        "ref": self.main_branch_name,
                                     },
                                 ],
                             },
@@ -553,35 +585,19 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
         )
 
         p = await self.create_pr()
+        await self.wait_for("workflow_job", {"action": "completed"})
+
         await self.add_label(p["number"], "dispatch")
         await self.run_engine()
 
-        # Workflow is triggered twice because of the necessary push trigger, see note in the first test
-        # most recent one is dispatched
-        workflow_job_events = [
-            typing.cast(github_types.GitHubEventWorkflowJob, wf.event)
-            for wf in await self.wait_for_all(
-                expected_events=[
-                    {
-                        "event_type": "workflow_job",
-                        "payload": {"action": "completed"},
-                    },
-                    {
-                        "event_type": "workflow_job",
-                        "payload": {"action": "completed"},
-                    },
-                ],
-            )
-        ]
-
-        assert all(wf is not None for wf in workflow_job_events)
-        dispatched_event = sorted(
-            workflow_job_events,
-            key=lambda wf: wf["workflow_job"]["started_at"],  # type: ignore[index]
-        )[-1]
+        dispatched_event = typing.cast(
+            github_types.GitHubEventWorkflowJob,
+            await self.wait_for("workflow_job", {"action": "completed"}),
+        )
+        assert dispatched_event["workflow_job"] is not None
 
         log = await self.client_integration.get(
-            f"{self.url_origin}/actions/runs/{dispatched_event['workflow_job']['run_id']}/logs",  # type: ignore[index]
+            f"{self.url_origin}/actions/runs/{dispatched_event['workflow_job']['run_id']}/logs",
         )
 
         with io.BytesIO(log.content) as stream:
@@ -598,7 +614,6 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}"""
             "name": "workflow_with_ref",
             "on": {
                 "pull_request": {"branches": self.main_branch_name},
-                "workflow_dispatch": {"inputs": {}},
             },
             "jobs": {
                 "test-dispatch": {

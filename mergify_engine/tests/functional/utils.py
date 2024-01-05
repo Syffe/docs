@@ -103,6 +103,25 @@ def get_pull_request_review_event_payload(
     return payload
 
 
+def get_workflow_run_event_payload(
+    action: github_types.GitHubEventWorkflowRunActionType,
+    status: github_types.GitHubWorkflowRunStatusType | None = None,
+    name: str | None = None,
+) -> dict[str, typing.Any]:
+    payload: dict[str, typing.Any] = {
+        "action": action,
+    }
+
+    if name or status:
+        payload["workflow_run"] = {}
+        if name:
+            payload["workflow_run"]["name"] = name
+        if status:
+            payload["workflow_run"]["status"] = status
+
+    return payload
+
+
 def match_expected_data(
     data: github_types.GitHubEvent,
     expected_data: typing.Any,
