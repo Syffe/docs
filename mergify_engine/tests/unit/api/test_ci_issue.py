@@ -486,7 +486,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     event_id = job.log_metadata[0].id
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/{event_id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/{event_id}",
     )
 
     assert job.steps is not None
@@ -528,7 +528,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     event_id = job.log_metadata[0].id
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/{event_id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/{event_id}",
     )
 
     assert job.steps is not None
@@ -557,7 +557,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     }
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/9999999",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/9999999",
     )
 
     assert reply.status_code == 404
@@ -576,7 +576,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     )
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.id}/events/{job.id}",
+        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.short_id_suffix}/events/{job.id}",
     )
 
     assert reply.status_code == 404

@@ -370,7 +370,7 @@ class CiIssueEventDetailResponse(CiIssueEvent):
 
 
 @router.get(
-    "/repos/{owner}/{repository}/ci_issues/{ci_issue_id}/events/{event_id}",
+    "/repos/{owner}/{repository}/ci_issues/{ci_issue_short_id_suffix}/events/{event_id}",
     summary="Get a detailed event of a CI issue",
     description="Get a detailed event of a CI issue",
     response_model=CiIssueEventDetailResponse,
@@ -383,12 +383,21 @@ class CiIssueEventDetailResponse(CiIssueEvent):
 async def get_ci_issue_event_detail(
     session: database.Session,
     repository_ctxt: security.Repository,
-    ci_issue_id: typing.Annotated[
+    ci_issue_short_id_suffix: typing.Annotated[
         int,
-        fastapi.Path(description="The ID of the CI Issue"),
+        fastapi.Path(description="The ID of the CI Issue in this repository"),
     ],
     event_id: typing.Annotated[int, fastapi.Path(description="The ID of the Event")],
 ) -> CiIssueEventDetailResponse:
+    sub_q_ci_issue_id = (
+        sqlalchemy.select(CiIssueGPT.id)
+        .where(
+            CiIssueGPT.short_id_suffix == ci_issue_short_id_suffix,
+            CiIssueGPT.repository_id == repository_ctxt.repo["id"],
+        )
+        .scalar_subquery()
+    )
+
     stmt = (
         sqlalchemy.select(gh_models.WorkflowJobLogMetadata)
         .join(gh_models.WorkflowJobLogMetadata.workflow_job)
@@ -404,7 +413,7 @@ async def get_ci_issue_event_detail(
             gh_models.WorkflowJobLogMetadata.id == event_id,
             # NOTE(sileht): For security purpose:
             gh_models.WorkflowJob.repository_id == repository_ctxt.repo["id"],
-            gh_models.WorkflowJobLogMetadata.ci_issue_id == ci_issue_id,
+            gh_models.WorkflowJobLogMetadata.ci_issue_id == sub_q_ci_issue_id,
         )
     )
 
