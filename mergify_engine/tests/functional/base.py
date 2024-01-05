@@ -4,6 +4,7 @@ import contextlib
 import copy
 import dataclasses
 import datetime
+import hashlib
 import itertools
 import json
 import os
@@ -2170,8 +2171,19 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     ) -> github_types.SHAType:
         if destination_branch is None:
             destination_branch = self.main_branch_name
+
+        local_branch_name_hash = hashlib.sha256(
+            f"{filename}/{destination_branch}".encode(),
+        ).hexdigest()
+        local_branch_name = f"push_file-{local_branch_name_hash}"
+
         await self.git("fetch", "origin", destination_branch)
-        await self.git("checkout", "-b", "random", f"origin/{destination_branch}")
+        await self.git(
+            "checkout",
+            "-b",
+            local_branch_name,
+            f"origin/{destination_branch}",
+        )
         with open(self.git.repository + f"/{filename}", "w") as f:
             f.write(content)
         await self.git("add", filename)
@@ -2179,7 +2191,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         head_sha = github_types.SHAType(
             (await self.git("log", "-1", "--format=%H")).strip(),
         )
-        await self.git("push", "--quiet", "origin", f"random:{destination_branch}")
+        await self.git(
+            "push",
+            "--quiet",
+            "origin",
+            f"{local_branch_name}:{destination_branch}",
+        )
         await self.wait_for_push(branch_name=destination_branch)
         return head_sha
 
@@ -2188,11 +2205,16 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         pull_request: github_types.GitHubPullRequest,
         commit_sha: str,
     ) -> github_types.GitHubEventPullRequest:
+        local_branch_name_hash = hashlib.sha256(
+            f"{pull_request['head']['ref']}/{commit_sha}".encode(),
+        ).hexdigest()
+        local_branch_name = f"change_pr_commit_sha-{local_branch_name_hash}"
+
         await self.git("fetch", "origin", pull_request["head"]["ref"])
         await self.git(
             "checkout",
             "-b",
-            "hellothere",
+            local_branch_name,
             f"origin/{pull_request['head']['ref']}",
         )
         await self.git("commit", "--no-edit", f"--fixup=reword:{commit_sha}")
@@ -2208,7 +2230,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             "--force",
             "--quiet",
             "origin",
-            f"hellothere:{pull_request['head']['ref']}",
+            f"{local_branch_name}:{pull_request['head']['ref']}",
         )
         await self.wait_for(
             "push",
