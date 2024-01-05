@@ -171,6 +171,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
 )
 async def test_api_ci_issue_get_ci_issues_with_pr(
     _mock_gh_pull_request_commits_insert_in_pg: None,
+    _mock_gh_pull_request_files_insert_in_pg: None,
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
@@ -276,6 +277,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
 )
 async def test_api_ci_issue_get_ci_issue(
     _mock_gh_pull_request_commits_insert_in_pg: None,
+    _mock_gh_pull_request_files_insert_in_pg: None,
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,

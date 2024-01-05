@@ -88,6 +88,7 @@ async def test_can_repo_use_github_in_pg_data(
 async def test_same_pull_request_number_in_multiple_repo(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     _mock_gh_pull_request_commits_insert_in_pg: None,
+    _mock_gh_pull_request_files_insert_in_pg: None,
 ) -> None:
     pr_number = github_types.GitHubPullRequestNumber(123)
 

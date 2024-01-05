@@ -40,6 +40,7 @@ from mergify_engine.clients import http
 from mergify_engine.github_in_postgres import utils as ghinpg_utils
 from mergify_engine.models.github import commit_status as status_model
 from mergify_engine.models.github import pull_request_commit as prcommit_model
+from mergify_engine.models.github import pull_request_file as prfile_model
 from mergify_engine.rules.config import mergify as mergify_conf
 
 
@@ -2125,39 +2126,55 @@ class Context:
             for commit in await self.commits
         )
 
+    async def _files_from_http(self) -> list[github_types.CachedGitHubFile]:
+        try:
+            return [
+                github_types.to_cached_github_file(file)
+                async for file in typing.cast(
+                    abc.AsyncIterable[github_types.GitHubFile],
+                    self.client.items(
+                        f"{self.base_url}/pulls/{self.pull['number']}/files",
+                        resource_name="files",
+                        page_limit=10,
+                    ),
+                )
+            ]
+        except http.HTTPClientSideError as e:
+            if (
+                e.status_code == 422
+                and "Sorry, this diff is taking too long to generate" in e.message
+            ):
+                raise exceptions.UnprocessablePullRequest(
+                    "GitHub cannot generate the file list because the diff is taking too long",
+                )
+            raise
+
+    async def _files_from_db(self) -> list[github_types.CachedGitHubFile]:
+        async with database.create_session() as session:
+            files_as_dict = await prfile_model.PullRequestFile.get_pull_request_files(
+                session,
+                self.pull["id"],
+                self.pull["head"]["sha"],
+            )
+
+        return [github_types.to_cached_github_file(file) for file in files_as_dict]
+
     @property
     async def files(self) -> list[github_types.CachedGitHubFile]:
         files = self._caches.files.get()
         if files is cache.Unset:
-            try:
-                files = [
-                    github_types.CachedGitHubFile(
-                        {
-                            "filename": file["filename"],
-                            "contents_url": file["contents_url"],
-                            "status": file["status"],
-                            "sha": file["sha"],
-                            "previous_filename": file.get("previous_filename"),
-                        },
-                    )
-                    async for file in typing.cast(
-                        abc.AsyncIterable[github_types.GitHubFile],
-                        self.client.items(
-                            f"{self.base_url}/pulls/{self.pull['number']}/files",
-                            resource_name="files",
-                            page_limit=10,
-                        ),
-                    )
-                ]
-            except http.HTTPClientSideError as e:
-                if (
-                    e.status_code == 422
-                    and "Sorry, this diff is taking too long to generate" in e.message
-                ):
-                    raise exceptions.UnprocessablePullRequest(
-                        "GitHub cannot generate the file list because the diff is taking too long",
-                    )
-                raise
+            files = []
+            if await ghinpg_utils.can_repo_use_github_in_pg_data(
+                repo_owner=self.repository.repo["owner"]["login"],
+            ):
+                files = await self._files_from_db()
+
+            if not files:
+                # NOTE: A pull request can have no file modified in it, in which case
+                # we will always make an HTTP call to GitHub just to be sure we didn't
+                # miss anything.
+                files = await self._files_from_http()
+
             self._caches.files.set(files)
         return files
 

@@ -1,4 +1,5 @@
 import typing
+from unittest import mock
 
 import pytest
 import respx
@@ -51,6 +52,7 @@ async def test_event_with_nul_bytes_in_body(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     context_getter: conftest.ContextGetterFixture,
     _mock_gh_pull_request_commits_insert_in_pg: None,
+    _mock_gh_pull_request_files_insert_in_pg: None,
 ) -> None:
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(123))
 
@@ -132,7 +134,8 @@ async def test_pull_request_event_invalid_commits_from_http(
         "12345",
         a_pull_request,
     )
-    await process_events.store_redis_events_in_pg(redis_links)
+    with mock.patch.object(gh_models.PullRequest, "_update_files"):
+        await process_events.store_redis_events_in_pg(redis_links)
 
     pull_requests = list(await db.scalars(sqlalchemy.select(gh_models.PullRequest)))
     assert len(pull_requests) == 1
@@ -187,7 +190,8 @@ async def test_pull_request_event_commits_endpoint_return_404(
         "12345",
         a_pull_request,
     )
-    await process_events.store_redis_events_in_pg(redis_links)
+    with mock.patch.object(gh_models.PullRequest, "_update_files"):
+        await process_events.store_redis_events_in_pg(redis_links)
 
     pull_requests = list(await db.scalars(sqlalchemy.select(gh_models.PullRequest)))
     assert len(pull_requests) == 1

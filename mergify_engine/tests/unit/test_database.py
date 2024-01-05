@@ -202,6 +202,7 @@ async def test_migration_script_c3263ca8c1c0(
     _reset_database_state: None,
     _reset_dbpopulator: None,
     _mock_gh_pull_request_commits_insert_in_pg: None,
+    _mock_gh_pull_request_files_insert_in_pg: None,
 ) -> None:
     async def prepare_data() -> None:
         async with database.create_session() as session:

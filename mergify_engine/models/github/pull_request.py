@@ -19,10 +19,21 @@ from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.models.github import account as gh_account_model
 from mergify_engine.models.github import pull_request_commit as pr_commit_model
+from mergify_engine.models.github import pull_request_file as pr_file_model
 from mergify_engine.models.github import repository as gh_repository_model
 
 
 LOG = daiquiri.getLogger(__name__)
+
+
+async def _get_client_from_pull(
+    pull_obj: "PullRequest",
+) -> github.AsyncGitHubInstallationClient:
+    installation = await github.get_installation_from_login(
+        pull_obj.base["repo"]["owner"]["login"],
+    )
+    auth = github.GitHubAppInstallationAuth(installation)
+    return github.AsyncGitHubInstallationClient(auth=auth)
 
 
 class PullRequest(models.Base):
@@ -247,16 +258,13 @@ class PullRequest(models.Base):
     @classmethod
     async def _update_commits(
         cls,
+        client: github.AsyncGitHubInstallationClient,
         session: sqlalchemy.ext.asyncio.AsyncSession,
         pull_request_id: int,
         pull_number: int,
         repo_owner: github_types.GitHubLogin,
         repo_name: github_types.GitHubRepositoryName,
     ) -> None:
-        installation = await github.get_installation_from_login(repo_owner)
-        auth = github.GitHubAppInstallationAuth(installation)
-        client = github.AsyncGitHubInstallationClient(auth=auth)
-
         try:
             new_commits = [
                 commit
@@ -305,6 +313,55 @@ class PullRequest(models.Base):
                 commit,
                 pull_request_id,
                 commit_index,
+            )
+
+    @classmethod
+    async def _update_files(
+        cls,
+        client: github.AsyncGitHubInstallationClient,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        pull_request_id: int,
+        pull_request_number: int,
+        pull_request_head_sha: github_types.SHAType,
+        repo_owner: github_types.GitHubLogin,
+        repo_name: github_types.GitHubRepositoryName,
+    ) -> None:
+        await session.execute(
+            sqlalchemy.delete(pr_file_model.PullRequestFile).where(
+                pr_file_model.PullRequestFile.pull_request_id == pull_request_id,
+                pr_file_model.PullRequestFile.pull_request_head_sha
+                != pull_request_head_sha,
+            ),
+        )
+
+        try:
+            files = [
+                file
+                async for file in typing.cast(
+                    abc.AsyncIterable[github_types.GitHubFile],
+                    client.items(
+                        f"/repos/{repo_owner}/{repo_name}/pulls/{pull_request_number}/files",
+                        resource_name="files",
+                        page_limit=None,
+                    ),
+                )
+            ]
+        except Exception as e:
+            if isinstance(e, http.HTTPNotFound) or exceptions.should_be_ignored(e):
+                LOG.warning(
+                    "Skipping files update for pull request %i because we can't query the files endpoint",
+                    pull_request_id,
+                    exc_info=True,
+                )
+                return
+            raise
+
+        for file in files:
+            await pr_file_model.PullRequestFile.insert_or_update(
+                session,
+                file,
+                pull_request_id,
+                pull_request_head_sha,
             )
 
     @classmethod
@@ -402,10 +459,22 @@ class PullRequest(models.Base):
             )
             session.add(new_head_sha)
 
+            client = await _get_client_from_pull(pull_obj)
             await cls._update_commits(
+                client,
                 session,
                 pull_obj.id,
                 pull_obj.number,
+                pull_obj.base["repo"]["owner"]["login"],
+                pull_obj.base["repo"]["name"],
+            )
+
+            await cls._update_files(
+                client,
+                session,
+                pull_obj.id,
+                pull_obj.number,
+                pull_obj.head["sha"],
                 pull_obj.base["repo"]["owner"]["login"],
                 pull_obj.base["repo"]["name"],
             )

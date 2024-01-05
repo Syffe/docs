@@ -364,8 +364,8 @@ class GitHubFile(typing_extensions.TypedDict):
     changes: int
     blob_url: str
     raw_url: str
-    patch: str
-    previous_filename: str | None
+    patch: typing.NotRequired[str]
+    previous_filename: typing.NotRequired[str]
 
 
 class CachedGitHubFile(typing_extensions.TypedDict):
@@ -374,6 +374,18 @@ class CachedGitHubFile(typing_extensions.TypedDict):
     contents_url: str
     status: GitHubFileStatus
     previous_filename: str | None
+
+
+def to_cached_github_file(file: GitHubFile) -> CachedGitHubFile:
+    return CachedGitHubFile(
+        {
+            "filename": file["filename"],
+            "contents_url": file["contents_url"],
+            "status": file["status"],
+            "sha": file["sha"],
+            "previous_filename": file.get("previous_filename"),
+        },
+    )
 
 
 class GitHubIssueOrPullRequest(typing_extensions.TypedDict):
