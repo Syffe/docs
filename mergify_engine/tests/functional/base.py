@@ -449,6 +449,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         # Track when worker work
         self.worker_concurrency_works = 0
+        self.github_in_postgres_working = 0
 
         await self.update_delete_branch_on_merge()
 
@@ -638,6 +639,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         async def mocked_tracked_consume(*args, **kwargs):  # type: ignore[no-untyped-def]
             self.worker_concurrency_works += 1
+            # Make sure github-in-postgres is not processing events before consuming a PR,
+            # this is to avoid the case where in record all the github-in-postgres events were
+            # properly stored in db but not in replay mode, which leads to inconsistencies
+            # in how the events are treated or where the data we get in the Context is fetched
+            # from.
+            while self.github_in_postgres_working:
+                await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
+
             try:
                 await real_consume_method(*args, **kwargs)
             finally:
@@ -645,10 +654,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         async def mocked_store_redis_events_in_pg(*args, **kwargs):  # type: ignore[no-untyped-def]
             self.worker_concurrency_works += 1
+            self.github_in_postgres_working += 1
             try:
                 return await real_store_redis_events_in_pg(*args, **kwargs)
             finally:
                 self.worker_concurrency_works -= 1
+                self.github_in_postgres_working -= 1
 
         async def mocked_process_failed_jobs(*args, **kwargs):  # type: ignore[no-untyped-def]
             self.worker_concurrency_works += 1
