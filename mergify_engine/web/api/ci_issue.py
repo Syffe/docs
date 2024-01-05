@@ -238,7 +238,7 @@ async def patch_ci_issues(
 
 
 @router.get(
-    "/repos/{owner}/{repository}/ci_issues/{ci_issue_id}",
+    "/repos/{owner}/{repository}/ci_issues/{ci_issue_short_id_suffix}",
     summary="Get a CI issue",
     description="Get a CI issue",
     response_model=CiIssueDetailResponse,
@@ -251,9 +251,9 @@ async def patch_ci_issues(
 async def get_ci_issue(
     session: database.Session,
     repository_ctxt: security.Repository,
-    ci_issue_id: typing.Annotated[
+    ci_issue_short_id_suffix: typing.Annotated[
         int,
-        fastapi.Path(description="The ID of the CI Issue"),
+        fastapi.Path(description="The ID of the CI Issue in this repository"),
     ],
 ) -> CiIssueDetailResponse:
     stmt = (
@@ -282,7 +282,7 @@ async def get_ci_issue(
         )
         .where(
             CiIssueGPT.repository_id == repository_ctxt.repo["id"],
-            CiIssueGPT.id == ci_issue_id,
+            CiIssueGPT.short_id_suffix == ci_issue_short_id_suffix,
         )
     )
 
@@ -324,7 +324,7 @@ async def get_ci_issue(
 
 
 @router.patch(
-    "/repos/{owner}/{repository}/ci_issues/{ci_issue_id}",
+    "/repos/{owner}/{repository}/ci_issues/{ci_issue_short_id_suffix}",
     summary="Partially update a CI issue",
     description="Update some properties of a CI issue",
     include_in_schema=False,
@@ -335,17 +335,20 @@ async def get_ci_issue(
 )
 async def patch_ci_issue(
     session: database.Session,
-    _repository_ctxt: security.Repository,
-    ci_issue_id: typing.Annotated[
+    repository_ctxt: security.Repository,
+    ci_issue_short_id_suffix: typing.Annotated[
         int,
-        fastapi.Path(description="The ID of the CI Issue"),
+        fastapi.Path(description="The ID of the CI Issue in this repository"),
     ],
     json: CiIssueBody,
 ) -> None:
     stmt = (
         sqlalchemy.update(CiIssueGPT)
         .values(status=json.status)
-        .where(CiIssueGPT.id == ci_issue_id)
+        .where(
+            CiIssueGPT.repository_id == repository_ctxt.repo["id"],
+            CiIssueGPT.short_id_suffix == ci_issue_short_id_suffix,
+        )
         .returning(CiIssueGPT.id)
     )
     result = await session.execute(stmt)

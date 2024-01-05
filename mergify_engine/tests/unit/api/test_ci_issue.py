@@ -300,7 +300,7 @@ async def test_api_ci_issue_get_ci_issue(
     populated_db.expunge_all()
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}",
     )
 
     # NOTE(Kontrolix): We have 3 events in this payload but the sum of events_count is 5
@@ -372,12 +372,6 @@ async def test_api_ci_issue_get_ci_issue(
         "colliding-account-1/colliding_repo_name",
     )
 
-    reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.id}",
-    )
-
-    assert reply.status_code == 404
-
     job = await populated_db.get_one(
         gh_models.WorkflowJob,
         DbPopulator.internal_ref[
@@ -391,7 +385,7 @@ async def test_api_ci_issue_get_ci_issue(
     populated_db.expunge_all()
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.id}",
+        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.short_id_suffix}",
     )
 
     assert reply.json() == {
@@ -413,6 +407,53 @@ async def test_api_ci_issue_get_ci_issue(
         "status": "unresolved",
         "pull_requests_impacted": [],
     }
+
+
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
+async def test_api_ci_issue_get_ci_issue_accross_repository(
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+) -> None:
+    await populated_db.commit()
+    populated_db.expunge_all()
+    await tests_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock,
+        populated_db,
+        web_client,
+        "OneAccount/OneRepo",
+    )
+
+    # NOTE(Kontrolix): We use this job because it has a short_id_suffix that does not
+    # exists in the colliding-account-1/colliding_repo_name repository
+    job = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/failed_job_with_no_flaky_nghb"],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
+    )
+
+    assert len(job.ci_issues_gpt) == 1
+    ci_issue = job.ci_issues_gpt[0]
+    populated_db.expunge_all()
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}",
+    )
+
+    assert reply.status_code == 200
+
+    await tests_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock,
+        populated_db,
+        web_client,
+        "colliding-account-1/colliding_repo_name",
+    )
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.short_id_suffix}",
+    )
+
+    assert reply.status_code == 404
 
 
 @pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
@@ -566,7 +607,7 @@ async def test_api_ci_issue_patch_ci_issue(
     ci_issue = job.ci_issues_gpt[0]
 
     response = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}",
     )
 
     assert response.json() == {
@@ -580,14 +621,14 @@ async def test_api_ci_issue_patch_ci_issue(
     }
 
     response = await web_client.patch(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}",
         json={"status": "resolved"},
     )
 
     assert response.status_code == 200, response.text
 
     response = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}",
     )
 
     assert response.json() == {
