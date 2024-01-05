@@ -340,7 +340,7 @@ async def test_api_ci_issue_get_ci_issue(
                 "started_at": job.started_at.isoformat(),
             },
         ],
-        "id": ci_issue.id,
+        "id": ci_issue.short_id_suffix,
         "job_name": "A job",
         "name": "Error on test: my_awesome_test",
         "short_id": ci_issue.short_id,
@@ -402,7 +402,7 @@ async def test_api_ci_issue_get_ci_issue(
                 "started_at": job.started_at.isoformat(),
             },
         ],
-        "id": ci_issue.id,
+        "id": ci_issue.short_id_suffix,
         "job_name": "A job",
         "name": "Error on test: my_awesome_test",
         "short_id": ci_issue.short_id,
@@ -525,7 +525,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
         ],
     )
 
-    assert ci_issue.id is not None
+    assert ci_issue.short_id_suffix is not None
     assert len(job.log_metadata) == 1
     event_id = job.log_metadata[0].id
 
@@ -613,7 +613,7 @@ async def test_api_ci_issue_patch_ci_issue(
     )
 
     assert response.json() == {
-        "id": ci_issue.id,
+        "id": ci_issue.short_id_suffix,
         "name": "Error on test: my_awesome_test",
         "short_id": ci_issue.short_id,
         "job_name": "A job",
@@ -634,7 +634,7 @@ async def test_api_ci_issue_patch_ci_issue(
     )
 
     assert response.json() == {
-        "id": ci_issue.id,
+        "id": ci_issue.short_id_suffix,
         "name": "Error on test: my_awesome_test",
         "short_id": ci_issue.short_id,
         "job_name": "A job",
@@ -703,11 +703,10 @@ async def test_api_ci_issue_patch_ci_issues(
         "per_page": 10,
         "size": 3,
     }
-    # TODO(Kontrolix): ci_issues endpoint will return short_id_suffix in `id` fields
-    # a following PR will do this
-    issue1 = response.json()["issues"][0]["short_id"].rsplit("-", 1)[1]
-    issue2 = response.json()["issues"][1]["short_id"].rsplit("-", 1)[1]
-    issue3 = response.json()["issues"][2]["short_id"].rsplit("-", 1)[1]
+
+    issue1 = response.json()["issues"][0]["id"]
+    issue2 = response.json()["issues"][1]["id"]
+    issue3 = response.json()["issues"][2]["id"]
 
     response = await web_client.patch(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?id={issue1}&id={issue2}&id={issue3}",

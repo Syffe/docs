@@ -153,13 +153,15 @@ async def get_ci_issues(
             raise pagination.InvalidCursor(page.cursor)
 
         if page.cursor.forward:
-            stmt = stmt.where(CiIssueGPT.id > cursor_issue_id)
+            stmt = stmt.where(CiIssueGPT.short_id_suffix > cursor_issue_id)
         else:
-            stmt = stmt.where(CiIssueGPT.id < cursor_issue_id)
+            stmt = stmt.where(CiIssueGPT.short_id_suffix < cursor_issue_id)
 
     # FIXME(sileht): default order should be the most recent issue first
     stmt = stmt.order_by(
-        CiIssueGPT.id.asc() if page.cursor.forward else CiIssueGPT.id.desc(),
+        CiIssueGPT.short_id_suffix.asc()
+        if page.cursor.forward
+        else CiIssueGPT.short_id_suffix.desc(),
     ).limit(page.per_page)
 
     result = await session.execute(stmt)
@@ -189,7 +191,7 @@ async def get_ci_issues(
 
         issues.append(
             CiIssueListResponse(
-                id=ci_issue.id,
+                id=ci_issue.short_id_suffix,
                 short_id=ci_issue.short_id,
                 name=ci_issue.name or "<unknown>",
                 job_name=ci_issue.log_metadata[0].workflow_job.name_without_matrix,
@@ -315,7 +317,7 @@ async def get_ci_issue(
         )
 
     return CiIssueDetailResponse(
-        id=ci_issue.id,
+        id=ci_issue.short_id_suffix,
         short_id=ci_issue.short_id,
         name=ci_issue.name or "<unknown>",
         job_name=ci_issue.log_metadata[0].workflow_job.name_without_matrix,
