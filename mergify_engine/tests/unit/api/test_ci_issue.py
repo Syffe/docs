@@ -43,7 +43,6 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
 
     reply = await web_client.get(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues",
-        follow_redirects=False,
     )
 
     assert reply.json() == {
@@ -137,7 +136,6 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
 
     reply = await web_client.get(
         "/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues",
-        follow_redirects=False,
     )
 
     assert reply.json() == {
@@ -188,7 +186,6 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
 
     reply = await web_client.get(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues",
-        follow_redirects=False,
     )
 
     assert reply.json() == {
@@ -244,7 +241,6 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
 
     reply = await web_client.get(
         "/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues",
-        follow_redirects=False,
     )
 
     assert reply.json() == {
@@ -301,7 +297,6 @@ async def test_api_ci_issue_get_ci_issue(
 
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
-        follow_redirects=False,
     )
 
     assert reply.json() == {
@@ -350,7 +345,6 @@ async def test_api_ci_issue_get_ci_issue(
 
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.id}",
-        follow_redirects=False,
     )
 
     assert reply.status_code == 404
@@ -369,7 +363,6 @@ async def test_api_ci_issue_get_ci_issue(
 
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.id}",
-        follow_redirects=False,
     )
 
     assert reply.json() == {
@@ -423,7 +416,6 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
 
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/{event_id}",
-        follow_redirects=False,
     )
 
     assert job.steps is not None
@@ -466,7 +458,6 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
 
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/{event_id}",
-        follow_redirects=False,
     )
 
     assert job.steps is not None
@@ -496,14 +487,12 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
 
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}/events/9999999",
-        follow_redirects=False,
     )
 
     assert reply.status_code == 404
 
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/9999999/events/{job.id}",
-        follow_redirects=False,
     )
 
     assert reply.status_code == 404
@@ -517,7 +506,6 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
 
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.id}/events/{job.id}",
-        follow_redirects=False,
     )
 
     assert reply.status_code == 404
@@ -549,7 +537,6 @@ async def test_api_ci_issue_patch_ci_issue(
 
     response = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
-        follow_redirects=False,
     )
 
     assert response.json() == {
@@ -564,14 +551,12 @@ async def test_api_ci_issue_patch_ci_issue(
     response = await web_client.patch(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
         json={"status": "resolved"},
-        follow_redirects=False,
     )
 
     assert response.status_code == 200, response.text
 
     response = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.id}",
-        follow_redirects=False,
     )
 
     assert response.json() == {
@@ -587,7 +572,6 @@ async def test_api_ci_issue_patch_ci_issue(
     response = await web_client.patch(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/0",
         json={"status": "resolved"},
-        follow_redirects=False,
     )
 
     assert response.status_code == 404, response.text
@@ -609,7 +593,6 @@ async def test_api_ci_issue_patch_ci_issues(
 
     response = await web_client.get(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues",
-        follow_redirects=False,
     )
 
     assert response.json() == {
@@ -652,7 +635,6 @@ async def test_api_ci_issue_patch_ci_issues(
     response = await web_client.patch(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?id={issue1}&id={issue2}&id={issue3}",
         json={"status": "resolved"},
-        follow_redirects=False,
     )
 
     assert response.status_code == 200, response.text
@@ -660,14 +642,12 @@ async def test_api_ci_issue_patch_ci_issues(
     # Resolved issues are filtered out by default
     response = await web_client.get(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues",
-        follow_redirects=False,
     )
 
     assert response.json() == {"issues": [], "per_page": 10, "size": 0}
 
     response = await web_client.get(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?status=resolved&status=unresolved",
-        follow_redirects=False,
     )
 
     assert response.json() == {
@@ -722,7 +702,6 @@ async def test_api_ci_issue_get_ci_issues_pagination(
     # Get the first page
     first_page = await web_client.get(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?per_page=1",
-        follow_redirects=False,
     )
 
     assert first_page.status_code == 200, first_page.text
@@ -732,7 +711,6 @@ async def test_api_ci_issue_get_ci_issues_pagination(
     # Going to the second page
     second_page = await web_client.get(
         first_page.links["next"]["url"],
-        follow_redirects=False,
     )
 
     assert second_page.status_code == 200, second_page.text
@@ -746,7 +724,6 @@ async def test_api_ci_issue_get_ci_issues_pagination(
     # Going back to the first page
     first_page_again = await web_client.get(
         second_page.links["prev"]["url"],
-        follow_redirects=False,
     )
 
     assert first_page_again.status_code == 200, first_page_again.text
