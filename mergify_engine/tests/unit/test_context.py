@@ -542,8 +542,9 @@ async def test_length_optimisation(
     a_pull_request["commits"] = 10
     a_pull_request["changed_files"] = 5
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    assert await getattr(condition_value_querier.PullRequest(ctxt), "#commits") == 10
-    assert await getattr(condition_value_querier.PullRequest(ctxt), "#files") == 5
+    pull = condition_value_querier.PullRequest(ctxt)
+    assert await pull.get_attribute_value("#commits") == 10
+    assert await pull.get_attribute_value("#files") == 5
 
 
 async def test_context_depends_on(
@@ -1691,11 +1692,11 @@ async def test_queue_attributes(context_getter: conftest.ContextGetterFixture) -
     pull_request = condition_value_querier.PullRequest(ctxt)
 
     # Not queued
-    assert await pull_request.queue_name is None
-    assert await pull_request.queue_position == -1
-    assert await pull_request.queued_at is None
-    assert await pull_request.queued_at_relative is None
-    assert await pull_request.queue_partition_name == []
+    assert await pull_request.get_attribute_value("queue_name") is None
+    assert await pull_request.get_attribute_value("queue_position") == -1
+    assert await pull_request.get_attribute_value("queued_at") is None
+    assert await pull_request.get_attribute_value("queued_at_relative") is None
+    assert await pull_request.get_attribute_value("queue_partition_name") == []
 
     # Queued in one queue (hotfix)
     embarked_pull = merge_train_types.ConvoyEmbarkedPullWithCarAndPos(
@@ -1709,11 +1710,13 @@ async def test_queue_attributes(context_getter: conftest.ContextGetterFixture) -
         "find_embarked_pull",
         return_value=[embarked_pull],
     ):
-        assert await pull_request.queue_name == "hotfix"
-        assert await pull_request.queue_position == 0
-        assert await pull_request.queued_at == some_date
-        assert await pull_request.queued_at_relative == date.RelativeDatetime(some_date)
-        assert await pull_request.queue_partition_name == []
+        assert await pull_request.get_attribute_value("queue_name") == "hotfix"
+        assert await pull_request.get_attribute_value("queue_position") == 0
+        assert await pull_request.get_attribute_value("queued_at") == some_date
+        assert await pull_request.get_attribute_value(
+            "queued_at_relative",
+        ) == date.RelativeDatetime(some_date)
+        assert await pull_request.get_attribute_value("queue_partition_name") == []
 
     # Queued in multiple queues
     embarked_pull1 = merge_train_types.ConvoyEmbarkedPullWithCarAndPos(
@@ -1733,19 +1736,21 @@ async def test_queue_attributes(context_getter: conftest.ContextGetterFixture) -
         "find_embarked_pull",
         return_value=[embarked_pull1, embarked_pull2],
     ):
-        assert await pull_request.queue_position == 1
-        assert await pull_request.queued_at == some_date
-        assert await pull_request.queued_at_relative == date.RelativeDatetime(some_date)
+        assert await pull_request.get_attribute_value("queue_position") == 1
+        assert await pull_request.get_attribute_value("queued_at") == some_date
+        assert await pull_request.get_attribute_value(
+            "queued_at_relative",
+        ) == date.RelativeDatetime(some_date)
 
         with pytest.raises(
             condition_value_querier.PullRequestAttributeError,
             match="queue-name",
         ):
-            assert await pull_request.queue_name
+            assert await pull_request.get_attribute_value("queue_name")
 
     # Attribute does not exist
     with pytest.raises(
         condition_value_querier.PullRequestAttributeError,
         match="queue-whatever",
     ):
-        assert await pull_request.queue_whatever
+        assert await pull_request.get_attribute_value("queue_whatever")

@@ -92,7 +92,7 @@ TreeT = typing.TypedDict(
 
 
 class GetAttrObject(typing.Protocol):
-    def __getattribute__(self, key: typing.Any) -> typing.Any:
+    def get_attribute_value(self, key: typing.Any) -> typing.Any:
         ...
 
 
@@ -199,7 +199,7 @@ class Filter(typing.Generic[FilterResultT]):
         op: abc.Callable[[typing.Any], typing.Any],
     ) -> list[typing.Any]:
         try:
-            attr = getattr(obj, attribute_name)
+            attr = obj.get_attribute_value(attribute_name)
             if inspect.iscoroutine(attr):
                 attr = await attr
         except AttributeError:
@@ -883,7 +883,7 @@ class JinjaTemplateWrapper:
     async def render_async(self, obj: GetAttrObjectT) -> typing.Any:
         infos = {}
         for k in sorted(self.used_variables):
-            infos[k] = await getattr(obj, k)
+            infos[k] = await obj.get_attribute_value(k)
 
         return self.compile_func(
             await self.env.from_string(self.template).render_async(**infos),

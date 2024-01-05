@@ -228,7 +228,7 @@ async def report(
 
     print("* PULL REQUEST:")
     attrs = condition_value_querier.PullRequest(ctxt)
-    pr_data = {attr: await getattr(attrs, attr) for attr in sorted(attrs)}
+    pr_data = {attr: await attrs.get_attribute_value(attr) for attr in sorted(attrs)}
     pprint.pprint(pr_data, width=160)
 
     is_behind = await ctxt.is_behind

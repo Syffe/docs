@@ -271,7 +271,7 @@ async def jinja_environment() -> jinja2.sandbox.SandboxedEnvironment:
 class FakePullRequest(condition_value_querier.BasePullRequest):
     attrs: dict[str, condition_value_querier.PullRequestAttributeType]
 
-    async def __getattr__(
+    async def get_attribute_value(
         self,
         name: str,
     ) -> condition_value_querier.PullRequestAttributeType:

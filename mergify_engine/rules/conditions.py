@@ -759,7 +759,10 @@ class QueueRuleMergeConditions(BaseRuleConditions):
             c = self.condition.copy()
             await c(pull)
             self._evaluated_conditions[
-                await pull.number  # type: ignore[attr-defined]
+                typing.cast(
+                    github_types.GitHubPullRequestNumber,
+                    await pull.get_attribute_value("number"),
+                )
             ] = c
 
         self._match = all(c.match for c in self._evaluated_conditions.values())

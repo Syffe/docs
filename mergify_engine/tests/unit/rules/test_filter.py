@@ -15,7 +15,7 @@ from mergify_engine.tests.tardis import time_travel
 
 
 class FakePR(dict):  # type: ignore[type-arg]
-    def __getattr__(self, k: typing.Any) -> typing.Any:
+    def get_attribute_value(self, k: typing.Any) -> typing.Any:
         try:
             return self[k]
         except KeyError:
@@ -26,7 +26,7 @@ class AsyncFakePR:
     def __init__(self, data: dict[str, typing.Any]) -> None:
         self.data = data
 
-    async def __getattr__(self, k: typing.Any) -> typing.Any:
+    async def get_attribute_value(self, k: typing.Any) -> typing.Any:
         try:
             return self.data[k]
         except KeyError:
@@ -225,12 +225,12 @@ async def test_invalid_arguments() -> None:
     (filter.BinaryFilter, filter.NearDatetimeFilter, filter.IncompleteChecksFilter),
 )
 async def test_str(filter_: filter.Filter[typing.Any]) -> None:
-    assert str(filter_({"~=": ("foo", "^f")})) == "foo~=^f"
-    assert str(filter_({"-": {"=": ("foo", 1)}})) == "-foo=1"
-    assert str(filter_({"=": ("foo", True)})) == "foo"
-    assert str(filter_({"=": ("bar", False)})) == "-bar"
+    assert str(filter_({"~=": ("foo", "^f")})) == "foo~=^f"  # type: ignore[type-var]
+    assert str(filter_({"-": {"=": ("foo", 1)}})) == "-foo=1"  # type: ignore[type-var]
+    assert str(filter_({"=": ("foo", True)})) == "foo"  # type: ignore[type-var]
+    assert str(filter_({"=": ("bar", False)})) == "-bar"  # type: ignore[type-var]
     with pytest.raises(filter.InvalidOperator):
-        str(filter_({">=": ("bar", False)}))
+        str(filter_({">=": ("bar", False)}))  # type: ignore[type-var]
 
 
 def dtime(day: int) -> datetime.datetime:

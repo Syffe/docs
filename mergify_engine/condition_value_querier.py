@@ -90,6 +90,9 @@ class PullRequestAttributeError(AttributeError):
 
 
 class BasePullRequest:
+    async def get_attribute_value(self, name: str) -> PullRequestAttributeType:
+        raise NotImplementedError
+
     @classmethod
     async def _get_commits_attribute(
         cls,
@@ -728,7 +731,7 @@ class PullRequest(BasePullRequest):
         "#commits-behind",
     }
 
-    async def __getattr__(self, name: str) -> PullRequestAttributeType:
+    async def get_attribute_value(self, name: str) -> PullRequestAttributeType:
         return await self._get_consolidated_data(self.context, name.replace("_", "-"))
 
     def __iter__(self) -> abc.Iterator[str]:
@@ -779,7 +782,7 @@ class PullRequest(BasePullRequest):
                     template += template_to_inject
                     used_variables.add(variable)
 
-            infos = {}
+            infos: dict[str, PullRequestAttributeType] = {}
             for k in sorted(used_variables):
                 # TODO(sileht): get rid of __getattr__ to avoid such security hack
                 if k.startswith("__"):
@@ -787,7 +790,7 @@ class PullRequest(BasePullRequest):
                 if extra_variables and k in extra_variables:
                     infos[k] = extra_variables[k]
                 else:
-                    infos[k] = await getattr(self, k)
+                    infos[k] = await self.get_attribute_value(k)
             return await env.from_string(template).render_async(**infos)
 
     @staticmethod
@@ -855,7 +858,7 @@ class PullRequest(BasePullRequest):
     ) -> tuple[str, str] | None:
         if template is None:
             # No template from configuration, looks at template from body
-            body = typing.cast(str, await self.body)
+            body = typing.cast(str, await self.get_attribute_value("body"))
             if not body:
                 return None
             found = False
@@ -922,7 +925,7 @@ class QueuePullRequest(BasePullRequest):
         "partition-name",
     )
 
-    async def __getattr__(self, name: str) -> PullRequestAttributeType:
+    async def get_attribute_value(self, name: str) -> PullRequestAttributeType:
         fancy_name = name.replace("_", "-")
         if fancy_name in self.QUEUE_ATTRIBUTES:
             if fancy_name in ("queue-partition-name", "partition-name"):
@@ -942,9 +945,9 @@ class CommandPullRequest(PullRequest):
     sender: github_types.GitHubLogin
     sender_permission: github_types.GitHubRepositoryPermission
 
-    async def __getattr__(self, name: str) -> PullRequestAttributeType:
+    async def get_attribute_value(self, name: str) -> PullRequestAttributeType:
         if name == "sender":
             return self.sender
         if name == "sender-permission":
             return self.sender_permission
-        return await super().__getattr__(name)
+        return await super().get_attribute_value(name)

@@ -5,6 +5,7 @@ import typing
 from mergify_engine import check_api
 from mergify_engine import condition_value_querier
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine.rules import conditions as rules_conditions
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
@@ -66,8 +67,11 @@ async def _get_checks_result(
     for pull in pulls:
         f = filter.IncompleteChecksFilter(
             tree,
-            pending_checks=await getattr(pull, "check-pending"),
-            all_checks=await pull.check,  # type: ignore[attr-defined]
+            pending_checks=typing.cast(
+                list[str],
+                await pull.get_attribute_value("check-pending"),
+            ),
+            all_checks=typing.cast(list[str], await pull.get_attribute_value("check")),
         )
         live_resolvers.configure_filter(repository, f)
 
@@ -80,7 +84,10 @@ async def _get_checks_result(
         ):
             return check_api.Conclusion.PENDING
 
-        pr_number = await pull.number  # type: ignore[attr-defined]
+        pr_number = typing.cast(
+            github_types.GitHubPullRequestNumber,
+            await pull.get_attribute_value("number"),
+        )
         results[pr_number] = ret
 
     if all(results.values()):

@@ -433,8 +433,9 @@ class TestQueueApi(base.FunctionalTestBase):
                 tmp_mq_pr["pull_request"],
                 [],
             )
+            pull = condition_value_querier.QueuePullRequest(ctxt, queue_ctxt)
             assert "continuous-integration/fake-ci" in (  # type:ignore [operator]
-                await condition_value_querier.QueuePullRequest(ctxt, queue_ctxt).check
+                await pull.get_attribute_value("check")
             )
 
         repository_name = self.RECORD_CONFIG["repository_name"]

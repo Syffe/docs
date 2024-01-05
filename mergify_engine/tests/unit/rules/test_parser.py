@@ -516,7 +516,8 @@ async def test_parse_jinja_template(
     attribute_name, template = result[expected_operator]
     assert attribute_name == expected_attribute
     assert isinstance(template, filter.JinjaTemplateWrapper)
-    obj = mock.Mock(author=AsyncProperty("foo"))
+    obj = mock.Mock()
+    obj.get_attribute_value = mock.AsyncMock(return_value="foo")
     assert await template.render_async(obj) == expected_rendering
 
 

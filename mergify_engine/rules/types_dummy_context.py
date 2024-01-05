@@ -22,7 +22,7 @@ class DummyContext(context.Context):
 
 class DummyPullRequest(condition_value_querier.PullRequest):
     # This is only used to check Jinja2 syntax validity and must be sync
-    def __getattr__(  # type: ignore[override]
+    def get_attribute_value(  # type: ignore[override]
         self,
         name: str,
     ) -> condition_value_querier.PullRequestAttributeType:
@@ -58,7 +58,7 @@ class DummyPullRequest(condition_value_querier.PullRequest):
 
         with self._template_exceptions_mapping():
             used_variables = jinja2.meta.find_undeclared_variables(env.parse(template))
-            infos = {}
+            infos: dict[str, condition_value_querier.PullRequestAttributeType] = {}
             for k in used_variables:
                 # TODO(sileht): get rid of __getattr__ to avoid such security hack
                 if k.startswith("__"):
@@ -66,7 +66,7 @@ class DummyPullRequest(condition_value_querier.PullRequest):
                 if extra_variables and k in extra_variables:
                     infos[k] = extra_variables[k]
                 else:
-                    infos[k] = getattr(self, k)
+                    infos[k] = self.get_attribute_value(k)
             return env.from_string(template).render(**infos)
 
     @staticmethod

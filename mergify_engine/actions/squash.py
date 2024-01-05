@@ -96,7 +96,10 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
             message = f"{title}\n\n{message}"
 
         elif self.config["commit_message"] == "all-commits":
-            message = f"{(await pull_attrs.title)} (#{(await pull_attrs.number)})\n"
+            message = (
+                f"{(await pull_attrs.get_attribute_value('title'))}"
+                f" (#{(await pull_attrs.get_attribute_value('number'))})\n"
+            )
             message += "\n\n* ".join(
                 [commit.commit_message for commit in await self.ctxt.commits],
             )
@@ -105,8 +108,11 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
             message = (await self.ctxt.commits)[0].commit_message
 
         elif self.config["commit_message"] == "title+body":
-            message = f"{(await pull_attrs.title)} (#{(await pull_attrs.number)})"
-            message += f"\n\n{await pull_attrs.body}"
+            message = (
+                f"{(await pull_attrs.get_attribute_value('title'))}"
+                f" (#{(await pull_attrs.get_attribute_value('number'))})\n"
+                f"\n{await pull_attrs.get_attribute_value('body')}"
+            )
 
         else:
             raise RuntimeError("Unsupported commit_message option")

@@ -142,8 +142,8 @@ async def test_flaky_check_get_consolidate_data(
     mock_is_gha_job_rerun_needed.return_value = mock_is_gha_job_rerun_needed_value
 
     pull_request = condition_value_querier.PullRequest(ctxt)
-    assert (await pull_request.check_pending) == pending_checks
-    assert (await pull_request.check_failure) == failure_cheks
+    assert (await pull_request.get_attribute_value("check_pending")) == pending_checks
+    assert (await pull_request.get_attribute_value("check_failure")) == failure_cheks
 
     assert ctxt.flaky_checks_to_rerun == flaky_checks_to_rerun
 

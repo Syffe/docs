@@ -526,7 +526,9 @@ def get_jinja_template_wrapper(value: str) -> filter.JinjaTemplateWrapper:
     )
 
     # We check it's rendearable with fake data
-    infos = {k: getattr(types_dummy_context.DUMMY_PR, k) for k in used_variables}
+    infos = {
+        k: types_dummy_context.DUMMY_PR.get_attribute_value(k) for k in used_variables
+    }
     try:
         sync_env.from_string(value).render(**infos)
     except jinja2.exceptions.TemplateError:

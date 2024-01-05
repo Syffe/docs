@@ -51,11 +51,13 @@ def fake_expander(_v: str) -> list[str]:
 async def test_expanders() -> None:
     rc = conditions.RuleCondition.from_string("author=@team")
     rc.filters.boolean.value_expanders["author"] = fake_expander
-    await rc(mock.Mock(author="foo"))
+    obj = mock.Mock(get_attribute_value=mock.AsyncMock(return_value="foo"))
+
+    await rc(obj)
     assert rc.match
 
     copy_rc = rc.copy()
-    await copy_rc(mock.Mock(author="foo"))
+    await copy_rc(obj)
     assert copy_rc.match
 
 

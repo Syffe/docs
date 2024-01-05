@@ -185,7 +185,10 @@ class RequestReviewsExecutor(
         existing_reviews = {
             user.lower()
             for key in reviews_keys
-            for user in await getattr(pull_attrs, key)
+            for user in typing.cast(
+                list[str],
+                await pull_attrs.get_attribute_value(key),
+            )
         }
 
         user_reviews_to_request_set, team_reviews_to_request_set = self._get_reviewers(
@@ -198,7 +201,10 @@ class RequestReviewsExecutor(
 
         if user_reviews_to_request or team_reviews_to_request:
             requested_reviews_nb = len(
-                typing.cast(list[str], await pull_attrs.review_requested),
+                typing.cast(
+                    list[str],
+                    await pull_attrs.get_attribute_value("review_requested"),
+                ),
             )
 
             already_at_max = requested_reviews_nb == self.GITHUB_MAXIMUM_REVIEW_REQUEST

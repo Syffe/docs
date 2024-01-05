@@ -336,21 +336,17 @@ class TestAttributes(base.FunctionalTestBase):
         await self.reload_repository_ctxt_configuration()
         ctxt = context.Context(self.repository_ctxt, pr)
 
+        pull = condition_value_querier.PullRequest(ctxt)
+
         # Test underscore/dash attributes
-        assert await condition_value_querier.PullRequest(ctxt).review_requested == []
+        assert await pull.get_attribute_value("review_requested") == []
         assert (
-            await condition_value_querier.PullRequest(
-                ctxt,
-            ).branch_protection_review_decision
-            is None
+            await pull.get_attribute_value("branch_protection_review_decision") is None
         )
-        assert (
-            await condition_value_querier.PullRequest(ctxt).review_threads_resolved
-            == []
-        )
+        assert await pull.get_attribute_value("review_threads_resolved") == []
 
         with pytest.raises(AttributeError):
-            assert await condition_value_querier.PullRequest(ctxt).foobar
+            assert await pull.get_attribute_value("foobar")
 
         # Test items
         assert list(condition_value_querier.PullRequest(ctxt)) == list(
@@ -362,7 +358,7 @@ class TestAttributes(base.FunctionalTestBase):
         )
         commit = (await ctxt.commits)[0]
         assert {
-            attr: await getattr(condition_value_querier.PullRequest(ctxt), attr)
+            attr: await pull.get_attribute_value(attr)
             for attr in sorted(condition_value_querier.PullRequest(ctxt))
         } == {
             "#commits": 1,
