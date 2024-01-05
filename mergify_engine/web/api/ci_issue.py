@@ -221,18 +221,26 @@ async def get_ci_issues(
 )
 async def patch_ci_issues(
     session: database.Session,
-    _repository_ctxt: security.Repository,
-    ci_issue_ids: typing.Annotated[
+    repository_ctxt: security.Repository,
+    ci_issue_short_ids_suffixes: typing.Annotated[
         list[int],
-        fastapi.Query(description="IDs of CI Issues", default_factory=list, alias="id"),
+        fastapi.Query(
+            description="IDs of CI Issues in this repository",
+            default_factory=list,
+            alias="id",
+        ),
     ],
     json: CiIssueBody,
 ) -> None:
     stmt = (
         sqlalchemy.update(CiIssueGPT)
         .values(status=json.status)
-        .where(CiIssueGPT.id.in_(ci_issue_ids))
+        .where(
+            CiIssueGPT.repository_id == repository_ctxt.repo["id"],
+            CiIssueGPT.short_id_suffix.in_(ci_issue_short_ids_suffixes),
+        )
     )
+
     await session.execute(stmt)
     await session.commit()
 

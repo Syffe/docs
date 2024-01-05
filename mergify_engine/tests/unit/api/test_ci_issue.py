@@ -701,9 +701,11 @@ async def test_api_ci_issue_patch_ci_issues(
         "per_page": 10,
         "size": 3,
     }
-    issue1 = response.json()["issues"][0]["id"]
-    issue2 = response.json()["issues"][1]["id"]
-    issue3 = response.json()["issues"][2]["id"]
+    # TODO(Kontrolix): ci_issues endpoint will return short_id_suffix in `id` fields
+    # a following PR will do this
+    issue1 = response.json()["issues"][0]["short_id"].rsplit("-", 1)[1]
+    issue2 = response.json()["issues"][1]["short_id"].rsplit("-", 1)[1]
+    issue3 = response.json()["issues"][2]["short_id"].rsplit("-", 1)[1]
 
     response = await web_client.patch(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?id={issue1}&id={issue2}&id={issue3}",
