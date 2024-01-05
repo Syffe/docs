@@ -664,7 +664,7 @@ class WorkflowJob(models.Base):
     ) -> None:
         await session.execute(
             sqlalchemy.delete(cls).where(
-                (date.utcnow() - cls.completed_at) > retention_time,
+                cls.completed_at < (date.utcnow() - retention_time),
             ),
         )
 
