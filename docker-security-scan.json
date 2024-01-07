@@ -3165,12 +3165,14 @@
     "VulnerabilityID": "CVE-2023-4641",
     "PkgName": "login",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4641",
     "Title": "shadow-utils: possible password leak during passwd(1) change",
     "Severity": "MEDIUM",
     "VendorSeverity": {
       "alma": 1,
       "amazon": 1,
+      "nvd": 2,
       "oracle-oval": 1,
       "redhat": 1
     },
@@ -3180,12 +3182,14 @@
     "VulnerabilityID": "CVE-2023-4641",
     "PkgName": "passwd",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4641",
     "Title": "shadow-utils: possible password leak during passwd(1) change",
     "Severity": "MEDIUM",
     "VendorSeverity": {
       "alma": 1,
       "amazon": 1,
+      "nvd": 2,
       "oracle-oval": 1,
       "redhat": 1
     },
@@ -3381,10 +3385,12 @@
     "VulnerabilityID": "CVE-2023-51767",
     "PkgName": "openssh-client",
     "Status": "fix_deferred",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-51767",
     "Title": "openssh: authentication bypass via row hammer attack",
     "Severity": "HIGH",
     "VendorSeverity": {
+      "nvd": 3,
       "redhat": 2,
       "ubuntu": 2
     },
@@ -3394,10 +3400,12 @@
     "VulnerabilityID": "CVE-2023-51767",
     "PkgName": "openssh-server",
     "Status": "fix_deferred",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-51767",
     "Title": "openssh: authentication bypass via row hammer attack",
     "Severity": "HIGH",
     "VendorSeverity": {
+      "nvd": 3,
       "redhat": 2,
       "ubuntu": 2
     },
@@ -3407,10 +3415,12 @@
     "VulnerabilityID": "CVE-2023-51767",
     "PkgName": "openssh-sftp-server",
     "Status": "fix_deferred",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-51767",
     "Title": "openssh: authentication bypass via row hammer attack",
     "Severity": "HIGH",
     "VendorSeverity": {
+      "nvd": 3,
       "redhat": 2,
       "ubuntu": 2
     },
@@ -3475,10 +3485,12 @@
     "VulnerabilityID": "CVE-2023-7008",
     "PkgName": "libnss-systemd",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7008",
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
     "VendorSeverity": {
+      "nvd": 2,
       "redhat": 2
     },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
@@ -3487,10 +3499,12 @@
     "VulnerabilityID": "CVE-2023-7008",
     "PkgName": "libpam-systemd",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7008",
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
     "VendorSeverity": {
+      "nvd": 2,
       "redhat": 2
     },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
@@ -3499,10 +3513,12 @@
     "VulnerabilityID": "CVE-2023-7008",
     "PkgName": "libsystemd0",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7008",
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
     "VendorSeverity": {
+      "nvd": 2,
       "redhat": 2
     },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
@@ -3511,10 +3527,12 @@
     "VulnerabilityID": "CVE-2023-7008",
     "PkgName": "libudev1",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7008",
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
     "VendorSeverity": {
+      "nvd": 2,
       "redhat": 2
     },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
@@ -3523,10 +3541,13 @@
     "VulnerabilityID": "CVE-2023-7104",
     "PkgName": "libsqlite3-0",
     "Status": "affected",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-7104",
     "Title": "sqlite: heap-buffer-overflow at sessionfuzz",
-    "Severity": "MEDIUM",
+    "Severity": "CRITICAL",
     "VendorSeverity": {
+      "bitnami": 4,
+      "nvd": 4,
       "redhat": 2,
       "ubuntu": 2
     },
