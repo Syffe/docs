@@ -5,10 +5,10 @@ from first import first
 
 from mergify_engine import context
 from mergify_engine import settings
-from mergify_engine import yaml
 import mergify_engine.queue.merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 class TestQueueWithPartitionRules(base.FunctionalTestBase):

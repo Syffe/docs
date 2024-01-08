@@ -14,12 +14,12 @@ from mergify_engine import refresher
 from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import utils
-from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.engine import commands_runner
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import live_resolvers
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 LOG = logging.getLogger(__name__)

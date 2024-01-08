@@ -13,12 +13,12 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import subscription
-from mergify_engine import yaml
 from mergify_engine.models import events as evt_models
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests import utils as test_utils
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
+from mergify_engine.yaml import yaml
 
 
 @pytest.mark.subscription(

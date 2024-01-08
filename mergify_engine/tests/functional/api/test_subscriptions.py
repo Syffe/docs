@@ -1,6 +1,6 @@
 from mergify_engine import settings
-from mergify_engine import yaml
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 class TestSubscriptionsApi(base.FunctionalTestBase):

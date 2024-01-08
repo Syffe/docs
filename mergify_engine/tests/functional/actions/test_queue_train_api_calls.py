@@ -11,7 +11,6 @@ from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import queue
 from mergify_engine import settings
-from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.queue import merge_train
@@ -21,6 +20,7 @@ from mergify_engine.rules.config import priority_rules as pr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
+from mergify_engine.yaml import yaml
 
 
 class TestTrainApiCalls(base.FunctionalTestBase):

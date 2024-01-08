@@ -1,9 +1,9 @@
 import datetime
 from unittest import mock
 
-from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
+from mergify_engine.yaml import yaml
 
 
 class TestStatisticsRedis(base.FunctionalTestBase):

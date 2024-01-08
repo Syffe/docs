@@ -6,10 +6,10 @@ from mergify_engine import context
 from mergify_engine import debug
 from mergify_engine import github_graphql_types
 from mergify_engine import subscription
-from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 class TestDebugger(base.FunctionalTestBase):

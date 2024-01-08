@@ -4,10 +4,10 @@ import os
 import shutil
 import tempfile
 
-from mergify_engine import yaml
 from mergify_engine.console_scripts import admin_cli
 from mergify_engine.tests import utils
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 class TestRedisUtilsDumper(base.FunctionalTestBase):

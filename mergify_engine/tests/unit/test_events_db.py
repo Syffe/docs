@@ -18,7 +18,6 @@ from mergify_engine import eventlogs
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine import signals
-from mergify_engine import yaml
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_model
 from mergify_engine.models import events_metadata as evt_meta_model
@@ -26,6 +25,7 @@ from mergify_engine.models.github import repository as github_repository
 from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
 from mergify_engine.tests.tardis import time_travel
+from mergify_engine.yaml import yaml
 
 
 async def insert_event(

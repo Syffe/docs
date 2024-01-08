@@ -22,7 +22,6 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import utils
-from mergify_engine import yaml
 from mergify_engine.actions import merge_base
 from mergify_engine.engine import actions_runner
 from mergify_engine.engine import commands_runner
@@ -33,6 +32,7 @@ from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.tests.tardis import time_travel
+from mergify_engine.yaml import yaml
 
 
 TEMPLATE_GITHUB_ACTION = """

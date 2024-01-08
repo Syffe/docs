@@ -6,10 +6,10 @@ import httpx
 
 from mergify_engine import context
 from mergify_engine import settings
-from mergify_engine import yaml
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import pause
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 class TestQueuePause(base.FunctionalTestBase):

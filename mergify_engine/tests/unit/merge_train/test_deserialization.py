@@ -47,8 +47,8 @@ import typing
 
 import daiquiri
 
-from mergify_engine import yaml
 from mergify_engine.queue import merge_train
+from mergify_engine.yaml import yaml
 
 
 LOG = daiquiri.getLogger(__name__)

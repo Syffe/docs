@@ -3,9 +3,9 @@ from unittest import mock
 from first import first
 
 from mergify_engine import context
-from mergify_engine import yaml
 from mergify_engine.queue import freeze
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 class TestQueueFreeze(base.FunctionalTestBase):

@@ -14,8 +14,8 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import settings
-from mergify_engine import yaml
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 LOG = daiquiri.getLogger(__name__)

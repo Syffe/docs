@@ -2,13 +2,13 @@ import datetime
 
 from mergify_engine import date
 from mergify_engine import settings
-from mergify_engine import yaml
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
 from mergify_engine.web.api.statistics import queue_checks_outcome
 from mergify_engine.web.api.statistics import utils as web_stat_utils
+from mergify_engine.yaml import yaml
 
 
 class TestStatisticsEndpoints(base.FunctionalTestBase):

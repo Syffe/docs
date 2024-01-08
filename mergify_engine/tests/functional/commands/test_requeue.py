@@ -1,5 +1,5 @@
-from mergify_engine import yaml
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 class TestRequeueCommand(base.FunctionalTestBase):

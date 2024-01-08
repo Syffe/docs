@@ -3,11 +3,11 @@ import respx
 
 from mergify_engine import github_types
 from mergify_engine import settings
-from mergify_engine import yaml
 from mergify_engine.queue import merge_train
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.functional import conftest
 from mergify_engine.tests.functional import event_reader
+from mergify_engine.yaml import yaml
 
 
 class TestQueueCommand(base.FunctionalTestBase):

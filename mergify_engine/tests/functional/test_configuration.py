@@ -14,10 +14,10 @@ from mergify_engine import github_types
 from mergify_engine import rules
 from mergify_engine import settings
 from mergify_engine import subscription
-from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)

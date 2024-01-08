@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+import contextlib
 import typing
 
 import daiquiri
 from ddtrace import tracer
 import voluptuous
+import yaml
 
 from mergify_engine import actions as actions_mod
 from mergify_engine import github_types
-from mergify_engine import yaml
 from mergify_engine.rules import types
 from mergify_engine.rules.config import defaults as defaults_config
+from mergify_engine.yaml import yaml as mergify_yaml
 
 
 if typing.TYPE_CHECKING:
@@ -42,12 +44,11 @@ class YAMLInvalid(voluptuous.Invalid):  # type: ignore[misc]
         return []
 
 
-@tracer.wrap("yaml.load")
-def YAML(v: str) -> typing.Any:
+@contextlib.contextmanager
+def convert_yaml_error_into_voluptuous_error() -> abc.Generator[None, None, None]:
     try:
-        return yaml.safe_load(v)
+        yield
     except yaml.MarkedYAMLError as e:
-        error_message = str(e)
         path = []
         if e.problem_mark is not None:
             path.append(
@@ -58,12 +59,24 @@ def YAML(v: str) -> typing.Any:
             )
         raise YAMLInvalid(
             message="Invalid YAML",
-            error_message=error_message,
+            error_message=str(e),
             path=path,
         )
+
     except yaml.YAMLError as e:
-        error_message = str(e)
-        raise YAMLInvalid(message="Invalid YAML", error_message=error_message)
+        raise YAMLInvalid(message="Invalid YAML", error_message=str(e))
+
+
+@tracer.wrap("yaml.load")
+def YAML(v: str) -> typing.Any:
+    with convert_yaml_error_into_voluptuous_error():
+        return mergify_yaml.safe_load(v)
+
+
+@tracer.wrap("yaml.anchor_extractor_load")
+def YAMLAnchorExtractor(v: str) -> typing.Any:
+    with convert_yaml_error_into_voluptuous_error():
+        return mergify_yaml.anchor_extractor_load(v)
 
 
 def UserConfigurationSchema(
@@ -120,3 +133,6 @@ def UserConfigurationSchema(
 
 
 YamlSchema: abc.Callable[[str], typing.Any] = voluptuous.Schema(voluptuous.Coerce(YAML))
+YamlAnchorsExtractorSchema: abc.Callable[[str], typing.Any] = voluptuous.Schema(
+    voluptuous.Coerce(YAMLAnchorExtractor),
+)

@@ -6,12 +6,12 @@ import pytest
 
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import yaml
 from mergify_engine.engine import actions_runner
 from mergify_engine.rules import conditions
 from mergify_engine.rules.config import conditions as cond_config
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.tests.unit import conftest
+from mergify_engine.yaml import yaml
 
 
 @mock.patch.object(

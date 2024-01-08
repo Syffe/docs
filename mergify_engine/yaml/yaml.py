@@ -3,14 +3,18 @@ import typing
 import yaml
 
 # convenient aliases
-from yaml import *  # noqa: F403
+from mergify_engine.yaml import yaml_anchor_extractor
 
 
-def safe_load(stream: typing.Any) -> typing.Any:  # type: ignore[no-redef]
+def anchor_extractor_load(stream: typing.Any) -> typing.Any:
+    return yaml.load(stream, Loader=yaml_anchor_extractor.AnchorExtractorLoader)  # type: ignore[arg-type]
+
+
+def safe_load(stream: typing.Any) -> typing.Any:
     return yaml.load(stream, Loader=yaml.CSafeLoader)
 
 
-def safe_dump(  # type: ignore[no-redef]
+def safe_dump(
     data: typing.Any,
     default_flow_style: bool | None = None,
 ) -> typing.Any:
@@ -21,7 +25,7 @@ def safe_dump(  # type: ignore[no-redef]
     )
 
 
-def dump(data: typing.Any) -> typing.Any:  # type: ignore[no-redef]
+def dump(data: typing.Any) -> typing.Any:
     return yaml.dump(data, Dumper=yaml.CSafeDumper)
 
 

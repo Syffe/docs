@@ -11,9 +11,9 @@ from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import settings
 from mergify_engine import subscription
-from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.tardis import time_travel
+from mergify_engine.yaml import yaml
 
 
 LOG = logging.getLogger(__name__)

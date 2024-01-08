@@ -27,7 +27,6 @@ from mergify_engine import refresher
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import worker_pusher
-from mergify_engine import yaml
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -40,6 +39,7 @@ from mergify_engine.queue.merge_train import utils as train_utils
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules.config import partition_rules as partr_config
+from mergify_engine.yaml import yaml
 
 
 if typing.TYPE_CHECKING:

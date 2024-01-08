@@ -1,9 +1,10 @@
 import logging
 
 import pydantic
+import yaml
 
 from mergify_engine import dependabot_types
-from mergify_engine import yaml
+from mergify_engine.yaml import yaml as mergify_yaml
 
 
 def get_dependabot_consolidated_data_from_commit_msg(
@@ -29,7 +30,7 @@ def get_dependabot_consolidated_data_from_commit_msg(
         return []
 
     try:
-        data_from_yaml = yaml.safe_load(yaml_str)
+        data_from_yaml = mergify_yaml.safe_load(yaml_str)
     except yaml.YAMLError:
         log.error(
             "Cannot parse dependabot commit message correctly",

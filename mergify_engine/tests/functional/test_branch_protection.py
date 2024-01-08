@@ -2,8 +2,8 @@ import typing
 
 from mergify_engine import context
 from mergify_engine import github_graphql_types
-from mergify_engine import yaml
 from mergify_engine.tests.functional import base
+from mergify_engine.yaml import yaml
 
 
 class TestBranchProtection(base.FunctionalTestBase):
