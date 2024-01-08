@@ -206,6 +206,177 @@ async def test_yaml_anchor_extractor_load_error(
         yaml.anchor_extractor_load(config)
 
 
+@pytest.mark.parametrize(
+    (
+        "config_with_anchors",
+        "config_without_anchors",
+        "expected_config",
+    ),
+    (
+        (
+            """
+        shared:
+          conditions: &cond1
+            - status-success=continuous-integration/fake-ci
+          conditions: &cond2
+            - base=main
+        """,
+            """
+        queue_rules:
+          - name: queue
+            conditions: *cond1
+
+        pull_request_rules:
+          - name: Merge me
+            conditions: *cond2
+            actions:
+              queue:
+                name: default
+        """,
+            {
+                "queue_rules": [
+                    {
+                        "name": "queue",
+                        "conditions": ["status-success=continuous-integration/fake-ci"],
+                    },
+                ],
+                "pull_request_rules": [
+                    {
+                        "name": "Merge me",
+                        "conditions": ["base=main"],
+                        "actions": {"queue": {"name": "default"}},
+                    },
+                ],
+            },
+        ),
+        (
+            """
+        shared:
+          conditions: &cond1
+            - status-success=continuous-integration/fake-ci
+          conditions: &cond2
+            - base=main
+        """,
+            """
+        pull_request_rules:
+          - name: Merge me
+            conditions: *cond2
+            actions:
+              queue:
+                name: default
+        """,
+            {
+                "pull_request_rules": [
+                    {
+                        "name": "Merge me",
+                        "conditions": ["base=main"],
+                        "actions": {"queue": {"name": "default"}},
+                    },
+                ],
+            },
+        ),
+        (
+            """
+        queue_rules:
+          - name: parent
+            conditions:
+              - base=main
+            speculative_checks: 5
+            allow_inplace_checks: true
+
+        pull_request_rules:
+          - name: Merge me parent
+            conditions:
+              - base=main
+            actions:
+              queue:
+                name: default
+        """,
+            """
+        queue_rules:
+          - name: child
+            conditions:
+              - base=main
+
+        pull_request_rules:
+          - name: Merge me child
+            conditions:
+              - base=main
+            actions:
+              queue:
+                name: default
+        """,
+            {
+                "queue_rules": [{"name": "child", "conditions": ["base=main"]}],
+                "pull_request_rules": [
+                    {
+                        "name": "Merge me child",
+                        "conditions": ["base=main"],
+                        "actions": {"queue": {"name": "default"}},
+                    },
+                ],
+            },
+        ),
+    ),
+)
+async def test_yaml_extended_anchors_load(
+    config_with_anchors: str,
+    config_without_anchors: str,
+    expected_config: str,
+) -> None:
+    extracted_anchors = yaml.anchor_extractor_load(config_with_anchors)
+    assert extracted_anchors is not None
+    anchors = extracted_anchors[1]
+    assert (
+        yaml.extended_anchors_load(config_without_anchors, anchors) == expected_config
+    )
+
+
+@pytest.mark.parametrize(
+    (
+        "config_with_anchors",
+        "config_without_anchors",
+        "expected_exception",
+        "expected_error_value",
+    ),
+    (
+        (
+            """
+        shared:
+          conditions: &cond1
+            - status-success=continuous-integration/fake-ci
+        """,
+            """
+        queue_rules:
+          - name: child
+            conditions: *cond1
+
+        pull_request_rules:
+          - name: Merge me
+            conditions: *cond2
+            actions:
+              queue:
+                name: default
+        """,
+            base_yaml.composer.ComposerError,
+            "found undefined alias 'cond2'",
+        ),
+    ),
+)
+async def test_yaml_extended_anchors_load_error(
+    config_with_anchors: str,
+    config_without_anchors: str,
+    expected_exception: type[Exception],
+    expected_error_value: str,
+) -> None:
+    extracted_anchors = yaml.anchor_extractor_load(config_with_anchors)
+    assert extracted_anchors is not None
+    anchors = extracted_anchors[1]
+
+    with pytest.raises(expected_exception, match=expected_error_value):
+        yaml.extended_anchors_load(config_without_anchors, anchors)
+
+
 async def test_yaml_with_anchor_extractor_schema() -> None:
     config = """
 shared:
@@ -282,3 +453,89 @@ pull_request_rules:
     assert len(nodes) == 2
     assert nodes[0].value == "check-success=ci/circleci: check_if_tests_done"
     assert nodes[1].value == "#approved-reviews-by>=1"
+
+
+async def test_yaml_with_extended_anchor_schema() -> None:
+    config = """
+        extends: .github
+
+        queue_rules:
+          - name: queue
+            merge_conditions: *common_checks
+            checks_timeout: 25m
+
+
+        pull_request_rules:
+          - name: queue
+            conditions:
+              - base=toto
+              - label=to-be-merged
+              - and: *common_checks
+            actions:
+              queue:
+                name: queue
+                method: squash
+        """
+
+    extended_config = """
+        shared:
+          merge_ci: &common_checks
+            - "check-success=ci/circleci: check_if_tests_done"
+            - "#approved-reviews-by>=1"
+
+        queue_rules:
+          - name: parent_queue
+            merge_conditions:
+              - label=parent
+              - and: *common_checks
+            checks_timeout: 25m
+
+        pull_request_rules:
+          - name: parent
+            conditions:
+              - base=toto
+              - label=to-be-merged
+              - and: *common_checks
+            actions:
+              queue:
+                name: parent_queue
+                method: squash
+        """
+
+    parsed_extended_config = rules.YamlAnchorsExtractorSchema(extended_config)
+    assert parsed_extended_config is not None
+    anchors = parsed_extended_config[1]
+
+    parsed_config = rules.YamlSchemaWithExtendedAnchors(
+        (config, anchors),
+    )
+
+    assert parsed_config == {
+        "extends": ".github",
+        "queue_rules": [
+            {
+                "name": "queue",
+                "merge_conditions": [
+                    "check-success=ci/circleci: check_if_tests_done",
+                    "#approved-reviews-by>=1",
+                ],
+                "checks_timeout": "25m",
+            },
+        ],
+        "pull_request_rules": [
+            {
+                "name": "queue",
+                "conditions": [
+                    "base=toto",
+                    "label=to-be-merged",
+                    {
+                        "and": [
+                            "check-success=ci/circleci: check_if_tests_done",
+                            "#approved-reviews-by>=1",
+                        ],
+                    },
+                ],
+                "actions": {"queue": {"name": "queue", "method": "squash"}},
+            },
+        ],
+    }

@@ -34,6 +34,14 @@ class AnchorExtractorComposer(composer.Composer):
         return node
 
 
+class ExtendedAnchorComposer(composer.Composer):
+    # NOTE(Syffe): This is the added change
+    def __init__(self, anchors: dict[str, typing.Any]) -> None:
+        # NOTE(Syffe): No need to init super class since the init function
+        # only contains `self.anchors = {}`
+        self.anchors = anchors
+
+
 class AnchorExtractorConstructor(constructor.SafeConstructor):
     def get_single_data(self) -> tuple[typing.Any, dict[str, typing.Any]] | None:
         # Ensure that the stream contains a single document and construct it.
@@ -61,4 +69,23 @@ class AnchorExtractorLoader(
         parser.Parser.__init__(self)
         AnchorExtractorComposer.__init__(self)
         AnchorExtractorConstructor.__init__(self)
+        resolver.Resolver.__init__(self)
+
+
+class ExtendedAnchorLoader(
+    reader.Reader,
+    scanner.Scanner,
+    parser.Parser,
+    ExtendedAnchorComposer,
+    constructor.SafeConstructor,
+    resolver.Resolver,
+):
+    """Loader uses external anchors to load the document"""
+
+    def __init__(self, stream: "reader._ReadStream", anchors: dict[str, typing.Any]):
+        reader.Reader.__init__(self, stream)
+        scanner.Scanner.__init__(self)
+        parser.Parser.__init__(self)
+        ExtendedAnchorComposer.__init__(self, anchors=anchors)
+        constructor.SafeConstructor.__init__(self)
         resolver.Resolver.__init__(self)

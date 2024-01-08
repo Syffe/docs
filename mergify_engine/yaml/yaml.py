@@ -6,6 +6,17 @@ import yaml
 from mergify_engine.yaml import yaml_anchor_extractor
 
 
+def extended_anchors_load(
+    stream: typing.Any,
+    anchors: dict[str, typing.Any],
+) -> typing.Any:
+    loader = yaml_anchor_extractor.ExtendedAnchorLoader(stream, anchors=anchors)
+    try:
+        return loader.get_single_data()
+    finally:
+        loader.dispose()  # type: ignore[no-untyped-call]
+
+
 def anchor_extractor_load(stream: typing.Any) -> typing.Any:
     return yaml.load(stream, Loader=yaml_anchor_extractor.AnchorExtractorLoader)  # type: ignore[arg-type]
 

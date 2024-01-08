@@ -79,6 +79,15 @@ def YAMLAnchorExtractor(v: str) -> typing.Any:
         return mergify_yaml.anchor_extractor_load(v)
 
 
+@tracer.wrap("yaml.extended_anchors_load")
+def YAMLExtendedAnchors(
+    yaml_content: str,
+    anchors: dict[str, typing.Any],
+) -> typing.Any:
+    with convert_yaml_error_into_voluptuous_error():
+        return mergify_yaml.extended_anchors_load(yaml_content, anchors)
+
+
 def UserConfigurationSchema(
     config: dict[str, typing.Any],
 ) -> voluptuous.Schema:
@@ -135,4 +144,17 @@ def UserConfigurationSchema(
 YamlSchema: abc.Callable[[str], typing.Any] = voluptuous.Schema(voluptuous.Coerce(YAML))
 YamlAnchorsExtractorSchema: abc.Callable[[str], typing.Any] = voluptuous.Schema(
     voluptuous.Coerce(YAMLAnchorExtractor),
+)
+# NOTE(Syffe): The parameter is a tuple containing the yaml content to parse/load
+# and the list of anchors that will be extended into the file.
+YamlSchemaWithExtendedAnchors: abc.Callable[
+    [tuple[str, dict[str, typing.Any]]],
+    typing.Any,
+] = voluptuous.Schema(
+    voluptuous.Coerce(
+        lambda v: YAMLExtendedAnchors(
+            yaml_content=v[0],
+            anchors=v[1],
+        ),
+    ),
 )
