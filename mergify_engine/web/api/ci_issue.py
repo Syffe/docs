@@ -59,7 +59,7 @@ class CiIssueDetailResponse:
     job_name: str
     status: CiIssueStatus
     events: list[CiIssueEvent] = dataclasses.field(
-        metadata={"description": "Event link to this CiIssue"},
+        metadata={"description": "List of CI issue events"},
     )
     pull_requests_impacted: list[CiIssuePullRequestData] = dataclasses.field(
         metadata={"description": "List of pull requests impacted by this CiIssue"},
@@ -75,14 +75,14 @@ class CiIssueListResponse:
     status: CiIssueStatus
     events_count: int
     events: list[CiIssueEvent] = dataclasses.field(
-        metadata={"description": "Event link to this CiIssue"},
+        metadata={"description": "List of CI issue events"},
     )
 
 
 class CiIssuesListResponse(pagination.PageResponse[CiIssueListResponse]):
     items_key: typing.ClassVar[str] = "issues"
     issues: list[CiIssueListResponse] = dataclasses.field(
-        metadata={"description": "List of CiIssue"},
+        metadata={"description": "List of CI issues"},
     )
 
 
