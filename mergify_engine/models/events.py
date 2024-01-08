@@ -655,7 +655,10 @@ class EventActionQueueLeave(Event):
             .where(
                 checks_end.pull_request == cls.pull_request,
                 checks_end.repository_id == cls.repository_id,
+                checks_end.received_at <= cls.received_at,
             )
+            .order_by(checks_end.received_at.desc())
+            .limit(1)
             .scalar_subquery()
         )
 

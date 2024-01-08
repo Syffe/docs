@@ -16,9 +16,15 @@ from mergify_engine.tests.unit.api import conftest as tests_api_conftest
             [
                 {
                     "pull_request": 1,
-                    "queued_at": "2022-11-24T12:15:00+00:00",
-                    "received_at": "2022-11-24T12:45:00+00:00",
+                    "queued_at": "2022-11-24T12:10:00+00:00",
+                    "received_at": "2022-11-24T12:30:00+00:00",
                     "seconds_waiting_for_freeze": 5 * 60,
+                },
+                {
+                    "pull_request": 1,
+                    "queued_at": "2022-11-24T12:35:00+00:00",
+                    "received_at": "2022-11-24T12:50:00+00:00",
+                    "seconds_waiting_for_freeze": 0,
                 },
                 {
                     "pull_request": 2,
@@ -36,8 +42,13 @@ from mergify_engine.tests.unit.api import conftest as tests_api_conftest
             [
                 {
                     "pull_request": 1,
-                    "checks_started_at": "2022-11-24T12:20:00+00:00",
-                    "checks_ended_at": "2022-11-24T12:40:00+00:00",
+                    "checks_started_at": "2022-11-24T12:15:00+00:00",
+                    "checks_ended_at": "2022-11-24T12:25:00+00:00",
+                },
+                {
+                    "pull_request": 1,
+                    "checks_started_at": "2022-11-24T12:40:00+00:00",
+                    "checks_ended_at": "2022-11-24T12:45:00+00:00",
                 },
                 {
                     "pull_request": 2,
@@ -77,11 +88,13 @@ async def test_basic_api_response(
                         {
                             "start": "2022-11-24T12:00:00Z",
                             "end": "2022-11-24T12:59:59Z",
-                            "queue_time": (30 - 20 - 5) * 60.0,
+                            # (pr1 first run) + (pr1 second run)
+                            "queue_time": ((20 - 5 - 10) + (15 - 0 - 5)) / 2 * 60.0,
                         },
                         {
                             "start": "2022-11-24T14:00:00Z",
                             "end": "2022-11-24T14:59:59Z",
+                            # (pr2 first run) + (pr3 first run)
                             "queue_time": ((10 - 5) + (25 - 10 - 10)) / 2 * 60.0,
                         },
                     ],
