@@ -683,6 +683,7 @@ class EventActionQueueLeave(Event):
                 cls.partition_name,
                 cls.queue_name,
             )
+            .order_by(cls.base_ref, cls.partition_name, cls.queue_name, chunk)
         )
 
         result = await session.execute(stmt)
@@ -769,6 +770,7 @@ class EventActionQueueChange(Event):
                 cls.partition_name,
                 cls.queue_name,
             )
+            .order_by(cls.base_ref, cls.partition_name, cls.queue_name, chunk)
         )
 
         result = await session.execute(stmt)
@@ -1083,6 +1085,7 @@ class EventActionQueueChecksEnd(Event):
                 cls.partition_name,
                 cls.queue_name,
             )
+            .order_by(cls.base_ref, cls.partition_name, cls.queue_name, chunk)
         )
 
         result = await session.execute(stmt)

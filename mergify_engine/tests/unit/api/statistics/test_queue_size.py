@@ -201,3 +201,93 @@ async def test_api_simple_filters(
             },
         ],
     }
+
+
+@pytest.mark.parametrize(
+    "_insert_action_queue_change",
+    [
+        (
+            (
+                {
+                    "size": 1,
+                    "received_at": "2022-11-24T12:00:00+00:00",
+                    "queue_name": "main",
+                },
+                {
+                    "size": 1,
+                    "received_at": "2022-11-24T12:00:00+00:00",
+                    "queue_name": "lowprio",
+                },
+                {
+                    "size": 2,
+                    "received_at": "2022-11-24T13:00:00+00:00",
+                    "queue_name": "main",
+                },
+                {
+                    "size": 2,
+                    "received_at": "2022-11-24T13:00:00+00:00",
+                    "queue_name": "lowprio",
+                },
+            )
+        ),
+    ],
+    indirect=True,
+)
+async def test_api_grouping(
+    fake_repository: context.Repository,  # noqa: ARG001
+    web_client: tests_conftest.CustomTestClient,
+    api_token: tests_api_conftest.TokenUserRepo,
+    _insert_action_queue_change: None,
+) -> None:
+    with time_travel("2022-11-25T00:00:00+00:00"):
+        response = await web_client.get(
+            "/v1/repos/Mergifyio/engine/stats/queue_size",
+            headers={"Authorization": api_token.api_token},
+        )
+
+        assert response.json() == {
+            "groups": [
+                {
+                    "base_ref": "main",
+                    "partition_name": "default",
+                    "queue_name": "lowprio",
+                    "stats": [
+                        {
+                            "start": "2022-11-24T12:00:00Z",
+                            "end": "2022-11-24T12:59:59Z",
+                            "avg_size": 1.0,
+                            "max_size": 1,
+                            "min_size": 1,
+                        },
+                        {
+                            "start": "2022-11-24T13:00:00Z",
+                            "end": "2022-11-24T13:59:59Z",
+                            "avg_size": 2.0,
+                            "max_size": 2,
+                            "min_size": 2,
+                        },
+                    ],
+                },
+                {
+                    "base_ref": "main",
+                    "partition_name": "default",
+                    "queue_name": "main",
+                    "stats": [
+                        {
+                            "start": "2022-11-24T12:00:00Z",
+                            "end": "2022-11-24T12:59:59Z",
+                            "avg_size": 1.0,
+                            "max_size": 1,
+                            "min_size": 1,
+                        },
+                        {
+                            "start": "2022-11-24T13:00:00Z",
+                            "end": "2022-11-24T13:59:59Z",
+                            "avg_size": 2.0,
+                            "max_size": 2,
+                            "min_size": 2,
+                        },
+                    ],
+                },
+            ],
+        }
