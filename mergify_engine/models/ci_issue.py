@@ -279,12 +279,15 @@ class CiIssueGPT(models.Base, CiIssueMixin):
                 gh_models.GitHubAccount,
                 gh_models.GitHubAccount.id == gh_pull_request.PullRequest.user_id,
             )
+            .join(
+                gh_pull_request.PullRequestHeadShaHistory,
+                gh_pull_request.PullRequest.id
+                == gh_pull_request.PullRequestHeadShaHistory.pull_request_id,
+            )
             .where(
                 gh_pull_request.PullRequest.base_repository_id == cls.repository_id,
-                gh_pull_request.PullRequest.head_sha_history.any(
-                    gh_pull_request.PullRequestHeadShaHistory.head_sha
-                    == gh_models.WorkflowJob.head_sha,
-                ),
+                gh_pull_request.PullRequestHeadShaHistory.head_sha
+                == gh_models.WorkflowJob.head_sha,
             )
             .group_by(gh_pull_request.PullRequest.id, gh_models.GitHubAccount.id)
             .order_by(
