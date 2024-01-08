@@ -2,17 +2,16 @@
 # ruff: noqa: T201
 
 import json
-import os
 import pathlib
 import re
 from urllib import request
 
 
-RUNTIME_TXT_FILE = pathlib.Path(os.path.dirname(__file__)) / ".." / "runtime.txt"
+RUNTIME_TXT_FILE = pathlib.Path(__file__).parent / ".." / "runtime.txt"
 
 
 def get_runtime_txt_version() -> str:
-    with open(RUNTIME_TXT_FILE) as f:
+    with RUNTIME_TXT_FILE.open() as f:
         version_raw = f.read()
 
     return version_raw.replace("python-", "")

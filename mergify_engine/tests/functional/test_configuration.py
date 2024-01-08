@@ -1,5 +1,4 @@
 import json
-import os
 import typing
 from unittest import mock
 
@@ -270,7 +269,7 @@ did not find expected alphabetic or numeric character
         assert cached_config_file["decoded_content"] == yaml.dump(rules_default)
 
         # Change unrelated file and config stay cached
-        with open(self.git.repository + "/random", "w") as f:
+        with (self.git.repository / "random").open("w") as f:
             f.write("yo")
         await self.git("add", "random")
         await self.git("commit", "--no-edit", "-m", "random update")
@@ -283,7 +282,7 @@ did not find expected alphabetic or numeric character
         assert cached_config_file["decoded_content"] == yaml.dump(rules_default)
 
         # Change config file and config cache gets cleaned
-        with open(self.git.repository + "/.mergify.yml", "w") as f:
+        with (self.git.repository / ".mergify.yml").open("w") as f:
             f.write(yaml.dump(rules))
         await self.git("add", ".mergify.yml")
         await self.git("commit", "--no-edit", "-m", "conf update")
@@ -320,7 +319,7 @@ did not find expected alphabetic or numeric character
         # config has been update in the meantime
         await self.setup_repo(yaml.dump({"pull_request_rules": []}))
         assert self.git.repository is not None
-        with open(self.git.repository + "/.mergify.yml", "wb") as f:
+        with (self.git.repository / ".mergify.yml").open("wb") as f:
             f.write(yaml.dump(rules).encode())
         await self.git("add", ".mergify.yml")
         await self.git("commit", "--no-edit", "-m", "conf update")
@@ -338,7 +337,7 @@ did not find expected alphabetic or numeric character
         await self.run_engine()
 
         await self.git("checkout", "save-point", "-b", self.main_branch_name)
-        with open(self.git.repository + "/.mergify.yml", "wb") as f:
+        with (self.git.repository / ".mergify.yml").open("wb") as f:
             f.write(yaml.dump({}).encode())
         await self.git("add", ".mergify.yml")
         await self.git("commit", "--no-edit", "-m", "conf update")
@@ -556,7 +555,7 @@ did not find expected alphabetic or numeric character
     async def test_configuration_moved(self) -> None:
         await self.setup_repo("")
 
-        os.mkdir(self.git.repository + "/.github")
+        (self.git.repository / ".github").mkdir()
         await self.git("mv", ".mergify.yml", ".github/mergify.yml")
         await self.create_pr(git_tree_ready=True)
         await self.run_engine()

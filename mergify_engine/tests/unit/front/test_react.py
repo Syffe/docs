@@ -1,4 +1,4 @@
-import os
+import pathlib
 
 import httpx
 import pytest
@@ -7,8 +7,8 @@ from mergify_engine import settings
 from mergify_engine.tests import conftest
 
 
-MODULE_DIRECTORY_PATH = os.path.dirname(__file__)
-FAKE_REACT_BUILD_DIR = os.path.abspath(f"{MODULE_DIRECTORY_PATH}/fake-build")
+MODULE_DIRECTORY_PATH = pathlib.Path(__file__).parent
+FAKE_REACT_BUILD_DIR = MODULE_DIRECTORY_PATH / "fake-build"
 
 
 @pytest.fixture()

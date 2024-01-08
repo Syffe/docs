@@ -1,5 +1,5 @@
 import json
-import os
+import pathlib
 import typing
 from unittest import mock
 
@@ -13,11 +13,11 @@ from mergify_engine.clients import github
 
 
 GITHUB_SAMPLE_EVENTS = {}
-_EVENT_DIR = os.path.join(os.path.dirname(__file__), "events")
-for filename in os.listdir(_EVENT_DIR):
-    event_type = filename.split(".")[0]
-    with open(os.path.join(_EVENT_DIR, filename)) as event:
-        GITHUB_SAMPLE_EVENTS[filename] = (event_type, json.load(event))
+_EVENT_DIR = pathlib.Path(__file__).parent / "events"
+for file in _EVENT_DIR.iterdir():
+    event_type = file.name.split(".")[0]
+    with file.open() as event:
+        GITHUB_SAMPLE_EVENTS[file.name] = (event_type, json.load(event))
 
 
 @pytest.mark.parametrize(("event_type", "event"), list(GITHUB_SAMPLE_EVENTS.values()))

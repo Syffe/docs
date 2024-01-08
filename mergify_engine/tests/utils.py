@@ -102,7 +102,7 @@ def dump_schema(dbname: str, filepath: pathlib.Path) -> None:
         timeout=10,
     )
 
-    with open(filepath, "w") as f:
+    with filepath.open("w") as f:
         f.write(process.stdout.decode())
 
 

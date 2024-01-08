@@ -1,5 +1,5 @@
 import json
-import os
+import pathlib
 import typing
 
 import click
@@ -87,9 +87,9 @@ def generate_openapi_spec(
             version="0.0.0",
         )
 
-    path = os.path.dirname(output)
+    path = pathlib.Path(output)
     if path:
-        os.makedirs(path, exist_ok=True)
-    with open(output, "w") as f:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w") as f:
         json.dump(fp=f, obj=openapi_schema)
     click.echo(f"{output} created")

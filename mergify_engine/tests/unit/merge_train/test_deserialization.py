@@ -41,7 +41,6 @@ of the key in the deserialized object.
 """
 
 import enum
-import os
 import pathlib
 import typing
 
@@ -67,13 +66,11 @@ def pytest_generate_tests(metafunc: typing.Any) -> None:
     ):
         return
 
-    cassettes_dir = (
-        pathlib.Path(os.path.dirname(__file__)) / "deserialization_cassettes"
-    )
+    cassettes_dir = pathlib.Path(__file__).parent / "deserialization_cassettes"
     test_data = []
     cassette_names = []
     for cassette_file in cassettes_dir.glob("*.yaml"):
-        with open(cassette_file) as f:
+        with cassette_file.open() as f:
             cassette_names.append(cassette_file.name)
 
             yaml_data = yaml.safe_load(f.read())

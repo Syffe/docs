@@ -1,4 +1,4 @@
-import os
+import pathlib
 import re
 from re import Match
 import typing
@@ -10,25 +10,29 @@ from mergify_engine.log_embedder import log_cleaner
 
 CleanerModeT = typing.Literal["basic", "gpt"]
 
-LOG_INPUT_LIBRARY_PATH = "zfixtures/unit/log_embedder/log_cleaner_input"
-LOG_OUTPUT_LIBRARY_PATH = "zfixtures/unit/log_embedder/log_cleaner_output"
-GPT_LOG_INPUT_LIBRARY_PATH = "zfixtures/unit/log_embedder/gpt_log_cleaner_input"
-GPT_LOG_OUTPUT_LIBRARY_PATH = "zfixtures/unit/log_embedder/gpt_log_cleaner_output"
+LOG_INPUT_LIBRARY_PATH = pathlib.Path("zfixtures/unit/log_embedder/log_cleaner_input")
+LOG_OUTPUT_LIBRARY_PATH = pathlib.Path("zfixtures/unit/log_embedder/log_cleaner_output")
+GPT_LOG_INPUT_LIBRARY_PATH = pathlib.Path(
+    "zfixtures/unit/log_embedder/gpt_log_cleaner_input",
+)
+GPT_LOG_OUTPUT_LIBRARY_PATH = pathlib.Path(
+    "zfixtures/unit/log_embedder/gpt_log_cleaner_output",
+)
 
 TEST_LOGS_FILEPATH_DICT = {
-    filename: (
-        os.path.join(LOG_INPUT_LIBRARY_PATH, filename),
-        os.path.join(LOG_OUTPUT_LIBRARY_PATH, filename),
+    file.name: (
+        file,
+        LOG_OUTPUT_LIBRARY_PATH / file.name,
     )
-    for filename in os.listdir(LOG_INPUT_LIBRARY_PATH)
+    for file in LOG_INPUT_LIBRARY_PATH.iterdir()
 }
 
 TEST_GPT_LOGS_FILEPATH_DICT = {
-    filename: (
-        os.path.join(GPT_LOG_INPUT_LIBRARY_PATH, filename),
-        os.path.join(GPT_LOG_OUTPUT_LIBRARY_PATH, filename),
+    file.name: (
+        file,
+        GPT_LOG_OUTPUT_LIBRARY_PATH / file.name,
     )
-    for filename in os.listdir(GPT_LOG_INPUT_LIBRARY_PATH)
+    for file in GPT_LOG_INPUT_LIBRARY_PATH.iterdir()
 }
 
 
@@ -47,12 +51,9 @@ def get_cleaned_log(input_file: typing.TextIO, mode: CleanerModeT = "basic") -> 
 
 
 def record_log_cleaner_output() -> None:
-    for log_filename in os.listdir(LOG_INPUT_LIBRARY_PATH):
-        with open(
-            f"{LOG_INPUT_LIBRARY_PATH}/{log_filename}",
-            encoding="utf-8",
-        ) as input_file, open(
-            f"{LOG_OUTPUT_LIBRARY_PATH}/{log_filename}",
+    for log_file in LOG_INPUT_LIBRARY_PATH.iterdir():
+        log_output_file = LOG_OUTPUT_LIBRARY_PATH / log_file.name
+        with log_file.open(encoding="utf-8") as input_file, log_output_file.open(
             "w",
         ) as output_file:
             log_output = get_cleaned_log(input_file)
@@ -60,12 +61,9 @@ def record_log_cleaner_output() -> None:
 
 
 def record_gpt_log_cleaner_output() -> None:
-    for log_filename in os.listdir(GPT_LOG_INPUT_LIBRARY_PATH):
-        with open(
-            f"{GPT_LOG_INPUT_LIBRARY_PATH}/{log_filename}",
-            encoding="utf-8",
-        ) as input_file, open(
-            f"{GPT_LOG_OUTPUT_LIBRARY_PATH}/{log_filename}",
+    for log_file in GPT_LOG_INPUT_LIBRARY_PATH.iterdir():
+        log_output_file = GPT_LOG_OUTPUT_LIBRARY_PATH / log_file.name
+        with log_file.open(encoding="utf-8") as input_file, log_output_file.open(
             "w",
         ) as output_file:
             log_output = get_cleaned_log(input_file, mode="gpt")
@@ -77,12 +75,12 @@ def record_gpt_log_cleaner_output() -> None:
     list(TEST_GPT_LOGS_FILEPATH_DICT.values()),
 )
 def test_gpt_log_cleaner_output(
-    input_log_filepath: str,
-    output_log_filepath: str,
+    input_log_filepath: pathlib.Path,
+    output_log_filepath: pathlib.Path,
 ) -> None:
-    with open(input_log_filepath, encoding="utf-8") as log_input_file, open(
-        output_log_filepath,
-    ) as log_output_file:
+    with input_log_filepath.open(
+        encoding="utf-8",
+    ) as log_input_file, output_log_filepath.open() as log_output_file:
         expected_log_output = log_output_file.read()
         log_output = get_cleaned_log(log_input_file, mode="gpt")
         assert log_output == expected_log_output
@@ -92,10 +90,13 @@ def test_gpt_log_cleaner_output(
     ("input_log_filepath", "output_log_filepath"),
     list(TEST_LOGS_FILEPATH_DICT.values()),
 )
-def test_log_cleaner_output(input_log_filepath: str, output_log_filepath: str) -> None:
-    with open(input_log_filepath, encoding="utf-8") as log_input_file, open(
-        output_log_filepath,
-    ) as log_output_file:
+def test_log_cleaner_output(
+    input_log_filepath: pathlib.Path,
+    output_log_filepath: pathlib.Path,
+) -> None:
+    with input_log_filepath.open(
+        encoding="utf-8",
+    ) as log_input_file, output_log_filepath.open() as log_output_file:
         expected_log_output = log_output_file.read()
         log_output = get_cleaned_log(log_input_file)
         assert log_output == expected_log_output

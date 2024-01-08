@@ -4756,7 +4756,7 @@ previous_failed_batches:
         draft_pr_head_ref = draft_pr["pull_request"]["head"]["ref"]
         await self.git("fetch", "origin", draft_pr_head_ref)
         await self.git("checkout", "-b", "random", f"origin/{draft_pr_head_ref}")
-        open(self.git.repository + "/random_file.txt", "wb").close()
+        (self.git.repository / "random_file.txt").open("wb").close()
         await self.git("add", "random_file.txt")
         await self.git("commit", "--no-edit", "-m", "random update")
         await self.git("push", "--quiet", "origin", f"random:{draft_pr_head_ref}")
@@ -4860,7 +4860,7 @@ previous_failed_batches:
         # We push changes to the base branch
         await self.git("fetch", "origin", self.main_branch_name)
         await self.git("checkout", "-b", "random", f"origin/{self.main_branch_name}")
-        open(self.git.repository + "/random_file.txt", "wb").close()
+        (self.git.repository / "random_file.txt").open("wb").close()
         await self.git("add", "random_file.txt")
         await self.git("commit", "--no-edit", "-m", "random update")
         await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
@@ -4952,7 +4952,7 @@ previous_failed_batches:
         # We push changes to the base branch
         await self.git("fetch", "origin", self.main_branch_name)
         await self.git("checkout", "-b", "random", f"origin/{self.main_branch_name}")
-        open(self.git.repository + "/random_file.txt", "wb").close()
+        (self.git.repository / "random_file.txt").open("wb").close()
         await self.git("add", "random_file.txt")
         await self.git("commit", "--no-edit", "-m", "random update")
         await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
@@ -5029,7 +5029,7 @@ previous_failed_batches:
         # We push changes to the pull request
         await self.git("fetch", "origin", self.main_branch_name)
         await self.git("checkout", "-b", "my_pr_branch", f"origin/{p1['head']['ref']}")
-        open(self.git.repository + "/random_file.txt", "wb").close()
+        (self.git.repository / "random_file.txt").open("wb").close()
         await self.git("add", "random_file.txt")
         await self.git("commit", "--no-edit", "-m", "random update")
         await self.git("push", "--quiet", "origin", f"my_pr_branch:{p1['head']['ref']}")
@@ -5964,7 +5964,7 @@ previous_failed_batches:
         draft_pr_head_ref = draft_pr["pull_request"]["head"]["ref"]
         await self.git("fetch", "origin", f"{draft_pr_head_ref}")
         await self.git("checkout", "-b", "random", f"origin/{draft_pr_head_ref}")
-        open(self.git.repository + "/random_file.txt", "wb").close()
+        (self.git.repository / "random_file.txt").open("wb").close()
         await self.git("add", "random_file.txt")
         await self.git("commit", "--no-edit", "-m", "random update")
         await self.git("push", "--quiet", "origin", f"random:{draft_pr_head_ref}")

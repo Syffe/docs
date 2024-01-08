@@ -1,5 +1,5 @@
 import json
-import os
+import pathlib
 import re
 import typing
 
@@ -30,11 +30,11 @@ from mergify_engine.tests.openai_embedding_dataset import (
 
 LOG = daiquiri.getLogger(__name__)
 
-PATH_INPUT_JOBS_JSON = (
-    "zfixtures/functional/log_embedder/raw_logs/unsorted_logs/input_jobs_json"
+PATH_INPUT_JOBS_JSON = pathlib.Path(
+    "zfixtures/functional/log_embedder/raw_logs/unsorted_logs/input_jobs_json",
 )
-PATH_INPUT_RAW_LOG_TXT = (
-    "zfixtures/functional/log_embedder/raw_logs/unsorted_logs/input_raw_logs_txt"
+PATH_INPUT_RAW_LOG_TXT = pathlib.Path(
+    "zfixtures/functional/log_embedder/raw_logs/unsorted_logs/input_raw_logs_txt",
 )
 
 JOB_IDS_BY_ISSUE: dict[int, list[int]] = {
@@ -551,10 +551,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         async with database.create_session() as session:
             # loop the job files and fill the DB
             # NOTE(Syffe): we sort here since depending on the OS the order of the files might not be the same
-            for job_json_filename in sorted(os.listdir(PATH_INPUT_JOBS_JSON)):
-                with open(
-                    f"{PATH_INPUT_JOBS_JSON}/{job_json_filename}",
-                ) as job_json_file:
+            for job_json_filename in sorted(PATH_INPUT_JOBS_JSON.iterdir()):
+                with job_json_filename.open() as job_json_file:
                     job_json = json.load(job_json_file)
 
                     job_json.update(
@@ -570,9 +568,10 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                         job_json["repository"],
                     )
 
-                    with open(
-                        f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
-                    ) as log_file:
+                    with (
+                        PATH_INPUT_RAW_LOG_TXT
+                        / f"{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt"
+                    ).open() as log_file:
                         tokens = await gha_embedder.get_tokenized_cleaned_log(
                             logm.Log.from_content(log_file.read()),
                         )
@@ -618,10 +617,8 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         async with database.create_session() as session:
             # loop the job files and fill the DB
             # NOTE(Syffe): we sort here since depending on the OS the order of the files might not be the same
-            for job_json_filename in sorted(os.listdir(PATH_INPUT_JOBS_JSON)):
-                with open(
-                    f"{PATH_INPUT_JOBS_JSON}/{job_json_filename}",
-                ) as job_json_file:
+            for job_json_filename in sorted(PATH_INPUT_JOBS_JSON.iterdir()):
+                with job_json_filename.open() as job_json_file:
                     job_json = json.load(job_json_file)
 
                     job_json.update(
@@ -637,9 +634,10 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                         job_json["repository"],
                     )
 
-                    with open(
-                        f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
-                    ) as log_file:
+                    with (
+                        PATH_INPUT_RAW_LOG_TXT
+                        / f"{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt"
+                    ).open() as log_file:
                         log_content = log_file.read()
 
                     log = logm.Log.from_content(log_content)
@@ -684,9 +682,9 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         self,
     ) -> None:
         async with database.create_session() as session:
-            with open(
-                f"{PATH_INPUT_JOBS_JSON}/37838584_575916772_17890412896_jobs.json",
-            ) as job_json_file:
+            with (
+                PATH_INPUT_JOBS_JSON / "37838584_575916772_17890412896_jobs.json"
+            ).open() as job_json_file:
                 job_json = json.load(job_json_file)
 
             job_json.update(
@@ -702,9 +700,10 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 job_json["repository"],
             )
 
-            with open(
-                f"{PATH_INPUT_RAW_LOG_TXT}/{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt",
-            ) as log_file:
+            with (
+                PATH_INPUT_RAW_LOG_TXT
+                / f"{job.repository.owner_id}_{job.repository_id}_{job.id}_logs.txt"
+            ).open() as log_file:
                 log_content = log_file.read()
 
             log = logm.Log.from_content(log_content)

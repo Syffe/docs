@@ -36,8 +36,8 @@ class TestCommentAction(base.FunctionalTestBase):
         assert new_comments[-1]["body"] == "WTF?"
 
         # Add new commit to ensure Summary get copied and comment not reposted
-        open(self.git.repository + "/new_file", "wb").close()
-        await self.git("add", self.git.repository + "/new_file")
+        (self.git.repository / "new_file").open("wb").close()
+        await self.git("add", "new_file")
         await self.git("commit", "--no-edit", "-m", "new commit")
         await self.git(
             "push",

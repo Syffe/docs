@@ -30,8 +30,8 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
         filename: str = "unwanted_changes",
         remote: str = "origin",
     ) -> None:
-        open(self.git.repository + f"/{filename}", "wb").close()
-        await self.git("add", self.git.repository + f"/{filename}")
+        (self.git.repository / filename).open("wb").close()
+        await self.git("add", filename)
         await self.git("commit", "--no-edit", "-m", filename)
         await self.git("push", "--quiet", remote, branch)
 

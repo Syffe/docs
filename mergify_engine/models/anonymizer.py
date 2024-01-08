@@ -125,7 +125,7 @@ async def gen_postgresql_anonymized_rules() -> None:
 
             rules += f"SECURITY LABEL FOR anon ON COLUMN {table.name}.{col.name} IS 'MASKED WITH {mask_type} {anonymizer_config}';\n"
 
-    with open("postgresql_anonymizer_rules.sql", "w") as f:
+    with pathlib.Path("postgresql_anonymizer_rules.sql").open("w") as f:
         f.write(rules)
 
     database.init_sqlalchemy("test")

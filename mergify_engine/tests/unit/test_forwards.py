@@ -1,5 +1,5 @@
 import asyncio
-import os
+import pathlib
 from unittest import mock
 import uuid
 
@@ -35,7 +35,7 @@ async def test_app_event_forward(
     request: pytest.FixtureRequest,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
-    with open(os.path.join(os.path.dirname(__file__), "events", "push.json")) as f:
+    with (pathlib.Path(__file__).parent / "events" / "push.json").open() as f:
         data = f.read()
 
     headers = {

@@ -2,7 +2,7 @@ from collections import abc
 import dataclasses
 import functools
 import json
-import os
+import pathlib
 import typing
 from unittest import mock
 
@@ -359,12 +359,12 @@ async def fake_mergify_bot(
 @pytest.fixture()
 def sample_events() -> dict[str, tuple[github_types.GitHubEventType, typing.Any]]:
     events = {}
-    event_dir = os.path.join(os.path.dirname(__file__), "events")
+    event_dir = pathlib.Path(__file__).parent / "events"
 
-    for filename in os.listdir(event_dir):
-        event_type = typing.cast(github_types.GitHubEventType, filename.split(".")[0])
-        with open(os.path.join(event_dir, filename)) as event:
-            events[filename] = (event_type, json.load(event))
+    for file in event_dir.iterdir():
+        event_type = typing.cast(github_types.GitHubEventType, file.name.split(".")[0])
+        with file.open() as event:
+            events[file.name] = (event_type, json.load(event))
 
     return events
 

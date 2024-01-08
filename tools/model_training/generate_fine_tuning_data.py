@@ -1,7 +1,7 @@
 import asyncio
-import glob
 import json
 import os
+import pathlib
 
 
 # NOTE(Kontrolix): We must do that here before mergify settings are loaded from env var
@@ -17,10 +17,10 @@ from mergify_engine.log_embedder import log as logm
 from mergify_engine.log_embedder import openai_api
 
 
-MODEL_TRAINING_DIR = "tools/model_training"
+MODEL_TRAINING_DIR = pathlib.Path("tools/model_training")
 
-SAMPLE_LOGS_DIR = os.path.join(MODEL_TRAINING_DIR, "sample_logs/*.txt")
-TRAINING_DATA_DIR = os.path.join(MODEL_TRAINING_DIR, "training_data")
+SAMPLE_LOGS_DIR = MODEL_TRAINING_DIR / "sample_logs"
+TRAINING_DATA_DIR = MODEL_TRAINING_DIR / "training_data"
 
 
 async def extract_data_from_log(
@@ -33,25 +33,22 @@ async def extract_data_from_log(
         )
 
 
-def get_cleaned_log_path(sample_log_path: str) -> str:
-    return os.path.join(
-        TRAINING_DATA_DIR,
-        os.path.basename(sample_log_path),
-    )
+def get_cleaned_log_path(sample_log_path: pathlib.Path) -> str:
+    return TRAINING_DATA_DIR / sample_log_path.name
 
 
-def get_cleaned_log(sample_log_path: str) -> tuple[str, bool]:
+def get_cleaned_log(sample_log_path: pathlib.Path) -> tuple[str, bool]:
     cleaned_log_path = get_cleaned_log_path(sample_log_path)
 
-    with open(sample_log_path) as f:
+    with sample_log_path.open() as f:
         log = logm.Log.from_content(f.read())
         cleaned_log = github_action.get_cleaned_log(log)
 
     try:
-        with open(cleaned_log_path) as f:
+        with cleaned_log_path.open() as f:
             is_cleaned_log_new = f.read() != cleaned_log
     except FileNotFoundError:
-        with open(cleaned_log_path, "w") as f:
+        with cleaned_log_path.open("w") as f:
             f.write(cleaned_log)
         is_cleaned_log_new = True
 
@@ -59,10 +56,10 @@ def get_cleaned_log(sample_log_path: str) -> tuple[str, bool]:
 
 
 async def get_extracted_data(
-    sample_log_path: str,
+    sample_log_path: pathlib.Path,
     is_cleaned_log_new: bool,
 ) -> list[github_action.ExtractedDataObject]:
-    json_path = os.path.splitext(get_cleaned_log_path(sample_log_path))[0] + ".json"
+    json_path = pathlib.Path(get_cleaned_log_path(sample_log_path).stem + ".json")
 
     # NOTE(Kontrolix): We remove the file here in case of a new cleaned log
     # even if we overwrite the json file later, because in case of failure of the api
@@ -70,19 +67,19 @@ async def get_extracted_data(
     # new and will therefore not force the recall of openAi
     if is_cleaned_log_new:
         try:
-            os.remove(json_path)
+            json_path.unlink()
         except FileNotFoundError:
             pass
 
     try:
-        with open(json_path) as f:
+        with json_path.open() as f:
             return json.load(f)
     except FileNotFoundError:
-        with open(sample_log_path) as f:
+        with sample_log_path.open() as f:
             log = logm.Log.from_content(f.read())
 
         extracted_data = await extract_data_from_log(log)
-        with open(json_path, "w") as f:
+        with json_path.open("w") as f:
             json.dump(extracted_data, f, indent=4)
 
         return extracted_data
@@ -90,7 +87,7 @@ async def get_extracted_data(
 
 async def main() -> None:
     fine_tuning_data = []
-    for sample_log_path in glob.glob(SAMPLE_LOGS_DIR):
+    for sample_log_path in SAMPLE_LOGS_DIR.glob("*.txt"):
         cleaned_log, is_cleaned_log_new = get_cleaned_log(sample_log_path)
 
         extracted_data = await get_extracted_data(sample_log_path, is_cleaned_log_new)
@@ -106,7 +103,7 @@ async def main() -> None:
 
         fine_tuning_data.append(query["messages"])
 
-    with open(os.path.join(MODEL_TRAINING_DIR, "fine_tuning.jsonl"), "w") as f:
+    with (MODEL_TRAINING_DIR / "fine_tuning.jsonl").open("w") as f:
         f.writelines(
             [json.dumps({"messages": data}) + "\n" for data in fine_tuning_data],
         )

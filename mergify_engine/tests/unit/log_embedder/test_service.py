@@ -1,6 +1,6 @@
 import datetime
 import io
-import os
+import pathlib
 import re
 import typing
 from unittest import mock
@@ -31,14 +31,19 @@ from mergify_engine.tests.openai_embedding_dataset import (
 )
 
 
-GHA_CI_LOGS_ZIP_DIRECTORY = "zfixtures/unit/log_embedder/gha-ci-logs-examples"
+GHA_CI_LOGS_ZIP_DIRECTORY = pathlib.Path(
+    "zfixtures/unit/log_embedder/gha-ci-logs-examples",
+)
 GHA_CI_LOGS_ZIP_BUFFER = io.BytesIO()
 
 with zipfile.ZipFile(GHA_CI_LOGS_ZIP_BUFFER, "w") as zip_object:
-    for folder_name, _sub_folders, file_names in os.walk(GHA_CI_LOGS_ZIP_DIRECTORY):
+    for folder_name, _sub_folders, file_names in GHA_CI_LOGS_ZIP_DIRECTORY.walk():
         for filename in file_names:
-            file_path = os.path.join(folder_name, filename)
-            zip_object.write(file_path, file_path[len(GHA_CI_LOGS_ZIP_DIRECTORY) :])
+            file_path = str(folder_name / filename)
+            zip_object.write(
+                file_path,
+                file_path[len(str(GHA_CI_LOGS_ZIP_DIRECTORY)) :],
+            )
 
 GHA_CI_LOGS_ZIP_BUFFER.seek(0)
 GHA_CI_LOGS_ZIP = GHA_CI_LOGS_ZIP_BUFFER.read()

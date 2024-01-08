@@ -1,5 +1,5 @@
 import json
-import os
+import pathlib
 import typing
 from unittest import mock
 
@@ -18,9 +18,7 @@ async def _do_test_event_to_pull(
     expected_pulls: set[github_types.GitHubPullRequestNumber],
     mocked_pulls: list[github_types.GitHubPullRequest] | None = None,
 ) -> None:
-    with open(
-        os.path.join(os.path.dirname(__file__), "events", filename),
-    ) as f:
+    with (pathlib.Path(__file__).parent / "events" / filename).open() as f:
         data = json.loads(
             f.read()
             .replace("https://github.com", settings.GITHUB_URL)

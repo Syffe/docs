@@ -543,7 +543,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                 "random",
                 f"origin/{self.main_branch_name}",
             )
-            open(self.git.repository + "/random_file.txt", "wb").close()
+            (self.git.repository / "random_file.txt").open("wb").close()
             await self.git("add", "random_file.txt")
             await self.git("commit", "--no-edit", "-m", "random update")
             await self.git(
@@ -616,7 +616,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
                 "random",
                 f"origin/{self.main_branch_name}",
             )
-            open(self.git.repository + "/random_file.txt", "wb").close()
+            (self.git.repository / "random_file.txt").open("wb").close()
             await self.git("add", "random_file.txt")
             await self.git("commit", "--no-edit", "-m", "random update")
             await self.git(

@@ -4,6 +4,7 @@ import dataclasses
 import datetime
 import logging
 import os
+import pathlib
 import re
 import sys
 import types
@@ -133,7 +134,7 @@ class Gitter:
             if self._temporary_directory is None:
                 # This is to please mypy only as it never returns None
                 raise RuntimeError("Unable to create temporary directory?")
-            self.repository = os.path.join(self._temporary_directory, "repository")
+            self.repository = pathlib.Path(self._temporary_directory) / "repository"
             await aiofiles.os.mkdir(self.repository)
 
             self.env = {

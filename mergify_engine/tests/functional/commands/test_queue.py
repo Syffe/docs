@@ -398,7 +398,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
         await assert_queued(p, "1st")
 
-        with open(self.git.repository + "/random", "w") as f:
+        with (self.git.repository / "random").open("w") as f:
             f.write("yo")
         await self.git("add", "random")
         await self.git("commit", "--no-edit", "-m", "random update")

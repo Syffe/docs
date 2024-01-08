@@ -1,5 +1,4 @@
 import email.utils
-import os
 
 import fastapi
 import starlette
@@ -17,10 +16,9 @@ async def serve_static_file(
 ) -> fastapi.Response:
     # NOTE(sileht): Ensure the destination file is located in REACT_BUILD_DIR
     assert settings.DASHBOARD_UI_STATIC_FILES_DIRECTORY is not None
-    base_path = os.path.abspath(settings.DASHBOARD_UI_STATIC_FILES_DIRECTORY)
-    path = os.path.abspath(f"{base_path}/{filepath}")
+    path = settings.DASHBOARD_UI_STATIC_FILES_DIRECTORY / filepath.removeprefix("/")
 
-    if path.startswith(base_path) and os.path.isfile(path):
+    if path.is_file():
         if request.method == "HEAD":
             return fastapi.responses.Response(status_code=200)
 

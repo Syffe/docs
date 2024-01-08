@@ -1,6 +1,6 @@
 import base64
 import json
-import os
+import pathlib
 import shutil
 import tempfile
 
@@ -62,7 +62,10 @@ class TestRedisUtilsDumper(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
         await self.repository_ctxt.get_mergify_config_file()
-        temporary_folder = tempfile.mkdtemp()
+        temporary_folder = pathlib.Path(tempfile.mkdtemp())
+        expected_config_file = (
+            temporary_folder / f"config_file-{self.repository_ctxt.repo['id']}.txt"
+        )
         self.addCleanup(shutil.rmtree, temporary_folder)
 
         result = utils.test_console_scripts(
@@ -77,9 +80,7 @@ class TestRedisUtilsDumper(base.FunctionalTestBase):
         )
         assert result.exit_code == 0, result.output
 
-        assert not os.path.exists(
-            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt",
-        )
+        assert not expected_config_file.exists()
 
         result = utils.test_console_scripts(
             admin_cli.admin_cli,
@@ -87,12 +88,8 @@ class TestRedisUtilsDumper(base.FunctionalTestBase):
         )
         assert result.exit_code == 0, result.output
 
-        assert os.path.exists(
-            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt",
-        )
-        with open(
-            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt",
-        ) as file:
+        assert expected_config_file.exists()
+        with expected_config_file.open() as file:
             jsoned_content = json.loads(file.read())
 
         decoded_content_rules = (

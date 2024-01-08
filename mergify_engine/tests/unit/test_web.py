@@ -1,5 +1,5 @@
 import json
-import os
+import pathlib
 from unittest import mock
 
 import httpx
@@ -11,10 +11,11 @@ from mergify_engine import settings
 from mergify_engine import utils
 
 
-with open(os.path.join(os.path.dirname(__file__), "events", "push.json")) as f:
+_EVENTS_DIR = pathlib.Path(__file__).parent / "events"
+with (_EVENTS_DIR / "push.json").open() as f:
     push_event = json.load(f)
 
-with open(os.path.join(os.path.dirname(__file__), "events", "pull_request.json")) as f:
+with (_EVENTS_DIR / "pull_request.json").open() as f:
     pull_request_event = json.load(f)
 
 

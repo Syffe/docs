@@ -7,7 +7,7 @@ import datetime
 import hashlib
 import itertools
 import json
-import os
+import pathlib
 import re
 import shutil
 import subprocess
@@ -104,7 +104,7 @@ class GitterRecorder(gitter.Gitter):
     cassette_library_dir_suffix: dataclasses.InitVar[str]
     _credentials_cache_timeout_seconds: int | None = dataclasses.field(default=None)
 
-    cassette_path: str = dataclasses.field(init=False)
+    cassette_path: pathlib.Path = dataclasses.field(init=False)
     records: list[Record] = dataclasses.field(init=False)
 
     def __post_init__(
@@ -113,9 +113,9 @@ class GitterRecorder(gitter.Gitter):
         cassette_library_dir_suffix: str,
     ) -> None:
         super().__post_init__()
-        self.cassette_path = os.path.join(
-            cassette_library_dir,
-            f"git-{cassette_library_dir_suffix}.json",
+        self.cassette_path = (
+            pathlib.Path(cassette_library_dir)
+            / f"git-{cassette_library_dir_suffix}.json"
         )
         if settings.TESTING_RECORD:
             self.records: list[Record] = []
@@ -128,14 +128,14 @@ class GitterRecorder(gitter.Gitter):
             )
 
     def load_records(self) -> None:
-        if not os.path.exists(self.cassette_path):
+        if not self.cassette_path.exists():
             raise RuntimeError(f"Cassette {self.cassette_path} not found")
-        with open(self.cassette_path, "rb") as f:
+        with self.cassette_path.open("rb") as f:
             data = f.read().decode("utf8")
             self.records = json.loads(data)
 
     def save_records(self) -> None:
-        with open(self.cassette_path, "wb") as f:
+        with self.cassette_path.open("wb") as f:
             data = json.dumps(self.records)
             f.write(data.encode("utf8"))
 
@@ -842,11 +842,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.git("remote", "add", "fork", self.git_fork)
 
         if mergify_config is None:
-            with open(self.git.repository + "/.gitkeep", "w") as f:
+            with (self.git.repository / ".gitkeep").open("w") as f:
                 f.write("repo must not be empty")
             await self.git("add", ".gitkeep")
         else:
-            with open(self.git.repository + "/.mergify.yml", "w") as f:
+            with (self.git.repository / ".mergify.yml").open("w") as f:
                 f.write(mergify_config)
             await self.git("add", ".mergify.yml")
 
@@ -1144,10 +1144,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             raise RuntimeError("self.git.init() not called, tmp dir empty")
 
         for name, content in files.items():
-            path = self.git.repository + "/" + name
-            directory_path = os.path.dirname(path)
-            os.makedirs(directory_path, exist_ok=True)
-            with open(path, "w") as f:
+            filepath = self.git.repository / name
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            with filepath.open("w") as f:
                 f.write(content)
             await self.git("add", name)
 
@@ -1208,7 +1207,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         pr = await self.create_pr(commit_body=commit_body, as_=as_)
 
-        with open(self.git.repository + f"/testfixup{self.pr_counter}", "w") as f:
+        with (self.git.repository / f"testfixup{self.pr_counter}").open("w") as f:
             f.write("fixup")
 
         await self.git("add", f"testfixup{self.pr_counter}")
@@ -2195,7 +2194,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             local_branch_name,
             f"origin/{destination_branch}",
         )
-        with open(self.git.repository + f"/{filename}", "w") as f:
+        with (self.git.repository / filename).open("w") as f:
             f.write(content)
         await self.git("add", filename)
         await self.git("commit", "--no-edit", "-m", "random update")

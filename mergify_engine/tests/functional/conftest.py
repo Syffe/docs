@@ -42,11 +42,11 @@ from mergify_engine.models.github import user as github_user
 pytest.register_assert_rewrite("mergify_engine.tests.functional.base")
 
 
-CASSETTE_LIBRARY_DIR_BASE = "zfixtures/cassettes"
+CASSETTE_LIBRARY_DIR_BASE = pathlib.Path("zfixtures/cassettes")
 DEFAULT_SUBSCRIPTION_FEATURES = (subscription.Features.PUBLIC_REPOSITORY,)
 
 # Files used for requests synchronization when recording in parallel.
-REQUESTS_SYNC_FILE_PATH = f"{tempfile.gettempdir()}/requests_timestamp"
+REQUESTS_SYNC_FILE_PATH = pathlib.Path(tempfile.gettempdir()) / "requests_timestamp"
 REQUESTS_SYNC_LOCK_FILE_PATH = f"{REQUESTS_SYNC_FILE_PATH}.lock"
 
 REQUESTS_SYNC_FILE_LOCK = filelock.FileLock(REQUESTS_SYNC_LOCK_FILE_PATH)
@@ -347,26 +347,20 @@ async def recorder(
         return None
 
     if is_unittest_class:
-        cassette_library_dir = os.path.join(
-            CASSETTE_LIBRARY_DIR_BASE,
-            request.cls.__name__,
-            request.node.name,
-        )
+        test_class = request.cls.__name__
     else:
-        cassette_library_dir = os.path.join(
-            CASSETTE_LIBRARY_DIR_BASE,
-            request.node.module.__name__.replace(
-                "mergify_engine.tests.functional.",
-                "",
-            ).replace(".", "/"),
-            request.node.name,
-        )
+        test_class = request.node.module.__name__.replace(
+            "mergify_engine.tests.functional.",
+            "",
+        ).replace(".", "/")
+
+    cassette_library_dir = CASSETTE_LIBRARY_DIR_BASE / test_class / request.node.name
 
     # Recording stuffs
     if settings.TESTING_RECORD:
-        if os.path.exists(cassette_library_dir):
+        if cassette_library_dir.exists():
             shutil.rmtree(cassette_library_dir)
-        os.makedirs(cassette_library_dir)
+        cassette_library_dir.mkdir(parents=True)
 
     ignored_host = []
     # NOTE(Kontrolix): Those are hosts that VCR will ignore. When adding one to the
@@ -380,7 +374,7 @@ async def recorder(
 
     recorder = vcr.VCR(
         serializer="msgpack",
-        cassette_library_dir=cassette_library_dir,
+        cassette_library_dir=str(cassette_library_dir),
         record_mode="all" if settings.TESTING_RECORD else "none",
         match_on=["method", "uri"],
         ignore_localhost=True,
@@ -421,11 +415,11 @@ async def recorder(
     cassette = recorder.use_cassette("http.msgpack")
     cassette.__enter__()
     request.addfinalizer(cassette.__exit__)
-    record_config_file = os.path.join(cassette_library_dir, "config.json")
+    record_config_file = cassette_library_dir / "config.json"
 
     if settings.TESTING_RECORD:
         mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache)
-        with open(record_config_file, "w") as f:
+        with record_config_file.open("w") as f:
             f.write(
                 json.dumps(
                     RecordConfigType(
@@ -446,7 +440,7 @@ async def recorder(
             )
 
     request.addfinalizer(cleanup_github_app_info)
-    with open(record_config_file) as f:
+    with record_config_file.open() as f:
         recorder_config = typing.cast(RecordConfigType, json.loads(f.read()))
         monkeypatch.setattr(
             settings,
@@ -575,7 +569,7 @@ async def _request_sync_lock() -> abc.AsyncIterator[None]:
         # Get the last modified date of the file, faster than reading the file
         # for the date inside.
         try:
-            timestamp = float(os.path.getmtime(REQUESTS_SYNC_FILE_PATH))
+            timestamp = float(REQUESTS_SYNC_FILE_PATH.stat().st_mtime)
         except FileNotFoundError:
             pass
         else:
@@ -589,7 +583,7 @@ async def _request_sync_lock() -> abc.AsyncIterator[None]:
 
         yield
 
-        with open(REQUESTS_SYNC_FILE_PATH, "w") as f:
+        with REQUESTS_SYNC_FILE_PATH.open("w") as f:
             f.write(str(date.utcnow_from_clock_realtime().timestamp()))
 
 

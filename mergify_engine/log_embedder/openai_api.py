@@ -1,5 +1,5 @@
 import base64
-import importlib.resources  # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
+import pathlib
 import typing
 
 import httpx
@@ -22,11 +22,9 @@ OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN: int = 8191
 BYTES_PER_TOKEN_APPROX = 4
 
 # NOTE: https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken
-mergeable_ranks_file = str(
-    importlib.resources.files(__package__).joinpath("cl100k_base.tiktoken"),
-)
+mergeable_ranks_file = pathlib.Path(__file__).parent / "cl100k_base.tiktoken"
 
-with open(mergeable_ranks_file) as f:
+with mergeable_ranks_file.open() as f:
     mergeable_ranks = {
         base64.b64decode(token): int(rank)
         for token, rank in (line.split() for line in f.readlines() if line)

@@ -1,4 +1,4 @@
-import os
+import pathlib
 from unittest import mock
 
 import pytest
@@ -24,13 +24,13 @@ async def test_gitter(
         if git.repository is None:
             pytest.fail("No tmp dir")
 
-        with open(git.repository + "/.mergify.yml", "w") as f:
+        with (git.repository / ".mergify.yml").open("w") as f:
             f.write("pull_request_rules:")
         await git("add", ".mergify.yml")
         await git("commit", "-m", "Initial commit", "-a", "--no-edit")
 
-        assert os.path.exists(f"{git.repository}/.git")
-    assert not os.path.exists(f"{git.repository}/.git")
+        assert (git.repository / ".git").exists()
+    assert not (git.repository / ".git").exists()
 
 
 async def test_gitter_init_fails(
@@ -41,7 +41,7 @@ async def test_gitter_init_fails(
     with pytest.raises(KeyError):
         await git.init()
     assert git._temporary_directory is not None
-    assert not os.path.exists(git._temporary_directory)
+    assert not pathlib.Path(git._temporary_directory).exists()
 
 
 @pytest.mark.parametrize(

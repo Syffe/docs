@@ -951,7 +951,7 @@ async def test_age_of_oldest_event(
     postgres_dd_metrics_file = (
         pathlib.Path(__file__).parents[3] / "datadog" / "conf.d" / "postgres.yaml"
     )
-    with open(postgres_dd_metrics_file) as file:
+    with postgres_dd_metrics_file.open() as file:
         metrics = yaml.safe_load(file)
 
     events_metric = next(

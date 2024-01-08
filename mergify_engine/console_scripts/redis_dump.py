@@ -1,4 +1,4 @@
-import os.path
+import pathlib
 
 import click
 
@@ -10,8 +10,9 @@ from mergify_engine.console_scripts import admin_cli
 @click.option("--path", default="cached_config_files")
 @click.option("--key", default="config_file/*")
 async def dump_redis_keys(path: str, key: str) -> None:
+    path_obj = pathlib.Path(path)
     try:
-        os.makedirs(path)
+        path_obj.mkdir(parents=True)
     except FileExistsError:
         pass
 
@@ -22,8 +23,6 @@ async def dump_redis_keys(path: str, key: str) -> None:
             click.echo(f"Downloading {redis_key.decode()}...")
             value = await redis_links.cache.get(redis_key)
             if value is not None:
-                with open(
-                    f"{path}/{redis_key.decode().replace('/', '-')}.txt",
-                    "wb",
-                ) as f:
+                redis_file = path_obj / f"{redis_key.decode().replace('/', '-')}.txt"
+                with redis_file.open("wb") as f:
                     f.write(value)
