@@ -12,6 +12,7 @@ import sqlalchemy.ext.asyncio
 from mergify_engine import date
 from mergify_engine import settings
 from mergify_engine.config import types as config_types
+from mergify_engine.models import ci_issue
 from mergify_engine.models import github as gh_models
 from mergify_engine.tests import conftest
 from mergify_engine.tests import utils as tests_utils
@@ -754,6 +755,46 @@ async def test_api_ci_issue_get_ci_issue_accross_repository(
         f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.short_id_suffix}",
     )
 
+    assert reply.status_code == 404
+
+
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
+async def test_api_ci_issue_get_ci_issue_event_log(
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+) -> None:
+    await populated_db.commit()
+    populated_db.expunge_all()
+    await tests_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock,
+        populated_db,
+        web_client,
+        "OneAccount/OneRepo",
+    )
+
+    event = await populated_db.get_one(
+        gh_models.WorkflowJobLogMetadata,
+        DbPopulator.internal_ref[
+            "OneAccount/OneRepo/flaky_failed_job_attempt_1/metadata/1"
+        ],
+    )
+    issue = await populated_db.get_one(ci_issue.CiIssueGPT, event.ci_issue_id)
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{issue.short_id_suffix}/events/{event.id}/log",
+    )
+    assert reply.text == "Some logs"
+
+    # Check 404 behavior
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{issue.short_id_suffix}/events/666/log",
+    )
+    assert reply.status_code == 404
+
+    reply = await web_client.get(
+        "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/666/events/666/log",
+    )
     assert reply.status_code == 404
 
 

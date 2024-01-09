@@ -569,3 +569,58 @@ async def get_ci_issue_event_detail(
         run_attempt=log_metadata.workflow_job.run_attempt,
         name=log_metadata.workflow_job.name_without_matrix,
     )
+
+
+@router.get(
+    "/repos/{owner}/{repository}/ci_issues/{ci_issue_short_id_suffix}/events/{event_id}/log",
+    summary="Get log of an event of a CI issue",
+    description="Get log of a event of a CI issue",
+    response_class=fastapi.responses.PlainTextResponse,
+    include_in_schema=False,
+    responses={
+        **api.default_responses,  # type: ignore[dict-item]
+        404: {"description": "CI issue event log not found"},
+    },
+)
+async def get_ci_issue_event_log(
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    ci_issue_short_id_suffix: typing.Annotated[
+        int,
+        fastapi.Path(description="The ID of the CI Issue in this repository"),
+    ],
+    event_id: typing.Annotated[int, fastapi.Path(description="The ID of the Event")],
+) -> str:
+    sub_q_ci_issue_id = (
+        sqlalchemy.select(CiIssueGPT.id)
+        .where(
+            CiIssueGPT.short_id_suffix == ci_issue_short_id_suffix,
+            CiIssueGPT.repository_id == repository_ctxt.repo["id"],
+        )
+        .scalar_subquery()
+    )
+
+    stmt = (
+        sqlalchemy.select(gh_models.WorkflowJob.log_extract)
+        .select_from(gh_models.WorkflowJobLogMetadata)
+        .join(gh_models.WorkflowJobLogMetadata.workflow_job)
+        .where(
+            gh_models.WorkflowJobLogMetadata.id == event_id,
+            # NOTE(sileht): For security purpose:
+            gh_models.WorkflowJob.repository_id == repository_ctxt.repo["id"],
+            gh_models.WorkflowJobLogMetadata.ci_issue_id == sub_q_ci_issue_id,
+        )
+    )
+
+    result = await session.execute(stmt)
+    try:
+        log = result.scalar_one()
+    except sqlalchemy.exc.NoResultFound:
+        raise fastapi.HTTPException(404)
+
+    if log is None:
+        raise RuntimeError(
+            "log_extract is None on a WorkflowJob attached to a CI issue",
+        )
+
+    return log
