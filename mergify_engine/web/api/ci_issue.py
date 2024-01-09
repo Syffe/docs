@@ -1,4 +1,5 @@
 import dataclasses
+import datetime
 import typing
 
 import daiquiri
@@ -81,6 +82,8 @@ class CiIssueListResponse:
         metadata={"description": "List of CI issue events"},
     )
     flaky: FlakyT
+    first_seen: datetime.datetime
+    last_seen: datetime.datetime
 
 
 class CiIssuesListResponse(pagination.PageResponse[CiIssueListResponse]):
@@ -116,6 +119,8 @@ async def get_ci_issues(
         .options(
             sqlalchemy.orm.undefer(CiIssueGPT.events_count),
             CiIssueGPT.with_flaky_column(),
+            CiIssueGPT.with_first_seen_column(),
+            CiIssueGPT.with_last_seen_column(),
             sqlalchemy.orm.joinedload(CiIssueGPT.log_metadata)
             .load_only(gh_models.WorkflowJobLogMetadata.id)
             .options(
@@ -199,6 +204,8 @@ async def get_ci_issues(
                 # TODO(sileht): make the order by with ORM
                 events=sorted(events, key=lambda e: e.started_at, reverse=True),
                 flaky=ci_issue.flaky,
+                first_seen=ci_issue.first_seen,
+                last_seen=ci_issue.last_seen,
             ),
         )
 

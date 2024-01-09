@@ -267,3 +267,43 @@ async def test_link_job_to_ci_issues_gpt(
         assert {job.id for job in issue.jobs} == {
             DbPopulator.internal_ref[nghb_job] for nghb_job in internal_ref_nghb_jobs
         }
+
+
+@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
+async def test_ci_issue_last_seen_first_seen(
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+) -> None:
+    await populated_db.commit()
+    populated_db.expunge_all()
+
+    failed_job_with_flaky_nghb = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/failed_job_with_flaky_nghb"],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
+    )
+    flaky_failed_job_attempt_1 = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
+    )
+
+    # NOTE(Kontrolix): We took this ci_issue because it has a several jobs linked to it
+    ci_issue_id = flaky_failed_job_attempt_1.ci_issues_gpt[0].id
+
+    issue = (
+        await populated_db.execute(
+            sqlalchemy.select(ci_issue.CiIssueGPT)
+            .where(
+                ci_issue.CiIssueGPT.id == ci_issue_id,
+            )
+            .options(
+                ci_issue.CiIssueGPT.with_first_seen_column(),
+                ci_issue.CiIssueGPT.with_last_seen_column(),
+            ),
+        )
+    ).scalar_one()
+
+    assert flaky_failed_job_attempt_1.started_at < failed_job_with_flaky_nghb.started_at
+
+    assert issue.first_seen == flaky_failed_job_attempt_1.started_at
+    assert issue.last_seen == failed_job_with_flaky_nghb.started_at

@@ -1,4 +1,5 @@
 from collections import abc
+import datetime
 from unittest import mock
 
 import anys
@@ -26,6 +27,10 @@ def _enable_ci_issues() -> abc.Generator[None, None, None]:
         yield
 
 
+def to_isoformat_with_z(dt: datetime.datetime) -> str:
+    return dt.isoformat().replace("+00:00", "Z")
+
+
 @pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
 async def test_api_ci_issue_get_ci_issues_without_pr(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
@@ -43,6 +48,22 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
 
     reply = await web_client.get(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues",
+    )
+
+    failed_job_with_flaky_nghb = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/failed_job_with_flaky_nghb"],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
+    )
+    flaky_failed_job_attempt_1 = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
+    )
+    failed_job_with_no_flaky_nghb = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/failed_job_with_no_flaky_nghb"],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
     )
 
     assert reply.json() == {
@@ -84,6 +105,10 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "flaky",
+                "last_seen": to_isoformat_with_z(failed_job_with_flaky_nghb.started_at),
+                "first_seen": to_isoformat_with_z(
+                    flaky_failed_job_attempt_1.started_at,
+                ),
             },
             {
                 "events": [
@@ -104,6 +129,10 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "unknown",
+                "last_seen": to_isoformat_with_z(failed_job_with_flaky_nghb.started_at),
+                "first_seen": to_isoformat_with_z(
+                    failed_job_with_flaky_nghb.started_at,
+                ),
             },
             {
                 "events": [
@@ -124,6 +153,12 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "unknown",
+                "last_seen": to_isoformat_with_z(
+                    failed_job_with_no_flaky_nghb.started_at,
+                ),
+                "first_seen": to_isoformat_with_z(
+                    failed_job_with_no_flaky_nghb.started_at,
+                ),
             },
         ],
         "per_page": 10,
@@ -141,6 +176,13 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
         "/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues",
     )
 
+    failed_job_with_no_flaky_nghb = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref[
+            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"
+        ],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
+    )
     assert reply.json() == {
         "issues": [
             {
@@ -162,6 +204,12 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "unknown",
+                "last_seen": to_isoformat_with_z(
+                    failed_job_with_no_flaky_nghb.started_at,
+                ),
+                "first_seen": to_isoformat_with_z(
+                    failed_job_with_no_flaky_nghb.started_at,
+                ),
             },
         ],
         "per_page": 10,
@@ -193,6 +241,16 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
         "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues",
     )
 
+    failed_job_with_flaky_nghb = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/failed_job_with_flaky_nghb"],
+    )
+    flaky_failed_job_attempt_1 = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
+    )
+
     assert reply.json() == {
         "issues": [
             {
@@ -232,6 +290,10 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "flaky",
+                "last_seen": to_isoformat_with_z(failed_job_with_flaky_nghb.started_at),
+                "first_seen": to_isoformat_with_z(
+                    flaky_failed_job_attempt_1.started_at,
+                ),
             },
         ],
         "per_page": 10,
@@ -247,6 +309,14 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
 
     reply = await web_client.get(
         "/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues",
+    )
+
+    failed_job_with_no_flaky_nghb = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref[
+            "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb"
+        ],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
     )
 
     assert reply.json() == {
@@ -270,6 +340,12 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "unknown",
+                "last_seen": to_isoformat_with_z(
+                    failed_job_with_no_flaky_nghb.started_at,
+                ),
+                "first_seen": to_isoformat_with_z(
+                    failed_job_with_no_flaky_nghb.started_at,
+                ),
             },
         ],
         "per_page": 10,
@@ -687,6 +763,8 @@ async def test_api_ci_issue_patch_ci_issues(
                 "events_count": 3,
                 "events": anys.ANY_LIST,
                 "flaky": "flaky",
+                "last_seen": anys.ANY_DATETIME_STR,
+                "first_seen": anys.ANY_DATETIME_STR,
             },
             {
                 "id": anys.ANY_INT,
@@ -697,6 +775,8 @@ async def test_api_ci_issue_patch_ci_issues(
                 "events_count": 1,
                 "events": anys.ANY_LIST,
                 "flaky": "unknown",
+                "last_seen": anys.ANY_DATETIME_STR,
+                "first_seen": anys.ANY_DATETIME_STR,
             },
             {
                 "id": anys.ANY_INT,
@@ -707,6 +787,8 @@ async def test_api_ci_issue_patch_ci_issues(
                 "events_count": 1,
                 "events": anys.ANY_LIST,
                 "flaky": "unknown",
+                "last_seen": anys.ANY_DATETIME_STR,
+                "first_seen": anys.ANY_DATETIME_STR,
             },
         ],
         "per_page": 10,
@@ -746,6 +828,8 @@ async def test_api_ci_issue_patch_ci_issues(
                 "events_count": 3,
                 "events": anys.ANY_LIST,
                 "flaky": "flaky",
+                "last_seen": anys.ANY_DATETIME_STR,
+                "first_seen": anys.ANY_DATETIME_STR,
             },
             {
                 "id": anys.ANY_INT,
@@ -756,6 +840,8 @@ async def test_api_ci_issue_patch_ci_issues(
                 "events_count": 1,
                 "events": anys.ANY_LIST,
                 "flaky": "unknown",
+                "last_seen": anys.ANY_DATETIME_STR,
+                "first_seen": anys.ANY_DATETIME_STR,
             },
             {
                 "id": anys.ANY_INT,
@@ -766,6 +852,8 @@ async def test_api_ci_issue_patch_ci_issues(
                 "events_count": 1,
                 "events": anys.ANY_LIST,
                 "flaky": "unknown",
+                "last_seen": anys.ANY_DATETIME_STR,
+                "first_seen": anys.ANY_DATETIME_STR,
             },
         ],
         "per_page": 10,

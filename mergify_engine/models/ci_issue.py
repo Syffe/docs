@@ -16,6 +16,9 @@ from mergify_engine.models.github import pull_request as gh_pull_request
 from mergify_engine.models.github import workflows as workflow_models
 
 
+if typing.TYPE_CHECKING:
+    import datetime
+
 COSINE_SIMILARITY_THRESHOLD = 0.97
 
 MIN_MATCHING_SCORE = 6
@@ -281,6 +284,51 @@ class CiIssueGPT(models.Base, CiIssueMixin):
                     else_="unknown",
                 ),
             ).scalar_subquery(),
+        )
+
+    first_seen: orm.Mapped[datetime.datetime] = orm.query_expression()
+    last_seen: orm.Mapped[datetime.datetime] = orm.query_expression()
+
+    @classmethod
+    def _seen_column_subquery(
+        cls,
+    ) -> sqlalchemy.Select[tuple[datetime.datetime]]:
+        return (
+            sqlalchemy.select(
+                gh_models.WorkflowJob.started_at,
+            )
+            .select_from(gh_models.WorkflowJobLogMetadata)
+            .join(
+                gh_models.WorkflowJob,
+                gh_models.WorkflowJob.id
+                == gh_models.WorkflowJobLogMetadata.workflow_job_id,
+            )
+            .where(
+                gh_models.WorkflowJobLogMetadata.ci_issue_id == cls.id,
+            )
+            .limit(1)
+        )
+
+    @classmethod
+    def with_first_seen_column(cls) -> orm.strategy_options._AbstractLoad:
+        return orm.with_expression(
+            cls.first_seen,
+            cls._seen_column_subquery()
+            .order_by(
+                gh_models.WorkflowJob.started_at.asc(),
+            )
+            .scalar_subquery(),
+        )
+
+    @classmethod
+    def with_last_seen_column(cls) -> orm.strategy_options._AbstractLoad:
+        return orm.with_expression(
+            cls.last_seen,
+            cls._seen_column_subquery()
+            .order_by(
+                gh_models.WorkflowJob.started_at.desc(),
+            )
+            .scalar_subquery(),
         )
 
     pull_requests_impacted: orm.Mapped[
