@@ -84,6 +84,7 @@ class CiIssueListResponse:
     flaky: FlakyT
     first_seen: datetime.datetime
     last_seen: datetime.datetime
+    pull_requests_count: int
 
 
 class CiIssuesListResponse(pagination.PageResponse[CiIssueListResponse]):
@@ -121,6 +122,7 @@ async def get_ci_issues(
             CiIssueGPT.with_flaky_column(),
             CiIssueGPT.with_first_seen_column(),
             CiIssueGPT.with_last_seen_column(),
+            CiIssueGPT.with_pull_requests_count_column(),
             sqlalchemy.orm.joinedload(CiIssueGPT.log_metadata)
             .load_only(gh_models.WorkflowJobLogMetadata.id)
             .options(
@@ -206,6 +208,7 @@ async def get_ci_issues(
                 flaky=ci_issue.flaky,
                 first_seen=ci_issue.first_seen,
                 last_seen=ci_issue.last_seen,
+                pull_requests_count=ci_issue.pull_requests_count,
             ),
         )
 

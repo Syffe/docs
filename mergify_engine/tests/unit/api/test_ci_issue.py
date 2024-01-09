@@ -109,6 +109,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "first_seen": to_isoformat_with_z(
                     flaky_failed_job_attempt_1.started_at,
                 ),
+                "pull_requests_count": 0,
             },
             {
                 "events": [
@@ -133,6 +134,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "first_seen": to_isoformat_with_z(
                     failed_job_with_flaky_nghb.started_at,
                 ),
+                "pull_requests_count": 0,
             },
             {
                 "events": [
@@ -159,6 +161,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "first_seen": to_isoformat_with_z(
                     failed_job_with_no_flaky_nghb.started_at,
                 ),
+                "pull_requests_count": 0,
             },
         ],
         "per_page": 10,
@@ -210,6 +213,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "first_seen": to_isoformat_with_z(
                     failed_job_with_no_flaky_nghb.started_at,
                 ),
+                "pull_requests_count": 0,
             },
         ],
         "per_page": 10,
@@ -294,6 +298,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 "first_seen": to_isoformat_with_z(
                     flaky_failed_job_attempt_1.started_at,
                 ),
+                "pull_requests_count": 3,
             },
         ],
         "per_page": 10,
@@ -346,6 +351,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 "first_seen": to_isoformat_with_z(
                     failed_job_with_no_flaky_nghb.started_at,
                 ),
+                "pull_requests_count": 0,
             },
         ],
         "per_page": 10,
@@ -975,6 +981,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "flaky": "flaky",
                 "last_seen": anys.ANY_DATETIME_STR,
                 "first_seen": anys.ANY_DATETIME_STR,
+                "pull_requests_count": 0,
             },
             {
                 "id": anys.ANY_INT,
@@ -987,6 +994,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "flaky": "unknown",
                 "last_seen": anys.ANY_DATETIME_STR,
                 "first_seen": anys.ANY_DATETIME_STR,
+                "pull_requests_count": 0,
             },
             {
                 "id": anys.ANY_INT,
@@ -999,6 +1007,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "flaky": "unknown",
                 "last_seen": anys.ANY_DATETIME_STR,
                 "first_seen": anys.ANY_DATETIME_STR,
+                "pull_requests_count": 0,
             },
         ],
         "per_page": 10,
@@ -1040,6 +1049,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "flaky": "flaky",
                 "last_seen": anys.ANY_DATETIME_STR,
                 "first_seen": anys.ANY_DATETIME_STR,
+                "pull_requests_count": 0,
             },
             {
                 "id": anys.ANY_INT,
@@ -1052,6 +1062,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "flaky": "unknown",
                 "last_seen": anys.ANY_DATETIME_STR,
                 "first_seen": anys.ANY_DATETIME_STR,
+                "pull_requests_count": 0,
             },
             {
                 "id": anys.ANY_INT,
@@ -1064,6 +1075,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "flaky": "unknown",
                 "last_seen": anys.ANY_DATETIME_STR,
                 "first_seen": anys.ANY_DATETIME_STR,
+                "pull_requests_count": 0,
             },
         ],
         "per_page": 10,

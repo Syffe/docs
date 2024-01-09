@@ -385,6 +385,15 @@ class CiIssueGPT(models.Base, CiIssueMixin):
             .scalar_subquery(),
         )
 
+    pull_requests_count: orm.Mapped[int] = orm.query_expression()
+
+    @classmethod
+    def with_pull_requests_count_column(cls) -> orm.strategy_options._AbstractLoad:
+        return orm.with_expression(
+            cls.pull_requests_count,
+            cls.pull_requests_count_subquery(),
+        )
+
     @classmethod
     def pull_requests_count_subquery(cls) -> sqlalchemy.ScalarSelect[int]:
         return cls._select_pull_request(
