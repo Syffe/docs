@@ -538,3 +538,148 @@ class TestGhaFailedJobsPullRequestsDataset(DbPopulator):
             session,
             pr,
         )
+
+
+class TestBigCiIssueDataset(DbPopulator):
+    @classmethod
+    async def _load(cls, session: sqlalchemy.ext.asyncio.AsyncSession) -> None:
+        from mergify_engine.tests.utils import fake_full_pull_request
+
+        await cls.load(session, {"AccountAndRepo"})
+
+        repository = await cls._get_repository(session)
+
+        # Create workflow jobs, 10 per CI issue
+        for ci_issue_number in range(10):
+            flaky_job = f"unittest for ci issue {ci_issue_number}"
+            # One CI isse is on a single pull request, others are on multiple
+            # pull requests
+            has_single_pull_request = ci_issue_number == 2
+
+            for job_number in range(10):
+                now = github_types.ISODateTimeType(date.utcnow().isoformat())
+                # Fails half of the time
+                is_success = job_number % 2 == 0
+                conclusion: github_types.GitHubWorkflowJobConclusionType = (
+                    "success" if is_success else "failure"
+                )
+                # Succeeds on the second attempt
+                run_attempt = 2 if is_success else 1
+                if has_single_pull_request:
+                    head_sha = github_types.SHAType("sha")
+                else:
+                    head_sha = github_types.SHAType(f"sha{job_number}")
+
+                job = await gh_models.WorkflowJob.insert(
+                    session,
+                    github_types.GitHubWorkflowJob(
+                        id=cls.next_id(gh_models.WorkflowJob),
+                        run_id=cls.next_id(gh_models.WorkflowRun),
+                        name=flaky_job,
+                        workflow_name="ci",
+                        started_at=now,
+                        completed_at=now,
+                        conclusion=conclusion,
+                        labels=[],
+                        run_attempt=run_attempt,
+                        head_sha=head_sha,
+                        steps=[
+                            github_types.GitHubWorkflowJobStep(
+                                name="Run a step",
+                                conclusion=conclusion,
+                                number=1,
+                                started_at=now,
+                                completed_at=now,
+                                status="completed",
+                            ),
+                        ],
+                        runner_id=1,
+                    ),
+                    repository,
+                )
+
+                job.log_embedding = np.array(list(map(np.float32, [1] * 1536)))
+                job.log_extract = "Some logs"
+                job.log_embedding_status = (
+                    gh_models.WorkflowJobLogEmbeddingStatus.EMBEDDED
+                )
+
+                job_metadata = gh_models.WorkflowJobLogMetadata(
+                    workflow_job_id=job.id,
+                    problem_type="Error on test: my_awesome_test",
+                    language="Python",
+                    filename="test.py",
+                    lineno="325",
+                    error="AssertionError: True is False",
+                    test_framework="pytest",
+                    stack_trace="some traceback",
+                )
+                session.add(job_metadata)
+
+        # Create CI issues
+        jobs = await session.scalars(
+            sqlalchemy.select(gh_models.WorkflowJob)
+            .options(
+                orm.joinedload(gh_models.WorkflowJob.log_metadata),
+                orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt),
+            )
+            .where(
+                gh_models.WorkflowJob.conclusion
+                == gh_models.WorkflowJobConclusion.FAILURE,
+                gh_models.WorkflowJob.log_embedding.isnot(None),
+                gh_models.WorkflowJob.ci_issue_id.is_(None),
+            ),
+        )
+        for job in jobs.unique():
+            await CiIssueGPT.link_job_to_ci_issues(session, job)
+
+        # Create pull requests
+        for pull_request_number in range(10):
+            pull_request = fake_full_pull_request(
+                github_types.GitHubPullRequestId(cls.next_id(gh_models.PullRequest)),
+                github_types.GitHubPullRequestNumber(pull_request_number),
+                repository,
+            )
+            pull_request["head"]["sha"] = github_types.SHAType(
+                f"sha{pull_request_number}",
+            )
+            await gh_models.PullRequest.insert_or_update(
+                session,
+                pull_request,
+            )
+
+        pull_request = fake_full_pull_request(
+            github_types.GitHubPullRequestId(cls.next_id(gh_models.PullRequest)),
+            github_types.GitHubPullRequestNumber(10),
+            repository,
+        )
+        pull_request["head"]["sha"] = github_types.SHAType("sha")
+        await gh_models.PullRequest.insert_or_update(
+            session,
+            pull_request,
+        )
+
+    @classmethod
+    async def _get_repository(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+    ) -> github_types.GitHubRepository:
+        repository = typing.cast(
+            github_types.GitHubRepository,
+            (
+                await session.get_one(
+                    gh_models.GitHubRepository,
+                    DbPopulator.internal_ref["OneRepo"],
+                )
+            ).as_github_dict(),
+        )
+
+        repository.update(
+            {
+                "url": "https://blabla.com",
+                "html_url": "https://blabla.com",
+                "default_branch": github_types.GitHubRefType("main"),
+            },
+        )
+
+        return repository

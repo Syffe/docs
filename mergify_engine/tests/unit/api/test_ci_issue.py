@@ -773,8 +773,10 @@ async def test_api_ci_issue_patch_ci_issues(
     }
 
 
-@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
+@pytest.mark.populated_db_datasets("TestBigCiIssueDataset")
 async def test_api_ci_issue_get_ci_issues_pagination(
+    _mock_gh_pull_request_commits_insert_in_pg: None,
+    _mock_gh_pull_request_files_insert_in_pg: None,
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
@@ -787,16 +789,17 @@ async def test_api_ci_issue_get_ci_issues_pagination(
         "OneAccount/OneRepo",
     )
 
-    # Get the first page
+    # Get the first page containing 8 issues
     first_page = await web_client.get(
-        "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?per_page=1",
+        "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?per_page=8",
     )
 
     assert first_page.status_code == 200, first_page.text
-    assert len(first_page.json()["issues"]) == 1
+    assert len(first_page.json()["issues"]) == 8
     assert "next" in first_page.links
 
-    # Going to the second page
+    # Going to the second and last page, containing only one issue (the tenth
+    # issue has only one pull request, so it is ignored)
     second_page = await web_client.get(
         first_page.links["next"]["url"],
     )
@@ -815,7 +818,7 @@ async def test_api_ci_issue_get_ci_issues_pagination(
     )
 
     assert first_page_again.status_code == 200, first_page_again.text
-    assert len(first_page_again.json()["issues"]) == 1
+    assert len(first_page_again.json()["issues"]) == 8
     assert first_page_issue_ids == {i["id"] for i in first_page_again.json()["issues"]}
 
     # Invalid cursor

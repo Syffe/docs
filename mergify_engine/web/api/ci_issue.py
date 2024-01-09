@@ -5,6 +5,7 @@ import daiquiri
 import fastapi
 import pydantic
 import sqlalchemy
+import sqlalchemy.orm
 
 from mergify_engine import database
 from mergify_engine import github_types
@@ -144,6 +145,7 @@ async def get_ci_issues(
         .where(
             CiIssueGPT.repository_id == repository_ctxt.repo["id"],
             CiIssueGPT.log_metadata.any(),
+            CiIssueGPT.pull_requests_count_subquery() != 1,
         )
     )
 
@@ -172,11 +174,8 @@ async def get_ci_issues(
     issues = []
     for ci_issue in result.unique().scalars():
         events = []
-        pull_requests = set()
         for log_metadata in ci_issue.log_metadata:
             job = log_metadata.workflow_job
-            if job.pull_requests:
-                pull_requests.update(job.pull_requests)
             events.append(
                 CiIssueEvent(
                     id=log_metadata.id,
@@ -188,10 +187,6 @@ async def get_ci_issues(
                     failed_run_count=job.failed_run_count,
                 ),
             )
-
-        # FIXME(sileht): This should be filterout in the SQL query, otherwise the pagination is wrong
-        if len(pull_requests) == 1:
-            continue
 
         issues.append(
             CiIssueListResponse(

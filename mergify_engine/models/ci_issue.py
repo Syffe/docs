@@ -359,6 +359,33 @@ class CiIssueGPT(models.Base, CiIssueMixin):
         )
 
     @classmethod
+    def pull_requests_count_subquery(cls) -> sqlalchemy.ScalarSelect[int]:
+        return (
+            sqlalchemy.select(
+                sqlalchemy.func.count(gh_models.PullRequest.id.distinct()),
+            )
+            .select_from(gh_models.PullRequest, gh_models.WorkflowJobLogMetadata)
+            .join(
+                gh_models.WorkflowJob,
+                gh_models.WorkflowJob.id
+                == gh_models.WorkflowJobLogMetadata.workflow_job_id,
+            )
+            .join(
+                gh_models.PullRequestHeadShaHistory,
+                gh_models.PullRequest.id
+                == gh_models.PullRequestHeadShaHistory.pull_request_id,
+            )
+            .where(
+                gh_models.WorkflowJobLogMetadata.ci_issue_id == CiIssueGPT.id,
+                gh_models.PullRequest.base_repository_id == CiIssueGPT.repository_id,
+                gh_pull_request.PullRequestHeadShaHistory.head_sha
+                == gh_models.WorkflowJob.head_sha,
+            )
+            .correlate(CiIssueGPT)
+            .scalar_subquery()
+        )
+
+    @classmethod
     async def insert(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
