@@ -83,6 +83,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "name": "Error on test: my_awesome_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
+                "flaky": "flaky",
             },
             {
                 "events": [
@@ -102,6 +103,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "name": "Error on test: my_fucking_awesome_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
+                "flaky": "unknown",
             },
             {
                 "events": [
@@ -121,6 +123,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "name": "Error on test: my_cypress_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
+                "flaky": "unknown",
             },
         ],
         "per_page": 10,
@@ -158,6 +161,7 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "name": "Error on test: my_awesome_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
+                "flaky": "unknown",
             },
         ],
         "per_page": 10,
@@ -227,6 +231,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 "name": "Error on test: my_awesome_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
+                "flaky": "flaky",
             },
         ],
         "per_page": 10,
@@ -264,6 +269,7 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 "name": "Error on test: my_awesome_test",
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
+                "flaky": "unknown",
             },
         ],
         "per_page": 10,
@@ -680,6 +686,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "status": "unresolved",
                 "events_count": 3,
                 "events": anys.ANY_LIST,
+                "flaky": "flaky",
             },
             {
                 "id": anys.ANY_INT,
@@ -689,6 +696,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "status": "unresolved",
                 "events_count": 1,
                 "events": anys.ANY_LIST,
+                "flaky": "unknown",
             },
             {
                 "id": anys.ANY_INT,
@@ -698,6 +706,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "status": "unresolved",
                 "events_count": 1,
                 "events": anys.ANY_LIST,
+                "flaky": "unknown",
             },
         ],
         "per_page": 10,
@@ -736,6 +745,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "status": "resolved",
                 "events_count": 3,
                 "events": anys.ANY_LIST,
+                "flaky": "flaky",
             },
             {
                 "id": anys.ANY_INT,
@@ -745,6 +755,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "status": "resolved",
                 "events_count": 1,
                 "events": anys.ANY_LIST,
+                "flaky": "unknown",
             },
             {
                 "id": anys.ANY_INT,
@@ -754,6 +765,7 @@ async def test_api_ci_issue_patch_ci_issues(
                 "status": "resolved",
                 "events_count": 1,
                 "events": anys.ANY_LIST,
+                "flaky": "unknown",
             },
         ],
         "per_page": 10,

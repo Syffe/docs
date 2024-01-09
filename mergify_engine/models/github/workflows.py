@@ -462,9 +462,16 @@ class WorkflowJob(models.Base):
     @classmethod
     def with_flaky_column(cls) -> orm.strategy_options._AbstractLoad:
         # NOTE(sileht): we can't use column_property due to self referencing GitHubWorkflowJob
-        WorkflowJobSibling = orm.aliased(WorkflowJob, name="workflow_job_sibling_flaky")
+
         return orm.with_expression(
             cls.flaky,
+            cls.flaky_subquery(),
+        )
+
+    @classmethod
+    def flaky_subquery(cls) -> sqlalchemy.ScalarSelect[FlakyStatusT]:
+        WorkflowJobSibling = orm.aliased(WorkflowJob, name="workflow_job_sibling_flaky")
+        return (
             sqlalchemy.select(
                 sqlalchemy.case(
                     (sqlalchemy.func.count() >= 1, "flaky"),
@@ -484,7 +491,7 @@ class WorkflowJob(models.Base):
                     WorkflowJobSibling.matrix == cls.matrix,
                 ),
             )
-            .scalar_subquery(),
+            .scalar_subquery()
         )
 
     def as_log_extras(self) -> dict[str, typing.Any]:

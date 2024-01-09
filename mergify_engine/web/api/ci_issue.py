@@ -19,6 +19,8 @@ from mergify_engine.web.api import security
 
 LOG = daiquiri.getLogger(__name__)
 
+FlakyT = typing.Literal["flaky", "unknown"]
+
 
 async def has_log_embedder_enabled(
     repository_ctxt: security.Repository,
@@ -77,6 +79,7 @@ class CiIssueListResponse:
     events: list[CiIssueEvent] = dataclasses.field(
         metadata={"description": "List of CI issue events"},
     )
+    flaky: FlakyT
 
 
 class CiIssuesListResponse(pagination.PageResponse[CiIssueListResponse]):
@@ -111,6 +114,7 @@ async def get_ci_issues(
         sqlalchemy.select(CiIssueGPT)
         .options(
             sqlalchemy.orm.undefer(CiIssueGPT.events_count),
+            CiIssueGPT.with_flaky_column(),
             sqlalchemy.orm.joinedload(CiIssueGPT.log_metadata)
             .load_only(gh_models.WorkflowJobLogMetadata.id)
             .options(
@@ -199,6 +203,7 @@ async def get_ci_issues(
                 events_count=ci_issue.events_count,
                 # TODO(sileht): make the order by with ORM
                 events=sorted(events, key=lambda e: e.started_at, reverse=True),
+                flaky=ci_issue.flaky,
             ),
         )
 

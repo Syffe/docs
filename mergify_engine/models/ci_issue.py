@@ -13,6 +13,7 @@ from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.models import github as gh_models
 from mergify_engine.models.github import pull_request as gh_pull_request
+from mergify_engine.models.github import workflows as workflow_models
 
 
 COSINE_SIMILARITY_THRESHOLD = 0.97
@@ -249,6 +250,38 @@ class CiIssueGPT(models.Base, CiIssueMixin):
         "WorkflowJobLogMetadata",
         lazy="raise_on_sql",
     )
+
+    flaky: orm.Mapped[workflow_models.FlakyStatusT] = orm.query_expression()
+
+    @classmethod
+    def with_flaky_column(cls) -> orm.strategy_options._AbstractLoad:
+        return orm.with_expression(
+            cls.flaky,
+            sqlalchemy.select(
+                sqlalchemy.case(
+                    (
+                        sqlalchemy.select(
+                            gh_models.WorkflowJob.id,
+                        )
+                        .select_from(gh_models.WorkflowJobLogMetadata)
+                        .join(
+                            gh_models.WorkflowJob,
+                            gh_models.WorkflowJob.id
+                            == gh_models.WorkflowJobLogMetadata.workflow_job_id,
+                        )
+                        .where(
+                            gh_models.WorkflowJobLogMetadata.ci_issue_id == cls.id,
+                            gh_models.WorkflowJob.flaky_subquery() == "flaky",
+                        )
+                        .limit(1)
+                        .exists()
+                        .correlate(CiIssueGPT),
+                        "flaky",
+                    ),
+                    else_="unknown",
+                ),
+            ).scalar_subquery(),
+        )
 
     pull_requests_impacted: orm.Mapped[
         list[PullRequestImpacted] | None
