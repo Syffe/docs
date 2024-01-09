@@ -666,6 +666,10 @@ async def test_api_ci_issue_get_ci_issue(
                 "title": "awesome",
             },
         ],
+        "events_count": 3,
+        "flaky": "flaky",
+        "last_seen": anys.ANY_DATETIME_STR,
+        "first_seen": anys.ANY_DATETIME_STR,
     }
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
@@ -709,6 +713,10 @@ async def test_api_ci_issue_get_ci_issue(
         "short_id": ci_issue.short_id,
         "status": "unresolved",
         "pull_requests_impacted": [],
+        "last_seen": anys.ANY_DATETIME_STR,
+        "first_seen": anys.ANY_DATETIME_STR,
+        "events_count": 1,
+        "flaky": "unknown",
     }
 
 
@@ -961,6 +969,10 @@ async def test_api_ci_issue_patch_ci_issue(
         "status": "unresolved",
         "events": anys.ANY_LIST,
         "pull_requests_impacted": [],
+        "events_count": 3,
+        "first_seen": anys.ANY_DATETIME_STR,
+        "flaky": "flaky",
+        "last_seen": anys.ANY_DATETIME_STR,
     }
 
     response = await web_client.patch(
@@ -982,6 +994,10 @@ async def test_api_ci_issue_patch_ci_issue(
         "status": "resolved",
         "events": anys.ANY_LIST,
         "pull_requests_impacted": [],
+        "events_count": 3,
+        "first_seen": anys.ANY_DATETIME_STR,
+        "flaky": "flaky",
+        "last_seen": anys.ANY_DATETIME_STR,
     }
 
     # Patch unknown issue

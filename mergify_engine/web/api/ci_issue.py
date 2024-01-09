@@ -61,6 +61,7 @@ class CiIssueDetailResponse:
     short_id: str
     name: str
     job_name: str
+    events_count: int
     status: CiIssueStatus
     events: list[CiIssueEventDeprecated] = dataclasses.field(
         metadata={"description": "List of CI issue events"},
@@ -68,6 +69,9 @@ class CiIssueDetailResponse:
     pull_requests_impacted: list[CiIssuePullRequestData] = dataclasses.field(
         metadata={"description": "List of pull requests impacted by this CiIssue"},
     )
+    flaky: FlakyT
+    first_seen: datetime.datetime
+    last_seen: datetime.datetime
 
 
 @pydantic.dataclasses.dataclass
@@ -278,7 +282,12 @@ async def get_ci_issue(
     stmt = (
         sqlalchemy.select(CiIssueGPT)
         .options(
+            sqlalchemy.orm.undefer(CiIssueGPT.events_count),
+            CiIssueGPT.with_flaky_column(),
+            CiIssueGPT.with_first_seen_column(),
+            CiIssueGPT.with_last_seen_column(),
             CiIssueGPT.with_pull_requests_impacted_column(),
+            CiIssueGPT.with_job_name_column(),
             sqlalchemy.orm.joinedload(CiIssueGPT.log_metadata)
             .load_only(gh_models.WorkflowJobLogMetadata.id)
             .options(
@@ -327,8 +336,9 @@ async def get_ci_issue(
         id=ci_issue.short_id_suffix,
         short_id=ci_issue.short_id,
         name=ci_issue.name or "<unknown>",
-        job_name=ci_issue.log_metadata[0].workflow_job.name_without_matrix,
+        job_name=ci_issue.job_name,
         status=ci_issue.status,
+        events_count=ci_issue.events_count,
         # TODO(sileht): make the order by with ORM
         events=sorted(events, key=lambda e: e.started_at, reverse=True),
         pull_requests_impacted=[
@@ -337,6 +347,9 @@ async def get_ci_issue(
         ]
         if ci_issue.pull_requests_impacted
         else [],
+        flaky=ci_issue.flaky,
+        first_seen=ci_issue.first_seen,
+        last_seen=ci_issue.last_seen,
     )
 
 
