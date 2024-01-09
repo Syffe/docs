@@ -921,6 +921,10 @@ def pretty_time(dt: datetime.datetime) -> str:
     return dt.strftime("%H:%M %Z")
 
 
+def to_isoformat_with_Z(dt: datetime.datetime) -> str:
+    return dt.isoformat().replace("+00:00", "Z")
+
+
 _INTERVAL_RE = re.compile(
     r"""
     (?P<filled>

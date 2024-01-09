@@ -42,7 +42,7 @@ router = fastapi.APIRouter(
 class CiIssueEventDeprecated:
     id: int
     run_id: int
-    started_at: github_types.ISODateTimeType
+    started_at: datetime.datetime
     flaky: typing.Literal["flaky", "unknown"]
     failed_run_count: int
 
@@ -187,9 +187,7 @@ async def get_ci_issues(
                 CiIssueEventDeprecated(
                     id=log_metadata.id,
                     run_id=job.workflow_run_id,
-                    started_at=github_types.ISODateTimeType(
-                        job.started_at.isoformat(),
-                    ),
+                    started_at=job.started_at,
                     flaky=job.flaky,
                     failed_run_count=job.failed_run_count,
                 ),
@@ -318,9 +316,7 @@ async def get_ci_issue(
             CiIssueEventDeprecated(
                 id=log_metadata.id,
                 run_id=job.workflow_run_id,
-                started_at=github_types.ISODateTimeType(
-                    job.started_at.isoformat(),
-                ),
+                started_at=job.started_at,
                 flaky=job.flaky,
                 failed_run_count=job.failed_run_count,
             ),
@@ -381,7 +377,7 @@ async def patch_ci_issue(
 
 @pydantic.dataclasses.dataclass
 class CiIssueEventDetailResponse(CiIssueEventDeprecated):
-    completed_at: github_types.ISODateTimeType
+    completed_at: datetime.datetime
     log_extract: str
     failed_step_number: int | None
     name: str
@@ -564,12 +560,8 @@ async def get_ci_issue_event_detail(
         run_id=log_metadata.workflow_job.workflow_run_id,
         steps=log_metadata.workflow_job.steps or [],
         failed_step_number=log_metadata.workflow_job.failed_step_number,
-        completed_at=github_types.ISODateTimeType(
-            log_metadata.workflow_job.completed_at.isoformat(),
-        ),
-        started_at=github_types.ISODateTimeType(
-            log_metadata.workflow_job.started_at.isoformat(),
-        ),
+        completed_at=log_metadata.workflow_job.completed_at,
+        started_at=log_metadata.workflow_job.started_at,
         flaky=log_metadata.workflow_job.flaky,
         failed_run_count=log_metadata.workflow_job.failed_run_count,
         log_extract=log_metadata.workflow_job.log_extract or "",

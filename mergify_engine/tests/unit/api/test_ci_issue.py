@@ -9,6 +9,7 @@ import sqlalchemy
 from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import date
 from mergify_engine import settings
 from mergify_engine.config import types as config_types
 from mergify_engine.models import github as gh_models
@@ -635,7 +636,7 @@ async def test_api_ci_issue_get_ci_issue(
                     "OneAccount/OneRepo/flaky_failed_job_attempt_1/metadata/1"
                 ],
                 "run_id": job.workflow_run_id,
-                "started_at": job.started_at.isoformat(),
+                "started_at": date.to_isoformat_with_Z(job.started_at),
             },
         ],
         "id": ci_issue.short_id_suffix,
@@ -697,7 +698,7 @@ async def test_api_ci_issue_get_ci_issue(
                     "colliding_acount_1/colliding_repo_name/failed_job_with_no_flaky_nghb/metadata/1"
                 ],
                 "run_id": job.workflow_run_id,
-                "started_at": job.started_at.isoformat(),
+                "started_at": date.to_isoformat_with_Z(job.started_at),
             },
         ],
         "id": ci_issue.short_id_suffix,
@@ -806,8 +807,8 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
             },
         ],
         "failed_step_number": 1,
-        "started_at": job.started_at.isoformat(),
-        "completed_at": job.completed_at.isoformat(),
+        "started_at": date.to_isoformat_with_Z(job.started_at),
+        "completed_at": date.to_isoformat_with_Z(job.completed_at),
         "flaky": "flaky",
         "run_attempt": 1,
         "failed_run_count": 3,
@@ -848,8 +849,8 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
             },
         ],
         "failed_step_number": 1,
-        "started_at": job.started_at.isoformat(),
-        "completed_at": job.completed_at.isoformat(),
+        "started_at": date.to_isoformat_with_Z(job.started_at),
+        "completed_at": date.to_isoformat_with_Z(job.completed_at),
         "flaky": "flaky",
         "run_attempt": 2,
         "failed_run_count": 3,
