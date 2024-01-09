@@ -50,11 +50,8 @@ class BackportActionTestBase(base.FunctionalTestBase):
 
         await self.add_label(p["number"], "backport-#3.1")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
-        assert await self.is_pull_merged(p["number"])
-
-        await self.run_engine()
-        await self.wait_for("pull_request", {"action": "opened"})
+        await self.wait_for_pull_request("closed", p["number"], merged=True)
+        await self.wait_for_pull_request("opened")
 
         pulls = await self.get_pulls(params={"state": "all"})
         assert len(pulls) == 1
@@ -143,8 +140,7 @@ class TestBackportAction(BackportActionTestBase):
 
         await self.add_label(p["number"], "backport-#3.1")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.run_engine()
+        await self.wait_for_pull_request("closed", p["number"])
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         checks = [
@@ -209,8 +205,7 @@ class TestBackportAction(BackportActionTestBase):
 
         await self.add_label(p["number"], "backport-#3.1")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.run_engine()
+        await self.wait_for_pull_request("closed", p["number"])
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         return (
@@ -381,8 +376,6 @@ no changes added to commit (use "git add" and/or "git commit -a")
         await self.add_label(p1["number"], "backport-#3.1")
         await self.run_engine()
         await self.wait_for_pull_request("closed", p1["number"], merged=True)
-
-        await self.run_engine()
         bp_pull_event = await self.wait_for_pull_request("opened")
         bp_pull = await self.get_pull(bp_pull_event["pull_request"]["number"])
         assert not bp_pull["merged"]

@@ -116,7 +116,6 @@ class TestGitHubCheckRun(base.FunctionalTestBase):
                 },
             ],
         )
-        await self.run_engine({"github-in-postgres"})
 
         ctxt_p1 = context.Context(self.repository_ctxt, p1, [])
         with mock.patch.object(

@@ -23,10 +23,7 @@ class TestRequeueCommand(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.create_comment(p["number"], "@mergifyio queue default", as_="admin")
         await self.run_engine()
-        queue_comment = await self.wait_for_issue_comment(
-            action="created",
-            test_id=str(p["number"]),
-        )
+        queue_comment = await self.wait_for_issue_comment(p["number"], "created")
         assert (
             "🟠 The pull request is the 1st in the queue to be merged"
             in queue_comment["comment"]["body"]
@@ -51,10 +48,7 @@ class TestRequeueCommand(base.FunctionalTestBase):
             as_="admin",
         )
         await self.run_engine()
-        requeue_comment = await self.wait_for_issue_comment(
-            action="created",
-            test_id=str(p["number"]),
-        )
+        requeue_comment = await self.wait_for_issue_comment(p["number"], "created")
         assert (
             "✅ This pull request will be re-embarked automatically"
             in requeue_comment["comment"]["body"]
@@ -64,10 +58,7 @@ class TestRequeueCommand(base.FunctionalTestBase):
             in requeue_comment["comment"]["body"]
         )
 
-        queue_comment_2 = await self.wait_for_issue_comment(
-            action="created",
-            test_id=str(p["number"]),
-        )
+        queue_comment_2 = await self.wait_for_issue_comment(p["number"], "created")
         assert (
             "🟠 The pull request is the 1st in the queue to be merged"
             in queue_comment_2["comment"]["body"]

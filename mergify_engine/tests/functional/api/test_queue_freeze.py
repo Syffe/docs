@@ -1,10 +1,13 @@
+import typing
 from unittest import mock
 
 from first import first
 
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine.queue import freeze
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.yaml import yaml
 
 
@@ -253,11 +256,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         await self.create_status(p2, context="continuous-integration/fast-ci")
         await self.run_engine()
 
-        p2_closed = await self.wait_for_pull_request("closed", pr_number=p2["number"])
-        assert p2_closed["pull_request"]["merged"]
-
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
+        await self.wait_for_pull_request("closed", pr_number=p2["number"], merged=True)
 
         check_run_p2 = await self.wait_for_check_run(
             name="Rule: Merge priority high (queue)",
@@ -1030,34 +1029,50 @@ class TestQueueFreeze(base.FunctionalTestBase):
         await self.add_label(p1["number"], "low-queue")
         await self.run_engine()
 
-        check_run_p1 = await self.wait_for_check_run(
-            name="Rule: Merge lowprio (queue)",
-            status="in_progress",
+        events = await self.wait_for_all(
+            [
+                {
+                    "event_type": "check_run",
+                    "payload": tests_utils.get_check_run_event_payload(
+                        name="Rule: Merge lowprio (queue)",
+                        status="in_progress",
+                        pr_number=p1["number"],
+                    ),
+                },
+                {
+                    "event_type": "check_run",
+                    "payload": tests_utils.get_check_run_event_payload(
+                        name="Queue: Embarked in merge queue",
+                        status="in_progress",
+                        pr_number=p1["number"],
+                    ),
+                },
+            ],
+            sort_received_events=True,
         )
-        assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
-        assert check_run_p1["check_run"]["output"]["title"] is not None
+        check_run_0 = typing.cast(github_types.GitHubEventCheckRun, events[0].event)
+        assert check_run_0["check_run"]["output"]["title"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
-            in check_run_p1["check_run"]["output"]["title"]
+            in check_run_0["check_run"]["output"]["title"]
         )
 
-        check_run_p1 = await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue",
-            status="in_progress",
-        )
-        assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
-        assert check_run_p1["check_run"]["output"]["summary"] is not None
+        check_run_1 = typing.cast(github_types.GitHubEventCheckRun, events[1].event)
+        assert check_run_1["check_run"]["output"]["summary"] is not None
         assert (
             "The merge is currently blocked by the freeze of the queue `default`, for the following reason: `test freeze reason`"
-            in check_run_p1["check_run"]["output"]["summary"]
+            in check_run_1["check_run"]["output"]["summary"]
         )
 
         # ensure p2 got queued before p1 and merged
         await self.add_label(p2["number"], "queue-urgent")
         await self.run_engine()
 
-        p2_closed = await self.wait_for_pull_request("closed", pr_number=p2["number"])
-        assert p2_closed["pull_request"]["merged"]
+        await self.wait_for_pull_request(
+            "closed",
+            pr_number=p2["number"],
+            merged=True,
+        )
 
     async def test_create_queue_freeze_without_cascading_effect(self) -> None:
         rules = {
@@ -1196,8 +1211,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         await self.create_status(p2, context="continuous-integration/fast-ci")
         await self.run_engine()
 
-        p2_closed = await self.wait_for_pull_request("closed", pr_number=p2["number"])
-        assert p2_closed["pull_request"]["merged"]
+        await self.wait_for_pull_request("closed", pr_number=p2["number"], merged=True)
 
         check_run_p2 = await self.wait_for_check_run(
             name="Rule: Merge priority high (queue)",
@@ -1247,7 +1261,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "synchronize",
             pr_number=p3["number"],
         )
-        await self.run_engine()
 
         # merge p3
         await self.create_status(
@@ -1256,11 +1269,11 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
         await self.run_engine()
 
-        p3_closed = await self.wait_for_pull_request(
-            "closed",
+        await self.wait_for_pull_request(
+            action="closed",
             pr_number=p3_waiting["pull_request"]["number"],
+            merged=True,
         )
-        assert p3_closed["pull_request"]["merged"]
 
         check_run_p3 = await self.wait_for_check_run(
             name="Rule: Merge low (queue)",

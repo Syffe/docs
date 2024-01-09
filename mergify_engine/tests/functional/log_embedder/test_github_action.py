@@ -241,7 +241,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
         log = await job.download_failure_annotations(self.client_integration)
 
         assert [
-            f"The run was canceled by @{self.installation_ctxt.installation['app_slug']}.",
+            f"The run was canceled by @{self.installation_ctxt.installation['app_slug']}[bot].",
         ] == log
 
     async def test_log_downloading_with_matrix(self) -> None:
@@ -334,6 +334,9 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 # NOTE(Kontrolix): Let github api pass through the mock to only catch openai api call
                 respx_mock.route(pipelines_route).pass_through()
                 respx_mock.route(host="api.github.com").pass_through()
+                respx_mock.route(
+                    url__startswith=settings.TESTING_FORWARDER_ENDPOINT,
+                ).pass_through()
 
                 respx_mock.post(f"{openai_api.OPENAI_API_BASE_URL}/embeddings").respond(
                     200,

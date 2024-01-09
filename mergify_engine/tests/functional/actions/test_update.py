@@ -33,12 +33,12 @@ class TestUpdateActionWithoutBot(base.FunctionalTestBase):
         await self.add_label(p1["number"], "merge")
 
         await self.run_engine()
-        p1_updated = await self.wait_for_pull_request("closed")
-        assert p1_updated["pull_request"]["merged"]
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
-
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request(
+            "closed",
+            pr_number=p1["number"],
+            merged=True,
+        )
+        await self.wait_for_pull_request("synchronize", pr_number=p2["number"])
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 2
         assert commits[-1]["commit"]["author"] is not None
@@ -73,13 +73,8 @@ class TestUpdateActionWithoutBot(base.FunctionalTestBase):
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
 
-        p1_updated = await self.wait_for_pull_request("closed")
-        assert p1_updated["pull_request"]["merged"]
-
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
-
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("closed", pr_number=p1["number"], merged=True)
+        await self.wait_for_pull_request("synchronize", pr_number=p2["number"])
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 2
         assert commits[-1]["commit"]["author"] is not None
@@ -134,10 +129,7 @@ class TestUpdateActionWithoutBot(base.FunctionalTestBase):
 
         await self.create_comment(p2["number"], "@mergifyio update", as_="admin")
         await self.run_engine()
-        comment = await self.wait_for_issue_comment(
-            test_id=str(p2["number"]),
-            action="created",
-        )
+        comment = await self.wait_for_issue_comment(p2["number"], "created")
         assert "Nothing to do" in comment["comment"]["body"]
 
 
@@ -169,13 +161,8 @@ class TestUpdateActionWithBot(base.FunctionalTestBase):
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
 
-        p1_updated = await self.wait_for_pull_request("closed")
-        assert p1_updated["pull_request"]["merged"]
-
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
-
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("closed", pr_number=p1["number"], merged=True)
+        await self.wait_for_pull_request("synchronize", pr_number=p2["number"])
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 2
         assert commits[-1]["commit"]["author"] is not None

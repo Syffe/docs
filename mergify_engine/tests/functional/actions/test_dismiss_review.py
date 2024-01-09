@@ -63,8 +63,7 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
         ]
 
         await self._push_for_synchronize(branch)
-
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize")
         await self.run_engine()
 
         check_run = await self.wait_for_check_run(conclusion="failure")
@@ -128,10 +127,10 @@ Unknown pull request attribute: Loser
         ]
 
         await self._push_for_synchronize(p["head"]["ref"])
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize")
 
         await self.run_engine()
-        await self.wait_for("pull_request_review", {"action": "dismissed"})
+        await self.wait_for_pull_request_review(action="dismissed")
 
         assert [("DISMISSED", "mergify-test1")] == [
             (r["state"], r["user"] and r["user"]["login"])
@@ -149,10 +148,10 @@ Unknown pull request attribute: Loser
         ]
 
         await self._push_for_synchronize(p["head"]["ref"], "unwanted_changes2")
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize")
 
         await self.run_engine()
-        await self.wait_for("pull_request_review", {"action": "dismissed"})
+        await self.wait_for_pull_request_review(action="dismissed")
 
         # There's no way to retrieve the dismiss message :(
         assert [("DISMISSED", "mergify-test1"), ("DISMISSED", "mergify-test1")] == [
@@ -290,22 +289,17 @@ Unknown pull request attribute: Loser
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
         await self._push_for_synchronize(p["head"]["ref"])
+        await self.wait_for_pull_request("synchronize")
 
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        async with self.event_reader.set_forwarding_events_status(False):
+            await self.client_admin.post(
+                f"{self.url_origin}/pulls/{p['number']}/reviews",
+                json={"event": "APPROVE", "body": "event: APPROVE"},
+            )
+            await self.wait_for_pull_request_review(action="submitted")
+            await self.run_engine()
 
-        await self.client_admin.post(
-            f"{self.url_origin}/pulls/{p['number']}/reviews",
-            json={"event": "APPROVE", "body": "event: APPROVE"},
-        )
-        await self.wait_for(
-            "pull_request_review",
-            {"action": "submitted"},
-            forward_to_engine=False,
-        )
-
-        await self.run_engine()
-
-        assert [("APPROVED", "mergify-test1")] == [
-            (r["state"], r["user"] and r["user"]["login"])
-            for r in await self.get_reviews(p["number"])
-        ]
+            assert [("APPROVED", "mergify-test1")] == [
+                (r["state"], r["user"] and r["user"]["login"])
+                for r in await self.get_reviews(p["number"])
+            ]

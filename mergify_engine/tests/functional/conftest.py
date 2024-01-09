@@ -321,12 +321,21 @@ def pyvcr_response_filter(
 def pyvcr_request_filter(request: vcr.request.Request) -> vcr.request.Request:
     if request.method == "POST" and request.path.endswith("/access_tokens"):
         return None
+
+    if request.host in ("localhost", "0.0.0.0", "127.0.0.1") and (
+        request.method != "PUT" or request.path != "/__breakpoint"
+    ):
+        # Ignore every localhost request except the `/breakpoint` one.
+        # We need it in order to replay the events forwarder requests at the right time
+        return None
+
     return request
 
 
 class RecorderFixture(typing.NamedTuple):
     config: RecordConfigType
     vcr: vcr.VCR
+    cassette: vcr.cassette.Cassette
 
 
 def cleanup_github_app_info() -> None:
@@ -377,7 +386,6 @@ async def recorder(
         cassette_library_dir=str(cassette_library_dir),
         record_mode="all" if settings.TESTING_RECORD else "none",
         match_on=["method", "uri"],
-        ignore_localhost=True,
         ignore_hosts=ignored_host,
         filter_headers=[
             ("Authorization", "<TOKEN>"),
@@ -477,7 +485,11 @@ async def recorder(
             ),
         )
 
-        return RecorderFixture(recorder_config, recorder)
+        return RecorderFixture(
+            recorder_config,
+            recorder,
+            cassette._CassetteContextDecorator__cassette,
+        )
 
 
 @pytest.fixture()
@@ -509,6 +521,7 @@ def _unittest_glue(
     request.cls.app = web_client
     request.cls.admin_app = web_client_as_admin
     request.cls.RECORD_CONFIG = recorder.config
+    request.cls.vcr_cassette = recorder.cassette
     request.cls.cassette_library_dir = recorder.vcr.cassette_library_dir
     request.cls.subscription = shadow_office.subscription
 

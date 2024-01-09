@@ -567,6 +567,8 @@ async def event_classifier(
             event_type,
             event_id,
             event,
+            # FIXME: We could exploit `check_run["pull_requests"]` to check
+            # if we already have the pull request number available
             await get_pull_request_head_sha_to_number_mapping(
                 redis_links.cache,
                 event["repository"]["owner"]["id"],

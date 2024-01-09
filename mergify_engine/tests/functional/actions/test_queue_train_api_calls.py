@@ -511,7 +511,7 @@ pull_requests:
             # To force others to be rebased
             p = await self.create_pr()
             p_closed = await self.merge_pull(p["number"])
-            await self.run_engine()
+            assert p_closed["pull_request"]["merge_commit_sha"] is not None
 
             await self.add_label(p1["number"], "queue")
             await self.add_label(p2["number"], "queue")
@@ -519,10 +519,8 @@ pull_requests:
             await self.run_engine()
 
             tmp_pull_1 = await self.wait_for_pull_request("opened")
-            await self.run_engine({"delayed-refresh"})
 
             q = await self.get_train()
-            assert p_closed["pull_request"]["merge_commit_sha"] is not None
             await self.assert_merge_queue_contents(
                 q,
                 p_closed["pull_request"]["merge_commit_sha"],
@@ -539,11 +537,7 @@ pull_requests:
 
             await self.remove_label(p1["number"], "queue")
             await self.run_engine()
-            await self.wait_for("pull_request", {"action": "closed"})
-
-            # If the seconds_waiting_for_schedule computation failed, the new pull
-            # request with the sliced car will not be opened
-            await self.run_engine()
+            await self.wait_for_pull_request("closed", pr_number=tmp_pull_1["number"])
             await self.wait_for_pull_request("opened")
 
     async def test_batch_max_failure_resolution_attempts(self) -> None:

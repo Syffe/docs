@@ -22,7 +22,7 @@ class TestCommandCopy(base.FunctionalTestBase):
             f"@mergifyio copy {stable_branch} {feature_branch}",
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
+        await self.wait_for_issue_comment(p["number"], "created")
         reactions = [
             r
             async for r in self.client_integration.items(

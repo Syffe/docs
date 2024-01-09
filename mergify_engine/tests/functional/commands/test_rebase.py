@@ -66,20 +66,20 @@ class TestCommandRebase(base.FunctionalTestBase):
         }
 
         await self.setup_repo(yaml.dump(rules))
-        p = await self.create_pr()
+        p1 = await self.create_pr()
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
 
-        await self.add_label(p["number"], "queue")
+        await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
         await self.wait_for_pull_request("opened")
 
-        await self.create_comment_as_admin(p["number"], "@mergifyio rebase")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio rebase")
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p1["number"], "created")
         assert (
             "It's not possible to rebase this pull request because it is queued for merge"
             in comment["comment"]["body"]
@@ -110,7 +110,7 @@ class TestCommandRebase(base.FunctionalTestBase):
             await self.create_comment_as_fork(p2["number"], "@mergifyio rebase")
             await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(p2["number"]), "created")
+        comment = await self.wait_for_issue_comment(p2["number"], "created")
         assert (
             "`mergify-test2` does not have write access to the forked repository."
             in comment["comment"]["body"]

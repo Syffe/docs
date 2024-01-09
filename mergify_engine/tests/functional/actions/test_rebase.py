@@ -325,7 +325,7 @@ class TestRebaseAction(base.FunctionalTestBase):
         await self.create_comment_as_admin(pr["number"], "@mergifyio rebase")
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        comment = await self.wait_for_issue_comment(pr["number"], "created")
         assert "Nothing to do for rebase action" in comment["comment"]["body"]
 
     async def test_rebase_action_on_conflict(self) -> None:
@@ -366,7 +366,7 @@ class TestRebaseAction(base.FunctionalTestBase):
         await self.create_comment(p2["number"], "@mergifyio rebase", as_="admin")
         await self.run_engine()
         comment = await self.wait_for_issue_comment(
-            test_id=str(p2["number"]),
-            action="created",
+            p2["number"],
+            "created",
         )
         assert "Nothing to do" in comment["comment"]["body"]

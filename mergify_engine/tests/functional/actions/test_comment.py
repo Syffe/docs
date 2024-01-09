@@ -3,6 +3,7 @@ import pytest
 from mergify_engine import github_types
 from mergify_engine import subscription
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.yaml import yaml
 
 
@@ -24,7 +25,7 @@ class TestCommentAction(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p["number"], "created")
         assert comment["comment"]["body"] == "WTF?"
 
         # Add a label to trigger mergify
@@ -70,7 +71,7 @@ class TestCommentAction(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p["number"], "created")
         assert (
             comment["comment"]["body"]
             == f"Thank you {self.RECORD_CONFIG['app_user_login']}"
@@ -149,7 +150,7 @@ Unknown pull request attribute: hello
         p = await self.create_pr(message="mergify-test4")
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p["number"], "created")
         assert comment["comment"]["body"] == "WTF?"
         assert comment["comment"]["user"]["login"] == "mergify-test4"
 
@@ -175,14 +176,26 @@ Unknown pull request attribute: hello
 
         p = await self.create_pr()
         await self.run_engine()
-
-        await self.wait_for_check_run(
-            action="completed",
-            status="completed",
-            conclusion="success",
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "check_run",
+                    "payload": tests_utils.get_check_run_event_payload(
+                        action="completed",
+                        status="completed",
+                        conclusion="success",
+                    ),
+                },
+                {
+                    "event_type": "issue_comment",
+                    "payload": tests_utils.get_issue_comment_event_payload(
+                        p["number"],
+                        "created",
+                        comment_body="Hello World!",
+                    ),
+                },
+            ],
         )
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
-        assert comment["comment"]["body"] == "Hello World!"
 
     async def test_comment_none_with_default(self) -> None:
         rules = {
@@ -207,13 +220,26 @@ Unknown pull request attribute: hello
         p = await self.create_pr()
         await self.run_engine()
 
-        await self.wait_for_check_run(
-            action="completed",
-            status="completed",
-            conclusion="success",
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "check_run",
+                    "payload": tests_utils.get_check_run_event_payload(
+                        action="completed",
+                        status="completed",
+                        conclusion="success",
+                    ),
+                },
+                {
+                    "event_type": "issue_comment",
+                    "payload": tests_utils.get_issue_comment_event_payload(
+                        p["number"],
+                        "created",
+                        comment_body="Hello World!",
+                    ),
+                },
+            ],
         )
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
-        assert comment["comment"]["body"] == "Hello World!"
 
     async def test_comment_none_without_default(self) -> None:
         rules = {

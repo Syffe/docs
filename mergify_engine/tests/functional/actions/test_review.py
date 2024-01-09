@@ -15,7 +15,11 @@ class TestReviewAction(base.FunctionalTestBase):
             "pull_request_rules": [
                 {
                     "name": "approve",
-                    "conditions": [f"base={self.main_branch_name}"],
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "#approved-reviews-by=0",
+                        "#changes-requested-reviews-by=0",
+                    ],
                     "actions": {"review": {"type": "APPROVE"}},
                 },
                 {
@@ -23,6 +27,7 @@ class TestReviewAction(base.FunctionalTestBase):
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "#approved-reviews-by>=1",
+                        "#changes-requested-reviews-by=0",
                     ],
                     "actions": {
                         "review": {"message": "WTF?", "type": "REQUEST_CHANGES"},
@@ -37,7 +42,6 @@ class TestReviewAction(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for_pull_request_review("approved")
 
-        await self.run_engine()
         r2 = await self.wait_for_pull_request_review("changes_requested")
         assert r2["review"]["body"] == "WTF?"
 
@@ -46,7 +50,11 @@ class TestReviewAction(base.FunctionalTestBase):
             "pull_request_rules": [
                 {
                     "name": "approve",
-                    "conditions": [f"base={self.main_branch_name}"],
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "#approved-reviews-by=0",
+                        "#changes-requested-reviews-by=0",
+                    ],
                     "actions": {"review": {"type": "APPROVE"}},
                 },
                 {
@@ -54,6 +62,7 @@ class TestReviewAction(base.FunctionalTestBase):
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "#approved-reviews-by>=1",
+                        "#changes-requested-reviews-by=0",
                     ],
                     "actions": {
                         "review": {
@@ -71,8 +80,6 @@ class TestReviewAction(base.FunctionalTestBase):
         await self.run_engine()
 
         await self.wait_for_pull_request_review("approved")
-        await self.run_engine()
-
         r2 = await self.wait_for_pull_request_review("changes_requested")
         assert r2["review"]["body"] == "WTF mergify-test2?"
 
@@ -86,6 +93,7 @@ class TestReviewAction(base.FunctionalTestBase):
                     "name": "review",
                     "conditions": [
                         f"base={self.main_branch_name}",
+                        "#changes-requested-reviews-by=0",
                     ],
                     "actions": {"review": {"message": msg, "type": "REQUEST_CHANGES"}},
                 },
@@ -136,7 +144,11 @@ Unknown pull request attribute: hello
             "pull_request_rules": [
                 {
                     "name": "approve",
-                    "conditions": [f"base={self.main_branch_name}"],
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "#approved-reviews-by=0",
+                        "#changes-requested-reviews-by=0",
+                    ],
                     "actions": {
                         "review": {
                             "type": "APPROVE",
@@ -145,7 +157,10 @@ Unknown pull request attribute: hello
                 },
                 {
                     "name": "requested",
-                    "conditions": [f"base={self.main_branch_name}"],
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "#changes-requested-reviews-by=0",
+                    ],
                     "actions": {
                         "review": {
                             "message": "WTF?",
@@ -163,8 +178,6 @@ Unknown pull request attribute: hello
         await self.run_engine()
 
         await self.wait_for_pull_request_review("approved")
-        await self.run_engine()
-
         r2 = await self.wait_for_pull_request_review("changes_requested")
         assert r2["review"]["body"] == "WTF?"
         assert (
@@ -172,7 +185,7 @@ Unknown pull request attribute: hello
         ) == "mergify-test4"
 
         # ensure review don't get posted twice
-        await self.create_comment(p["number"], "@mergifyio refresh")
+        await self.create_comment_as_admin(p["number"], "@mergifyio refresh")
         await self.run_engine()
         reviews = await self.get_reviews(p["number"])
         assert len(reviews) == 2
@@ -183,6 +196,16 @@ Unknown pull request attribute: hello
         assert r.status_code == 200
         assert r.json() == {
             "events": [
+                {
+                    "id": anys.ANY_INT,
+                    "repository": p["base"]["repo"]["full_name"],
+                    "pull_request": p["number"],
+                    "base_ref": self.main_branch_name,
+                    "received_at": anys.ANY_AWARE_DATETIME_STR,
+                    "type": "action.refresh",
+                    "metadata": {},
+                    "trigger": "Command: refresh",
+                },
                 {
                     "id": anys.ANY_INT,
                     "repository": p["base"]["repo"]["full_name"],
@@ -213,5 +236,5 @@ Unknown pull request attribute: hello
                 },
             ],
             "per_page": 10,
-            "size": 2,
+            "size": 3,
         }

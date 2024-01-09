@@ -112,8 +112,6 @@ class TestStackedPr(base.FunctionalTestBase):
 
         assert pr_b["base"]["ref"] == self.main_branch_name
 
-        await self.run_engine()
-
         await self.wait_for_pull_request(
             "closed",
             pr_number=pr_b["number"],
@@ -137,8 +135,6 @@ class TestStackedPr(base.FunctionalTestBase):
         assert pr_c["base"]["ref"] == self.main_branch_name
         assert pr_c1["base"]["ref"] == self.main_branch_name
 
-        await self.run_engine()
-
         await self.wait_for_pull_request(
             "closed",
             pr_number=pr_c["number"],
@@ -160,8 +156,6 @@ class TestStackedPr(base.FunctionalTestBase):
         )
 
         assert pr_d["base"]["ref"] == self.main_branch_name
-
-        await self.run_engine()
 
         await self.wait_for_pull_request(
             "closed",

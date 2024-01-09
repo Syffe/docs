@@ -189,7 +189,6 @@ class TestQueueCommand(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
         await self.create_comment_as_admin(p2["number"], "@mergifyio queue default")
@@ -234,7 +233,6 @@ class TestQueueCommand(base.FunctionalTestBase):
                 in comments[-1]["body"]
             )
 
-        await self.run_engine()
         await assert_queued(p1, "1st")
         await assert_queued(p2, "2nd")
 
@@ -277,13 +275,12 @@ class TestQueueCommand(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
         await self.run_engine()
-        comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        comment_p1 = await self.wait_for_issue_comment(p1["number"], "created")
 
         assert """Waiting for conditions to match
 
@@ -303,7 +300,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(p2["number"], "@mergifyio queue")
         await self.run_engine()
-        comment_p2 = await self.wait_for_issue_comment(str(p2["number"]), "created")
+        comment_p2 = await self.wait_for_issue_comment(p2["number"], "created")
 
         assert """Waiting for conditions to match
 
@@ -395,7 +392,6 @@ class TestQueueCommand(base.FunctionalTestBase):
                 in comments[-1]["body"]
             )
 
-        await self.run_engine()
         await assert_queued(p, "1st")
 
         with (self.git.repository / "random").open("w") as f:
@@ -405,7 +401,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         pr_branch = self.get_full_branch_name(f"integration/pr{self.pr_counter}")
         await self.git("push", "--quiet", "origin", pr_branch)
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize", p["number"])
         await self.run_engine()
 
         pulls = await self.get_pulls()
@@ -450,7 +446,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
 
         # Make sure the queue action is waiting for the branch protections
-        comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        comment = await self.wait_for_issue_comment(pr["number"], "created")
         assert "Waiting for conditions to match" in comment["comment"]["body"]
         assert """<details>
 
@@ -496,7 +492,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.add_label(pr["number"], "special")
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        comment = await self.wait_for_issue_comment(pr["number"], "created")
 
         assert """#### 🟠 Waiting for conditions to match
 
@@ -543,7 +539,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(pr["number"], "@mergifyio queue default")
         await self.run_engine()
-        await self.wait_for_issue_comment(str(pr["number"]), "created")
+        await self.wait_for_issue_comment(pr["number"], "created")
 
         await self.add_label(pr["number"], "special")
         await self.run_engine()
@@ -556,7 +552,7 @@ class TestQueueCommand(base.FunctionalTestBase):
                 conftest.ShutUpVcrCannotOverwriteExistingCassetteException,
             ),
         ):
-            await self.wait_for_issue_comment(str(pr["number"]), "created")
+            await self.wait_for_issue_comment(pr["number"], "created")
 
     async def test_multiple_queue_commands_on_different_queues(self) -> None:
         rules = {
@@ -587,18 +583,18 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.add_label(pr["number"], "special")
         await self.create_comment_as_admin(pr["number"], "@mergifyio queue specialq")
         await self.run_engine()
-        first_comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        first_comment = await self.wait_for_issue_comment(pr["number"], "created")
 
         await self.create_comment_as_admin(pr["number"], "@mergifyio queue default")
         await self.run_engine()
-        edited_comment = await self.wait_for_issue_comment(str(pr["number"]), "edited")
+        edited_comment = await self.wait_for_issue_comment(pr["number"], "edited")
         assert edited_comment["comment"]["id"] == first_comment["comment"]["id"]
         assert (
             "🛑 Command `queue specialq` cancelled because of a new `queue` command with different arguments"
             in edited_comment["comment"]["body"]
         )
 
-        second_comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        second_comment = await self.wait_for_issue_comment(pr["number"], "created")
         assert "Waiting for conditions to match" in second_comment["comment"]["body"]
 
         train = await self.get_train()
@@ -632,15 +628,12 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(pr["number"], "@mergifyio queue specialq")
         await self.run_engine()
-        first_response = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        first_response = await self.wait_for_issue_comment(pr["number"], "created")
 
         await self.create_comment(pr["number"], "@mergifyio queue", as_="fork")
         await self.run_engine()
 
-        second_response = await self.wait_for_issue_comment(
-            str(pr["number"]),
-            "created",
-        )
+        second_response = await self.wait_for_issue_comment(pr["number"], "created")
         assert "Command disallowed" in second_response["comment"]["body"]
 
         first_response_again = await self.get_comment(first_response["comment"]["id"])
@@ -667,13 +660,12 @@ class TestQueueCommand(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
         await self.run_engine()
-        comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        comment_p1 = await self.wait_for_issue_comment(p1["number"], "created")
 
         assert """Waiting for conditions to match
 
@@ -694,7 +686,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.create_status(p1, state="success")
         await self.run_engine()
 
-        comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "edited")
+        comment_p1 = await self.wait_for_issue_comment(p1["number"], "edited")
         assert (
             "The pull request is the 1st in the queue to be merged"
             in comment_p1["comment"]["body"]
@@ -707,13 +699,13 @@ class TestQueueCommand(base.FunctionalTestBase):
         assert len(train._waiting_pulls) == 0
 
         await self.create_status(p1, state="failure")
-        await self.run_engine({"delayed-refresh"})
+        await self.run_engine()
 
         train = await self.get_train()
         assert len(train._cars) == 0
         assert len(train._waiting_pulls) == 0
         p1 = await self.get_pull(p1["number"])
-        comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "edited")
+        comment_p1 = await self.wait_for_issue_comment(p1["number"], "edited")
 
         assert (
             "The pull request has been removed from the queue"
@@ -766,7 +758,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
 
         # Make sure the queue action is waiting for the branch protections
-        comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        comment = await self.wait_for_issue_comment(pr["number"], "created")
         assert "Waiting for conditions to match" in comment["comment"]["body"]
         assert """<details>
 
@@ -792,7 +784,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.create_status(pr)
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(pr["number"]), "edited")
+        comment = await self.wait_for_issue_comment(pr["number"], "edited")
         assert """**Required conditions of queue** `specialq` **for merge:**
 
 - [ ] any of: [🛡 GitHub branch protection]
@@ -823,24 +815,21 @@ class TestQueueCommand(base.FunctionalTestBase):
                 f"{settings.GITHUB_REST_API_URL}/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/merge",
             ).respond(405, json={"message": "Pull Request is not mergeable"})
             respx_mock.route(host="api.github.com").pass_through()
+            respx_mock.route(
+                url__startswith=settings.TESTING_FORWARDER_ENDPOINT,
+            ).pass_through()
 
             await self.run_engine()
 
-        queue_comment = await self.wait_for_issue_comment(
-            action="created",
-            test_id=str(p["number"]),
-        )
+        queue_comment = await self.wait_for_issue_comment(p["number"], "created")
         assert (
             "🟠 The pull request is the 1st in the queue to be merged"
             in queue_comment["comment"]["body"]
         )
 
-        await self.wait_for_issue_comment(action="edited", test_id=str(p["number"]))
+        await self.wait_for_issue_comment(p["number"], "edited")
 
-        queue_comment = await self.wait_for_issue_comment(
-            action="edited",
-            test_id=str(p["number"]),
-        )
+        queue_comment = await self.wait_for_issue_comment(p["number"], "edited")
         assert (
             "GitHub can't merge the pull request after 15 retries."
             in queue_comment["comment"]["body"]
@@ -849,19 +838,13 @@ class TestQueueCommand(base.FunctionalTestBase):
         # Second queue attempt succeeds
         await self.create_comment(p["number"], "@mergifyio requeue", as_="admin")
         await self.run_engine()
-        queue_comment = await self.wait_for_issue_comment(
-            action="created",
-            test_id=str(p["number"]),
-        )
+        queue_comment = await self.wait_for_issue_comment(p["number"], "created")
         assert (
             "This pull request will be re-embarked automatically"
             in queue_comment["comment"]["body"]
         )
 
-        queue_comment = await self.wait_for_issue_comment(
-            action="created",
-            test_id=str(p["number"]),
-        )
+        queue_comment = await self.wait_for_issue_comment(p["number"], "created")
         assert (
             "🟠 The pull request is the 1st in the queue to be merged"
             in queue_comment["comment"]["body"]

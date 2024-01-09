@@ -1397,8 +1397,7 @@ class TestQueueAction(base.FunctionalTestBase):
         }
 
         p2 = await self.create_pr(files={".mergify.yml": yaml.dump(updated_rules)})
-        await self.merge_pull(p2["number"])
-        await self.wait_for_push(branch_name=self.main_branch_name)
+        await self.merge_pull(p2["number"], wait_for_main_push=True)
         await self.run_engine()
 
         p = await self.get_pull(p["number"])
@@ -1442,11 +1441,10 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force p1 to be rebased
         p2 = await self.create_pr()
         p2_merged = await self.merge_pull_as_admin(p2["number"])
-        await self.run_engine()
 
         await self.create_status(p1)
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize", p1["number"])
 
         q = await self.get_train()
         # base sha should have been updated
@@ -1834,8 +1832,10 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # To force p1 to be rebased
         p2 = await self.create_pr()
-        p2_merged = await self.merge_pull_as_admin(p2["number"])
-        await self.wait_for_push(branch_name=self.main_branch_name)
+        p2_merged = await self.merge_pull_as_admin(
+            p2["number"],
+            wait_for_main_push=True,
+        )
         await self.run_engine()
 
         await self.wait_for_pull_request("synchronize", p1["number"])
@@ -1859,8 +1859,10 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # To force p1 to be rebased a second time
         p3 = await self.create_pr()
-        p3_merged = await self.merge_pull_as_admin(p3["number"])
-        await self.wait_for_push(branch_name=self.main_branch_name)
+        p3_merged = await self.merge_pull_as_admin(
+            p3["number"],
+            wait_for_main_push=True,
+        )
         await self.run_engine()
 
         await self.wait_for_pull_request("synchronize", p1["number"])
@@ -1914,7 +1916,7 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -1927,9 +1929,12 @@ class TestQueueAction(base.FunctionalTestBase):
         assert tmp_pull_1["pull_request"]["user"]["login"] == "mergify-test4"
         assert tmp_pull_2["number"] not in [p1["number"], p2["number"]]
         assert tmp_pull_2["pull_request"]["user"]["login"] == "mergify-test4"
+        assert tmp_pull_1["pull_request"]["commits"] == 2
+        assert tmp_pull_1["pull_request"]["changed_files"] == 1
+        assert tmp_pull_2["pull_request"]["commits"] == 5
+        assert tmp_pull_2["pull_request"]["changed_files"] == 2
 
         q = await self.get_train()
-        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -1962,28 +1967,44 @@ class TestQueueAction(base.FunctionalTestBase):
                 == "The pull request is the 1st in the queue to be merged"
             )
 
-        await self.run_engine()
         await assert_queued()
-        assert tmp_pull_1["pull_request"]["commits"] == 2
-        assert tmp_pull_1["pull_request"]["changed_files"] == 1
-        assert tmp_pull_2["pull_request"]["commits"] == 5
-        assert tmp_pull_2["pull_request"]["changed_files"] == 2
 
         await self.create_status(tmp_pull_2["pull_request"])
         await self.run_engine()
-        await assert_queued()
 
+        await assert_queued()
         await self.wait_for_pull_request("closed", tmp_pull_2["number"])
 
         await self.create_status(tmp_pull_1["pull_request"])
         await self.run_engine()
 
-        await self.wait_for_pull_request("closed", tmp_pull_1["number"])
-        p_closed = [
-            await self.wait_for_pull_request("closed"),
-            await self.wait_for_pull_request("closed"),
-        ]
-        assert sorted([p["number"] for p in p_closed]) == [p1["number"], p2["number"]]
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_pull_1["number"],
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p1["number"],
+                        merged=True,
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p2["number"],
+                        merged=True,
+                    ),
+                },
+            ],
+        )
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -2018,7 +2039,6 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -2027,9 +2047,7 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         tmp_pull_2 = await self.wait_for_pull_request("opened")
 
-        assert tmp_pull_1["number"] not in [p1["number"], p2["number"]]
         assert tmp_pull_1["pull_request"]["head"]["ref"].startswith("mq-")
-        assert tmp_pull_2["pull_request"]["number"] not in [p1["number"], p2["number"]]
         assert tmp_pull_2["pull_request"]["head"]["ref"].startswith("mq-")
 
     async def test_queue_fast_forward(self) -> None:
@@ -2066,19 +2084,25 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        p1_synced = await self.wait_for_pull_request(
+            "synchronize",
+            pr_number=p1["number"],
+        )
+        assert (
+            # ensure it has been rebased
+            p1_synced["pull_request"]["head"]["sha"] != p1["head"]["sha"]
+        )
 
         pulls = await self.get_pulls()
         assert len(pulls) == 2
 
         q = await self.get_train()
-        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -2094,11 +2118,6 @@ class TestQueueAction(base.FunctionalTestBase):
             [p2["number"]],
         )
 
-        head_sha = p1["head"]["sha"]
-        p1 = await self.get_pull(p1["number"])
-        assert p1["head"]["sha"] != head_sha  # ensure it have been rebased
-
-        await self.run_engine()
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: merge fast-forward (queue)",
@@ -2109,10 +2128,14 @@ class TestQueueAction(base.FunctionalTestBase):
             == "The pull request is the 1st in the queue to be merged"
         )
 
-        await self.create_status(p1)
+        await self.create_status(p1_synced["pull_request"])
         await self.run_engine()
 
-        p1_merged = await self.wait_for_pull_request("closed", p1["number"])
+        p1_merged = await self.wait_for_pull_request(
+            "closed",
+            p1["number"],
+            merged=True,
+        )
         check = first(
             await context.Context(
                 self.repository_ctxt,
@@ -2141,7 +2164,7 @@ class TestQueueAction(base.FunctionalTestBase):
         # Continue with the second PR
         await self.assert_merge_queue_contents(
             q,
-            p1["head"]["sha"],
+            p1_merged["pull_request"]["head"]["sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
@@ -2153,11 +2176,15 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
         )
 
-        head_sha = p2["head"]["sha"]
-        p2 = await self.get_pull(p2["number"])
-        assert p2["head"]["sha"] != head_sha  # ensure it has been rebased
+        p2_synced = await self.wait_for_pull_request(
+            "synchronize",
+            pr_number=p2["number"],
+        )
+        assert (
+            # ensure it has been rebased
+            p2_synced["pull_request"]["head"]["sha"] != p2["head"]["sha"]
+        )
 
-        await self.run_engine()
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: merge fast-forward (queue)",
@@ -2168,10 +2195,14 @@ class TestQueueAction(base.FunctionalTestBase):
             == "The pull request is the 1st in the queue to be merged"
         )
 
-        await self.create_status(p2)
+        await self.create_status(p2_synced["pull_request"])
         await self.run_engine()
 
-        p2_merged = await self.wait_for_pull_request("closed", p2["number"])
+        p2_merged = await self.wait_for_pull_request(
+            "closed",
+            p2["number"],
+            merged=True,
+        )
         check = first(
             await context.Context(
                 self.repository_ctxt,
@@ -2240,18 +2271,22 @@ class TestQueueAction(base.FunctionalTestBase):
         # Forces a rebase of p1
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         # Fulfill conditions to queue
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for_pull_request("synchronize", p1["number"])
-        pulls = await self.get_pulls()
-        assert len(pulls) == 1
+        p1_synced = await self.wait_for_pull_request(
+            "synchronize",
+            pr_number=p1["number"],
+        )
+        assert (
+            # ensure it has been rebased
+            p1_synced["pull_request"]["head"]["sha"] != p1["head"]["sha"]
+        )
 
         q = await self.get_train()
-        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -2266,12 +2301,6 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
         )
 
-        head_sha = p1["head"]["sha"]
-        p1 = await self.get_pull(p1["number"])
-        # p1 has been rebased
-        assert p1["head"]["sha"] != head_sha
-
-        await self.run_engine()
         check = await self.wait_for_check_run(name="Rule: merge fast-forward (queue)")
         assert (
             check["check_run"]["output"]["title"]
@@ -2279,7 +2308,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # Fulfill merge_conditions
-        await self.create_status(p1)
+        await self.create_status(p1_synced["pull_request"])
 
         # GitHub fast-forward is failing unexpectedly
         with respx.mock(assert_all_called=False) as respx_mock:
@@ -2295,34 +2324,40 @@ class TestQueueAction(base.FunctionalTestBase):
 
             await self.run_engine()
 
-        await self.wait_for_check_run(name="Queue: Embarked in merge queue")
-        pr_disembarked_check = await self.wait_for_check_run(
-            name="Queue: Embarked in merge queue",
-            conclusion="failure",
-        )
-        assert pr_disembarked_check is not None
-        assert (
-            pr_disembarked_check["check_run"]["output"]["title"]
-            == f"The pull request {p1['number']} cannot be merged and has been disembarked"
-        )
-        assert pr_disembarked_check["check_run"]["output"]["summary"] == (
-            "Mergify failed to merge the pull request\n"
-            "GitHub can't merge the pull request after 15 retries.\n"
-            "Base branch was modified in the meantime"
-        )
-
-        merge_check = await self.wait_for_check_run(
-            name="Rule: merge fast-forward (queue)",
-            conclusion="cancelled",
-        )
-        assert merge_check is not None
-        assert (
-            merge_check["check_run"]["output"]["title"]
-            == "Mergify failed to merge the pull request"
-        )
-        assert merge_check["check_run"]["output"]["summary"] == (
-            "GitHub can't merge the pull request after 15 retries.\n"
-            "Base branch was modified in the meantime"
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "check_run",
+                    "payload": tests_utils.get_check_run_event_payload(
+                        name="Queue: Embarked in merge queue",
+                    ),
+                },
+                {
+                    "event_type": "check_run",
+                    "payload": tests_utils.get_check_run_event_payload(
+                        name="Queue: Embarked in merge queue",
+                        conclusion="failure",
+                        output_title=f"The pull request {p1['number']} cannot be merged and has been disembarked",
+                        output_summary=(
+                            "Mergify failed to merge the pull request\n"
+                            "GitHub can't merge the pull request after 15 retries.\n"
+                            "Base branch was modified in the meantime"
+                        ),
+                    ),
+                },
+                {
+                    "event_type": "check_run",
+                    "payload": tests_utils.get_check_run_event_payload(
+                        name="Rule: merge fast-forward (queue)",
+                        conclusion="cancelled",
+                        output_title="Mergify failed to merge the pull request",
+                        output_summary=(
+                            "GitHub can't merge the pull request after 15 retries.\n"
+                            "Base branch was modified in the meantime"
+                        ),
+                    ),
+                },
+            ],
         )
 
     async def test_queue_with_ci_and_files(self) -> None:
@@ -2619,7 +2654,7 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -2628,8 +2663,12 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         tmp_pull_2 = await self.wait_for_pull_request("opened")
 
+        assert tmp_pull_1["pull_request"]["commits"] == 2
+        assert tmp_pull_1["pull_request"]["changed_files"] == 1
+        assert tmp_pull_2["pull_request"]["commits"] == 5
+        assert tmp_pull_2["pull_request"]["changed_files"] == 2
+
         q = await self.get_train()
-        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -2662,16 +2701,12 @@ class TestQueueAction(base.FunctionalTestBase):
                 == "The pull request is the 1st in the queue to be merged"
             )
 
-        await self.run_engine()
         await assert_queued()
-        assert tmp_pull_1["pull_request"]["commits"] == 2
-        assert tmp_pull_1["pull_request"]["changed_files"] == 1
-        assert tmp_pull_2["pull_request"]["commits"] == 5
-        assert tmp_pull_2["pull_request"]["changed_files"] == 2
 
         await self.create_status(tmp_pull_2["pull_request"])
         await self.run_engine()
         await assert_queued()
+        await self.wait_for_pull_request("closed", pr_number=tmp_pull_2["number"])
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio refresh")
         await self.run_engine()
@@ -2684,8 +2719,33 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(tmp_pull_1["pull_request"])
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_pull_1["number"],
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p1["number"],
+                        merged=True,
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p2["number"],
+                        merged=True,
+                    ),
+                },
+            ],
+        )
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -2701,7 +2761,6 @@ class TestQueueAction(base.FunctionalTestBase):
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
@@ -2827,19 +2886,29 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        p1_synced = await self.wait_for_pull_request(
+            "synchronize",
+            pr_number=p1["number"],
+        )
+        assert (
+            # ensure it has been rebased
+            p1_synced["pull_request"]["head"]["sha"] != p1["head"]["sha"]
+        )
+        commits = await self.get_commits(p1["number"])
+        assert len(commits) == 1
+        assert commits[0]["commit"]["committer"] is not None
+        assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
 
         pulls = await self.get_pulls()
         assert len(pulls) == 2
 
         q = await self.get_train()
-        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -2855,15 +2924,6 @@ class TestQueueAction(base.FunctionalTestBase):
             [p2["number"]],
         )
 
-        head_sha = p1["head"]["sha"]
-        p1 = await self.get_pull(p1["number"])
-        assert p1["head"]["sha"] != head_sha  # ensure it has been rebased
-        commits = await self.get_commits(p1["number"])
-        assert len(commits) == 1
-        assert commits[0]["commit"]["committer"] is not None
-        assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
-
-        await self.run_engine()
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: default merge (queue)",
@@ -2874,13 +2934,31 @@ class TestQueueAction(base.FunctionalTestBase):
             == "The pull request is the 1st in the queue to be merged"
         )
 
-        await self.create_status(p1)
+        await self.create_status(p1_synced["pull_request"])
         await self.run_engine()
 
-        p1_merged = await self.wait_for_pull_request("closed", p1["number"])
-        await self.wait_for("pull_request", {"action": "synchronize"})
-
+        p1_merged = await self.wait_for_pull_request(
+            "closed",
+            p1["number"],
+            merged=True,
+        )
         assert p1_merged["pull_request"]["merge_commit_sha"] is not None
+
+        p2_synced = await self.wait_for_pull_request(
+            "synchronize",
+            pr_number=p2["number"],
+        )
+        assert (
+            # ensure it has been rebased
+            p2_synced["pull_request"]["head"]["sha"] != p2["head"]["sha"]
+        )
+        commits = await self.get_commits(p2["number"])
+        assert len(commits) == 2
+        assert commits[0]["commit"]["committer"] is not None
+        assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
+        assert commits[1]["commit"]["committer"] is not None
+        assert commits[1]["commit"]["committer"]["name"] == "mergify-test4"
+
         await self.assert_merge_queue_contents(
             q,
             p1_merged["pull_request"]["merge_commit_sha"],
@@ -2895,20 +2973,10 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
         )
 
-        head_sha = p2["head"]["sha"]
-        p2 = await self.get_pull(p2["number"])
-        assert p2["head"]["sha"] != head_sha  # ensure it has been rebased
-        commits = await self.get_commits(p2["number"])
-        assert len(commits) == 2
-        assert commits[0]["commit"]["committer"] is not None
-        assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
-        assert commits[1]["commit"]["committer"] is not None
-        assert commits[1]["commit"]["committer"]["name"] == "mergify-test4"
-
-        await self.create_status(p2)
+        await self.create_status(p2_synced["pull_request"])
         await self.run_engine()
 
-        await self.wait_for_pull_request("closed", p2["number"])
+        await self.wait_for_pull_request("closed", p2["number"], merged=True)
         await self.assert_merge_queue_contents(q, None, [])
 
     async def test_queue_no_inplace(self) -> None:
@@ -2941,7 +3009,6 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p2 = await self.create_pr()
         p2_merged = await self.merge_pull(p2["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
@@ -3365,17 +3432,17 @@ class TestQueueAction(base.FunctionalTestBase):
         p1 = await self.create_pr()
         p2 = await self.create_pr(two_commits=True)
         p3 = await self.create_pr()
-        await self.add_label(p1["number"], "queue")
-        await self.add_label(p2["number"], "queue")
-        await self.add_label(p3["number"], "queue")
 
         # To force others to be rebased
         p = await self.create_pr()
         p_closed = await self.merge_pull(p["number"])
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
         tmp_pull_1 = await self.wait_for_pull_request("opened")
-        await self.run_engine()
 
         q = await self.get_train()
         assert p_closed["pull_request"]["merge_commit_sha"] is not None
@@ -3395,10 +3462,10 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.remove_label(p1["number"], "queue")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.run_engine()
 
+        await self.wait_for_pull_request("closed", pr_number=tmp_pull_1["number"])
         tmp_pull_2 = await self.wait_for_pull_request("opened")
+
         q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
@@ -3482,7 +3549,6 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         p_closed = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -3490,7 +3556,6 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         tmp_pull_1 = await self.wait_for_pull_request("opened")
-        await self.run_engine({"delayed-refresh"})
 
         q = await self.get_train()
         assert p_closed["pull_request"]["merge_commit_sha"] is not None
@@ -3510,8 +3575,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.remove_label(p1["number"], "queue")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.run_engine()
+        await self.wait_for_pull_request("closed", pr_number=tmp_pull_1["number"])
 
         tmp_pull_2 = await self.wait_for_pull_request("opened")
         q = await self.get_train()
@@ -3678,7 +3742,6 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -3686,7 +3749,6 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         tmp_pull_1 = await self.wait_for_pull_request("opened")
-        await self.run_engine()
 
         q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
@@ -3718,9 +3780,9 @@ class TestQueueAction(base.FunctionalTestBase):
                 {
                     "event_type": "issue_comment",
                     "payload": tests_utils.get_issue_comment_event_payload(
-                        action="created",
+                        p1["number"],
+                        "created",
                     ),
-                    "test_id": str(p1["number"]),
                 },
             ],
             sort_received_events=True,
@@ -3941,7 +4003,6 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -4068,7 +4129,6 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -4263,7 +4323,6 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -4472,7 +4531,6 @@ previous_failed_batches:
         # To force others to create draft PR
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -4880,7 +4938,7 @@ previous_failed_batches:
         )
 
         # when detecting base branch changes, the engine should reset the train
-        comment = await self.wait_for_issue_comment(str(draft_pr["number"]), "created")
+        comment = await self.wait_for_issue_comment(draft_pr["number"], "created")
         assert (
             "Merge queue reset: an external action moved the base branch head to"
             in comment["comment"]["body"]
@@ -4965,7 +5023,7 @@ previous_failed_batches:
         )
 
         # when detecting base branch changes, the engine should reset the train
-        comment = await self.wait_for_issue_comment(str(draft_pr["number"]), "created")
+        comment = await self.wait_for_issue_comment(draft_pr["number"], "created")
         assert (
             "Merge queue reset: an external action moved the base branch head to"
             in comment["comment"]["body"]
@@ -5114,22 +5172,15 @@ previous_failed_batches:
 
         p1 = await self.create_pr()
         p2 = await self.create_pr()
-        await self.merge_pull(p2["number"])
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
+        await self.merge_pull(p2["number"], wait_for_main_push=True)
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
-
-        await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for_pull_request("synchronize", pr_number=p1["number"])
+        await self.wait_for_pull_request("closed", pr_number=p1["number"], merged=True)
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(q, None, [])
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
 
     async def test_queue_already_ready(self) -> None:
         rules = {
@@ -5308,7 +5359,7 @@ previous_failed_batches:
 
         await self.add_label(p1["number"], "queue")
         await self.create_status(p1)
-        await self.run_engine({"delayed-refresh"})
+        await self.run_engine()
 
         p1_synced = await self.wait_for_pull_request("synchronize", p1["number"])
         await self.create_status(p1_synced["pull_request"])
@@ -5317,7 +5368,7 @@ previous_failed_batches:
             "_send_queue_leave_signal",
             autospec=True,
         ) as mocked_queue_leave:
-            await self.run_engine({"delayed-refresh"})
+            await self.run_engine()
 
         # p1 should not have been removed from the train due to anything
         mocked_queue_leave.assert_not_called()
@@ -5355,7 +5406,6 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.create_status(p1)
         await self.add_label(p1["number"], "queue")
@@ -5476,7 +5526,6 @@ previous_failed_batches:
         await self.wait_for(
             "issue_comment",
             {"action": "created"},
-            test_id=mq_pr_number,
         )
         comments = await self.get_issue_comments(mq_pr_number)
         assert (
@@ -5488,7 +5537,6 @@ previous_failed_batches:
         await self.wait_for(
             "issue_comment",
             {"action": "created"},
-            test_id=mq_pr_number,
         )
         comments = await self.get_issue_comments(mq_pr_number)
         assert (
@@ -5571,11 +5619,34 @@ previous_failed_batches:
         # Merge p1
         await self.create_status(tmp_mq_p1["pull_request"])
         await self.run_engine()
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
-        for p in (p1, p2, p3):
-            await self.wait_for("pull_request", {"action": "closed"})
-            assert (await self.get_pull(p["number"]))["merged"]
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p1["number"],
+                        merged=True,
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p2["number"],
+                        merged=True,
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p3["number"],
+                        merged=True,
+                    ),
+                },
+            ],
+        )
 
         # ensure it's fast-forward
         tmp_mq_p1_refreshed = await self.get_pull(tmp_mq_p1["number"])
@@ -5588,10 +5659,7 @@ previous_failed_batches:
         # merge the second one
         await self.create_status(tmp_mq_p2["pull_request"])
         await self.run_engine()
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
-        assert (await self.get_pull(p4["number"]))["merged"]
+        await self.wait_for_pull_request("closed", pr_number=p4["number"], merged=True)
 
         # ensure it's fast-forward
         tmp_mq_p2_refreshed = await self.get_pull(tmp_mq_p2["number"])
@@ -5627,9 +5695,7 @@ previous_failed_batches:
         # merge the third one
         await self.create_status(tmp_mq_p3["pull_request"])
         await self.run_engine()
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
-        assert (await self.get_pull(p5["number"]))["merged"]
+        await self.wait_for_pull_request("closed", pr_number=p5["number"], merged=True)
 
         # ensure it's fast-forward
         tmp_mq_p3_refreshed = await self.get_pull(tmp_mq_p3["number"])
@@ -5700,7 +5766,6 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         # Queue PRs
         await self.add_label(p1["number"], "queue")
@@ -5745,7 +5810,7 @@ previous_failed_batches:
         await self.create_status(tmp_mq_p1["pull_request"])
         await self.run_engine()
         await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
+
         pulls = await self.get_pulls()
         assert len(pulls) == 3
         p1 = await self.get_pull(p1["number"])
@@ -5839,22 +5904,17 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         # Queue two pulls
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
-        tmp_mq_p1 = pulls[1]
-        tmp_mq_p2 = pulls[0]
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
+        tmp_mq_p1 = await self.wait_for_pull_request("opened")
+        tmp_mq_p2 = await self.wait_for_pull_request("opened")
 
         q = await self.get_train()
-        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -5877,10 +5937,10 @@ previous_failed_batches:
         )
 
         # p2 is ready first, ensure it's not merged
-        await self.create_status(tmp_mq_p2)
+        await self.create_status(tmp_mq_p2["pull_request"])
         await self.run_engine()
-        pulls = await self.get_pulls()
-        assert len(pulls) == 3
+
+        await self.wait_for_pull_request("closed", pr_number=tmp_mq_p2["number"])
 
         # Nothing change
         await self.assert_merge_queue_contents(
@@ -5907,18 +5967,35 @@ previous_failed_batches:
         assert not p2["merged"]
 
         # p1 is ready, check both are merged in a row
-        await self.create_status(tmp_mq_p1)
+        await self.create_status(tmp_mq_p1["pull_request"])
         await self.run_engine()
-
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
-        p1 = await self.get_pull(p1["number"])
-        assert p1["merged"]
-        p2 = await self.get_pull(p2["number"])
-        assert p2["merged"]
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_mq_p1["number"],
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p1["number"],
+                        merged=True,
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p2["number"],
+                        merged=True,
+                    ),
+                },
+            ],
+        )
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -6009,7 +6086,6 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -6076,8 +6152,6 @@ previous_failed_batches:
 
         # Merge p2
         await self.create_status(tmp_mq_p2_bis)
-        await self.run_engine()
-        await self.wait_for_push(branch_name=self.main_branch_name)
         await self.run_engine()
 
         # Only p1 is still there and the queue is empty
@@ -6319,8 +6393,6 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
-
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         # Queue PR
@@ -6375,7 +6447,6 @@ previous_failed_batches:
         p2 = await self.create_pr()
         p2_merged = await self.merge_pull(p2["number"])
         assert p2_merged["pull_request"]["merge_commit_sha"] is not None
-        await self.run_engine()
 
         # Now it's success again, it can be reembarked automatically
         await self.create_status(rebased_p1["pull_request"], state="success")
@@ -6593,7 +6664,6 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         # Queue PRs
         await self.add_label(p1["number"], "queue")
@@ -6632,10 +6702,11 @@ previous_failed_batches:
 
         # Merge a not queued PR manually
         p_merged_in_meantime = await self.create_pr()
-        p_merged_in_meantime = (await self.merge_pull(p_merged_in_meantime["number"]))[
-            "pull_request"
-        ]
-        await self.wait_for_push(branch_name=self.main_branch_name)
+        merged_event = await self.merge_pull(
+            p_merged_in_meantime["number"],
+            wait_for_main_push=True,
+        )
+        p_merged_in_meantime = merged_event["pull_request"]
 
         await self.run_engine()
 
@@ -6753,45 +6824,38 @@ previous_failed_batches:
         await self.add_label(p3["number"], "low")
 
         # To force others to be rebased
-        p_merged = await self.create_pr()
-        await self.merge_pull(p_merged["number"])
+        p = await self.create_pr()
+        p_merged = await self.merge_pull(p["number"])
+
         await self.run_engine()
-        p_merged = await self.get_pull(p_merged["number"])
+        tmp_mq_p1 = await self.wait_for_pull_request("opened")
+        tmp_mq_p2 = await self.wait_for_pull_request("opened")
+        tmp_mq_p3 = await self.wait_for_pull_request("opened")
         q = await self.get_train()
 
-        # my 3 PRs + 3 merge queue PR (3 spec checks)
-        pulls = await self.get_pulls()
-        assert len(pulls) == 6
-
-        tmp_mq_p1 = pulls[2]
-        tmp_mq_p2 = pulls[1]
-        tmp_mq_p3 = pulls[0]
-        assert tmp_mq_p1["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert p_merged["merge_commit_sha"] is not None
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p_merged["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
-                    p_merged["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p1["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p_merged["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p2["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p3["number"]],
                     [p1["number"], p2["number"]],
-                    p_merged["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p3["number"],
                 ),
@@ -6806,45 +6870,62 @@ previous_failed_batches:
         p_new_config = await self.create_pr(
             files={".mergify.yml": yaml.dump(updated_rules)},
         )
-        await self.merge_pull(p_new_config["number"])
+        p_new_config_merged = await self.merge_pull(p_new_config["number"])
         await self.run_engine()
-        p_new_config = await self.get_pull(p_new_config["number"])
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_mq_p1["number"],
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_mq_p2["number"],
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_mq_p3["number"],
+                    ),
+                },
+            ],
+        )
+        tmp_mq_p1 = await self.wait_for_pull_request("opened")
+        tmp_mq_p2 = await self.wait_for_pull_request("opened")
+        tmp_mq_p3 = await self.wait_for_pull_request("opened")
 
         q = await self.get_train()
 
-        # my 3 PRs + 3 merge queue PR (3 spec checks)
-        pulls = await self.get_pulls()
-        assert len(pulls) == 6
-
-        tmp_mq_p1 = pulls[2]
-        tmp_mq_p2 = pulls[1]
-        tmp_mq_p3 = pulls[0]
-        assert tmp_mq_p1["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert p_new_config["merge_commit_sha"] is not None
+        assert p_new_config_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p_new_config["merge_commit_sha"],
+            p_new_config_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
-                    p_new_config["merge_commit_sha"],
+                    p_new_config_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p1["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p_new_config["merge_commit_sha"],
+                    p_new_config_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p2["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p3["number"]],
                     [p1["number"], p2["number"]],
-                    p_new_config["merge_commit_sha"],
+                    p_new_config_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p3["number"],
                 ),
@@ -6860,30 +6941,28 @@ previous_failed_batches:
         pulls = await self.get_pulls()
         assert len(pulls) == 6
 
-        tmp_mq_p3 = pulls[0]
-        assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
         await self.assert_merge_queue_contents(
             q,
-            p_new_config["merge_commit_sha"],
+            p_new_config_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
-                    p_new_config["merge_commit_sha"],
+                    p_new_config_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p1["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p_new_config["merge_commit_sha"],
+                    p_new_config_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p2["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p3["number"]],
                     [p1["number"], p2["number"]],
-                    p_new_config["merge_commit_sha"],
+                    p_new_config_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p3["number"],
                 ),
@@ -6936,24 +7015,18 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         # Put first PR in queue
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
+        tmp_mq_p1 = await self.wait_for_pull_request("opened")
+        tmp_mq_p2 = await self.wait_for_pull_request("opened")
+
         q = await self.get_train()
 
-        # my 3 PRs + 2 merge queue PR
-        pulls = await self.get_pulls()
-        assert len(pulls) == 5
-
-        tmp_mq_p1 = pulls[1]
-        tmp_mq_p2 = pulls[0]
-        assert tmp_mq_p1["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -6978,6 +7051,31 @@ previous_failed_batches:
         # Put third PR at the begining of the queue via queue priority
         await self.add_label(p3["number"], "queue-urgent")
         await self.run_engine()
+
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_mq_p1["number"],
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_mq_p2["number"],
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="opened",
+                    ),
+                },
+            ],
+        )
 
         pulls = await self.get_pulls()
         assert len(pulls) == 4
@@ -7127,11 +7225,13 @@ previous_failed_batches:
         # Merge p3
         await self.create_status(tmp_mq_p3, context="continuous-integration/fast-ci")
         await self.run_engine()
-        p3 = await self.get_pull(p3["number"])
-        assert p3["merged"]
 
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
+        p3_merged = await self.wait_for_pull_request(
+            action="closed",
+            pr_number=p3["number"],
+            merged=True,
+        )
+        assert p3_merged["pull_request"]["merge_commit_sha"] is not None
 
         # ensure p1 and p2 are back in queue
         pulls = await self.get_pulls()
@@ -7141,22 +7241,21 @@ previous_failed_batches:
         tmp_mq_p2_bis = pulls[0]
         assert tmp_mq_p1_bis["number"] not in [p1["number"], p2["number"], p3["number"]]
         assert tmp_mq_p2_bis["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert p3["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p3["merge_commit_sha"],
+            p3_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
-                    p3["merge_commit_sha"],
+                    p3_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p1_bis["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p3["merge_commit_sha"],
+                    p3_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p2_bis["number"],
                 ),
@@ -7254,7 +7353,6 @@ previous_failed_batches:
         )
 
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         # Merge base branch into p2
         await self.client_integration.put(
@@ -7357,17 +7455,23 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         await self.add_label(p1["number"], "queue")
         await self.create_status(p1)
         await self.create_status(p1, context="very-long-ci")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
-        await self.run_engine()
+
+        p1_synced = await self.wait_for_pull_request(
+            "synchronize",
+            pr_number=p1["number"],
+        )
+        assert (
+            # ensure it has been rebased
+            p1_synced["pull_request"]["head"]["sha"] != p1["head"]["sha"]
+        )
 
         q = await self.get_train()
-        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -7382,10 +7486,6 @@ previous_failed_batches:
             ],
         )
 
-        head_sha = p1["head"]["sha"]
-        p1 = await self.get_pull(p1["number"])
-        assert p1["head"]["sha"] != head_sha  # ensure it have been rebased
-
         async def assert_queued() -> None:
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -7398,17 +7498,14 @@ previous_failed_batches:
             )
 
         await assert_queued()
-        await self.create_status(p1)
+        await self.create_status(p1_synced["pull_request"])
         await self.run_engine()
 
         await assert_queued()
-        await self.create_status(p1, context="very-long-ci")
+        await self.create_status(p1_synced["pull_request"], context="very-long-ci")
         await self.run_engine()
 
-        await self.wait_for_push(branch_name=self.main_branch_name)
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
+        await self.wait_for_pull_request("closed", pr_number=p1["number"], merged=True)
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -7442,14 +7539,19 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.create_status(p1)
         await self.create_status(p1, context="very-long-ci")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
-        await self.run_engine()
+
+        p1_synced = await self.wait_for_pull_request(
+            "synchronize",
+            pr_number=p1["number"],
+        )
+        assert (
+            p1_synced["pull_request"]["head"]["sha"] != p1["head"]["sha"]
+        )  # ensure it has been rebased
 
         q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
@@ -7466,10 +7568,6 @@ previous_failed_batches:
                 ),
             ],
         )
-
-        head_sha = p1["head"]["sha"]
-        p1 = await self.get_pull(p1["number"])
-        assert p1["head"]["sha"] != head_sha  # ensure it have been rebased
 
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -7520,22 +7618,30 @@ previous_failed_batches:
             # To force others to be rebased
             p = await self.create_pr()
             await self.merge_pull(p["number"])
-            await self.run_engine({"delayed-refresh"})
 
             await self.create_status(p1)
             await self.run_engine({"delayed-refresh"})
 
-            check_run = await self.wait_for_check_run(
-                name="Rule: queue (queue)",
-                action="created",
-                status="in_progress",
+            await self.wait_for_all(
+                [
+                    {
+                        "event_type": "check_run",
+                        "payload": tests_utils.get_check_run_event_payload(
+                            name="Rule: queue (queue)",
+                            action="created",
+                            status="in_progress",
+                            output_title="The pull request is the 1st in the queue to be merged",
+                        ),
+                    },
+                    {
+                        "event_type": "pull_request",
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            action="synchronize",
+                            pr_number=p1["number"],
+                        ),
+                    },
+                ],
             )
-            assert (
-                check_run["check_run"]["output"]["title"]
-                == "The pull request is the 1st in the queue to be merged"
-            )
-            await self.wait_for_pull_request("synchronize", p1["number"])
-            await self.run_engine({"delayed-refresh"})
 
             pulls_to_refresh: list[
                 tuple[bytes, float]
@@ -7556,42 +7662,54 @@ previous_failed_batches:
             # - Summary
             # - Rule: queue (queue)
             # - Queue: Embarked in merge queue
-            check_runs = [
-                await self.wait_for_check_run(status="completed", action="completed"),
-                await self.wait_for_check_run(status="completed", action="completed"),
-                await self.wait_for_check_run(status="completed", action="completed"),
-            ]
-
-            found_queue_rule = False
-            found_embarked_train = False
-            for check_run in check_runs:
-                match check_run["check_run"]["name"]:
-                    case "Rule: queue (queue)":
-                        found_queue_rule = True
-                        assert check_run["check_run"]["output"]["title"] is not None
-                        assert check_run["check_run"]["output"]["title"].startswith(
-                            "The pull request has been removed from the queue",
-                        )
-                        assert check_run["check_run"]["conclusion"] == "cancelled"
-                    case "Queue: Embarked in merge queue":
-                        found_embarked_train = True
-                        assert check_run["check_run"]["output"]["summary"] is not None
-                        assert (
-                            "checks have timed out"
-                            in check_run["check_run"]["output"]["summary"]
-                        )
-                        assert check_run["check_run"]["conclusion"] == "failure"
-                    case _:
-                        continue
-
-            if not found_queue_rule:
-                raise AssertionError(
-                    "Did not find check_run event for 'Rule: queue (queue)'",
-                )
-            if not found_embarked_train:
-                raise AssertionError(
-                    "Did not find check_run event for 'Queue: Embarked in merge queue'",
-                )
+            events = await self.wait_for_all(
+                [
+                    {
+                        "event_type": "check_run",
+                        "payload": tests_utils.get_check_run_event_payload(
+                            status="completed",
+                            action="completed",
+                            name="Summary",
+                        ),
+                    },
+                    {
+                        "event_type": "check_run",
+                        "payload": tests_utils.get_check_run_event_payload(
+                            status="completed",
+                            action="completed",
+                            conclusion="cancelled",
+                            name="Rule: queue (queue)",
+                        ),
+                    },
+                    {
+                        "event_type": "check_run",
+                        "payload": tests_utils.get_check_run_event_payload(
+                            status="completed",
+                            action="completed",
+                            conclusion="failure",
+                            name="Queue: Embarked in merge queue",
+                        ),
+                    },
+                ],
+                sort_received_events=True,
+            )
+            queue_check_run = typing.cast(
+                github_types.GitHubEventCheckRun,
+                events[1].event,
+            )
+            assert queue_check_run["check_run"]["output"]["title"] is not None
+            assert queue_check_run["check_run"]["output"]["title"].startswith(
+                "The pull request has been removed from the queue",
+            )
+            embarked_check_run = typing.cast(
+                github_types.GitHubEventCheckRun,
+                events[2].event,
+            )
+            assert embarked_check_run["check_run"]["output"]["summary"] is not None
+            assert (
+                "checks have timed out"
+                in embarked_check_run["check_run"]["output"]["summary"]
+            )
 
     async def test_queue_ci_timeout_inplace_with_only_pull_request_rules(self) -> None:
         config = {
@@ -7621,6 +7739,7 @@ previous_failed_batches:
             # To force others to be rebased
             p = await self.create_pr()
             await self.merge_pull(p["number"])
+
             await self.create_status(p1)
             await self.run_engine({"delayed-refresh"})
 
@@ -7634,7 +7753,6 @@ previous_failed_batches:
                 == "The pull request is the 1st in the queue to be merged"
             )
             await self.wait_for_pull_request("synchronize", p1["number"])
-            await self.run_engine({"delayed-refresh"})
 
             pulls_to_refresh: list[
                 tuple[bytes, float]
@@ -7655,42 +7773,54 @@ previous_failed_batches:
             # - Summary
             # - Rule: queue (queue)
             # - Queue: Embarked in merge queue
-            check_runs = [
-                await self.wait_for_check_run(status="completed", action="completed"),
-                await self.wait_for_check_run(status="completed", action="completed"),
-                await self.wait_for_check_run(status="completed", action="completed"),
-            ]
-
-            found_queue_rule = False
-            found_embarked_train = False
-            for check_run in check_runs:
-                match check_run["check_run"]["name"]:
-                    case "Rule: queue (queue)":
-                        found_queue_rule = True
-                        assert check_run["check_run"]["output"]["title"] is not None
-                        assert check_run["check_run"]["output"]["title"].startswith(
-                            "The pull request has been removed from the queue",
-                        )
-                        assert check_run["check_run"]["conclusion"] == "cancelled"
-                    case "Queue: Embarked in merge queue":
-                        found_embarked_train = True
-                        assert check_run["check_run"]["output"]["summary"] is not None
-                        assert (
-                            "checks have timed out"
-                            in check_run["check_run"]["output"]["summary"]
-                        )
-                        assert check_run["check_run"]["conclusion"] == "failure"
-                    case _:
-                        continue
-
-            if not found_queue_rule:
-                raise AssertionError(
-                    "Did not find check_run event for 'Rule: queue (queue)'",
-                )
-            if not found_embarked_train:
-                raise AssertionError(
-                    "Did not find check_run event for 'Queue: Embarked in merge queue'",
-                )
+            events = await self.wait_for_all(
+                [
+                    {
+                        "event_type": "check_run",
+                        "payload": tests_utils.get_check_run_event_payload(
+                            status="completed",
+                            action="completed",
+                            name="Summary",
+                        ),
+                    },
+                    {
+                        "event_type": "check_run",
+                        "payload": tests_utils.get_check_run_event_payload(
+                            status="completed",
+                            action="completed",
+                            conclusion="cancelled",
+                            name="Rule: queue (queue)",
+                        ),
+                    },
+                    {
+                        "event_type": "check_run",
+                        "payload": tests_utils.get_check_run_event_payload(
+                            status="completed",
+                            action="completed",
+                            conclusion="failure",
+                            name="Queue: Embarked in merge queue",
+                        ),
+                    },
+                ],
+                sort_received_events=True,
+            )
+            queue_check_run = typing.cast(
+                github_types.GitHubEventCheckRun,
+                events[1].event,
+            )
+            assert queue_check_run["check_run"]["output"]["title"] is not None
+            assert queue_check_run["check_run"]["output"]["title"].startswith(
+                "The pull request has been removed from the queue",
+            )
+            embarked_check_run = typing.cast(
+                github_types.GitHubEventCheckRun,
+                events[2].event,
+            )
+            assert embarked_check_run["check_run"]["output"]["summary"] is not None
+            assert (
+                "checks have timed out"
+                in embarked_check_run["check_run"]["output"]["summary"]
+            )
 
     async def test_queue_ci_timeout_draft_pr(self) -> None:
         config = {
@@ -7723,8 +7853,7 @@ previous_failed_batches:
             await self.create_status(p1)
             await self.run_engine({"delayed-refresh"})
 
-            await self.wait_for("pull_request", {"action": "opened"})
-            await self.run_engine({"delayed-refresh"})
+            await self.wait_for_pull_request("opened")
 
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -7804,7 +7933,6 @@ previous_failed_batches:
             await self.run_engine({"delayed-refresh"})
 
             await self.wait_for_pull_request("opened")
-            await self.run_engine({"delayed-refresh"})
 
             ctxt_p1 = context.Context(self.repository_ctxt, p1)
             check = await ctxt_p1.get_engine_check_run("Rule: queue (queue)")
@@ -7898,12 +8026,10 @@ previous_failed_batches:
             await self.setup_repo(yaml.dump(config), preload_configuration=True)
 
             p1 = await self.create_pr()
-
             await self.create_status(p1)
             await self.run_engine({"delayed-refresh"})
 
             tmp_pull = await self.wait_for_pull_request("opened")
-            await self.run_engine({"delayed-refresh"})
 
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -8049,17 +8175,22 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull_as_admin(p["number"])
-        await self.run_engine()
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         await self.add_label(p1["number"], "queue")
         await self.create_status(p1)
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "synchronize"})
-        await self.run_engine()
+        p1_synced = await self.wait_for_pull_request(
+            "synchronize",
+            pr_number=p1["number"],
+        )
+        assert (
+            # ensure it has been rebased
+            p1_synced["pull_request"]["head"]["sha"] != p1["head"]["sha"]
+        )
 
         q = await self.get_train()
-        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -8074,10 +8205,6 @@ previous_failed_batches:
             ],
         )
 
-        head_sha = p1["head"]["sha"]
-        p1 = await self.get_pull(p1["number"])
-        assert p1["head"]["sha"] != head_sha  # ensure it have been rebased
-
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
@@ -8088,9 +8215,9 @@ previous_failed_batches:
             == "The pull request is the 1st in the queue to be merged"
         )
 
-        await self.create_status(p1)
+        await self.create_status(p1_synced["pull_request"])
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for_pull_request("closed", pr_number=p1["number"], merged=True)
 
         pulls = await self.get_pulls()
         assert len(pulls) == 0
@@ -8123,13 +8250,18 @@ previous_failed_batches:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull_as_admin(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "synchronize"})
-        await self.run_engine()
+        p1_synced = await self.wait_for_pull_request(
+            "synchronize",
+            pr_number=p1["number"],
+        )
+        assert (
+            # ensure it has been rebased
+            p1_synced["pull_request"]["head"]["sha"] != p1["head"]["sha"]
+        )
 
         q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
@@ -8147,10 +8279,6 @@ previous_failed_batches:
             ],
         )
 
-        head_sha = p1["head"]["sha"]
-        p1 = await self.get_pull(p1["number"])
-        assert p1["head"]["sha"] != head_sha  # ensure it have been rebased
-
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
@@ -8161,12 +8289,9 @@ previous_failed_batches:
             == "The pull request is the 1st in the queue to be merged"
         )
 
-        await self.create_status(p1)
+        await self.create_status(p1_synced["pull_request"])
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
+        await self.wait_for_pull_request("closed", pr_number=p1["number"], merged=True)
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -8282,17 +8407,22 @@ pull_request_rules:
         # To force others to be rebased
         p = await self.create_pr()
         p_merged = await self.merge_pull_as_admin(p["number"])
-        await self.run_engine()
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
 
         await self.create_review(p1["number"])
         await self.add_label(p1["number"], "flag:merge")
         await self.run_engine()
 
-        await self.wait_for_pull_request("synchronize", p1["number"])
-        await self.run_engine()
+        p1_synced = await self.wait_for_pull_request(
+            "synchronize",
+            pr_number=p1["number"],
+        )
+        assert (
+            # ensure it has been rebased
+            p1_synced["pull_request"]["head"]["sha"] != p1["head"]["sha"]
+        )
 
         q = await self.get_train()
-        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -8307,10 +8437,6 @@ pull_request_rules:
             ],
         )
 
-        head_sha = p["head"]["sha"]
-        p1 = await self.get_pull(p1["number"])
-        assert p1["head"]["sha"] != head_sha  # ensure it have been rebased
-
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: merge (queue)",
@@ -8321,14 +8447,18 @@ pull_request_rules:
             == "The pull request is the 1st in the queue to be merged"
         )
 
-        await self.create_status(p1, "ci/status", state="pending")
+        await self.create_status(
+            p1_synced["pull_request"],
+            "ci/status",
+            state="pending",
+        )
         await self.run_engine()
 
-        await self.create_status(p1, "ci/status")
-        await self.create_status(p1, "ci/service-test")
+        await self.create_status(p1_synced["pull_request"], "ci/status")
+        await self.create_status(p1_synced["pull_request"], "ci/service-test")
         await self.run_engine()
 
-        await self.create_status(p1, "ci/pipelines")
+        await self.create_status(p1_synced["pull_request"], "ci/pipelines")
         await self.run_engine()
         await self.wait_for_pull_request("closed", p1["number"], merged=True)
 
@@ -8783,12 +8913,18 @@ pull_request_rules:
                 },
             )
 
+            respx_mock.route(
+                url__startswith=settings.TESTING_FORWARDER_ENDPOINT,
+            ).pass_through()
             respx_mock.route(host="api.github.com").pass_through()
 
             async def mocked_handle_merge_error(*args, **kwargs):  # type: ignore[no-untyped-def]
                 # Rollback the previous mock so we get the 409 error only once
                 respx_mock.rollback()
                 respx_mock.route(host="api.github.com").pass_through()
+                respx_mock.route(
+                    url__startswith=settings.TESTING_FORWARDER_ENDPOINT,
+                ).pass_through()
                 return await real_handle_merge_error(*args, **kwargs)
 
             with mock.patch.object(
@@ -8855,9 +8991,9 @@ pull_request_rules:
                 {
                     "event_type": "issue_comment",
                     "payload": tests_utils.get_issue_comment_event_payload(
-                        action="created",
+                        p1["number"],
+                        "created",
                     ),
-                    "test_id": str(p1["number"]),
                 },
                 {
                     "event_type": "pull_request",
@@ -8907,16 +9043,16 @@ pull_request_rules:
                 {
                     "event_type": "issue_comment",
                     "payload": tests_utils.get_issue_comment_event_payload(
-                        action="created",
+                        p1["number"],
+                        "created",
                     ),
-                    "test_id": str(p1["number"]),
                 },
                 {
                     "event_type": "issue_comment",
                     "payload": tests_utils.get_issue_comment_event_payload(
-                        action="created",
+                        p1["number"],
+                        "created",
                     ),
-                    "test_id": str(p1["number"]),
                 },
                 {
                     "event_type": "check_run",
@@ -9275,13 +9411,13 @@ pull_request_rules:
         await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         await self.create_pr()
-        p = await self.create_pr()
-        await self.merge_pull(p["number"])
+        p1 = await self.create_pr()
+        await self.merge_pull(p1["number"])
         await self.run_engine()
 
-        p1 = await self.wait_for_pull_request("synchronize")
-        await self.create_status(p1["pull_request"], state="pending")
+        p1_synced = await self.wait_for_pull_request("synchronize")
 
+        await self.create_status(p1_synced["pull_request"], state="pending")
         await self.run_engine()
 
         train = await self.get_train()
@@ -9597,7 +9733,7 @@ pull_request_rules:
             pull["number"],
             ("rebase",),
         ):
-            await self.run_engine({"delayed-refresh"})
+            await self.run_engine()
         await self.wait_for_pull_request(
             action="closed",
             pr_number=pull["number"],
@@ -9661,7 +9797,7 @@ class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
         await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
         await self.run_engine()
 
-        comment_p1_rep = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        comment_p1_rep = await self.wait_for_issue_comment(p1["number"], "created")
         assert "Cannot use the command `queue`" in comment_p1_rep["comment"]["body"]
         assert (
             f"The [subscription]({settings.DASHBOARD_UI_FRONT_URL}/github/mergifyio-testing/subscription) needs to be updated to enable this feature"
@@ -9671,7 +9807,7 @@ class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
         await self.create_comment_as_admin(p1["number"], "@mergifyio dequeue")
         await self.run_engine()
 
-        comment_p1_rep = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        comment_p1_rep = await self.wait_for_issue_comment(p1["number"], "created")
         assert "Cannot use the command `dequeue`" in comment_p1_rep["comment"]["body"]
         assert (
             f"The [subscription]({settings.DASHBOARD_UI_FRONT_URL}/github/mergifyio-testing/subscription) needs to be updated to enable this feature"

@@ -601,13 +601,13 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             p4 = await self.create_pr()
 
             await self.add_label(p4["number"], "queue")
-            await self.run_engine({"delayed-refresh"})
+            await self.run_engine()
 
             draft_pr = await self.wait_for_pull_request("opened")
             await self.create_status(draft_pr["pull_request"])
 
         with time_travel("2022-08-18T12:00:00", tick=True):
-            await self.run_engine({"delayed-refresh"})
+            await self.run_engine()
 
             await self.wait_for_pull_request("closed", draft_pr["number"])
             await self.wait_for_pull_request("closed", p4["number"])

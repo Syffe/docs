@@ -46,7 +46,7 @@ class TestCommandsDetection(base.FunctionalTestBase):
             p1["number"],
             "test",
         )
-        await self.run_engine({"delayed-refresh"})
+        await self.run_engine()
 
         comments = await self.get_issue_comments(p1["number"])
         assert len(comments) == 2
@@ -60,18 +60,10 @@ class TestCommandsDetection(base.FunctionalTestBase):
         )
         await self.run_engine()
 
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created"},
-            test_id=p1["number"],
-        )
+        await self.wait_for_issue_comment(p1["number"], "created")
         await self.delete_comment(comment_id)
 
-        await self.wait_for(
-            "issue_comment",
-            {"action": "deleted"},
-            test_id=p1["number"],
-        )
+        await self.wait_for_issue_comment(p1["number"], "deleted")
 
         if settings.TESTING_RECORD:
             await asyncio.sleep(15)

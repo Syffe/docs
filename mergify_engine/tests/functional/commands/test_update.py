@@ -12,7 +12,7 @@ class TestCommandUpdate(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.create_comment_as_admin(p["number"], "@mergifyio update")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
+        await self.wait_for_issue_comment(p["number"], "created")
         comments = await self.get_issue_comments(p["number"])
         assert len(comments) == 2, comments
         assert "Nothing to do" in comments[-1]["body"]
@@ -20,10 +20,10 @@ class TestCommandUpdate(base.FunctionalTestBase):
     async def test_command_update_pending(self) -> None:
         await self.setup_repo()
         p = await self.create_pr()
-        await self.merge_pull(p["number"])
+        await self.merge_pull(p["number"], remove_pr_from_events=False)
         await self.create_comment_as_admin(p["number"], "@mergifyio update")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
+        await self.wait_for_issue_comment(p["number"], "created")
         comments = await self.get_issue_comments(p["number"])
         assert len(comments) == 2, comments
         assert "Nothing to do" in comments[-1]["body"]
@@ -69,7 +69,7 @@ class TestCommandUpdate(base.FunctionalTestBase):
         await self.create_comment_as_admin(p["number"], "@mergifyio update")
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p["number"], "created")
         assert (
             "It's not possible to update this pull request because it is queued for merge"
             in comment["comment"]["body"]

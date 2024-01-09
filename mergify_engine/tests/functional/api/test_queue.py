@@ -316,9 +316,6 @@ class TestQueueApi(base.FunctionalTestBase):
         p3 = await self.create_pr()
         p4 = await self.create_pr()
 
-        p5 = await self.create_pr()
-        await self.merge_pull(p5["number"])
-
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
@@ -414,10 +411,10 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
-
         # Tuesday
         with time_travel("2023-01-10T14:00:00", tick=True):
+            await self.setup_repo(yaml.dump(rules), preload_configuration=True)
+
             p = await self.create_pr()
             await self.add_label(p["number"], "queue")
             await self.run_engine()
@@ -1118,9 +1115,6 @@ class TestQueueApi(base.FunctionalTestBase):
         p1 = await self.create_pr()
         p2 = await self.create_pr()
         p3 = await self.create_pr()
-
-        p4 = await self.create_pr()
-        await self.merge_pull(p4["number"])
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()

@@ -6,6 +6,7 @@ from mergify_engine import utils
 from mergify_engine.engine import commands_runner
 from mergify_engine.queue import merge_train
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.yaml import yaml
 
 
@@ -62,11 +63,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio requeue")
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created"},
-            test_id=p1["number"],
-        )
+        await self.wait_for_issue_comment(p1["number"], "created")
 
         comments = await self.get_issue_comments(p1["number"])
         assert (
@@ -92,11 +89,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio dequeue")
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created"},
-            test_id=p1["number"],
-        )
+        await self.wait_for_issue_comment(p1["number"], "created")
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -128,11 +121,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio requeue")
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created"},
-            test_id=p1["number"],
-        )
+        await self.wait_for_issue_comment(p1["number"], "created")
 
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -210,13 +199,25 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p1["number"], "@mergifyio dequeue")
 
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created"},
-            test_id=p1["number"],
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "issue_comment",
+                    "payload": tests_utils.get_issue_comment_event_payload(
+                        p1["number"],
+                        "created",
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        "closed",
+                        draft_pr_p1["number"],
+                    ),
+                },
+            ],
         )
 
-        await self.wait_for_pull_request("closed", draft_pr_p1["number"])
         convoy = await self.get_convoy()
         assert len(convoy._trains) == 2
         for train in convoy.iter_trains():
@@ -284,13 +285,24 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p1["number"], "@mergifyio dequeue")
 
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created"},
-            test_id=p1["number"],
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "issue_comment",
+                    "payload": tests_utils.get_issue_comment_event_payload(
+                        p1["number"],
+                        "created",
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        "closed",
+                        draft_pr_p1_projA["number"],
+                    ),
+                },
+            ],
         )
-
-        await self.wait_for_pull_request("closed", draft_pr_p1_projA["number"])
 
         convoy = await self.get_convoy()
         assert len(convoy._trains) == 2
@@ -361,7 +373,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.run_engine()
 
         await self.wait_for_pull_request("closed", draft_pr_p1["number"])
-        await self.wait_for_issue_comment(str(p1["number"]), "created")
+        await self.wait_for_issue_comment(p1["number"], "created")
 
         convoy = await self.get_convoy()
         assert len(convoy._trains) == 2
@@ -378,7 +390,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.run_engine()
 
         await self.wait_for_pull_request("closed", draft_pr_p2["number"])
-        await self.wait_for_issue_comment(str(p2["number"]), "created")
+        await self.wait_for_issue_comment(p2["number"], "created")
 
         convoy = await self.get_convoy()
         assert len(convoy._trains) == 2
@@ -409,7 +421,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        comment = await self.wait_for_issue_comment(p1["number"], "created")
         assert """#### 🟠 Waiting for conditions to match
 
 <details>
@@ -427,17 +439,14 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p1["number"], "@mergifyio dequeue")
         await self.run_engine()
 
-        edited_comment = await self.wait_for_issue_comment(str(p1["number"]), "edited")
+        edited_comment = await self.wait_for_issue_comment(p1["number"], "edited")
         assert (
             "This `queue` command has been cancelled by a `dequeue` command"
             in edited_comment["comment"]["body"]
         )
         assert '"conclusion": "cancelled"' in edited_comment["comment"]["body"]
 
-        unqueue_comment = await self.wait_for_issue_comment(
-            str(p1["number"]),
-            "created",
-        )
+        unqueue_comment = await self.wait_for_issue_comment(p1["number"], "created")
         assert (
             "#### ✅ The pull request is not waiting to be queued anymore."
             in unqueue_comment["comment"]["body"]
@@ -448,7 +457,7 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p2["number"], "@mergifyio queue default")
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(p2["number"]), "created")
+        comment = await self.wait_for_issue_comment(p2["number"], "created")
         assert """#### 🟠 Waiting for conditions to match
 
 <details>
@@ -464,17 +473,14 @@ class TestDequeueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p2["number"], "@mergifyio dequeue")
         await self.run_engine()
 
-        edited_comment = await self.wait_for_issue_comment(str(p2["number"]), "edited")
+        edited_comment = await self.wait_for_issue_comment(p2["number"], "edited")
         assert (
             "This `queue` command has been cancelled by a `dequeue` command"
             in edited_comment["comment"]["body"]
         )
         assert '"conclusion": "cancelled"' in edited_comment["comment"]["body"]
 
-        unqueue_comment = await self.wait_for_issue_comment(
-            str(p2["number"]),
-            "created",
-        )
+        unqueue_comment = await self.wait_for_issue_comment(p2["number"], "created")
         assert (
             "#### ✅ The pull request is not waiting to be queued anymore."
             in unqueue_comment["comment"]["body"]

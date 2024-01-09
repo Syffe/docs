@@ -12,20 +12,22 @@ class TestCommandBackport(base.FunctionalTestBase):
         feature_branch = self.get_full_branch_name("feature/one")
         await self.setup_repo(test_branches=[stable_branch, feature_branch])
         p = await self.create_pr()
-
         await self.run_engine()
+
         await self.create_comment_as_admin(
             p["number"],
             f"@mergifyio backport {stable_branch} {feature_branch}",
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
+        await self.wait_for_issue_comment(p["number"], "created")
+
         comments = await self.get_issue_comments(p["number"])
         assert len(comments) == 2, comments
         assert "Waiting for conditions" in comments[-1]["body"]
-        await self.merge_pull(p["number"])
+
+        await self.merge_pull(p["number"], remove_pr_from_events=False)
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "edited"}, test_id=p["number"])
+        await self.wait_for_issue_comment(p["number"], "edited")
 
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
@@ -104,10 +106,10 @@ class TestCommandBackport(base.FunctionalTestBase):
             p["number"],
             f"@mergifyio backport {stable_branch} {feature_branch}",
         )
-        await self.merge_pull(p["number"])
+        await self.merge_pull(p["number"], remove_pr_from_events=False)
 
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
+        await self.wait_for_issue_comment(p["number"], "created")
 
         pulls = await self.get_pulls(params={"state": "all", "base": stable_branch})
         assert len(pulls) == 1
@@ -130,19 +132,23 @@ class TestCommandBackport(base.FunctionalTestBase):
     async def test_command_backport_without_config(self) -> None:
         stable_branch = self.get_full_branch_name("stable/#3.1")
         feature_branch = self.get_full_branch_name("feature/one")
+
         await self.setup_repo(test_branches=[stable_branch, feature_branch])
         p = await self.create_pr()
-
         await self.create_comment_as_admin(
             p["number"],
             f"@mergifyio backport {stable_branch} {feature_branch}",
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
+        await self.wait_for_issue_comment(p["number"], "created")
 
-        await self.merge_pull(p["number"])
+        await self.merge_pull(
+            p["number"],
+            wait_for_main_push=True,
+            remove_pr_from_events=False,
+        )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "edited"}, test_id=p["number"])
+        await self.wait_for_issue_comment(p["number"], "edited")
 
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch},
@@ -222,14 +228,14 @@ class TestCommandBackport(base.FunctionalTestBase):
         )
 
         await self.run_engine()
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p["number"], "created")
         assert "Waiting for conditions to match" in comment["comment"]["body"]
 
         # triggers backport
-        await self.merge_pull(p["number"])
+        await self.merge_pull(p["number"], remove_pr_from_events=False)
         await self.run_engine()
-        comment_1 = await self.wait_for_issue_comment(str(p["number"]), "edited")
+        comment_1 = await self.wait_for_issue_comment(p["number"], "edited")
         assert "in progress" in comment_1["comment"]["body"]
 
-        comment_2 = await self.wait_for_issue_comment(str(p["number"]), "edited")
+        comment_2 = await self.wait_for_issue_comment(p["number"], "edited")
         assert "but encountered conflict" in comment_2["comment"]["body"]

@@ -23,6 +23,7 @@ from first import first
 import httpx
 import pytest
 import respx
+import vcr.cassette
 
 from mergify_engine import branch_updater
 from mergify_engine import check_api
@@ -30,6 +31,7 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import delayed_refresh
 from mergify_engine import duplicate_pull
+from mergify_engine import engine
 from mergify_engine import github_graphql_types
 from mergify_engine import github_types
 from mergify_engine import gitter
@@ -51,12 +53,14 @@ from mergify_engine.queue import merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import conftest as func_conftest
-from mergify_engine.tests.functional import event_reader
+from mergify_engine.tests.functional import event_reader as event_reader_import
 from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.worker import gitter_service
 from mergify_engine.worker import log_embedder_service
 from mergify_engine.worker import manager
 from mergify_engine.worker import stream
+from mergify_engine.worker import stream_lua
+from mergify_engine.worker import task
 
 
 if typing.TYPE_CHECKING:
@@ -66,10 +70,16 @@ if typing.TYPE_CHECKING:
 LOG = daiquiri.getLogger(__name__)
 
 real_consume_method = stream.Processor.consume
+real_get_pull_messages = stream_lua.get_pull_messages
 real_store_redis_events_in_pg = ghinpg_process_events.store_redis_events_in_pg
 real_process_failed_jobs = github_action.process_failed_jobs
 real_process_workflow_run_stream = event_processing.process_workflow_run_stream
 real_process_workflow_job_stream = event_processing.process_workflow_job_stream
+real__save_cached_last_summary_head_sha = (
+    context.Context._save_cached_last_summary_head_sha
+)
+real_engine_run = engine.run
+real_get_checks_for_ref = check_api.get_checks_for_ref
 
 
 class MergeQueueCarMatcher(typing.NamedTuple):
@@ -225,6 +235,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     app: httpx.AsyncClient
     admin_app: httpx.AsyncClient
     RECORD_CONFIG: func_conftest.RecordConfigType
+    vcr_cassette: vcr.cassette.Cassette
     subscription: subscription.Subscription
     cassette_library_dir: str
     api_key_admin: str
@@ -298,7 +309,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             mock.patch.object(branch_updater.gitter, "Gitter", self.get_gitter),  # type: ignore[attr-defined]
         )
         self.register_mock(
-            mock.patch.object(duplicate_pull.gitter, "Gitter", self.get_gitter),  # type: ignore[attr-defined]
+            mock.patch.object(
+                duplicate_pull.gitter,  # type: ignore[attr-defined]
+                "Gitter",
+                self.get_gitter,
+            ),
         )
 
         self.main_branch_name = github_types.GitHubRefType(
@@ -439,13 +454,81 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             ),
         )
 
-        self._event_reader = event_reader.EventReader(
+        self.event_reader = event_reader_import.EventReader(
             self.app,
+            self.vcr_cassette,
             self.RECORD_CONFIG["integration_id"],
             self.RECORD_CONFIG["repository_id"],
             self.get_full_branch_name(),
         )
-        await self._event_reader.drain()
+        await self.event_reader.drain()
+
+        if settings.TESTING_RECORD:
+            real__record_responses = vcr.stubs.httpx_stubs._record_responses
+
+            def mocked__record_responses(cassette, vcr_request, real_response):  # type: ignore[no-untyped-def]
+                # Mock to not persist empty event forwarder requests to the cassette.
+                # Linked to `EventReader._get_events` which decrements the counter if the
+                # response is empty.
+                # This allows to not have a huge amount of empty requests in the cassette
+                # if we are rate limited for example.
+                if (
+                    self.event_reader.regex_event_forwarder_req.match(
+                        str(vcr_request.url),
+                    )
+                    and not real_response.json()
+                ):
+                    return real_response
+
+                return real__record_responses(cassette, vcr_request, real_response)
+
+            self.register_mock(
+                mock.patch.object(
+                    vcr.stubs.httpx_stubs,
+                    "_record_responses",
+                    mocked__record_responses,
+                ),
+            )
+
+            # NOTE: This system is a bit heavy on the requests it does sometimes.
+            # A system where the tests have a public endpoint that GitHub sends data
+            # directly to would probably be better, but this is good enough for now.
+            self.event_reader_task = asyncio.create_task(
+                self.event_reader.receive_and_forward_events_to_engine(),
+                name=f"event-reader-{self._testMethodName}",
+            )
+            self.event_reader_task.add_done_callback(
+                self.check_event_reader_task_result,
+            )
+
+        else:
+            real__async_vcr_send = vcr.stubs.httpx_stubs._async_vcr_send
+
+            async def mocked_async_vcr_send(cassette, real_send, *args, **kwargs):  # type: ignore[no-untyped-def]
+                request = args[1]
+                response = await real__async_vcr_send(
+                    cassette,
+                    real_send,
+                    *args,
+                    **kwargs,
+                )
+
+                if not self.event_reader.regex_event_forwarder_req.match(
+                    str(request.url),
+                ):
+                    await self.event_reader.replay_next_requests()
+
+                return response
+
+            self.register_mock(
+                mock.patch.object(
+                    vcr.stubs.httpx_stubs,
+                    "_async_vcr_send",
+                    mocked_async_vcr_send,
+                ),
+            )
+
+            await self.event_reader.replay_next_requests()
 
         # Track when worker work
         self.worker_concurrency_works = 0
@@ -453,50 +536,65 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         await self.update_delete_branch_on_merge()
 
+    def check_event_reader_task_result(
+        self,
+        task: asyncio.Task[Exception | None],
+    ) -> None:
+        result = task.result()
+        if isinstance(result, Exception):
+            raise result
+
+    async def _cleanup_branches(self) -> None:
+        for rule_id in self.created_branch_protection_rule_ids:
+            await self.delete_graphql_branch_protection_rule(rule_id)
+
+        current_test_branches = [
+            github_types.GitHubRefType(ref["ref"].replace("refs/heads/", ""))
+            async for ref in self.find_git_refs(
+                self.url_origin,
+                [
+                    self.main_branch_name,
+                    self.mocked_merge_queue_branch_prefix,
+                    f"mergify/{self.mocked_backport_branch_prefix}",
+                    f"mergify/{self.mocked_copy_branch_prefix}",
+                ],
+            )
+        ]
+
+        for branch_name in self.created_branches.union(current_test_branches):
+            try:
+                branch = await self.get_branch(branch_name)
+            except http.HTTPNotFound:
+                continue
+
+            if branch["protected"]:
+                await self.branch_protection_unprotect(branch["name"])
+
+            try:
+                await self.client_integration.delete(
+                    f"{self.url_origin}/git/refs/heads/{parse.quote(branch['name'])}",
+                )
+            except http.HTTPNotFound:
+                continue
+            except http.HTTPClientSideError:
+                LOG.warning(
+                    "failed to delete branch '%s'",
+                    branch["name"],
+                    exc_info=True,
+                )
+                continue
+
     async def asyncTearDown(self) -> None:
         await super().asyncTearDown()
 
         await self.update_delete_branch_on_merge(teardown=True)
+        await self.event_reader.aclose()
 
-        # NOTE(sileht): Wait a bit to ensure all remaining events arrive.
         if settings.TESTING_RECORD:
-            await asyncio.sleep(self.WAIT_TIME_BEFORE_TEARDOWN)
-
-            for rule_id in self.created_branch_protection_rule_ids:
-                await self.delete_graphql_branch_protection_rule(rule_id)
-
-            current_test_branches = [
-                github_types.GitHubRefType(ref["ref"].replace("refs/heads/", ""))
-                async for ref in self.find_git_refs(
-                    self.url_origin,
-                    [
-                        self.main_branch_name,
-                        self.mocked_merge_queue_branch_prefix,
-                        f"mergify/{self.mocked_backport_branch_prefix}",
-                        f"mergify/{self.mocked_copy_branch_prefix}",
-                    ],
-                )
-            ]
-
-            for branch_name in self.created_branches.union(current_test_branches):
-                try:
-                    branch = await self.get_branch(branch_name)
-                except http.HTTPNotFound:
-                    continue
-
-                if branch["protected"]:
-                    await self.branch_protection_unprotect(branch["name"])
-
-                try:
-                    await self.client_integration.delete(
-                        f"{self.url_origin}/git/refs/heads/{parse.quote(branch['name'])}",
-                    )
-                except http.HTTPNotFound:
-                    continue
+            await self._cleanup_branches()
 
         await self.app.aclose()
 
-        await self._event_reader.aclose()
         await self.redis_links.flushall()
         await self.redis_links.shutdown_all()
 
@@ -528,20 +626,49 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     def clear_repository_ctxt_caches(self) -> None:
         self.repository_ctxt.clear_caches()
 
+    def add_pull_request_to_event_reader(
+        self,
+        pull_request: github_types.GitHubEventPullRequest,
+    ) -> None:
+        self.event_reader.add_test_id(str(pull_request["number"]))
+        self.event_reader.add_test_id(str(pull_request["pull_request"]["head"]["sha"]))
+        check_run_test_id = self._extract_test_id_from_pull_request_for_check_run(
+            pull_request["pull_request"],
+        )
+        if check_run_test_id is not None:
+            self.event_reader.add_test_id(check_run_test_id)
+
+    def remove_pull_request_from_event_reader(
+        self,
+        pull_request: github_types.GitHubEventPullRequest,
+    ) -> None:
+        self.event_reader.remove_test_id(str(pull_request["number"]))
+        self.event_reader.remove_test_id(
+            str(pull_request["pull_request"]["head"]["sha"]),
+        )
+        check_run_test_id = self._extract_test_id_from_pull_request_for_check_run(
+            pull_request["pull_request"],
+        )
+        if check_run_test_id is not None:
+            self.event_reader.remove_test_id(check_run_test_id)
+
     async def wait_for(
         self,
         *args: typing.Any,
         **kwargs: typing.Any,
     ) -> github_types.GitHubEvent:
-        return await self._event_reader.wait_for(*args, **kwargs)
+        return await self.event_reader.wait_for(*args, **kwargs)
 
     async def wait_for_all(
         self,
-        expected_events: list[event_reader.WaitForAllEvent],
+        expected_events: list[event_reader_import.WaitForAllEvent],
         sort_received_events: bool = False,
         **kwargs: typing.Any,
-    ) -> list[event_reader.EventReceived]:
-        events = await self._event_reader.wait_for_all(expected_events, **kwargs)
+    ) -> list[event_reader_import.EventReceived]:
+        events = await self.event_reader.wait_for_all(
+            expected_events,
+            **kwargs,
+        )
         if sort_received_events and len(events) > 1:
             return tests_utils.sort_events(expected_events, events)
 
@@ -566,7 +693,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         action: github_types.GitHubEventPullRequestActionType | None = None,
         pr_number: github_types.GitHubPullRequestNumber | None = None,
         merged: bool | None = None,
-        forward_to_engine: bool = True,
+        remove_pr_from_events: bool = True,
     ) -> github_types.GitHubEventPullRequest:
         wait_for_payload = tests_utils.get_pull_request_event_payload(
             action=action,
@@ -574,24 +701,38 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             merged=merged,
         )
 
-        return typing.cast(
+        pull = typing.cast(
             github_types.GitHubEventPullRequest,
             await self.wait_for(
                 "pull_request",
                 wait_for_payload,
-                forward_to_engine=forward_to_engine,
             ),
         )
 
+        if action == "opened":
+            self.add_pull_request_to_event_reader(pull)
+        elif action == "closed" and remove_pr_from_events:
+            self.remove_pull_request_from_event_reader(pull)
+        elif action == "synchronize":
+            self.event_reader.remove_test_id(str(pull["before"]))
+            self.event_reader.add_test_id(str(pull["after"]))
+
+        return pull
+
     async def wait_for_issue_comment(
         self,
-        test_id: str,
+        pr_number: github_types.GitHubPullRequestNumber,
         action: github_types.GitHubEventIssueCommentActionType,
+        comment_body: str | None = None,
     ) -> github_types.GitHubEventIssueComment:
-        wait_for_payload = tests_utils.get_issue_comment_event_payload(action)
+        wait_for_payload = tests_utils.get_issue_comment_event_payload(
+            pr_number,
+            action,
+            comment_body,
+        )
         return typing.cast(
             github_types.GitHubEventIssueComment,
-            await self.wait_for("issue_comment", wait_for_payload, test_id=test_id),
+            await self.wait_for("issue_comment", wait_for_payload),
         )
 
     async def wait_for_check_run(
@@ -620,10 +761,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     async def wait_for_pull_request_review(
         self,
-        state: github_types.GitHubEventReviewStateType,
+        state: github_types.GitHubEventReviewStateType | None = None,
+        action: github_types.GitHubEventPullRequestReviewActionType | None = None,
     ) -> github_types.GitHubEventPullRequestReview:
         wait_for_payload = tests_utils.get_pull_request_review_event_payload(
             state=state,
+            action=action,
         )
 
         return typing.cast(
@@ -648,7 +791,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
 
             try:
-                await real_consume_method(*args, **kwargs)
+                return await real_consume_method(*args, **kwargs)
             finally:
                 self.worker_concurrency_works -= 1
 
@@ -682,14 +825,55 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             finally:
                 self.worker_concurrency_works -= 1
 
+        async def mocked__save_cached_last_summary_head_sha(*args, **kwargs):  # type: ignore[no-untyped-def]
+            # We need to add an event breakpoint here, otherwise if some check run
+            # (or other events that use the head sha to pull request number mapping)
+            # arrives before this is called in replay mode, the head_sha is not saved in redis
+            # which leads the events to be pushed in the wrong sources_key.
+            await real__save_cached_last_summary_head_sha(*args, **kwargs)
+            await self.event_reader.put_event_breakpoint("head sha mapping saved")
+
+        async def mocked_engine_run(*args, **kwargs):  # type: ignore[no-untyped-def]
+            # Make sure every github-in-postgres events are handled and stored
+            # before using `engine.run`, otherwise the context can have different values
+            # fetched from db between record and replay.
+            while (
+                "github-in-postgres" in services
+                and await self.redis_links.stream.xlen("github_in_postgres")
+            ):
+                await asyncio.sleep(0.05)
+
+            return await real_engine_run(*args, **kwargs)
+
+        async def mocked_get_checks_for_ref(*args, **kwargs):  # type: ignore[no-untyped-def]
+            # We need to add a breakpoint after querying checks for a ref, otherwise,
+            # without a breakpoint, if an event arrives after we queried checks then in replay
+            # mode the event might come before the query and the context loaded inside
+            # `engine.run` will not be the same than in record mode.
+            # This is only required when github-in-postgres service is used.
+            r = await real_get_checks_for_ref(*args, **kwargs)
+            if "github-in-postgres" in services:
+                await self.event_reader.put_event_breakpoint("get checks for ref")
+            return r
+
+        async def mocked_get_pull_messages(*args, **kwargs):  # type: ignore[no-untyped-def]
+            # We need to add a breakpoint after querying pull messages, otherwise events
+            # can be replayed too early which leads to some call to `get_pull_messages`
+            # having more messages in replay than in record.
+            r = await real_get_pull_messages(*args, **kwargs)
+            await self.event_reader.put_event_breakpoint("got pull messages")
+            return r
+
         services: manager.ServiceNamesT = {
             "shared-workers-spawner",
             "dedicated-workers-spawner",
-            "gitter",
         }
 
         if additionnal_services:
             services.update(additionnal_services)
+
+        # See note in _run_workers for more informations
+        assert "gitter" not in services, "gitter is not allowed in additional services"
 
         with mock.patch.object(
             stream.Processor,
@@ -711,12 +895,28 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             event_processing,
             "process_workflow_job_stream",
             mocked_process_workflow_job_stream,
+        ), mock.patch.object(
+            context.Context,
+            "_save_cached_last_summary_head_sha",
+            mocked__save_cached_last_summary_head_sha,
+        ), mock.patch.object(engine, "run", mocked_engine_run), mock.patch.object(
+            check_api,
+            "get_checks_for_ref",
+            mocked_get_checks_for_ref,
+        ), mock.patch.object(
+            stream_lua,
+            "get_pull_messages",
+            mocked_get_pull_messages,
         ):
             await self._run_workers(services)
+            await self.event_reader.put_event_breakpoint("end running engine")
 
         LOG.log(42, "END RUNNING ENGINE")
 
     async def _run_workers(self, services: manager.ServiceNamesT) -> None:
+        # FIXME: We should find a way to exit the test early if the workers
+        # "crashed" because of a pyvcr exception in replay mode. Otherwise the full test
+        # can keep playing even though the workers failed early.
         w = manager.ServiceManager(
             worker_idle_time=self.WORKER_IDLE_TIME,
             enabled_services=services,
@@ -728,72 +928,88 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             ci_event_processing_idle_time=0.01,
             shared_stream_processes=1,
             shared_stream_tasks_per_process=1,
-            gitter_idle_time=0.5,
-            gitter_concurrent_jobs=1,
-            gitter_worker_idle_time=0.01,
             retry_handled_exception_forever=False,
         )
-        try:
-            await w.start()
 
-            gitter_serv = w.get_service(gitter_service.GitterService)
-            assert gitter_serv is not None
-
-            log_embedder_serv = None
-            if services and "log-embedder" in services:
-                log_embedder_serv = w.get_service(
-                    log_embedder_service.LogEmbedderService,
+        async def keep_going() -> bool:
+            return bool(
+                (await self.redis_links.stream.zcard("streams")) > 0
+                or self.worker_concurrency_works > 0
+                or (
+                    "delayed-refresh" in services
+                    and len(
+                        await delayed_refresh.get_list_of_refresh_to_send(
+                            self.redis_links,
+                        ),
+                    )
                 )
-                assert log_embedder_serv is not None
-
-            did_something = False
-
-            async def keep_going() -> bool:
-                return bool(
-                    (await w._redis_links.stream.zcard("streams")) > 0
-                    or self.worker_concurrency_works > 0
-                    or len(gitter_serv._jobs) > 0
-                    or (
-                        "delayed-refresh" in services
-                        and len(
-                            await delayed_refresh.get_list_of_refresh_to_send(
-                                self.redis_links,
-                            ),
-                        )
-                    )
-                    or (
-                        "github-in-postgres" in services
-                        and await self.redis_links.stream.xlen("github_in_postgres")
-                    )
-                    or (
-                        "ci-event-processing" in services
-                        and await self.redis_links.stream.xlen(
-                            event_processing.GHA_WORKFLOW_RUN_REDIS_KEY,
-                        )
-                        and await self.redis_links.stream.xlen(
-                            event_processing.GHA_WORKFLOW_JOB_REDIS_KEY,
-                        )
-                    )
-                    or (
-                        "log-embedder" in services
-                        # Just to please mypy, but it's impossible to have this case
-                        # because we assert that the service is not `None` if `log-embedder` is
-                        # in `services`.
-                        and log_embedder_serv is not None
-                        and log_embedder_serv.has_pending_work
-                    ),
+                or (
+                    "github-in-postgres" in services
+                    and await self.redis_links.stream.xlen("github_in_postgres")
                 )
+                or (
+                    "ci-event-processing" in services
+                    and await self.redis_links.stream.xlen(
+                        event_processing.GHA_WORKFLOW_RUN_REDIS_KEY,
+                    )
+                    and await self.redis_links.stream.xlen(
+                        event_processing.GHA_WORKFLOW_JOB_REDIS_KEY,
+                    )
+                )
+                or (
+                    "log-embedder" in services
+                    and (
+                        log_embedder_serv := w.get_service(
+                            log_embedder_service.LogEmbedderService,
+                        )
+                    )
+                    is not None
+                    and log_embedder_serv.has_pending_work
+                ),
+            )
 
-            while await keep_going():
-                did_something = True
-                await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
+        gitter_serv = gitter_service.GitterService(
+            self.redis_links,
+            idle_time=0.5,
+            gitter_concurrent_jobs=0,
+            gitter_worker_idle_time=0.01,
+        )
 
-            if not did_something:
-                raise RuntimeError("A `run_engine` did not do anything.")
-        finally:
-            w.stop()
-            await w.wait_shutdown_complete()
-            self.worker_concurrency_works = 0
+        did_something = False
+        while await keep_going():
+            did_something = True
+            try:
+                while (
+                    # This first condition is for replay mode, so we do not start the workers
+                    # too early and launch them before every events that were supposed to
+                    # be replayed are replayed.
+                    self.event_reader.has_requests_to_replay()
+                    # This is for both replay and record mode, this avoids the workers executing
+                    # while the event forwarder is still processing events it received.
+                    or self.event_reader.is_processing_events
+                ):
+                    await asyncio.sleep(0.02)
+
+                await w.start()
+
+                while await keep_going():
+                    await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
+
+            finally:
+                w.stop()
+                await w.wait_shutdown_complete()
+                self.worker_concurrency_works = 0
+
+            # NOTE: We need to split gitter from the rest of the tasks, otherwise
+            # it will replay its tasks way too fast which will lead to pull refresh
+            # being being treated not in the same worker consume loop than in record.
+            while not gitter_serv._queue.empty():
+                await gitter_serv._gitter_worker("gitter-worker-0")
+
+        await task.stop_and_wait(gitter_serv.tasks)
+
+        if not did_something:
+            raise RuntimeError("A `run_engine` did not do anything.")
 
     def get_gitter(
         self,
@@ -863,9 +1079,19 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             branches_to_push.append(test_branch)
             self.created_branches.add(github_types.GitHubRefType(test_branch))
 
-        await self.git("push", "--quiet", "origin", *branches_to_push)
-        for _ in branches_to_push:
-            await self.wait_for("push", {}, forward_to_engine=forward_to_engine)
+        async with self.event_reader.set_forwarding_events_status(forward_to_engine):
+            await self.git("push", "--quiet", "origin", *branches_to_push)
+            await self.wait_for_all(
+                [
+                    {
+                        "event_type": "push",
+                        "payload": tests_utils.get_push_event_payload(
+                            branch_name=branch_to_push,
+                        ),
+                    }
+                    for branch_to_push in branches_to_push
+                ],
+            )
 
         if preload_configuration:
             await self.reload_repository_ctxt_configuration()
@@ -893,7 +1119,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         commit_body: str | None = None,
         commit_date: datetime.datetime | None = None,
         commit_author: str | None = None,
-        forward_event_to_engine: bool = True,
     ) -> github_types.GitHubPullRequest:
         self.pr_counter += 1
 
@@ -983,10 +1208,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         await self.git("push", "--quiet", remote, branch)
         if as_ != "fork":
-            await self.wait_for(
-                "push",
-                {"ref": f"refs/heads/{branch}"},
-            )
+            await self.wait_for_push(branch_name=branch)
 
         if as_ == "admin":
             client = self.client_admin
@@ -1009,10 +1231,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             },
         )
 
-        pr_opened_event = await self.wait_for_pull_request(
-            "opened",
-            forward_to_engine=forward_event_to_engine,
-        )
+        pr_opened_event = await self.wait_for_pull_request("opened")
 
         self.created_branches.add(github_types.GitHubRefType(branch))
 
@@ -1030,7 +1249,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         verified: bool = False,
         commits_body: list[str] | None = None,
         commits_author: list[str] | None = None,
-        forward_event_to_engine: bool = True,
     ) -> github_types.GitHubPullRequest:
         self.pr_counter += 1
 
@@ -1104,10 +1322,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.git("push", "--quiet", remote, branch)
 
         if as_ != "fork":
-            await self.wait_for(
-                "push",
-                {"ref": f"refs/heads/{branch}"},
-            )
+            await self.wait_for_push(branch_name=branch)
 
         if as_ == "admin":
             client = self.client_admin
@@ -1129,11 +1344,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 "draft": draft,
             },
         )
-        await self.wait_for(
-            "pull_request",
-            {"action": "opened"},
-            forward_to_engine=forward_event_to_engine,
-        )
+        await self.wait_for_pull_request("opened")
 
         self.created_branches.add(github_types.GitHubRefType(branch))
 
@@ -1260,6 +1471,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         context: str = "continuous-integration/fake-ci",
         state: github_types.GitHubStatusState = "success",
     ) -> None:
+        self.event_reader.add_test_id(str(pull["head"]["sha"]))
         await self.client_integration.post(
             f"{self.url_origin}/statuses/{pull['head']['sha']}",
             json={
@@ -1271,7 +1483,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         # There is no way to retrieve the current test name in a "status" event,
         # so we need to retrieve it based on the head sha of the PR
         # (the test-events-forwarder stores the event like that).
-        await self.wait_for("status", {"state": state}, test_id=pull["head"]["sha"])
+        await self.wait_for("status", {"state": state})
 
     async def get_check_runs(
         self,
@@ -1315,6 +1527,10 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         if external_id:
             http_payload["external_id"] = external_id
 
+        test_id = self._extract_test_id_from_pull_request_for_check_run(pull)
+        if test_id is not None:
+            self.event_reader.add_test_id(test_id)
+
         await self.client_integration.post(
             f"{self.url_origin}/check-runs",
             json=http_payload,
@@ -1325,21 +1541,27 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             await self.wait_for(
                 "check_run",
                 wait_payload,
-                test_id=self._extract_test_id_from_pull_request_for_check_run(pull),
             ),
         )
 
     @staticmethod
     def _extract_test_id_from_pull_request_for_check_run(
         pull: github_types.GitHubPullRequest,
-    ) -> str:
+    ) -> str | None:
         branch = pull["head"]["ref"]
         # eg: refs/heads/20221003073120/test_retrieve_unresolved_threads/integration/pr1
         tmp = branch.replace("refs/heads/", "")
         # eg: 20221003073120/test_retrieve_unresolved_threads/integration/pr1
         tmp_split = tmp.split("/")
         # eg: 20221003073120/test_retrieve_unresolved_threads
-        tmp = "/".join((tmp_split[0], tmp_split[1]))
+        try:
+            tmp = "/".join((tmp_split[0], tmp_split[1]))
+        except IndexError:
+            # Branch has unexpected format.
+            # Happens when the merge queue branch prefix is something
+            # else than the default value and doesn't follow the expected
+            # format
+            return None
 
         # NOTE(Kontrolix): This test let us know if this pull request is a draft merge
         # queue PR. If so, in the creation process of the pr, we create a branch with
@@ -1448,11 +1670,13 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         else:
             client = self.client_integration
 
+        self.event_reader.add_test_id(str(pull_number))
+
         response = await client.post(
             f"{self.url_origin}/issues/{pull_number}/comments",
             json={"body": message},
         )
-        await self.wait_for_issue_comment(str(pull_number), "created")
+        await self.wait_for_issue_comment(pull_number, "created", comment_body=message)
         return typing.cast(int, response.json()["id"])
 
     async def create_comment_as_fork(
@@ -1477,7 +1701,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     ) -> int:
         comment_id = await self.create_comment(pull_number, command, as_=as_)
         await self.run_engine()
-        await self.wait_for_issue_comment(str(pull_number), "created")
+        await self.wait_for_issue_comment(pull_number, "created")
         return comment_id
 
     async def get_gql_id_of_comment_to_hide(
@@ -2003,19 +2227,41 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         merge_method: typing.Literal["merge", "rebase", "squash"] = "merge",
+        remove_pr_from_events: bool = True,
+        wait_for_main_push: bool = False,
+        as_: typing.Literal["integration", "admin"] = "integration",
     ) -> github_types.GitHubEventPullRequest:
-        await self.client_integration.put(
+        client = self.client_integration if as_ == "integration" else self.client_admin
+
+        await client.put(
             f"{self.url_origin}/pulls/{pull_number}/merge",
             json={"merge_method": merge_method},
         )
-        return await self.wait_for_pull_request("closed", pull_number, merged=True)
+        pull = await self.wait_for_pull_request(
+            "closed",
+            pull_number,
+            merged=True,
+            remove_pr_from_events=remove_pr_from_events,
+        )
+        if wait_for_main_push:
+            await self.wait_for_push(branch_name=self.main_branch_name)
+
+        return pull
 
     async def merge_pull_as_admin(
         self,
         pull_number: github_types.GitHubPullRequestNumber,
+        merge_method: typing.Literal["merge", "rebase", "squash"] = "merge",
+        remove_pr_from_events: bool = True,
+        wait_for_main_push: bool = False,
     ) -> github_types.GitHubEventPullRequest:
-        await self.client_admin.put(f"{self.url_origin}/pulls/{pull_number}/merge")
-        return await self.wait_for_pull_request("closed", pull_number, merged=True)
+        return await self.merge_pull(
+            pull_number,
+            merge_method=merge_method,
+            remove_pr_from_events=remove_pr_from_events,
+            wait_for_main_push=wait_for_main_push,
+            as_="admin",
+        )
 
     async def get_labels(self) -> list[github_types.GitHubLabel]:
         return [

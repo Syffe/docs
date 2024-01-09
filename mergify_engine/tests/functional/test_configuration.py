@@ -281,6 +281,10 @@ did not find expected alphabetic or numeric character
         assert cached_config_file is not None
         assert cached_config_file["decoded_content"] == yaml.dump(rules_default)
 
+        # This is needed for the next push to not be replayed before the previous assert
+        # in replay mode.
+        await self.event_reader.put_event_breakpoint("after second assert inside test")
+
         # Change config file and config cache gets cleaned
         with (self.git.repository / ".mergify.yml").open("w") as f:
             f.write(yaml.dump(rules))
@@ -443,8 +447,7 @@ did not find expected alphabetic or numeric character
         await self.run_engine()
 
         p_change_config = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
-        await self.merge_pull(p_change_config["number"])
-        await self.wait_for_push(branch_name=self.main_branch_name)
+        await self.merge_pull(p_change_config["number"], wait_for_main_push=True)
         await self.run_engine()
 
         ctxt = context.Context(self.repository_ctxt, p, [])
@@ -525,13 +528,12 @@ did not find expected alphabetic or numeric character
 
         p2 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
         await self.merge_pull(p2["number"])
+
+        p3 = await self.create_pr()
+        await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        p2 = await self.create_pr()
-        await self.add_label(p2["number"], "queue")
-        await self.run_engine()
-
-        await self.wait_for_pull_request("labeled", p2["number"])
+        await self.wait_for_pull_request("labeled", p3["number"])
 
         await self.send_refresh(p1["number"])
         await self.run_engine()

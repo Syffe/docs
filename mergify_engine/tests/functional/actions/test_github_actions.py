@@ -499,18 +499,20 @@ Workflow successfully dispatched:
         await self.add_label(p["number"], "dispatch")
 
         # NOTE(lecrepont01): mock a user who did not grant appropriate permissions
-        with respx.mock(
-            base_url=settings.GITHUB_REST_API_URL,
-            assert_all_called=False,
-        ) as respx_mock, mock.patch(
+        with respx.mock(assert_all_called=False) as respx_mock, mock.patch(
             "mergify_engine.context.Context.github_actions_controllable",
             return_value=False,
         ):
             respx_mock.post(
-                url__regex=f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
-                rf"/actions/workflows/workflow_dispatch_forbidden.yaml/dispatches",
+                url__regex=(
+                    f"/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}"
+                    rf"/actions/workflows/workflow_dispatch_forbidden.yaml/dispatches"
+                ),
             ).respond(403)
             respx_mock.route(host=settings.GITHUB_REST_API_HOST).pass_through()
+            respx_mock.route(
+                url__startswith=settings.TESTING_FORWARDER_ENDPOINT,
+            ).pass_through()
             await self.run_engine()
 
         check_run = await self.wait_for_check_run(

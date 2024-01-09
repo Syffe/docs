@@ -53,9 +53,8 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "close")
 
         await self.merge_pull(p1["number"])
-
         await self.edit_pull(p2["number"], state="close")
-        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for_pull_request("closed", p2["number"])
 
         await self.run_engine()
 
@@ -100,10 +99,10 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         pulls = await self.get_pulls(params={"state": "all", "base": first_branch})
         assert len(pulls) == 1
 
-        await self.merge_pull(p1["number"])
+        await self.merge_pull(p1["number"], remove_pr_from_events=False)
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
-        await self.wait_for("check_run", {"check_run": {"conclusion": "success"}})
+        await self.wait_for_check_run(conclusion="success")
 
         pulls = await self.get_pulls(params={"state": "all"})
         assert len(pulls) == 1
@@ -145,10 +144,10 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         ).json()
         assert p1["base"]["ref"] != p2["base"]["ref"]
         await self.wait_for("pull_request", {"action": "opened"})
-        await self.merge_pull(p1["number"])
+        await self.merge_pull(p1["number"], remove_pr_from_events=False)
         await self.run_engine()
 
-        await self.wait_for("check_run", {"check_run": {"conclusion": "neutral"}})
+        await self.wait_for_check_run(conclusion="neutral")
 
         pulls = await self.get_pulls(params={"state": "all"})
         assert len(pulls) == 1
@@ -185,7 +184,7 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         p1 = await self.create_pr(branch=first_branch)
         await self.create_pr(branch=second_branch, base=first_branch)
 
-        await self.merge_pull(p1["number"])
+        await self.merge_pull(p1["number"], remove_pr_from_events=False)
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
 

@@ -50,11 +50,16 @@ def get_pull_request_event_payload(
 
 
 def get_issue_comment_event_payload(
+    pr_number: github_types.GitHubPullRequestNumber,
     action: github_types.GitHubEventIssueCommentActionType,
+    comment_body: str | None = None,
 ) -> dict[str, typing.Any]:
     payload: dict[str, typing.Any] = {
         "action": action,
+        "issue": {"number": pr_number},
     }
+    if comment_body:
+        payload.update({"comment": {"body": comment_body}})
 
     return payload
 
@@ -66,13 +71,23 @@ def get_check_run_event_payload(
     name: str | None = None,
     check_id: int | None = None,
     pr_number: github_types.GitHubPullRequestNumber | None = None,
+    output_title: str | None = None,
+    output_summary: str | None = None,
+    head_sha: str | None = None,
 ) -> dict[str, typing.Any]:
     payload: dict[str, typing.Any] = {}
-
     if action:
         payload["action"] = action
-
-    if status or conclusion or name or check_id or pr_number:
+    if (
+        status
+        or conclusion
+        or name
+        or check_id
+        or pr_number
+        or output_title
+        or output_summary
+        or head_sha
+    ):
         payload["check_run"] = {}
         if check_id:
             payload["check_run"]["id"] = check_id
@@ -86,6 +101,14 @@ def get_check_run_event_payload(
             payload["check_run"]["pull_requests"] = anys.AnyContains(
                 anys.AnyWithEntries({"number": pr_number}),
             )
+        if head_sha:
+            payload["check_run"]["head_sha"] = head_sha
+        if output_title or output_summary:
+            payload["check_run"]["output"] = {}
+            if output_title:
+                payload["check_run"]["output"]["title"] = output_title
+            if output_summary:
+                payload["check_run"]["output"]["summary"] = output_summary
 
     return payload
 
@@ -93,12 +116,17 @@ def get_check_run_event_payload(
 def get_pull_request_review_event_payload(
     action: github_types.GitHubEventPullRequestReviewActionType | None = None,
     state: github_types.GitHubEventReviewStateType | None = None,
+    review_body: str | None = None,
 ) -> dict[str, typing.Any]:
     payload: dict[str, typing.Any] = {}
     if action:
         payload["action"] = action
-    if state:
-        payload["review"] = {"state": state}
+    if state or review_body:
+        payload["review"] = {}
+        if state:
+            payload["review"]["state"] = state
+        if review_body:
+            payload["review"]["body"] = review_body
 
     return payload
 

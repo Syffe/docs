@@ -290,7 +290,6 @@ class TestQueueCISummary(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")

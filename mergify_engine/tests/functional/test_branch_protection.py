@@ -3,6 +3,7 @@ import typing
 from mergify_engine import context
 from mergify_engine import github_graphql_types
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.yaml import yaml
 
 
@@ -88,13 +89,26 @@ class TestBranchProtection(base.FunctionalTestBase):
         draft_pr = await self.wait_for_pull_request("opened")
         await self.create_status(draft_pr["pull_request"])
         await self.run_engine()
-        await self.wait_for_push(branch_name=self.main_branch_name)
-        await self.run_engine()
-
-        for _ in (p1, p2):
-            p_merged = await self.wait_for_pull_request("closed")
-            assert p_merged["pull_request"]["number"] in (p1["number"], p2["number"])
-            assert p_merged["pull_request"]["merged"]
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p1["number"],
+                        merged=True,
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p2["number"],
+                        merged=True,
+                    ),
+                },
+            ],
+        )
 
     async def test_draft_pr_with_branch_protection_on_everything(self) -> None:
         rules = {
@@ -178,13 +192,11 @@ class TestBranchProtection(base.FunctionalTestBase):
         await self.merge_pull(p2["number"], "rebase")
 
         await self.add_label(p1["number"], "ready-to-merge")
-
         await self.run_engine()
 
         draft_pr = await self.wait_for_pull_request("opened")
         await self.wait_for_pull_request("closed", draft_pr["number"])
-        p1_closed = await self.wait_for_pull_request("closed", p1["number"])
-        assert p1_closed["pull_request"]["merged"]
+        await self.wait_for_pull_request("closed", p1["number"], merged=True)
 
     async def test_strict_status_check_with_rebase_update_method_and_no_bot_account(
         self,
@@ -241,7 +253,7 @@ class TestBranchProtection(base.FunctionalTestBase):
         )
 
         await self.add_label(pr2["number"], "queue")
-        await self.run_engine({"delayed-refresh"})
+        await self.run_engine()
 
         # pr2 should be merged because not created by a bot
         await self.wait_for_pull_request("synchronize", pr2["number"])

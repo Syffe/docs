@@ -609,9 +609,6 @@ class TestPartitionsApi(base.FunctionalTestBase):
             p1 = await self.create_pr()
             p2 = await self.create_pr()
 
-            p3 = await self.create_pr()
-            await self.merge_pull_as_admin(p3["number"])
-
             await self.add_label(p1["number"], "queuedefault")
             await self.add_label(p2["number"], "queuedefault")
             await self.run_engine()
@@ -623,9 +620,15 @@ class TestPartitionsApi(base.FunctionalTestBase):
             await self.create_status(tmp_pr_queue_default["pull_request"])
             await self.run_engine()
 
-            await self.wait_for_pull_request("closed", tmp_pr_queue_default["number"])
             await self.wait_for_all(
                 [
+                    {
+                        "event_type": "pull_request",
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            action="closed",
+                            pr_number=tmp_pr_queue_default["number"],
+                        ),
+                    },
                     {
                         "event_type": "pull_request",
                         "payload": tests_utils.get_pull_request_event_payload(
@@ -659,9 +662,15 @@ class TestPartitionsApi(base.FunctionalTestBase):
             await self.create_status(tmp_pr_queue_lowprio["pull_request"])
             await self.run_engine()
 
-            await self.wait_for_pull_request("closed", tmp_pr_queue_lowprio["number"])
             await self.wait_for_all(
                 [
+                    {
+                        "event_type": "pull_request",
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            action="closed",
+                            pr_number=tmp_pr_queue_lowprio["number"],
+                        ),
+                    },
                     {
                         "event_type": "pull_request",
                         "payload": tests_utils.get_pull_request_event_payload(
@@ -789,9 +798,6 @@ class TestPartitionsApi(base.FunctionalTestBase):
             p2 = await self.create_pr()
             p3 = await self.create_pr()
 
-            p4 = await self.create_pr()
-            await self.merge_pull_as_admin(p4["number"])
-
             await self.add_label(p1["number"], "queuedefault")
             await self.add_label(p2["number"], "queuedefault")
             await self.add_label(p3["number"], "queuedefault")
@@ -804,9 +810,15 @@ class TestPartitionsApi(base.FunctionalTestBase):
             await self.create_status(tmp_pr_queue_default["pull_request"])
             await self.run_engine()
 
-            await self.wait_for_pull_request("closed", tmp_pr_queue_default["number"])
             await self.wait_for_all(
                 [
+                    {
+                        "event_type": "pull_request",
+                        "payload": tests_utils.get_pull_request_event_payload(
+                            action="closed",
+                            pr_number=tmp_pr_queue_default["number"],
+                        ),
+                    },
                     {
                         "event_type": "pull_request",
                         "payload": tests_utils.get_pull_request_event_payload(

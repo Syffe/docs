@@ -480,7 +480,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
 
-        await self.run_engine({"delayed-refresh"})
+        await self.run_engine()
 
         ctxt = context.Context(
             self.repository_ctxt,
@@ -499,10 +499,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         completed_at = summary["completed_at"]
 
         await self.create_comment_as_admin(p["number"], "@mergifyio refresh")
+        await self.run_engine()
 
-        await self.run_engine({"delayed-refresh"})
-
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p["number"], "created")
         assert (
             f"""> refresh
 
@@ -514,12 +513,12 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             == comment["comment"]["body"]
         )
 
-        check_run_summary = await self.wait_for_check_run(
-            name=constants.SUMMARY_NAME,
-            action="completed",
-            conclusion="success",
-        )
-        assert completed_at != check_run_summary["check_run"]["completed_at"]
+        ctxt = context.Context(self.repository_ctxt, p, [])
+        check_run_summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert check_run_summary is not None
+        assert check_run_summary["conclusion"] == "success"
+        assert check_run_summary["status"] == "completed"
+        assert completed_at != check_run_summary["completed_at"]
 
     async def test_refresh_on_conflict(self) -> None:
         rules = {
@@ -534,8 +533,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules), files={"TESTING": "foobar"})
         p1 = await self.create_pr(files={"TESTING": "p1"})
         p2 = await self.create_pr(files={"TESTING": "p2"})
-        await self.merge_pull(p1["number"])
-        await self.wait_for_push(branch_name=self.main_branch_name)
+        await self.merge_pull(p1["number"], wait_for_main_push=True)
 
         # Wait a bit than GitHub refresh the mergeable_state before running the
         # engine
@@ -543,10 +541,10 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             await asyncio.sleep(3)
 
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created", "comment": {"body": "It conflict!"}},
-            test_id=p2["number"],
+        await self.wait_for_issue_comment(
+            p2["number"],
+            "created",
+            comment_body="It conflict!",
         )
 
     async def test_refresh_on_draft_conflict(self) -> None:
@@ -562,8 +560,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules), files={"TESTING": "foobar"})
         p1 = await self.create_pr(files={"TESTING": "p1"})
         p2 = await self.create_pr(files={"TESTING": "p2"}, draft=True)
-        await self.merge_pull(p1["number"])
-        await self.wait_for_push(branch_name=self.main_branch_name)
+        await self.merge_pull(p1["number"], wait_for_main_push=True)
 
         # Wait a bit than GitHub refresh the mergeable_state before running the
         # engine
@@ -571,10 +568,10 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             await asyncio.sleep(3)
 
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created", "comment": {"body": "It conflict!"}},
-            test_id=p2["number"],
+        await self.wait_for_issue_comment(
+            p2["number"],
+            "created",
+            comment_body="It conflict!",
         )
 
     async def test_set_summary_with_broken_checks(self) -> None:
@@ -632,7 +629,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.create_review_request(p1["number"], reviewers=["mergify-test4"])
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        comment = await self.wait_for_issue_comment(p1["number"], "created")
         assert comment["comment"]["body"] == "review-requested user"
 
         # FIXME(sileht): This doesn't work anymore MRGFY-227
@@ -729,11 +726,10 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             0
         ] = f"base={self.main_branch_name}"
         p_config = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
-        await self.merge_pull(p_config["number"])
-        await self.wait_for_push(branch_name=self.main_branch_name)
+        await self.merge_pull(p_config["number"], wait_for_main_push=True)
 
         await self.run_engine()
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p["number"], "created")
         assert comment["comment"]["body"] == "it works"
 
     async def test_check_run_api(self) -> None:
@@ -883,21 +879,13 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         prs = await self.create_prs_with_same_head_sha()
 
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created"},
-            test_id=prs[1]["number"],
-        )
+        await self.wait_for_issue_comment(prs[1]["number"], "created")
 
         await self.create_comment_as_admin(prs[1]["number"], "@mergifyio refresh")
 
         await self.run_engine()
         # Wait for the refresh comment
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created"},
-            test_id=prs[1]["number"],
-        )
+        await self.wait_for_issue_comment(prs[1]["number"], "created")
 
         await refresher.send_pull_refresh(
             self.redis_links.stream,
@@ -974,7 +962,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         assert pr2["head"]["sha"] == pr1["head"]["sha"]
 
         await self.run_engine()
-        comment = await self.wait_for_issue_comment(str(pr2["number"]), "created")
+        comment = await self.wait_for_issue_comment(pr2["number"], "created")
         assert (
             comment["comment"]["body"]
             == f"⚠️ The sha of the head commit of this PR conflicts with #{pr1['number']}. Mergify cannot evaluate rules on this PR. ⚠️"

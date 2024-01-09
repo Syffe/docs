@@ -1224,9 +1224,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
-
         with time_travel(date.utcnow(), tick=True):
+            await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr()
 
             await self.add_label(pr["number"], "queue")
@@ -1247,24 +1246,24 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 state="pending",
             )
 
-            with time_travel(date.utcnow() + datetime.timedelta(minutes=15), tick=True):
-                await self.run_engine({"delayed-refresh"})
+        with time_travel(date.utcnow() + datetime.timedelta(minutes=15), tick=True):
+            await self.run_engine({"delayed-refresh"})
 
-                r = await self.admin_app.get(
-                    f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr['number']}",
-                )
-                self.assert_unsuccessful_checks(
-                    events=r.json()["events"],
-                    expected_unsuccessful_checks=[
-                        {
-                            "avatar_url": anys.ANY_STR,
-                            "description": "The CI is pending",
-                            "name": "continuous-integration/fake-ci_2",
-                            "state": "pending",
-                            "url": anys.ANY_STR,
-                        },
-                    ],
-                )
+            r = await self.admin_app.get(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={pr['number']}",
+            )
+            self.assert_unsuccessful_checks(
+                events=r.json()["events"],
+                expected_unsuccessful_checks=[
+                    {
+                        "avatar_url": anys.ANY_STR,
+                        "description": "The CI is pending",
+                        "name": "continuous-integration/fake-ci_2",
+                        "state": "pending",
+                        "url": anys.ANY_STR,
+                    },
+                ],
+            )
 
     async def test_eventlogs_db(self) -> None:
         # NOTE(lecrepont01): this tests the integration of feature events in DB but should evolve in an API test

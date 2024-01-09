@@ -473,6 +473,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
 
             await self.remove_label(p1["number"], "queue")
             await self.run_engine()
+
             await self.wait_for_pull_request("closed", draft_pr["number"])
             draft_pr = await self.wait_for_pull_request("opened")
 
@@ -490,13 +491,13 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             # Create ChecksDuration for SUCCESS
             p4 = await self.create_pr(files={"projA/test4.txt": "test"})
             await self.add_label(p4["number"], "queue")
-            await self.run_engine({"delayed-refresh"})
+            await self.run_engine()
 
             draft_pr = await self.wait_for_pull_request("opened")
             await self.create_status(draft_pr["pull_request"])
 
         with time_travel(start_date + datetime.timedelta(hours=2), tick=True):
-            await self.run_engine({"delayed-refresh"})
+            await self.run_engine()
 
             await self.wait_for_pull_request("closed", draft_pr["number"])
             await self.wait_for_pull_request("closed", p4["number"])

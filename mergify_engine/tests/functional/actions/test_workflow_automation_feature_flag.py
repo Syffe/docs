@@ -56,5 +56,5 @@ class TestWorkflowAutomationFeatureFlag(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p["number"], "created")
         assert comment["comment"]["body"] == "Hello there"

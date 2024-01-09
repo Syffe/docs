@@ -9,6 +9,7 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.actions import merge_base
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.yaml import yaml
 
 
@@ -175,8 +176,7 @@ class TestMergeAction(base.FunctionalTestBase):
 
         # set admin bot account
         p2 = await self.create_pr(files={".mergify.yml": yaml.dump(updated_rules)})
-        await self.merge_pull_as_admin(p2["number"])
-        await self.wait_for_push(branch_name=self.main_branch_name)
+        await self.merge_pull_as_admin(p2["number"], wait_for_main_push=True)
         await self.run_engine()
         p = await self.get_pull(p["number"])
         await self.create_status(p, "continuous-integration/fake-ci-queue")
@@ -597,9 +597,6 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
         await self.merge_pull(p1["number"])
 
         await self.branch_protection_protect(self.main_branch_name, protection)
-
-        await self.run_engine()
-
         await self.create_status(p2)
         await self.run_engine()
 
@@ -611,25 +608,36 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
 
         await self.create_comment_as_admin(p2["number"], "@mergifyio update")
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment",
-            {"action": "created"},
-            test_id=p2["number"],
+        await self.wait_for_all(
+            [
+                {
+                    "event_type": "issue_comment",
+                    "payload": tests_utils.get_issue_comment_event_payload(
+                        p2["number"],
+                        "created",
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="synchronize",
+                        pr_number=p2["number"],
+                    ),
+                },
+            ],
         )
-        await self.wait_for("pull_request", {"action": "synchronize"})
-        await self.run_engine()
 
         p2 = await self.get_pull(p2["number"])
         await self.create_status(p2)
         await self.run_engine()
+
+        await self.wait_for_pull_request("closed", pr_number=p2["number"], merged=True)
+
         ctxt = context.Context(self.repository_ctxt, p2, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"]["summary"] is not None
         assert "[X] `#commits-behind=0`" in summary["output"]["summary"]
-
-        p2 = await self.get_pull(p2["number"])
-        assert p2["merged"]
 
     async def test_merge_fastforward_basic(self) -> None:
         rules = {

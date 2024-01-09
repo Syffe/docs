@@ -1,13 +1,16 @@
+import typing
 from unittest import mock
 from urllib import parse
 
 from first import first
 
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine import settings
 import mergify_engine.queue.merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import utils as tests_utils
 from mergify_engine.yaml import yaml
 
 
@@ -464,11 +467,14 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             p1 = await self.create_pr(files={"projB/test.txt": "test"})
             p2 = await self.create_pr(files={"projA/toto.txt": "toto"})
             p3 = await self.create_pr(files={"projB/toto.txt": "toto"})
+
             await self.add_label(p2["number"], "queue")
             await self.add_label(p3["number"], "queue")
             await self.run_engine()
+
             await self.merge_pull(p1["number"])
             await self.run_engine()
+
             p4 = await self.create_pr(files={"projA/tutu.txt": "tutu"})
             p5 = await self.create_pr(files={"projB/tutu.txt": "tutu"})
             await self.add_label(p4["number"], "queue")
@@ -754,14 +760,17 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             p2 = await self.create_pr(files={"tutu.txt": "test"})
             p3 = await self.create_pr(files={"projA/toto.txt": "toto"})
             p4 = await self.create_pr(files={"projB/toto.txt": "toto"})
+
             await self.add_label(p2["number"], "queue")
             await self.add_label(p3["number"], "queue")
             await self.add_label(p4["number"], "queue")
             await self.run_engine()
+
             await self.merge_pull(p1["number"])
             await self.run_engine()
+
             assert reset_mock.call_count == 1
-            assert reset_partitions_mock.call_count == 3
+            assert reset_partitions_mock.call_count == 5
             iter_train_mock.assert_any_call(mock.ANY, ["fallback_partition"])
 
     async def test_partition_reset_when_pr_manual_merge_matches_one_partition(
@@ -1242,22 +1251,32 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        check_run_p1 = await self.wait_for_check_run(
-            action="created",
-            name="Rule: Automatic merge (queue)",
-        )
-        assert (
-            check_run_p1["check_run"]["output"]["title"]
-            == "The pull request is the 1st in the `projA` partition queue to be merged"
+        events = await self.wait_for_all(
+            [
+                {
+                    "event_type": "check_run",
+                    "payload": tests_utils.get_check_run_event_payload(
+                        action="created",
+                        name="Rule: Automatic merge (queue)",
+                        output_title="The pull request is the 1st in the `projA` partition queue to be merged",
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="opened",
+                    ),
+                },
+            ],
+            sort_received_events=True,
         )
 
-        draft_pr = await self.wait_for_pull_request("opened")
+        draft_pr = typing.cast(github_types.GitHubEventPullRequest, events[1].event)
         await self.create_status(draft_pr["pull_request"])
         await self.run_engine()
 
         await self.wait_for_pull_request("closed", draft_pr["number"])
-        p1_closed = await self.wait_for_pull_request("closed", p1["number"])
-        assert p1_closed["pull_request"]["merged"]
+        await self.wait_for_pull_request("closed", p1["number"], merged=True)
 
     async def test_queue_1_pr_multiple_partitions_match_inplace(self) -> None:
         rules = {
@@ -1870,8 +1889,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         )
 
         p2 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
-        await self.merge_pull(p2["number"])
-        await self.wait_for_push(branch_name=self.main_branch_name)
+        await self.merge_pull(p2["number"], wait_for_main_push=True)
         await self.run_engine()
 
         # draft_pr_p1 should be closed and reopened and be part of partition

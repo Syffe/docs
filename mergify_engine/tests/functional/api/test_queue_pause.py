@@ -254,7 +254,6 @@ class TestQueuePause(base.FunctionalTestBase):
         }
         await self.run_engine()
         q = await self.get_train()
-        assert p_closed["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_closed["pull_request"]["merge_commit_sha"],
@@ -300,7 +299,6 @@ class TestQueuePause(base.FunctionalTestBase):
         await self.run_engine()
 
         q = await self.get_train()
-        assert p_closed["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_closed["pull_request"]["merge_commit_sha"],
@@ -487,7 +485,6 @@ class TestQueuePause(base.FunctionalTestBase):
         }
         await self.run_engine()
         q = await self.get_train()
-        assert p_closed["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_closed["pull_request"]["merge_commit_sha"],
@@ -544,7 +541,6 @@ class TestQueuePause(base.FunctionalTestBase):
         await self.run_engine()
 
         q = await self.get_train()
-        assert p_closed["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_closed["pull_request"]["merge_commit_sha"],
@@ -690,7 +686,6 @@ class TestQueuePause(base.FunctionalTestBase):
         await self.run_engine()
         q = await self.get_train()
 
-        assert p_closed["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_closed["pull_request"]["merge_commit_sha"],
@@ -747,7 +742,6 @@ class TestQueuePause(base.FunctionalTestBase):
         await self.run_engine()
 
         q = await self.get_train()
-        assert p_closed["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
             p_closed["pull_request"]["merge_commit_sha"],

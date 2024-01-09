@@ -36,7 +36,7 @@ IMPORT_CHECKS_TEST_DEV_DEPS = "1"
 [tool.poe.tasks.test]
 deps = ["setup"]
 help = "Run test suite"
-cmd = "./tools/run-tests.sh pytest -v --timeout_method thread --reruns 3 --only-rerun MissingEventTimeout"
+cmd = "./tools/run-tests.sh pytest -v --timeout_method thread"
 
 [tool.poe.tasks.test-parallel]
 deps = ["setup"]

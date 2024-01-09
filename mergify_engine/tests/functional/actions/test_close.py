@@ -26,7 +26,7 @@ class TestCloseAction(base.FunctionalTestBase):
 
         await self.wait_for_pull_request("closed")
 
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p["number"], "created")
         assert comment["comment"]["body"] == "WTF?"
 
     async def test_close_template(self) -> None:
@@ -47,7 +47,7 @@ class TestCloseAction(base.FunctionalTestBase):
 
         await self.wait_for_pull_request("closed")
 
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        comment = await self.wait_for_issue_comment(p["number"], "created")
         assert (
             comment["comment"]["body"]
             == f"Thank you {self.RECORD_CONFIG['app_user_login']}"
