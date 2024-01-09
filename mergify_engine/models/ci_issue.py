@@ -290,12 +290,13 @@ class CiIssueGPT(models.Base, CiIssueMixin):
     last_seen: orm.Mapped[datetime.datetime] = orm.query_expression()
 
     @classmethod
-    def _seen_column_subquery(
+    def _one_of_jobs_subquery(
         cls,
+        *columns: sqlalchemy.ColumnElement[typing.Any] | orm.Mapped[typing.Any],
     ) -> sqlalchemy.Select[tuple[datetime.datetime]]:
         return (
             sqlalchemy.select(
-                gh_models.WorkflowJob.started_at,
+                *columns,
             )
             .select_from(gh_models.WorkflowJobLogMetadata)
             .join(
@@ -313,7 +314,7 @@ class CiIssueGPT(models.Base, CiIssueMixin):
     def with_first_seen_column(cls) -> orm.strategy_options._AbstractLoad:
         return orm.with_expression(
             cls.first_seen,
-            cls._seen_column_subquery()
+            cls._one_of_jobs_subquery(gh_models.WorkflowJob.started_at)
             .order_by(
                 gh_models.WorkflowJob.started_at.asc(),
             )
@@ -324,11 +325,24 @@ class CiIssueGPT(models.Base, CiIssueMixin):
     def with_last_seen_column(cls) -> orm.strategy_options._AbstractLoad:
         return orm.with_expression(
             cls.last_seen,
-            cls._seen_column_subquery()
+            cls._one_of_jobs_subquery(gh_models.WorkflowJob.started_at)
             .order_by(
                 gh_models.WorkflowJob.started_at.desc(),
             )
             .scalar_subquery(),
+        )
+
+    job_name: orm.Mapped[str] = orm.query_expression()
+
+    @classmethod
+    def with_job_name_column(cls) -> orm.strategy_options._AbstractLoad:
+        # NOTE(Kontrolix): Since jobs are linked to ci_issue among other thing
+        # by their name_without_matrix, we can take any job's name_without_matrix
+        return orm.with_expression(
+            cls.job_name,
+            cls._one_of_jobs_subquery(
+                gh_models.WorkflowJob.name_without_matrix,
+            ).scalar_subquery(),
         )
 
     pull_requests_impacted: orm.Mapped[
