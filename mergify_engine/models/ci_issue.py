@@ -290,7 +290,7 @@ class CiIssueGPT(models.Base, CiIssueMixin):
     @classmethod
     def with_pull_requests_impacted_column(cls) -> orm.strategy_options._AbstractLoad:
         distinct_subquery = (
-            sqlalchemy.select(
+            cls._select_pull_request(
                 gh_pull_request.PullRequest.number,
                 gh_pull_request.PullRequest.title,
                 gh_models.GitHubAccount.login,
@@ -298,36 +298,15 @@ class CiIssueGPT(models.Base, CiIssueMixin):
                     gh_models.WorkflowJobLogMetadata.id.distinct(),
                 ).label("events"),
             )
-            .select_from(gh_pull_request.PullRequest)
-            .join(
-                gh_models.WorkflowJobLogMetadata,
-                gh_models.WorkflowJobLogMetadata.ci_issue_id == cls.id,
-            )
-            .join(
-                gh_models.WorkflowJob,
-                gh_models.WorkflowJob.id
-                == gh_models.WorkflowJobLogMetadata.workflow_job_id,
-            )
             .join(
                 gh_models.GitHubAccount,
                 gh_models.GitHubAccount.id == gh_pull_request.PullRequest.user_id,
-            )
-            .join(
-                gh_pull_request.PullRequestHeadShaHistory,
-                gh_pull_request.PullRequest.id
-                == gh_pull_request.PullRequestHeadShaHistory.pull_request_id,
-            )
-            .where(
-                gh_pull_request.PullRequest.base_repository_id == cls.repository_id,
-                gh_pull_request.PullRequestHeadShaHistory.head_sha
-                == gh_models.WorkflowJob.head_sha,
             )
             .group_by(gh_pull_request.PullRequest.id, gh_models.GitHubAccount.id)
             .order_by(
                 sqlalchemy.desc("events"),
                 gh_pull_request.PullRequest.number,
             )
-            .correlate(CiIssueGPT)
             .subquery()
         )
         return orm.with_expression(
@@ -360,10 +339,17 @@ class CiIssueGPT(models.Base, CiIssueMixin):
 
     @classmethod
     def pull_requests_count_subquery(cls) -> sqlalchemy.ScalarSelect[int]:
+        return cls._select_pull_request(
+            sqlalchemy.func.count(gh_models.PullRequest.id.distinct()),
+        ).scalar_subquery()
+
+    @classmethod
+    def _select_pull_request(
+        cls,
+        *columns: sqlalchemy.ColumnElement[typing.Any] | orm.Mapped[typing.Any],
+    ) -> sqlalchemy.Select[typing.Any]:
         return (
-            sqlalchemy.select(
-                sqlalchemy.func.count(gh_models.PullRequest.id.distinct()),
-            )
+            sqlalchemy.select(*columns)
             .select_from(gh_models.PullRequest, gh_models.WorkflowJobLogMetadata)
             .join(
                 gh_models.WorkflowJob,
@@ -382,7 +368,6 @@ class CiIssueGPT(models.Base, CiIssueMixin):
                 == gh_models.WorkflowJob.head_sha,
             )
             .correlate(CiIssueGPT)
-            .scalar_subquery()
         )
 
     @classmethod
