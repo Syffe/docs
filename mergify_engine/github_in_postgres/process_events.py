@@ -1,6 +1,7 @@
 import dataclasses
 
 import daiquiri
+from ddtrace import tracer
 import msgpack
 import pydantic_core
 
@@ -41,6 +42,7 @@ async def store_redis_events_in_pg(redis_links: redis_utils.RedisLinks) -> bool:
     )
 
 
+@tracer.wrap("store_redis_event_in_pg")
 async def store_redis_event_in_pg(event_id: bytes, event: dict[bytes, bytes]) -> None:
     event_type = event[b"event_type"].decode()
     LOG.info("processing event '%s', id=%s", event_type, event_id)
