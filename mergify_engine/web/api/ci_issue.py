@@ -39,7 +39,7 @@ router = fastapi.APIRouter(
 
 
 @pydantic.dataclasses.dataclass
-class CiIssueEvent:
+class CiIssueEventDeprecated:
     id: int
     run_id: int
     started_at: github_types.ISODateTimeType
@@ -62,7 +62,7 @@ class CiIssueDetailResponse:
     name: str
     job_name: str
     status: CiIssueStatus
-    events: list[CiIssueEvent] = dataclasses.field(
+    events: list[CiIssueEventDeprecated] = dataclasses.field(
         metadata={"description": "List of CI issue events"},
     )
     pull_requests_impacted: list[CiIssuePullRequestData] = dataclasses.field(
@@ -78,7 +78,7 @@ class CiIssueListResponse:
     job_name: str
     status: CiIssueStatus
     events_count: int
-    events: list[CiIssueEvent] = dataclasses.field(
+    events: list[CiIssueEventDeprecated] = dataclasses.field(
         metadata={"description": "List of CI issue events"},
     )
     flaky: FlakyT
@@ -182,7 +182,7 @@ async def get_ci_issues(
         for log_metadata in ci_issue.log_metadata:
             job = log_metadata.workflow_job
             events.append(
-                CiIssueEvent(
+                CiIssueEventDeprecated(
                     id=log_metadata.id,
                     run_id=job.workflow_run_id,
                     started_at=github_types.ISODateTimeType(
@@ -312,7 +312,7 @@ async def get_ci_issue(
     for log_metadata in ci_issue.log_metadata:
         job = log_metadata.workflow_job
         events.append(
-            CiIssueEvent(
+            CiIssueEventDeprecated(
                 id=log_metadata.id,
                 run_id=job.workflow_run_id,
                 started_at=github_types.ISODateTimeType(
@@ -377,13 +377,129 @@ async def patch_ci_issue(
 
 
 @pydantic.dataclasses.dataclass
-class CiIssueEventDetailResponse(CiIssueEvent):
+class CiIssueEventDetailResponse(CiIssueEventDeprecated):
     completed_at: github_types.ISODateTimeType
     log_extract: str
     failed_step_number: int | None
     name: str
     run_attempt: int
     steps: list[github_types.GitHubWorkflowJobStep]
+
+
+@pydantic.dataclasses.dataclass
+class CiIssueEvent:
+    id: int
+    run_id: int
+    started_at: datetime.datetime
+    completed_at: datetime.datetime
+    flaky: typing.Literal["flaky", "unknown"]
+    failed_run_count: int
+    failed_step_number: int | None
+    name: str
+    run_attempt: int
+    steps: list[github_types.GitHubWorkflowJobStep]
+
+
+class CiIssueEventsResponse(pagination.PageResponse[CiIssueEvent]):
+    items_key: typing.ClassVar[str] = "events"
+    events: list[CiIssueEvent] = dataclasses.field(
+        metadata={"description": "List of CI issue events"},
+    )
+
+
+@router.get(
+    "/repos/{owner}/{repository}/ci_issues/{ci_issue_short_id_suffix}/events",
+    summary="Get detailed events of a CI issue",
+    description="Get detailed events of a CI issue",
+    response_model=CiIssueEventsResponse,
+    include_in_schema=False,
+    responses={
+        **api.default_responses,  # type: ignore[dict-item]
+        404: {"description": "CI issue event not found"},
+    },
+)
+async def get_ci_issue_events(
+    session: database.Session,
+    repository_ctxt: security.Repository,
+    ci_issue_short_id_suffix: typing.Annotated[
+        int,
+        fastapi.Path(description="The ID of the CI Issue in this repository"),
+    ],
+    page: pagination.CurrentPage,
+) -> CiIssueEventsResponse:
+    sub_q_ci_issue_id = (
+        sqlalchemy.select(CiIssueGPT.id)
+        .where(
+            CiIssueGPT.short_id_suffix == ci_issue_short_id_suffix,
+            CiIssueGPT.repository_id == repository_ctxt.repo["id"],
+        )
+        .scalar_subquery()
+    )
+
+    stmt = (
+        sqlalchemy.select(gh_models.WorkflowJobLogMetadata)
+        .join(gh_models.WorkflowJobLogMetadata.workflow_job)
+        .options(
+            sqlalchemy.orm.joinedload(
+                gh_models.WorkflowJobLogMetadata.workflow_job,
+            ).options(
+                gh_models.WorkflowJob.with_flaky_column(),
+                gh_models.WorkflowJob.with_failed_run_count_column(),
+            ),
+        )
+        .where(
+            gh_models.WorkflowJobLogMetadata.ci_issue_id == sub_q_ci_issue_id,
+            # NOTE(sileht): For security purpose:
+            gh_models.WorkflowJob.repository_id == repository_ctxt.repo["id"],
+        )
+    )
+
+    if page.cursor.value:
+        try:
+            cursor_event_id = int(page.cursor.value)
+        except ValueError:
+            raise pagination.InvalidCursorError(page.cursor)
+
+        if page.cursor.forward:
+            stmt = stmt.where(gh_models.WorkflowJobLogMetadata.id < cursor_event_id)
+        else:
+            stmt = stmt.where(gh_models.WorkflowJobLogMetadata.id > cursor_event_id)
+
+    stmt = stmt.order_by(
+        gh_models.WorkflowJob.completed_at.desc()
+        if page.cursor.forward
+        else gh_models.WorkflowJob.completed_at.asc(),
+    ).limit(page.per_page)
+
+    result = await session.execute(stmt)
+    logs_metadata = result.unique().scalars()
+
+    events = [
+        CiIssueEvent(
+            id=event.id,
+            run_id=event.workflow_job.workflow_run_id,
+            steps=event.workflow_job.steps or [],
+            failed_step_number=event.workflow_job.failed_step_number,
+            completed_at=event.workflow_job.completed_at,
+            started_at=event.workflow_job.started_at,
+            flaky=event.workflow_job.flaky,
+            failed_run_count=event.workflow_job.failed_run_count,
+            run_attempt=event.workflow_job.run_attempt,
+            name=event.workflow_job.name_without_matrix,
+        )
+        for event in logs_metadata
+    ]
+
+    first_event_id = events[0].id if events else None
+    last_event_id = events[-1].id if events else None
+
+    page_response: pagination.Page[CiIssueEvent] = pagination.Page(
+        items=events,
+        current=page,
+        cursor_prev=page.cursor.previous(first_event_id, last_event_id),
+        cursor_next=page.cursor.next(first_event_id, last_event_id),
+    )
+    return CiIssueEventsResponse(page=page_response)  # type: ignore[call-arg]
 
 
 @router.get(

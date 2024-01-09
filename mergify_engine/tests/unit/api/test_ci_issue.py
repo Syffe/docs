@@ -357,6 +357,216 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
     "TestGhaFailedJobsLinkToCissueGPTDataset",
     "TestGhaFailedJobsPullRequestsDataset",
 )
+async def test_api_ci_issue_get_ci_issue_events(
+    _mock_gh_pull_request_commits_insert_in_pg: None,
+    _mock_gh_pull_request_files_insert_in_pg: None,
+    populated_db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+) -> None:
+    await populated_db.commit()
+    populated_db.expunge_all()
+    await tests_utils.configure_web_client_to_work_with_a_repo(
+        respx_mock,
+        populated_db,
+        web_client,
+        "OneAccount/OneRepo",
+    )
+
+    job = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"],
+        options=[orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt)],
+    )
+
+    assert len(job.ci_issues_gpt) == 1
+    ci_issue = job.ci_issues_gpt[0]
+    populated_db.expunge_all()
+
+    assert job.steps is not None
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events",
+    )
+
+    assert reply.json() == {
+        "per_page": 10,
+        "size": 3,
+        "events": [
+            {
+                "id": DbPopulator.internal_ref[
+                    "OneAccount/OneRepo/failed_job_with_flaky_nghb/metadata/1"
+                ],
+                "name": "A job",
+                "failed_run_count": 1,
+                "failed_step_number": 1,
+                "run_attempt": 1,
+                "flaky": "unknown",
+                "run_id": anys.ANY_INT,
+                "started_at": anys.ANY_DATETIME_STR,
+                "completed_at": anys.ANY_DATETIME_STR,
+                "steps": [anys.ANY_DICT],
+            },
+            {
+                "id": DbPopulator.internal_ref[
+                    "OneAccount/OneRepo/flaky_failed_job_attempt_2/metadata/1"
+                ],
+                "name": "A job",
+                "failed_run_count": 3,
+                "failed_step_number": 1,
+                "run_attempt": 2,
+                "flaky": "flaky",
+                "run_id": anys.ANY_INT,
+                "started_at": anys.ANY_DATETIME_STR,
+                "completed_at": anys.ANY_DATETIME_STR,
+                "steps": [anys.ANY_DICT],
+            },
+            {
+                "id": DbPopulator.internal_ref[
+                    "OneAccount/OneRepo/flaky_failed_job_attempt_1/metadata/1"
+                ],
+                "name": "A job",
+                "flaky": "flaky",
+                "failed_run_count": 3,
+                "failed_step_number": 1,
+                "run_attempt": 1,
+                "run_id": job.workflow_run_id,
+                "started_at": job.started_at.isoformat().replace("+00:00", "Z"),
+                "completed_at": job.completed_at.isoformat().replace("+00:00", "Z"),
+                "steps": [
+                    {
+                        "name": "Run a step",
+                        "status": "completed",
+                        "conclusion": "failure",
+                        "number": 1,
+                        "started_at": job.steps[0]["started_at"],
+                        "completed_at": job.steps[0]["completed_at"],
+                    },
+                ],
+            },
+        ],
+    }
+
+    expected_last_event_page_json = {
+        "per_page": 1,
+        "size": 1,
+        "events": [
+            {
+                "id": DbPopulator.internal_ref[
+                    "OneAccount/OneRepo/flaky_failed_job_attempt_1/metadata/1"
+                ],
+                "name": "A job",
+                "flaky": "flaky",
+                "failed_run_count": 3,
+                "failed_step_number": 1,
+                "run_attempt": 1,
+                "run_id": job.workflow_run_id,
+                "started_at": job.started_at.isoformat().replace("+00:00", "Z"),
+                "completed_at": job.completed_at.isoformat().replace("+00:00", "Z"),
+                "steps": [
+                    {
+                        "name": "Run a step",
+                        "status": "completed",
+                        "conclusion": "failure",
+                        "number": 1,
+                        "started_at": job.steps[0]["started_at"],
+                        "completed_at": job.steps[0]["completed_at"],
+                    },
+                ],
+            },
+        ],
+    }
+
+    expected_first_event_page_json = {
+        "per_page": 1,
+        "size": 1,
+        "events": [
+            {
+                "id": DbPopulator.internal_ref[
+                    "OneAccount/OneRepo/failed_job_with_flaky_nghb/metadata/1"
+                ],
+                "name": "A job",
+                "failed_run_count": 1,
+                "failed_step_number": 1,
+                "run_attempt": 1,
+                "flaky": "unknown",
+                "run_id": anys.ANY_INT,
+                "started_at": anys.ANY_DATETIME_STR,
+                "completed_at": anys.ANY_DATETIME_STR,
+                "steps": [anys.ANY_DICT],
+            },
+        ],
+    }
+    expected_second_event_page_json = {
+        "per_page": 1,
+        "size": 1,
+        "events": [
+            {
+                "id": DbPopulator.internal_ref[
+                    "OneAccount/OneRepo/flaky_failed_job_attempt_2/metadata/1"
+                ],
+                "name": "A job",
+                "failed_run_count": 3,
+                "failed_step_number": 1,
+                "run_attempt": 2,
+                "flaky": "flaky",
+                "run_id": anys.ANY_INT,
+                "started_at": anys.ANY_DATETIME_STR,
+                "completed_at": anys.ANY_DATETIME_STR,
+                "steps": [anys.ANY_DICT],
+            },
+        ],
+    }
+
+    # Get first event
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events?per_page=1",
+    )
+    assert reply.json() == expected_first_event_page_json
+
+    # Get next event
+    reply = await web_client.get(reply.links["next"]["url"])
+    assert reply.json() == expected_second_event_page_json
+
+    # Get last event
+    reply = await web_client.get(reply.links["next"]["url"])
+    assert reply.json() == expected_last_event_page_json
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events?per_page=1&cursor=-",
+    )
+    assert reply.json() == expected_last_event_page_json
+
+    # Get second event in reverted order
+    reply = await web_client.get(reply.links["next"]["url"])
+    assert reply.json() == expected_second_event_page_json
+
+    # Get first event in reverted order
+    reply = await web_client.get(reply.links["next"]["url"])
+    assert reply.json() == expected_first_event_page_json
+
+    # Get two events per page
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events?per_page=2",
+    )
+    assert reply.json() == {
+        "per_page": 2,
+        "size": 2,
+        "events": [anys.ANY_DICT, anys.ANY_DICT],
+    }
+
+    # Get last event
+    reply = await web_client.get(reply.links["next"]["url"])
+    assert reply.json() == {
+        "per_page": 2,
+        "size": 1,
+        "events": expected_last_event_page_json["events"],
+    }
+
+
+@pytest.mark.populated_db_datasets(
+    "TestGhaFailedJobsLinkToCissueGPTDataset",
+    "TestGhaFailedJobsPullRequestsDataset",
+)
 async def test_api_ci_issue_get_ci_issue(
     _mock_gh_pull_request_commits_insert_in_pg: None,
     _mock_gh_pull_request_files_insert_in_pg: None,
