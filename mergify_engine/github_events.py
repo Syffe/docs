@@ -24,6 +24,7 @@ from mergify_engine import worker_pusher
 from mergify_engine.ci import job_registries
 from mergify_engine.clients import github
 from mergify_engine.engine import commands_runner
+from mergify_engine.github_in_postgres import utils as ghinpg_utils
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.web.api import security as api_security
 
@@ -661,17 +662,30 @@ async def filter_and_dispatch(
             event,
         )
 
-        await worker_pusher.push(
-            redis_links.stream,
-            classified_event.event["repository"]["owner"]["id"],
-            classified_event.event["repository"]["owner"]["login"],
-            classified_event.event["repository"]["id"],
-            classified_event.event["repository"]["name"],
-            classified_event.pull_request_number,
-            event_type,
-            classified_event.slim_event,
-            classified_event.priority,
-        )
+        # Push the event in the stream worker only if the owner of the repo cannot use github-in-postgres.
+        # Otherwise the new engine flow will push the event in this stream once
+        # the event's data have been updated in postgres.
+        if (
+            EventRoute.GITHUB_IN_POSTGRES in classified_event.routes
+            and await ghinpg_utils.can_repo_use_github_in_pg_data(
+                repo_owner=classified_event.event["repository"]["owner"]["login"],
+            )
+        ):
+            # Just to not have a confusing log telling the event was pushed
+            # in stream when it wasn't.
+            classified_event.routes ^= EventRoute.STREAM
+        else:
+            await worker_pusher.push(
+                redis_links.stream,
+                classified_event.event["repository"]["owner"]["id"],
+                classified_event.event["repository"]["owner"]["login"],
+                classified_event.event["repository"]["id"],
+                classified_event.event["repository"]["name"],
+                classified_event.pull_request_number,
+                event_type,
+                classified_event.slim_event,
+                classified_event.priority,
+            )
 
     if (
         settings.CI_EVENT_INGESTION
@@ -688,6 +702,20 @@ async def filter_and_dispatch(
         settings.GITHUB_IN_POSTGRES_EVENTS_INGESTION
         and EventRoute.GITHUB_IN_POSTGRES in classified_event.routes
     ):
+        data_for_stream_push: worker_pusher.DataForStreamPush | None = None
+        if await ghinpg_utils.can_repo_use_github_in_pg_data(
+            repo_owner=classified_event.event["repository"]["owner"]["login"],
+        ):
+            data_for_stream_push = worker_pusher.DataForStreamPush(
+                owner_id=classified_event.event["repository"]["owner"]["id"],
+                owner_login=classified_event.event["repository"]["owner"]["login"],
+                repository_id=classified_event.event["repository"]["id"],
+                repository_name=classified_event.event["repository"]["name"],
+                pull_number=classified_event.pull_request_number,
+                slim_event=classified_event.slim_event,
+                priority=classified_event.priority,
+            )
+
         await worker_pusher.push_github_in_pg_event(
             redis_links.stream,
             event_type,
@@ -696,6 +724,7 @@ async def filter_and_dispatch(
                 event_type,
                 classified_event.event,
             ),
+            data_for_stream_push=data_for_stream_push,
         )
 
     classified_event.emit_log()

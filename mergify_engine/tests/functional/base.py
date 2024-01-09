@@ -31,7 +31,6 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import delayed_refresh
 from mergify_engine import duplicate_pull
-from mergify_engine import engine
 from mergify_engine import github_graphql_types
 from mergify_engine import github_types
 from mergify_engine import gitter
@@ -70,6 +69,7 @@ if typing.TYPE_CHECKING:
 LOG = daiquiri.getLogger(__name__)
 
 real_consume_method = stream.Processor.consume
+real_select_pull_request_bucket = stream.Processor.select_pull_request_bucket
 real_get_pull_messages = stream_lua.get_pull_messages
 real_store_redis_events_in_pg = ghinpg_process_events.store_redis_events_in_pg
 real_process_failed_jobs = github_action.process_failed_jobs
@@ -78,7 +78,6 @@ real_process_workflow_job_stream = event_processing.process_workflow_job_stream
 real__save_cached_last_summary_head_sha = (
     context.Context._save_cached_last_summary_head_sha
 )
-real_engine_run = engine.run
 real_get_checks_for_ref = check_api.get_checks_for_ref
 
 
@@ -532,7 +531,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         # Track when worker work
         self.worker_concurrency_works = 0
-        self.github_in_postgres_working = 0
 
         await self.update_delete_branch_on_merge()
 
@@ -742,6 +740,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         conclusion: github_types.GitHubCheckRunConclusion | None = None,
         name: str | None = None,
         pr_number: github_types.GitHubPullRequestNumber | None = None,
+        output_title: str | None = None,
+        output_summary: str | None = None,
+        head_sha: str | None = None,
     ) -> github_types.GitHubEventCheckRun:
         wait_for_payload = tests_utils.get_check_run_event_payload(
             action=action,
@@ -749,6 +750,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             conclusion=conclusion,
             name=name,
             pr_number=pr_number,
+            output_title=output_title,
+            output_summary=output_summary,
+            head_sha=head_sha,
         )
 
         return typing.cast(
@@ -782,27 +786,30 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         async def mocked_tracked_consume(*args, **kwargs):  # type: ignore[no-untyped-def]
             self.worker_concurrency_works += 1
-            # Make sure github-in-postgres is not processing events before consuming a PR,
-            # this is to avoid the case where in record all the github-in-postgres events were
-            # properly stored in db but not in replay mode, which leads to inconsistencies
-            # in how the events are treated or where the data we get in the Context is fetched
-            # from.
-            while self.github_in_postgres_working:
-                await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
-
             try:
                 return await real_consume_method(*args, **kwargs)
             finally:
                 self.worker_concurrency_works -= 1
 
+        async def mocked_select_pull_request_bucket(*args, **kwargs):  # type: ignore[no-untyped-def]
+            while (
+                "github-in-postgres" in services
+                and await self.redis_links.stream.xlen("github_in_postgres")
+            ):
+                # This is to avoid a case where, in record, an engine run in record is processing
+                # a pull with, as sources, an internal refresh and an event, but in replay mode
+                # the workers are too fast which cause the engine run to be launched with only
+                # the internal refresh.
+                await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
+
+            return await real_select_pull_request_bucket(*args, **kwargs)
+
         async def mocked_store_redis_events_in_pg(*args, **kwargs):  # type: ignore[no-untyped-def]
             self.worker_concurrency_works += 1
-            self.github_in_postgres_working += 1
             try:
                 return await real_store_redis_events_in_pg(*args, **kwargs)
             finally:
                 self.worker_concurrency_works -= 1
-                self.github_in_postgres_working -= 1
 
         async def mocked_process_failed_jobs(*args, **kwargs):  # type: ignore[no-untyped-def]
             self.worker_concurrency_works += 1
@@ -833,34 +840,32 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             await real__save_cached_last_summary_head_sha(*args, **kwargs)
             await self.event_reader.put_event_breakpoint("head sha mapping saved")
 
-        async def mocked_engine_run(*args, **kwargs):  # type: ignore[no-untyped-def]
-            # Make sure every github-in-postgres events are handled and stored
-            # before using `engine.run`, otherwise the context can have different values
-            # fetched from db between record and replay.
-            while (
-                "github-in-postgres" in services
-                and await self.redis_links.stream.xlen("github_in_postgres")
-            ):
-                await asyncio.sleep(0.05)
-
-            return await real_engine_run(*args, **kwargs)
-
         async def mocked_get_checks_for_ref(*args, **kwargs):  # type: ignore[no-untyped-def]
+            r = await real_get_checks_for_ref(*args, **kwargs)
             # We need to add a breakpoint after querying checks for a ref, otherwise,
             # without a breakpoint, if an event arrives after we queried checks then in replay
             # mode the event might come before the query and the context loaded inside
             # `engine.run` will not be the same than in record mode.
             # This is only required when github-in-postgres service is used.
-            r = await real_get_checks_for_ref(*args, **kwargs)
             if "github-in-postgres" in services:
                 await self.event_reader.put_event_breakpoint("get checks for ref")
             return r
 
         async def mocked_get_pull_messages(*args, **kwargs):  # type: ignore[no-untyped-def]
+            while (
+                "github-in-postgres" in services
+                and await self.redis_links.stream.xlen("github_in_postgres")
+            ):
+                # This is to avoid a case where, in record, an engine run in record is processing
+                # a pull with, as sources, an internal refresh and an event, but in replay mode
+                # the workers are too fast which cause the engine run to be launched with only
+                # the internal refresh.
+                await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
+
+            r = await real_get_pull_messages(*args, **kwargs)
             # We need to add a breakpoint after querying pull messages, otherwise events
             # can be replayed too early which leads to some call to `get_pull_messages`
             # having more messages in replay than in record.
-            r = await real_get_pull_messages(*args, **kwargs)
             await self.event_reader.put_event_breakpoint("got pull messages")
             return r
 
@@ -879,6 +884,10 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             stream.Processor,
             "consume",
             mocked_tracked_consume,
+        ), mock.patch.object(
+            stream.Processor,
+            "select_pull_request_bucket",
+            mocked_select_pull_request_bucket,
         ), mock.patch.object(
             ghinpg_process_events,
             "store_redis_events_in_pg",
@@ -899,7 +908,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             context.Context,
             "_save_cached_last_summary_head_sha",
             mocked__save_cached_last_summary_head_sha,
-        ), mock.patch.object(engine, "run", mocked_engine_run), mock.patch.object(
+        ), mock.patch.object(
             check_api,
             "get_checks_for_ref",
             mocked_get_checks_for_ref,

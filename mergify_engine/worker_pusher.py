@@ -1,5 +1,6 @@
 import datetime
 import enum
+import typing
 
 import daiquiri
 from ddtrace import tracer
@@ -164,11 +165,22 @@ async def push_ci_event(
     )
 
 
+class DataForStreamPush(typing.TypedDict):
+    owner_id: github_types.GitHubAccountIdType
+    owner_login: github_types.GitHubLogin
+    repository_id: github_types.GitHubRepositoryIdType
+    repository_name: github_types.GitHubRepositoryName
+    pull_number: github_types.GitHubPullRequestNumber | None
+    slim_event: typing.Any
+    priority: Priority | None
+
+
 async def push_github_in_pg_event(
     redis_stream: redis_utils.RedisStream,
     event_type: github_types.GitHubEventType,
     event_id: str,
     data: filtered_github_types.GitHubDataT,
+    data_for_stream_push: DataForStreamPush | None = None,
 ) -> None:
     fields = {
         "event_type": event_type,
@@ -176,6 +188,9 @@ async def push_github_in_pg_event(
         "data": msgpack.packb(data),
         "timestamp": date.utcnow().isoformat(),
     }
+    if data_for_stream_push:
+        fields["data_for_stream_push"] = msgpack.packb(data_for_stream_push)
+
     await redis_stream.xadd(
         "github_in_postgres",
         fields=fields,  # type: ignore[arg-type]

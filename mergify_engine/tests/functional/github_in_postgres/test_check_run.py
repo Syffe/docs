@@ -2,7 +2,6 @@ from unittest import mock
 
 import pytest
 import sqlalchemy
-import yaml
 
 from mergify_engine import constants
 from mergify_engine import context
@@ -11,6 +10,7 @@ from mergify_engine.clients import github
 from mergify_engine.models.github import check_run as gh_checkrun_model
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.functional import utils as tests_utils
+from mergify_engine.yaml import yaml
 
 
 @pytest.mark.usefixtures("_enable_github_in_postgres")
