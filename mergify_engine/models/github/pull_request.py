@@ -557,30 +557,6 @@ class PullRequestRequestedReviewersGitHubAccountAssociationTable(models.Base):
         await session.execute(sql)
 
 
-# This table is kept just in case we still need the data from it for the moment
-class PullRequestForCiEventProcessing(models.Base):
-    __tablename__ = "old_pull_request_for_ci_event_processing"
-
-    id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger,
-        primary_key=True,
-        autoincrement=False,
-        anonymizer_config=None,
-    )
-    number: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger,
-        anonymizer_config="anon.random_int_between(1,100000)",
-    )
-    title: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text,
-        anonymizer_config="anon.lorem_ipsum( words := 5 )",
-    )
-    state: orm.Mapped[github_types.GitHubPullRequestState] = orm.mapped_column(
-        sqlalchemy.Text,
-        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
-    )
-
-
 class PullRequestHeadShaHistory(models.Base):
     __tablename__ = "pull_request_head_sha_history"
 

@@ -2,7 +2,6 @@ from mergify_engine.models.github.account import GitHubAccount
 from mergify_engine.models.github.check_run import CheckRun
 from mergify_engine.models.github.commit_status import Status
 from mergify_engine.models.github.pull_request import PullRequest
-from mergify_engine.models.github.pull_request import PullRequestForCiEventProcessing
 from mergify_engine.models.github.pull_request import PullRequestHeadShaHistory
 from mergify_engine.models.github.pull_request_commit import PullRequestCommit
 from mergify_engine.models.github.pull_request_file import PullRequestFile
@@ -31,7 +30,6 @@ __all__ = [
     "PullRequest",
     "PullRequestCommit",
     "PullRequestFile",
-    "PullRequestForCiEventProcessing",
     "Status",
     "WorkflowJobConclusion",
     "WorkflowRunTriggerEvent",
