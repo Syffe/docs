@@ -90,7 +90,7 @@ def get_completion_query(log_content: str) -> openai_api.ChatCompletion:
 
 
 @dataclasses.dataclass
-class UnexpectedLogEmbedderError(Exception):
+class LogNotFoundInZipFileError(Exception):
     message: str
     log_extras: dict[str, typing.Any] = dataclasses.field(default_factory=dict)
 
@@ -174,24 +174,24 @@ def get_step_log_from_zipped_content(
     failed_step_number: int,
 ) -> bytes:
     cleaned_job_name = WORKFLOW_JOB_NAME_INVALID_CHARS_REGEXP.sub("", github_name)
-
+    searching_pattern = f"{cleaned_job_name}/{failed_step_number}_"
     with io.BytesIO() as zip_data:
         zip_data.write(zipped_log_content)
 
         with zipfile.ZipFile(zip_data, "r") as zip_file:
             for i in zip_file.infolist():
-                if not i.filename.startswith(
-                    f"{cleaned_job_name}/{failed_step_number}_",
-                ):
+                if not i.filename.startswith(searching_pattern):
                     continue
 
                 with zip_file.open(i.filename) as log_file:
                     return log_file.read()
 
-    # FIXME(sileht): We should mark the job as ERROR instead of retrying
-    raise UnexpectedLogEmbedderError(
+    raise LogNotFoundInZipFileError(
         "log-embedder: job log not found in zip file",
-        log_extras={"files": [i.filename for i in zip_file.infolist()]},
+        log_extras={
+            "files": [i.filename for i in zip_file.infolist()],
+            "searching_pattern": searching_pattern,
+        },
     )
 
 
@@ -337,7 +337,7 @@ def log_exception_and_maybe_retry(
     job: gh_models.WorkflowJob,
 ) -> bool:
     log_extras = job.as_log_extras()
-    if isinstance(exc, UnexpectedLogEmbedderError):
+    if isinstance(exc, LogNotFoundInZipFileError):
         log_extras.update(exc.log_extras)
 
     if exceptions.should_be_ignored(exc):
@@ -373,8 +373,13 @@ def log_exception_and_maybe_retry(
 
     retry_at = date.utcnow() + retry_in
 
-    # We don't want to log anything related to network and HTTP server side error
-    if not isinstance(exc, http.RequestError | http.HTTPServerSideError):
+    # We don't want to log anything related to:
+    #     - network and HTTP server side error
+    #     - LogNotFoundInZipFileError
+    if not isinstance(
+        exc,
+        http.RequestError | http.HTTPServerSideError | LogNotFoundInZipFileError,
+    ):
         LOG.error(
             "log-embedder: unexpected failure, retrying later",
             exc_info=True,
