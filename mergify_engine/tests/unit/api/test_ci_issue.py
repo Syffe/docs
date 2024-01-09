@@ -1,5 +1,4 @@
 from collections import abc
-import datetime
 from unittest import mock
 
 import anys
@@ -27,10 +26,6 @@ def _enable_ci_issues() -> abc.Generator[None, None, None]:
         config_types.StrListFromStrWithComma(["OneAccount", "colliding-account-1"]),
     ):
         yield
-
-
-def to_isoformat_with_z(dt: datetime.datetime) -> str:
-    return dt.isoformat().replace("+00:00", "Z")
 
 
 @pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
@@ -107,8 +102,10 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "flaky",
-                "last_seen": to_isoformat_with_z(failed_job_with_flaky_nghb.started_at),
-                "first_seen": to_isoformat_with_z(
+                "last_seen": date.to_isoformat_with_Z(
+                    failed_job_with_flaky_nghb.started_at,
+                ),
+                "first_seen": date.to_isoformat_with_Z(
                     flaky_failed_job_attempt_1.started_at,
                 ),
                 "pull_requests_count": 0,
@@ -132,8 +129,10 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "unknown",
-                "last_seen": to_isoformat_with_z(failed_job_with_flaky_nghb.started_at),
-                "first_seen": to_isoformat_with_z(
+                "last_seen": date.to_isoformat_with_Z(
+                    failed_job_with_flaky_nghb.started_at,
+                ),
+                "first_seen": date.to_isoformat_with_Z(
                     failed_job_with_flaky_nghb.started_at,
                 ),
                 "pull_requests_count": 0,
@@ -157,10 +156,10 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "unknown",
-                "last_seen": to_isoformat_with_z(
+                "last_seen": date.to_isoformat_with_Z(
                     failed_job_with_no_flaky_nghb.started_at,
                 ),
-                "first_seen": to_isoformat_with_z(
+                "first_seen": date.to_isoformat_with_Z(
                     failed_job_with_no_flaky_nghb.started_at,
                 ),
                 "pull_requests_count": 0,
@@ -209,10 +208,10 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "unknown",
-                "last_seen": to_isoformat_with_z(
+                "last_seen": date.to_isoformat_with_Z(
                     failed_job_with_no_flaky_nghb.started_at,
                 ),
-                "first_seen": to_isoformat_with_z(
+                "first_seen": date.to_isoformat_with_Z(
                     failed_job_with_no_flaky_nghb.started_at,
                 ),
                 "pull_requests_count": 0,
@@ -296,8 +295,10 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "flaky",
-                "last_seen": to_isoformat_with_z(failed_job_with_flaky_nghb.started_at),
-                "first_seen": to_isoformat_with_z(
+                "last_seen": date.to_isoformat_with_Z(
+                    failed_job_with_flaky_nghb.started_at,
+                ),
+                "first_seen": date.to_isoformat_with_Z(
                     flaky_failed_job_attempt_1.started_at,
                 ),
                 "pull_requests_count": 3,
@@ -347,10 +348,10 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 "short_id": anys.ANY_STR,
                 "status": "unresolved",
                 "flaky": "unknown",
-                "last_seen": to_isoformat_with_z(
+                "last_seen": date.to_isoformat_with_Z(
                     failed_job_with_no_flaky_nghb.started_at,
                 ),
-                "first_seen": to_isoformat_with_z(
+                "first_seen": date.to_isoformat_with_Z(
                     failed_job_with_no_flaky_nghb.started_at,
                 ),
                 "pull_requests_count": 0,
