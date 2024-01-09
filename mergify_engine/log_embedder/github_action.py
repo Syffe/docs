@@ -96,7 +96,7 @@ class UnexpectedLogEmbedderError(Exception):
 
 
 @dataclasses.dataclass
-class UnableToExtractLogMetadata(Exception):
+class UnableToExtractLogMetadataError(Exception):
     chat_completion_result: openai_api.ChatCompletionResponse | None
 
 
@@ -232,7 +232,7 @@ async def create_job_log_metadata(
 ) -> None:
     try:
         extracted_data = await extract_data_from_log(openai_client, log)
-    except UnableToExtractLogMetadata as err:
+    except UnableToExtractLogMetadataError as err:
         LOG.warning(
             "Unable to extract data for the job log",
             chat_completion=err.chat_completion_result,
@@ -277,7 +277,7 @@ async def extract_data_from_log(
             err.response.status_code == 400
             and "Detected an error in the prompt" in err.response.content.decode()
         ):
-            raise UnableToExtractLogMetadata(None)
+            raise UnableToExtractLogMetadataError(None)
 
         raise
 
@@ -286,11 +286,11 @@ async def extract_data_from_log(
         # FIXME(Kontrolix): It means that GPT reaches a limit.
         # for now I have no better solution than push the error under the carpet.
         # But we will have to improve the prompt or the cleaner or the model we use ...
-        raise UnableToExtractLogMetadata(chat_completion)
+        raise UnableToExtractLogMetadataError(chat_completion)
 
     chat_response = choice["message"]["content"]
     if not chat_response:
-        raise UnableToExtractLogMetadata(chat_completion)
+        raise UnableToExtractLogMetadataError(chat_completion)
 
     extracted_data: list[ExtractedDataObject] = json.loads(chat_response)["failures"]
 
@@ -298,7 +298,7 @@ async def extract_data_from_log(
     # solution than push the error under the carpet. But we will have to improve
     # the prompt or the cleaner or the model we use ...
     if not extracted_data or extracted_data == [None]:
-        raise UnableToExtractLogMetadata(chat_completion)
+        raise UnableToExtractLogMetadataError(chat_completion)
 
     return extracted_data
 
@@ -562,7 +562,7 @@ async def extract_metadata_from_logs() -> bool:
                             job_for_update,
                             logm.Log.from_content(job_for_update.log_extract),
                         )
-                    except UnableToExtractLogMetadata:
+                    except UnableToExtractLogMetadataError:
                         session.expunge(job_for_update)
                         job_for_error = await session.merge(job, load=False)
                         job_for_error.log_metadata_extracting_status = (
@@ -651,7 +651,7 @@ async def download_logs_for_failed_jobs() -> bool:
             try:
                 try:
                     await fetch_and_store_log(gcs_client, job_for_update)
-                except gh_models.WorkflowJob.UnableToRetrieveLog:
+                except gh_models.WorkflowJob.UnableToRetrieveLogError:
                     session.expunge(job_for_update)
                     job_for_error = await session.merge(job, load=False)
                     job_for_error.log_status = gh_models.WorkflowJobLogStatus.GONE

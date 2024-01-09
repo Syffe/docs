@@ -170,7 +170,7 @@ class RuleCondition:
                 condition,
                 description,
             )
-        except (parser.ConditionParsingError, filter.InvalidQuery) as e:
+        except (parser.ConditionParsingError, filter.InvalidQueryError) as e:
             # Escape HTML chars that a user can insert in configuration
             escaped_condition = html.escape(condition)
             raise voluptuous.Invalid(
@@ -203,7 +203,7 @@ class RuleCondition:
             if self.filters.related_checks is not None:
                 self.related_checks = (await self.filters.related_checks(obj)).values
             self.next_evaluation_at = await self.filters.next_evaluation(obj)
-        except live_resolvers.LiveResolutionFailure as e:
+        except live_resolvers.LiveResolutionFailureError as e:
             self.match = False
             self.evaluation_error = e.reason
 
@@ -601,7 +601,7 @@ async def get_depends_on_conditions(ctxt: context.Context) -> list[RuleCondition
             dep_ctxt = await ctxt.repository.get_pull_request_context(
                 pull_request_number,
             )
-        except http.HTTPNotFound:
+        except http.HTTPNotFoundError:
             description = f"⛓️ ⚠️ *pull request not found* (#{pull_request_number})"
         else:
             # Escape HTML chars in PR title, for security

@@ -39,17 +39,17 @@ class PullRequestRule:
     actions: dict[str, actions_mod.Action]
     hidden: bool
 
-    class T_from_dict_required(typing.TypedDict):
+    class TypeFromDictRequired(typing.TypedDict):
         name: PullRequestRuleName
         disabled: DisabledDict | None
         conditions: conditions_mod.PullRequestRuleConditions
         actions: dict[str, actions_mod.Action]
 
-    class T_from_dict(T_from_dict_required, total=False):
+    class TypeFromDict(TypeFromDictRequired, total=False):
         hidden: bool
 
     @classmethod
-    def from_dict(cls, d: T_from_dict) -> "PullRequestRule":
+    def from_dict(cls, d: TypeFromDict) -> "PullRequestRule":
         return cls(**d)
 
     def get_check_name(self, action: str) -> str:

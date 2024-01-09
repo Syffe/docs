@@ -65,7 +65,7 @@ async def assert_base_event(
 
 
 async def test_event_not_supported(fake_repository: context.Repository) -> None:
-    with pytest.raises(eventlogs.EventNotHandled) as e:
+    with pytest.raises(eventlogs.EventNotHandledError) as e:
         await eventlogs.insert(
             event="event.not.supported",  # type: ignore [arg-type]
             repository=fake_repository.repo,

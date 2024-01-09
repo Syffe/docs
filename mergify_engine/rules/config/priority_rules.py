@@ -30,13 +30,13 @@ class PriorityRule:
     conditions: conditions_mod.PriorityRuleConditions
     priority: queue.PriorityT
 
-    class T_from_dict(typing.TypedDict):
+    class TypeFromDict(typing.TypedDict):
         name: PriorityRuleName
         conditions: conditions_mod.PriorityRuleConditions
         priority: queue.PriorityT
 
     @classmethod
-    def from_dict(cls, d: T_from_dict) -> PriorityRule:
+    def from_dict(cls, d: TypeFromDict) -> PriorityRule:
         return cls(**d)
 
     def get_conditions_used_by_evaluator(self) -> conditions_mod.PriorityRuleConditions:

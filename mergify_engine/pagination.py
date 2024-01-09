@@ -68,7 +68,7 @@ class Cursor(str):
 
 
 @dataclasses.dataclass
-class InvalidCursor(Exception):
+class InvalidCursorError(Exception):
     cursor: Cursor
 
 

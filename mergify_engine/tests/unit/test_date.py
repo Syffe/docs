@@ -159,7 +159,7 @@ def test_relative_datetime_from_string(string: str, expected_value: str) -> None
 
 
 def test_relative_datetime_without_timezone() -> None:
-    with pytest.raises(date.InvalidDate):
+    with pytest.raises(date.InvalidDateError):
         date.RelativeDatetime(datetime.datetime.now())  # noqa: DTZ005
 
 
@@ -199,7 +199,7 @@ def test_invalid_date_string(
     value: str,
     expected_message: str,
 ) -> None:
-    with pytest.raises(date.InvalidDate) as exc:
+    with pytest.raises(date.InvalidDateError) as exc:
         date_type.from_string(value)
 
     assert exc.value.message == expected_message
@@ -270,7 +270,7 @@ def test_interval_from_string(
     expected_interval: datetime.timedelta | None,
 ) -> None:
     if expected_interval is None:
-        with pytest.raises(date.InvalidDate):
+        with pytest.raises(date.InvalidDateError):
             date.interval_from_string(value)
     else:
         assert date.interval_from_string(value) == expected_interval
@@ -1016,7 +1016,7 @@ def test_fromisoformat_with_zoneinfo(
     ),
 )
 def test_fromisoformat_with_zoneinfo_invalid(isoformat_datetime: str) -> None:
-    with pytest.raises(date.InvalidDate):
+    with pytest.raises(date.InvalidDateError):
         assert date.fromisoformat_with_zoneinfo(isoformat_datetime)
 
 
@@ -1087,7 +1087,7 @@ def test_datetimerange_fromisoformat_with_zoneinfo(
     ),
 )
 def test_datetimerange_fromisoformat_with_zoneinfo_invalid(isoformat_dtr: str) -> None:
-    with pytest.raises(date.InvalidDate):
+    with pytest.raises(date.InvalidDateError):
         assert date.DateTimeRange.fromisoformat_with_zoneinfo(isoformat_dtr)
 
 

@@ -58,11 +58,11 @@ class MergifyConfigFile(github_types.GitHubContentFile):
 
 
 @dataclasses.dataclass
-class ConfigurationFileAlreadyLoaded(Exception):
-    mergify_config: mergify_conf.MergifyConfig | mergify_conf.InvalidRules
+class ConfigurationFileAlreadyLoadedError(Exception):
+    mergify_config: mergify_conf.MergifyConfig | mergify_conf.InvalidRulesError
 
     def reraise_configuration_error(self) -> None:
-        if isinstance(self.mergify_config, mergify_conf.InvalidRules):
+        if isinstance(self.mergify_config, mergify_conf.InvalidRulesError):
             raise self.mergify_config
 
 
@@ -91,7 +91,7 @@ DEFAULT_CONFIG_FILE = MergifyConfigFile(
 )
 
 
-class T_PayloadEventSource(typing.TypedDict):
+class PayloadEventSourceType(typing.TypedDict):
     event_type: github_types.GitHubEventType
     data: github_types.GitHubEvent
     timestamp: str
@@ -313,7 +313,7 @@ class RepositoryCaches:
         MergifyConfigFile | None
     ] = dataclasses.field(default_factory=cache.SingleCache)
     mergify_config: cache.SingleCache[
-        mergify_conf.MergifyConfig | mergify_conf.InvalidRules
+        mergify_conf.MergifyConfig | mergify_conf.InvalidRulesError
     ] = dataclasses.field(default_factory=cache.SingleCache)
     branches: cache.Cache[
         github_types.GitHubRefType,
@@ -406,9 +406,9 @@ class Repository:
                         params=params,
                     ),
                 )
-            except http.HTTPNotFound:
+            except http.HTTPNotFoundError:
                 continue
-            except http.HTTPForbidden as e:
+            except http.HTTPForbiddenError as e:
                 codes = [e["code"] for e in e.response.json().get("errors", [])]
                 if "too_large" in codes:
                     self.log.warning(
@@ -450,7 +450,7 @@ class Repository:
 
         mergify_config_or_exception = self._caches.mergify_config.get()
         if mergify_config_or_exception is not cache.Unset:
-            raise ConfigurationFileAlreadyLoaded(mergify_config_or_exception)
+            raise ConfigurationFileAlreadyLoadedError(mergify_config_or_exception)
 
         if config_file is None:
             config_file = await self.get_mergify_config_file()
@@ -463,7 +463,7 @@ class Repository:
                 self,
                 config_file,
             )
-        except mergify_conf.InvalidRules as e:
+        except mergify_conf.InvalidRulesError as e:
             self._caches.mergify_config.set(e)
             raise
 
@@ -498,7 +498,7 @@ class Repository:
             raise RuntimeError(
                 "no mergify configuration has been loaded into the repository context",
             )
-        if isinstance(mergify_config_or_exception, mergify_conf.InvalidRules):
+        if isinstance(mergify_config_or_exception, mergify_conf.InvalidRulesError):
             raise RuntimeError(
                 "Trying to use the Mergify configuration after a loading failure",
             ) from mergify_config_or_exception
@@ -719,7 +719,7 @@ class Repository:
 
     @classmethod
     def get_mergify_installation_cache_key(
-        self,
+        cls,
         repo_fullname: str,
     ) -> str:
         return f"mergify-installation/{repo_fullname}"
@@ -741,7 +741,7 @@ class Repository:
                 await client.get(
                     f"/repos/{self.repo['owner']['login']}/{self.repo['name']}/installation",
                 )
-            except http.HTTPNotFound as e:
+            except http.HTTPNotFoundError as e:
                 ret = MergifyInstalled(
                     installed=False,
                     error=str(e),
@@ -966,7 +966,7 @@ class Repository:
                         f"/orgs/{self.installation.owner_login}/teams/{team}/repos/{self.installation.owner_login}/{self.repo['name']}",
                     )
                     read_permission = True
-                except http.HTTPNotFound:
+                except http.HTTPNotFoundError:
                     read_permission = False
                 pipe = await self.installation.redis.team_permissions_cache.pipeline()
                 await pipe.hset(key, team, str(int(read_permission)))
@@ -983,7 +983,7 @@ class Repository:
     ) -> github_types.GitHubBranchProtection | None:
         try:
             branch = await self.get_branch(branch_name)
-        except http.HTTPNotFound:
+        except http.HTTPNotFoundError:
             return None
 
         if branch["protection"]["enabled"]:
@@ -1097,9 +1097,9 @@ class Repository:
                         api_version="luke-cage",
                     ),
                 )
-            except http.HTTPNotFound:
+            except http.HTTPNotFoundError:
                 branch_protection = None
-            except http.HTTPForbidden as e:
+            except http.HTTPForbiddenError as e:
                 if (
                     "or make this repository public to enable this feature."
                     in e.message
@@ -1227,7 +1227,7 @@ class ContextCaches:
 class Context:
     repository: Repository
     pull: github_types.GitHubPullRequest
-    sources: list[T_PayloadEventSource] = dataclasses.field(default_factory=list)
+    sources: list[PayloadEventSourceType] = dataclasses.field(default_factory=list)
     configuration_changed: bool = False
     github_has_pending_background_jobs: bool = dataclasses.field(
         init=False,
@@ -1734,7 +1734,7 @@ class Context:
 
         try:
             return date.fromisoformat_with_zoneinfo(find.group(1))
-        except date.InvalidDate:
+        except date.InvalidDateError:
             return None
 
     async def update_cached_check_runs(
@@ -2144,7 +2144,7 @@ class Context:
                 e.status_code == 422
                 and "Sorry, this diff is taking too long to generate" in e.message
             ):
-                raise exceptions.UnprocessablePullRequest(
+                raise exceptions.UnprocessablePullRequestError(
                     "GitHub cannot generate the file list because the diff is taking too long",
                 )
             raise

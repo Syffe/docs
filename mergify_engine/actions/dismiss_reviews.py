@@ -62,8 +62,8 @@ class DismissReviewsExecutor(
         pull_attrs = condition_value_querier.PullRequest(ctxt)
         try:
             message = await pull_attrs.render_template(message_raw)
-        except condition_value_querier.RenderTemplateFailure as rmf:
-            raise actions.InvalidDynamicActionConfiguration(
+        except condition_value_querier.RenderTemplateFailureError as rmf:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Invalid dismiss reviews message",

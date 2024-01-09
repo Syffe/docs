@@ -111,7 +111,7 @@ def merge_config_with_defaults(
 
 
 @dataclasses.dataclass
-class InvalidRules(Exception):
+class InvalidRulesError(Exception):
     error: voluptuous.Invalid
     filename: str
 
@@ -177,7 +177,7 @@ async def get_mergify_config_from_file(
     try:
         config = rules.YamlSchema(config_file["decoded_content"])
     except voluptuous.Invalid as e:
-        raise InvalidRules(e, config_file["path"])
+        raise InvalidRulesError(e, config_file["path"])
 
     # Allow an empty file
     if config is None:
@@ -201,14 +201,14 @@ async def get_mergify_config_from_dict(
     try:
         rules.UserConfigurationSchema(config)
     except voluptuous.Invalid as e:
-        raise InvalidRules(e, error_path)
+        raise InvalidRulesError(e, error_path)
 
     defaults = config.pop("defaults", {})
 
     extended_path = config.get("extends")
     if extended_path is not None:
         if not allow_extend:
-            raise InvalidRules(
+            raise InvalidRulesError(
                 voluptuous.Invalid(
                     "Maximum number of extended configuration reached. Limit is 1.",
                     ["extends"],
@@ -232,7 +232,7 @@ async def get_mergify_config_from_dict(
         final_config["defaults"] = defaults
         final_config["raw_config"] = config
     except voluptuous.Invalid as e:
-        raise InvalidRules(e, error_path)
+        raise InvalidRulesError(e, error_path)
     else:
         return typing.cast(MergifyConfig, final_config)
 
@@ -246,8 +246,8 @@ async def get_mergify_extended_config(
         extended_repository_ctxt = (
             await repository_ctxt.installation.get_repository_by_name(extended_path)
         )
-    except http.HTTPNotFound as e:
-        exc = InvalidRules(
+    except http.HTTPNotFoundError as e:
+        exc = InvalidRulesError(
             voluptuous.Invalid(
                 f"Extended configuration repository `{extended_path}` was not found. This repository doesn't exist or Mergify is not installed on it.",
                 ["extends"],
@@ -258,7 +258,7 @@ async def get_mergify_extended_config(
         raise exc from e
 
     if extended_repository_ctxt.repo["id"] == repository_ctxt.repo["id"]:
-        raise InvalidRules(
+        raise InvalidRulesError(
             voluptuous.Invalid(
                 "Only configuration from other repositories can be extended.",
                 ["extends"],
@@ -268,7 +268,7 @@ async def get_mergify_extended_config(
 
     mergify_installed = await extended_repository_ctxt.is_mergify_installed()
     if not mergify_installed["installed"]:
-        raise InvalidRules(
+        raise InvalidRulesError(
             voluptuous.Invalid(
                 f"Extended configuration repository `{extended_path}` doesn't have Mergify installed on it. Mergify needs to be enabled on extended repositories to be able to detect configuration changes properly.",
                 ["extends"],
@@ -279,7 +279,7 @@ async def get_mergify_extended_config(
 
     config_file = await extended_repository_ctxt.get_mergify_config_file()
     if config_file is None:
-        raise InvalidRules(
+        raise InvalidRulesError(
             voluptuous.Invalid(
                 f"Extended configuration repository `{extended_path}` doesn't have a Mergify configuration file.",
                 ["extends"],

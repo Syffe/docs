@@ -244,7 +244,7 @@ class GenericEvent(EventBase):
 
 
 @dataclasses.dataclass
-class UnsupportedEvent(Exception):
+class UnsupportedEventError(Exception):
     event: GenericEvent
     message: str = "unsupported event-type, skipping"
 
@@ -342,7 +342,7 @@ def cast_event_item(event: GenericEvent) -> Event:
         case "queue.pause.delete":
             return typing.cast(EventQueuePauseDelete, event)
 
-    raise UnsupportedEvent(event)
+    raise UnsupportedEventError(event)
 
 
 EVENT_NAME_TO_MODEL = {
@@ -354,7 +354,7 @@ EVENT_NAME_TO_MODEL = {
 }
 
 
-class EventNotHandled(Exception):
+class EventNotHandledError(Exception):
     pass
 
 
@@ -369,7 +369,7 @@ async def insert(
     try:
         event_model = EVENT_NAME_TO_MODEL[event]
     except KeyError:
-        raise EventNotHandled(f"Event '{event}' not supported in database")
+        raise EventNotHandledError(f"Event '{event}' not supported in database")
 
     async for attempt in database.tenacity_retry_on_pk_integrity_error(
         (gh_models.GitHubRepository, gh_models.GitHubAccount),
@@ -450,7 +450,7 @@ async def get(
         event = typing.cast(GenericEvent, format_event_item_response(raw))
         try:
             casted_events.append(cast_event_item(event))
-        except UnsupportedEvent as err:
+        except UnsupportedEventError as err:
             LOG.error(err.message, event=err.event)
 
     return pagination.Page(

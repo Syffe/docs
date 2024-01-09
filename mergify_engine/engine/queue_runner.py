@@ -79,5 +79,5 @@ async def _handle_car(
             original_pull_request_rule=None,
             original_pull_request_number=None,
         )
-    except merge_train.MergeQueueReset:
+    except merge_train.MergeQueueResetError:
         pass

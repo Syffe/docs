@@ -77,7 +77,7 @@ async def select_user(
         async with shadow_office.AsyncShadowOfficeSaasClient() as client:
             try:
                 associated_users = await client.get_associated_users(login)
-            except shadow_office.NoAssociatedUsersFound as e:
+            except shadow_office.NoAssociatedUsersFoundError as e:
                 raise fastapi.HTTPException(status_code=404, detail=str(e))
 
             for associated_user in associated_users:

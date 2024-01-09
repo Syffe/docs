@@ -27,13 +27,13 @@ GitHubLoginSchema = voluptuous.Schema(types.GitHubLogin)
 
 
 @dataclasses.dataclass
-class RenderBotAccountFailure(Exception):
+class RenderBotAccountFailureError(Exception):
     status: check_api.Conclusion
     title: str
     reason: str
 
 
-class MissingMergeQueueCheckRun(Exception):
+class MissingMergeQueueCheckRunError(Exception):
     pass
 
 
@@ -76,8 +76,8 @@ async def render_bot_account(
             bot_account = await condition_value_querier.PullRequest(
                 ctxt,
             ).render_template(bot_account_template)
-        except condition_value_querier.RenderTemplateFailure as rmf:
-            raise RenderBotAccountFailure(
+        except condition_value_querier.RenderTemplateFailureError as rmf:
+            raise RenderBotAccountFailureError(
                 check_api.Conclusion.FAILURE,
                 f"Invalid {option_name} template",
                 str(rmf),
@@ -95,7 +95,7 @@ async def render_bot_account(
         try:
             bot_account = GitHubLoginSchema(bot_account)
         except voluptuous.Invalid as e:
-            raise RenderBotAccountFailure(
+            raise RenderBotAccountFailureError(
                 check_api.Conclusion.FAILURE,
                 f"Invalid {option_name} value",
                 str(e),
@@ -110,7 +110,7 @@ async def render_users_template(ctxt: context.Context, users: list[str]) -> set[
     for user in set(users):
         try:
             user = await pull_attrs.render_template(user)  # noqa: PLW2901
-        except condition_value_querier.RenderTemplateFailure:
+        except condition_value_querier.RenderTemplateFailureError:
             # NOTE: this should never happen since
             # the template is validated when parsing the config 🤷
             continue
@@ -121,7 +121,7 @@ async def render_users_template(ctxt: context.Context, users: list[str]) -> set[
 
 
 @dataclasses.dataclass
-class BotAccountNotFound(Exception):
+class BotAccountNotFoundError(Exception):
     status: check_api.Conclusion
     title: str
     reason: str
@@ -160,7 +160,7 @@ async def get_github_user_from_bot_account(
         return None
 
     if login.endswith("[bot]"):
-        raise BotAccountNotFound(
+        raise BotAccountNotFoundError(
             check_api.Conclusion.FAILURE,
             f"Unable to {purpose}: GitHub App bot `{login}` can't be impersonated.",
             "",
@@ -170,8 +170,8 @@ async def get_github_user_from_bot_account(
         try:
             user = await repository.installation.get_user(login)
             permission = await repository.get_user_permission(user)
-        except http.HTTPNotFound:
-            raise BotAccountNotFound(
+        except http.HTTPNotFoundError:
+            raise BotAccountNotFoundError(
                 check_api.Conclusion.ACTION_REQUIRED,
                 f"User `{login}` used as `bot_account` is unknown",
                 f"Please make sure `{login}` exists and has logged into the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL}).",
@@ -186,7 +186,7 @@ async def get_github_user_from_bot_account(
                 fancy_perm += f" or {quoted_required_permissions[-1]}"
             required_permissions[0:-1]
             # `write` or `maintain`
-            raise BotAccountNotFound(
+            raise BotAccountNotFoundError(
                 check_api.Conclusion.ACTION_REQUIRED,
                 (
                     f"`{login}` account used as "
@@ -200,7 +200,7 @@ async def get_github_user_from_bot_account(
             branch_protection_injection_mode == "none"
             and permission != github_types.GitHubRepositoryPermission.ADMIN
         ):
-            raise BotAccountNotFound(
+            raise BotAccountNotFoundError(
                 check_api.Conclusion.ACTION_REQUIRED,
                 (
                     f"`{login}` account used as "
@@ -225,7 +225,7 @@ async def get_github_user_from_bot_account(
         on_behalf = await github_user.GitHubUser.get_by_login(session, login)
 
     if on_behalf is None:
-        raise BotAccountNotFound(
+        raise BotAccountNotFoundError(
             check_api.Conclusion.FAILURE,
             f"Unable to {purpose}: user `{login}` is unknown. ",
             f"Please make sure `{login}` has logged in Mergify dashboard.",
@@ -252,7 +252,7 @@ async def get_dequeue_reason(
 
     check = await ctxt.get_merge_queue_check_run()
     if check is None:
-        raise MissingMergeQueueCheckRun(
+        raise MissingMergeQueueCheckRunError(
             "get_dequeue_reason_from_outcome() called but check is not there",
         )
 

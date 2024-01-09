@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
 
 
 @dataclasses.dataclass
-class LiveResolutionFailure(Exception):
+class LiveResolutionFailureError(Exception):
     reason: str
 
 
@@ -36,11 +36,11 @@ async def _resolve_login(
     if "/" in name:
         organization, _, team_slug = name.partition("/")
         if not team_slug or "/" in team_slug:
-            raise LiveResolutionFailure(f"Team `{name}` is invalid")
+            raise LiveResolutionFailureError(f"Team `{name}` is invalid")
         organization = github_types.GitHubLogin(organization[1:])
         expected_organization = repository.repo["owner"]["login"]
         if organization != expected_organization:
-            raise LiveResolutionFailure(
+            raise LiveResolutionFailureError(
                 f"Team `{name}` is not part of the organization `{expected_organization}`",
             )
         team_slug = github_types.GitHubTeamSlug(team_slug)
@@ -49,8 +49,8 @@ async def _resolve_login(
 
     try:
         return await repository.installation.get_team_members(team_slug)
-    except http.HTTPNotFound:
-        raise LiveResolutionFailure(f"Team `{name}` does not exist")
+    except http.HTTPNotFoundError:
+        raise LiveResolutionFailureError(f"Team `{name}` does not exist")
     except http.HTTPClientSideError as e:
         repository.log.warning(
             "fail to get the organization, team or members",
@@ -58,7 +58,7 @@ async def _resolve_login(
             status_code=e.status_code,
             detail=e.message,
         )
-        raise LiveResolutionFailure(
+        raise LiveResolutionFailureError(
             f"Failed retrieve team `{name}`, details: {e.message}",
         )
 

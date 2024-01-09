@@ -3879,7 +3879,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         sources = [
-            context.T_PayloadEventSource(
+            context.PayloadEventSourceType(
                 {
                     "event_type": "refresh",
                     "data": github_types.GitHubEventRefresh(
@@ -8534,7 +8534,7 @@ pull_request_rules:
         )
 
     async def test_base_branch_vanished(self) -> None:
-        featureA = self.get_full_branch_name("featureA")
+        feature_a = self.get_full_branch_name("featureA")
         rules = {
             "queue_rules": [
                 {
@@ -8550,7 +8550,7 @@ pull_request_rules:
                 {
                     "name": "merge default",
                     "conditions": [
-                        f"base={featureA}",
+                        f"base={feature_a}",
                     ],
                     "actions": {"queue": {"name": "default"}},
                 },
@@ -8558,12 +8558,12 @@ pull_request_rules:
         }
         await self.setup_repo(
             yaml.dump(rules),
-            test_branches=[featureA],
+            test_branches=[feature_a],
             preload_configuration=True,
         )
 
-        await self.create_pr(base=featureA)
-        await self.create_pr(base=featureA)
+        await self.create_pr(base=feature_a)
+        await self.create_pr(base=feature_a)
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "opened"})
 
@@ -8578,7 +8578,7 @@ pull_request_rules:
         assert len(await queues[0].get_pulls()) == 2
 
         await self.client_integration.delete(
-            f"{self.url_origin}/git/refs/heads/{parse.quote(featureA)}",
+            f"{self.url_origin}/git/refs/heads/{parse.quote(feature_a)}",
         )
         await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "closed"})

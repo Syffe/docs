@@ -44,8 +44,8 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
                 action.config["bot_account"],
                 bot_account_fallback=bot_account_fallback,
             )
-        except action_utils.RenderBotAccountFailure as e:
-            raise actions.InvalidDynamicActionConfiguration(
+        except action_utils.RenderBotAccountFailureError as e:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 e.title,
@@ -88,7 +88,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
                 self.config["bot_account"],
                 required_permissions=[],
             )
-        except action_utils.BotAccountNotFound as e:
+        except action_utils.BotAccountNotFoundError as e:
             return check_api.Result(e.status, e.title, e.reason)
 
         try:
@@ -97,7 +97,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
                 on_behalf,
                 self.config["autosquash"],
             )
-        except branch_updater.BranchUpdateFailure as e:
+        except branch_updater.BranchUpdateFailureError as e:
             return check_api.Result(check_api.Conclusion.FAILURE, e.title, e.message)
 
         await signals.send(

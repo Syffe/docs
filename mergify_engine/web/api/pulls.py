@@ -323,7 +323,7 @@ async def get_pull_request_summary(
         prr_evaluator = await repository.mergify_config[
             "pull_request_rules"
         ].get_pull_request_rules_evaluator(ctxt)
-    except actions_mod.InvalidDynamicActionConfiguration as e:
+    except actions_mod.InvalidDynamicActionConfigurationError as e:
         detail = [
             {
                 "loc": ("body", "mergify_yml"),

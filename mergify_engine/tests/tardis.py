@@ -427,7 +427,7 @@ if real_clock is not None:
 
 class FakeDateMeta(type):
     @classmethod
-    def __instancecheck__(self, obj: typing.Any) -> bool:
+    def __instancecheck__(cls, obj: typing.Any) -> bool:
         return isinstance(obj, real_date)
 
     @classmethod
@@ -472,7 +472,7 @@ FakeDate.max = date_to_fakedate(real_date.max)
 
 class FakeDatetimeMeta(FakeDateMeta):
     @classmethod
-    def __instancecheck__(self, obj: typing.Any) -> bool:
+    def __instancecheck__(cls, obj: typing.Any) -> bool:
         return isinstance(obj, real_datetime)
 
     @classmethod
@@ -598,7 +598,7 @@ def pickle_fake_datetime(
 _T = typing.TypeVar("_T")
 
 
-class _time_travel:
+class TimeTravel:
     def __init__(
         self,
         time_to_travel_to: ParsableTimeT,
@@ -931,7 +931,7 @@ def time_travel(
     tick: bool = False,
     as_arg: bool = False,
     as_kwarg: str = "",
-) -> _time_travel:
+) -> TimeTravel:
     if callable(time_to_travel_to):
         return time_travel(
             time_to_travel_to(),
@@ -957,7 +957,7 @@ def time_travel(
     if tardis_settings.default_ignore_list:
         ignore.extend(tardis_settings.default_ignore_list)
 
-    return _time_travel(
+    return TimeTravel(
         time_to_travel_to=time_to_travel_to,
         ignore=ignore,
         tick=tick,

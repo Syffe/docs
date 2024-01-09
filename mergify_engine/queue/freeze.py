@@ -22,7 +22,7 @@ LOG = daiquiri.getLogger(__name__)
 
 
 @dataclasses.dataclass
-class QueueFreezeWithNoQueueRule(Exception):
+class QueueFreezeWithNoQueueRuleError(Exception):
     name: str
 
 

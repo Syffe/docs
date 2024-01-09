@@ -52,19 +52,21 @@ BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
 
 
 @dataclasses.dataclass
-class InvalidQueueConfiguration(Exception):
+class InvalidQueueConfigurationError(Exception):
     title: str
     message: str
 
 
 @dataclasses.dataclass
-class MergeBotAccountNotFoundWithBranchProtectionOff(InvalidQueueConfiguration):
+class MergeBotAccountNotFoundErrorWithBranchProtectionOffError(
+    InvalidQueueConfigurationError,
+):
     title: str = "There are no `merge_bot_account` being used"
     message: str = "Cannot use `branch_protection_injection_mode` set to `none` without using a `merge_bot_account` with the `queue` action"
 
 
 @dataclasses.dataclass
-class MismatchingQueueConditions(InvalidQueueConfiguration):
+class MismatchingQueueConditionsError(InvalidQueueConfigurationError):
     summary: str | None = dataclasses.field(default=None)
     title: str = "There are no queue conditions matching"
     message: str = (
@@ -77,7 +79,7 @@ class MismatchingQueueConditions(InvalidQueueConfiguration):
 
 
 @dataclasses.dataclass
-class IncompatibleBranchProtection(InvalidQueueConfiguration):
+class IncompatibleBranchProtectionError(InvalidQueueConfigurationError):
     """Incompatibility between Mergify configuration and branch protection settings"""
 
     configuration: str
@@ -152,7 +154,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             and ctxt.repository.mergify_config["queue_rules"].get(action.config["name"])
             is None
         ):
-            raise actions.InvalidDynamicActionConfiguration(
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 f"`{action.config['name']}` queue not found",
@@ -264,7 +266,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 # enabled, but not enforced on admins, we may bypass them
                 required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
             )
-        except action_utils.BotAccountNotFound as e:
+        except action_utils.BotAccountNotFoundError as e:
             return check_api.Result(e.status, e.title, e.reason)
 
         car = cars[0]
@@ -293,7 +295,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json={"sha": newsha},
             )
-        except http.HTTPUnauthorized:
+        except http.HTTPUnauthorizedError:
             if on_behalf is None:
                 raise
             return action_utils.get_invalid_credentials_report(on_behalf)
@@ -396,7 +398,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 f"* Queue `{name}`: \n{queue_conditions_summary}"
                 for name, queue_conditions_summary in summary.items()
             )
-            raise MismatchingQueueConditions(summary=queue_conditions_summary_str)
+            raise MismatchingQueueConditionsError(summary=queue_conditions_summary_str)
 
         if matching_queue_conditions and self.config["name"] is None:
             self.config["name"] = matching_queue_conditions[0].name
@@ -408,7 +410,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         try:
             self.queue_rule = self.queue_rules[qr_config.QueueName(self.config["name"])]
         except KeyError:
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "Invalid queue name",
                 f"The queue `{self.config['name']}` does not exist",
             )
@@ -417,7 +419,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             self.queue_rule.config["queue_branch_merge_method"] == "fast-forward"
             and len(self.partition_rules) > 0
         ):
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "Invalid merge method with partition rules in use",
                 "Cannot use `fast-forward` merge method when using partition rules",
             )
@@ -509,7 +511,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     original_pull_request_rule=self.rule,
                     original_pull_request_number=self.ctxt.pull["number"],
                 )
-            except merge_train.MergeQueueReset:
+            except merge_train.MergeQueueResetError:
                 cars.remove(car)
 
         dequeue_msg = (
@@ -605,7 +607,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             ):
                 try:
                     result = await self._merge(convoy, cars)
-                except merge_base.MergeNeedRetry:
+                except merge_base.MergeNeedRetryError:
                     result = await self.get_pending_queue_status(
                         convoy=convoy,
                         queue_freeze=queue_freeze,
@@ -744,7 +746,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     original_pull_request_rule=self.rule,
                     original_pull_request_number=self.ctxt.pull["number"],
                 )
-            except merge_train.MergeQueueReset:
+            except merge_train.MergeQueueResetError:
                 cars.remove(car)
 
         # We just rebase the pull request, don't cancel it yet if CIs are
@@ -806,8 +808,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 bot_account_fallback=None,
                 option_name="merge_bot_account",
             )
-        except action_utils.RenderBotAccountFailure as e:
-            raise InvalidQueueConfiguration(e.title, e.reason)
+        except action_utils.RenderBotAccountFailureError as e:
+            raise InvalidQueueConfigurationError(e.title, e.reason)
 
         try:
             await action_utils.get_github_user_from_bot_account(
@@ -831,8 +833,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ),
                 branch_protection_injection_mode=self.queue_rule.branch_protection_injection_mode,
             )
-        except action_utils.BotAccountNotFound as e:
-            raise InvalidQueueConfiguration(e.title, e.reason)
+        except action_utils.BotAccountNotFoundError as e:
+            raise InvalidQueueConfigurationError(e.title, e.reason)
 
     async def _check_action_validity(
         self,
@@ -854,8 +856,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 queue_rule=self.queue_rule,
             )
             await self._render_bot_accounts()
-        except InvalidQueueConfiguration as e:
-            if isinstance(e, MismatchingQueueConditions) and (
+        except InvalidQueueConfigurationError as e:
+            if isinstance(e, MismatchingQueueConditionsError) and (
                 still_embarked_pull := first.first(
                     still_embarked_pull
                     for car in cars
@@ -885,7 +887,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 partition_rules=self.partition_rules,
                 ctxt=self.ctxt,
             )
-        except InvalidQueueConfiguration as e:
+        except InvalidQueueConfigurationError as e:
             return check_api.Result(
                 check_api.Conclusion.ACTION_REQUIRED,
                 e.title,
@@ -1140,28 +1142,28 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return
 
         if config["update_method"] != "rebase":
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 f"`update_method: {config['update_method']}` is not compatible with fast-forward merge method",
                 "`update_method` must be set to `rebase`.",
             )
 
         if config["commit_message_template"] is not None:
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "Commit message can't be changed with fast-forward merge method",
                 "`commit_message_template` must not be set if `merge_method: fast-forward` is set.",
             )
         if queue_rule.config["batch_size"] > 1:
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "batch_size > 1 is not compatible with fast-forward merge method",
                 "The `merge_method` or the queue configuration must be updated.",
             )
         if queue_rule.config["speculative_checks"] > 1:
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "speculative_checks > 1 is not compatible with fast-forward merge method",
                 "The `merge_method` or the queue configuration must be updated.",
             )
         if not queue_rule.config["allow_inplace_checks"]:
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "allow_inplace_checks=False is not compatible with fast-forward merge method",
                 "The `merge_method` or the queue configuration must be updated.",
             )
@@ -1170,7 +1172,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             self.ctxt.pull["user"]["type"] == "Bot"
             and config["update_bot_account"] is None
         ):
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "Pull requests created by GitHub App can't be impersonated for rebasing.",
                 "A `update_bot_account` must be set to be able to rebase and merge them with fast-forward merge method.",
             )
@@ -1183,7 +1185,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ctxt: context.Context,
     ) -> None:
         if not ctxt.subscription.has_feature(subscription.Features.MERGE_QUEUE):
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "Cannot use the merge queue.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"],
@@ -1193,7 +1195,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if len(queue_rules) > 1 and not ctxt.subscription.has_feature(
             subscription.Features.QUEUE_ACTION,
         ):
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "Cannot use multiple queues.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"],
@@ -1203,7 +1205,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if queue_rule.config[
             "speculative_checks"
         ] > 1 and not ctxt.subscription.has_feature(subscription.Features.QUEUE_ACTION):
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "Cannot use `speculative_checks` with queue action.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"],
@@ -1213,7 +1215,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if queue_rule.config["batch_size"] > 1 and not ctxt.subscription.has_feature(
             subscription.Features.QUEUE_ACTION,
         ):
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "Cannot use `batch_size` with queue action.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"],
@@ -1223,7 +1225,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if len(partition_rules) > 0 and not ctxt.subscription.has_feature(
             subscription.Features.QUEUE_ACTION,
         ):
-            raise InvalidQueueConfiguration(
+            raise InvalidQueueConfigurationError(
                 "Cannot use `partition_rules` with queue action.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"],
@@ -1239,7 +1241,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             branch_protection_injection_mode == "none"
             and queue_executor_config["merge_bot_account"] is None
         ):
-            raise MergeBotAccountNotFoundWithBranchProtectionOff
+            raise MergeBotAccountNotFoundErrorWithBranchProtectionOffError
 
     @staticmethod
     async def _check_config_compatibility_with_branch_protection(
@@ -1265,17 +1267,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         if _has_required_status_checks_strict:
             if queue_rule_config["batch_size"] > 1:
-                raise IncompatibleBranchProtection(
+                raise IncompatibleBranchProtectionError(
                     "batch_size>1",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                 )
             if queue_rule_config["speculative_checks"] > 1:
-                raise IncompatibleBranchProtection(
+                raise IncompatibleBranchProtectionError(
                     "speculative_checks>1",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                 )
             if queue_rule_config["allow_inplace_checks"] is False:
-                raise IncompatibleBranchProtection(
+                raise IncompatibleBranchProtectionError(
                     "allow_inplace_checks=false",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                 )
@@ -1286,7 +1288,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 and queue_executor_config["update_method"] == "rebase"
                 and not queue_executor_config["update_bot_account"]
             ):
-                raise IncompatibleBranchProtection(
+                raise IncompatibleBranchProtectionError(
                     "update_method=rebase",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                     "update_bot_account",

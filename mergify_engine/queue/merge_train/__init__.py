@@ -4,12 +4,12 @@ from mergify_engine.queue.merge_train.convoy import Convoy
 from mergify_engine.queue.merge_train.embarked_pull import EmbarkedPull
 from mergify_engine.queue.merge_train.train import Train
 from mergify_engine.queue.merge_train.train import get_redis_train_key
-from mergify_engine.queue.merge_train.train_car import MergeQueueReset
+from mergify_engine.queue.merge_train.train_car import MergeQueueResetError
 from mergify_engine.queue.merge_train.train_car import TrainCar
 from mergify_engine.queue.merge_train.train_car import TrainCarChecksType
 from mergify_engine.queue.merge_train.train_car import TrainCarOutcome
 from mergify_engine.queue.merge_train.train_car import (
-    TrainCarPullRequestCreationFailure,
+    TrainCarPullRequestCreationFailureError,
 )
 from mergify_engine.queue.merge_train.train_car_state import TrainCarState
 from mergify_engine.queue.merge_train.train_car_state import TrainCarStateForSummary
@@ -29,8 +29,8 @@ __all__ = [
     "TrainCar",
     "TrainCarChecksType",
     "TrainCarOutcome",
-    "TrainCarPullRequestCreationFailure",
+    "TrainCarPullRequestCreationFailureError",
     "TrainCarState",
     "TrainCarStateForSummary",
-    "MergeQueueReset",
+    "MergeQueueResetError",
 ]

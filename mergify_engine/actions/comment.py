@@ -35,7 +35,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
         if action.config["message"] is None:
             # Happens when the config for a comment action is just `None` and
             # there is no "defaults" for the comment action.
-            raise actions.InvalidDynamicActionConfiguration(
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Cannot have `comment` action with no `message`",
@@ -48,8 +48,8 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
                 action.config["bot_account"],
                 bot_account_fallback=None,
             )
-        except action_utils.RenderBotAccountFailure as e:
-            raise actions.InvalidDynamicActionConfiguration(
+        except action_utils.RenderBotAccountFailureError as e:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 e.title,
@@ -58,8 +58,8 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
         pull_attrs = condition_value_querier.PullRequest(ctxt)
         try:
             message = await pull_attrs.render_template(action.config["message"])
-        except condition_value_querier.RenderTemplateFailure as rmf:
-            raise actions.InvalidDynamicActionConfiguration(
+        except condition_value_querier.RenderTemplateFailureError as rmf:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Invalid comment message",
@@ -87,7 +87,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
                 self.config["bot_account"],
                 required_permissions=[],
             )
-        except action_utils.BotAccountNotFound as e:
+        except action_utils.BotAccountNotFoundError as e:
             return check_api.Result(e.status, e.title, e.reason)
 
         try:
@@ -96,7 +96,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
                 oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json={"body": self.config["message"]},
             )
-        except http.HTTPUnauthorized:
+        except http.HTTPUnauthorizedError:
             if on_behalf is None:
                 raise
             return action_utils.get_invalid_credentials_report(on_behalf)

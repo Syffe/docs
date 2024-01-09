@@ -58,20 +58,20 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
     app.exception_handler(redis_exceptions.ConnectionError)(redis_errors)
     app.exception_handler(redis_exceptions.TimeoutError)(redis_errors)
 
-    @app.exception_handler(engine_exceptions.RateLimited)
+    @app.exception_handler(engine_exceptions.RateLimitedError)
     def rate_limited_handler(
         _request: requests.Request,
-        _exc: engine_exceptions.RateLimited,
+        _exc: engine_exceptions.RateLimitedError,
     ) -> responses.JSONResponse:
         return responses.JSONResponse(
             status_code=403,
             content={"message": "Organization or user has hit GitHub API rate limit"},
         )
 
-    @app.exception_handler(engine_exceptions.MergifyNotInstalled)
+    @app.exception_handler(engine_exceptions.MergifyNotInstalledError)
     def mergify_not_installed_handler(
         _request: requests.Request,
-        _exc: engine_exceptions.MergifyNotInstalled,
+        _exc: engine_exceptions.MergifyNotInstalledError,
     ) -> responses.JSONResponse:
         return responses.JSONResponse(
             status_code=403,
@@ -80,10 +80,10 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
             },
         )
 
-    @app.exception_handler(pagination.InvalidCursor)
+    @app.exception_handler(pagination.InvalidCursorError)
     def pagination_handler(
         _request: requests.Request,
-        exc: pagination.InvalidCursor,
+        exc: pagination.InvalidCursorError,
     ) -> responses.JSONResponse:
         return responses.JSONResponse(
             status_code=422,

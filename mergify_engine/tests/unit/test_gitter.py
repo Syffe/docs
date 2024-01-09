@@ -53,7 +53,7 @@ async def test_gitter_init_fails(
 error: failed to push some refs to 'https://github.com/owner/repo'
 
 """,
-            gitter.GitMergifyNamespaceConflict,
+            gitter.GitMergifyNamespaceConflictError,
             "cannot lock ref",
         ),
         (
@@ -62,7 +62,7 @@ error: failed to push some refs to 'https://github.com/owner/repo'
 error: failed to push some refs to 'https://github.com/owner/repo'
 
 """,
-            gitter.GitMergifyNamespaceConflict,
+            gitter.GitMergifyNamespaceConflictError,
             "cannot lock ref",
         ),
         (
@@ -71,7 +71,7 @@ To github.com:example/my-project.git
  ! [rejected]        my-branch -> my-branch (stale info)
 error: failed to push some refs to 'https://github.com/example/my-project.git'
 """,
-            gitter.GitErrorRetriable,
+            gitter.GitErrorRetriableError,
             "Remote branch changed in the meantime",
         ),
     ),

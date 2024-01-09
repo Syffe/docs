@@ -451,7 +451,9 @@ pull_requests:
             ],
         )
 
-        with pytest.raises(merge_train.TrainCarPullRequestCreationFailure) as exc_info:
+        with pytest.raises(
+            merge_train.TrainCarPullRequestCreationFailureError,
+        ) as exc_info:
             await car.start_checking_with_draft(None)
         assert exc_info.value.car == car
         assert car.queue_pull_request_number is None

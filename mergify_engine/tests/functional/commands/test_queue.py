@@ -548,8 +548,8 @@ class TestQueueCommand(base.FunctionalTestBase):
         # not be queued in "specialq"
         with pytest.raises(
             (
-                event_reader.MissingEventTimeout,
-                conftest.ShutUpVcrCannotOverwriteExistingCassetteException,
+                event_reader.MissingEventTimeoutError,
+                conftest.ShutUpVcrCannotOverwriteExistingCassetteExceptionError,
             ),
         ):
             await self.wait_for_issue_comment(pr["number"], "created")

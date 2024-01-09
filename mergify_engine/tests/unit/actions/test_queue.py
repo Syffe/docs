@@ -230,7 +230,7 @@ def fake_client() -> mock.Mock:
             )
 
         if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
-            raise http.HTTPNotFound(
+            raise http.HTTPNotFoundError(
                 message="boom",
                 response=mock.Mock(),
                 request=mock.Mock(),
@@ -474,7 +474,7 @@ async def test_required_status_checks_strict_incompatibility_with_queue_rules(
     queue_executor = await queue.QueueExecutor.create(action, ctxt, mock.Mock())
     queue_executor.config.update(queue_executor_config)  # type: ignore[typeddict-item]
 
-    with pytest.raises(queue.IncompatibleBranchProtection) as e:
+    with pytest.raises(queue.IncompatibleBranchProtectionError) as e:
         await queue.QueueExecutor._check_config_compatibility_with_branch_protection(
             ctxt,
             ctxt.repository.mergify_config["queue_rules"][
@@ -637,7 +637,7 @@ async def test_check_method_fastforward_configuration(
     await executor._set_action_queue_rule()
     executor._set_action_config_from_queue_rules()
 
-    with pytest.raises(queue.InvalidQueueConfiguration) as e:
+    with pytest.raises(queue.InvalidQueueConfigurationError) as e:
         executor._check_method_fastforward_configuration(
             config=executor.config,
             queue_rule=ctxt.repository.mergify_config["queue_rules"][
@@ -682,7 +682,7 @@ async def test_check_queue_branch_merge_method_fastforward_with_partition_rules(
         ctxt,
         evaluated_pull_request_rule,
     )
-    with pytest.raises(queue.InvalidQueueConfiguration) as e:
+    with pytest.raises(queue.InvalidQueueConfigurationError) as e:
         await executor._set_action_queue_rule()
 
     assert e.value.title == "Invalid merge method with partition rules in use"
@@ -765,7 +765,7 @@ async def test_check_subscription_status(
     await executor._set_action_queue_rule()
     executor._set_action_config_from_queue_rules()
 
-    with pytest.raises(queue.InvalidQueueConfiguration) as e:
+    with pytest.raises(queue.InvalidQueueConfigurationError) as e:
         await executor._check_subscription_status(
             queue_rule=executor.queue_rule,
             queue_rules=executor.queue_rules,

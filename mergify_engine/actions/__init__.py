@@ -83,7 +83,7 @@ ActionExecutorConfigT = typing.TypeVar("ActionExecutorConfigT")
 
 
 @dataclasses.dataclass
-class InvalidDynamicActionConfiguration(Exception):
+class InvalidDynamicActionConfigurationError(Exception):
     rule: prr_config.EvaluatedPullRequestRule
     action: Action
     reason: str

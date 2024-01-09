@@ -36,8 +36,8 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
         pull_attrs = condition_value_querier.PullRequest(ctxt)
         try:
             return await pull_attrs.render_template(label)
-        except condition_value_querier.RenderTemplateFailure as rtf:
-            raise actions.InvalidDynamicActionConfiguration(
+        except condition_value_querier.RenderTemplateFailureError as rtf:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 f"Invalid template in label '{label}'",

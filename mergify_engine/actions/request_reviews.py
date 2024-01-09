@@ -55,8 +55,8 @@ class RequestReviewsExecutor(
                 action.config["bot_account"],
                 bot_account_fallback=None,
             )
-        except action_utils.RenderBotAccountFailure as e:
-            raise actions.InvalidDynamicActionConfiguration(
+        except action_utils.RenderBotAccountFailureError as e:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 e.title,
@@ -67,14 +67,14 @@ class RequestReviewsExecutor(
         for team in action.config["teams"]:
             try:
                 await team.has_read_permission(ctxt)
-            except types.InvalidTeam as e:
+            except types.InvalidTeamError as e:
                 team_errors.add(e.details)
 
         users = action.config["users"].copy()
         for team, weight in action.config["users_from_teams"].items():
             try:
                 await team.has_read_permission(ctxt)
-            except types.InvalidTeam as e:
+            except types.InvalidTeamError as e:
                 team_errors.add(e.details)
             else:
                 users.update(
@@ -87,7 +87,7 @@ class RequestReviewsExecutor(
                 )
 
         if team_errors:
-            raise actions.InvalidDynamicActionConfiguration(
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Invalid requested teams",
@@ -247,7 +247,7 @@ class RequestReviewsExecutor(
                     self.config["bot_account"],
                     required_permissions=[],
                 )
-            except action_utils.BotAccountNotFound as e:
+            except action_utils.BotAccountNotFoundError as e:
                 return check_api.Result(e.status, e.title, e.reason)
 
             try:
@@ -259,7 +259,7 @@ class RequestReviewsExecutor(
                         "team_reviewers": team_reviews_to_request,
                     },
                 )
-            except http.HTTPUnauthorized:
+            except http.HTTPUnauthorizedError:
                 if on_behalf is None:
                     raise
                 return action_utils.get_invalid_credentials_report(on_behalf)

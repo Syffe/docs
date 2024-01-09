@@ -38,7 +38,7 @@ LOG = daiquiri.getLogger(__name__)
 
 
 @dataclasses.dataclass
-class TooManyPages(exceptions.UnprocessablePullRequest):
+class TooManyPages(exceptions.UnprocessablePullRequestError):
     reason: str
     per_page: int
     page_limit: int
@@ -74,7 +74,7 @@ class CachedToken:
         CachedToken.STORAGE.pop(self.installation_id, None)
 
 
-class InstallationInaccessible(Exception):
+class InstallationInaccessibleError(Exception):
     message: str
 
 
@@ -154,7 +154,7 @@ class GitHubAppInstallationAuth(httpx.Auth):
                 auth_response = yield self.build_access_token_request(force=True)
 
             if auth_response.status_code == 404:
-                raise exceptions.MergifyNotInstalled()
+                raise exceptions.MergifyNotInstalledError()
             elif auth_response.status_code == 403:
                 error_message = auth_response.json()["message"]
                 if "This installation has been suspended" in error_message:
@@ -163,7 +163,7 @@ class GitHubAppInstallationAuth(httpx.Auth):
                         gh_owner=self._owner_login,
                         error_message=error_message,
                     )
-                    raise exceptions.MergifyNotInstalled()
+                    raise exceptions.MergifyNotInstalledError()
 
             http.raise_for_status(auth_response)
             token = self._set_access_token(auth_response.json())
@@ -240,16 +240,16 @@ async def _get_installation(
                 github_types.GitHubInstallation,
                 await client.item(f"{settings.GITHUB_REST_API_URL}{endpoint}"),
             )
-        except http.HTTPNotFound as e:
+        except http.HTTPNotFoundError as e:
             LOG.debug(
                 "Mergify not installed",
                 error_message=e.message,
                 **logging_extras,
             )
-            raise exceptions.MergifyNotInstalled()
+            raise exceptions.MergifyNotInstalledError()
 
     if installation["suspended_at"]:
-        raise exceptions.MergifySuspended()
+        raise exceptions.MergifySuspendedError()
     return installation
 
 
@@ -329,13 +329,13 @@ def _check_rate_limit(client: http.AsyncClient, response: httpx.Response) -> Non
                 "http.client.rate_limited",
                 tags=tags,
             )
-        raise exceptions.RateLimited(delta, remaining)
+        raise exceptions.RateLimitedError(delta, remaining)
 
     if (
         response.status_code == 403
         and "You have exceeded a secondary rate limit" in http.extract_message(response)
     ):
-        raise exceptions.SecondaryRateLimited(datetime.timedelta(seconds=30), 0)
+        raise exceptions.SecondaryRateLimitedError(datetime.timedelta(seconds=30), 0)
 
 
 class AsyncGitHubClient(http.AsyncClient):
@@ -706,7 +706,7 @@ class GitHubAppInfo:
             async with AsyncGitHubClient(auth=auth) as client_install:
                 try:
                     bot = await client_install.item(f"/users/{app['slug']}[bot]")
-                except (http.HTTPForbidden, http.HTTPUnauthorized):
+                except (http.HTTPForbiddenError, http.HTTPUnauthorizedError):
                     continue
                 else:
                     await redis_cache.setex(

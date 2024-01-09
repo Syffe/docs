@@ -70,36 +70,36 @@ ATTEMPTS_KEY = "attempts"
 LOG = daiquiri.getLogger(__name__)
 
 
-class IgnoredException(Exception):
+class IgnoredExceptionError(Exception):
     pass
 
 
 @dataclasses.dataclass
-class PullRetry(Exception):
+class PullRetryError(Exception):
     attempts: int
 
 
-class PullFastRetry(PullRetry):
+class PullFastRetryError(PullRetryError):
     pass
 
 
-class MaxPullRetry(PullRetry):
+class MaxPullRetryError(PullRetryError):
     pass
 
 
 @dataclasses.dataclass
-class OrgBucketRetry(Exception):
+class OrgBucketRetryError(Exception):
     bucket_org_key: stream_lua.BucketOrgKeyType
     attempts: int
     retry_at: datetime.datetime
 
 
-class OrgBucketUnused(Exception):
+class OrgBucketUnusedError(Exception):
     bucket_org_key: stream_lua.BucketOrgKeyType
 
 
 @dataclasses.dataclass
-class UnexpectedPullRetry(Exception):
+class UnexpectedPullRetryErrorError(Exception):
     pass
 
 
@@ -121,7 +121,7 @@ class PullRequestBucket:
 
 
 def order_messages_without_pull_numbers(
-    data: tuple[bytes, context.T_PayloadEventSource, str],
+    data: tuple[bytes, context.PayloadEventSourceType, str],
 ) -> str:
     # NOTE(sileht): put push event first to make PullRequestFinder more efficient.
     if data[1]["event_type"] == "push":
@@ -135,7 +135,7 @@ async def run_engine(
     repo_id: github_types.GitHubRepositoryIdType,
     tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
     pull_number: github_types.GitHubPullRequestNumber,
-    sources: list[context.T_PayloadEventSource],
+    sources: list[context.PayloadEventSourceType],
 ) -> None:
     logger = daiquiri.getLogger(
         __name__,
@@ -155,7 +155,7 @@ async def run_engine(
                 # ensure we get the last snapshot of the pull request
                 force_new=True,
             )
-        except http.HTTPNotFound:
+        except http.HTTPNotFoundError:
             # NOTE(sileht): Don't fail if we received an event on repo/pull that doesn't exists anymore
             logger.debug("pull request doesn't exists, skipping it")
             return
@@ -182,7 +182,7 @@ async def run_engine(
 
         try:
             result = await engine.run(ctxt, sources)
-        except exceptions.UnprocessablePullRequest as e:
+        except exceptions.UnprocessablePullRequestError as e:
             logger.warning(
                 "This pull request cannot be evaluated by Mergify",
                 exc_info=True,
@@ -274,7 +274,7 @@ class Processor:
                 if bucket_sources_key:
                     await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_sources_key)
                 await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_org_key)
-                raise IgnoredException()
+                raise IgnoredExceptionError()
 
             if (
                 isinstance(e, http.HTTPServerSideError)
@@ -288,27 +288,28 @@ class Processor:
                     bucket_sources_key,
                 )
                 if attempts < MAX_RETRIES:
-                    raise PullRetry(attempts) from e
+                    raise PullRetryError(attempts) from e
                 else:
                     await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_sources_key)
-                    raise MaxPullRetry(attempts) from e
+                    raise MaxPullRetryError(attempts) from e
 
             if isinstance(
                 e,
-                exceptions.MergifyNotInstalled | exceptions.MergifyDisabledByUs,
+                exceptions.MergifyNotInstalledError
+                | exceptions.MergifyDisabledByUsError,
             ):
                 if bucket_sources_key:
                     await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_sources_key)
                 await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_org_key)
                 await stream_lua.drop_bucket(self.redis_links.stream, bucket_org_key)
-                raise OrgBucketUnused(bucket_org_key)
+                raise OrgBucketUnusedError(bucket_org_key)
 
-            if isinstance(e, exceptions.RateLimited):
+            if isinstance(e, exceptions.RateLimitedError):
                 retry_at = date.utcnow() + e.countdown
                 if bucket_sources_key:
                     await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_sources_key)
                 await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_org_key)
-                raise OrgBucketRetry(bucket_org_key, 0, retry_at)
+                raise OrgBucketRetryError(bucket_org_key, 0, retry_at)
 
             backoff = exceptions.need_retry_in(e)
             if backoff is None:
@@ -322,7 +323,7 @@ class Processor:
             )
             retry_in = 2 ** min(attempts, 3) * backoff
             retry_at = date.utcnow() + retry_in
-            raise OrgBucketRetry(bucket_org_key, attempts, retry_at)
+            raise OrgBucketRetryError(bucket_org_key, attempts, retry_at)
 
     async def consume(
         self,
@@ -347,7 +348,7 @@ class Processor:
                         gh_owner=owner_login_for_tracing,
                         subscription_reason=sub.reason,
                     )
-                    raise exceptions.MergifyDisabledByUs()
+                    raise exceptions.MergifyDisabledByUsError()
 
                 if sub.has_feature(subscription.Features.DEDICATED_WORKER):
                     if self.dedicated_owner_id is None:
@@ -421,9 +422,9 @@ class Processor:
                 "Stream Processor lost Redis connection",
                 bucket_org_key=bucket_org_key,
             )
-        except OrgBucketUnused:
+        except OrgBucketUnusedError:
             LOG.info("unused org bucket, dropping it", gh_owner=owner_login_for_tracing)
-        except OrgBucketRetry as e:
+        except OrgBucketRetryError as e:
             reschedule_org_at = e.retry_at
             log_method = LOG.info
             if e.attempts >= STREAM_ATTEMPTS_LOGGING_THRESHOLD:
@@ -656,7 +657,7 @@ class Processor:
                         (
                             message_id,
                             typing.cast(
-                                context.T_PayloadEventSource,
+                                context.PayloadEventSourceType,
                                 msgpack.unpackb(message[b"source"]),
                             ),
                             message[b"score"].decode(),
@@ -706,7 +707,7 @@ class Processor:
             else:
                 sources = [
                     typing.cast(
-                        context.T_PayloadEventSource,
+                        context.PayloadEventSourceType,
                         msgpack.unpackb(message[b"source"]),
                     )
                     for _, message in messages
@@ -740,11 +741,11 @@ class Processor:
                             message_ids,
                             sources,
                         )
-                except OrgBucketRetry:
+                except OrgBucketRetryError:
                     raise
-                except OrgBucketUnused:
+                except OrgBucketUnusedError:
                     raise
-                except PullFastRetry:
+                except PullFastRetryError:
                     await self.redis_links.stream.zadd(
                         bucket_org_key,
                         {
@@ -754,7 +755,7 @@ class Processor:
                             ),
                         },
                     )
-                except (PullRetry, UnexpectedPullRetry):
+                except (PullRetryError, UnexpectedPullRetryErrorError):
                     # NOTE(sileht): Will be retried automatically in NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST
                     pass
 
@@ -767,7 +768,7 @@ class Processor:
         pr_finder: pull_request_finder.PullRequestFinder,
         repo_id: github_types.GitHubRepositoryIdType,
         tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
-        source: context.T_PayloadEventSource,
+        source: context.PayloadEventSourceType,
         score: str | None = None,
     ) -> int:
         # NOTE(sileht): the event is incomplete (push, refresh, checks, status)
@@ -822,7 +823,7 @@ class Processor:
         bucket: PullRequestBucket,
         tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
         message_ids: list[T_MessageID],
-        sources: list[context.T_PayloadEventSource],
+        sources: list[context.PayloadEventSourceType],
     ) -> None:
         for source in sources:
             # backward compat <= 7.2.1
@@ -876,7 +877,7 @@ class Processor:
                 bucket.sources_key,
                 tuple(message_ids),
             )
-        except IgnoredException:
+        except IgnoredExceptionError:
             await stream_lua.remove_pull(
                 self.redis_links.stream,
                 bucket_org_key,
@@ -884,7 +885,7 @@ class Processor:
                 tuple(message_ids),
             )
             logger.debug("failed to process pull request, ignoring", exc_info=True)
-        except MaxPullRetry as e:
+        except MaxPullRetryError as e:
             await stream_lua.remove_pull(
                 self.redis_links.stream,
                 bucket_org_key,
@@ -900,16 +901,16 @@ class Processor:
                 attempts=e.attempts,
                 exc_info=True,
             )
-        except PullRetry as e:
+        except PullRetryError as e:
             logger.info(
                 "failed to process pull request, retrying",
                 attempts=e.attempts,
                 exc_info=True,
             )
             raise
-        except OrgBucketRetry:
+        except OrgBucketRetryError:
             raise
-        except OrgBucketUnused:
+        except OrgBucketUnusedError:
             raise
         except redis_exceptions.ConnectionError:
             raise
@@ -917,13 +918,13 @@ class Processor:
             logger.error("failed to process pull request", exc_info=True)
             if self.retry_unhandled_exception_forever:
                 # Ignore it, it will retried later
-                raise UnexpectedPullRetry()
+                raise UnexpectedPullRetryErrorError()
 
             raise
 
 
 def _monitor_consumed_events(
-    source: context.T_PayloadEventSource,
+    source: context.PayloadEventSourceType,
     installation: context.Installation,
 ) -> None:
     # NOTE(charly): CI usage metric, see MRGFY-2617

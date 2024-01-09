@@ -106,8 +106,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 action.config["bot_account"],
                 bot_account_fallback=None,
             )
-        except action_utils.RenderBotAccountFailure as e:
-            raise actions.InvalidDynamicActionConfiguration(
+        except action_utils.RenderBotAccountFailureError as e:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 e.title,
@@ -120,9 +120,9 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 action.config["title"],
                 extra_variables=DUPLICATE_TITLE_EXTRA_VARIABLES,
             )
-        except condition_value_querier.RenderTemplateFailure as rmf:
+        except condition_value_querier.RenderTemplateFailureError as rmf:
             # can't occur, template have been checked earlier
-            raise actions.InvalidDynamicActionConfiguration(
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Invalid title message",
@@ -134,9 +134,9 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 action.config["body"],
                 extra_variables=DUPLICATE_BODY_EXTRA_VARIABLES,
             )
-        except condition_value_querier.RenderTemplateFailure as rmf:
+        except condition_value_querier.RenderTemplateFailureError as rmf:
             # can't occur, template have been checked earlier
-            raise actions.InvalidDynamicActionConfiguration(
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Invalid body message",
@@ -211,7 +211,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 self.config["bot_account"],
                 required_permissions=[],
             )
-        except action_utils.BotAccountNotFound as e:
+        except action_utils.BotAccountNotFoundError as e:
             return self._get_failure_copy_result(branch_name, f"{e.title}\n{e.reason}")
 
         job = await self._get_job(job_id)
@@ -227,7 +227,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
 
             try:
                 commits = await duplicate_pull.get_commits_to_cherrypick(self.ctxt)
-            except duplicate_pull.DuplicateFailed as e:
+            except duplicate_pull.DuplicateFailedError as e:
                 return self._get_failure_copy_result(branch_name, e.reason)
             job = await self._create_job(branch_name, commits, on_behalf)
 
@@ -255,7 +255,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 label_conflicts=self.config["label_conflicts"],
                 assignees=assignees,
             )
-        except duplicate_pull.DuplicateAlreadyExists:
+        except duplicate_pull.DuplicateAlreadyExistsError:
             new_pull = await self.get_existing_duplicate_pull(branch_name)
             if new_pull is None:
                 # NOTE(sileht): the pull request may already have been created, but not yet
@@ -263,7 +263,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 return self._get_inprogress_copy_result(branch_name, job.id)
             return self._get_success_copy_result(branch_name, new_pull)
 
-        except duplicate_pull.DuplicateNotNeeded:
+        except duplicate_pull.DuplicateNotNeededError:
             return CopyResult(
                 branch_name,
                 check_api.Conclusion.SUCCESS,
@@ -273,7 +273,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 False,
             )
 
-        except duplicate_pull.DuplicateFailed as e:
+        except duplicate_pull.DuplicateFailedError as e:
             if isinstance(e, duplicate_pull.DuplicateUnexpectedError):
                 self.ctxt.log.error(
                     "duplicate failed",
@@ -282,7 +282,10 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                     kind=self.KIND,
                     exc_info=True,
                 )
-            conflicting = isinstance(e, duplicate_pull.DuplicateFailedConflicts)
+            conflicting = isinstance(
+                e,
+                duplicate_pull.DuplicateFailedErrorConflictsError,
+            )
             return self._get_failure_copy_result(branch_name, e.reason, conflicting)
 
         conflicting = bool(duplicate_branch_result.cherry_pick_error)

@@ -2082,12 +2082,12 @@ async def test_train_inplace_branch_update_failure(
     ):
         await t.refresh()
 
-    ctxt.client.put.side_effect = branch_updater.BranchUpdateFailure("oops")  # type: ignore [attr-defined]
+    ctxt.client.put.side_effect = branch_updater.BranchUpdateFailureError("oops")  # type: ignore [attr-defined]
     with mock.patch.object(
         merge_train.TrainCar,
         "_set_creation_failure",
     ) as _set_creation_failure:
-        with pytest.raises(merge_train.TrainCarPullRequestCreationFailure):
+        with pytest.raises(merge_train.TrainCarPullRequestCreationFailureError):
             await t._cars[0]._start_checking_inplace_merge(ctxt)
 
     assert (
@@ -2125,9 +2125,9 @@ async def test_train_inplace_branch_rebase_failure(
         "mergify_engine.actions.utils.get_github_user_from_bot_account",
     ), mock.patch(
         "mergify_engine.branch_updater.rebase_with_git",
-        side_effect=branch_updater.BranchUpdateFailure("oops"),
+        side_effect=branch_updater.BranchUpdateFailureError("oops"),
     ):
-        with pytest.raises(merge_train.TrainCarPullRequestCreationFailure):
+        with pytest.raises(merge_train.TrainCarPullRequestCreationFailureError):
             await t._cars[0]._start_checking_inplace_rebase(ctxt)
 
     assert (

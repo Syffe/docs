@@ -278,7 +278,7 @@ class PullRequest(models.Base):
                 )
             ]
         except Exception as e:
-            if isinstance(e, http.HTTPNotFound) or exceptions.should_be_ignored(e):
+            if isinstance(e, http.HTTPNotFoundError) or exceptions.should_be_ignored(e):
                 LOG.warning(
                     "Skipping commit update for pull request %i because we can't query it's commits",
                     pull_request_id,
@@ -347,7 +347,7 @@ class PullRequest(models.Base):
                 )
             ]
         except Exception as e:
-            if isinstance(e, http.HTTPNotFound) or exceptions.should_be_ignored(e):
+            if isinstance(e, http.HTTPNotFoundError) or exceptions.should_be_ignored(e):
                 LOG.warning(
                     "Skipping files update for pull request %i because we can't query the files endpoint",
                     pull_request_id,

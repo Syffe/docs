@@ -39,7 +39,7 @@ async def refresh(
     async with github.aget_client(installation_json) as client:
         try:
             repository = await client.item(f"/repos/{owner_login}/{repository_name}")
-        except http.HTTPNotFound:
+        except http.HTTPNotFoundError:
             cli_ctxt.fail(f"repository {owner_login}/{repository_name} not found")
 
     if branch is not None:

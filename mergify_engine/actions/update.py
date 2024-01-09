@@ -39,8 +39,8 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
                 action.config["bot_account"],
                 bot_account_fallback=None,
             )
-        except action_utils.RenderBotAccountFailure as e:
-            raise actions.InvalidDynamicActionConfiguration(
+        except action_utils.RenderBotAccountFailureError as e:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 e.title,
@@ -57,7 +57,7 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
                 self.config["bot_account"],
                 required_permissions=[],
             )
-        except action_utils.BotAccountNotFound as e:
+        except action_utils.BotAccountNotFoundError as e:
             return check_api.Result(e.status, e.title, e.reason)
 
         convoy = await merge_train.Convoy.from_context(self.ctxt)
@@ -70,11 +70,11 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
 
         try:
             await branch_updater.update_with_api(self.ctxt, on_behalf)
-        except http.HTTPUnauthorized:
+        except http.HTTPUnauthorizedError:
             if on_behalf is None:
                 raise
             return action_utils.get_invalid_credentials_report(on_behalf)
-        except branch_updater.BranchUpdateFailure as e:
+        except branch_updater.BranchUpdateFailureError as e:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 e.title,

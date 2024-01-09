@@ -145,12 +145,14 @@ async def test_subscription_db_unavailable(
         retrieve_subscription_from_db_mock.return_value = sub
 
         # no cache, no db -> reraise
-        retrieve_subscription_from_db_mock.side_effect = http.HTTPServiceUnavailable(
-            "boom!",
-            response=mock.Mock(),
-            request=mock.Mock(),
+        retrieve_subscription_from_db_mock.side_effect = (
+            http.HTTPServiceUnavailableError(
+                "boom!",
+                response=mock.Mock(),
+                request=mock.Mock(),
+            )
         )
-        with pytest.raises(http.HTTPServiceUnavailable):
+        with pytest.raises(http.HTTPServiceUnavailableError):
             await subscription.Subscription.get_subscription(redis_cache, owner_id)
         retrieve_subscription_from_db_mock.assert_called_once()
 
@@ -169,10 +171,12 @@ async def test_subscription_db_unavailable(
 
         # cache expired and not db -> got cached sub and expiration is updated
         retrieve_subscription_from_db_mock.reset_mock()
-        retrieve_subscription_from_db_mock.side_effect = http.HTTPServiceUnavailable(
-            "boom!",
-            response=mock.Mock(),
-            request=mock.Mock(),
+        retrieve_subscription_from_db_mock.side_effect = (
+            http.HTTPServiceUnavailableError(
+                "boom!",
+                response=mock.Mock(),
+                request=mock.Mock(),
+            )
         )
         frozen_time.move_to("2023-08-25 13:01")
         await redis_cache.expire(f"subscription-cache-owner-{owner_id}", 7200)
@@ -297,7 +301,7 @@ async def test_subscription_on_premise_wrong_token(
         f"{settings.SUBSCRIPTION_URL}/on-premise/subscription/1234",
     ).respond(401, json={"message": "error"})
 
-    with pytest.raises(exceptions.MergifyNotInstalled):
+    with pytest.raises(exceptions.MergifyNotInstalledError):
         await subscription.SubscriptionShadowOfficeOnPremise.get_subscription(
             redis_cache,
             github_types.GitHubAccountIdType(1234),
@@ -321,7 +325,7 @@ async def test_subscription_on_premise_invalid_sub(
         403,
         json={"message": "error"},
     )
-    with pytest.raises(exceptions.MergifyNotInstalled):
+    with pytest.raises(exceptions.MergifyNotInstalledError):
         await subscription.SubscriptionShadowOfficeOnPremise.get_subscription(
             redis_cache,
             github_types.GitHubAccountIdType(1234),

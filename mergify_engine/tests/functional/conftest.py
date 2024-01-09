@@ -54,7 +54,7 @@ REQUESTS_SYNC_FILE_LOCK = filelock.FileLock(REQUESTS_SYNC_LOCK_FILE_PATH)
 SHUTUPVCR = utils.strtobool(os.getenv("SHUTUPVCR", "true"))
 
 
-class ShutUpVcrCannotOverwriteExistingCassetteException(Exception):
+class ShutUpVcrCannotOverwriteExistingCassetteExceptionError(Exception):
     def __init__(self, *args, **kwargs):  # type: ignore[no-untyped-def]  # noqa: ARG002
         self.cassette = kwargs["cassette"]
         self.failed_request = kwargs["failed_request"]
@@ -72,7 +72,7 @@ class ShutUpVcrCannotOverwriteExistingCassetteException(Exception):
 
 if SHUTUPVCR:
     vcr.errors.CannotOverwriteExistingCassetteException = (
-        ShutUpVcrCannotOverwriteExistingCassetteException
+        ShutUpVcrCannotOverwriteExistingCassetteExceptionError
     )
 
 
@@ -531,7 +531,7 @@ class RetrySecondaryRateLimit(tenacity.TryAgain):
     ratelimit_reset_timestamp: float
 
 
-class wait_rate_limit(tenacity.wait.wait_base):
+class wait_rate_limit(tenacity.wait.wait_base):  # noqa: N801
     def __call__(self, retry_state: tenacity.RetryCallState) -> float:
         if retry_state.outcome is None:
             return 0
@@ -540,7 +540,7 @@ class wait_rate_limit(tenacity.wait.wait_base):
         if exc is None:
             return 0
 
-        if isinstance(exc, exceptions.RateLimited):
+        if isinstance(exc, exceptions.RateLimitedError):
             return int(exc.countdown.total_seconds())
 
         if isinstance(exc, RetrySecondaryRateLimit):
@@ -562,8 +562,8 @@ async def _request_with_secondary_rate_limit() -> abc.AsyncIterator[None]:
         yield
     except (
         http.HTTPClientSideError,
-        http.HTTPForbidden,
-        http.HTTPTooManyRequests,
+        http.HTTPForbiddenError,
+        http.HTTPTooManyRequestsError,
     ) as exc:
         # A secondary rate limit has no specific headers about its own ratelimit
         # (its ratelimit headers are the one about the normal ratelimit),
@@ -619,7 +619,7 @@ def _mock_asyncgithubclient_requests(
 
             if not isinstance(
                 exception,
-                exceptions.RateLimited | RetrySecondaryRateLimit,
+                exceptions.RateLimitedError | RetrySecondaryRateLimit,
             ):
                 return
 
@@ -654,7 +654,7 @@ def _mock_asyncgithubclient_requests(
                 stop=tenacity.stop_after_attempt(5),
                 retry=tenacity.retry_any(
                     tenacity.retry_if_exception_type(
-                        (exceptions.RateLimited, RetrySecondaryRateLimit),
+                        (exceptions.RateLimitedError, RetrySecondaryRateLimit),
                     ),
                 ),
                 after=log_rate_limit,

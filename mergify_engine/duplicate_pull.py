@@ -23,37 +23,37 @@ if typing.TYPE_CHECKING:
 
 
 @dataclasses.dataclass
-class DuplicateAlreadyExists(Exception):
+class DuplicateAlreadyExistsError(Exception):
     reason: str
 
 
 @dataclasses.dataclass
-class DuplicateNeedRetry(exceptions.EngineNeedRetry):
+class DuplicateNeedRetry(exceptions.EngineNeedRetryError):
     pass
 
 
 @dataclasses.dataclass
-class DuplicateNotNeeded(Exception):
+class DuplicateNotNeededError(Exception):
     reason: str
 
 
 @dataclasses.dataclass
-class DuplicateFailed(Exception):
+class DuplicateFailedError(Exception):
     reason: str
 
 
 @dataclasses.dataclass
-class DuplicateUnexpectedError(DuplicateFailed):
+class DuplicateUnexpectedError(DuplicateFailedError):
     reason: str
 
 
 @dataclasses.dataclass
-class DuplicateWithMergeFailure(DuplicateFailed):
+class DuplicateWithMergeFailureError(DuplicateFailedError):
     reason: str = "merge commits are not supported"
 
 
 @dataclasses.dataclass
-class DuplicateFailedConflicts(DuplicateFailed):
+class DuplicateFailedErrorConflictsError(DuplicateFailedError):
     reason: str
 
 
@@ -65,18 +65,18 @@ class DuplicateBranchResult:
 
 
 GIT_MESSAGE_TO_EXCEPTION = {
-    "(non-fast-forward)": DuplicateAlreadyExists,
+    "(non-fast-forward)": DuplicateAlreadyExistsError,
     "Updates were rejected because the tip of your current branch is behind": DuplicateNeedRetry,
-    "Aborting commit due to empty commit message": DuplicateNotNeeded,
-    "reference already exists": DuplicateAlreadyExists,
-    "You may want to first integrate the remote changes": DuplicateAlreadyExists,
-    "is a merge but no -m option was given": DuplicateWithMergeFailure,
-    "is not a commit and a branch": DuplicateFailed,
-    "couldn't find remote ref": DuplicateFailed,
-    "does not have a commit checked": DuplicateFailed,
-    "Merge conflict in .gitmodules": DuplicateFailedConflicts,
-    "Protected branch update failed for": DuplicateFailed,
-    "Failed to merge submodule": DuplicateFailed,
+    "Aborting commit due to empty commit message": DuplicateNotNeededError,
+    "reference already exists": DuplicateAlreadyExistsError,
+    "You may want to first integrate the remote changes": DuplicateAlreadyExistsError,
+    "is a merge but no -m option was given": DuplicateWithMergeFailureError,
+    "is not a commit and a branch": DuplicateFailedError,
+    "couldn't find remote ref": DuplicateFailedError,
+    "does not have a commit checked": DuplicateFailedError,
+    "Merge conflict in .gitmodules": DuplicateFailedErrorConflictsError,
+    "Protected branch update failed for": DuplicateFailedError,
+    "Failed to merge submodule": DuplicateFailedError,
 }
 
 
@@ -215,7 +215,9 @@ async def get_commits_to_cherrypick(
         return await _get_commits_without_base_branch_merge(ctxt)
 
     elif len(merge_commit.parents) >= 3:
-        raise DuplicateFailed("merge commit with more than 2 parents are unsupported")
+        raise DuplicateFailedError(
+            "merge commit with more than 2 parents are unsupported",
+        )
     else:
         raise RuntimeError("merge commit with no parents")
 
@@ -312,8 +314,8 @@ async def prepare_branch(
                 try:
                     await git("cherry-pick", "-x", commit.sha)
                 except (
-                    gitter.GitAuthenticationFailure,
-                    gitter.GitErrorRetriable,
+                    gitter.GitAuthenticationFailureError,
+                    gitter.GitErrorRetriableError,
                     gitter.GitFatalError,
                 ):
                     raise
@@ -330,33 +332,33 @@ async def prepare_branch(
                     output = await git("status")
                     cherry_pick_error += f"Cherry-pick of {commit.sha} has failed:\n```\n{output}```\n\n\n"
                     if not ignore_conflicts:
-                        raise DuplicateFailedConflicts(cherry_pick_error)
+                        raise DuplicateFailedErrorConflictsError(cherry_pick_error)
                     await git("add", "*", _env={"GIT_NOGLOB_PATHSPECS": "0"})
                     await git("commit", "-a", "--no-edit", "--allow-empty")
 
             await git("push", "origin", destination_branch)
-        except gitter.GitMergifyNamespaceConflict as e:
-            raise DuplicateFailed(
+        except gitter.GitMergifyNamespaceConflictError as e:
+            raise DuplicateFailedError(
                 "`Mergify uses `mergify/...` namespace for creating temporary branches. "
                 "A branch of your repository is conflicting with this namespace\n"
                 f"```\n{e.output}\n```\n",
             )
-        except gitter.GitAuthenticationFailure as e:
+        except gitter.GitAuthenticationFailureError as e:
             if on_behalf is None:
                 # Need to get a new token
                 raise DuplicateNeedRetry(
                     f"Git reported the following error:\n```\n{e.output}\n```\n",
                 )
-            raise DuplicateFailed(
+            raise DuplicateFailedError(
                 f"Git reported the following error:\n```\n{e.output}\n```\n\n"
                 f"`{on_behalf.login}` token is maybe invalid, make sure `{on_behalf.login}` can still log in on the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL}).",
             )
-        except gitter.GitErrorRetriable as e:
+        except gitter.GitErrorRetriableError as e:
             raise DuplicateNeedRetry(
                 f"Git reported the following error:\n```\n{e.output}\n```\n",
             )
         except gitter.GitFatalError as e:
-            raise DuplicateFailed(
+            raise DuplicateFailedError(
                 f"Git reported the following error:\n```\n{e.output}\n```\n",
             )
         except gitter.GitError as e:  # pragma: no cover
@@ -416,8 +418,8 @@ async def create_duplicate_pull(
                 "destination_branch": duplicate_branch_result.target_branch,
             },
         )
-    except condition_value_querier.RenderTemplateFailure as rmf:
-        raise DuplicateFailed(f"Invalid title message: {rmf}")
+    except condition_value_querier.RenderTemplateFailureError as rmf:
+        raise DuplicateFailedError(f"Invalid title message: {rmf}")
 
     try:
         body_without_error = await pull_attrs.render_template(
@@ -447,8 +449,8 @@ async def create_duplicate_pull(
                 "cherry_pick_error": "\n{{ cherry_pick_error }}",
             },
         )
-    except condition_value_querier.RenderTemplateFailure as rmf:
-        raise DuplicateFailed(f"Invalid title message: {rmf}")
+    except condition_value_querier.RenderTemplateFailureError as rmf:
+        raise DuplicateFailedError(f"Invalid title message: {rmf}")
 
     try:
         duplicate_pr = typing.cast(
@@ -470,11 +472,13 @@ async def create_duplicate_pull(
         if e.status_code == 422:
             if "No commits between" in e.message:
                 if duplicate_branch_result.cherry_pick_error:
-                    raise DuplicateFailed(duplicate_branch_result.cherry_pick_error)
-                raise DuplicateNotNeeded(e.message)
+                    raise DuplicateFailedError(
+                        duplicate_branch_result.cherry_pick_error,
+                    )
+                raise DuplicateNotNeededError(e.message)
 
             if "A pull request already exists" in e.message:
-                raise DuplicateAlreadyExists(e.message)
+                raise DuplicateAlreadyExistsError(e.message)
 
         raise
 

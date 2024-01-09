@@ -71,7 +71,7 @@ class QueueRule:
     require_branch_protection: bool
     branch_protection_injection_mode: queue.BranchProtectionInjectionModeT
 
-    class T_from_dict(QueueConfig, total=False):
+    class TypeFromDict(QueueConfig, total=False):
         name: QueueName
         config: QueueConfig
         # NOTE: conditions is the deprecated variant of merge_conditions
@@ -85,7 +85,7 @@ class QueueRule:
         branch_protection_injection_mode: queue.BranchProtectionInjectionModeT
 
     @classmethod
-    def from_dict(cls, d: T_from_dict) -> QueueRule:
+    def from_dict(cls, d: TypeFromDict) -> QueueRule:
         name = d.pop("name")
         # NOTE(jd): deprecated name, for backward compat
         merge_conditions = d.pop("conditions", None)
@@ -371,7 +371,7 @@ class QueueRules:
 def PositiveInterval(v: str) -> datetime.timedelta:
     try:
         td = date.interval_from_string(v)
-    except date.InvalidDate as e:
+    except date.InvalidDateError as e:
         raise voluptuous.Invalid(e.message)
 
     if td < datetime.timedelta(seconds=0):
@@ -382,7 +382,7 @@ def PositiveInterval(v: str) -> datetime.timedelta:
 def ChecksTimeout(v: str) -> datetime.timedelta:
     try:
         td = date.interval_from_string(v)
-    except date.InvalidDate as e:
+    except date.InvalidDateError as e:
         raise voluptuous.Invalid(e.message)
     if td < datetime.timedelta(seconds=60):
         raise voluptuous.Invalid("Interval must be greater than 60 seconds")

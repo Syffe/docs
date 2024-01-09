@@ -52,8 +52,8 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
                 if isinstance(iv, str):
                     try:
                         inputs[ik] = await pull_attrs.render_template(iv)
-                    except condition_value_querier.RenderTemplateFailure as rmf:
-                        raise actions.InvalidDynamicActionConfiguration(
+                    except condition_value_querier.RenderTemplateFailureError as rmf:
+                        raise actions.InvalidDynamicActionConfigurationError(
                             rule,
                             action,
                             "Invalid input value",
@@ -85,7 +85,7 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
                 workflows=await cls._get_workflow_dispatch_config(action, ctxt, rule),
             )
         except KeyError as e:
-            raise actions.InvalidDynamicActionConfiguration(
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Workflow not found",
@@ -150,7 +150,7 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
                     "inputs": wf["inputs"],
                 },
             )
-        except http.HTTPForbidden as e:
+        except http.HTTPForbiddenError as e:
             if not self.ctxt.github_actions_controllable():
                 err_msg = (
                     base_err_msg

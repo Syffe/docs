@@ -8,17 +8,17 @@ from mergify_engine.models.github import user as github_user
 
 
 @dataclasses.dataclass
-class SquashFailure(Exception):
+class SquashFailureError(Exception):
     reason: str
 
 
 @dataclasses.dataclass
-class SquashNeedRetry(exceptions.EngineNeedRetry):
+class SquashNeedRetry(exceptions.EngineNeedRetryError):
     pass
 
 
 GIT_MESSAGE_TO_EXCEPTION = {
-    "CONFLICT (": SquashFailure,
+    "CONFLICT (": SquashFailureError,
 }
 
 
@@ -28,7 +28,7 @@ async def _do_squash(
     squash_message: str,
 ) -> None:
     if ctxt.pull["head"]["repo"] is None:
-        raise SquashFailure(
+        raise SquashFailureError(
             f"The head repository of {ctxt.pull['base']['label']} has been deleted.",
         )
 
@@ -76,20 +76,20 @@ async def _do_squash(
                 60 * 60,
                 expected_sha,
             )
-        except gitter.GitMergifyNamespaceConflict as e:
-            raise SquashFailure(
+        except gitter.GitMergifyNamespaceConflictError as e:
+            raise SquashFailureError(
                 "`Mergify uses `mergify/...` namespace for creating temporary branches. "
                 "A branch of your repository is conflicting with this namespace\n"
                 f"```\n{e.output}\n```\n",
             )
-        except gitter.GitAuthenticationFailure:
+        except gitter.GitAuthenticationFailureError:
             raise
-        except gitter.GitErrorRetriable as e:
+        except gitter.GitErrorRetriableError as e:
             raise SquashNeedRetry(
                 f"Git reported the following error:\n```\n{e.output}\n```\n",
             )
         except gitter.GitFatalError as e:
-            raise SquashFailure(
+            raise SquashFailureError(
                 f"Git reported the following error:\n```\n{e.output}\n```\n",
             )
         except gitter.GitError as e:
@@ -105,10 +105,10 @@ async def _do_squash(
                 returncode=e.returncode,
                 exc_info=True,
             )
-            raise SquashFailure("")
+            raise SquashFailureError("")
         except Exception:  # pragma: no cover
             ctxt.log.error("squash failed", exc_info=True)
-            raise SquashFailure("")
+            raise SquashFailureError("")
 
 
 async def squash(
@@ -121,7 +121,7 @@ async def squash(
 
     try:
         await _do_squash(ctxt, on_behalf, message)
-    except gitter.GitAuthenticationFailure:
+    except gitter.GitAuthenticationFailureError:
         ctxt.log.info("git authentification failure", login=on_behalf, exc_info=True)
 
         if ctxt.pull_from_fork and ctxt.pull["base"]["repo"]["private"]:
@@ -129,4 +129,4 @@ async def squash(
         else:
             message = f"`{on_behalf}` token is invalid, make sure `{on_behalf}` can still log in on the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL})."
 
-        raise SquashFailure(message)
+        raise SquashFailureError(message)

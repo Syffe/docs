@@ -19,35 +19,35 @@ if typing.TYPE_CHECKING:
 _T = typing.TypeVar("_T")
 
 
-class InvalidQuery(Exception):
+class InvalidQueryError(Exception):
     pass
 
 
-class ParseError(InvalidQuery):
+class ParseError(InvalidQueryError):
     def __init__(self, tree: TreeT) -> None:
         super().__init__(f"Unable to parse tree: {tree!s}")
         self.tree = tree
 
 
-class UnknownAttribute(InvalidQuery, ValueError):
+class UnknownAttributeError(InvalidQueryError, ValueError):
     def __init__(self, key: str) -> None:
         super().__init__(f"Unknown attribute: {key!s}")
         self.key = key
 
 
-class UnknownOperator(InvalidQuery, ValueError):
+class UnknownOperatorError(InvalidQueryError, ValueError):
     def __init__(self, operator: str) -> None:
         super().__init__(f"Unknown operator: {operator!s}")
         self.operator = operator
 
 
-class InvalidOperator(InvalidQuery, TypeError):
+class InvalidOperatorError(InvalidQueryError, TypeError):
     def __init__(self, operator: str) -> None:
         super().__init__(f"Invalid operator: {operator!s}")
         self.operator = operator
 
 
-class InvalidArguments(InvalidQuery, ValueError):
+class InvalidArgumentsError(InvalidQueryError, ValueError):
     def __init__(self, arguments: typing.Any) -> None:
         super().__init__(f"Invalid arguments: {arguments!s}")
         self.arguments = arguments
@@ -153,7 +153,7 @@ class Filter(typing.Generic[FilterResultT]):
         if op in self.binary_operators:
             if isinstance(nodes[1], bool):  # type: ignore[index]
                 if op != "=":
-                    raise InvalidOperator(op)
+                    raise InvalidOperatorError(op)
                 return ("" if nodes[1] else "-") + str(nodes[0])  # type: ignore[index]
 
             if isinstance(nodes[1], datetime.datetime):  # type: ignore[index]
@@ -172,7 +172,7 @@ class Filter(typing.Generic[FilterResultT]):
 
             return str(nodes[0]) + op + str(nodes[1])  # type: ignore[index]
 
-        raise InvalidOperator(op)  # pragma: no cover
+        raise InvalidOperatorError(op)  # pragma: no cover
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"{self.__class__.__name__}({self!s})"
@@ -203,12 +203,12 @@ class Filter(typing.Generic[FilterResultT]):
             if inspect.iscoroutine(attr):
                 attr = await attr
         except AttributeError:
-            raise UnknownAttribute(attribute_name)
+            raise UnknownAttributeError(attribute_name)
 
         try:
             values = op(attr)
         except TypeError:
-            raise InvalidOperator(attribute_name)
+            raise InvalidOperatorError(attribute_name)
 
         return self._to_list(values)
 
@@ -223,7 +223,7 @@ class Filter(typing.Generic[FilterResultT]):
                 attribute_name,
                 _format_attribute_value,
             )
-        except UnknownAttribute:
+        except UnknownAttributeError:
             if attribute_name.startswith(self.LENGTH_OPERATOR):
                 return await self._get_attribute_values(obj, attribute_name[1:], len)
             raise
@@ -254,13 +254,13 @@ class Filter(typing.Generic[FilterResultT]):
                 try:
                     binary_operator = self.binary_operators[operator_name]
                 except KeyError:
-                    raise UnknownOperator(operator_name)
+                    raise UnknownOperatorError(operator_name)
                 nodes = typing.cast(TreeBinaryLeafT, nodes)
                 return self._handle_binary_op(binary_operator, nodes)
             nodes = typing.cast(TreeT, nodes)
             return self._handle_unary_op(unary_operator, nodes)
         if not isinstance(nodes, abc.Iterable):
-            raise InvalidArguments(nodes)
+            raise InvalidArgumentsError(nodes)
         return self._handle_multiple_op(multiple_op, nodes)
 
     def _eval_binary_op(
@@ -283,7 +283,7 @@ class Filter(typing.Generic[FilterResultT]):
         nodes: TreeBinaryLeafT,
     ) -> CompiledTreeT[GetAttrObject, FilterResultT]:
         if len(nodes) != 2:
-            raise InvalidArguments(nodes)
+            raise InvalidArgumentsError(nodes)
 
         attribute_name, reference_value = nodes
         _, _, compile_fn = op
@@ -293,7 +293,7 @@ class Filter(typing.Generic[FilterResultT]):
             try:
                 reference_value = compile_fn(reference_value)
             except Exception as e:
-                raise InvalidArguments(str(e))
+                raise InvalidArgumentsError(str(e))
 
         async def _op(obj: GetAttrObjectT) -> FilterResultT:
             nonlocal reference_value

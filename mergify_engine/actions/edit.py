@@ -38,8 +38,8 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
                 action.config["bot_account"],
                 bot_account_fallback=None,
             )
-        except action_utils.RenderBotAccountFailure as e:
-            raise actions.InvalidDynamicActionConfiguration(
+        except action_utils.RenderBotAccountFailureError as e:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 e.title,
@@ -88,7 +88,7 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
                 self.config["bot_account"],
                 required_permissions=[],
             )
-        except action_utils.BotAccountNotFound as e:
+        except action_utils.BotAccountNotFoundError as e:
             return check_api.Result(e.status, e.title, e.reason)
 
         mutation = f"""
@@ -105,7 +105,7 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
                 mutation,
                 oauth_token=on_behalf.oauth_access_token if on_behalf else None,
             )
-        except http.HTTPUnauthorized:
+        except http.HTTPUnauthorizedError:
             if on_behalf is None:
                 raise
             return action_utils.get_invalid_credentials_report(on_behalf)

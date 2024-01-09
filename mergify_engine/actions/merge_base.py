@@ -51,7 +51,7 @@ MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
 PullMergePayload = dict[str, str]
 
 
-class MergeNeedRetry(Exception):
+class MergeNeedRetryError(Exception):
     ctxt: context.Context
     abort_message: str
     exception: Exception | None
@@ -78,7 +78,7 @@ class MergeUtilsMixin:
                 refresh_flag=refresher.RefreshFlag.MERGE_FAILED,
                 max_attempts=cls.MAX_REFRESH_ATTEMPTS,
             )
-        except refresher.MaxRefreshAttemptsExceeded as e:
+        except refresher.MaxRefreshAttemptsExceededError as e:
             ctxt.log.error(
                 "failed to merge after %s refresh attempts",
                 e.max_attempts,
@@ -99,7 +99,7 @@ class MergeUtilsMixin:
             is_conflicting=await ctxt.is_conflicting(),
             curl=await exception.to_curl() if exception else None,
         )
-        raise MergeNeedRetry(exception)
+        raise MergeNeedRetryError(exception)
 
     @staticmethod
     def _get_redis_recently_merged_tracker_key(
@@ -171,7 +171,7 @@ class MergeUtilsMixin:
                     merge_bot_account,
                     required_permissions=required_permissions,
                 )
-            except action_utils.BotAccountNotFound as e:
+            except action_utils.BotAccountNotFoundError as e:
                 return check_api.Result(e.status, e.title, e.reason)
 
         if merge_method == "fast-forward":
@@ -211,7 +211,7 @@ class MergeUtilsMixin:
             commit_title_and_message = await attrs.get_commit_message(
                 commit_message_template,
             )
-        except condition_value_querier.RenderTemplateFailure as rmf:
+        except condition_value_querier.RenderTemplateFailureError as rmf:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 "Invalid commit message",
@@ -235,7 +235,7 @@ class MergeUtilsMixin:
             else:
                 pull_merge_payload["merge_method"] = merge_method
                 await self._request_merge(ctxt, pull_merge_payload, on_behalf)
-        except http.HTTPUnauthorized:
+        except http.HTTPUnauthorizedError:
             if on_behalf is None:
                 raise
             return action_utils.get_invalid_credentials_report(on_behalf)

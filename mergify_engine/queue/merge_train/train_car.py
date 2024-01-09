@@ -52,12 +52,12 @@ if typing.TYPE_CHECKING:
 
 
 @dataclasses.dataclass
-class DraftPullRequestCreationTemporaryFailure(Exception):
+class DraftPullRequestCreationTemporaryFailureError(Exception):
     reason: str
 
 
 @dataclasses.dataclass
-class DraftPullRequestBranchCreationTemporaryFailure(Exception):
+class DraftPullRequestBranchCreationTemporaryFailureError(Exception):
     reason: str
 
 
@@ -146,12 +146,12 @@ class TrainCarOutcome(enum.Enum):
 
 
 @dataclasses.dataclass
-class MergeQueueReset(Exception):
+class MergeQueueResetError(Exception):
     pass
 
 
 @dataclasses.dataclass
-class QueuePaused(MergeQueueReset):
+class QueuePausedError(MergeQueueResetError):
     pause: pause.QueuePause
 
     def __str__(self) -> str:
@@ -159,7 +159,7 @@ class QueuePaused(MergeQueueReset):
 
 
 @dataclasses.dataclass
-class UnexpectedBaseBranchChange(MergeQueueReset):
+class UnexpectedBaseBranchChangeError(MergeQueueResetError):
     base_sha: github_types.SHAType
 
     def __str__(self) -> str:
@@ -247,12 +247,12 @@ class TrainCarChecksType(enum.Enum):
 
 
 @dataclasses.dataclass
-class TrainCarPullRequestCreationPostponed(Exception):
+class TrainCarPullRequestCreationPostponedError(Exception):
     car: TrainCar
 
 
 @dataclasses.dataclass
-class TrainCarPullRequestCreationFailure(Exception):
+class TrainCarPullRequestCreationFailureError(Exception):
     car: TrainCar
     guilty_prs: list[github_types.GitHubPullRequestNumber] = dataclasses.field(
         default_factory=list,
@@ -693,36 +693,36 @@ class TrainCar:
                 bot_account,
                 required_permissions=[],
             )
-        except action_utils.BotAccountNotFound as exc:
+        except action_utils.BotAccountNotFoundError as exc:
             await self._set_creation_failure(
                 f"{exc.title}\n\n{exc.reason}",
                 operation="updated",
             )
-            raise TrainCarPullRequestCreationFailure(self) from exc
+            raise TrainCarPullRequestCreationFailureError(self) from exc
 
         autosquash = self.still_queued_embarked_pulls[0].config.get("autosquash", True)
         try:
             await branch_updater.rebase_with_git(ctxt, on_behalf, autosquash)
-        except branch_updater.BranchUpdateFailure as exc:
+        except branch_updater.BranchUpdateFailureError as exc:
             await self._set_creation_failure(
                 f"{exc.title}\n\n{exc.message}",
                 TrainCarOutcome.BRANCH_UPDATE_FAILED,
                 operation="updated",
             )
-            raise TrainCarPullRequestCreationFailure(self) from exc
+            raise TrainCarPullRequestCreationFailureError(self) from exc
 
     async def _start_checking_inplace_merge(self, ctxt: context.Context) -> None:
         # Do not use any oauth_token for this update, otherwise we won't be able
         # to detect when we did the merge or if the user did it.
         try:
             await branch_updater.update_with_api(ctxt)
-        except branch_updater.BranchUpdateFailure as exc:
+        except branch_updater.BranchUpdateFailureError as exc:
             await self._set_creation_failure(
                 f"{exc.title}\n\n{exc.message}",
                 TrainCarOutcome.BRANCH_UPDATE_FAILED,
                 operation="updated",
             )
-            raise TrainCarPullRequestCreationFailure(self) from exc
+            raise TrainCarPullRequestCreationFailureError(self) from exc
 
     @tracer.wrap("TrainCar.start_inplace_checks")
     async def start_checking_inplace(self) -> None:
@@ -825,7 +825,7 @@ class TrainCar:
     @tracer.wrap("TrainCar._create_draft_pull_request")
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(
-            DraftPullRequestCreationTemporaryFailure,
+            DraftPullRequestCreationTemporaryFailureError,
         ),
         stop=tenacity.stop_after_attempt(2),
         reraise=True,
@@ -899,7 +899,7 @@ class TrainCar:
                     title,
                     on_behalf,
                 )
-                raise DraftPullRequestCreationTemporaryFailure(e.message)
+                raise DraftPullRequestCreationTemporaryFailureError(e.message)
 
             if "Draft pull requests are not supported" not in e.message:
                 self.train.log.error(
@@ -916,7 +916,7 @@ class TrainCar:
                 )
 
             await self._set_creation_failure(e.message, report_as_error=True)
-            raise TrainCarPullRequestCreationFailure(self) from e
+            raise TrainCarPullRequestCreationFailureError(self) from e
 
         else:
             return (
@@ -927,7 +927,7 @@ class TrainCar:
     @tracer.wrap("TrainCar._prepare_draft_pr_branch")
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(
-            DraftPullRequestBranchCreationTemporaryFailure,
+            DraftPullRequestBranchCreationTemporaryFailureError,
         ),
         stop=tenacity.stop_after_attempt(2),
         reraise=True,
@@ -981,7 +981,7 @@ class TrainCar:
                     await self._delete_branch()
                 except http.HTTPClientSideError as exc_patch:
                     await self._set_creation_failure(exc_patch.message)
-                    raise TrainCarPullRequestCreationFailure(self) from exc_patch
+                    raise TrainCarPullRequestCreationFailureError(self) from exc_patch
 
                 self.train.log.error(
                     "Conflict with merge-queue branch creation",
@@ -996,10 +996,10 @@ class TrainCar:
                         for ep in self.still_queued_embarked_pulls
                     ],
                 )
-                raise DraftPullRequestBranchCreationTemporaryFailure(exc.message)
+                raise DraftPullRequestBranchCreationTemporaryFailureError(exc.message)
 
             await self._set_creation_failure(exc.message, report_as_error=True)
-            raise TrainCarPullRequestCreationFailure(self) from exc
+            raise TrainCarPullRequestCreationFailureError(self) from exc
 
         return None
 
@@ -1056,7 +1056,7 @@ class TrainCar:
                     await self._delete_branch()
                 except http.HTTPClientSideError as exc_patch:
                     await self._set_creation_failure(exc_patch.message)
-                    raise TrainCarPullRequestCreationFailure(self) from exc_patch
+                    raise TrainCarPullRequestCreationFailureError(self) from exc_patch
 
             elif (
                 exc.status_code == 403
@@ -1071,7 +1071,7 @@ class TrainCar:
                 )
             else:
                 await self._set_creation_failure(exc.message, report_as_error=True)
-                raise TrainCarPullRequestCreationFailure(self) from exc
+                raise TrainCarPullRequestCreationFailureError(self) from exc
 
     async def duplicate_old_branch_to_new_branch(
         self,
@@ -1100,7 +1100,7 @@ class TrainCar:
             )
         except http.HTTPClientSideError as exc:
             await self._set_creation_failure(exc.message, report_as_error=True)
-            raise TrainCarPullRequestCreationFailure(self) from exc
+            raise TrainCarPullRequestCreationFailureError(self) from exc
 
     async def _get_draft_pr_setup(
         self,
@@ -1163,9 +1163,9 @@ class TrainCar:
                     queue_rule.config["draft_bot_account"],
                     required_permissions=[],
                 )
-            except action_utils.BotAccountNotFound as e:
+            except action_utils.BotAccountNotFoundError as e:
                 await self._set_creation_failure(f"{e.title}. {e.reason}")
-                raise TrainCarPullRequestCreationFailure(self)
+                raise TrainCarPullRequestCreationFailureError(self)
 
         base_sha, pulls_in_draft = await self._get_draft_pr_setup(
             queue_rule,
@@ -1193,9 +1193,9 @@ class TrainCar:
                 base_sha,
                 on_behalf,
             )
-        except DraftPullRequestBranchCreationTemporaryFailure as e:
+        except DraftPullRequestBranchCreationTemporaryFailureError as e:
             await self._set_creation_failure(e.reason)
-            raise TrainCarPullRequestCreationPostponed(self) from e
+            raise TrainCarPullRequestCreationPostponedError(self) from e
 
         if existing_pr is not None:
             await self._set_initial_state(
@@ -1220,7 +1220,7 @@ class TrainCar:
                         error_message=e.message,
                     )
                     await self._delete_branch()
-                    raise TrainCarPullRequestCreationPostponed(self) from e
+                    raise TrainCarPullRequestCreationPostponedError(self) from e
 
                 if "Merge conflict" in e.message:
                     pull_requests_ahead = self.parent_pull_request_numbers[:]
@@ -1243,7 +1243,10 @@ class TrainCar:
                         pull_requests_to_remove=[pull_number],
                     )
                     await self._delete_branch()
-                    raise TrainCarPullRequestCreationFailure(self, [pull_number]) from e
+                    raise TrainCarPullRequestCreationFailureError(
+                        self,
+                        [pull_number],
+                    ) from e
 
                 await self._set_creation_failure(
                     e.message,
@@ -1251,7 +1254,10 @@ class TrainCar:
                     report_as_error=True,
                 )
                 await self._delete_branch()
-                raise TrainCarPullRequestCreationFailure(self, [pull_number]) from e
+                raise TrainCarPullRequestCreationFailureError(
+                    self,
+                    [pull_number],
+                ) from e
 
         new_branch_name = github_types.GitHubRefType(
             self.queue_branch_name.replace(self.QUEUE_BRANCH_PREFIX, "", 1),
@@ -1264,9 +1270,9 @@ class TrainCar:
                 self.queue_branch_name,
                 on_behalf,
             )
-        except DraftPullRequestCreationTemporaryFailure as e:
+        except DraftPullRequestCreationTemporaryFailureError as e:
             await self._delete_branch()
-            raise TrainCarPullRequestCreationPostponed(self) from e
+            raise TrainCarPullRequestCreationPostponedError(self) from e
 
         await self._set_initial_state(checks_type, tmp_pull)
 
@@ -1791,14 +1797,14 @@ You don't need to do anything. Mergify will close this pull request automaticall
     async def get_reset_event(
         self,
         paused: pause.QueuePause | None,
-    ) -> MergeQueueReset | None:
+    ) -> MergeQueueResetError | None:
         if self.queue_pull_request_number is None:
             raise RuntimeError(
                 "get_unexpected_changes expected the train car to be started",
             )
 
         if paused:
-            return QueuePaused(paused)
+            return QueuePausedError(paused)
 
         checked_ctxt = await self.repository.get_pull_request_context(
             self.queue_pull_request_number,
@@ -1806,7 +1812,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         try:
             current_base_sha = await self.train.get_base_sha()
-        except train_utils.BaseBranchVanished:
+        except train_utils.BaseBranchVanishedError:
             checked_ctxt.log.warning(
                 "base branch vanished, the merge queue will be deleted soon",
             )
@@ -1819,7 +1825,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             return None
 
         # NOTE(Syffe): If we enter this clause, it means there are no unexpected changes detected yet on the PR.
-        # Thus, checking for UnexpectedBaseBranchChange on a closed pull request makes no sense, since
+        # Thus, checking for UnexpectedBaseBranchChangeError on a closed pull request makes no sense, since
         # we are sure, if the PR is closed, that it is closed by us.
         train_synced_with_base_branch = await self.train.is_synced_with_the_base_branch(
             checked_ctxt,
@@ -1833,7 +1839,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         ].get_fallback_partition_name()
         if fallback_partition_name is None:
             # There is no fallback partition, and we don't know the change, we reset every partition
-            return UnexpectedBaseBranchChange(current_base_sha)
+            return UnexpectedBaseBranchChangeError(current_base_sha)
 
         # NOTE(Syffe): In case a context with a fallback partition, if the train is out of sync with the base
         # branch we have to define wether the change comes from a Pull Request, or a force push directly on
@@ -1877,7 +1883,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         if is_api_call_result_empty:
             # In a context with a fallback partition, the change doesn't come from a PR, we reset every
             # partition
-            return UnexpectedBaseBranchChange(current_base_sha)
+            return UnexpectedBaseBranchChangeError(current_base_sha)
         return None
 
     async def check_mergeability(

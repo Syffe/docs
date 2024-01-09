@@ -26,7 +26,7 @@ EVENT_TO_MODEL_MAPPING: dict[str, HandledModelsT] = {
 
 
 @dataclasses.dataclass
-class UnhandledEventType(Exception):
+class UnhandledEventTypeError(Exception):
     message: str
     event_type: str
 
@@ -46,7 +46,7 @@ async def store_redis_event_in_pg(event_id: bytes, event: dict[bytes, bytes]) ->
     LOG.info("processing event '%s', id=%s", event_type, event_id)
 
     if event_type not in EVENT_TO_MODEL_MAPPING:
-        raise UnhandledEventType(
+        raise UnhandledEventTypeError(
             "Found unhandled event_type '%s' in 'github_in_postgres' stream"
             % event_type,
             event_type,
@@ -74,7 +74,7 @@ async def store_redis_event_in_pg(event_id: bytes, event: dict[bytes, bytes]) ->
             # mypy thinks the typed_event_data can be, for example,
             # `CheckRun` for a "pull_request" event.
             await model.insert_or_update(session, typed_event_data)  # type: ignore[arg-type]
-        except exceptions.MergifyNotInstalled:
+        except exceptions.MergifyNotInstalledError:
             # Just ignore event for uninstalled repository
             return
         await session.commit()

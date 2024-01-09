@@ -19,7 +19,7 @@ async def test_update_with_api_permission_error(
         json={"message": "wow stop"},
     )
 
-    with pytest.raises(branch_updater.BranchUpdateFailure) as e:
+    with pytest.raises(branch_updater.BranchUpdateFailureError) as e:
         await branch_updater.update_with_api(ctxt)
 
     assert e.value.title == "Mergify doesn't have permission to update"

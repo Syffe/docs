@@ -37,7 +37,7 @@ async def test_filter_and_dispatch(
             event_id,
             event,
         )
-    except github_events.IgnoredEvent as e:
+    except github_events.IgnoredEventError as e:
         # Not all events are supposed to raise an error, so the
         # PT017 is useless here.
         assert isinstance(e.reason, str)  # noqa: PT017
@@ -66,7 +66,7 @@ async def test_event_classifier(
                 event,
                 mergify_bot,
             )
-        except github_events.IgnoredEvent:
+        except github_events.IgnoredEventError:
             if expected_event_routes is not None:
                 raise
 

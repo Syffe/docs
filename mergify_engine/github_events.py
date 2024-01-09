@@ -70,7 +70,7 @@ async def meter_event(
 
 
 @dataclasses.dataclass
-class IgnoredEvent(Exception):
+class IgnoredEventError(Exception):
     reason: str
 
 
@@ -383,12 +383,12 @@ async def event_classifier(
         "team_add",
         "workflow_run",
     ):
-        raise IgnoredEvent(f"{event_type} event")
+        raise IgnoredEventError(f"{event_type} event")
 
     if "repository" in event:
         event = typing.cast(github_types.GitHubEventWithRepository, event)
         if event["repository"]["archived"]:
-            raise IgnoredEvent("repository archived")
+            raise IgnoredEventError("repository archived")
 
     if event_type == "pull_request":
         event = typing.cast(github_types.GitHubEventPullRequest, event)
@@ -408,7 +408,7 @@ async def event_classifier(
                 )
             )
         ):
-            raise IgnoredEvent("mergify merge queue description update")
+            raise IgnoredEventError("mergify merge queue description update")
 
         return EventToRoute(
             EventRoute.STREAM | EventRoute.GITHUB_IN_POSTGRES,
@@ -463,10 +463,10 @@ async def event_classifier(
     if event_type == "issue_comment":
         event = typing.cast(github_types.GitHubEventIssueComment, event)
         if "pull_request" not in event["issue"]:
-            raise IgnoredEvent("comment is not on a pull request")
+            raise IgnoredEventError("comment is not on a pull request")
 
         if event["action"] not in ("created", "edited"):
-            raise IgnoredEvent(f"comment action is '{event['action']}'")
+            raise IgnoredEventError(f"comment action is '{event['action']}'")
 
         if (
             # When someone else edit our comment the user id is still us
@@ -474,7 +474,7 @@ async def event_classifier(
             event["comment"]["user"]["id"] == mergify_bot["id"]
             and event["sender"]["id"] == mergify_bot["id"]
         ):
-            raise IgnoredEvent("comment by Mergify[bot]")
+            raise IgnoredEventError("comment by Mergify[bot]")
 
         if (
             # At the moment there is no specific "action" key or event
@@ -485,10 +485,10 @@ async def event_classifier(
             and event["action"] == "edited"
             and event["changes"]["body"]["from"] == event["comment"]["body"]
         ):
-            raise IgnoredEvent("comment has been hidden")
+            raise IgnoredEventError("comment has been hidden")
 
         if not commands_runner.COMMAND_MATCHER.search(event["comment"]["body"]):
-            raise IgnoredEvent("comment is not a command")
+            raise IgnoredEventError("comment is not a command")
 
         return EventToRoute(
             EventRoute.STREAM,
@@ -517,7 +517,7 @@ async def event_classifier(
     if event_type == "push":
         event = typing.cast(github_types.GitHubEventPush, event)
         if not event["ref"].startswith("refs/heads/"):
-            raise IgnoredEvent(f"push on {event['ref']}")
+            raise IgnoredEventError(f"push on {event['ref']}")
 
         return EventToRoute(
             EventRoute.STREAM,
@@ -530,14 +530,14 @@ async def event_classifier(
     if event_type == "check_suite":
         event = typing.cast(github_types.GitHubEventCheckSuite, event)
         if event["action"] != "rerequested":
-            raise IgnoredEvent(f"check_suite/{event['action']}")
+            raise IgnoredEventError(f"check_suite/{event['action']}")
 
         if (
             event["check_suite"]["app"]["id"] == settings.GITHUB_APP_ID
             and event["action"] != "rerequested"
             and event["check_suite"].get("external_id") != check_api.USER_CREATED_CHECKS
         ):
-            raise IgnoredEvent("mergify check_suite")
+            raise IgnoredEventError("mergify check_suite")
 
         return EventToRoute(
             EventRoute.STREAM,
@@ -582,7 +582,7 @@ async def event_classifier(
         if job_registries.HTTPJobRegistry.is_workflow_run_ignored(
             event["workflow_run"],
         ):
-            raise IgnoredEvent(reason="workflow_run ignored")
+            raise IgnoredEventError(reason="workflow_run ignored")
 
         return EventToRoute(EventRoute.CI_MONITORING, event_type, event_id, event)
 
@@ -592,11 +592,11 @@ async def event_classifier(
         if event_data is None or job_registries.HTTPJobRegistry.is_workflow_job_ignored(
             event_data,
         ):
-            raise IgnoredEvent("workflow_job ignored")
+            raise IgnoredEventError("workflow_job ignored")
 
         return EventToRoute(EventRoute.CI_MONITORING, event_type, event_id, event)
 
-    raise IgnoredEvent("unexpected event_type")
+    raise IgnoredEventError("unexpected event_type")
 
 
 async def filter_and_dispatch(
@@ -623,7 +623,7 @@ async def filter_and_dispatch(
             event,
             mergify_bot,
         )
-    except IgnoredEvent as exc:
+    except IgnoredEventError as exc:
         if "repository" in event:
             event = typing.cast(github_types.GitHubEventWithRepository, event)
             gh_owner = event["repository"]["owner"]["login"]

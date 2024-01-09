@@ -45,11 +45,11 @@ TIKTOKEN_ENCODING = tiktoken.Encoding(
 )
 
 
-class OpenAiException(Exception):
+class OpenAiExceptionError(Exception):
     pass
 
 
-class OpenAIModelNotFound(Exception):
+class OpenAIModelNotFoundError(Exception):
     pass
 
 
@@ -161,6 +161,8 @@ class OpenAIClient(http.AsyncClient):
         embedding = response.json()["data"][0]["embedding"]
 
         if embedding is None:
-            raise OpenAiException(f"OpenAI return None for embedding of {input_data}")
+            raise OpenAiExceptionError(
+                f"OpenAI return None for embedding of {input_data}",
+            )
 
         return np.array(list(map(np.float32, embedding)))

@@ -19,7 +19,7 @@ class AssociatedUsers(typing.TypedDict):
     associated_users: list[AssociatedUser]
 
 
-class NoAssociatedUsersFound(Exception):
+class NoAssociatedUsersFoundError(Exception):
     pass
 
 
@@ -44,8 +44,10 @@ class AsyncShadowOfficeSaasClient(http.AsyncClient):
                 url=f"/engine/associated-users/{login}",
                 follow_redirects=True,
             )
-        except http.HTTPNotFound:
-            raise NoAssociatedUsersFound("User or Organization has no Mergify account")
+        except http.HTTPNotFoundError:
+            raise NoAssociatedUsersFoundError(
+                "User or Organization has no Mergify account",
+            )
 
         data = typing.cast(AssociatedUsers, resp.json())
         # Try admin first

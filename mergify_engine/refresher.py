@@ -20,7 +20,7 @@ if typing.TYPE_CHECKING:
 
 
 @dataclasses.dataclass
-class MaxRefreshAttemptsExceeded(Exception):
+class MaxRefreshAttemptsExceededError(Exception):
     max_attempts: int
 
 
@@ -67,7 +67,7 @@ async def _add_refresh_attempt(
                 else attempts
             )
             if attempts >= max_attempts:
-                raise MaxRefreshAttemptsExceeded(max_attempts)
+                raise MaxRefreshAttemptsExceededError(max_attempts)
             attempts += 1
             # NOTE(lecrepont01): first refresh event if many is the most recent
             break

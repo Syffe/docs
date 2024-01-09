@@ -249,8 +249,8 @@ class SubscriptionShadowOfficeSaas(SubscriptionBase):
         async with shadow_office.AsyncShadowOfficeSaasClient() as client:
             try:
                 resp = await client.get(f"/engine/subscription/{owner_id}")
-            except http.HTTPNotFound:
-                raise exceptions.MergifyNotInstalled()
+            except http.HTTPNotFoundError:
+                raise exceptions.MergifyNotInstalledError()
             else:
                 sub = resp.json()
                 return cls.from_dict(redis, owner_id, sub)
@@ -268,16 +268,16 @@ class SubscriptionShadowOfficeOnPremise(SubscriptionBase):
         async with shadow_office.AsyncShadowOfficeOnPremiseClient() as client:
             try:
                 resp = await client.get(f"/on-premise/subscription/{owner_id}")
-            except http.HTTPUnauthorized:
+            except http.HTTPUnauthorizedError:
                 LOG.critical(
                     "The SUBSCRIPTION_TOKEN is invalid, the subscription can't be checked",
                 )
-                raise exceptions.MergifyNotInstalled()
-            except http.HTTPForbidden:
+                raise exceptions.MergifyNotInstalledError()
+            except http.HTTPForbiddenError:
                 LOG.critical(
                     "The subscription attached to SUBSCRIPTION_TOKEN is not valid",
                 )
-                raise exceptions.MergifyNotInstalled()
+                raise exceptions.MergifyNotInstalledError()
             else:
                 sub = resp.json()
 

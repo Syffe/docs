@@ -52,7 +52,7 @@ class NormalizedUrl(str):
 
     @classmethod
     def __get_pydantic_core_schema__(
-        self,
+        cls,
         _source_type: typing.Any,
         _handler: typing.Callable[[typing.Any], pydantic_core.core_schema.CoreSchema],
     ) -> pydantic_core.core_schema.CoreSchema:

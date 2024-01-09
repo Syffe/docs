@@ -43,8 +43,8 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
                 action.config["bot_account"],
                 bot_account_fallback=bot_account_fallback,
             )
-        except action_utils.RenderBotAccountFailure as e:
-            raise actions.InvalidDynamicActionConfiguration(
+        except action_utils.RenderBotAccountFailureError as e:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 e.title,
@@ -74,7 +74,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
 
         try:
             commit_title_and_message = await pull_attrs.get_commit_message()
-        except condition_value_querier.RenderTemplateFailure as rmf:
+        except condition_value_querier.RenderTemplateFailureError as rmf:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 "Invalid commit message",
@@ -88,7 +88,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
                 self.config["bot_account"],
                 required_permissions=[],
             )
-        except action_utils.BotAccountNotFound as e:
+        except action_utils.BotAccountNotFoundError as e:
             return check_api.Result(e.status, e.title, e.reason)
 
         if commit_title_and_message is not None:
@@ -119,7 +119,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
 
         try:
             await squash_pull.squash(self.ctxt, message, on_behalf=on_behalf)
-        except squash_pull.SquashFailure as e:
+        except squash_pull.SquashFailureError as e:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 "Pull request squash failed",

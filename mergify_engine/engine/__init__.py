@@ -31,7 +31,7 @@ LOG = daiquiri.getLogger(__name__)
 
 
 @dataclasses.dataclass
-class MultipleConfigurationFileFound(Exception):
+class MultipleConfigurationFileFoundError(Exception):
     filenames: set[str]
 
 
@@ -113,7 +113,7 @@ async def _check_configuration_changes(
         config_filenames.add(current_mergify_config_file["path"])
 
     if len(config_filenames) >= 2:
-        raise MultipleConfigurationFileFound(config_filenames)
+        raise MultipleConfigurationFileFoundError(config_filenames)
 
     if len(modified_config_files) != 1:
         raise RuntimeError(
@@ -136,7 +136,7 @@ async def _check_configuration_changes(
             github_types.GitHubContentFile,
             await ctxt.client.item(future_mergify_config_file["contents_url"]),
         )
-    except http.HTTPNotFound:
+    except http.HTTPNotFoundError:
         # Deleted in the meantime, we will received another event soon
         return True
 
@@ -152,7 +152,10 @@ async def _check_configuration_changes(
             ].get_pull_request_rules_evaluator(
                 ctxt,
             )
-    except (mergify_conf.InvalidRules, actions.InvalidDynamicActionConfiguration) as e:
+    except (
+        mergify_conf.InvalidRulesError,
+        actions.InvalidDynamicActionConfigurationError,
+    ) as e:
         # Not configured, post status check with the error message
         await check_api.set_check_run(
             ctxt,
@@ -162,11 +165,11 @@ async def _check_configuration_changes(
                 title="The new Mergify configuration is invalid",
                 # ##### separation for better readability
                 summary=str(e)
-                if isinstance(e, mergify_conf.InvalidRules)
+                if isinstance(e, mergify_conf.InvalidRulesError)
                 else e.get_summary(),
                 # ##### separation for better readability
                 annotations=e.get_annotations(e.filename)
-                if isinstance(e, mergify_conf.InvalidRules)
+                if isinstance(e, mergify_conf.InvalidRulesError)
                 else None,
             ),
         )
@@ -304,7 +307,7 @@ async def get_context_with_sha_collision(
         conflicting_ctxt = await ctxt.repository.get_pull_request_context(
             github_types.GitHubPullRequestNumber(int(summary["external_id"])),
         )
-    except http.HTTPNotFound:
+    except http.HTTPNotFoundError:
         return None
     else:
         # NOTE(sileht): allow to override the summary of another pull request
@@ -345,7 +348,7 @@ async def report_sha_collision(
             await conflicting_ctxt.set_warned_about_sha_collision(comment["url"])
 
 
-class T_PayloadEventIssueCommentSource(typing.TypedDict):
+class PayloadEventIssueCommentSourceType(typing.TypedDict):
     event_type: github_types.GitHubEventType
     data: github_types.GitHubEventIssueComment
     timestamp: str
@@ -353,7 +356,7 @@ class T_PayloadEventIssueCommentSource(typing.TypedDict):
 
 async def run(
     ctxt: context.Context,
-    sources: list[context.T_PayloadEventSource],
+    sources: list[context.PayloadEventSourceType],
 ) -> check_api.Result | None:
     LOG.debug("engine get context")
     ctxt.log.debug("engine start processing context")
@@ -405,7 +408,7 @@ async def run(
             ctxt,
             config_file,
         )
-    except MultipleConfigurationFileFound as e:
+    except MultipleConfigurationFileFoundError as e:
         files = "\n * " + "\n * ".join(f for f in e.filenames)
         # NOTE(sileht): This replaces the summary, so we will may lost the
         # state of queue/comment action. But since we can't choice which config
@@ -420,9 +423,9 @@ async def run(
     try:
         try:
             await ctxt.repository.load_mergify_config()
-        except context.ConfigurationFileAlreadyLoaded as e:
+        except context.ConfigurationFileAlreadyLoadedError as e:
             e.reraise_configuration_error()
-    except mergify_conf.InvalidRules as e:  # pragma: no cover
+    except mergify_conf.InvalidRulesError as e:  # pragma: no cover
         ctxt.log.info(
             "The Mergify configuration is invalid",
             summary=str(e),

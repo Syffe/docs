@@ -40,16 +40,16 @@ class Anonymizer(sqlalchemy.Dialect):
 
 
 @dataclasses.dataclass
-class CustomPostgresException(Exception):
+class CustomPostgresExceptionError(Exception):
     msg: typing.ClassVar[str]
-    registry: typing.ClassVar[dict[str, type["CustomPostgresException"]]] = {}
+    registry: typing.ClassVar[dict[str, type["CustomPostgresExceptionError"]]] = {}
 
     CUSTOM_PG_EXCEPTION_MARKER = "CUSTOM_PG_EXCEPTION"
 
     def __init_subclass__(cls, *args: typing.Any, **kwargs: typing.Any) -> None:
         if cls.__name__ in cls.registry:
             raise ValueError(
-                f"A CustomPostgresException named '{cls.__name__}' has already been registered.",
+                f"A CustomPostgresExceptionError named '{cls.__name__}' has already been registered.",
             )
         cls.registry[cls.__name__] = cls
         super().__init_subclass__(*args, **kwargs)
@@ -63,12 +63,12 @@ def handle_custom_pg_exception(context: sqlalchemy.ExceptionContext) -> None:
     if (
         isinstance(context.original_exception, psycopg.errors.RaiseException)
         and context.original_exception.diag.message_primary
-        == CustomPostgresException.CUSTOM_PG_EXCEPTION_MARKER
+        == CustomPostgresExceptionError.CUSTOM_PG_EXCEPTION_MARKER
     ):
         class_name = context.original_exception.diag.message_detail
         if class_name is None:
             raise RuntimeError("CUSTOM_PG_EXCEPTION raised with DETAIL set")
-        raise CustomPostgresException.registry[class_name]()
+        raise CustomPostgresExceptionError.registry[class_name]()
 
 
 def init_sqlalchemy(service_name: str) -> None:

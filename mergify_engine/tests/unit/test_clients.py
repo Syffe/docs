@@ -139,7 +139,7 @@ async def test_client_401_raise_ratelimit(respx_mock: respx.MockRouter) -> None:
     installation_json = await github.get_installation_from_account_id(owner_id)
     async with github.aget_client(installation_json) as client:
         client.retry_exponential_multiplier = 0
-        with pytest.raises(exceptions.RateLimited):
+        with pytest.raises(exceptions.RateLimitedError):
             await client.item(f"/repos/{owner_login}/{repo}/pull/1")
 
 
@@ -434,7 +434,7 @@ async def test_client_installation_HTTP_404(respx_mock: respx.MockRouter) -> Non
         json={"message": "Repository not found"},
     )
 
-    with pytest.raises(exceptions.MergifyNotInstalled):
+    with pytest.raises(exceptions.MergifyNotInstalledError):
         await github.get_installation_from_account_id(
             github_types.GitHubAccountIdType(12345),
         )
@@ -453,7 +453,7 @@ async def test_client_installation_HTTP_301(respx_mock: respx.MockRouter) -> Non
         404,
         json={"message": "Repository not found"},
     )
-    with pytest.raises(exceptions.MergifyNotInstalled):
+    with pytest.raises(exceptions.MergifyNotInstalledError):
         await github.get_installation_from_account_id(
             github_types.GitHubAccountIdType(12345),
         )

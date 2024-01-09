@@ -196,11 +196,18 @@ select = [
  "RUF", "RET", "DTZ", "TCH", "COM",
  "PERF", "PT", "PL", "PGH", "SIM",
  "PIE", "YTT", "T20", "ARG", "PTH",
+ "N",
  # FIXME(sileht): doctring/rst-docstring like
  # "D"
 ]
 
 ignore = [
+    # NOTE(Greesb): Function name should be lowercase
+    # For a lot of usecases it makes sense to want to not use lowercase
+    "N802",
+    # NOTE(Greesb): variable in function should be lowercase
+    # For a lot of usecases it makes sense to want to not use lowercase variables
+    "N806",
     # NOTE(Greesb): unnecessary nesting of multiple consecutive context managers
     # It worsens the visibility even more
     "SIM117",

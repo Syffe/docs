@@ -27,7 +27,7 @@ async def merge_queue_reset(cli_ctxt: click.Context, url: str) -> None:
     try:
         installation_json = await github.get_installation_from_login(owner_login)
         client = github.aget_client(installation_json)
-    except exceptions.MergifyNotInstalled:
+    except exceptions.MergifyNotInstalledError:
         cli_ctxt.fail(f"* Mergify is not installed on account {owner_login}")
 
     # Do a dumb request just to authenticate
@@ -52,7 +52,7 @@ async def merge_queue_reset(cli_ctxt: click.Context, url: str) -> None:
 
     try:
         await repository.load_mergify_config()
-    except mergify_conf.InvalidRules as e:  # pragma: no cover
+    except mergify_conf.InvalidRulesError as e:  # pragma: no cover
         cli_ctxt.fail(f"configuration is invalid {e!s}")
 
     async for convoy in merge_train.Convoy.iter_convoys(repository):

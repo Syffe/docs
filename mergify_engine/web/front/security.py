@@ -90,7 +90,7 @@ async def get_membership(
                 user=gh_membership["user"],
                 organization=gh_membership["organization"],
             )
-        except (http.HTTPNotFound, http.HTTPForbidden):
+        except (http.HTTPNotFoundError, http.HTTPForbiddenError):
             raise fastapi.HTTPException(403)
 
 

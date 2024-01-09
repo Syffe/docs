@@ -145,7 +145,7 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
 
             try:
                 ret = await f(pull)
-            except live_resolvers.LiveResolutionFailure:
+            except live_resolvers.LiveResolutionFailureError:
                 return False
 
             if ret in (

@@ -21,5 +21,5 @@ def build_pr_link(
 
 
 @dataclasses.dataclass
-class BaseBranchVanished(Exception):
+class BaseBranchVanishedError(Exception):
     branch_name: github_types.GitHubRefType

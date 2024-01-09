@@ -86,7 +86,7 @@ CommitAttributeType = (
 
 
 @dataclasses.dataclass
-class RenderTemplateFailure(Exception):
+class RenderTemplateFailureError(Exception):
     message: str
     lineno: int | None = None
 
@@ -258,8 +258,8 @@ class BasePullRequest:
                     .replace("_", "-")
                 )
             except (
-                action_utils.MissingMergeQueueCheckRun,
-                tcs.UnexpectedReason,
+                action_utils.MissingMergeQueueCheckRunError,
+                tcs.UnexpectedReasonError,
             ):
                 # NOTE(lecrepont01): We don't expect the check to be present here at
                 # all cost during the evaluation, and we can't ensure that the
@@ -541,7 +541,7 @@ class BasePullRequest:
                     depends_on_ctxt = await ctxt.repository.get_pull_request_context(
                         pull_request_number,
                     )
-                except http.HTTPNotFound:
+                except http.HTTPNotFoundError:
                     continue
 
                 is_pr_queued_above = await cls.is_pull_queued_above(
@@ -851,16 +851,18 @@ class PullRequest(BasePullRequest):
             # to catch issue with str.format(), Jinja2 has a customer "safe" version of this
             # but KeyError from this formatter are not converted into a TemplateError
             # NOTE(sileht): we cannot use the KeyError message to avoid code/html injection
-            raise RenderTemplateFailure("invalid arguments passed to format()")
+            raise RenderTemplateFailureError("invalid arguments passed to format()")
         except jinja2.exceptions.SecurityError:
             # avoid message like: access to attribute '__class__' of 'DummyList' object is unsafe.
-            raise RenderTemplateFailure("invalid template")
+            raise RenderTemplateFailureError("invalid template")
         except jinja2.exceptions.TemplateSyntaxError as tse:
-            raise RenderTemplateFailure(tse.message or "", tse.lineno)
+            raise RenderTemplateFailureError(tse.message or "", tse.lineno)
         except jinja2.exceptions.TemplateError as te:
-            raise RenderTemplateFailure(te.message or "")
+            raise RenderTemplateFailureError(te.message or "")
         except PullRequestAttributeError as e:
-            raise RenderTemplateFailure(f"Unknown pull request attribute: {e.name}")
+            raise RenderTemplateFailureError(
+                f"Unknown pull request attribute: {e.name}",
+            )
 
     async def get_commit_message(
         self,

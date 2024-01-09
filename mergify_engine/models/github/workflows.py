@@ -676,7 +676,7 @@ class WorkflowJob(models.Base):
         )
 
     @dataclasses.dataclass
-    class UnableToRetrieveLog(Exception):
+    class UnableToRetrieveLogError(Exception):
         job: WorkflowJob
 
     async def download_failure_annotations(
@@ -689,7 +689,7 @@ class WorkflowJob(models.Base):
             )
         except http.HTTPStatusError as e:
             if e.response.status_code in (410, 404):
-                raise self.UnableToRetrieveLog(self)
+                raise self.UnableToRetrieveLogError(self)
             raise
 
         return [
@@ -711,7 +711,7 @@ class WorkflowJob(models.Base):
             )
         except http.HTTPStatusError as e:
             if e.response.status_code in (410, 404):
-                raise self.UnableToRetrieveLog(self)
+                raise self.UnableToRetrieveLogError(self)
             raise
 
         return resp.content

@@ -20,12 +20,12 @@ EPOCH = datetime.datetime(1970, 1, 1, tzinfo=UTC)
 
 
 @dataclasses.dataclass
-class InvalidDate(Exception):
+class InvalidDateError(Exception):
     message: str
 
 
 @dataclasses.dataclass
-class TimezoneNotAllowed(Exception):
+class TimezoneNotAllowedError(Exception):
     message: str
 
 
@@ -43,7 +43,7 @@ def extract_timezone(
             if value.endswith(timezone):
                 return value[: -len(timezone)], zoneinfo.ZoneInfo(timezone[1:-1])
 
-        raise InvalidDate("Invalid timezone")
+        raise InvalidDateError("Invalid timezone")
 
     return value, UTC
 
@@ -151,7 +151,7 @@ class RelativeDatetime:
     def from_string(cls, value: str) -> RelativeDatetime:
         m = cls._TIMEDELTA_TO_NOW_RE.match(value)
         if m is None:
-            raise InvalidDate("Invalid relative date")
+            raise InvalidDateError("Invalid relative date")
 
         kw = typing.cast(TimedeltaRegexResultT, m.groupdict())
         return cls(
@@ -165,7 +165,7 @@ class RelativeDatetime:
 
     def __post_init__(self) -> None:
         if self.value.tzinfo is None:
-            raise InvalidDate("timezone is missing")
+            raise InvalidDateError("timezone is missing")
 
 
 @functools.total_ordering
@@ -178,28 +178,28 @@ class Time:
     @classmethod
     def from_string(cls, string: str, timezone_allowed: bool = True) -> Time:
         if not timezone_allowed and has_timezone(string):
-            raise TimezoneNotAllowed("Timezone is not allowed")
+            raise TimezoneNotAllowedError("Timezone is not allowed")
 
         value, tzinfo = extract_timezone(string)
         hour_str, sep, minute_str = value.partition(":")
         if sep != ":":
-            raise InvalidDate("Invalid time")
+            raise InvalidDateError("Invalid time")
         try:
             hour = int(hour_str)
         except ValueError:
-            raise InvalidDate(f"{hour_str} is not a number")
+            raise InvalidDateError(f"{hour_str} is not a number")
         try:
             minute = int(minute_str)
         except ValueError:
-            raise InvalidDate(f"{minute_str} is not a number")
+            raise InvalidDateError(f"{minute_str} is not a number")
 
         return cls(hour=hour, minute=minute, tzinfo=tzinfo)
 
     def __post_init__(self) -> None:
         if self.hour < 0 or self.hour >= 24:
-            raise InvalidDate("Hour must be between 0 and 23")
+            raise InvalidDateError("Hour must be between 0 and 23")
         if self.minute < 0 or self.minute >= 60:
-            raise InvalidDate("Minute must be between 0 and 59")
+            raise InvalidDateError("Minute must be between 0 and 59")
 
     def __str__(self) -> str:
         value = f"{self.hour:02d}:{self.minute:02d}"
@@ -268,7 +268,9 @@ class DayOfWeek(int):
         try:
             return cls(int(string))
         except ValueError:
-            raise InvalidDate(f"{string} is not a number or literal day of the week")
+            raise InvalidDateError(
+                f"{string} is not a number or literal day of the week",
+            )
 
 
 class TimeJSON(typing_extensions.TypedDict):
@@ -331,7 +333,7 @@ class Schedule:
         try:
             start_weekday, end_weekday = days.split("-")
         except ValueError:
-            raise InvalidDate(f"Invalid schedule: missing separator in '{days}'")
+            raise InvalidDateError(f"Invalid schedule: missing separator in '{days}'")
 
         return (
             DayOfWeek.from_string(start_weekday),
@@ -343,12 +345,12 @@ class Schedule:
         try:
             start_hourminute, end_hourminute = times.split("-")
         except ValueError:
-            raise InvalidDate(f"Invalid schedule: missing separator in '{times}'")
+            raise InvalidDateError(f"Invalid schedule: missing separator in '{times}'")
 
         try:
             start_time = Time.from_string(start_hourminute, timezone_allowed=False)
-        except TimezoneNotAllowed:
-            raise InvalidDate(
+        except TimezoneNotAllowedError:
+            raise InvalidDateError(
                 "Invalid schedule: schedule takes 1 timezone but 2 were given",
             )
 
@@ -411,7 +413,7 @@ class Schedule:
             try:
                 # Only days
                 return cls.from_days_string(days)
-            except InvalidDate:
+            except InvalidDateError:
                 # Only hours+minutes
                 return cls.from_times_string(days)
         else:
@@ -420,17 +422,17 @@ class Schedule:
 
     def __post_init__(self) -> None:
         if self.start_hour > self.end_hour:
-            raise InvalidDate(
+            raise InvalidDateError(
                 "Starting hour of schedule needs to be less or equal than the ending hour",
             )
 
         if self.start_hour == self.end_hour and self.start_minute > self.end_minute:
-            raise InvalidDate(
+            raise InvalidDateError(
                 "Starting minute of schedule needs to be less or equal than the ending minute",
             )
 
         if self.start_hour == self.end_hour and self.start_minute == self.end_minute:
-            raise InvalidDate(
+            raise InvalidDateError(
                 "Cannot have schedule with the same hour+minute as start and end",
             )
 
@@ -731,7 +733,7 @@ class UncertainDate:
             and isinstance(self.month, UncertainDatePart)
             and isinstance(self.day, UncertainDatePart)
         ):
-            raise InvalidDate(
+            raise InvalidDateError(
                 "Cannot have year, month and day as uncertain, use `schedule` condition instead",
             )
 
@@ -745,13 +747,13 @@ class UncertainDate:
             # quite a bit of code to get working and i'm not sure this use case
             # make sense or will be used at all. So until a client requires it,
             # it will be forbidden.
-            raise InvalidDate("Cannot have both month and day as uncertain")
+            raise InvalidDateError("Cannot have both month and day as uncertain")
 
     @classmethod
     def fromisoformat(cls, string: str, tzinfo: zoneinfo.ZoneInfo) -> UncertainDate:
         match = REGEX_DATETIME_WITH_UNCERTAIN_DIGITS.search(string)
         if not match:
-            raise InvalidDate("The datetime format is invalid")
+            raise InvalidDateError("The datetime format is invalid")
 
         values: dict[str, int | UncertainDatePart] = {}
         for group_name in ("year", "month", "day"):
@@ -762,7 +764,7 @@ class UncertainDate:
                 try:
                     values[group_name] = int(raw_value)
                 except ValueError:
-                    raise InvalidDate("The datetime format is invalid")
+                    raise InvalidDateError("The datetime format is invalid")
 
         for group_name in ("hour", "minute"):
             # hour and minute cannot have uncertain digits
@@ -903,7 +905,7 @@ def fromisoformat_with_zoneinfo(
     try:
         return fromisoformat(value).replace(tzinfo=tzinfo)
     except ValueError:
-        raise InvalidDate("Invalid timestamp")
+        raise InvalidDateError("Invalid timestamp")
 
 
 def fromtimestamp(timestamp: float) -> datetime.datetime:
@@ -935,11 +937,11 @@ _INTERVAL_RE = re.compile(
 def interval_from_string(value: str) -> datetime.timedelta:
     m = _INTERVAL_RE.match(value)
     if m is None:
-        raise InvalidDate("Invalid date interval")
+        raise InvalidDateError("Invalid date interval")
 
     kw = typing.cast(TimedeltaRegexResultT, m.groupdict())
     if not kw or not kw["filled"]:
-        raise InvalidDate("Invalid date interval")
+        raise InvalidDateError("Invalid date interval")
 
     return datetime.timedelta(
         days=int(kw["days"] or 0),
@@ -982,7 +984,7 @@ class DateTimeRange:
         try:
             return fromisoformat(string).replace(tzinfo=tzinfo)
         except ValueError:
-            raise InvalidDate("Invalid date/time range")
+            raise InvalidDateError("Invalid date/time range")
 
     @classmethod
     def fromisoformat_with_zoneinfo(cls, string: str) -> DateTimeRange:
@@ -990,7 +992,7 @@ class DateTimeRange:
         # dates
         separator_match = re.search(r"/(?:\d{4}|X{4})-", string)
         if separator_match is None:
-            raise InvalidDate("Invalid date/time range")
+            raise InvalidDateError("Invalid date/time range")
 
         start_str = string[: separator_match.start()]
         start_iso_str, start_tz = extract_timezone(start_str)

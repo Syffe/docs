@@ -16,39 +16,39 @@ LOG = daiquiri.getLogger(__name__)
 
 
 @dataclasses.dataclass
-class UnprocessablePullRequest(Exception):
+class UnprocessablePullRequestError(Exception):
     reason: str
 
 
-class MergifyNotInstalled(Exception):
+class MergifyNotInstalledError(Exception):
     pass
 
 
-class MergifySuspended(MergifyNotInstalled):
+class MergifySuspendedError(MergifyNotInstalledError):
     pass
 
 
-class MergifyDisabledByUs(Exception):
+class MergifyDisabledByUsError(Exception):
     pass
 
 
-class MergifyConfigFileEmpty(Exception):
+class MergifyConfigFileEmptyError(Exception):
     pass
 
 
 @dataclasses.dataclass
-class RateLimited(Exception):
+class RateLimitedError(Exception):
     countdown: datetime.timedelta
     remaining: int
 
 
 @dataclasses.dataclass
-class SecondaryRateLimited(RateLimited):
+class SecondaryRateLimitedError(RateLimitedError):
     pass
 
 
 @dataclasses.dataclass
-class EngineNeedRetry(Exception):
+class EngineNeedRetryError(Exception):
     message: str
     retry_in: datetime.timedelta = dataclasses.field(
         default=datetime.timedelta(minutes=1),
@@ -122,12 +122,12 @@ def need_retry_in(
     # circular import
     from mergify_engine.clients import github
 
-    if isinstance(exception, RateLimited):
+    if isinstance(exception, RateLimitedError):
         # NOTE(sileht): when we are close to reset date, and since utc time between us and
         # github differ a bit, we can have negative delta, so set a minimun for retrying
         return max(exception.countdown, RATE_LIMIT_RETRY_MIN)
 
-    if isinstance(exception, EngineNeedRetry):
+    if isinstance(exception, EngineNeedRetryError):
         return exception.retry_in
 
     if isinstance(exception, http.RequestError | http.HTTPServerSideError) or (

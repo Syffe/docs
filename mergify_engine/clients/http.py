@@ -115,32 +115,32 @@ class HTTPClientSideError(HTTPCustomStatusError):
         return extract_message(self.response)
 
 
-class HTTPForbidden(HTTPClientSideError):
+class HTTPForbiddenError(HTTPClientSideError):
     pass
 
 
-class HTTPUnauthorized(HTTPClientSideError):
+class HTTPUnauthorizedError(HTTPClientSideError):
     pass
 
 
-class HTTPNotFound(HTTPClientSideError):
+class HTTPNotFoundError(HTTPClientSideError):
     pass
 
 
-class HTTPTooManyRequests(HTTPClientSideError):
+class HTTPTooManyRequestsError(HTTPClientSideError):
     pass
 
 
-class HTTPServiceUnavailable(HTTPServerSideError):
+class HTTPServiceUnavailableError(HTTPServerSideError):
     pass
 
 
 STATUS_CODE_TO_EXC = {
-    401: HTTPUnauthorized,
-    403: HTTPForbidden,
-    404: HTTPNotFound,
-    429: HTTPTooManyRequests,
-    503: HTTPServiceUnavailable,
+    401: HTTPUnauthorizedError,
+    403: HTTPForbiddenError,
+    404: HTTPNotFoundError,
+    429: HTTPTooManyRequestsError,
+    503: HTTPServiceUnavailableError,
 }
 
 
@@ -160,7 +160,7 @@ def parse_date(value: str) -> datetime.datetime | None:
 class TryAgainOnCertainHTTPError(tenacity.TryAgain):
     response: httpx.Response
 
-    class wait_from_headers(tenacity.wait.wait_base):
+    class wait_from_headers(tenacity.wait.wait_base):  # noqa: N801
         def __call__(self, retry_state: tenacity.RetryCallState) -> float:
             if retry_state.outcome is None:
                 return 0

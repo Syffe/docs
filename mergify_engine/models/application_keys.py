@@ -22,7 +22,7 @@ if typing.TYPE_CHECKING:
 APPLICATIONS_LIMIT = 200
 
 
-class ApplicationKeyLimitReached(database.CustomPostgresException):
+class ApplicationKeyLimitReached(database.CustomPostgresExceptionError):
     msg = (
         f"The number of application keys has reached the limit of {APPLICATIONS_LIMIT}"
     )

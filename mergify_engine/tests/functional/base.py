@@ -564,7 +564,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         for branch_name in self.created_branches.union(current_test_branches):
             try:
                 branch = await self.get_branch(branch_name)
-            except http.HTTPNotFound:
+            except http.HTTPNotFoundError:
                 continue
 
             if branch["protected"]:
@@ -574,7 +574,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 await self.client_integration.delete(
                     f"{self.url_origin}/git/refs/heads/{parse.quote(branch['name'])}",
                 )
-            except http.HTTPNotFound:
+            except http.HTTPNotFoundError:
                 continue
             except http.HTTPClientSideError:
                 LOG.warning(
@@ -2031,7 +2031,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 f"{self.url_origin}/branches/{branch}/protection",
                 headers={"Accept": "application/vnd.github.luke-cage-preview+json"},
             )
-        except http.HTTPNotFound as exc:
+        except http.HTTPNotFoundError as exc:
             if "Branch not protected" not in exc.message:
                 raise
 
@@ -2218,7 +2218,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             await self.client_integration.get(
                 f"{self.url_origin}/pulls/{pull_number}/merge",
             )
-        except http.HTTPNotFound:
+        except http.HTTPNotFoundError:
             return False
         else:
             return True
@@ -2282,7 +2282,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         matches: list[str],
     ) -> abc.AsyncGenerator[github_types.GitHubGitRef, None]:
         for match in matches:
-            async for matchedBranch in typing.cast(
+            async for matched_branch in typing.cast(
                 abc.AsyncGenerator[github_types.GitHubGitRef, None],
                 self.client_integration.items(
                     f"{url}/git/matching-refs/heads/{match}",
@@ -2290,7 +2290,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                     page_limit=5,
                 ),
             ):
-                yield matchedBranch
+                yield matched_branch
 
     async def get_teams(self) -> list[github_types.GitHubTeam]:
         return [

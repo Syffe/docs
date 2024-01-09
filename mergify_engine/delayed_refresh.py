@@ -100,7 +100,7 @@ async def plan_next_refresh(
     live_resolvers.configure_filter(ctxt.repository, f)
     try:
         plan_refresh_at = await f(pull_request)
-    except live_resolvers.LiveResolutionFailure:
+    except live_resolvers.LiveResolutionFailureError:
         plan_refresh_at = None
 
     if plan_refresh_at is None or plan_refresh_at >= date.DT_MAX:

@@ -37,7 +37,7 @@ HTTP_GITHUB_TO_MERGIFY_HOST GitHub directly talks to Heroku via:
 LOG = daiquiri.getLogger(__name__)
 
 
-class UnexpectedConnection(Exception):
+class UnexpectedConnectionError(Exception):
     pass
 
 
@@ -59,7 +59,7 @@ class SaasSecurityMiddleware:
 
         try:
             self._check_source(request)
-        except UnexpectedConnection:
+        except UnexpectedConnectionError:
             if settings.HTTP_SAAS_SECURITY_ENFORCE:
                 response = starlette.responses.Response(
                     status_code=542,
@@ -97,4 +97,4 @@ class SaasSecurityMiddleware:
             if request.headers.get("X-Hub-Signature", "").startswith("sha1="):
                 return
 
-        raise UnexpectedConnection()
+        raise UnexpectedConnectionError()

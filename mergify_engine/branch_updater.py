@@ -21,20 +21,20 @@ if typing.TYPE_CHECKING:
 
 
 @dataclasses.dataclass
-class BranchUpdateFailure(Exception):
+class BranchUpdateFailureError(Exception):
     message: str
     title: str = dataclasses.field(default="Base branch update has failed")
 
 
 @dataclasses.dataclass
-class BranchUpdateNeedRetry(exceptions.EngineNeedRetry):
+class BranchUpdateNeedRetry(exceptions.EngineNeedRetryError):
     pass
 
 
 GIT_MESSAGE_TO_EXCEPTION = {
-    "Could not apply ": BranchUpdateFailure,
-    "could not apply ": BranchUpdateFailure,
-    "Patch failed at": BranchUpdateFailure,
+    "Could not apply ": BranchUpdateFailureError,
+    "could not apply ": BranchUpdateFailureError,
+    "Patch failed at": BranchUpdateFailureError,
 }
 
 
@@ -45,7 +45,7 @@ def pre_update_check(ctxt: context.Context) -> None:
         and not ctxt.pull["base"]["repo"]["private"]
         and not ctxt.pull["maintainer_can_modify"]
     ):
-        raise BranchUpdateFailure(
+        raise BranchUpdateFailureError(
             "Mergify needs the author permission to update the base branch of the pull request.\n"
             f"@{ctxt.pull['head']['user']['login']} needs to "
             "[authorize modification on its head branch]"
@@ -65,7 +65,7 @@ async def pre_rebase_check(ctxt: context.Context) -> None:
         and ctxt.pull["base"]["repo"]["private"]
         and not ctxt.pull["maintainer_can_modify"]
     ):
-        raise BranchUpdateFailure(
+        raise BranchUpdateFailureError(
             "Mergify needs the permission to update the base branch of the pull request.\n"
             "GitHub does not allow a GitHub App to modify base branch for a private fork.\n"
             "You cannot `rebase` a pull request from a private fork.",
@@ -73,7 +73,7 @@ async def pre_rebase_check(ctxt: context.Context) -> None:
         )
 
     if not ctxt.can_change_github_workflow() and await ctxt.github_workflow_changed():
-        raise BranchUpdateFailure(
+        raise BranchUpdateFailureError(
             f"{constants.NEW_MERGIFY_PERMISSIONS_MUST_BE_ACCEPTED}"
             "In the meantime, this pull request must be rebased manually.",
             title="Pull request can't be updated with latest base branch changes",
@@ -106,7 +106,7 @@ async def _do_rebase(
     # $ git push origin sileht/testpr:sileht/testpr
 
     if ctxt.pull["head"]["repo"] is None:
-        raise BranchUpdateFailure("The head repository does not exist anymore")
+        raise BranchUpdateFailureError("The head repository does not exist anymore")
 
     head_branch = ctxt.pull["head"]["ref"]
     base_branch = ctxt.pull["base"]["ref"]
@@ -154,20 +154,20 @@ async def _do_rebase(
                 60 * 60,
                 expected_sha,
             )
-        except gitter.GitMergifyNamespaceConflict as e:
-            raise BranchUpdateFailure(
+        except gitter.GitMergifyNamespaceConflictError as e:
+            raise BranchUpdateFailureError(
                 "`Mergify uses `mergify/...` namespace for creating temporary branches. "
                 "A branch of your repository is conflicting with this namespace\n"
                 f"```\n{e.output}\n```\n",
             )
-        except gitter.GitAuthenticationFailure:
+        except gitter.GitAuthenticationFailureError:
             raise
-        except gitter.GitErrorRetriable as e:
+        except gitter.GitErrorRetriableError as e:
             raise BranchUpdateNeedRetry(
                 f"Git reported the following error:\n```\n{e.output}\n```\n",
             )
         except gitter.GitFatalError as e:
-            raise BranchUpdateFailure(
+            raise BranchUpdateFailureError(
                 f"Git reported the following error:\n```\n{e.output}\n```\n",
             )
         except gitter.GitError as e:
@@ -183,10 +183,14 @@ async def _do_rebase(
                 returncode=e.returncode,
                 exc_info=True,
             )
-            raise BranchUpdateFailure("Git reported an unexpected error while rebasing")
+            raise BranchUpdateFailureError(
+                "Git reported an unexpected error while rebasing",
+            )
         except Exception:  # pragma: no cover
             ctxt.log.error("update branch failed", exc_info=True)
-            raise BranchUpdateFailure("Git reported an unknown error while rebasing")
+            raise BranchUpdateFailureError(
+                "Git reported an unknown error while rebasing",
+            )
 
 
 async def update_with_api(
@@ -231,7 +235,7 @@ async def update_with_api(
                 expected_head_sha=ctxt.pull["head"]["sha"],
                 response_body=e.response.json(),
             )
-            raise BranchUpdateFailure(
+            raise BranchUpdateFailureError(
                 title="Mergify doesn't have permission to update",
                 message="For security reasons, Mergify can't update this pull request. "
                 "Try updating locally.\n"
@@ -243,7 +247,7 @@ async def update_with_api(
             status_code=e.status_code,
             error=e.message,
         )
-        raise BranchUpdateFailure(e.message)
+        raise BranchUpdateFailureError(e.message)
 
 
 async def rebase_with_git(
@@ -257,7 +261,7 @@ async def rebase_with_git(
 
     try:
         await _do_rebase(ctxt, on_behalf, on_behalf, autosquash)
-    except gitter.GitAuthenticationFailure:
+    except gitter.GitAuthenticationFailureError:
         ctxt.log.info(
             "git authentification failure",
             login=on_behalf.login,
@@ -276,4 +280,4 @@ async def rebase_with_git(
                 if permission < github_types.GitHubRepositoryPermission.WRITE:
                     message = f"`{on_behalf.login}` does not have write access to the forked repository."
 
-        raise BranchUpdateFailure(message)
+        raise BranchUpdateFailureError(message)

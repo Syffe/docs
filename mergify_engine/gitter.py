@@ -31,23 +31,23 @@ class GitFatalError(GitError):
     pass
 
 
-class GitErrorRetriable(GitError):
+class GitErrorRetriableError(GitError):
     pass
 
 
-class GitAuthenticationFailure(GitError):
+class GitAuthenticationFailureError(GitError):
     pass
 
 
-class GitReferenceAlreadyExists(GitError):
+class GitReferenceAlreadyExistsError(GitError):
     pass
 
 
-class GitMergifyNamespaceConflict(GitError):
+class GitMergifyNamespaceConflictError(GitError):
     pass
 
 
-class GitTimeout(GitFatalError):
+class GitTimeoutError(GitFatalError):
     pass
 
 
@@ -56,39 +56,39 @@ GIT_MESSAGE_TO_EXCEPTION: dict[
     type[GitError],
 ] = collections.OrderedDict(
     [
-        ("Authentication failed", GitAuthenticationFailure),
-        ("RPC failed; HTTP 401", GitAuthenticationFailure),
+        ("Authentication failed", GitAuthenticationFailureError),
+        ("RPC failed; HTTP 401", GitAuthenticationFailureError),
         ("This repository was archived so it is read-only.", GitFatalError),
         ("organization has enabled or enforced SAML SSO.", GitFatalError),
         ("fatal: bad config", GitFatalError),
-        ("Invalid username or password", GitAuthenticationFailure),
-        ("Repository not found", GitAuthenticationFailure),
-        ("The requested URL returned error: 403", GitAuthenticationFailure),
-        ("The requested URL returned error: 500", GitErrorRetriable),
-        ("The requested URL returned error: 501", GitErrorRetriable),
-        ("The requested URL returned error: 502", GitErrorRetriable),
-        ("The requested URL returned error: 503", GitErrorRetriable),
-        ("The requested URL returned error: 504", GitErrorRetriable),
-        ("Internal Server Error", GitErrorRetriable),
-        ("Failed sending data to the peer", GitErrorRetriable),
-        ("remote contains work that you do", GitErrorRetriable),
-        ("remote end hung up unexpectedly", GitErrorRetriable),
-        ("gnutls_handshake() failed:", GitErrorRetriable),
-        ("unexpected disconnect while reading sideband packet", GitErrorRetriable),
+        ("Invalid username or password", GitAuthenticationFailureError),
+        ("Repository not found", GitAuthenticationFailureError),
+        ("The requested URL returned error: 403", GitAuthenticationFailureError),
+        ("The requested URL returned error: 500", GitErrorRetriableError),
+        ("The requested URL returned error: 501", GitErrorRetriableError),
+        ("The requested URL returned error: 502", GitErrorRetriableError),
+        ("The requested URL returned error: 503", GitErrorRetriableError),
+        ("The requested URL returned error: 504", GitErrorRetriableError),
+        ("Internal Server Error", GitErrorRetriableError),
+        ("Failed sending data to the peer", GitErrorRetriableError),
+        ("remote contains work that you do", GitErrorRetriableError),
+        ("remote end hung up unexpectedly", GitErrorRetriableError),
+        ("gnutls_handshake() failed:", GitErrorRetriableError),
+        ("unexpected disconnect while reading sideband packet", GitErrorRetriableError),
         # https://github.com/orgs/community/discussions/15823
-        ("fatal error in commit_refs ", GitErrorRetriable),
+        ("fatal error in commit_refs ", GitErrorRetriableError),
         (
             re.compile(
                 "cannot lock ref 'refs/heads/mergify/[^']*': 'refs/heads/mergify(|/bp|/copy|/merge-queue)' exists",
             ),
-            GitMergifyNamespaceConflict,
+            GitMergifyNamespaceConflictError,
         ),
-        ("cannot lock ref 'refs/heads/", GitErrorRetriable),
-        ("Could not resolve host", GitErrorRetriable),
-        ("Operation timed out", GitErrorRetriable),
-        ("Connection timed out", GitErrorRetriable),
-        ("Couldn't connect to server", GitErrorRetriable),
-        ("No such device or address", GitErrorRetriable),
+        ("cannot lock ref 'refs/heads/", GitErrorRetriableError),
+        ("Could not resolve host", GitErrorRetriableError),
+        ("Operation timed out", GitErrorRetriableError),
+        ("Connection timed out", GitErrorRetriableError),
+        ("Couldn't connect to server", GitErrorRetriableError),
+        ("No such device or address", GitErrorRetriableError),
         ("Protected branch update failed", GitFatalError),
         ("couldn't find remote ref", GitFatalError),
     ],
@@ -228,7 +228,7 @@ class Gitter:
                     command=command,
                     level=logging.ERROR,
                 )
-                raise GitTimeout(-1, "git operation took too long")
+                raise GitTimeoutError(-1, "git operation took too long")
 
             output = stdout.decode("utf-8")
             self._check_git_output(process, output)
@@ -249,10 +249,10 @@ class Gitter:
     def _create_git_exception(cls, returncode: int, output: str) -> GitError:
         if output == "" or returncode == -15:
             # SIGKILL...
-            return GitErrorRetriable(returncode, "Git process got killed")
+            return GitErrorRetriableError(returncode, "Git process got killed")
 
         if cls._is_force_push_lease_reject(output):
-            return GitErrorRetriable(
+            return GitErrorRetriableError(
                 returncode,
                 f"Remote branch changed in the meantime: \n```\n{output}\n```\n",
             )

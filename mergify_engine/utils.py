@@ -190,7 +190,7 @@ class MergifyHiddenPayload(typing.TypedDict):
     pass
 
 
-class MergifyHiddenPayloadNotFound(Exception):
+class MergifyHiddenPayloadNotFoundError(Exception):
     pass
 
 
@@ -200,13 +200,13 @@ def deserialize_hidden_payload(
     payload_match = MERGIFY_COMMENT_PAYLOAD_MATCHER.search(comment_body)
 
     if payload_match is None:
-        raise MergifyHiddenPayloadNotFound
+        raise MergifyHiddenPayloadNotFoundError
 
     try:
         payload: MergifyHiddenPayload = json.loads(payload_match[1])
     except Exception:
         LOG.error("MergifyHiddenPayload is invalid: '%s'", payload_match[1])
-        raise MergifyHiddenPayloadNotFound
+        raise MergifyHiddenPayloadNotFoundError
 
     return payload
 

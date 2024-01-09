@@ -101,7 +101,7 @@ select custom_masks.jsonb_obj(0, 3, ARRAY['text', 'integer', 'boolean']);
 """
 
 
-class MissingAnonymizedFunction(Exception):
+class MissingAnonymizedFunctionError(Exception):
     pass
 
 
@@ -110,7 +110,7 @@ async def gen_postgresql_anonymized_rules() -> None:
     for table in models.Base.metadata.sorted_tables:
         for col in table.c:
             if "anonymizer_config" not in col.dialect_kwargs:
-                raise MissingAnonymizedFunction(
+                raise MissingAnonymizedFunctionError(
                     f"{table.name}.{col.name} does not have anonymizer config yet",
                 )
 

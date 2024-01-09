@@ -156,7 +156,7 @@ async def get_ci_issues(
         try:
             cursor_issue_id = int(page.cursor.value)
         except ValueError:
-            raise pagination.InvalidCursor(page.cursor)
+            raise pagination.InvalidCursorError(page.cursor)
 
         if page.cursor.forward:
             stmt = stmt.where(CiIssueGPT.short_id_suffix > cursor_issue_id)

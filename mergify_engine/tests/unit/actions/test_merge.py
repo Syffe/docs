@@ -188,7 +188,7 @@ async def test_merge_commit_message_undefined(
         body=body,
         title="My PR title",
     )
-    with pytest.raises(condition_value_querier.RenderTemplateFailure) as x:
+    with pytest.raises(condition_value_querier.RenderTemplateFailureError) as x:
         await condition_value_querier.PullRequest(ctxt).get_commit_message()
     assert "foobar" in str(x.value)
 
@@ -214,7 +214,7 @@ async def test_merge_commit_message_syntax_error(
         body=body,
         title="My PR title",
     )
-    with pytest.raises(condition_value_querier.RenderTemplateFailure):
+    with pytest.raises(condition_value_querier.RenderTemplateFailureError):
         await condition_value_querier.PullRequest(ctxt).get_commit_message()
 
 

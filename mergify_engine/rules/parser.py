@@ -237,7 +237,7 @@ def _unquote(value: str) -> str:
 def parse_schedule(string: str) -> date.Schedule:
     try:
         return date.Schedule.from_string(_unquote(string))
-    except date.InvalidDate as e:
+    except date.InvalidDateError as e:
         raise ConditionParsingError(e.message)
 
 
@@ -394,14 +394,14 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         if parser == Parser.TIMESTAMP_OR_TIMEDELTA:
             try:
                 rd = date.RelativeDatetime.from_string(value)
-            except date.InvalidDate:
+            except date.InvalidDateError:
                 pass
             else:
                 return _to_dict(False, False, f"{attribute}-relative", op, rd)
 
         try:
             dtr = date.DateTimeRange.fromisoformat_with_zoneinfo(value)
-        except date.InvalidDate:
+        except date.InvalidDateError:
             pass
         else:
             if op not in EQUALITY_OPERATORS:
@@ -410,7 +410,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
 
         try:
             d = date.fromisoformat_with_zoneinfo(value)
-        except date.InvalidDate as e:
+        except date.InvalidDateError as e:
             raise ConditionParsingError(e.message)
 
         if op not in RANGE_OPERATORS:

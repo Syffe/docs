@@ -498,7 +498,7 @@ async def test_configuration_duplicated(
         assert main_config_file is not None
         assert main_config_file["decoded_content"] == "pull_request_rules:"
 
-        with pytest.raises(engine.MultipleConfigurationFileFound):
+        with pytest.raises(engine.MultipleConfigurationFileFoundError):
             await engine._check_configuration_changes(ctxt, main_config_file)
 
 

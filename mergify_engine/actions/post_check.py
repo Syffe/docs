@@ -56,7 +56,7 @@ class PostCheckExecutor(
         rule: prr_config.EvaluatedPullRequestRule,
     ) -> PostCheckExecutor:
         if not ctxt.subscription.has_feature(subscription.Features.CUSTOM_CHECKS):
-            raise actions.InvalidDynamicActionConfiguration(
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Custom checks are disabled",
@@ -115,8 +115,8 @@ class PostCheckExecutor(
                 action.config["title"],
                 extra_variables,
             )
-        except condition_value_querier.RenderTemplateFailure as rmf:
-            raise actions.InvalidDynamicActionConfiguration(
+        except condition_value_querier.RenderTemplateFailureError as rmf:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Invalid title template",
@@ -128,8 +128,8 @@ class PostCheckExecutor(
                 action.config["summary"],
                 extra_variables,
             )
-        except condition_value_querier.RenderTemplateFailure as rmf:
-            raise actions.InvalidDynamicActionConfiguration(
+        except condition_value_querier.RenderTemplateFailureError as rmf:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Invalid summary template",

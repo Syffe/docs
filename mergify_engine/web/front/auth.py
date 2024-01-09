@@ -131,7 +131,7 @@ async def create_or_update_user(
                 github_types.GitHubAccount,
                 await client.item("/user"),
             )
-        except http.HTTPUnauthorized:
+        except http.HTTPUnauthorizedError:
             await clear_session_and_auth(request)
             raise fastapi.HTTPException(401)
         except http.HTTPServerSideError:
@@ -237,7 +237,7 @@ async def auth_setup(
                         f"/user/installations/{installation_id}/repositories?per_page=1",
                     ),
                 )
-            except http.HTTPNotFound:
+            except http.HTTPNotFoundError:
                 return AuthRedirectUrl("/github?new=true")
 
         if len(data["repositories"]) < 1:

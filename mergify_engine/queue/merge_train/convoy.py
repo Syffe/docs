@@ -592,7 +592,7 @@ class Convoy:
         for (repo_id, ref), convoy_raw in trains_by_convoy.items():
             try:
                 repository = await installation.get_repository_by_id(repo_id)
-            except http.HTTPNotFound:
+            except http.HTTPNotFoundError:
                 LOG.warning(
                     "repository with active merge queue is unaccessible, deleting merge queue",
                     gh_owner=installation.owner_login,
@@ -608,9 +608,9 @@ class Convoy:
             try:
                 try:
                     await repository.load_mergify_config()
-                except context.ConfigurationFileAlreadyLoaded as e:
+                except context.ConfigurationFileAlreadyLoadedError as e:
                     e.reraise_configuration_error()
-            except mergify_conf.InvalidRules as e:  # pragma: no cover
+            except mergify_conf.InvalidRulesError as e:  # pragma: no cover
                 LOG.warning(
                     "convoy can't be refreshed, the mergify configuration is invalid",
                     gh_owner=repository.installation.owner_login,

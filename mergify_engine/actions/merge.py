@@ -52,8 +52,8 @@ class MergeExecutor(
                 bot_account_fallback=None,
                 option_name="merge_bot_account",
             )
-        except action_utils.RenderBotAccountFailure as e:
-            raise actions.InvalidDynamicActionConfiguration(
+        except action_utils.RenderBotAccountFailureError as e:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 e.title,
@@ -64,7 +64,7 @@ class MergeExecutor(
             action.config["method"] == "fast-forward"
             and action.config["commit_message_template"] is not None
         ):
-            raise actions.InvalidDynamicActionConfiguration(
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Commit message can't be changed with fast-forward merge method",
@@ -101,7 +101,7 @@ class MergeExecutor(
                     self.config["merge_bot_account"],
                     self.config["commit_message_template"],
                 )
-            except merge_base.MergeNeedRetry:
+            except merge_base.MergeNeedRetryError:
                 report = check_api.Result(
                     check_api.Conclusion.PENDING,
                     "The pull request will be merged soon",

@@ -30,7 +30,7 @@ FAKE_HMAC = utils.compute_hmac(
 )
 
 
-class MissingEventTimeout(Exception):
+class MissingEventTimeoutError(Exception):
     def __init__(
         self,
         event_type: github_types.GitHubEventType,
@@ -260,7 +260,7 @@ class EventReader:
                     - (time.monotonic() - started_at),
                 )
             except (TimeoutError, asyncio.QueueEmpty):
-                raise MissingEventTimeout(
+                raise MissingEventTimeoutError(
                     event_type=remaining_expected_events[0]["event_type"],
                     expected_payload=remaining_expected_events[0]["payload"],
                 )
@@ -276,7 +276,7 @@ class EventReader:
             await asyncio.sleep(self.EVENTS_POLLING_INTERVAL_SECONDS)
 
         if remaining_expected_events:
-            raise MissingEventTimeout(
+            raise MissingEventTimeoutError(
                 event_type=expected_events[0]["event_type"],
                 expected_payload=expected_events[0]["payload"],
             )

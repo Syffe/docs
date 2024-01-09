@@ -349,7 +349,7 @@ class CiIssueGPT(models.Base, CiIssueMixin):
         )
 
     @sqlalchemy.orm.declared_attr
-    def events_count(cls) -> orm.Mapped[int]:
+    def events_count(cls) -> orm.Mapped[int]:  # noqa: N805
         return orm.deferred(
             sqlalchemy.select(sqlalchemy.func.count())
             .where(

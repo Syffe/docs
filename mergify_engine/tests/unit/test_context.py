@@ -394,7 +394,7 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
                 url
                 == f"/orgs/{self.owner}/teams/team-nok/repos/{self.owner}/{self.repo}"
             ):
-                raise http.HTTPNotFound(
+                raise http.HTTPNotFoundError(
                     message="Not found",
                     request=mock.ANY,
                     response=mock.ANY,
@@ -404,7 +404,7 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
                 url
                 == f"/orgs/{self.owner}/teams/team-also-nok/repos/{self.owner}/{self.repo}"
             ):
-                raise http.HTTPNotFound(
+                raise http.HTTPNotFoundError(
                     message="Not found",
                     request=mock.ANY,
                     response=mock.ANY,
@@ -968,7 +968,7 @@ Instructions
 
 """
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    with pytest.raises(condition_value_querier.RenderTemplateFailure):
+    with pytest.raises(condition_value_querier.RenderTemplateFailureError):
         await condition_value_querier.PullRequest(ctxt).get_commit_message(
             "TITLE\n{{ body | get_section('### Commit') }}",
         )
@@ -1218,7 +1218,7 @@ async def test_reviews_filtering(
 
     ctxt = context.Context(repo, a_pull_request)
     ctxt.sources = [
-        context.T_PayloadEventSource(
+        context.PayloadEventSourceType(
             {
                 "event_type": "refresh",
                 "data": github_types.GitHubEventRefresh(

@@ -191,7 +191,7 @@ async def test_team_permissions_missing(
     )
     client = mock.MagicMock()
     client.get = mock.AsyncMock(
-        side_effect=http.HTTPNotFound(
+        side_effect=http.HTTPNotFoundError(
             message="not found",
             response=mock.ANY,
             request=mock.ANY,
@@ -199,7 +199,7 @@ async def test_team_permissions_missing(
     )
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client
-    with pytest.raises(actions.InvalidDynamicActionConfiguration) as excinfo:
+    with pytest.raises(actions.InvalidDynamicActionConfigurationError) as excinfo:
         await action.load_context(ctxt, mock.Mock())
 
     assert excinfo.value.reason == "Invalid requested teams"

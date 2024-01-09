@@ -109,7 +109,7 @@ def Jinja2(
     try:
         # TODO: optimize this by returning, storing and using the parsed Jinja2 AST
         types_dummy_context.DUMMY_PR.render_template(value, extra_variables)
-    except types_dummy_context.RenderTemplateFailure as rtf:
+    except types_dummy_context.RenderTemplateFailureError as rtf:
         path = None if rtf.lineno is None else [LineColumnPath(rtf.lineno, None)]
         raise voluptuous.Invalid(
             "Template syntax error",
@@ -153,7 +153,7 @@ GitHubLogin = voluptuous.All(str, _check_GitHubLogin_format)
 
 
 @dataclasses.dataclass
-class InvalidTeam(Exception):
+class InvalidTeamError(Exception):
     details: str
 
 
@@ -202,12 +202,12 @@ class _GitHubTeam:
     ) -> None:
         expected_organization = ctxt.pull["base"]["repo"]["owner"]["login"]
         if self.organization is not None and self.organization != expected_organization:
-            raise InvalidTeam(
+            raise InvalidTeamError(
                 f"Team `{self.raw}` is not part of the organization `{expected_organization}`",
             )
 
         if not await ctxt.repository.team_has_read_permission(self.team):
-            raise InvalidTeam(
+            raise InvalidTeamError(
                 f"Team `{self.raw}` does not exist or has not access to this repository",
             )
 

@@ -148,7 +148,7 @@ class Event(models.Base):
             try:
                 event_id = int(cursor.value)
             except ValueError:
-                raise pagination.InvalidCursor(cursor)
+                raise pagination.InvalidCursorError(cursor)
 
             if cursor.forward:
                 filter_dict.update({"cursor": cls.id < event_id})

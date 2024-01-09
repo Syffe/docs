@@ -21,7 +21,7 @@ def _endpoint_with_testing_router(web_server: fastapi.FastAPI) -> None:
         response_model=test_auth.ResponseTest,
     )
     async def test_exception_rate_limited() -> None:
-        raise exceptions.RateLimited(
+        raise exceptions.RateLimitedError(
             datetime.timedelta(seconds=622, microseconds=280475),
             0,
         )
@@ -31,14 +31,14 @@ def _endpoint_with_testing_router(web_server: fastapi.FastAPI) -> None:
         response_model=test_auth.ResponseTest,
     )
     async def test_exception_pagination() -> None:
-        raise pagination.InvalidCursor(cursor=pagination.Cursor("abcdef"))
+        raise pagination.InvalidCursorError(cursor=pagination.Cursor("abcdef"))
 
     @router.get(
         "/testing-endpoint-exception-mergify-not-installed",
         response_model=test_auth.ResponseTest,
     )
     async def test_exception_mergify_not_installed() -> None:
-        raise exceptions.MergifyNotInstalled()
+        raise exceptions.MergifyNotInstalledError()
 
     for route in web_server.router.routes:
         if isinstance(route, starlette.routing.Mount):

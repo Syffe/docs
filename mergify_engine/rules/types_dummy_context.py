@@ -6,7 +6,7 @@ from mergify_engine import context
 from mergify_engine import github_types
 
 
-RenderTemplateFailure = condition_value_querier.RenderTemplateFailure
+RenderTemplateFailureError = condition_value_querier.RenderTemplateFailureError
 
 
 class DummyList(list[str]):

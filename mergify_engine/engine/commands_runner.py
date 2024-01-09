@@ -69,14 +69,14 @@ class Command(CommandMixin):
 
 
 @dataclasses.dataclass
-class CommandInvalid(Exception, CommandMixin):
+class CommandInvalidError(Exception, CommandMixin):
     name: prr_config.PullRequestRuleName
     command_args: str
     message: str
 
 
 @dataclasses.dataclass
-class NotACommand(Exception):
+class NotACommandError(Exception):
     message: str
 
 
@@ -149,7 +149,7 @@ def load_command(
     match = COMMAND_MATCHER.search(message)
 
     if not match:
-        raise NotACommand(
+        raise NotACommandError(
             "Comment contains '@Mergify/io' tag but is not aimed to be executed as a command",
         )
 
@@ -169,14 +169,14 @@ def load_command(
         try:
             action = action_class(action_config)
         except voluptuous.Invalid:
-            raise CommandInvalid(
+            raise CommandInvalidError(
                 action_name,
                 command_args,
                 INVALID_COMMAND_ARGS_MESSAGE.format(command=action_name),
             )
         return Command(action_name, command_args, action)
 
-    raise CommandInvalid(action_name, command_args, UNKNOWN_COMMAND_MESSAGE)
+    raise CommandInvalidError(action_name, command_args, UNKNOWN_COMMAND_MESSAGE)
 
 
 @exceptions.log_and_ignore_exception("commands_runner.on_each_event failed")
@@ -195,7 +195,7 @@ async def on_each_event(event: github_types.GitHubEventIssueComment) -> None:
                     json={"content": "+1"},
                     api_version="squirrel-girl",
                 )
-            except http.HTTPNotFound:
+            except http.HTTPNotFoundError:
                 # we don't care if the comment was deleted
                 pass
 
@@ -207,7 +207,7 @@ class LastUpdatedOrderedDict(collections.OrderedDict[str, CommandState]):
         self.move_to_end(key)
 
 
-class NoCommandStateFound(Exception):
+class NoCommandStateFoundError(Exception):
     pass
 
 
@@ -231,15 +231,15 @@ def extract_command_state(
 
     # Looking for Mergify command result comment
     if comment["user"]["id"] != mergify_bot["id"]:
-        raise NoCommandStateFound()
+        raise NoCommandStateFoundError()
 
     try:
         payload = typing.cast(
             CommandPayload,
             utils.deserialize_hidden_payload(comment["body"]),
         )
-    except utils.MergifyHiddenPayloadNotFound:
-        raise NoCommandStateFound()
+    except utils.MergifyHiddenPayloadNotFoundError:
+        raise NoCommandStateFoundError()
 
     if (
         not isinstance(payload, dict)
@@ -248,7 +248,7 @@ def extract_command_state(
     ):
         # backward compat <= 7.2.1
         LOG.warning("got command with invalid payload", payload=payload)  # type: ignore[unreachable]
-        raise NoCommandStateFound()
+        raise NoCommandStateFoundError()
 
     # TODO(Syffe): remove this once every command has been updated with new payload format
     # backward compat, we need to set a value for old payloads
@@ -258,7 +258,7 @@ def extract_command_state(
         conclusion = check_api.Conclusion(payload["conclusion"])
     except ValueError:
         LOG.error("Unable to load conclusions %s", payload["conclusion"])
-        raise NoCommandStateFound()
+        raise NoCommandStateFoundError()
 
     previous_state = pendings.get(payload["command"])
     if previous_state is None:
@@ -278,7 +278,7 @@ def extract_command_state(
             )
 
         LOG.warning("Unable to find initial command comment")
-        raise NoCommandStateFound()
+        raise NoCommandStateFoundError()
 
     return CommandState(
         payload["command"],
@@ -317,7 +317,7 @@ async def get_pending_commands_to_run_from_comments(
                 pendings,
                 finished_commands,
             )
-        except NoCommandStateFound:
+        except NoCommandStateFoundError:
             continue
 
         if state.conclusion == check_api.Conclusion.PENDING:
@@ -334,19 +334,19 @@ async def pre_commands_run(
     ctxt: context.Context,
     pendings: LastUpdatedOrderedDict,
     mergify_config: mergify_conf.MergifyConfig,
-) -> list[tuple[Command | CommandInvalid | NotACommand, CommandState]]:
+) -> list[tuple[Command | CommandInvalidError | NotACommandError, CommandState]]:
     loaded_commands: list[
-        tuple[Command | CommandInvalid | NotACommand, CommandState]
+        tuple[Command | CommandInvalidError | NotACommandError, CommandState]
     ] = []
     seen_commands_names = set()
     for pending, state in pendings.items():
         try:
             command = load_command(mergify_config, f"@Mergifyio {pending}")
-        except CommandInvalid as e:
+        except CommandInvalidError as e:
             loaded_commands.append((e, state))
             seen_commands_names.add(e.name)
             continue
-        except NotACommand as e:
+        except NotACommandError as e:
             loaded_commands.append((e, state))
             continue
 
@@ -370,7 +370,7 @@ async def pre_commands_run(
             # otherwise we could be cancelling actions from unauthorized
             # senders.
             await check_init_command_run(ctxt, mergify_config, command, state)
-        except CommandNotAllowed:
+        except CommandNotAllowedError:
             ctxt.log.info(
                 "Command '%s' doesn't have the rights to be executed, cancelling overload of previous command.",
                 command.get_command(),
@@ -441,7 +441,7 @@ async def run_commands_tasks(
     commands = await pre_commands_run(ctxt, pendings, mergify_config)
 
     for idx, (command, state) in enumerate(commands):
-        if isinstance(command, CommandInvalid):
+        if isinstance(command, CommandInvalidError):
             if state.github_comment_result is None:
                 command_execution_state = CommandExecutionState(
                     result=check_api.Result(
@@ -459,7 +459,7 @@ async def run_commands_tasks(
                     exc=str(command),
                 )
 
-        elif isinstance(command, NotACommand):
+        elif isinstance(command, NotACommandError):
             if state.github_comment_result is not None:
                 ctxt.log.error(
                     "Unexpected command string, it was valid in the past but not anymore",
@@ -505,23 +505,23 @@ async def run_commands_tasks(
                 command.name,
                 followup_command_str,
             )
-            followup_command: Command | CommandInvalid | NotACommand
+            followup_command: Command | CommandInvalidError | NotACommandError
             try:
                 followup_command = load_command(
                     mergify_config,
                     f"@Mergifyio {followup_command_str}",
                 )
-            except CommandInvalid as e:
+            except CommandInvalidError as e:
                 followup_command = e
                 ctxt.log.error(
-                    "CommandInvalid while loading followup command '%s'",
+                    "CommandInvalidError while loading followup command '%s'",
                     followup_command_str,
                     exc_info=True,
                 )
-            except NotACommand as e:
+            except NotACommandError as e:
                 followup_command = e
                 ctxt.log.error(
-                    "NotACommandError while loading followup command '%s'",
+                    "NotACommandErrorError while loading followup command '%s'",
                     followup_command_str,
                     exc_info=True,
                 )
@@ -570,7 +570,7 @@ async def post_result_for_command_with_followup(
 
 async def post_result(
     ctxt: context.Context,
-    command: Command | CommandInvalid,
+    command: Command | CommandInvalidError,
     state: CommandState,
     command_execution_state: CommandExecutionState,
 ) -> None:
@@ -610,7 +610,7 @@ async def run_command(
     statsd.increment("engine.commands.count", tags=[f"name:{command.name}"])
     try:
         await check_init_command_run(ctxt, mergify_config, command, state)
-    except CommandNotAllowed as e:
+    except CommandNotAllowedError as e:
         return CommandExecutionState(
             result=check_api.Result(check_api.Conclusion.FAILURE, e.title, e.message),
             action_is_running=False,
@@ -635,7 +635,7 @@ async def run_command(
                     ),
                 ),
             )
-        except actions.InvalidDynamicActionConfiguration as e:
+        except actions.InvalidDynamicActionConfigurationError as e:
             return CommandExecutionState(
                 result=check_api.Result(
                     check_api.Conclusion.ACTION_REQUIRED,
@@ -677,7 +677,7 @@ async def run_command(
                     ),
                 ),
             )
-        except actions.InvalidDynamicActionConfiguration as e:
+        except actions.InvalidDynamicActionConfigurationError as e:
             return CommandExecutionState(
                 result=check_api.Result(
                     check_api.Conclusion.ACTION_REQUIRED,
@@ -713,13 +713,13 @@ async def run_command(
 
 
 @dataclasses.dataclass
-class CommandNotAllowed(Exception):
+class CommandNotAllowedError(Exception):
     title: str
     message: str
 
 
 @dataclasses.dataclass
-class CommandNotAllowedDueToRestriction(CommandNotAllowed):
+class CommandNotAllowedErrorDueToRestrictionError(CommandNotAllowedError):
     title: str = dataclasses.field(
         init=False,
         default="Command disallowed due to [command restrictions](https://docs.mergify.com/commands/restrictions) in the Mergify configuration.",
@@ -751,7 +751,7 @@ async def check_command_restrictions(
         await restriction_conditions([command_pull_request])
 
         if not restriction_conditions.match:
-            raise CommandNotAllowedDueToRestriction(restriction_conditions)
+            raise CommandNotAllowedErrorDueToRestrictionError(restriction_conditions)
 
 
 async def check_init_command_run(
@@ -765,7 +765,7 @@ async def check_init_command_run(
         return
 
     if command.name != "refresh" and queue_utils.is_merge_queue_pr(ctxt.pull):
-        raise CommandNotAllowed(MERGE_QUEUE_COMMAND_MESSAGE, "")
+        raise CommandNotAllowedError(MERGE_QUEUE_COMMAND_MESSAGE, "")
 
     await check_command_restrictions(
         ctxt,

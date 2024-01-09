@@ -203,7 +203,7 @@ class Train:
 
         try:
             await self._populate_cars()
-        except train_utils.BaseBranchVanished:
+        except train_utils.BaseBranchVanishedError:
             self.log.warning("base branch vanished, deleting merge queue.")
             for embarked_pull, _ in list(self._iter_embarked_pulls()):
                 await self._remove_pull(
@@ -262,7 +262,7 @@ class Train:
         ctxt: context.Context,
         merge_commit_sha: github_types.SHAType,
         fallback_partition_name: partr_config.PartitionRuleName,
-    ) -> train_car.UnexpectedBaseBranchChange | None:
+    ) -> train_car.UnexpectedBaseBranchChangeError | None:
         # NOTE(Syffe): the way we examine if a train needs to be reset is train centered,
         # meaning that each train is going to be evaluated individually from others,
         # and thus we don't have to iterate on the other trains, we can focus only on the current one.
@@ -299,7 +299,7 @@ class Train:
             if self.partition_name == fallback_partition_name:
                 # The PR doesn't match any partition and we are in the fallback partition's train,
                 # so we reset the fallback partition.
-                return train_car.UnexpectedBaseBranchChange(merge_commit_sha)
+                return train_car.UnexpectedBaseBranchChangeError(merge_commit_sha)
 
             # We are not in the fallback partition train, the PR doesn't match the current train
             # we do nothing
@@ -307,7 +307,7 @@ class Train:
         elif self.partition_name != fallback_partition_name:
             # We are not in the fallback partition's train and the PR matches the current train's partition rules,
             # so we reset the partition.
-            return train_car.UnexpectedBaseBranchChange(merge_commit_sha)
+            return train_car.UnexpectedBaseBranchChangeError(merge_commit_sha)
 
         # NOTE(Syffe): In a context with a fallback partition, doing nothing here handles the cases where,
         # there has been a manually merged PR, one or more partition have been reset and their base sha have changed,
@@ -926,8 +926,8 @@ class Train:
                         previous_car,
                     )
                 except (
-                    train_car.TrainCarPullRequestCreationPostponed,
-                    train_car.TrainCarPullRequestCreationFailure,
+                    train_car.TrainCarPullRequestCreationPostponedError,
+                    train_car.TrainCarPullRequestCreationFailureError,
                 ):
                     self.log.info(
                         "failed to create draft pull request",
@@ -966,7 +966,7 @@ class Train:
                     original_pull_request_rule=None,
                     original_pull_request_number=None,
                 )
-            except train_car.MergeQueueReset:
+            except train_car.MergeQueueResetError:
                 pass
             return
 
@@ -1024,9 +1024,9 @@ class Train:
 
             try:
                 await self._try_checking_car(0, None)
-            except train_car.TrainCarPullRequestCreationPostponed:
+            except train_car.TrainCarPullRequestCreationPostponedError:
                 return
-            except train_car.TrainCarPullRequestCreationFailure:
+            except train_car.TrainCarPullRequestCreationFailureError:
                 # NOTE(sileht): We posted failure merge queue check-run on
                 # car.user_pull_request_number and refreshed it, so it will be removed
                 # from the train soon. We don't need to create remaining cars now.
@@ -1050,7 +1050,7 @@ class Train:
         car = self._cars[car_index]
         try:
             await self._start_checking_car(car, previous_car)
-        except train_car.TrainCarPullRequestCreationFailure as exc:
+        except train_car.TrainCarPullRequestCreationFailureError as exc:
             self.log.info(
                 "train car pull request creation failure",
                 guilty_prs=exc.guilty_prs,
@@ -1286,10 +1286,10 @@ class Train:
 
                 try:
                     await self._try_checking_car(-1, previous_car)
-                except train_car.TrainCarPullRequestCreationPostponed:
+                except train_car.TrainCarPullRequestCreationPostponedError:
                     self.log.info("train car pull request creation postponed")
                     return
-                except train_car.TrainCarPullRequestCreationFailure:
+                except train_car.TrainCarPullRequestCreationFailureError:
                     # NOTE(sileht): We posted failure merge queue check-run on
                     # car.user_pull_request_number and refreshed it, so it will be removed
                     # from the train soon. We don't need to create remaining cars now.
@@ -1313,7 +1313,7 @@ class Train:
             else:
                 await car.start_checking_with_draft(previous_car)
 
-        except train_car.TrainCarPullRequestCreationPostponed:
+        except train_car.TrainCarPullRequestCreationPostponedError:
             # NOTE(sileht): We can't create the tmp pull request, we will
             # retry later. In worse case, that will be retried until the pull
             # request become the first one in queue
@@ -1330,8 +1330,8 @@ class Train:
                     f"repos/{self.convoy.repository.installation.owner_login}/{self.convoy.repository.repo['name']}/branches/{escaped_branch_name}",
                 ),
             )
-        except http.HTTPNotFound:
-            raise train_utils.BaseBranchVanished(self.convoy.ref)
+        except http.HTTPNotFoundError:
+            raise train_utils.BaseBranchVanishedError(self.convoy.ref)
         return branch["commit"]["sha"]
 
     async def is_synced_with_the_base_branch(
@@ -1517,7 +1517,7 @@ class Train:
                 f"/repos/{self.convoy.repository.installation.owner_login}/{self.convoy.repository.repo['name']}/pulls/{pull_request_number}",
                 json={"state": "closed"},
             )
-        except http.HTTPNotFound:
+        except http.HTTPNotFoundError:
             self.log.warning(
                 "fail to close merge queue pull request",
                 pull_request_number=pull_request_number,

@@ -97,7 +97,7 @@ def permissions_need_to_be_updated(
             # FIXME(sileht): Looks like ton of people have not all permissions
             # Or this is buggy, so disable it for now.
             if perm_name in ["checks", "pull_requests", "contents"]:
-                raise exceptions.MergifyNotInstalled()
+                raise exceptions.MergifyNotInstalledError()
             return True
     return False
 

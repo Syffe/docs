@@ -55,7 +55,7 @@ async def event_handler(
             event_id,
             data,
         )
-    except github_events.IgnoredEvent as ie:
+    except github_events.IgnoredEventError as ie:
         status_code = 200
         reason = f"Event ignored: {ie.reason}"
     else:

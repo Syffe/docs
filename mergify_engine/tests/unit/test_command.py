@@ -49,25 +49,25 @@ FAKE_COMMENT = github_types.GitHubComment(
 
 
 async def test_command_loader() -> None:
-    with pytest.raises(commands_runner.CommandInvalid):
+    with pytest.raises(commands_runner.CommandInvalidError):
         commands_runner.load_command(
             await get_empty_config(),
             "@mergifyio notexist foobar\n",
         )
 
-    with pytest.raises(commands_runner.CommandInvalid):
+    with pytest.raises(commands_runner.CommandInvalidError):
         commands_runner.load_command(
             await get_empty_config(),
             "@mergifyio comment foobar\n",
         )
 
-    with pytest.raises(commands_runner.CommandInvalid):
+    with pytest.raises(commands_runner.CommandInvalidError):
         commands_runner.load_command(
             await get_empty_config(),
             "@Mergifyio comment foobar\n",
         )
 
-    with pytest.raises(commands_runner.NotACommand):
+    with pytest.raises(commands_runner.NotACommandError):
         commands_runner.load_command(
             await get_empty_config(),
             "comment @Mergifyio test foobar\n",

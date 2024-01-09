@@ -34,8 +34,8 @@ class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
         pull_attrs = condition_value_querier.PullRequest(ctxt)
         try:
             message = await pull_attrs.render_template(action.config["message"])
-        except condition_value_querier.RenderTemplateFailure as rmf:
-            raise actions.InvalidDynamicActionConfiguration(
+        except condition_value_querier.RenderTemplateFailureError as rmf:
+            raise actions.InvalidDynamicActionConfigurationError(
                 rule,
                 action,
                 "Invalid close message",

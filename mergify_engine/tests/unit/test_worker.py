@@ -1385,7 +1385,7 @@ async def test_stream_processor_priority(
         _repo_id: github_types.GitHubRepositoryIdType,
         _repo: github_types.GitHubRepositoryName,
         pull_number: github_types.GitHubPullRequestNumber,
-        _sources: list[context.T_PayloadEventSource],
+        _sources: list[context.PayloadEventSourceType],
     ) -> None:
         received.append(pull_number)
 
@@ -1503,7 +1503,7 @@ async def test_stream_processor_date_scheduling(
         _repo_id: github_types.GitHubRepositoryIdType,
         _repo: github_types.GitHubRepositoryName,
         _pull_number: github_types.GitHubPullRequestNumber,
-        _sources: list[context.T_PayloadEventSource],
+        _sources: list[context.PayloadEventSourceType],
     ) -> None:
         received.append(installation.owner_login)
 
@@ -1619,7 +1619,7 @@ async def test_stream_processor_retrying_after_read_error(
         request=mock.Mock(),
     )
 
-    with pytest.raises(stream.OrgBucketRetry):
+    with pytest.raises(stream.OrgBucketRetryError):
         async with stream_processor._translate_exception_to_retries(
             stream_lua.BucketOrgKeyType("stream~owner~123"),
         ):
@@ -2509,7 +2509,7 @@ async def test_stream_processor_ignoring_error_422(
     )
     run_engine.side_effect = error_422
 
-    with pytest.raises(stream.IgnoredException):
+    with pytest.raises(stream.IgnoredExceptionError):
         async with stream_processor._translate_exception_to_retries(
             stream_lua.BucketOrgKeyType("stream~owner~123"),
         ):

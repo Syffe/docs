@@ -82,7 +82,7 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
     def __init__(
         self,
         *,
-        bearerFormat: str | None = None,
+        bearerFormat: str | None = None,  # noqa: N803
         scheme_name: str | None = None,
         description: str | None = None,
         auto_error: bool = True,
@@ -297,7 +297,11 @@ async def _application_actor_with_cache(
             f"{owner}/{repository}",
             json.dumps({"status_code": 200, "data": repo}),
         )
-    except (http.HTTPNotFound, http.HTTPForbidden, http.HTTPUnauthorized) as exc:
+    except (
+        http.HTTPNotFoundError,
+        http.HTTPForbiddenError,
+        http.HTTPUnauthorizedError,
+    ) as exc:
         await pipe.hset(
             repo_access_redis_key,
             f"{owner}/{repository}",
@@ -333,7 +337,11 @@ async def get_repository_context(
                     github_types.GitHubRepository,
                     await client.item(f"/repos/{owner}/{repository}"),
                 )
-            except (http.HTTPNotFound, http.HTTPForbidden, http.HTTPUnauthorized):
+            except (
+                http.HTTPNotFoundError,
+                http.HTTPForbiddenError,
+                http.HTTPUnauthorizedError,
+            ):
                 raise fastapi.HTTPException(status_code=404)
         elif authenticated_actor.actor["type"] == "application":
             repo = await _application_actor_with_cache(
@@ -371,7 +379,7 @@ async def get_repository_context(
                     permission = await repository_ctxt.get_user_permission(
                         logged_user.to_github_account(),
                     )
-                except http.HTTPForbidden:
+                except http.HTTPForbiddenError:
                     raise fastapi.HTTPException(status_code=403)
 
                 # NOTE(sileht): as we can't known if the user with read permissions are collaborator or not
@@ -410,7 +418,7 @@ async def get_repository_context_with_config(
 ) -> context.Repository:
     try:
         await repository_ctxt.load_mergify_config()
-    except mergify_conf.InvalidRules:
+    except mergify_conf.InvalidRulesError:
         raise fastapi.HTTPException(
             status_code=422,
             detail="The configuration file is invalid.",
@@ -440,7 +448,7 @@ async def check_logged_user_has_write_access(
         permission = await repository_ctxt.get_user_permission(
             logged_user.to_github_account(),
         )
-    except http.HTTPForbidden:
+    except http.HTTPForbiddenError:
         raise fastapi.HTTPException(status_code=403)
 
     if permission < github_types.GitHubRepositoryPermission.WRITE:

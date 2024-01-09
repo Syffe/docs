@@ -326,7 +326,7 @@ async def exec_action(
         if (
             exceptions.should_be_ignored(e)
             or exceptions.need_retry_in(e)
-            or isinstance(e, exceptions.UnprocessablePullRequest)
+            or isinstance(e, exceptions.UnprocessablePullRequestError)
         ):
             raise
         # NOTE(sileht): the action fails, this is a bug!!!, so just set the
@@ -652,7 +652,7 @@ async def handle(ctxt: context.Context) -> check_api.Result | None:
     with ddtrace.tracer.trace("pull_request_rules_evaluation", resource=str(ctxt)):
         try:
             match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
-        except actions.InvalidDynamicActionConfiguration as e:
+        except actions.InvalidDynamicActionConfigurationError as e:
             return check_api.Result(
                 check_api.Conclusion.ACTION_REQUIRED,
                 "The current Mergify configuration is invalid",

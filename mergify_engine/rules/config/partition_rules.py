@@ -33,13 +33,13 @@ class PartitionRule:
     conditions: conditions_mod.PartitionRuleConditions
     fallback_partition: bool
 
-    class T_from_dict(typing.TypedDict):
+    class TypeFromDict(typing.TypedDict):
         name: PartitionRuleName
         conditions: conditions_mod.PartitionRuleConditions
         fallback_partition: bool
 
     @classmethod
-    def from_dict(cls, d: T_from_dict) -> PartitionRule:
+    def from_dict(cls, d: TypeFromDict) -> PartitionRule:
         return cls(**d)
 
     def get_conditions_used_by_evaluator(

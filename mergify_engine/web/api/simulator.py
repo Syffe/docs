@@ -58,11 +58,11 @@ class SimulatorPayload(pydantic.BaseModel):
                     },
                 ),
             )
-        except mergify_conf.InvalidRules as exc:
+        except mergify_conf.InvalidRulesError as exc:
             detail = [
                 {
                     "loc": ("body", "mergify_yml"),
-                    "msg": mergify_conf.InvalidRules.format_error(e),
+                    "msg": mergify_conf.InvalidRulesError.format_error(e),
                     "type": "mergify_config_error",
                 }
                 for e in sorted(exc.errors, key=str)
@@ -106,7 +106,7 @@ async def simulator_pull(
         ].get_pull_request_rules_evaluator(
             ctxt,
         )
-    except actions_mod.InvalidDynamicActionConfiguration as e:
+    except actions_mod.InvalidDynamicActionConfigurationError as e:
         title = "The current Mergify configuration is invalid"
         summary = f"### {e.reason}\n\n{e.details}"
     else:
@@ -255,7 +255,7 @@ async def pull_request_configuration_simulator(
         prr_evaluator = await repository_ctxt.mergify_config[
             "pull_request_rules"
         ].get_pull_request_rules_evaluator(ctxt)
-    except actions_mod.InvalidDynamicActionConfiguration as e:
+    except actions_mod.InvalidDynamicActionConfigurationError as e:
         detail = [
             {
                 "loc": ("body", "mergify_yml"),

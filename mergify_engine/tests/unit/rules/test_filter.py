@@ -57,7 +57,7 @@ async def test_not() -> None:
 async def test_len() -> None:
     f = filter.BinaryFilter({"=": ("#foo", 3)})
     assert await f(FakePR({"foo": "bar"}))
-    with pytest.raises(filter.InvalidOperator):
+    with pytest.raises(filter.InvalidOperatorError):
         await f(FakePR({"foo": 2}))
     assert not await f(FakePR({"foo": "a"}))
     assert not await f(FakePR({"foo": "abcedf"}))
@@ -66,7 +66,7 @@ async def test_len() -> None:
     assert not await f(FakePR({"foo": [10, 20, 40, 50]}))
     f = filter.BinaryFilter({">": ("#foo", 3)})
     assert await f(FakePR({"foo": "barz"}))
-    with pytest.raises(filter.InvalidOperator):
+    with pytest.raises(filter.InvalidOperatorError):
         await f(FakePR({"foo": 2}))
     assert not await f(FakePR({"foo": "a"}))
     assert await f(FakePR({"foo": "abcedf"}))
@@ -104,7 +104,7 @@ async def test_object() -> None:
 async def test_optimized_len() -> None:
     f = filter.BinaryFilter({"=": ("#foo", 3)})
     assert await f(FakePR({"foo": "bar"}))
-    with pytest.raises(filter.InvalidOperator):
+    with pytest.raises(filter.InvalidOperatorError):
         await f(FakePR({"foo": 2}))
     assert not await f(FakePR({"foo": "a"}))
     assert await f(FakePR({"#foo": 3, "foo": "a"}))
@@ -128,7 +128,7 @@ async def test_regexp() -> None:
 
 
 async def test_regexp_invalid() -> None:
-    with pytest.raises(filter.InvalidArguments):
+    with pytest.raises(filter.InvalidArgumentsError):
         filter.BinaryFilter({"~=": ("foo", r"([^\s\w])(\s*\1+")})
 
 
@@ -201,7 +201,7 @@ async def test_none() -> None:
 
 async def test_unknown_attribute() -> None:
     f = filter.BinaryFilter({"=": ("foo", 1)})
-    with pytest.raises(filter.UnknownAttribute):
+    with pytest.raises(filter.UnknownAttributeError):
         await f(FakePR({"bar": 1}))
 
 
@@ -211,12 +211,12 @@ async def test_parse_error() -> None:
 
 
 async def test_unknown_operator() -> None:
-    with pytest.raises(filter.UnknownOperator):
+    with pytest.raises(filter.UnknownOperatorError):
         filter.BinaryFilter({"oops": (1, 2)})  # type: ignore[arg-type]
 
 
 async def test_invalid_arguments() -> None:
-    with pytest.raises(filter.InvalidArguments):
+    with pytest.raises(filter.InvalidArgumentsError):
         filter.BinaryFilter({"=": (1, 2, 3)})  # type: ignore[typeddict-item]
 
 
@@ -229,7 +229,7 @@ async def test_str(filter_: filter.Filter[typing.Any]) -> None:
     assert str(filter_({"-": {"=": ("foo", 1)}})) == "-foo=1"  # type: ignore[type-var]
     assert str(filter_({"=": ("foo", True)})) == "foo"  # type: ignore[type-var]
     assert str(filter_({"=": ("bar", False)})) == "-bar"  # type: ignore[type-var]
-    with pytest.raises(filter.InvalidOperator):
+    with pytest.raises(filter.InvalidOperatorError):
         str(filter_({">=": ("bar", False)}))  # type: ignore[type-var]
 
 

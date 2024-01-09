@@ -27,7 +27,7 @@ if typing.TYPE_CHECKING:
 LOG = daiquiri.getLogger(__name__)
 
 
-class UnexpectedReason(Exception):
+class UnexpectedReasonError(Exception):
     pass
 
 
@@ -502,13 +502,13 @@ def dequeue_reason_from_train_car_state_delete_reasons(
     pull_request: github_types.GitHubPullRequestNumber,
 ) -> queue_utils.BaseDequeueReason:
     if pull_request not in train_car_state.delete_reasons:
-        raise UnexpectedReason(
+        raise UnexpectedReasonError(
             f"Pull request missing from TrainCarState.delete_reasons: `{train_car_state.delete_reasons} {type(train_car_state)}`",
         )
     reason = train_car_state.delete_reasons[pull_request]
     if isinstance(reason, queue_utils.BaseDequeueReason):
         return reason
-    raise UnexpectedReason(
+    raise UnexpectedReasonError(
         f"TrainCarState.delete_reasons[pull_request] is a cancel reason: `{train_car_state.delete_reasons}`, outcome is `{train_car_state.outcome}`",
     )
 
@@ -544,6 +544,6 @@ def dequeue_reason_from_outcome(
     if outcome == merge_train.TrainCarOutcome.UPDATED_PR_CHANGE:
         return queue_utils.PullRequestUpdated(pull_request)
 
-    raise UnexpectedReason(
+    raise UnexpectedReasonError(
         f"TrainCarState.outcome `{outcome.value}` can't be mapped to an AbortReason",
     )

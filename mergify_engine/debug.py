@@ -126,7 +126,7 @@ async def report(
     try:
         installation_json = await github.get_installation_from_login(owner_login)
         client = github.aget_client(installation_json)
-    except exceptions.MergifyNotInstalled:
+    except exceptions.MergifyNotInstalledError:
         print(f"* Mergify is not installed on account {owner_login}")
         return None
 
@@ -188,7 +188,7 @@ async def report(
         print(config_file["decoded_content"])
         try:
             await repository.load_mergify_config()
-        except mergify_conf.InvalidRules as e:  # pragma: no cover
+        except mergify_conf.InvalidRulesError as e:  # pragma: no cover
             print(f"configuration is invalid {e!s}")
 
         # FIXME(sileht): drop this and use the repository.mergify_config directly everywhere
@@ -212,7 +212,7 @@ async def report(
         ctxt = await repository.get_pull_request_context(
             github_types.GitHubPullRequestNumber(int(pull_number)),
         )
-    except http.HTTPNotFound:
+    except http.HTTPNotFoundError:
         print(f"Pull request `{url}` does not exist")
         await redis_links.shutdown_all()
         return client

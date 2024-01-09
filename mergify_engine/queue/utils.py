@@ -323,7 +323,7 @@ def is_pr_body_a_merge_queue_pr(pull_request_body: str | None) -> bool:
                 pull_request_body,
             ),
         )
-    except utils.MergifyHiddenPayloadNotFound:
+    except utils.MergifyHiddenPayloadNotFoundError:
         return False
 
     return payload.get("merge-queue-pr", False)
