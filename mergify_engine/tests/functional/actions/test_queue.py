@@ -9796,6 +9796,36 @@ pull_request_rules:
             merged=True,
         )
 
+    async def test_merge_condition_out_of_daterange(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "queue_conditions": ["label=queue"],
+                    "merge_conditions": [
+                        "current-datetime != XXXX-01-01T00:00/XXXX-01-01T23:59[Europe/Paris]",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "automatic merge",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+
+        with time_travel("2024-01-01T12:00+01", tick=True):
+            await self.setup_repo(yaml.dump(rules))
+            pr = await self.create_pr()
+            await self.add_label(pr["number"], "queue")
+            await self.run_engine()
+
+        with time_travel("2024-01-02T12:00+01", tick=True):
+            await self.run_engine({"delayed-refresh"})
+            await self.wait_for_pull_request("closed", pr["number"], merged=True)
+
 
 class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
     @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)

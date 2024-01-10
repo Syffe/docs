@@ -138,7 +138,7 @@ async def get_outcome_from_conditions(
         log,
         pulls,
         conditions,
-        ("check-", "status-", "schedule"),
+        ("check-", "status-", "schedule", "current-datetime"),
     )
     # NOTE(sileht): when something not related to checks does not match
     # we now also remove schedule from the tree, if it match
@@ -149,7 +149,10 @@ async def get_outcome_from_conditions(
         result_without_schedule = await _get_checks_result(
             repository,
             pulls,
-            get_conditions_with_ignored_attributes(conditions, ("schedule",)),
+            get_conditions_with_ignored_attributes(
+                conditions,
+                ("schedule", "current-datetime"),
+            ),
         )
         if result_without_schedule == check_api.Conclusion.FAILURE:
             # Checks failed outside of schedule

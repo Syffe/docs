@@ -201,6 +201,26 @@ async def test_rules_checks_basic() -> None:
         TrainCarOutcome.WAITING_FOR_SCHEDULE,
     )
 
+    # Success reported and schedule missing (using current-datetime)
+    pull.attrs["current-datetime"] = datetime.datetime(
+        2022,
+        1,
+        1,
+        tzinfo=datetime.UTC,
+    )
+    pull.attrs["check-pending"] = ["whatever"]
+    pull.attrs["check-failure"] = ["foo"]
+    pull.attrs["check-success"] = ["fake-ci", "test-starter"]
+    await assert_queue_rule_checks_status(
+        [
+            "check-success=fake-ci",
+            "label=foobar",
+            "current-datetime != XXXX-01-01T00:00/XXXX-01-01T23:59",
+        ],
+        pull,
+        TrainCarOutcome.WAITING_FOR_SCHEDULE,
+    )
+
 
 async def test_rules_checks_with_and_or() -> None:
     pull = conftest.FakePullRequest(
