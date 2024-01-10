@@ -38,6 +38,13 @@ async def _get_client_from_pull(
 
 class PullRequest(models.Base):
     __tablename__ = "pull_request"
+    __table_args__ = (
+        sqlalchemy.Index(
+            "pull_request_head_sha_gin_idx",
+            sqlalchemy.text("(head-> 'sha')"),
+            postgresql_using="gin",
+        ),
+    )
 
     __repr_attributes__: typing.ClassVar[tuple[str, ...]] = (
         "id",
