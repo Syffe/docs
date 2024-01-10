@@ -111,7 +111,7 @@ class GitHubRepositoryPermission(enum.Enum):
     level: int
     _ignore_ = "level"
 
-    def __new__(cls, permission: str) -> GitHubRepositoryPermission:
+    def __new__(cls, permission: str) -> typing.Self:
         member = object.__new__(cls)
         member._value_ = permission
         member.level = len(cls.__members__)

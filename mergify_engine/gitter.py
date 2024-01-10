@@ -288,8 +288,8 @@ class Gitter:
 
     async def __aexit__(
         self,
-        exc_type: type[Exception] | None,
-        exc_value: Exception | None,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
         traceback: types.TracebackType | None,
     ) -> None:
         await self.cleanup()

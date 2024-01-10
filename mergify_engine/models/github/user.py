@@ -18,7 +18,7 @@ from mergify_engine import settings
 class OAuthTokenSecretString(str):
     key: str
 
-    def __new__(cls, value: str, key: str) -> OAuthTokenSecretString:
+    def __new__(cls, value: str, key: str) -> typing.Self:
         obj = str.__new__(cls, value)
         obj.key = key
         return obj

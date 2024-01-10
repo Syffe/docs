@@ -711,7 +711,7 @@ class TimeTravel:
     def __enter__(self) -> TickingDateTimeFactory | FrozenDateTimeFactory:
         return self.start()
 
-    def __exit__(self, *args: typing.Any) -> None:
+    def __exit__(self, *args: object) -> None:
         self.stop()
 
     def start(self) -> TickingDateTimeFactory | FrozenDateTimeFactory:

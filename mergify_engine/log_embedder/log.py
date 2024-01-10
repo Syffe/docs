@@ -2,7 +2,6 @@ import codecs
 from collections import abc
 import dataclasses
 import re
-import typing
 
 from mergify_engine.log_embedder import log_cleaner
 from mergify_engine.log_embedder import log_tag
@@ -35,7 +34,7 @@ class Log:
 
         return self._tags
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Log) and self.content == other.content
 
     def __repr__(self) -> str:

@@ -252,13 +252,13 @@ class RedisLinks:
         ddtrace.Pin.override(client, service=f"engine-redis-{name}")
         return client
 
-    async def __aenter__(self) -> RedisLinks:
+    async def __aenter__(self) -> typing.Self:
         return self
 
     async def __aexit__(
         self,
-        exc_type: type[Exception] | None,
-        exc_value: Exception | None,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
         traceback: types.TracebackType | None,
     ) -> None:
         await self.shutdown_all()

@@ -105,7 +105,7 @@ class CommitOrderingKey:
             and self.order_commit(self.obj, other.obj) < 0
         )
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return (
             isinstance(other, CommitOrderingKey)
             and self.order_commit(self.obj, other.obj) == 0
