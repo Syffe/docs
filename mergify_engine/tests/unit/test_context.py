@@ -1154,13 +1154,12 @@ async def test_reviews_filtering(
                 "id": github_types.GitHubReviewIdType(123456),
                 "user": a_pull_request["user"],
                 "body": "",
-                "pull_request": a_pull_request,
-                "repository": a_pull_request["base"]["repo"],
                 "state": "APPROVED",
                 "author_association": "COLLABORATOR",
                 "submitted_at": github_types.ISODateTimeType(
                     "2022-07-26T04:49:04.750767+00:00",
                 ),
+                "commit_id": a_pull_request["head"]["sha"],
             },
         ),
         github_types.GitHubReview(
@@ -1168,13 +1167,12 @@ async def test_reviews_filtering(
                 "id": github_types.GitHubReviewIdType(424242),
                 "user": a_pull_request["user"],
                 "body": "",
-                "pull_request": a_pull_request,
-                "repository": a_pull_request["base"]["repo"],
                 "state": "CHANGES_REQUESTED",
                 "author_association": "COLLABORATOR",
                 "submitted_at": github_types.ISODateTimeType(
                     "2022-07-26T14:14:14.000000+00:00",
                 ),
+                "commit_id": a_pull_request["head"]["sha"],
             },
         ),
         github_types.GitHubReview(
@@ -1182,13 +1180,12 @@ async def test_reviews_filtering(
                 "id": github_types.GitHubReviewIdType(987654),
                 "user": a_pull_request["user"],
                 "body": "",
-                "pull_request": a_pull_request,
-                "repository": a_pull_request["base"]["repo"],
                 "state": "APPROVED",
                 "author_association": "COLLABORATOR",
                 "submitted_at": github_types.ISODateTimeType(
                     "2022-07-26T22:42:24.000001+00:00",
                 ),
+                "commit_id": a_pull_request["head"]["sha"],
             },
         ),
     ]

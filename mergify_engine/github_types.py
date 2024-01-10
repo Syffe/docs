@@ -670,11 +670,10 @@ class GitHubReview(typing_extensions.TypedDict):
     id: GitHubReviewIdType
     user: GitHubAccount | None
     body: str | None
-    pull_request: GitHubPullRequest
-    repository: GitHubRepository
     state: GitHubReviewStateType
     author_association: GitHubCommentAuthorAssociation
     submitted_at: ISODateTimeType
+    commit_id: SHAType | None
 
 
 class GitHubEventPullRequestReview(GitHubEventWithRepository):
