@@ -118,19 +118,19 @@ class BasePullRequest:
         # mypy doesn't seem to be able to understand that commit_attribute
         # always being the same for each values makes it impossible to have
         # different types in the list.
-        if commit_attribute in ("date_author", "date_committer"):
+        if commit_attribute in {"date_author", "date_committer"}:
             if relative_time:
                 return typing.cast(list[date.RelativeDatetime], return_values)
             return typing.cast(list[datetime.datetime], return_values)
         if commit_attribute == "commit_verification_verified":
             return typing.cast(list[bool], return_values)
-        if commit_attribute in (
+        if commit_attribute in {
             "email_author",
             "email_committer",
             "commit_message",
-        ):
+        }:
             return typing.cast(list[str], return_values)
-        if commit_attribute in ("author", "committer"):
+        if commit_attribute in {"author", "committer"}:
             return typing.cast(list[github_types.GitHubLogin], return_values)
 
         raise RuntimeError(f"Unknown commit attribute `{commit_attribute}`")
@@ -148,16 +148,16 @@ class BasePullRequest:
             raise PullRequestAttributeError(commit_attribute)
 
         value = getattr(commit, commit_attribute)
-        if commit_attribute not in ("date_author", "date_committer"):
+        if commit_attribute not in {"date_author", "date_committer"}:
             if commit_attribute == "commit_verification_verified":
                 return typing.cast(bool, value)
-            if commit_attribute in (
+            if commit_attribute in {
                 "email_author",
                 "email_committer",
                 "commit_message",
-            ):
+            }:
                 return typing.cast(str, value)
-            if commit_attribute in ("author", "committer"):
+            if commit_attribute in {"author", "committer"}:
                 return typing.cast(github_types.GitHubLogin, value)
             raise RuntimeError(f"Unknown commit attribute `{commit_attribute}`")
 
@@ -198,7 +198,7 @@ class BasePullRequest:
 
             return max([ep.position for ep in embarked_pulls])
 
-        if name in ("queued-at", "queued-at-relative"):
+        if name in {"queued-at", "queued-at-relative"}:
             embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])
             if not embarked_pulls:
                 return None
@@ -209,7 +209,7 @@ class BasePullRequest:
                 return embarked_pulls[0].embarked_pull.queued_at
             return date.RelativeDatetime(embarked_pulls[0].embarked_pull.queued_at)
 
-        if name in ("queue-merge-started-at", "queue-merge-started-at-relative"):
+        if name in {"queue-merge-started-at", "queue-merge-started-at-relative"}:
             # Only used with QueuePullRequest
             cars = convoy.get_train_cars_by_tmp_pull(ctxt)
             if not cars:
@@ -234,7 +234,7 @@ class BasePullRequest:
                 return started_at
             return date.RelativeDatetime(started_at)
 
-        if name in ("queue-partition-name", "partition-name"):
+        if name in {"queue-partition-name", "partition-name"}:
             return await ctxt.repository.mergify_config[
                 "partition_rules"
             ].get_evaluated_partition_names_from_context(ctxt)
@@ -319,7 +319,7 @@ class BasePullRequest:
         ctxt: context_mod.Context,
         name: str,
     ) -> PullRequestAttributeType:
-        if name in ("assignee", "assignees"):
+        if name in {"assignee", "assignees"}:
             return [a["login"] for a in ctxt.pull["assignees"]]
 
         if name.startswith("queue") or ("partition-name" in name):
@@ -416,7 +416,7 @@ class BasePullRequest:
         if name == "files":
             return [f["filename"] for f in await ctxt.files]
 
-        if name in ("added-files", "removed-files", "modified-files"):
+        if name in {"added-files", "removed-files", "modified-files"}:
             status = name.split("-")[0]
             return [f["filename"] for f in await ctxt.files if f["status"] == status]
 
@@ -501,10 +501,10 @@ class BasePullRequest:
         if name == "check-success-or-neutral":
             return await cls._get_consolidated_checks_data(ctxt, ("success", "neutral"))
 
-        if name in ("status-success", "check-success"):
+        if name in {"status-success", "check-success"}:
             return await cls._get_consolidated_checks_data(ctxt, ("success",))
 
-        if name in ("status-failure", "check-failure"):
+        if name in {"status-failure", "check-failure"}:
             # hopefully "cancelled" is actually a failure state to github.
             # I think it is, however it could be the same thing as the
             # "skipped" status.
@@ -513,7 +513,7 @@ class BasePullRequest:
                 ("failure", "action_required", "cancelled", "timed_out", "error"),
             )
 
-        if name in ("status-neutral", "check-neutral"):
+        if name in {"status-neutral", "check-neutral"}:
             return await cls._get_consolidated_checks_data(ctxt, ("neutral",))
 
         if name == "check-timed-out":
@@ -608,11 +608,11 @@ class BasePullRequest:
         if name == "repository-full-name":
             return ctxt.repository.repo["full_name"]
 
-        if name in (
+        if name in {
             "dependabot-dependency-name",
             "dependabot-dependency-type",
             "dependabot-update-type",
-        ):
+        }:
             dependabot_attributes = await ctxt.dependabot_attributes
             if name == "dependabot-dependency-name":
                 return [da["dependency-name"] for da in dependabot_attributes]
@@ -940,7 +940,7 @@ class QueuePullRequest(BasePullRequest):
     async def get_attribute_value(self, name: str) -> PullRequestAttributeType:
         fancy_name = name.replace("_", "-")
         if fancy_name in self.QUEUE_ATTRIBUTES:
-            if fancy_name in ("queue-partition-name", "partition-name"):
+            if fancy_name in {"queue-partition-name", "partition-name"}:
                 fancy_name = "current-partition-name"
             return await self._get_consolidated_data(self.queue_context, fancy_name)
         return await self._get_consolidated_data(self.context, fancy_name)

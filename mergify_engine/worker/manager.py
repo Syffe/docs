@@ -86,7 +86,7 @@ AVAILABLE_WORKER_SERVICES = set(ServiceNameT.__dict__["__args__"])
 for service_name in AVAILABLE_WORKER_SERVICES:
     # nosemgrep: python.lang.security.audit.non-literal-import.non-literal-import
     importlib.import_module(
-        f"mergify_engine.worker.{service_name.replace('-','_')}_service",
+        f"mergify_engine.worker.{service_name.replace('-', '_')}_service",
     )
 
 
@@ -99,7 +99,7 @@ def asyncio_event_set_by_default() -> asyncio.Event:
 @dataclasses.dataclass
 class ServiceManager:
     enabled_services: ServiceNamesT = dataclasses.field(
-        default_factory=lambda: AVAILABLE_WORKER_SERVICES.copy(),
+        default_factory=AVAILABLE_WORKER_SERVICES.copy,
     )
     _mandatory_services: typing.ClassVar[ServiceNamesT] = {
         "dedicated-workers-cache-syncer",

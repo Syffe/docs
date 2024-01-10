@@ -44,7 +44,7 @@ async def test_train_inplace_with_speculative_checks_out_of_date(
         side_effect=mock.AsyncMock(return_value=False),
     ):
         await t.refresh()
-    assert [[12345], [12345, 54321]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[12345], [12345, 54321]]
     assert (
         t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
     )
@@ -73,7 +73,7 @@ async def test_train_inplace_with_speculative_checks_up_to_date(
         side_effect=mock.AsyncMock(side_effect=[True, False]),
     ):
         await t.refresh()
-    assert [[12345], [12345, 54321]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[12345], [12345, 54321]]
     assert (
         t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.INPLACE
     )
@@ -96,19 +96,19 @@ async def test_train_add_pull(
 
     await t.add_pull(await context_getter(1), config, "")
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
 
     await t.add_pull(await context_getter(2), config, "")
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
 
     await t.add_pull(await context_getter(3), config, "")
     await t.refresh()
-    assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2], [1, 2, 3]]
 
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
-    assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2], [1, 2, 3]]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(2),
@@ -116,11 +116,11 @@ async def test_train_add_pull(
         UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
-    assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 3]]
 
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
-    assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 3]]
 
 
 async def test_train_remove_middle_merged(
@@ -138,7 +138,7 @@ async def test_train_remove_middle_merged(
     await t.add_pull(await context_getter(2), config, "")
     await t.add_pull(await context_getter(3), config, "")
     await t.refresh()
-    assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2], [1, 2, 3]]
 
     # Merged by someone else
     await t.remove_pull(
@@ -147,7 +147,7 @@ async def test_train_remove_middle_merged(
         UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
-    assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 3]]
 
 
 async def test_train_remove_middle_not_merged(
@@ -186,7 +186,7 @@ async def test_train_remove_middle_not_merged(
     )
 
     await t.refresh()
-    assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2], [1, 2, 3]]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(2),
@@ -194,7 +194,7 @@ async def test_train_remove_middle_not_merged(
         UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
-    assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 3]]
 
 
 async def test_train_remove_head_not_merged(
@@ -213,7 +213,7 @@ async def test_train_remove_head_not_merged(
     await t.add_pull(await context_getter(2), config, "")
     await t.add_pull(await context_getter(3), config, "")
     await t.refresh()
-    assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2], [1, 2, 3]]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(1),
@@ -221,7 +221,7 @@ async def test_train_remove_head_not_merged(
         UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
-    assert [[2], [2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[2], [2, 3]]
 
 
 async def test_train_remove_head_merged(
@@ -240,7 +240,7 @@ async def test_train_remove_head_merged(
     await t.add_pull(await context_getter(2), config, "")
     await t.add_pull(await context_getter(3), config, "")
     await t.refresh()
-    assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2], [1, 2, 3]]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(1),
@@ -248,7 +248,7 @@ async def test_train_remove_head_merged(
         queue_utils.PrMerged(1, github_types.SHAType("new_sha1")),
     )
     await t.refresh()
-    assert [[1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1, 2], [1, 2, 3]]
 
 
 async def test_train_add_remove_pull_idempotent(
@@ -268,7 +268,7 @@ async def test_train_add_remove_pull_idempotent(
     await t.add_pull(await context_getter(2), config, "")
     await t.add_pull(await context_getter(3), config, "")
     await t.refresh()
-    assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2], [1, 2, 3]]
 
     config = conftest.get_pull_queue_config(
         convoy.repository.mergify_config["queue_rules"],
@@ -278,11 +278,11 @@ async def test_train_add_remove_pull_idempotent(
 
     await t.add_pull(await context_getter(1), config, "")
     await t.refresh()
-    assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2], [1, 2, 3]]
 
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
-    assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2], [1, 2, 3]]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(2),
@@ -290,7 +290,7 @@ async def test_train_add_remove_pull_idempotent(
         UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
-    assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 3]]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(2),
@@ -298,11 +298,11 @@ async def test_train_add_remove_pull_idempotent(
         UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
-    assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 3]]
 
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
-    assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 3]]
 
 
 async def test_train_multiple_queue(
@@ -328,27 +328,27 @@ async def test_train_multiple_queue(
     await t.add_pull(await context_getter(3), config_five, "")
     await t.add_pull(await context_getter(4), config_five, "")
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3, 4] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3, 4]
 
     # Ensure we don't got over the train_size
     await t.add_pull(await context_getter(5), config_two, "")
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [5, 3, 4] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [5, 3, 4]
 
     await t.add_pull(await context_getter(6), config_five, "")
     await t.add_pull(await context_getter(7), config_five, "")
     await t.add_pull(await context_getter(8), config_five, "")
     await t.add_pull(await context_getter(9), config_five, "")
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [5, 3, 4, 6, 7, 8, 9] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [5, 3, 4, 6, 7, 8, 9]
 
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [5, 3, 4, 6, 7, 8, 9] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [5, 3, 4, 6, 7, 8, 9]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(2),
@@ -357,9 +357,9 @@ async def test_train_multiple_queue(
     )
     await t.refresh()
     assert (
-        [[1], [1, 5]] == mt_conftest.get_train_cars_content(t)
+        mt_conftest.get_train_cars_content(t) == [[1], [1, 5]]
     ), f"{mt_conftest.get_train_cars_content(t)} {mt_conftest.get_train_waiting_pulls_content(t)}"
-    assert [3, 4, 6, 7, 8, 9] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3, 4, 6, 7, 8, 9]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(1),
@@ -372,25 +372,25 @@ async def test_train_multiple_queue(
         UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [3],
         [3, 4],
         [3, 4, 6],
         [3, 4, 6, 7],
         [3, 4, 6, 7, 8],
-    ] == mt_conftest.get_train_cars_content(t)
-    assert [9] == mt_conftest.get_train_waiting_pulls_content(t)
+    ]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [9]
 
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [3],
         [3, 4],
         [3, 4, 6],
         [3, 4, 6, 7],
         [3, 4, 6, 7, 8],
-    ] == mt_conftest.get_train_cars_content(t)
-    assert [9] == mt_conftest.get_train_waiting_pulls_content(t)
+    ]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [9]
 
 
 async def test_train_remove_duplicates(
@@ -438,8 +438,8 @@ async def test_train_remove_duplicates(
     )
 
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3, 4] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3, 4]
 
     # Insert bugs in queue
     t._waiting_pulls.extend(
@@ -454,13 +454,13 @@ async def test_train_remove_duplicates(
         ],
     )
     t._cars = t._cars + t._cars
-    assert [[1], [1, 2], [1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [1, 3, 3, 4] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2], [1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [1, 3, 3, 4]
 
     # Everything should be back to normal
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3, 4] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3, 4]
 
 
 async def test_train_remove_end_wp(
@@ -499,8 +499,8 @@ async def test_train_remove_end_wp(
     )
 
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [2, 3]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(3),
@@ -508,8 +508,8 @@ async def test_train_remove_end_wp(
         UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [2] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [2]
 
 
 async def test_train_remove_first_wp(
@@ -548,8 +548,8 @@ async def test_train_remove_first_wp(
     )
 
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [2, 3]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(2),
@@ -557,8 +557,8 @@ async def test_train_remove_first_wp(
         UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
 
 async def test_train_remove_last_cars(
@@ -597,8 +597,8 @@ async def test_train_remove_last_cars(
     )
 
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [2, 3]
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(1),
@@ -606,8 +606,8 @@ async def test_train_remove_last_cars(
         UNQUEUE_REASON_DEQUEUED,
     )
     await t.refresh()
-    assert [[2]] == mt_conftest.get_train_cars_content(t)
-    assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
 
 async def test_train_with_speculative_checks_decreased(
@@ -630,14 +630,14 @@ async def test_train_with_speculative_checks_decreased(
     await t.add_pull(await context_getter(5), config, "")
 
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [1],
         [1, 2],
         [1, 2, 3],
         [1, 2, 3, 4],
         [1, 2, 3, 4, 5],
-    ] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    ]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     await t.remove_pull(
         github_types.GitHubPullRequestNumber(1),
@@ -650,8 +650,8 @@ async def test_train_with_speculative_checks_decreased(
     ].config["speculative_checks"] = 2
 
     await t.refresh()
-    assert [[1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
-    assert [4, 5] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1, 2], [1, 2, 3]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [4, 5]
 
 
 async def test_train_queue_config_change(
@@ -690,8 +690,8 @@ async def test_train_queue_config_change(
     )
 
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
     t.convoy.repository.mergify_config["queue_rules"] = voluptuous.Schema(
         qr_config.QueueRulesSchema,
@@ -706,8 +706,8 @@ queue_rules:
         )["queue_rules"],
     )
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [2, 3]
 
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
@@ -748,8 +748,8 @@ async def test_train_queue_config_deleted(
     )
 
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
     t.convoy.repository.mergify_config["queue_rules"] = voluptuous.Schema(
         qr_config.QueueRulesSchema,
@@ -764,8 +764,8 @@ queue_rules:
         )["queue_rules"],
     )
     await t.refresh()
-    assert [] == mt_conftest.get_train_cars_content(t)
-    assert [1, 2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == []
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [1, 2, 3]
     assert len(report_failure.mock_calls) == 1
 
 
@@ -805,8 +805,8 @@ async def test_train_priority_change(
     )
 
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
     assert (
         t._cars[0].still_queued_embarked_pulls[0].config["effective_priority"]
@@ -829,8 +829,8 @@ async def test_train_priority_change(
         "",
     )
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
     assert (
         t._cars[0].still_queued_embarked_pulls[0].config["effective_priority"]
@@ -937,7 +937,7 @@ async def test_train_queue_splitted_on_failure_1x2(
         )
 
     await t.refresh()
-    assert [[41, 42]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[41, 42]]
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
     t._cars[
@@ -946,15 +946,15 @@ async def test_train_queue_splitted_on_failure_1x2(
         merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
     )
     await t.save()
-    assert [[41, 42]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[41, 42]]
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.test_helper_load_from_redis()
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41],
         [41, 42],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 0
@@ -976,7 +976,7 @@ async def test_train_queue_splitted_on_failure_1x2(
 
     # It's 41 fault, we restart the train on 42
     await t.refresh()
-    assert [[42, 6]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[42, 6]]
     assert list(range(7, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 0
     assert (
@@ -1016,7 +1016,7 @@ async def test_train_queue_splitted_on_failure_1x5(
         )
 
     await t.refresh()
-    assert [[41, 42, 43, 44, 45]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[41, 42, 43, 44, 45]]
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
     t._cars[
@@ -1025,16 +1025,16 @@ async def test_train_queue_splitted_on_failure_1x5(
         merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
     )
     await t.save()
-    assert [[41, 42, 43, 44, 45]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[41, 42, 43, 44, 45]]
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.test_helper_load_from_redis()
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42],
         [41, 42, 43, 44],
         [41, 42, 43, 44, 45],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
@@ -1057,11 +1057,11 @@ async def test_train_queue_splitted_on_failure_1x5(
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42],
         [41, 42, 43, 44],
         [41, 42, 43, 44, 45],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
@@ -1092,10 +1092,10 @@ async def test_train_queue_splitted_on_failure_1x5(
 
     # [43+44] fail, so it's not 45, but is it 43 or 44?
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42, 43],
         [41, 42, 43, 44],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert [45, *list(range(6, 20))] == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 2
     assert len(t._cars[1].failure_history) == 1
@@ -1115,7 +1115,7 @@ async def test_train_queue_splitted_on_failure_1x5(
 
     # Train got cut after 43, and we restart from the begining
     await t.refresh()
-    assert [[44, 45, 6, 7, 8]] == mt_conftest.get_train_cars_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[44, 45, 6, 7, 8]]
     assert list(range(9, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 0
     assert (
@@ -1155,10 +1155,10 @@ async def test_train_queue_splitted_on_failure_2x5(
         )
 
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42, 43, 44, 45],
         [41, 42, 43, 44, 45, 6, 7, 8, 9, 10],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(11, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
     t._cars[
@@ -1167,19 +1167,19 @@ async def test_train_queue_splitted_on_failure_2x5(
         merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
     )
     await t.save()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42, 43, 44, 45],
         [41, 42, 43, 44, 45, 6, 7, 8, 9, 10],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(11, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.test_helper_load_from_redis()
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42],
         [41, 42, 43, 44],
         [41, 42, 43, 44, 45],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
@@ -1204,11 +1204,11 @@ async def test_train_queue_splitted_on_failure_2x5(
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42],
         [41, 42, 43, 44],
         [41, 42, 43, 44, 45],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
@@ -1241,10 +1241,10 @@ async def test_train_queue_splitted_on_failure_2x5(
 
     # [43+44] fail, so it's not 45, but is it 43 or 44?
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42, 43],
         [41, 42, 43, 44],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert [45, *list(range(6, 20))] == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 2
     assert len(t._cars[1].failure_history) == 1
@@ -1266,10 +1266,10 @@ async def test_train_queue_splitted_on_failure_2x5(
 
     # Train got cut after 43, and we restart from the begining
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [44, 45, 6, 7, 8],
         [44, 45, 6, 7, 8, 9, 10, 11, 12, 13],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(14, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 0
     assert len(t._cars[1].failure_history) == 0
@@ -1313,13 +1313,13 @@ async def test_train_queue_splitted_on_failure_5x3(
         )
 
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42, 43],
         [41, 42, 43, 44, 45, 46],
         [41, 42, 43, 44, 45, 46, 7, 8, 9],
         [41, 42, 43, 44, 45, 46, 7, 8, 9, 10, 11, 12],
         [41, 42, 43, 44, 45, 46, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(16, 22)) == mt_conftest.get_train_waiting_pulls_content(t)
 
     t._cars[
@@ -1328,22 +1328,22 @@ async def test_train_queue_splitted_on_failure_5x3(
         merge_train.TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE
     )
     await t.save()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42, 43],
         [41, 42, 43, 44, 45, 46],
         [41, 42, 43, 44, 45, 46, 7, 8, 9],
         [41, 42, 43, 44, 45, 46, 7, 8, 9, 10, 11, 12],
         [41, 42, 43, 44, 45, 46, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(16, 22)) == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.test_helper_load_from_redis()
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41],
         [41, 42],
         [41, 42, 43],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert [
         44,
         45,
@@ -1365,13 +1365,13 @@ async def test_train_queue_splitted_on_failure_5x3(
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [42, 43, 44],
         [42, 43, 44, 45, 46, 7],
         [42, 43, 44, 45, 46, 7, 8, 9, 10],
         [42, 43, 44, 45, 46, 7, 8, 9, 10, 11, 12, 13],
         [42, 43, 44, 45, 46, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(17, 22)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 0
     assert len(t._cars[1].failure_history) == 0
@@ -1407,11 +1407,11 @@ async def test_train_queue_splitted_on_failure_5x3(
     )
 
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [42, 43, 44, 45],
         [42, 43, 44, 45, 46],
         [42, 43, 44, 45, 46, 7],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(8, 22)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
@@ -1424,11 +1424,11 @@ async def test_train_queue_splitted_on_failure_5x3(
 
     # Nothing change yet!
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [42, 43, 44, 45],
         [42, 43, 44, 45, 46],
         [42, 43, 44, 45, 46, 7],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     assert list(range(8, 22)) == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
@@ -1447,9 +1447,9 @@ async def test_train_queue_splitted_on_failure_5x3(
         queue_utils.PrMerged(46, github_types.SHAType("sha46")),
     )
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [42, 43, 44, 45, 46, 7],
-    ] == mt_conftest.get_train_cars_content(t)
+    ]
     t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     assert len(t._cars[0].failure_history) == 0
 
@@ -1462,14 +1462,14 @@ async def test_train_queue_splitted_on_failure_5x3(
 
     # Train got cut after 43, and we restart from the begining
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [8, 9, 10],
         [8, 9, 10, 11, 12, 13],
         [8, 9, 10, 11, 12, 13, 14, 15, 16],
         [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
         [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
-    ] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    ]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
 
 async def test_train_no_interrupt_add_pull(
@@ -1486,18 +1486,18 @@ async def test_train_no_interrupt_add_pull(
 
     await t.add_pull(await context_getter(1), config, "")
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     await t.add_pull(await context_getter(2), config, "")
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     await t.add_pull(await context_getter(3), config, "")
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
     # Inserting high prio didn't break started speculative checks, but the PR
     # move above other
@@ -1511,8 +1511,8 @@ async def test_train_no_interrupt_add_pull(
         "",
     )
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [4, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [4, 3]
 
 
 async def test_train_always_interrupt_across_queue(
@@ -1529,18 +1529,18 @@ async def test_train_always_interrupt_across_queue(
 
     await t.add_pull(await context_getter(1), config, "")
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     await t.add_pull(await context_getter(2), config, "")
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     await t.add_pull(await context_getter(3), config, "")
     await t.refresh()
-    assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1], [1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
     # Inserting pr in high queue always break started speculative checks even
     # if allow_checks_interruption is set
@@ -1553,8 +1553,8 @@ async def test_train_always_interrupt_across_queue(
         "",
     )
     await t.refresh()
-    assert [[4]] == mt_conftest.get_train_cars_content(t)
-    assert [1, 2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[4]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [1, 2, 3]
 
 
 async def test_train_interrupt_mixed_across_queue(
@@ -1571,18 +1571,18 @@ async def test_train_interrupt_mixed_across_queue(
 
     await t.add_pull(await context_getter(1), config, "")
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     await t.add_pull(await context_getter(2), config, "")
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [2] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [2]
 
     await t.add_pull(await context_getter(3), config, "")
     await t.refresh()
-    assert [[1]] == mt_conftest.get_train_cars_content(t)
-    assert [2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [2, 3]
 
     # Inserting pr in high queue always break started speculative checks
     await t.add_pull(
@@ -1594,8 +1594,8 @@ async def test_train_interrupt_mixed_across_queue(
         "",
     )
     await t.refresh()
-    assert [[4]] == mt_conftest.get_train_cars_content(t)
-    assert [1, 2, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[4]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [1, 2, 3]
 
 
 async def test_train_disallow_checks_interruption_scenario_1(
@@ -1621,27 +1621,27 @@ async def test_train_disallow_checks_interruption_scenario_1(
     await t.add_pull(await context_getter(1), fastlane, "")
     await t.add_pull(await context_getter(2), fastlane, "")
     await t.refresh()
-    assert [[1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     # regular doesn't interrupt the checks as it's below fastlane
     await t.add_pull(await context_getter(3), regular, "")
     await t.refresh()
-    assert [[1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
     # fastlane doesn't interrupt the checks because of noint, but goes before
     # regular
     await t.add_pull(await context_getter(4), fastlane, "")
     await t.refresh()
-    assert [[1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [4, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [4, 3]
 
     # urgent breaks everything, and all fastlane got pack together, regular move behind
     await t.add_pull(await context_getter(5), urgent, "")
     await t.refresh()
-    assert [[5]] == mt_conftest.get_train_cars_content(t)
-    assert [1, 2, 4, 3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[5]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [1, 2, 4, 3]
 
 
 async def test_train_disallow_checks_interruption_scenario_2(
@@ -1667,28 +1667,28 @@ async def test_train_disallow_checks_interruption_scenario_2(
     await t.add_pull(await context_getter(1), regular, "")
     await t.add_pull(await context_getter(2), regular, "")
     await t.refresh()
-    assert [[1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     # fastlane doesn't interrupt the checks as
     # disallow_checks_interruption_from_queues of regular disallow it
     await t.add_pull(await context_getter(3), fastlane, "")
     await t.refresh()
-    assert [[1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
     # fastlane doesn't interrupt the checks because of noint, but goes before
     # regular
     await t.add_pull(await context_getter(4), regular, "")
     await t.refresh()
-    assert [[1, 2]] == mt_conftest.get_train_cars_content(t)
-    assert [3, 4] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[1, 2]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3, 4]
 
     # urgent breaks everything, then we put the fastlane one, and all regulars goes behind
     await t.add_pull(await context_getter(5), urgent, "")
     await t.refresh()
-    assert [[5]] == mt_conftest.get_train_cars_content(t)
-    assert [3, 1, 2, 4] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[5]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [3, 1, 2, 4]
 
 
 async def test_train_batch_max_wait_time(
@@ -1706,19 +1706,19 @@ async def test_train_batch_max_wait_time(
 
         await t.add_pull(await context_getter(1), config, "")
         await t.refresh()
-        assert [] == mt_conftest.get_train_cars_content(t)
-        assert [1] == mt_conftest.get_train_waiting_pulls_content(t)
+        assert mt_conftest.get_train_cars_content(t) == []
+        assert mt_conftest.get_train_waiting_pulls_content(t) == [1]
 
         # Enought PR to batch!
         await t.add_pull(await context_getter(2), config, "")
         await t.refresh()
-        assert [[1, 2]] == mt_conftest.get_train_cars_content(t)
-        assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+        assert mt_conftest.get_train_cars_content(t) == [[1, 2]]
+        assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
         await t.add_pull(await context_getter(3), config, "")
         await t.refresh()
-        assert [[1, 2]] == mt_conftest.get_train_cars_content(t)
-        assert [3] == mt_conftest.get_train_waiting_pulls_content(t)
+        assert mt_conftest.get_train_cars_content(t) == [[1, 2]]
+        assert mt_conftest.get_train_waiting_pulls_content(t) == [3]
 
         d = await delayed_refresh._get_current_refresh_datetime(
             convoy.repository,
@@ -1731,8 +1731,8 @@ async def test_train_batch_max_wait_time(
 
     with time_travel("2021-09-22T08:05:02"):
         await t.refresh()
-        assert [[1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
-        assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+        assert mt_conftest.get_train_cars_content(t) == [[1, 2], [1, 2, 3]]
+        assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
@@ -1757,14 +1757,14 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
         )
 
     await t.refresh()
-    assert [[41, 42, 43, 44, 45]] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[41, 42, 43, 44, 45]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.WAITING_FOR_MERGE
     await t.save()
     await t.refresh()
-    assert [[41, 42, 43, 44, 45]] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[41, 42, 43, 44, 45]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     # merge half of the batch
     for i in range(41, 44):
@@ -1776,8 +1776,8 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
         )
 
     await t.refresh()
-    assert [[44, 45]] == mt_conftest.get_train_cars_content(t)
-    assert [] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[44, 45]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == []
 
     await t.add_pull(
         await context_getter(7),
@@ -1789,8 +1789,8 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
         "",
     )
     await t.refresh()
-    assert [[44, 45]] == mt_conftest.get_train_cars_content(t)
-    assert [7] == mt_conftest.get_train_waiting_pulls_content(t)
+    assert mt_conftest.get_train_cars_content(t) == [[44, 45]]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [7]
 
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
@@ -1815,20 +1815,20 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
         )
 
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42, 43, 44, 45],
         [41, 42, 43, 44, 45, 46, 47, 48, 49, 50],
-    ] == mt_conftest.get_train_cars_content(t)
-    assert [51] == mt_conftest.get_train_waiting_pulls_content(t)
+    ]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [51]
 
     t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.WAITING_FOR_MERGE
     await t.save()
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [41, 42, 43, 44, 45],
         [41, 42, 43, 44, 45, 46, 47, 48, 49, 50],
-    ] == mt_conftest.get_train_cars_content(t)
-    assert [51] == mt_conftest.get_train_waiting_pulls_content(t)
+    ]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [51]
 
     # merge half of the batch
     for i in range(41, 44):
@@ -1840,11 +1840,11 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
         )
 
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [44, 45],
         [41, 42, 43, 44, 45, 46, 47, 48, 49, 50],
-    ] == mt_conftest.get_train_cars_content(t)
-    assert [51] == mt_conftest.get_train_waiting_pulls_content(t)
+    ]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [51]
 
     await t.add_pull(
         await context_getter(7),
@@ -1857,11 +1857,11 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
     )
 
     await t.refresh()
-    assert [
+    assert mt_conftest.get_train_cars_content(t) == [
         [44, 45],
         [44, 45, 7, 46, 47, 48, 49],
-    ] == mt_conftest.get_train_cars_content(t)
-    assert [50, 51] == mt_conftest.get_train_waiting_pulls_content(t)
+    ]
+    assert mt_conftest.get_train_waiting_pulls_content(t) == [50, 51]
 
 
 def test_embarked_pull_old_serialization() -> None:

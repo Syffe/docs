@@ -292,7 +292,6 @@ class NoopSignal(SignalBase):
         pass
 
 
-global SIGNALS
 SIGNALS: dict[str, SignalT] = {}
 
 

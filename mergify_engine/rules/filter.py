@@ -531,12 +531,12 @@ def _dt_op(
 
             dt_ref = _as_datetime(ref).astimezone(datetime.UTC)
 
-            handle_equality = op in (
+            handle_equality = op in {
                 operator.eq,
                 operator.ne,
                 operator.le,
                 operator.ge,
-            )
+            }
 
             if handle_equality and dt_value == dt_ref:
                 # NOTE(sileht): The condition will change...
@@ -834,10 +834,10 @@ class IncompleteChecksFilter(TernaryFilter):
                 if len(self.pending_checks) != 0:
                     return False
             else:
-                if real_attr_name in (
+                if real_attr_name in {
                     "check-pending",
                     "check-success-or-neutral-or-pending",
-                ):
+                }:
                     return not bool(self.pending_checks)
 
                 final_checks = set(self.all_checks) - set(self.pending_checks)

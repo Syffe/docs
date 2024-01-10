@@ -104,11 +104,11 @@ async def get_pull_requests(
     for cond in base_pull_conditions.walk():
         # The pull object from `/pulls` doesn't have all the data required
         # for those attributes to be properly evaluated
-        if cond.get_attribute_name(with_length_operator=True) in (
+        if cond.get_attribute_name(with_length_operator=True) in {
             "conflict",
             "#commits",
             "#files",
-        ):
+        }:
             needs_full_data = True
             break
 

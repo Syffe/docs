@@ -1433,15 +1433,15 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.git("add", f"testfixup{self.pr_counter}")
 
         args = ["commit", "--no-edit"]
-        if commit_type in ("fixup=amend", "fixup=reword"):
+        if commit_type in {"fixup=amend", "fixup=reword"}:
             args += [f"--{commit_type}:{pr['head']['sha']}"]
         else:
             args += [f"--{commit_type}", pr["head"]["sha"]]
 
-        if autosquash_commit_body is not None and commit_type not in (
+        if autosquash_commit_body is not None and commit_type not in {
             "fixup=amend",
             "fixup=reword",
-        ):
+        }:
             args += ["-m", autosquash_commit_body]
 
         await self.git(*args)
@@ -1455,10 +1455,10 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         # We can't use `-m` with those (git doesn't allow it), so we
         # need to trick a bit to have the same behavior.
-        if autosquash_commit_body is not None and commit_type in (
+        if autosquash_commit_body is not None and commit_type in {
             "fixup=amend",
             "fixup=reword",
-        ):
+        }:
             amend_commit_headline = commits[1]["commit"]["message"].split("\n")[0]
             await self.git(
                 "commit",

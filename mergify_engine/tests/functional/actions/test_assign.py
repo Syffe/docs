@@ -146,4 +146,4 @@ class TestAssignAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p_updated = await self.wait_for_pull_request("unassigned")
-        assert [] == p_updated["pull_request"]["assignees"]
+        assert p_updated["pull_request"]["assignees"] == []

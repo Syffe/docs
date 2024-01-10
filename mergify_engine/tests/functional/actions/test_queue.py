@@ -1925,9 +1925,9 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         tmp_pull_2 = await self.wait_for_pull_request("opened")
 
-        assert tmp_pull_1["number"] not in [p1["number"], p2["number"]]
+        assert tmp_pull_1["number"] not in {p1["number"], p2["number"]}
         assert tmp_pull_1["pull_request"]["user"]["login"] == "mergify-test4"
-        assert tmp_pull_2["number"] not in [p1["number"], p2["number"]]
+        assert tmp_pull_2["number"] not in {p1["number"], p2["number"]}
         assert tmp_pull_2["pull_request"]["user"]["login"] == "mergify-test4"
         assert tmp_pull_1["pull_request"]["commits"] == 2
         assert tmp_pull_1["pull_request"]["changed_files"] == 1
@@ -3014,7 +3014,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         tmp_pull = await self.wait_for_pull_request("opened")
-        assert tmp_pull["number"] not in [p1["number"]]
+        assert tmp_pull["number"] not in {p1["number"]}
         assert tmp_pull["pull_request"]["changed_files"] == 1
 
         # No parent PR, but created instead updated
@@ -4793,7 +4793,7 @@ previous_failed_batches:
         await self.run_engine()
 
         draft_pr = await self.wait_for_pull_request("opened")
-        assert draft_pr["number"] not in [p1["number"], p2["number"]]
+        assert draft_pr["number"] not in {p1["number"], p2["number"]}
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(
@@ -4888,7 +4888,7 @@ previous_failed_batches:
         await self.run_engine()
 
         draft_pr = await self.wait_for_pull_request("opened")
-        assert draft_pr["number"] not in [p1["number"], p2["number"]]
+        assert draft_pr["number"] not in {p1["number"], p2["number"]}
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(
@@ -4990,7 +4990,7 @@ previous_failed_batches:
         await self.run_engine()
 
         draft_pr = await self.wait_for_pull_request("opened")
-        assert draft_pr["number"] not in [p1["number"], p2["number"]]
+        assert draft_pr["number"] not in {p1["number"], p2["number"]}
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(
@@ -5421,8 +5421,8 @@ previous_failed_batches:
 
         tmp_mq_p1 = await self.get_pull(pulls[1]["number"])
         tmp_mq_p2 = await self.get_pull(pulls[0]["number"])
-        assert tmp_mq_p1["number"] not in [p1["number"], p2["number"]]
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
+        assert tmp_mq_p1["number"] not in {p1["number"], p2["number"]}
+        assert tmp_mq_p2["number"] not in {p1["number"], p2["number"]}
 
         q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
@@ -5546,7 +5546,7 @@ previous_failed_batches:
 
 
 
-{utils.serialize_hidden_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running":  True}))}"""
+{utils.serialize_hidden_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running": True}))}"""
             == comments[-1]["body"]
         )
 
@@ -5781,7 +5781,7 @@ previous_failed_batches:
         pulls = await self.get_pulls()
         # 2 queue PR with its tmp PR + 1 one not queued PR
         assert len(pulls) == 5
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
+        assert tmp_mq_p2["number"] not in {p1["number"], p2["number"], p3["number"]}
 
         q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
@@ -5842,12 +5842,12 @@ previous_failed_batches:
         pulls = await self.get_pulls()
         assert len(pulls) == 4
 
-        assert tmp_mq_p3["number"] not in [
+        assert tmp_mq_p3["number"] not in {
             p1["number"],
             p2["number"],
             p3["number"],
             tmp_mq_p2["number"],
-        ]
+        }
 
         q = await self.get_train()
         assert p1["merge_commit_sha"] is not None
@@ -6096,8 +6096,8 @@ previous_failed_batches:
 
         tmp_mq_p1 = pulls[1]
         tmp_mq_p2 = pulls[0]
-        assert tmp_mq_p1["number"] not in [p1["number"], p2["number"]]
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
+        assert tmp_mq_p1["number"] not in {p1["number"], p2["number"]}
+        assert tmp_mq_p2["number"] not in {p1["number"], p2["number"]}
 
         q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
@@ -6307,7 +6307,7 @@ previous_failed_batches:
 
         tmp_mq_pr = await self.wait_for_pull_request("opened")
 
-        assert tmp_mq_pr["number"] not in [p1["number"], p2["number"], p3["number"]]
+        assert tmp_mq_pr["number"] not in {p1["number"], p2["number"], p3["number"]}
 
         # Check only p1 and p3 are in the train
         q = await self.get_train()
@@ -6503,8 +6503,8 @@ previous_failed_batches:
         tmp_mq_p2 = await self.wait_for_pull_request("opened")
         tmp_mq_p3 = await self.wait_for_pull_request("opened")
 
-        assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
+        assert tmp_mq_p3["number"] not in {p1["number"], p2["number"], p3["number"]}
+        assert tmp_mq_p2["number"] not in {p1["number"], p2["number"], p3["number"]}
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(
@@ -6612,7 +6612,7 @@ previous_failed_batches:
         tmp_mq_p2_bis = await self.wait_for_pull_request("opened")
 
         # Check pull is back to the queue and tmp pull recreated
-        assert tmp_mq_p2_bis["number"] not in [p1["number"], p2["number"], p3["number"]]
+        assert tmp_mq_p2_bis["number"] not in {p1["number"], p2["number"], p3["number"]}
         await self.assert_merge_queue_contents(
             q,
             p1_merged["pull_request"]["merge_commit_sha"],
@@ -6674,8 +6674,8 @@ previous_failed_batches:
         tmp_mq_p1 = await self.wait_for_pull_request("opened")
         tmp_mq_p2 = await self.wait_for_pull_request("opened")
 
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
-        assert tmp_mq_p1["number"] not in [p1["number"], p2["number"]]
+        assert tmp_mq_p2["number"] not in {p1["number"], p2["number"]}
+        assert tmp_mq_p1["number"] not in {p1["number"], p2["number"]}
 
         q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
@@ -6715,18 +6715,18 @@ previous_failed_batches:
         tmp_mq_p1_bis = await self.wait_for_pull_request("opened")
         tmp_mq_p2_bis = await self.wait_for_pull_request("opened")
 
-        assert tmp_mq_p1_bis["number"] not in [
+        assert tmp_mq_p1_bis["number"] not in {
             p1["number"],
             p2["number"],
             tmp_mq_p1["number"],
             tmp_mq_p2["number"],
-        ]
-        assert tmp_mq_p2_bis["number"] not in [
+        }
+        assert tmp_mq_p2_bis["number"] not in {
             p1["number"],
             p2["number"],
             tmp_mq_p1["number"],
             tmp_mq_p2["number"],
-        ]
+        }
         assert p_merged_in_meantime["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -7081,7 +7081,7 @@ previous_failed_batches:
         assert len(pulls) == 4
 
         tmp_mq_p3 = pulls[0]
-        assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
+        assert tmp_mq_p3["number"] not in {p1["number"], p2["number"], p3["number"]}
 
         # p3 is now the only car in train, as its queue is not the same as p1 and p2
         await self.assert_merge_queue_contents(
@@ -7239,8 +7239,8 @@ previous_failed_batches:
 
         tmp_mq_p1_bis = pulls[1]
         tmp_mq_p2_bis = pulls[0]
-        assert tmp_mq_p1_bis["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert tmp_mq_p2_bis["number"] not in [p1["number"], p2["number"], p3["number"]]
+        assert tmp_mq_p1_bis["number"] not in {p1["number"], p2["number"], p3["number"]}
+        assert tmp_mq_p2_bis["number"] not in {p1["number"], p2["number"], p3["number"]}
         await self.assert_merge_queue_contents(
             q,
             p3_merged["pull_request"]["merge_commit_sha"],
@@ -7373,8 +7373,8 @@ previous_failed_batches:
 
         tmp_mq_p1 = await self.get_pull(pulls[1]["number"])
         tmp_mq_p2 = await self.get_pull(pulls[0]["number"])
-        assert tmp_mq_p1["number"] not in [p1["number"], p2["number"]]
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
+        assert tmp_mq_p1["number"] not in {p1["number"], p2["number"]}
+        assert tmp_mq_p2["number"] not in {p1["number"], p2["number"]}
 
         q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
@@ -9376,7 +9376,7 @@ pull_request_rules:
             p.user_pull_request_number
             for p in train._cars[0].still_queued_embarked_pulls
         ]
-        assert [] == [p.user_pull_request_number for p in train._waiting_pulls]
+        assert [p.user_pull_request_number for p in train._waiting_pulls] == []
 
         await self.create_status(draft_pr_p4["pull_request"])
         await self.run_engine()

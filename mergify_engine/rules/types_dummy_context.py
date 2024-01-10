@@ -52,7 +52,6 @@ class DummyPullRequest(condition_value_querier.PullRequest):
         env = jinja2.sandbox.SandboxedEnvironment(
             undefined=jinja2.StrictUndefined,
         )
-        #
         env.filters["markdownify"] = lambda s: s
         env.filters["get_section"] = self.dummy_get_section
 

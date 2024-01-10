@@ -331,7 +331,7 @@ def get_convoy_train_cars_content(
 def get_train_waiting_pulls_content(
     train: merge_train.Train,
 ) -> list[github_types.GitHubPullRequestNumber]:
-    waiting_pulls, ignored_pulls = train._get_waiting_pulls_ordered_by_priority()
+    waiting_pulls, _ignored_pulls = train._get_waiting_pulls_ordered_by_priority()
     return [wp.user_pull_request_number for wp in waiting_pulls]
 
 

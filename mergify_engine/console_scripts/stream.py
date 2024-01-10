@@ -27,7 +27,7 @@ async def stream_status() -> None:
     )
 
     def sorter(item: tuple[bytes, float]) -> str:
-        org_bucket, score = item
+        org_bucket, _score = item
         owner_id = stream_service_base.StreamService.extract_owner(
             stream_lua.BucketOrgKeyType(org_bucket.decode()),
         )

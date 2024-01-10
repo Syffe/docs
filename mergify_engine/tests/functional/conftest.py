@@ -271,7 +271,7 @@ def pyvcr_response_filter(
     response: dict[str, typing.Any],
 ) -> dict[str, typing.Any] | None:
     if (
-        response["status_code"] in (403, 429)
+        response["status_code"] in {403, 429}
         or response["status_code"] == 422
         and "abuse" in response["content"]
     ) and response["headers"].get("X-RateLimit-Remaining") is not None:
@@ -322,7 +322,7 @@ def pyvcr_request_filter(request: vcr.request.Request) -> vcr.request.Request:
     if request.method == "POST" and request.path.endswith("/access_tokens"):
         return None
 
-    if request.host in ("localhost", "0.0.0.0", "127.0.0.1") and (
+    if request.host in {"localhost", "0.0.0.0", "127.0.0.1"} and (
         request.method != "PUT" or request.path != "/__breakpoint"
     ):
         # Ignore every localhost request except the `/breakpoint` one.

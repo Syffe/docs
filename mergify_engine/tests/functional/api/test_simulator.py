@@ -51,7 +51,7 @@ class TestApiSimulator(base.FunctionalTestBase):
         )
         assert r.status_code == 200, r.json()
         assert r.json()["title"] == "The configuration is valid"
-        assert r.json()["summary"] == ""
+        assert not r.json()["summary"]
 
         r = await self.admin_app.post(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/simulator",

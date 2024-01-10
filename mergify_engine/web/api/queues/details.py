@@ -92,17 +92,17 @@ class MergeabilityCheck:
         if car is None:
             return None
 
-        if car.train_car_state.checks_type in (
+        if car.train_car_state.checks_type in {
             merge_train.TrainCarChecksType.FAILED,
             None,
-        ):
+        }:
             return None
 
-        if car.train_car_state.checks_type in (
+        if car.train_car_state.checks_type in {
             merge_train.TrainCarChecksType.DRAFT,
             merge_train.TrainCarChecksType.DRAFT_DELEGATED,
             merge_train.TrainCarChecksType.INPLACE,
-        ):
+        }:
             if car.queue_pull_request_number is None:
                 raise RuntimeError(
                     f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None",

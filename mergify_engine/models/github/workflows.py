@@ -577,7 +577,7 @@ class WorkflowJob(models.Base):
             return None
 
         for step in workflow_job_data["steps"]:
-            if step["conclusion"] in ("failure", "cancelled"):
+            if step["conclusion"] in {"failure", "cancelled"}:
                 return WorkflowJobFailedStep(number=step["number"], name=step["name"])
 
             if step["status"] != "completed":
@@ -688,7 +688,7 @@ class WorkflowJob(models.Base):
                 f"/repos/{self.repository.owner.login}/{self.repository.name}/check-runs/{self.id}/annotations",
             )
         except http.HTTPStatusError as e:
-            if e.response.status_code in (410, 404):
+            if e.response.status_code in {410, 404}:
                 raise self.UnableToRetrieveLogError(self)
             raise
 
@@ -710,7 +710,7 @@ class WorkflowJob(models.Base):
                 f"/repos/{self.repository.owner.login}/{self.repository.name}/actions/runs/{self.workflow_run_id}/attempts/{self.run_attempt}/logs",
             )
         except http.HTTPStatusError as e:
-            if e.response.status_code in (410, 404):
+            if e.response.status_code in {410, 404}:
                 raise self.UnableToRetrieveLogError(self)
             raise
 

@@ -133,7 +133,7 @@ defaults:
     config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
     command = commands_runner.load_command(config, "@mergifyio backport")
     assert command.name == "backport"
-    assert command.command_args == ""
+    assert not command.command_args
     assert isinstance(command.action, BackportAction)
     assert command.action.config == {
         "assignees": [],

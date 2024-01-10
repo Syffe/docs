@@ -81,7 +81,7 @@ async def create_queue_freeze(
     authentication_actor: security.AuthenticatedActor,
     repository_ctxt: security.RepositoryWithConfig,
 ) -> QueueFreezeResponse:
-    if queue_freeze_payload.reason == "":
+    if not queue_freeze_payload.reason:
         queue_freeze_payload.reason = "No freeze reason was specified."
 
     queue_freeze = await freeze.QueueFreeze.get(repository_ctxt, queue_rule)

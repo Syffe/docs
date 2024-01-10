@@ -173,13 +173,13 @@ async def auth_via_github(
         token = await oauth.github.authorize_access_token(request)
     except starlette_client.OAuthError as e:
         await clear_session_and_auth(request)
-        if e.error in ("access_denied", "not_found"):
+        if e.error in {"access_denied", "not_found"}:
             raise fastapi.HTTPException(403)
-        if e.error in (
+        if e.error in {
             "bad_verification_code",
             "mismatching_state",
             "redirect_uri_mismatch",
-        ):
+        }:
             # old verification code, just retry
             LOG.warning("OAuth2 failed, retrying", exc_info=True)
             if e.error == "redirect_uri_mismatch":

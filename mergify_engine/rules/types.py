@@ -175,7 +175,7 @@ class _GitHubTeam:
         else:
             org, sep, team = value.partition("/")
 
-        if sep == "" and team == "":
+        if not sep and not team:
             # Just a slug
             team = org
             final_org = None
@@ -219,7 +219,7 @@ GitHubTeam = voluptuous.All(str, voluptuous.Coerce(_GitHubTeam.from_string))
 
 
 def check_forbidden_repository_name(v: str) -> str:
-    if v in (".", "..", ".git"):
+    if v in {".", "..", ".git"}:
         raise voluptuous.Invalid(f"Repository name '{v}' is forbidden")
     return v
 

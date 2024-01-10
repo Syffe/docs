@@ -68,11 +68,11 @@ class Conclusion(enum.Enum):
             return "🟠"
         if self.value == "success":
             return "✅"
-        if self.value in ("failure", "timed_out"):
+        if self.value in {"failure", "timed_out"}:
             return "❌"
         if self.value == "cancelled":
             return "🛑"
-        if self.value in ("skipped", "neutral", "stale"):
+        if self.value in {"skipped", "neutral", "stale"}:
             return "☑️"
         if self.value == "action_required":
             return "⚠️"

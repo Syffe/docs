@@ -75,7 +75,7 @@ def get_date_from_score(score: float) -> datetime.datetime:
     reraise=True,
 )
 async def push(
-    redis: redis_utils.RedisStream | "redis_utils.PipelineStream",
+    redis: redis_utils.RedisStream | redis_utils.PipelineStream,
     owner_id: github_types.GitHubAccountIdType,
     owner_login: github_types.GitHubLogin,
     repo_id: github_types.GitHubRepositoryIdType,

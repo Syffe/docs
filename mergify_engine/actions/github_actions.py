@@ -113,17 +113,17 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
 
         if any(failed_workflows):
             summary = (
-                f"Workflow{'s'*(len(failed_workflows)>1)} dispatch failed:\n- "
+                f"Workflow{'s' * (len(failed_workflows) > 1)} dispatch failed:\n- "
                 + "\n- ".join(wf.summary for wf in failed_workflows)
             )
             if any(success_workflows):
                 summary += (
-                    f"\n\nWorkflow{'s'*(len(success_workflows)>1)} successfully dispatched:\n- "
+                    f"\n\nWorkflow{'s' * (len(success_workflows) > 1)} successfully dispatched:\n- "
                     + "\n- ".join(f"`{r.summary}`" for r in success_workflows)
                 )
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
-                f"Some workflow{'s'*(len(failed_workflows)>1)} dispatch{'es'*(len(failed_workflows)>1)} failed",
+                f"Some workflow{'s' * (len(failed_workflows) > 1)} dispatch{'es' * (len(failed_workflows) > 1)} failed",
                 summary,
             )
 

@@ -1323,7 +1323,7 @@ def get_farthest_datetime_from_non_match_schedule_condition(
             continue
 
         if cond.attribute_name == "schedule":
-            _, op, condition_value, _, _, _ = parser.parse_raw_condition(cond.label)
+            _, _op, condition_value, _, _, _ = parser.parse_raw_condition(cond.label)
             schedule_obj = parser.parse_schedule(condition_value)
             schedule_next_datetime = schedule_obj.get_next_datetime(from_time)
             if (

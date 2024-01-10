@@ -794,10 +794,10 @@ class TimeTravel:
                 if mod_name.startswith(self.ignore) or mod_name.endswith(".six.moves"):
                     continue
 
-                if not hasattr(module, "__name__") or module.__name__ in (
+                if not hasattr(module, "__name__") or module.__name__ in {
                     "datetime",
                     "time",
-                ):
+                }:
                     continue
 
                 module_attrs = _get_cached_module_attributes(module)
@@ -854,10 +854,10 @@ class TimeTravel:
                         ".six.moves",
                     ):
                         continue
-                    if not hasattr(module, "__name__") or module.__name__ in (
+                    if not hasattr(module, "__name__") or module.__name__ in {
                         "datetime",
                         "time",
-                    ):
+                    }:
                         continue
                     for module_attribute in dir(module):
                         if module_attribute in self.fake_names:

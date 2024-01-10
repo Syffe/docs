@@ -1176,9 +1176,9 @@ class Repository:
                 return None
             raise
         else:
-            if data["status"] in ("ahead", "identical"):
+            if data["status"] in {"ahead", "identical"}:
                 return 0
-            if data["status"] in ("behind", "diverged"):
+            if data["status"] in {"behind", "diverged"}:
                 return data["behind_by"]
             return None
 
@@ -1713,7 +1713,7 @@ class Context:
             {
                 github_types.GitHubPullRequestNumber(int(pull))
                 for owner, repo, pull in self.DEPENDS_ON.findall(self.body)
-                if (owner == "" and repo == "")
+                if (not owner and not repo)
                 or (
                     owner == self.pull["base"]["user"]["login"]
                     and repo == self.pull["base"]["repo"]["name"]

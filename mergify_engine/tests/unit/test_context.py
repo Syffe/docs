@@ -715,12 +715,11 @@ async def test_context_body_null(
 ) -> None:
     a_pull_request["body"] = None
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    assert (
+    assert not (
         await condition_value_querier.PullRequest(ctxt)._get_consolidated_data(
             ctxt,
             "body",
         )
-        == ""
     )
 
 

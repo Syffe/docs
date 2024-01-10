@@ -460,7 +460,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         else:
             message = "Pending"
 
-        if conclusion in (check_api.Conclusion.SUCCESS, check_api.Conclusion.FAILURE):
+        if conclusion in {check_api.Conclusion.SUCCESS, check_api.Conclusion.FAILURE}:
             await self._clear_state()
         else:
             await self._save_state(results)

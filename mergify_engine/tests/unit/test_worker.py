@@ -939,10 +939,10 @@ async def test_stream_processor_retrying_pull(
     assert len(await redis_links.stream.keys("bucket-sources~*")) == 2
     assert await redis_links.stream.xlen("bucket-sources~123~123") == 1
     assert await redis_links.stream.xlen("bucket-sources~123~42") == 1
-    assert {
+    assert await redis_links.stream.hgetall("attempts") == {
         b"bucket-sources~123~42": b"1",
         b"bucket-sources~123~123": b"1",
-    } == await redis_links.stream.hgetall("attempts")
+    }
 
     with time_travel("2020-01-01 22:00:35", tick=True):
         await stream_processor.consume(
@@ -960,9 +960,9 @@ async def test_stream_processor_retrying_pull(
 
     assert len(await redis_links.stream.hgetall("attempts")) == 1
     assert len(run_engine.mock_calls) == 4
-    assert {b"bucket-sources~123~42": b"2"} == await redis_links.stream.hgetall(
+    assert await redis_links.stream.hgetall(
         "attempts",
-    )
+    ) == {b"bucket-sources~123~42": b"2"}
 
     # Check nothing is retried if we replay the steram before 30s
     with time_travel("2020-01-01 22:00:58", tick=True):
@@ -980,9 +980,9 @@ async def test_stream_processor_retrying_pull(
 
     assert len(await redis_links.stream.hgetall("attempts")) == 1
     assert len(run_engine.mock_calls) == 4
-    assert {b"bucket-sources~123~42": b"2"} == await redis_links.stream.hgetall(
+    assert await redis_links.stream.hgetall(
         "attempts",
-    )
+    ) == {b"bucket-sources~123~42": b"2"}
 
     when = date.fromisoformat("2020-01-01 22:01:33")
     for _ in range(14):
@@ -1111,7 +1111,7 @@ async def test_stream_processor_retrying_stream_recovered(
         assert await redis_links.stream.xlen("bucket-sources~123~123") == 2
         assert len(await redis_links.stream.hgetall("attempts")) == 1
 
-        assert {b"bucket~123": b"1"} == await redis_links.stream.hgetall("attempts")
+        assert await redis_links.stream.hgetall("attempts") == {b"bucket~123": b"1"}
 
         run_engine.side_effect = None
 
@@ -1229,7 +1229,7 @@ async def test_stream_processor_retrying_stream_failure(
         assert len(await redis_links.stream.keys("bucket~*")) == 1
         assert len(await redis_links.stream.hgetall("attempts")) == 1
 
-        assert {b"bucket~123": b"1"} == await redis_links.stream.hgetall("attempts")
+        assert await redis_links.stream.hgetall("attempts") == {b"bucket~123": b"1"}
 
     with time_travel("2020-01-01 22:01:03", tick=True):
         await stream_processor.consume(
@@ -1238,7 +1238,7 @@ async def test_stream_processor_retrying_stream_failure(
             github_types.GitHubLogin("owner-123"),
         )
         assert len(run_engine.mock_calls) == 2
-        assert {b"bucket~123": b"2"} == await redis_links.stream.hgetall("attempts")
+        assert await redis_links.stream.hgetall("attempts") == {b"bucket~123": b"2"}
 
         await stream_processor.consume(
             stream_lua.BucketOrgKeyType("bucket~123"),

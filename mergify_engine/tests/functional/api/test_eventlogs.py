@@ -766,10 +766,10 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         await self.run_engine()
         tmp_pull = await self.wait_for_pull_request("opened")
-        assert tmp_pull["pull_request"]["number"] not in [
+        assert tmp_pull["pull_request"]["number"] not in {
             pr_1["number"],
             pr_2["number"],
-        ]
+        }
 
         # make the first PR pass the CIs
         await self.create_status(pr_1, "continuous-integration/fake-ci")
@@ -1032,10 +1032,10 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         await self.run_engine()
         tmp_pull_1 = await self.wait_for_pull_request("opened")
-        assert tmp_pull_1["pull_request"]["number"] not in [
+        assert tmp_pull_1["pull_request"]["number"] not in {
             pr_1["number"],
             pr_2["number"],
-        ]
+        }
 
         # make the first PR pass the CIs
         await self.create_status(pr_1, "continuous-integration/fake-ci")

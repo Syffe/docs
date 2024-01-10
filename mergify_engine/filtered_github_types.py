@@ -54,7 +54,7 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
             },
         )
 
-    elif event_type in ("check_suite", "check_run"):
+    elif event_type in {"check_suite", "check_run"}:
         # FIXME(sileht): GitHubEventCheckSuite/GitHubEventCheckRun looks badly typed.
         # code should use the app attributes inside check_suite/check_run.
         event["app"] = {"id": event[event_type]["app"]["id"]}

@@ -222,7 +222,7 @@ class Gitter:
                     stdout, _ = await process.communicate(
                         input=None if _input is None else _input.encode("utf8"),
                     )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 self.log(
                     "git operation timed out",
                     command=command,
@@ -247,7 +247,7 @@ class Gitter:
 
     @classmethod
     def _create_git_exception(cls, returncode: int, output: str) -> GitError:
-        if output == "" or returncode == -15:
+        if not output or returncode == -15:
             # SIGKILL...
             return GitErrorRetriableError(returncode, "Git process got killed")
 

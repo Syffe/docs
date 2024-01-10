@@ -56,9 +56,9 @@ here """
     log = logm.Log.from_content(content)
 
     with pytest.raises(ValueError, match="positive"):
-        assert log.extract(-1) == ""
+        assert not log.extract(-1)
 
-    assert log.extract(0) == ""
+    assert not log.extract(0)
     assert log.extract(1) == "e"
     assert log.extract(2) == "re"
     assert log.extract(3) == "ere"

@@ -216,13 +216,25 @@ ignore = [
     "SIM117",
     # NOTE(Greesb): contextlib.supress is slower than try-except-pass
     "SIM105",
+    # NOTE(Greesb): Import should be at the top level of the file
+    # we already have isort for this, also when we do not have an import at top level
+    # it's because of circular imports
+    "PLC0415",
+    # NOTE(Greesb): Method could be a function, classmethod or static method
+    # rule useless since we have a lot of abstraction
+    "PLR6301",
     # NOTE(Greesb): Magic value used in comparison
     # Interesting but will require a refactor, and will need to be ignored
     # in tests
     "PLR2004",
-    # NOTE(Greesb): Too many return, branches, arguments, statements, boolean expression, positional arguments.
+    # NOTE(Greesb): too many public methods
+    "PLR0904",
+    # NOTE(Greesb): Too many return, branches, arguments, local variables, statements, boolean expression, positional arguments.
     # Interesting but will require a big refactor
-    "PLR0911", "PLR0912", "PLR0913","PLR0915", "PLR0916", "PLR0917",
+    "PLR0911", "PLR0912", "PLR0913", "PLR0914", "PLR0915", "PLR0916", "PLR0917",
+    # NOTE(Greesb): custom class with __eq__ but no __hash__
+    # We don't need it
+    "PLW1641",
     # NOTE(Greesb): global variables related stuff, we need those global variables
     "PLW0602", "PLW0603",
     # NOTE(Greesb): subprocess.run without explicit check argument
@@ -245,7 +257,7 @@ ignore = [
     # NOTE(sileht): line-length is up to black
     "E501",
     # NOTE(sileht): we prefer using exc_info=True
-    "G201", "TRY200", "TRY400",
+    "G201", "TRY400",
     # NOTE(sileht): "Unnecessary parentheses on raised exception", this breaks
     # isinstance on exception
     "RSE102",
@@ -255,7 +267,7 @@ ignore = [
     # TypedDict/NamedTuple with key named like builtin, so it's useless
     "A003",
     # NOTE(sileht): This enforce usage of raise ... from ...
-    "B904",
+    "B904", "TRY200",
     # FIXME(sileht): Convert some exception -> TypeError
     "TRY004",
     # FIXME(sileht): very interresting, ruff BLE is far better that flake8-blind-except
@@ -264,12 +276,18 @@ ignore = [
     "UP040",
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint]
+preview = true
+
+[tool.ruff.lint.pylint]
+allow-dunder-method-names = ["__get_pydantic_core_schema__"]
+
+[tool.ruff.lint.isort]
 force-single-line = true
 force-sort-within-sections = true
 lines-after-imports = 2
 known-first-party = ["mergify_engine"]
 known-third-party = ["datadog"]
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"

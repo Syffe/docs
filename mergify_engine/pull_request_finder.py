@@ -65,7 +65,7 @@ class PullRequestFinder:
             data = typing.cast(github_types.GitHubEventStatus, data)
             return await self._get_pull_numbers_from_sha(repo_id, data["sha"])
 
-        if event_type in ("check_suite", "check_run"):
+        if event_type in {"check_suite", "check_run"}:
             info: github_types.GitHubCheckRun | github_types.GitHubCheckSuite
             if event_type == "check_run":
                 data = typing.cast(github_types.GitHubEventCheckRun, data)

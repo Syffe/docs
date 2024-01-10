@@ -35,10 +35,10 @@ def convert_legacy_outcome(
     outcome: merge_train.TrainCarOutcome,
 ) -> merge_train.TrainCarOutcome:
     # Has been dropped, just move back to waiting for CI until next eval
-    if outcome in (
+    if outcome in {
         train_car.TrainCarOutcome.BASE_BRANCH_PUSHED,
         train_car.TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE,
-    ):
+    }:
         # Just wait reevaluation
         outcome = merge_train.TrainCarOutcome.WAITING_FOR_CI
 

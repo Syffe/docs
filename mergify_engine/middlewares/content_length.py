@@ -53,7 +53,7 @@ class ContentLengthMiddleware:
 
         # Only these methods require a content-length, others are optional
         # https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
-        elif request.method in ("POST", "PUT", "PATCH"):
+        elif request.method in {"POST", "PUT", "PATCH"}:
             response = starlette.responses.Response(
                 status_code=status.HTTP_411_LENGTH_REQUIRED,
             )

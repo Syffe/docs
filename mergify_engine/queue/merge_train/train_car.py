@@ -118,14 +118,14 @@ class TrainCarOutcome(enum.Enum):
     )
 
     def is_mergeable_soon(self) -> bool:
-        return self in (
+        return self in {
             TrainCarOutcome.WAITING_FOR_MERGE,
             TrainCarOutcome.WAITING_FOR_UNFREEZE,
             TrainCarOutcome.WAITING_FOR_SCHEDULE,
-        )
+        }
 
     def is_failure(self) -> bool:
-        return self in (
+        return self in {
             TrainCarOutcome.CONDITIONS_FAILED,
             TrainCarOutcome.CHECKS_FAILED,
             TrainCarOutcome.BRANCH_UPDATE_FAILED,
@@ -134,15 +134,15 @@ class TrainCarOutcome(enum.Enum):
             TrainCarOutcome.DRAFT_PR_CHANGE,
             TrainCarOutcome.UPDATED_PR_CHANGE,
             TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS,
-        )
+        }
 
     def can_be_interrupted(self) -> bool:
-        return self in (
+        return self in {
             TrainCarOutcome.WAITING_FOR_CI,
             TrainCarOutcome.WAITING_FOR_SCHEDULE,
             TrainCarOutcome.WAITING_FOR_UNFREEZE,
             TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE,
-        )
+        }
 
 
 @dataclasses.dataclass
@@ -502,13 +502,13 @@ class TrainCar:
         if self.train_car_state.outcome == TrainCarOutcome.WAITING_FOR_MERGE:
             return check_api.Conclusion.SUCCESS
 
-        if self.train_car_state.outcome in (
+        if self.train_car_state.outcome in {
             TrainCarOutcome.WAITING_FOR_CI,
             TrainCarOutcome.WAITING_FOR_UNFREEZE,
             TrainCarOutcome.WAITING_FOR_SCHEDULE,
             TrainCarOutcome.UPDATED_PR_CHANGE,
             TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE,
-        ):
+        }:
             return check_api.Conclusion.PENDING
 
         if self.train_car_state.outcome.is_failure():
@@ -573,11 +573,11 @@ class TrainCar:
     async def get_pull_requests_to_evaluate(
         self,
     ) -> list[condition_value_querier.BasePullRequest]:
-        if self.train_car_state.checks_type in (
+        if self.train_car_state.checks_type in {
             TrainCarChecksType.INPLACE,
             TrainCarChecksType.DRAFT,
             TrainCarChecksType.DRAFT_DELEGATED,
-        ):
+        }:
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
                     f"car's spec checks type is {self.train_car_state.checks_type}, but queue_pull_request_number is None",
@@ -611,10 +611,10 @@ class TrainCar:
         )
 
     async def get_context_to_evaluate(self) -> context.Context | None:
-        if self.train_car_state.checks_type not in (
+        if self.train_car_state.checks_type not in {
             TrainCarChecksType.INPLACE,
             TrainCarChecksType.DRAFT,
-        ):
+        }:
             return None
 
         if self.queue_pull_request_number is None:
@@ -1115,10 +1115,10 @@ class TrainCar:
         elif queue_branch_merge_method == "fast-forward":
             if previous_car is None:
                 base_sha = self.initial_current_base_sha
-            elif previous_car.train_car_state.checks_type in (
+            elif previous_car.train_car_state.checks_type in {
                 TrainCarChecksType.INPLACE,
                 TrainCarChecksType.DRAFT,
-            ):
+            }:
                 if previous_car.queue_pull_request_number is None:
                     raise RuntimeError("previous_car without queue_pull_request_number")
                 ctxt = await self.repository.get_pull_request_context(
@@ -1463,10 +1463,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
             if ep.user_pull_request_number not in not_reembarked_pull_requests
         ]
 
-        if self.train_car_state.checks_type in (
+        if self.train_car_state.checks_type in {
             TrainCarChecksType.INPLACE,
             TrainCarChecksType.DRAFT_DELEGATED,
-        ):
+        }:
             return
 
         if self.train_car_state.checks_type == TrainCarChecksType.DRAFT:
@@ -1547,19 +1547,19 @@ You don't need to do anything. Mergify will close this pull request automaticall
         raw_unsuccessful_checks = [
             check
             for check in self.last_checks
-            if check.state not in ("success", "neutral")
+            if check.state not in {"success", "neutral"}
         ]
 
         # TODO(sileht): like we do for checks failure and related_checks,
         # we can returns related_conditions for CONDITIONS_FAILED
         if (
             self.train_car_state.outcome
-            in (
+            in {
                 TrainCarOutcome.CHECKS_TIMEOUT,
                 TrainCarOutcome.CHECKS_FAILED,
                 TrainCarOutcome.CHECKS_FAILED_LOOKING_FOR_ROOT_CAUSE,
                 TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS,
-            )
+            }
             and self.last_merge_conditions_evaluation
             and raw_unsuccessful_checks
         ):
@@ -1782,7 +1782,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             (source for source in checked_ctxt.sources),
             key=lambda s: s["event_type"] == "pull_request"
             and typing.cast(github_types.GitHubEventPullRequest, s["data"])["action"]
-            in ["closed", "reopened", "synchronize"]
+            in {"closed", "reopened", "synchronize"}
             and s["data"]["sender"]["id"] != mergify_bot["id"],
         )
         if unexpected_event:
@@ -2081,10 +2081,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
         ],
         original_pull_request_number: github_types.GitHubPullRequestNumber | None,
     ) -> None:
-        if self.train_car_state.checks_type not in (
+        if self.train_car_state.checks_type not in {
             TrainCarChecksType.DRAFT,
             TrainCarChecksType.DRAFT_DELEGATED,
-        ):
+        }:
             # NOTE(sileht): No need to refresh INPLACE checks as merge() is always
             # called after check_mergeability()
             return
@@ -2130,11 +2130,11 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def sync_ci_state_from_outcome(self) -> None:
         # Update CI state before we the outcome from conditions is overridden
-        if self.train_car_state.outcome in (
+        if self.train_car_state.outcome in {
             TrainCarOutcome.WAITING_FOR_MERGE,
             TrainCarOutcome.WAITING_FOR_SCHEDULE,
             TrainCarOutcome.WAITING_FOR_UNFREEZE,
-        ):
+        }:
             self.train_car_state.ci_state = merge_train_types.CiState.SUCCESS
             self.train_car_state.ci_ended_at = date.utcnow()
         # TODO(sileht): we should add timeout here...
@@ -2207,10 +2207,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
             if (
                 self.train_car_state.frozen_by is not None
                 and self.train_car_state.outcome
-                in (
+                in {
                     TrainCarOutcome.WAITING_FOR_MERGE,
                     TrainCarOutcome.WAITING_FOR_SCHEDULE,
-                )
+                }
             ):
                 self.train_car_state.outcome = TrainCarOutcome.WAITING_FOR_UNFREEZE
 
@@ -2256,10 +2256,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
         ):
             self.train_car_state.add_waiting_for_schedule_end_date()
 
-        if self.train_car_state.outcome_from_conditions in (
+        if self.train_car_state.outcome_from_conditions in {
             TrainCarOutcome.WAITING_FOR_CI,
             TrainCarOutcome.WAITING_FOR_SCHEDULE,
-        ):
+        }:
             queue_pull_requests = await self.get_pull_requests_to_evaluate()
             conditions_with_only_schedule = (
                 self._get_merge_conditions_with_ignored_attributes(
@@ -2320,11 +2320,11 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
 
         # Save the status of all check-runs/statuses for API/UI reporting
-        if self.train_car_state.checks_type in (
+        if self.train_car_state.checks_type in {
             TrainCarChecksType.INPLACE,
             TrainCarChecksType.DRAFT,
             TrainCarChecksType.DRAFT_DELEGATED,
-        ):
+        }:
             await self._save_check_runs()
 
     async def is_checked_head_sha_outdated(self) -> bool:
@@ -2694,11 +2694,11 @@ You don't need to do anything. Mergify will close this pull request automaticall
         )
 
     def get_checked_pull(self) -> github_types.GitHubPullRequestNumber | None:
-        if self.train_car_state.checks_type in (
+        if self.train_car_state.checks_type in {
             TrainCarChecksType.DRAFT,
             TrainCarChecksType.DRAFT_DELEGATED,
             TrainCarChecksType.INPLACE,
-        ):
+        }:
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
                     f"car's spec checks type is {self.train_car_state.checks_type}, but queue_pull_request_number is None",

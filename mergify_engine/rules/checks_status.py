@@ -76,12 +76,12 @@ async def _get_checks_result(
         live_resolvers.configure_filter(repository, f)
 
         ret = await f(pull)
-        if ret in (
+        if ret in {
             filter.UnknownOnlyAttribute,
             filter.UnknownOrTrueAttribute,
             # NOTE(sileht): Impossible since since root conditions is always an AND, but better safe than sorry
             filter.UnknownOrFalseAttribute,
-        ):
+        }:
             return check_api.Conclusion.PENDING
 
         pr_number = typing.cast(

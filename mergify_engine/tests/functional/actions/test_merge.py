@@ -288,7 +288,7 @@ class TestMergeAction(base.FunctionalTestBase):
             check["output"]["title"]
             == "Unable to merge queued pull request: GitHub App bot `mergify-test4 [bot]` can't be impersonated."
         )
-        assert check["output"]["summary"] == ""
+        assert not check["output"]["summary"]
 
     @pytest.mark.skipif(
         not settings.GITHUB_URL.startswith("https://github.com"),
@@ -834,8 +834,8 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
             conclusion="cancelled",
             name="Rule: merge on main (merge)",
         )
-        assert check_run["check_run"]["output"]["title"] in (
+        assert check_run["check_run"]["output"]["title"] in {
             merge_base.FORBIDDEN_MERGE_COMMITS_MSG,
             merge_base.FORBIDDEN_REBASE_MERGE_MSG,
             merge_base.FORBIDDEN_SQUASH_MERGE_MSG,
-        )
+        }

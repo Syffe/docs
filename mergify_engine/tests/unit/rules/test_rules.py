@@ -871,7 +871,7 @@ def test_user_configuration_schema() -> None:
         "* required key not provided @ pull_request_rules → item 0 → actions\n"
         "* required key not provided @ pull_request_rules → item 0 → conditions"
     )
-    assert [] == ir.get_annotations(".mergify.yml")
+    assert ir.get_annotations(".mergify.yml") == []
 
     with pytest.raises(voluptuous.Invalid) as i:
         rules.UserConfigurationSchema(
@@ -892,7 +892,7 @@ found undefined alias
   in "<unicode string>", line 2, column 3
 ```"""
     )
-    assert [
+    assert ir.get_annotations(".mergify.yml") == [
         {
             "annotation_level": "failure",
             "end_column": 3,
@@ -904,7 +904,7 @@ found undefined alias
             "start_line": 2,
             "title": "Invalid YAML",
         },
-    ] == ir.get_annotations(".mergify.yml")
+    ]
 
     with pytest.raises(voluptuous.Invalid) as i:
         rules.UserConfigurationSchema(

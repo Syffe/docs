@@ -39,7 +39,7 @@ def get_latest_version_number() -> str:
     }
 
     common_tags = list(docker_tags & github_action_tags)
-    common_tags.sort(key=lambda s: version_str_to_version_int_list(s))
+    common_tags.sort(key=version_str_to_version_int_list)
 
     runtime_version = get_runtime_txt_version()
     if version_str_to_version_int_list(

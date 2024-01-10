@@ -705,7 +705,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.create_command(pr["number"], "@mergifyio queue", as_="admin")
         draft_pr = await self.wait_for_pull_request("opened")
         assert queue_utils.is_merge_queue_pr(draft_pr["pull_request"])
-        assert [] == (await self.get_check_runs(draft_pr["pull_request"]))
+        assert (await self.get_check_runs(draft_pr["pull_request"])) == []
 
     async def test_pull_refreshed_after_config_change(self) -> None:
         rules = {
@@ -1032,10 +1032,10 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                 "completed",
                 name="Rule: default merge (queue)",
             )
-            assert check["check_run"]["head_sha"] in [
+            assert check["check_run"]["head_sha"] in {
                 pr_1["head"]["sha"],
                 pr_2["head"]["sha"],
-            ]
+            }
             if check["check_run"]["head_sha"] == pr_1["head"]["sha"]:
                 assert (
                     check["check_run"]["output"]["title"]

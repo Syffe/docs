@@ -152,12 +152,12 @@ class RedisSettings(pydantic_settings.BaseSettings):
         # NOTE(sileht): on legacy on-premise installation, before things were
         # auto sharded in redis databases, STREAM/QUEUE/LEGACY_CACHE/... was in
         # the same db, so keep it as-is
-        if self.STORAGE_URL and name in (
+        if self.STORAGE_URL and name in {
             "STREAM_URL",
             "QUEUE_URL",
             "ACTIVE_USERS_URL",
             "CACHE_URL",
-        ):
+        }:
             # Legacy on-premise url
             return self.STORAGE_URL
 

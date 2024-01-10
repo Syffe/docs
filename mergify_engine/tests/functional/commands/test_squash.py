@@ -22,7 +22,7 @@ class TestCommandSquash(base.FunctionalTestBase):
         for i in range(3):
             (self.git.repository / f"file{i}").open("wb").close()
             await self.git("add", f"file{i}")
-            await self.git("commit", "--no-edit", "-m", f"feat(): add file{i+1}")
+            await self.git("commit", "--no-edit", "-m", f"feat(): add file{i + 1}")
 
         await self.git("push", "--quiet", "fork", branch_name)
 
@@ -257,7 +257,7 @@ Awesome body
         for i in range(3):
             (self.git.repository / f"file{i}").open("wb").close()
             await self.git("add", f"file{i}")
-            await self.git("commit", "--no-edit", "-m", f"feat(): add file{i+1}")
+            await self.git("commit", "--no-edit", "-m", f"feat(): add file{i + 1}")
 
         await self.git("push", "--quiet", "origin", branch_name)
         await self.wait_for_push(branch_name=branch_name)

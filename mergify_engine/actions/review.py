@@ -191,7 +191,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
             signals.EventReviewMetadata(
                 {
                     "review_type": self.config["type"],
-                    "reviewer": (review["user"] and review["user"]["login"]) or None,
+                    "reviewer": review["user"]["login"] if review["user"] else None,
                     "message": payload.get("body"),
                 },
             ),

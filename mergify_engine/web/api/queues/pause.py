@@ -68,7 +68,7 @@ async def create_queue_pause(
     authentication_actor: security.AuthenticatedActor,
     repository_ctxt: security.RepositoryWithConfig,
 ) -> QueuePauseResponse:
-    if queue_pause_payload.reason == "":
+    if not queue_pause_payload.reason:
         queue_pause_payload.reason = "No pause reason was specified."
 
     queue_pause = await pause.QueuePause.get(repository_ctxt)

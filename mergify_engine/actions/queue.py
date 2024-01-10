@@ -272,10 +272,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
         car = cars[0]
         if car.train_car_state.checks_type == merge_train.TrainCarChecksType.INPLACE:
             newsha = self.ctxt.pull["head"]["sha"]
-        elif car.train_car_state.checks_type in (
+        elif car.train_car_state.checks_type in {
             merge_train.TrainCarChecksType.DRAFT,
             merge_train.TrainCarChecksType.DRAFT_DELEGATED,
-        ):
+        }:
             if car.queue_pull_request_number is None:
                 raise RuntimeError(
                     f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None",
@@ -429,11 +429,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _can_be_reembarked_automatically(self) -> bool:
         # FIXME(sileht): relies on delete_reason and outcome instead of guessing
         check = await self.ctxt.get_merge_queue_check_run()
-        if check is None or check_api.Conclusion(check["conclusion"]) in (
+        if check is None or check_api.Conclusion(check["conclusion"]) in {
             check_api.Conclusion.SUCCESS,
             check_api.Conclusion.PENDING,
             check_api.Conclusion.NEUTRAL,
-        ):
+        }:
             return False
 
         reason = await action_utils.get_dequeue_reason(self.ctxt, False)
@@ -972,11 +972,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
     ) -> bool:
         # FIXME(sileht): relies on delete_reason and outcome instead of guessing
         check = await ctxt.get_merge_queue_check_run()
-        return not check or check_api.Conclusion(check["conclusion"]) in [
+        return not check or check_api.Conclusion(check["conclusion"]) in {
             check_api.Conclusion.SUCCESS,
             check_api.Conclusion.PENDING,
             check_api.Conclusion.NEUTRAL,
-        ]
+        }
 
     @staticmethod
     async def _should_be_merged(
@@ -1299,11 +1299,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
         # check and the method _should_be_queued will become true again :)
         # FIXME(sileht): relies on delete_reason and outcome instead of guessing
         check = await self.ctxt.get_merge_queue_check_run()
-        if check and check_api.Conclusion(check["conclusion"]) not in [
+        if check and check_api.Conclusion(check["conclusion"]) not in {
             check_api.Conclusion.SUCCESS,
             check_api.Conclusion.PENDING,
             check_api.Conclusion.NEUTRAL,
-        ]:
+        }:
             await check_api.set_check_run(
                 self.ctxt,
                 check["name"],

@@ -282,7 +282,7 @@ async def get_installation_from_login(
 
 
 def _check_rate_limit(client: http.AsyncClient, response: httpx.Response) -> None:
-    if response.status_code not in (403, 422, 429) or (
+    if response.status_code not in {403, 422, 429} or (
         response.status_code == 422
         and (
             "errors" not in response.json()

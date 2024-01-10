@@ -376,7 +376,7 @@ def sample_ci_events_to_process(
     ci_events = {}
 
     for filename, (event_type, event) in sample_events.items():
-        if event_type in ("workflow_run", "workflow_job"):
+        if event_type in {"workflow_run", "workflow_job"}:
             ci_events[filename] = filtered_github_types.extract(
                 event_type,
                 "",

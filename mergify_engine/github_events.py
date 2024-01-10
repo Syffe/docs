@@ -121,13 +121,13 @@ async def clean_and_fill_caches(
 ) -> None:
     if event_type == "pull_request":
         event = typing.cast(github_types.GitHubEventPullRequest, event)
-        if event["action"] in ("opened", "synchronize", "edited", "closed", "reopened"):
+        if event["action"] in {"opened", "synchronize", "edited", "closed", "reopened"}:
             await pull_request_finder.PullRequestFinder.sync(
                 redis_links.cache,
                 event["pull_request"],
             )
 
-        if event["action"] in ("opened", "edited"):
+        if event["action"] in {"opened", "edited"}:
             await context.Repository.cache_pull_request_title(
                 redis_links.cache,
                 event["repository"]["id"],
@@ -137,7 +137,7 @@ async def clean_and_fill_caches(
 
     elif event_type == "repository":
         event = typing.cast(github_types.GitHubEventRepository, event)
-        if event["action"] in ("edited", "deleted"):
+        if event["action"] in {"edited", "deleted"}:
             await context.Repository.clear_config_file_cache(
                 redis_links.cache,
                 event["repository"]["id"],
@@ -189,7 +189,7 @@ async def clean_and_fill_caches(
                 event["organization"],
             )
 
-        if event["action"] in ("deleted", "member_added", "member_removed"):
+        if event["action"] in {"deleted", "member_added", "member_removed"}:
             await context.Repository.clear_user_permission_cache_for_org(
                 redis_links.user_permissions_cache,
                 event["organization"],
@@ -254,7 +254,7 @@ async def clean_and_fill_caches(
 
     elif event_type == "team":
         event = typing.cast(github_types.GitHubEventTeam, event)
-        if event["action"] in ("edited", "deleted"):
+        if event["action"] in {"edited", "deleted"}:
             await context.Installation.clear_team_members_cache_for_team(
                 redis_links.team_members_cache,
                 event["organization"],
@@ -266,12 +266,12 @@ async def clean_and_fill_caches(
                 event["team"]["slug"],
             )
 
-        if event["action"] in (
+        if event["action"] in {
             "edited",
             "added_to_repository",
             "removed_from_repository",
             "deleted",
-        ):
+        }:
             if "repository" in event and event["repository"] is not None:
                 await context.Repository.clear_user_permission_cache_for_repo(
                     redis_links.user_permissions_cache,
@@ -315,7 +315,7 @@ async def event_preprocessing(
 ) -> None:
     if event_type == "pull_request":
         event = typing.cast(github_types.GitHubEventPullRequest, event)
-        if event["action"] in ("opened", "synchronize"):
+        if event["action"] in {"opened", "synchronize"}:
             background_tasks.add_task(
                 engine.create_initial_summary,
                 redis_links.cache,
@@ -373,7 +373,7 @@ async def event_classifier(
     mergify_bot: github_types.GitHubAccount,
 ) -> EventToRoute:
     # NOTE(sileht): those events are only used by synack or cache cleanup/feed
-    if event_type in (
+    if event_type in {
         "installation",
         "installation_repositories",
         "member",
@@ -383,7 +383,7 @@ async def event_classifier(
         "team",
         "team_add",
         "workflow_run",
-    ):
+    }:
         raise IgnoredEventError(f"{event_type} event")
 
     if "repository" in event:
@@ -466,7 +466,7 @@ async def event_classifier(
         if "pull_request" not in event["issue"]:
             raise IgnoredEventError("comment is not on a pull request")
 
-        if event["action"] not in ("created", "edited"):
+        if event["action"] not in {"created", "edited"}:
             raise IgnoredEventError(f"comment action is '{event['action']}'")
 
         if (

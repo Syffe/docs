@@ -142,13 +142,13 @@ def _setup_logging(
         messages = [
             rec.getMessage()
             for rec in caplog.get_records(when)
-            if rec.levelname in ("CRITICAL", "ERROR")
+            if rec.levelname in {"CRITICAL", "ERROR"}
             # FIXME(sileht): redis/asyncio bug
             # https://github.com/redis/redis-py/issues/2749
             and "coro=<Connection.disconnect() done" not in rec.getMessage()
             and rec.getMessage() not in ignored_logs
         ]
-        assert [] == messages
+        assert messages == []
 
 
 @pytest.fixture(autouse=True, scope="session")

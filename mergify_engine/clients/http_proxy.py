@@ -41,7 +41,7 @@ async def override_or_raise_unexpected_content_type(
     if (
         300 <= response.status_code < 400
         or response.status_code >= 500
-        or response.status_code in (202, 204, 401, 403)
+        or response.status_code in {202, 204, 401, 403}
     ):
         return
 

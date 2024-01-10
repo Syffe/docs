@@ -389,7 +389,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         cond: dict[str, typing.Any] = {op: ("current-datetime", parse_schedule(value))}
         return _to_dict(False, False, attribute, "@", cond)
 
-    if parser in (Parser.TIMESTAMP, Parser.TIMESTAMP_OR_TIMEDELTA):
+    if parser in {Parser.TIMESTAMP, Parser.TIMESTAMP_OR_TIMEDELTA}:
         value = _unquote(value)
         if parser == Parser.TIMESTAMP_OR_TIMEDELTA:
             try:
@@ -417,10 +417,10 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             raise ConditionParsingError("Invalid operator")
         return _to_dict(False, False, attribute, op, d)
 
-    if parser in (
+    if parser in {
         Parser.NUMBER,
         Parser.POSITIVE_NUMBER,
-    ):
+    }:
         try:
             number = int(value)
         except ValueError:
@@ -430,13 +430,13 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             raise ConditionParsingError("Value must be positive")
         return _to_dict(negate, False, attribute, op, number)
 
-    if parser in (
+    if parser in {
         Parser.BRANCH,
         Parser.ENUM,
         Parser.LOGIN_AND_TEAMS,
         Parser.TEXT,
         Parser.WORD,
-    ):
+    }:
         if (
             parser == Parser.LOGIN_AND_TEAMS
             and is_github_team_name(value)

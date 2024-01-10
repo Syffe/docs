@@ -148,11 +148,11 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
             except live_resolvers.LiveResolutionFailureError:
                 return False
 
-            if ret in (
+            if ret in {
                 True,
                 filter.UnknownOnlyAttribute,
                 filter.UnknownOrTrueAttribute,
-            ):
+            }:
                 return False
 
         return True

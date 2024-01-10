@@ -163,7 +163,7 @@ def to_ordinal_numeric(number: int) -> str:
     if number < 0:
         raise ValueError("number must be positive")
     last = number % 100
-    if last in (11, 12, 13):
+    if last in {11, 12, 13}:
         suffix = "th"
     else:
         last = number % 10
@@ -220,10 +220,10 @@ def serialize_hidden_payload(json_payload: MergifyHiddenPayload) -> str:
 
 
 def strtobool(string: str) -> bool:
-    if string.lower() in ("y", "yes", "t", "true", "on", "1"):
+    if string.lower() in {"y", "yes", "t", "true", "on", "1"}:
         return True
 
-    if string.lower() in ("n", "no", "f", "false", "off", "0"):
+    if string.lower() in {"n", "no", "f", "false", "off", "0"}:
         return False
 
     raise ValueError(f"Could not convert '{string}' to boolean")
@@ -280,7 +280,7 @@ def github_url_parser(
     github_types.GitHubPullRequestNumber | None,
     github_types.GitHubRefType | None,
 ]:
-    path = [el for el in urllib.parse.urlparse(url).path.split("/") if el != ""]
+    path = [el for el in urllib.parse.urlparse(url).path.split("/") if el]
 
     pull_number: str | None
     branch: str | None

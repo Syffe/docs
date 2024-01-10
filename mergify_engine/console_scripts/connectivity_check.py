@@ -23,7 +23,7 @@ async def _check_connectivity_of(name: str, verbose: bool) -> abc.AsyncIterator[
     try:
         async with asyncio.timeout(TIMEOUT):
             yield
-    except asyncio.TimeoutError:
+    except TimeoutError:
         click.secho("connection timed out", fg="red")
     except Exception as e:
         click.secho("failed to connect", fg="red")

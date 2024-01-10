@@ -378,7 +378,7 @@ class EventReader:
 
     async def _process_event(self, event: typing.Any) -> None:
         payload = event["payload"]
-        if event["type"] in ["check_run", "check_suite"]:
+        if event["type"] in {"check_run", "check_suite"}:
             extra = (
                 f"/{payload[event['type']].get('status')}"
                 f"/{payload[event['type']].get('conclusion')}"

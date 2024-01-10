@@ -57,10 +57,10 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
         branch = self.get_full_branch_name(f"integration/pr{self.pr_counter}")
         await self.create_review(p["number"], "APPROVE")
 
-        assert [("APPROVED", "mergify-test1")] == [
+        assert [
             (r["state"], r["user"] and r["user"]["login"])
             for r in await self.get_reviews(p["number"])
-        ]
+        ] == [("APPROVED", "mergify-test1")]
 
         await self._push_for_synchronize(branch)
         await self.wait_for_pull_request("synchronize")
@@ -121,10 +121,10 @@ Unknown pull request attribute: Loser
         p = await self.create_pr()
         await self.create_review(p["number"], "APPROVE")
 
-        assert [("APPROVED", "mergify-test1")] == [
+        assert [
             (r["state"], r["user"] and r["user"]["login"])
             for r in await self.get_reviews(p["number"])
-        ]
+        ] == [("APPROVED", "mergify-test1")]
 
         await self._push_for_synchronize(p["head"]["ref"])
         await self.wait_for_pull_request("synchronize")
@@ -132,19 +132,19 @@ Unknown pull request attribute: Loser
         await self.run_engine()
         await self.wait_for_pull_request_review(action="dismissed")
 
-        assert [("DISMISSED", "mergify-test1")] == [
+        assert [
             (r["state"], r["user"] and r["user"]["login"])
             for r in await self.get_reviews(p["number"])
-        ]
+        ] == [("DISMISSED", "mergify-test1")]
 
         await self.create_review(p["number"], "REQUEST_CHANGES")
 
         assert [
-            ("DISMISSED", "mergify-test1"),
-            ("CHANGES_REQUESTED", "mergify-test1"),
-        ] == [
             (r["state"], r["user"] and r["user"]["login"])
             for r in await self.get_reviews(p["number"])
+        ] == [
+            ("DISMISSED", "mergify-test1"),
+            ("CHANGES_REQUESTED", "mergify-test1"),
         ]
 
         await self._push_for_synchronize(p["head"]["ref"], "unwanted_changes2")
@@ -154,10 +154,10 @@ Unknown pull request attribute: Loser
         await self.wait_for_pull_request_review(action="dismissed")
 
         # There's no way to retrieve the dismiss message :(
-        assert [("DISMISSED", "mergify-test1"), ("DISMISSED", "mergify-test1")] == [
+        assert [
             (r["state"], r["user"] and r["user"]["login"])
             for r in await self.get_reviews(p["number"])
-        ]
+        ] == [("DISMISSED", "mergify-test1"), ("DISMISSED", "mergify-test1")]
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/logs?pull_request={p['number']}",
@@ -214,10 +214,10 @@ Unknown pull request attribute: Loser
         p = await self.create_pr()
         await self.create_review(p["number"], "APPROVE")
 
-        assert [("APPROVED", "mergify-test1")] == [
+        assert [
             (r["state"], r["user"] and r["user"]["login"])
             for r in await self.get_reviews(p["number"])
-        ]
+        ] == [("APPROVED", "mergify-test1")]
 
         # Move base branch
         await self.git("checkout", self.main_branch_name)
@@ -228,10 +228,10 @@ Unknown pull request attribute: Loser
         await self.run_engine()
 
         # Ensure review have not been dismiss
-        assert [("APPROVED", "mergify-test1")] == [
+        assert [
             (r["state"], r["user"] and r["user"]["login"])
             for r in await self.get_reviews(p["number"])
-        ]
+        ] == [("APPROVED", "mergify-test1")]
 
     async def test_dismiss_reviews_from_requested_reviewers(self) -> None:
         rules = {
@@ -258,18 +258,18 @@ Unknown pull request attribute: Loser
             oauth_token=settings.TESTING_ORG_USER_PERSONAL_TOKEN,
         )
 
-        assert [("APPROVED", "mergify-test1"), ("APPROVED", "mergify-test4")] == [
+        assert [
             (r["state"], r["user"] and r["user"]["login"])
             for r in await self.get_reviews(p["number"])
-        ]
+        ] == [("APPROVED", "mergify-test1"), ("APPROVED", "mergify-test4")]
         await self.create_review_request(p["number"], ["mergify-test1"])
         await self.run_engine()
 
         # Ensure review have been dismiss
-        assert [("DISMISSED", "mergify-test1"), ("APPROVED", "mergify-test4")] == [
+        assert [
             (r["state"], r["user"] and r["user"]["login"])
             for r in await self.get_reviews(p["number"])
-        ]
+        ] == [("DISMISSED", "mergify-test1"), ("APPROVED", "mergify-test4")]
 
     @pytest.mark.skipif(
         not settings.TESTING_RECORD,
@@ -299,7 +299,7 @@ Unknown pull request attribute: Loser
             await self.wait_for_pull_request_review(action="submitted")
             await self.run_engine()
 
-            assert [("APPROVED", "mergify-test1")] == [
+            assert [
                 (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
-            ]
+            ] == [("APPROVED", "mergify-test1")]

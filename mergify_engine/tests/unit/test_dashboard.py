@@ -55,10 +55,10 @@ async def test_get_queues_url_from_context(
         [partr_config.PartitionRuleName("projectA")],
         "",
     )
-    assert ["projectA", "projectB"] == [
+    assert [
         epwt.train.partition_name
         for epwt in await fake_convoy.find_embarked_pull_with_train(ctxt.pull["number"])
-    ]
+    ] == ["projectA", "projectB"]
     assert (
         await dashboard.get_queues_url_from_context(ctxt, fake_convoy)
         == f"{settings.DASHBOARD_UI_FRONT_URL}/github/Mergifyio/repo/mergify-engine/queues/partitions/projectA?branch=main&queues=default&pull=42"

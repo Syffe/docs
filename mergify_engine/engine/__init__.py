@@ -56,10 +56,10 @@ async def _check_configuration_changes(
     # If we don't have the real summary yet it means the pull request has just
     # been open or synchronize or we never see it.
     summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
-    if summary and summary["output"]["title"] not in (
+    if summary and summary["output"]["title"] not in {
         constants.INITIAL_SUMMARY_TITLE,
         constants.CONFIGURATION_MUTIPLE_FOUND_SUMMARY_TITLE,
-    ):
+    }:
         if await ctxt.get_engine_check_run(constants.CONFIGURATION_CHANGED_CHECK_NAME):
             return True
         if await ctxt.get_engine_check_run(constants.CONFIGURATION_DELETED_CHECK_NAME):
@@ -74,7 +74,7 @@ async def _check_configuration_changes(
         f
         for f in await ctxt.files
         if f["filename"] in constants.MERGIFY_CONFIG_FILENAMES
-        and f["status"] not in ("removed", "unchanged")
+        and f["status"] not in {"removed", "unchanged"}
     ]
 
     deleted_config_files = [
@@ -274,7 +274,7 @@ async def _ensure_summary_on_head_sha(ctxt: context.Context) -> None:
     # Sync only if the external_id is the expected one
     if previous_summary and (
         previous_summary["external_id"] is None
-        or previous_summary["external_id"] == ""
+        or not previous_summary["external_id"]
         or previous_summary["external_id"] == str(ctxt.pull["number"])
     ):
         await ctxt.set_summary_check(
@@ -298,7 +298,7 @@ async def get_context_with_sha_collision(
     if not (
         summary
         and summary["external_id"] is not None
-        and summary["external_id"] != ""
+        and summary["external_id"]
         and summary["external_id"] != str(ctxt.pull["number"])
     ):
         return None
@@ -435,7 +435,7 @@ async def run(
         for s in ctxt.sources:
             if s["event_type"] == "pull_request":
                 event = typing.cast(github_types.GitHubEventPullRequest, s["data"])
-                if event["action"] in ("opened", "synchronize"):
+                if event["action"] in {"opened", "synchronize"}:
                     return check_api.Result(
                         check_api.Conclusion.FAILURE,
                         title="The current Mergify configuration is invalid",

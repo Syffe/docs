@@ -53,20 +53,20 @@ def test_defaults(
     assert conf.GITHUB_OAUTH_CLIENT_SECRET.get_secret_value() == "secret"
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is None
-    assert [] == conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES
+    assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == []
     assert conf.GITHUB_WEBHOOK_FORWARD_URL is None
     assert conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None
     assert conf.DASHBOARD_UI_FRONT_URL == "http://localhost:3000"
-    assert [] == conf.DASHBOARD_UI_FEATURES
+    assert conf.DASHBOARD_UI_FEATURES == []
     assert conf.DASHBOARD_UI_SESSION_EXPIRATION_HOURS == 24
     assert conf.DASHBOARD_UI_DATADOG_CLIENT_TOKEN is None
-    assert [] == conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO
+    assert conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO == []
     assert conf.LOG_LEVEL == logging.INFO
     assert conf.LOG_STDOUT
     assert conf.LOG_STDOUT_LEVEL is None
     assert conf.LOG_DATADOG is False
     assert conf.LOG_DATADOG_LEVEL is None
-    assert [] == conf.LOG_DEBUG_LOGGER_NAMES
+    assert conf.LOG_DEBUG_LOGGER_NAMES == []
     assert conf.SENTRY_URL is None
     assert conf.SENTRY_ENVIRONMENT == "test"
 
@@ -81,8 +81,8 @@ def test_defaults(
     assert conf.SUBSCRIPTION_URL == "https://subscription.mergify.com"
     assert conf.SHADOW_OFFICE_TO_ENGINE_API_KEY.get_secret_value()
     assert conf.SHADOW_OFFICE_TO_ENGINE_API_KEY_PRE_ROTATION is None
-    assert [] == conf.ACCOUNT_TOKENS
-    assert {} == conf.APPLICATION_APIKEYS
+    assert conf.ACCOUNT_TOKENS == []
+    assert conf.APPLICATION_APIKEYS == {}
 
     assert conf.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value() == "crypto-secret"
     assert conf.REDIS_CRYPTO_SECRET_OLD is None
@@ -214,7 +214,7 @@ def test_all_sets(
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret2"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value() == "secret3"
-    assert ["foo", "bar", "yo"] == conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES
+    assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == ["foo", "bar", "yo"]
     assert conf.GITHUB_WEBHOOK_FORWARD_URL == "https://sub.example.com/events"
     assert {"web": 2, "worker": 3, "foobar": 6} == conf.DATABASE_POOL_SIZES
     assert conf.DATABASE_OAUTH_TOKEN_SECRET_CURRENT.get_secret_value() == "secret2"
@@ -222,15 +222,15 @@ def test_all_sets(
     assert conf.DATABASE_OAUTH_TOKEN_SECRET_OLD.get_secret_value() == "secret3"
     assert tmpdir == conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY
     assert conf.DASHBOARD_UI_FRONT_URL == "https://dashboard.mergify.com"
-    assert [
+    assert conf.DASHBOARD_UI_FEATURES == [
         "subscriptions",
         "applications",
         "intercom",
         "statuspage",
-    ] == conf.DASHBOARD_UI_FEATURES
+    ]
     assert conf.DASHBOARD_UI_SESSION_EXPIRATION_HOURS == 100
     assert conf.DASHBOARD_UI_DATADOG_CLIENT_TOKEN == "no-secret"
-    assert [1234, 5432] == conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO
+    assert conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO == [1234, 5432]
     assert conf.LOG_LEVEL == logging.DEBUG
     assert conf.LOG_STDOUT is False
     assert conf.LOG_STDOUT_LEVEL == logging.CRITICAL
@@ -240,7 +240,7 @@ def test_all_sets(
     assert conf.LOG_DATADOG.host == "localhost"
     assert conf.LOG_DATADOG.port == 8080
     assert conf.LOG_DATADOG_LEVEL == logging.WARNING
-    assert ["foo", "bar", "yo"] == conf.LOG_DEBUG_LOGGER_NAMES
+    assert conf.LOG_DEBUG_LOGGER_NAMES == ["foo", "bar", "yo"]
 
     assert conf.SHARED_STREAM_PROCESSES == 2
     assert conf.DEDICATED_STREAM_PROCESSES == 3
@@ -297,7 +297,7 @@ def test_all_sets(
     assert conf.REDIS_SSL_VERIFY_MODE_CERT_NONE is True
     assert conf.VERSION == "3.1"
     assert conf.SHA == "f8c4fe06d56cd89cbe48975aa8507d479d881bdc"
-    assert ["Mergifyio"] == conf.LOG_EMBEDDER_ENABLED_ORGS
+    assert conf.LOG_EMBEDDER_ENABLED_ORGS == ["Mergifyio"]
 
 
 def test_legacy_env_sets(
@@ -341,7 +341,7 @@ def test_legacy_env_sets(
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret4"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value() == "secret5"
-    assert ["foo", "bar", "yo"] == conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES
+    assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == ["foo", "bar", "yo"]
     assert conf.GITHUB_WEBHOOK_FORWARD_URL == "https://sub.example.com/events"
     assert conf.GITHUB_APP_ID == 12345
     assert conf.GITHUB_PRIVATE_KEY.get_secret_value() == "hello world"

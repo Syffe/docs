@@ -27,11 +27,11 @@ async def test_convoy_add_pull_1_partition_rule(
     )
     await convoy.refresh_trains()
 
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[123]]),
         ("projectB", []),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
     await convoy.add_pull(
         await context_getter(456),
@@ -41,11 +41,11 @@ async def test_convoy_add_pull_1_partition_rule(
     )
     await convoy.refresh_trains()
 
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[123]]),
         ("projectB", [[456]]),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
 
 async def test_convoy_add_pull_multiple_partition_rules(
@@ -69,11 +69,11 @@ async def test_convoy_add_pull_multiple_partition_rules(
     )
     await convoy.refresh_trains()
 
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[123]]),
         ("projectB", [[123]]),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
     await convoy.add_pull(
         await context_getter(456),
@@ -86,11 +86,11 @@ async def test_convoy_add_pull_multiple_partition_rules(
     )
     await convoy.refresh_trains()
 
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[123]]),
         ("projectB", [[123], [123, 456]]),
         ("projectC", [[456]]),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
 
 async def tests_convoy_remove_middle_not_merged_1_partition(
@@ -110,11 +110,11 @@ async def tests_convoy_remove_middle_not_merged_1_partition(
 
     await convoy.refresh_trains()
 
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[1], [1, 2], [1, 2, 3]]),
         ("projectB", []),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
     # Merged by someone else
     await convoy.remove_pull(
@@ -124,11 +124,11 @@ async def tests_convoy_remove_middle_not_merged_1_partition(
     )
     await convoy.refresh_trains()
 
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[1], [1, 3]]),
         ("projectB", []),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
 
 async def tests_convoy_remove_middle_not_merged_multiple_partitions(
@@ -152,11 +152,11 @@ async def tests_convoy_remove_middle_not_merged_multiple_partitions(
 
     await convoy.refresh_trains()
 
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[1], [1, 2], [1, 2, 3]]),
         ("projectB", [[1], [1, 2]]),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
     # Merged by someone else
     await convoy.remove_pull(
@@ -166,11 +166,11 @@ async def tests_convoy_remove_middle_not_merged_multiple_partitions(
     )
     await convoy.refresh_trains()
 
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[1], [1, 3]]),
         ("projectB", [[1]]),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
 
 async def test_convoy_remove_head_merged_1_partition(
@@ -190,11 +190,11 @@ async def test_convoy_remove_head_merged_1_partition(
     await convoy.add_pull(await context_getter(3), config, partition_rules_a, "")
 
     await convoy.refresh_trains()
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[1], [1, 2], [1, 2, 3]]),
         ("projectB", []),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
     await convoy.remove_pull(
         github_types.GitHubPullRequestNumber(1),
@@ -204,11 +204,11 @@ async def test_convoy_remove_head_merged_1_partition(
 
     await convoy.refresh_trains()
 
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[1, 2], [1, 2, 3]]),
         ("projectB", []),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
 
 async def test_convoy_remove_head_merged_multiple_partitions(
@@ -232,11 +232,11 @@ async def test_convoy_remove_head_merged_multiple_partitions(
     await convoy.add_pull(await context_getter(3), config, partition_rules_ab, "")
 
     await convoy.refresh_trains()
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[1], [1, 2], [1, 2, 3]]),
         ("projectB", [[1], [1, 3]]),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]
 
     await convoy.remove_pull(
         github_types.GitHubPullRequestNumber(1),
@@ -246,8 +246,8 @@ async def test_convoy_remove_head_merged_multiple_partitions(
 
     await convoy.refresh_trains()
 
-    assert [
+    assert mt_conftest.get_convoy_train_cars_content(convoy) == [
         ("projectA", [[1, 2], [1, 2, 3]]),
         ("projectB", [[1, 3]]),
         ("projectC", []),
-    ] == mt_conftest.get_convoy_train_cars_content(convoy)
+    ]

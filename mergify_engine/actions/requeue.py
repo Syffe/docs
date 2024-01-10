@@ -51,11 +51,11 @@ class RequeueExecutor(
                 summary="",
             )
 
-        if check_api.Conclusion(previous_queue_check["conclusion"]) in [
+        if check_api.Conclusion(previous_queue_check["conclusion"]) in {
             check_api.Conclusion.SUCCESS,
             check_api.Conclusion.NEUTRAL,
             check_api.Conclusion.PENDING,
-        ]:
+        }:
             return check_api.Result(
                 check_api.Conclusion.NEUTRAL,
                 title="This pull request is already queued",

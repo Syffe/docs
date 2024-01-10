@@ -1855,7 +1855,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         await self.run_engine()
 
         draft_pr = await self.wait_for_pull_request("opened")
-        assert draft_pr["number"] not in [p1["number"], p2["number"]]
+        assert draft_pr["number"] not in {p1["number"], p2["number"]}
 
         await self._create_queue_freeze(
             queue_name="default",

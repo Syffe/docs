@@ -341,7 +341,7 @@ async def send_report(seats: SeatsCountResult) -> None:
                     "engine_version": settings.VERSION,
                 },
                 extensions={
-                    "retry": lambda response: response.status_code in [401, 403],
+                    "retry": lambda response: response.status_code in {401, 403},
                 },
             )
         except Exception as exc:

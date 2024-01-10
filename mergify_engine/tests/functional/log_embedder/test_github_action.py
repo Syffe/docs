@@ -445,7 +445,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 "run": "echo toto",
             },
         ]
-        job_event, pr = await self.run_github_action(steps=steps)
+        job_event, _pr = await self.run_github_action(steps=steps)
 
         assert job_event["workflow_job"] is not None
 

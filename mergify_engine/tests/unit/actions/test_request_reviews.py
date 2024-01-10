@@ -232,6 +232,6 @@ async def test_team_permissions_ok(
     ctxt.repository.installation.client = client
     await action.load_context(ctxt, mock.Mock())
     result = await action.executor.run()
-    assert result.summary == ""
+    assert not result.summary
     assert result.title == "No new reviewers to request"
     assert result.conclusion == check_api.Conclusion.SUCCESS

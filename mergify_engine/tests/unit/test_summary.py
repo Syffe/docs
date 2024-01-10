@@ -365,7 +365,7 @@ async def test_rule_condition_negation_summary() -> None:
     - [ ] `base=main`
     - [ ] `label=foo`"""
     assert pr_conditions.get_summary() == expected_summary
-    assert pr_conditions.get_unmatched_summary() == ""
+    assert not pr_conditions.get_unmatched_summary()
 
 
 def create_queue_rule_conditions(

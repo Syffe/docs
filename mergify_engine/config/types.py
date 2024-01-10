@@ -79,7 +79,7 @@ class NormalizedUrl(str):
                 ],
             ),
             serialization=pydantic_core.core_schema.plain_serializer_function_ser_schema(
-                lambda instance: str(instance),
+                str,
             ),
         )
 
@@ -216,13 +216,13 @@ class RedisDSN(SecretUrl):
 
 
 def parse_loglevel_aliases(value: str | int) -> str | int:
-    if isinstance(value, str) and value.upper() in (
+    if isinstance(value, str) and value.upper() in {
         "CRITICAL",
         "ERROR",
         "WARNING",
         "INFO",
         "DEBUG",
-    ):
+    }:
         return int(getattr(logging, value.upper()))
     return int(value)
 

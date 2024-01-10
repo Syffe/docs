@@ -17,7 +17,7 @@ from mergify_engine.rules.config import mergify as mergify_conf
 @click.argument("url", required=True)
 async def merge_queue_reset(cli_ctxt: click.Context, url: str) -> None:
     try:
-        owner_login, repo, pull_number, _ = utils.github_url_parser(url)
+        owner_login, repo, _, _ = utils.github_url_parser(url)
     except ValueError:
         cli_ctxt.fail(f"{url} is not valid")
 
