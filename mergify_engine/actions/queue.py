@@ -32,6 +32,7 @@ from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import pause
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.queue.merge_train import train_car_state as tcs
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
@@ -436,7 +437,19 @@ Then, re-embark the pull request into the merge queue by posting the comment
         }:
             return False
 
-        reason = await action_utils.get_dequeue_reason(self.ctxt, False)
+        train_car_state = tcs.TrainCarStateForSummary.deserialize_from_summary(check)
+        if train_car_state is None:
+            return False
+
+        if not train_car_state.delete_reasons:
+            return False
+
+        reason = train_car_state.delete_reasons.get(self.ctxt.pull["number"])
+        if reason is None:
+            # The pull request has the same head sha as another already closed pull request, so
+            # allow to reembark it automatically
+            return True
+
         if isinstance(reason, queue_utils.PrDequeued):
             # FIXME(sileht): we need dedicated BaseDequeueReason for all these special cases
             if reason.is_dequeue_command():

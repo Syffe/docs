@@ -1155,65 +1155,66 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         else:
             await self.git("checkout", "--quiet", f"origin/{base}", "-b", branch)
 
-        await self._git_create_files(files)
+        if files:
+            await self._git_create_files(files)
 
-        args_commit = ["commit", "--no-edit", "-m", commit_headline]
-        if commit_body is not None:
-            args_commit += ["-m", commit_body]
-        if commit_author is not None:
-            args_commit += ["--author", commit_author]
-
-        tmp_kwargs = {}
-        if commit_date is not None:
-            tmp_kwargs["_env"] = {"GIT_COMMITTER_DATE": commit_date.isoformat()}
-
-        if verified:
-            temporary_folder = tempfile.mkdtemp()
-            tmp_env = {"GNUPGHOME": temporary_folder}
-            self.addCleanup(shutil.rmtree, temporary_folder)
-            subprocess.run(
-                ["gpg", "--import"],
-                input=settings.TESTING_GPG_SECRET_KEY.encode(),
-                env=self.git.prepare_safe_env(tmp_env),
-            )
-            await self.git(
-                "config",
-                "user.signingkey",
-                settings.TESTING_GPG_SECRET_KEY_ID,
-            )
-            await self.git(
-                "config",
-                "user.email",
-                "engineering+mergify-test@mergify.com",
-            )
-            args_commit.append("-S")
-            tmp_kwargs.setdefault("_env", {})
-            tmp_kwargs["_env"].update(tmp_env)
-
-        await self.git(*args_commit, **tmp_kwargs)
-
-        if two_commits:
-            if not files:
-                filename = f"test{self.pr_counter}"
-            else:
-                first_file = first(files.keys())
-                assert isinstance(first_file, str)
-                filename = first_file
-
-            await self.git("mv", filename, f"{filename}-moved")
-
-            args_second_commit = [
-                "commit",
-                "--no-edit",
-                "-m",
-                f"{commit_headline}, moved",
-            ]
+            args_commit = ["commit", "--no-edit", "-m", commit_headline]
             if commit_body is not None:
-                args_second_commit += ["-m", commit_body]
-            if verified:
-                args_second_commit.append("-S")
+                args_commit += ["-m", commit_body]
+            if commit_author is not None:
+                args_commit += ["--author", commit_author]
 
-            await self.git(*args_second_commit, **tmp_kwargs)
+            tmp_kwargs = {}
+            if commit_date is not None:
+                tmp_kwargs["_env"] = {"GIT_COMMITTER_DATE": commit_date.isoformat()}
+
+            if verified:
+                temporary_folder = tempfile.mkdtemp()
+                tmp_env = {"GNUPGHOME": temporary_folder}
+                self.addCleanup(shutil.rmtree, temporary_folder)
+                subprocess.run(
+                    ["gpg", "--import"],
+                    input=settings.TESTING_GPG_SECRET_KEY.encode(),
+                    env=self.git.prepare_safe_env(tmp_env),
+                )
+                await self.git(
+                    "config",
+                    "user.signingkey",
+                    settings.TESTING_GPG_SECRET_KEY_ID,
+                )
+                await self.git(
+                    "config",
+                    "user.email",
+                    "engineering+mergify-test@mergify.com",
+                )
+                args_commit.append("-S")
+                tmp_kwargs.setdefault("_env", {})
+                tmp_kwargs["_env"].update(tmp_env)
+
+            await self.git(*args_commit, **tmp_kwargs)
+
+            if two_commits:
+                if not files:
+                    filename = f"test{self.pr_counter}"
+                else:
+                    first_file = first(files.keys())
+                    assert isinstance(first_file, str)
+                    filename = first_file
+
+                await self.git("mv", filename, f"{filename}-moved")
+
+                args_second_commit = [
+                    "commit",
+                    "--no-edit",
+                    "-m",
+                    f"{commit_headline}, moved",
+                ]
+                if commit_body is not None:
+                    args_second_commit += ["-m", commit_body]
+                if verified:
+                    args_second_commit.append("-S")
+
+                await self.git(*args_second_commit, **tmp_kwargs)
 
         await self.git("push", "--quiet", remote, branch)
         if as_ != "fork":

@@ -9309,6 +9309,48 @@ pull_request_rules:
             in queue_summary_check_run["output"]["summary"]
         )
 
+    async def test_duplicate_pr(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "merge_conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules), preload_configuration=True)
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+        await self.close_pull(p1["number"])
+
+        p2 = await self.create_pr(git_tree_ready=True, files={})
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        train = await self.get_train()
+        assert len(train._cars) == 1
+        assert [p2["number"]] == [
+            p.user_pull_request_number
+            for p in train._cars[0].still_queued_embarked_pulls
+        ]
+
     async def test_batch_max_wait_time_after_pr_conflicts(self) -> None:
         rules = {
             "queue_rules": [
