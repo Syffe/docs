@@ -181,12 +181,14 @@ async def push_github_in_pg_event(
     event_id: str,
     data: filtered_github_types.GitHubDataT,
     data_for_stream_push: DataForStreamPush | None = None,
+    log_infos: dict[str, typing.Any] | None = None,
 ) -> None:
     fields = {
         "event_type": event_type,
         "event_id": event_id,
         "data": msgpack.packb(data),
         "timestamp": date.utcnow().isoformat(),
+        "log_infos": msgpack.packb(log_infos or {}),
     }
     if data_for_stream_push:
         fields["data_for_stream_push"] = msgpack.packb(data_for_stream_push)

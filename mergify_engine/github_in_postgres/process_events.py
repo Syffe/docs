@@ -59,7 +59,18 @@ async def store_redis_event_in_pg(
         github_types.GitHubEventType,
         event[b"event_type"].decode(),
     )
-    LOG.info("processing event '%s', id=%s", event_type, event_id)
+    log_infos = {}
+    log_infos_raw = event.get(b"log_infos")
+    if log_infos_raw:
+        log_infos = msgpack.unpackb(log_infos_raw)
+
+    LOG.info(
+        "processing event '%s', id=%s",
+        event_type,
+        event_id,
+        event_type=event_type,
+        **log_infos,
+    )
 
     if event_type not in EVENT_TO_MODEL_MAPPING:
         raise UnhandledEventTypeError(

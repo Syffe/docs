@@ -724,6 +724,11 @@ async def filter_and_dispatch(
                 event_type,
                 classified_event.event,
             ),
+            log_infos={
+                "gh_owner": classified_event.event["repository"]["owner"]["login"],
+                "gh_repo": classified_event.event["repository"]["name"],
+                "gh_pull": classified_event.pull_request_number,
+            },
             data_for_stream_push=data_for_stream_push,
         )
 
