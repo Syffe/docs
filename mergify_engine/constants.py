@@ -72,3 +72,6 @@ You can accept them at {settings.DASHBOARD_UI_FRONT_URL}.
 # NOTE(Kontrolix): 1536 is the output dimension of OpenAI Embedding at this time
 # https://platform.openai.com/docs/guides/embeddings/second-generation-models
 OPENAI_EMBEDDING_DIMENSION = 1536
+
+# page_limit when querying the `/pulls/<pr_number>/files` endpoint
+FILES_PAGE_LIMIT_FROM_HTTP = 10

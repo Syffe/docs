@@ -2135,7 +2135,7 @@ class Context:
                     self.client.items(
                         f"{self.base_url}/pulls/{self.pull['number']}/files",
                         resource_name="files",
-                        page_limit=10,
+                        page_limit=constants.FILES_PAGE_LIMIT_FROM_HTTP,
                     ),
                 )
             ]

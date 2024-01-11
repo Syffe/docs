@@ -11,6 +11,7 @@ from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.hybrid
 
+from mergify_engine import constants
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
@@ -359,10 +360,20 @@ class PullRequest(models.Base):
                     client.items(
                         f"/repos/{repo_owner}/{repo_name}/pulls/{pull_request_number}/files",
                         resource_name="files",
-                        page_limit=None,
+                        # NOTE: We still need a limit until we can find a way to better handle
+                        # pull requests with a lot of files and be able to remove the files
+                        # limit for Mergify to evaluate a pull request.
+                        page_limit=constants.FILES_PAGE_LIMIT_FROM_HTTP,
                     ),
                 )
             ]
+        except github.TooManyPages:
+            LOG.warning(
+                "Skipping files update for pull request %s because it has too many files",
+                pull_request_id,
+                exc_info=True,
+            )
+            return
         except Exception as e:
             if isinstance(e, http.HTTPNotFoundError) or exceptions.should_be_ignored(e):
                 LOG.warning(
