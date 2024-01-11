@@ -196,12 +196,14 @@ select = [
  "RUF", "RET", "DTZ", "TCH", "COM",
  "PERF", "PT", "PL", "PGH", "SIM",
  "PIE", "YTT", "T20", "ARG", "PTH",
- "N", "PYI",
+ "N", "PYI", "FURB",
  # FIXME(sileht): doctring/rst-docstring like
  # "D"
 ]
 
 ignore = [
+    # NOTE(Greesb): itertools.starmap is less efficient than list comprehensions
+    "FURB140",
     # NOTE(Greesb): Checks for union annotations that contain redundant numeric types (e.g., int | float).
     # too confusing to only have `float` as typing when the function can also receive an `int`
     "PYI041",

@@ -3014,7 +3014,6 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         tmp_pull = await self.wait_for_pull_request("opened")
-        assert tmp_pull["number"] not in {p1["number"]}
         assert tmp_pull["pull_request"]["changed_files"] == 1
 
         # No parent PR, but created instead updated

@@ -517,7 +517,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if await self._can_be_reembarked_automatically():
             await self.reembark_pull_request_if_possible()
 
-        for car in cars[:]:
+        for car in cars.copy():
             try:
                 await car.check_mergeability(
                     "original_pull_request",
