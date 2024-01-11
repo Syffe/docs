@@ -129,6 +129,8 @@ class TrainCarOutcome(enum.Enum):
             TrainCarOutcome.CONDITIONS_FAILED,
             TrainCarOutcome.CHECKS_FAILED,
             TrainCarOutcome.BRANCH_UPDATE_FAILED,
+            TrainCarOutcome.CONFLICT_WITH_BASE_BRANCH,
+            TrainCarOutcome.CONFLICT_WITH_PULL_AHEAD,
             TrainCarOutcome.DRAFT_PR_CHANGE,
             TrainCarOutcome.CHECKS_TIMEOUT,
             TrainCarOutcome.DRAFT_PR_CHANGE,
