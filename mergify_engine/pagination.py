@@ -4,7 +4,6 @@ import urllib.parse
 
 import fastapi
 import pydantic
-import pydantic_core
 
 from mergify_engine.web import utils
 
@@ -14,57 +13,48 @@ DEFAULT_PER_PAGE = 10
 T = typing.TypeVar("T")
 
 
-# FIXME(charly): it has to inherit from `str` as the pull request endpoint
-# doesn't fully implement cursor and should be refactored.
-class Cursor(str):
-    @classmethod
-    def __get_pydantic_core_schema__(
-        cls,
-        source_type: typing.Any,
-        handler: pydantic.GetCoreSchemaHandler,
-    ) -> pydantic_core.CoreSchema:
-        return pydantic_core.core_schema.no_info_after_validator_function(
-            cls,
-            handler(str),
-        )
+@dataclasses.dataclass
+class Cursor:
+    value: str
+    forward: bool
 
-    @property
-    def forward(self) -> bool:
-        return not self or self.startswith("+")
+    @classmethod
+    def from_string(cls, cursor: str) -> typing.Self:
+        forward = not cursor.startswith("-")
+        return cls(cursor.lstrip("+-"), forward)
+
+    def to_string(self) -> str:
+        return f"{'' if self.forward else '-'}{self.value}"
 
     @property
     def backward(self) -> bool:
-        return self.startswith("-")
-
-    @property
-    def value(self) -> str:
-        return self.lstrip("+-")
+        return not self.forward
 
     def next(
         self,
-        first_item_id: object | None,
-        last_item_id: object | None,
-    ) -> "Cursor":
+        first_item_id: str | None,
+        last_item_id: str | None,
+    ) -> typing.Self:
         if self.forward and last_item_id is not None:
-            return self.__class__(f"+{last_item_id}")
+            return self.__class__(last_item_id, forward=True)
 
         if self.backward and first_item_id is not None:
-            return self.__class__(f"-{first_item_id}")
+            return self.__class__(first_item_id, forward=False)
 
-        return self.__class__("")
+        return self.__class__("", forward=True)
 
     def previous(
         self,
-        first_item_id: object | None,
-        last_item_id: object | None,
-    ) -> "Cursor":
+        first_item_id: str | None,
+        last_item_id: str | None,
+    ) -> typing.Self:
         if self.forward and first_item_id is not None:
-            return self.__class__(f"-{first_item_id}" if self else "")
+            return self.__class__(first_item_id, forward=False)
 
         if self.backward and last_item_id is not None:
-            return self.__class__(f"+{last_item_id}" if self != "-" else "")
+            return self.__class__(last_item_id, forward=True)
 
-        return self.__class__("")
+        return self.__class__("", forward=False)
 
 
 @dataclasses.dataclass
@@ -99,7 +89,7 @@ def get_current_page(
         ),
     ] = DEFAULT_PER_PAGE,
 ) -> "CurrentPage":
-    return _CurrentPage(request, response, Cursor(cursor or ""), per_page)
+    return _CurrentPage(request, response, Cursor.from_string(cursor or ""), per_page)
 
 
 CurrentPage = typing.Annotated[_CurrentPage, fastapi.Depends(get_current_page)]
@@ -109,10 +99,10 @@ CurrentPage = typing.Annotated[_CurrentPage, fastapi.Depends(get_current_page)]
 class Page(typing.Generic[T]):
     items: list[T]
     current: CurrentPage
-    cursor_prev: str | None = dataclasses.field(default=None)
-    cursor_next: str | None = dataclasses.field(default=None)
-    cursor_first: str = dataclasses.field(default="")
-    cursor_last: str = dataclasses.field(default="-")
+    cursor_prev: Cursor | None = dataclasses.field(default=None)
+    cursor_next: Cursor | None = dataclasses.field(default=None)
+    cursor_first: Cursor = dataclasses.field(default_factory=lambda: Cursor("", True))
+    cursor_last: Cursor = dataclasses.field(default_factory=lambda: Cursor("", False))
 
     @property
     def size(self) -> int:
@@ -187,12 +177,12 @@ class PageResponse(pydantic.BaseModel, typing.Generic[T]):
         links_query_parameters = {
             "first": {
                 "per_page": page.current.per_page,
-                "cursor": page.cursor_first,
+                "cursor": page.cursor_first.to_string(),
                 **cleaned_query_parameters,
             },
             "last": {
                 "per_page": page.current.per_page,
-                "cursor": page.cursor_last,
+                "cursor": page.cursor_last.to_string(),
                 **cleaned_query_parameters,
             },
         }
@@ -200,13 +190,13 @@ class PageResponse(pydantic.BaseModel, typing.Generic[T]):
         if page.cursor_next is not None:
             links_query_parameters["next"] = {
                 "per_page": page.current.per_page,
-                "cursor": page.cursor_next,
+                "cursor": page.cursor_next.to_string(),
                 **cleaned_query_parameters,
             }
         if page.cursor_prev is not None:
             links_query_parameters["prev"] = {
                 "per_page": page.current.per_page,
-                "cursor": page.cursor_prev,
+                "cursor": page.cursor_prev.to_string(),
                 **cleaned_query_parameters,
             }
 

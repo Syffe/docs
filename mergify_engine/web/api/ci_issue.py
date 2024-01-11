@@ -215,8 +215,8 @@ async def get_ci_issues(
             ),
         )
 
-    first_issue_id = issues[0].id if issues else None
-    last_issue_id = issues[-1].id if issues else None
+    first_issue_id = str(issues[0].id) if issues else None
+    last_issue_id = str(issues[-1].id) if issues else None
 
     page_response: pagination.Page[CiIssueListResponse] = pagination.Page(
         items=issues,
@@ -503,8 +503,8 @@ async def get_ci_issue_events(
         for event in logs_metadata
     ]
 
-    first_event_id = events[0].id if events else None
-    last_event_id = events[-1].id if events else None
+    first_event_id = str(events[0].id) if events else None
+    last_event_id = str(events[-1].id) if events else None
 
     page_response: pagination.Page[CiIssueEvent] = pagination.Page(
         items=events,

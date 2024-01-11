@@ -352,17 +352,17 @@ async def test_api_cursor_pg(
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [6, 5]
     links = parse_links(response.headers["link"])
-    assert links["next"].split("?")[-1] == "per_page=2&cursor=%2B5"
+    assert links["next"].split("?")[-1] == "per_page=2&cursor=5"
 
     # first 2 to 4
     response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=%2B5",
+        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=5",
         headers={"Authorization": api_token.api_token},
     )
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [4, 3]
     links = parse_links(response.headers["link"])
-    assert links["next"].split("?")[-1] == "per_page=2&cursor=%2B3"
+    assert links["next"].split("?")[-1] == "per_page=2&cursor=3"
     assert links["prev"].split("?")[-1] == "per_page=2&cursor=-4"
 
     # last 2 with initial last cursor
@@ -384,7 +384,7 @@ async def test_api_cursor_pg(
     assert [r["id"] for r in resp["events"]] == [4, 3]
     links = parse_links(response.headers["link"])
     assert links["next"].split("?")[-1] == "per_page=2&cursor=-4"
-    assert links["prev"].split("?")[-1] == "per_page=2&cursor=%2B3"
+    assert links["prev"].split("?")[-1] == "per_page=2&cursor=3"
 
 
 async def test_api_links_with_query_params(
