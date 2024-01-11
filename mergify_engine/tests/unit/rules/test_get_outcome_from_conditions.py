@@ -39,7 +39,7 @@ async def test_rules_conditions_update() -> None:
     pulls[0].sync_checks()
     schema = voluptuous.Schema(
         voluptuous.All(
-            [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+            cond_config.ListOfRuleCondition(),
             voluptuous.Coerce(conditions.QueueRuleMergeConditions),
         ),
     )
@@ -79,7 +79,7 @@ async def assert_queue_rule_checks_status(
     pull.sync_checks()
     schema = voluptuous.Schema(
         voluptuous.All(
-            [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+            cond_config.ListOfRuleCondition(),
             voluptuous.Coerce(conditions.QueueRuleMergeConditions),
         ),
     )

@@ -18,10 +18,12 @@ def extended_anchors_load(
 
 
 def anchor_extractor_load(stream: typing.Any) -> typing.Any:
+    # FIXME(sileht): we should find a way to limit the number of anchors referenced by other part of the document
     return yaml.load(stream, Loader=yaml_anchor_extractor.AnchorExtractorLoader)  # type: ignore[arg-type]
 
 
 def safe_load(stream: typing.Any) -> typing.Any:
+    # FIXME(sileht): we should find a way to limit the number of anchors referenced by other part of the document
     return yaml.load(stream, Loader=yaml.CSafeLoader)
 
 

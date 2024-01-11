@@ -2448,10 +2448,12 @@ pull_request_rules:
 
 
 async def test_rule_condition_negation_extract_raw_filter_tree() -> None:
-    rule_condition_negation = cond_config.RuleConditionSchema(
-        {"not": {"or": ["base=main", "label=foo"]}},
-    )
-    pr_conditions = conditions.PullRequestRuleConditions([rule_condition_negation])
+    pr_conditions = voluptuous.Schema(
+        voluptuous.All(
+            cond_config.ListOfRuleCondition(),
+            voluptuous.Coerce(conditions.PullRequestRuleConditions),
+        ),
+    )([{"not": {"or": ["base=main", "label=foo"]}}])
 
     expected_tree = {
         "and": [

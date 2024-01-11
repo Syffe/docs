@@ -20,6 +20,7 @@ if typing.TYPE_CHECKING:
     from mergify_engine.rules.config import pull_request_rules as prr_config
 
 MAX_DISPATCHED_EVENTS: int = 10
+MAX_WORKFLOW_INPUTS: int = 10
 
 
 class GhaExecutorDispatchConfig(typing.TypedDict):
@@ -197,24 +198,23 @@ class GhaExecutor(actions.ActionExecutor["GhaAction", GhaExecutorConfig]):
 class GhaAction(actions.Action):
     validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("workflow"): {
-            voluptuous.Required("dispatch", default=list): voluptuous.All(
-                [
-                    {
-                        voluptuous.Required("workflow"): voluptuous.All(
-                            str,
-                            urllib.parse.quote,
-                        ),
-                        voluptuous.Required("ref", default=None): voluptuous.Any(
-                            str,
-                            None,
-                        ),
-                        voluptuous.Required("inputs", default={}): voluptuous.All(
-                            {str: voluptuous.Any(types.Jinja2, int, bool)},
-                            voluptuous.Length(max=10),
-                        ),
-                    },
-                ],
-                voluptuous.Length(max=MAX_DISPATCHED_EVENTS),
+            voluptuous.Required("dispatch", default=list): types.ListOf(
+                {
+                    voluptuous.Required("workflow"): voluptuous.All(
+                        str,
+                        urllib.parse.quote,
+                    ),
+                    voluptuous.Required("ref", default=None): voluptuous.Any(
+                        str,
+                        None,
+                    ),
+                    voluptuous.Required("inputs", default={}): types.DictOf(
+                        str,
+                        voluptuous.Any(types.Jinja2, int, bool),
+                        MAX_WORKFLOW_INPUTS,
+                    ),
+                },
+                MAX_DISPATCHED_EVENTS,
             ),
         },
     }

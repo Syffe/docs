@@ -20,6 +20,8 @@ if typing.TYPE_CHECKING:
     from mergify_engine import context
     from mergify_engine.rules.config import pull_request_rules as prr_config
 
+MAX_DISMISS_REVIEWS = 50
+
 DismissReviewWhenT = typing.Literal["synchronize", "always"]
 WHEN_SYNCHRONIZE: DismissReviewWhenT = "synchronize"
 WHEN_ALWAYS: DismissReviewWhenT = "always"
@@ -228,13 +230,13 @@ class DismissReviewsAction(actions.Action):
         voluptuous.Required("approved", default=True): voluptuous.Any(
             True,
             False,
-            [types.GitHubLogin],
+            types.ListOf(types.GitHubLogin, MAX_DISMISS_REVIEWS),
             FROM_REQUESTED_REVIEWERS,
         ),
         voluptuous.Required("changes_requested", default=True): voluptuous.Any(
             True,
             False,
-            [types.GitHubLogin],
+            types.ListOf(types.GitHubLogin, MAX_DISMISS_REVIEWS),
             FROM_REQUESTED_REVIEWERS,
         ),
         voluptuous.Required("message", default=None): types.Jinja2WithNone,

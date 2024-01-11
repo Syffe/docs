@@ -12,7 +12,7 @@ from mergify_engine.tests.unit import conftest
 
 SCHEMA = voluptuous.Schema(
     voluptuous.All(
-        [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+        cond_config.ListOfRuleCondition(),
         voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
     ),
 )
@@ -318,7 +318,7 @@ async def test_condition_summary_simple() -> None:
 async def test_condition_summary_complex() -> None:
     schema = voluptuous.Schema(
         voluptuous.All(
-            [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+            cond_config.ListOfRuleCondition(),
             voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
         ),
     )
@@ -353,10 +353,12 @@ async def test_condition_summary_complex() -> None:
 
 
 async def test_rule_condition_negation_summary() -> None:
-    rule_condition_negation = cond_config.RuleConditionSchema(
-        {"not": {"or": ["base=main", "label=foo"]}},
-    )
-    pr_conditions = conditions_mod.PullRequestRuleConditions([rule_condition_negation])
+    pr_conditions = voluptuous.Schema(
+        voluptuous.All(
+            cond_config.ListOfRuleCondition(),
+            voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
+        ),
+    )([{"not": {"or": ["base=main", "label=foo"]}}])
     pr_conditions.condition.conditions[0].match = True
 
     expected_summary = """\
@@ -373,7 +375,7 @@ def create_queue_rule_conditions(
 ) -> conditions_mod.QueueRuleMergeConditions:
     schema = voluptuous.Schema(
         voluptuous.All(
-            [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+            cond_config.ListOfRuleCondition(),
             voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
         ),
     )

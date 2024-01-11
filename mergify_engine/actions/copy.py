@@ -22,6 +22,7 @@ from mergify_engine import refresher
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import worker_pusher
+from mergify_engine.actions import assign
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.rules import types
@@ -51,6 +52,10 @@ DUPLICATE_BODY_EXTRA_VARIABLES: dict[str, str | bool] = {
 DUPLICATE_TITLE_EXTRA_VARIABLES: dict[str, str | bool] = {
     "destination_branch": "branch-name-example",
 }
+
+
+MAX_LABELS = 30
+MAX_BRANCHES = 30
 
 
 def DuplicateBodyJinja2(v: typing.Any) -> str | None:
@@ -596,11 +601,20 @@ class CopyAction(actions.Action):
                 None,
                 types.Jinja2,
             ),
-            voluptuous.Required("branches", default=list): [types.BranchName],
-            voluptuous.Required("regexes", default=list): [voluptuous.Coerce(Regex)],
+            voluptuous.Required("branches", default=list): types.ListOf(
+                types.BranchName,
+                MAX_BRANCHES,
+            ),
+            voluptuous.Required("regexes", default=list): types.ListOf(
+                voluptuous.Coerce(Regex),
+                MAX_BRANCHES,
+            ),
             voluptuous.Required("ignore_conflicts", default=True): bool,
-            voluptuous.Required("assignees", default=list): [types.Jinja2],
-            voluptuous.Required("labels", default=list): [str],
+            voluptuous.Required("assignees", default=list): types.ListOf(
+                types.Jinja2,
+                assign.GITHUB_MAX_ASSIGNEES,
+            ),
+            voluptuous.Required("labels", default=list): types.ListOf(str, MAX_LABELS),
             voluptuous.Required("label_conflicts", default="conflicts"): str,
             voluptuous.Required(
                 "title",

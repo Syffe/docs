@@ -75,9 +75,9 @@ async def get_pull_requests(
     input_body: typing.Annotated[InputConditions, fastapi.Body()],
 ) -> MatchingPullRequests:
     try:
-        validated_conditions = [
-            config_conditions.RuleConditionSchema(cond) for cond in input_body
-        ]
+        validated_conditions = voluptuous.Schema(
+            config_conditions.ListOfRuleCondition(),
+        )(input_body)
     except voluptuous.Invalid as e:
         raise fastapi.HTTPException(
             status_code=400,

@@ -10,6 +10,7 @@ from mergify_engine import condition_value_querier
 from mergify_engine import github_types
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import generic_evaluator
+from mergify_engine.rules import types
 from mergify_engine.rules.config import conditions as cond_config
 
 
@@ -18,6 +19,8 @@ if typing.TYPE_CHECKING:
 
 
 LOG = daiquiri.getLogger(__name__)
+
+MAX_PULL_REQUEST_RULES = 200
 
 PullRequestRuleName = typing.NewType("PullRequestRuleName", str)
 EvaluatedPullRequestRule = typing.NewType("EvaluatedPullRequestRule", "PullRequestRule")
@@ -161,14 +164,7 @@ def CommandsRestrictionsSchema(
             "conditions",
             default=command.default_restrictions,
         ): voluptuous.All(
-            [
-                voluptuous.Coerce(
-                    lambda v: cond_config.RuleConditionSchema(
-                        v,
-                        allow_command_attributes=True,
-                    ),
-                ),
-            ],
+            cond_config.ListOfRuleCondition(allow_command_attributes=True),
             voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
         ),
     }
@@ -180,7 +176,7 @@ class CommandsRestrictions(typing.TypedDict):
 
 def get_pull_request_rules_schema() -> voluptuous.All:
     return voluptuous.All(
-        [
+        types.ListOf(
             voluptuous.All(
                 {
                     voluptuous.Required("name"): str,
@@ -190,13 +186,14 @@ def get_pull_request_rules_schema() -> voluptuous.All:
                     ),
                     voluptuous.Required("hidden", default=False): bool,
                     voluptuous.Required("conditions"): voluptuous.All(
-                        [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+                        cond_config.ListOfRuleCondition(),
                         voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
                     ),
                     voluptuous.Required("actions"): actions_mod.get_action_schemas(),
                 },
                 voluptuous.Coerce(PullRequestRule.from_dict),
             ),
-        ],
+            MAX_PULL_REQUEST_RULES,
+        ),
         voluptuous.Coerce(PullRequestRules),
     )

@@ -3,6 +3,7 @@ import typing
 from unittest import mock
 
 import pytest
+import voluptuous
 
 from mergify_engine import context
 from mergify_engine import github_types
@@ -191,13 +192,12 @@ async def test_get_already_merged_summary_without_rules(
         ),
         (
             "conditions",
-            conditions.PullRequestRuleConditions(
-                [
-                    cond_config.RuleConditionSchema(
-                        {"not": {"or": ["base=main", "label=foo"]}},
-                    ),
-                ],
-            ),
+            voluptuous.Schema(
+                voluptuous.All(
+                    cond_config.ListOfRuleCondition(),
+                    voluptuous.Coerce(conditions.PullRequestRuleConditions),
+                ),
+            )([{"not": {"or": ["base=main", "label=foo"]}}]),
             "conditions: |-\n  - [ ] not:\n    - [ ] any of:\n      - [ ] `base=main`\n      - [ ] `label=foo`\n",
         ),
     ],

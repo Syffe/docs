@@ -230,3 +230,44 @@ GitHubRepositoryName = voluptuous.All(
     voluptuous.Match(re.compile(r"^[\w\-.]+$")),
     check_forbidden_repository_name,
 )
+
+
+def ListOfAnything(v: typing.Any) -> typing.Any:
+    # NOTE(sileht): we can't just use `list` as voluptuous will pass `v` to `list()`
+    # This is a lighter version that just check the type
+    if isinstance(v, list):
+        return v
+    raise voluptuous.Invalid("expected a list")
+
+
+def DictOfAnything(v: typing.Any) -> typing.Any:
+    # NOTE(sileht): we can't just use `dict` as voluptuous will pass `v` to `dict()`
+    # This is a lighter version that just check the type
+    if isinstance(v, dict):
+        return v
+    raise voluptuous.Invalid("expected a dictionnary")
+
+
+def ListOf(value: typing.Any, _max: int, _min: int = 0) -> typing.Any:
+    # NOTE(sileht): to not get DDoS with the yaml billion laughs attack,
+    # we limit and check the size of the list before browsing the content that could be huge
+    return voluptuous.All(
+        ListOfAnything,
+        voluptuous.Length(min=_min, max=_max),
+        [value],
+    )
+
+
+def DictOf(
+    key: typing.Any,
+    value: typing.Any,
+    _max: int,
+    _min: int = 0,
+) -> typing.Any:
+    # NOTE(sileht): to not get DDoS with the yaml billion laughs attack,
+    # we limit and check the size of the dict bfore browsing the content that could be huge
+    return voluptuous.All(
+        DictOfAnything,
+        voluptuous.Length(min=_min, max=_max),
+        {key: value},
+    )

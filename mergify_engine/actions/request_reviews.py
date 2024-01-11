@@ -319,7 +319,10 @@ class RequestReviewsAction(actions.Action):
     validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("users", default=list): voluptuous.Any(
             voluptuous.All(
-                [types.GitHubLogin],
+                types.ListOf(
+                    types.GitHubLogin,
+                    RequestReviewsExecutor.GITHUB_MAXIMUM_REVIEW_REQUEST * 10,
+                ),
                 voluptuous.Coerce(_ensure_weight),
             ),
             {
@@ -328,7 +331,10 @@ class RequestReviewsAction(actions.Action):
         ),
         voluptuous.Required("teams", default=list): voluptuous.Any(
             voluptuous.All(
-                [types.GitHubTeam],
+                types.ListOf(
+                    types.GitHubTeam,
+                    RequestReviewsExecutor.GITHUB_MAXIMUM_REVIEW_REQUEST * 10,
+                ),
                 voluptuous.Coerce(_ensure_weight),
             ),
             {
@@ -337,7 +343,10 @@ class RequestReviewsAction(actions.Action):
         ),
         voluptuous.Required("users_from_teams", default=list): voluptuous.Any(
             voluptuous.All(
-                [types.GitHubTeam],
+                types.ListOf(
+                    types.GitHubTeam,
+                    RequestReviewsExecutor.GITHUB_MAXIMUM_REVIEW_REQUEST * 10,
+                ),
                 voluptuous.Coerce(_ensure_weight),
             ),
             {

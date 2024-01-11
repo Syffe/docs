@@ -16,6 +16,9 @@ if typing.TYPE_CHECKING:
     from mergify_engine import context
     from mergify_engine.rules.config import pull_request_rules as prr_config
 
+# NOTE(sileht): GitHub allows 10 assignees max
+GITHUB_MAX_ASSIGNEES = 10
+
 
 class AssignExecutorConfig(typing.TypedDict):
     users_to_add: set[str]
@@ -119,9 +122,18 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
 class AssignAction(actions.Action):
     validator: typing.ClassVar[actions.ValidatorT] = {
         # NOTE: "users" is deprecated, but kept as legacy code for old config
-        voluptuous.Required("users", default=list): [types.Jinja2],
-        voluptuous.Required("add_users", default=list): [types.Jinja2],
-        voluptuous.Required("remove_users", default=list): [types.Jinja2],
+        voluptuous.Required("users", default=list): types.ListOf(
+            types.Jinja2,
+            GITHUB_MAX_ASSIGNEES,
+        ),
+        voluptuous.Required("add_users", default=list): types.ListOf(
+            types.Jinja2,
+            GITHUB_MAX_ASSIGNEES,
+        ),
+        voluptuous.Required("remove_users", default=list): types.ListOf(
+            types.Jinja2,
+            GITHUB_MAX_ASSIGNEES * 4,
+        ),
     }
 
     flags = actions.ActionFlag.ALWAYS_RUN

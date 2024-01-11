@@ -10,11 +10,15 @@ from mergify_engine import check_api
 from mergify_engine import condition_value_querier
 from mergify_engine import signals
 from mergify_engine.clients import http
+from mergify_engine.rules import types
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
     from mergify_engine.rules.config import pull_request_rules as prr_config
+
+
+MAX_LABELS = 50
 
 
 class LabelExecutorConfig(typing.TypedDict):
@@ -198,9 +202,9 @@ class LabelAction(actions.Action):
     flags = actions.ActionFlag.ALWAYS_RUN
 
     validator: typing.ClassVar[actions.ValidatorT] = {
-        voluptuous.Required("add", default=list): [str],
-        voluptuous.Required("remove", default=list): [str],
+        voluptuous.Required("add", default=list): types.ListOf(str, MAX_LABELS),
+        voluptuous.Required("remove", default=list): types.ListOf(str, MAX_LABELS),
         voluptuous.Required("remove_all", default=False): bool,
-        voluptuous.Required("toggle", default=list): [str],
+        voluptuous.Required("toggle", default=list): types.ListOf(str, MAX_LABELS),
     }
     executor_class = LabelExecutor

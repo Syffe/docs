@@ -219,14 +219,14 @@ class PostCheckAction(actions.Action):
         voluptuous.Required("success_conditions", default=None): voluptuous.Any(
             None,
             voluptuous.All(
-                [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+                cond_config.ListOfRuleCondition(),
                 voluptuous.Coerce(conditions.PullRequestRuleConditions),
             ),
         ),
         voluptuous.Required("neutral_conditions", default=None): voluptuous.Any(
             None,
             voluptuous.All(
-                [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+                cond_config.ListOfRuleCondition(),
                 voluptuous.Coerce(conditions.PullRequestRuleConditions),
             ),
         ),

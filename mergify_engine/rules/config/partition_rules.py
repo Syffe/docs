@@ -8,6 +8,7 @@ import voluptuous
 from mergify_engine import condition_value_querier
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import generic_evaluator
+from mergify_engine.rules import types
 from mergify_engine.rules.config import conditions as cond_config
 
 
@@ -15,6 +16,8 @@ if typing.TYPE_CHECKING:
     from collections import abc
 
     from mergify_engine import context
+
+MAX_PARTITION_RULES = 50
 
 PartitionRuleName = typing.NewType("PartitionRuleName", str)
 DEFAULT_PARTITION_NAME = PartitionRuleName("__default__")
@@ -155,12 +158,12 @@ class PartitionRules:
 
 
 PartitionRulesSchema = voluptuous.All(
-    [
+    types.ListOf(
         voluptuous.All(
             {
                 voluptuous.Required("name"): str,
                 voluptuous.Required("conditions", default=list): voluptuous.All(
-                    [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+                    cond_config.ListOfRuleCondition(),
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
                 voluptuous.Required(
@@ -170,6 +173,7 @@ PartitionRulesSchema = voluptuous.All(
             },
             voluptuous.Coerce(PartitionRule.from_dict),
         ),
-    ],
+        MAX_PARTITION_RULES,
+    ),
     voluptuous.Coerce(PartitionRules),
 )

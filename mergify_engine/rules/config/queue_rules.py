@@ -28,6 +28,9 @@ if typing.TYPE_CHECKING:
 
     from mergify_engine import context
 
+MAX_QUEUE_RULES = 50
+MAX_PRIORITY_RULES = 50
+
 QueueBranchMergeMethod = typing.Literal["fast-forward"] | None
 QueueName = typing.NewType("QueueName", str)
 
@@ -419,7 +422,7 @@ merge_conditions_exclusive_msg = "Cannot have both `conditions` and `merge_condi
 queue_conditions_exclusive_msg = "Cannot have both `routing_conditions` and `queue_conditions`, only use `queue_conditions (`routing_conditions` is deprecated)"
 
 QueueRulesSchema = voluptuous.All(
-    [
+    types.ListOf(
         voluptuous.All(
             {voluptuous.Extra: object},  # just ensure first it's a dict
             _has_only_one_of(
@@ -435,16 +438,12 @@ QueueRulesSchema = voluptuous.All(
             {
                 voluptuous.Required("name"): str,
                 voluptuous.Required("priority_rules", default=list): voluptuous.All(
-                    [
+                    types.ListOf(
                         voluptuous.All(
                             {
                                 voluptuous.Required("name"): str,
                                 voluptuous.Required("conditions"): voluptuous.All(
-                                    [
-                                        voluptuous.Coerce(
-                                            cond_config.RuleConditionSchema,
-                                        ),
-                                    ],
+                                    cond_config.ListOfRuleCondition(),
                                     voluptuous.Coerce(
                                         conditions_mod.PriorityRuleConditions,
                                     ),
@@ -458,23 +457,24 @@ QueueRulesSchema = voluptuous.All(
                                 priority_rules_config.PriorityRule.from_dict,
                             ),
                         ),
-                    ],
+                        MAX_PRIORITY_RULES,
+                    ),
                     voluptuous.Coerce(priority_rules_config.PriorityRules),
                 ),
                 voluptuous.Required("merge_conditions", default=list): voluptuous.All(
-                    [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+                    cond_config.ListOfRuleCondition(),
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
                 "conditions": voluptuous.All(
-                    [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+                    cond_config.ListOfRuleCondition(),
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
                 voluptuous.Required("queue_conditions", default=list): voluptuous.All(
-                    [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+                    cond_config.ListOfRuleCondition(),
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
                 "routing_conditions": voluptuous.All(
-                    [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+                    cond_config.ListOfRuleCondition(),
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
                 voluptuous.Required("require_branch_protection", default=True): bool,
@@ -498,7 +498,7 @@ QueueRulesSchema = voluptuous.All(
                 voluptuous.Required(
                     "disallow_checks_interruption_from_queues",
                     default=[],
-                ): [str],
+                ): types.ListOf(str, _max=MAX_QUEUE_RULES),
                 voluptuous.Required("checks_timeout", default=None): voluptuous.Any(
                     None,
                     voluptuous.All(str, voluptuous.Coerce(ChecksTimeout)),
@@ -569,6 +569,7 @@ QueueRulesSchema = voluptuous.All(
             },
             voluptuous.Coerce(QueueRule.from_dict),
         ),
-    ],
+        MAX_QUEUE_RULES,
+    ),
     voluptuous.Coerce(QueueRules),
 )
