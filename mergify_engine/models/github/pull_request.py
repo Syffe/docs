@@ -288,7 +288,7 @@ class PullRequest(models.Base):
         except Exception as e:
             if isinstance(e, http.HTTPNotFoundError) or exceptions.should_be_ignored(e):
                 LOG.warning(
-                    "Skipping commit update for pull request %i because we can't query it's commits",
+                    "Skipping commit update for pull request %s because we can't query it's commits",
                     pull_request_id,
                     exc_info=True,
                 )
@@ -300,7 +300,7 @@ class PullRequest(models.Base):
                 pr_commit_model.PullRequestCommit.type_adapter.validate_python(commit)
             except pydantic_core.ValidationError:
                 LOG.warning(
-                    "Skipping commit insert/update for pull_request %i because one of its commit can't be validated by pydantic",
+                    "Skipping commit insert/update for pull_request %s because one of its commit can't be validated by pydantic",
                     pull_request_id,
                     commit=commit,
                 )
@@ -314,16 +314,6 @@ class PullRequest(models.Base):
                 pr_commit_model.PullRequestCommit.sha.notin_(new_commits_head_shas),
             ),
         )
-
-        try:
-            for commit in new_commits:
-                pr_commit_model.PullRequestCommit.type_adapter.validate_python(commit)
-        except pydantic_core.ValidationError:
-            LOG.warning(
-                "Skipping commits update for pull request %s because at least one commit can't be validated by its type adapter",
-                pull_request_id,
-                exc_info=True,
-            )
 
         for commit_index, commit in enumerate(new_commits):
             await pr_commit_model.PullRequestCommit.insert_or_update(
@@ -393,6 +383,7 @@ class PullRequest(models.Base):
                 pull_request_id,
                 exc_info=True,
             )
+            return
 
         for file in files:
             await pr_file_model.PullRequestFile.insert_or_update(
