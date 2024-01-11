@@ -362,8 +362,8 @@ class GitHubFile(typing_extensions.TypedDict):
     additions: int
     deletions: int
     changes: int
-    blob_url: str
-    raw_url: str
+    blob_url: str | None
+    raw_url: str | None
     patch: typing.NotRequired[str]
     previous_filename: typing.NotRequired[str]
 

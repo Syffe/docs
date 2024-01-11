@@ -66,12 +66,14 @@ class PullRequestFile(models.Base):
         sqlalchemy.BigInteger,
         anonymizer_config="anon.random_int_between(0, 50)",
     )
-    blob_url: orm.Mapped[str] = orm.mapped_column(
+    blob_url: orm.Mapped[str | None] = orm.mapped_column(
         sqlalchemy.Text,
+        nullable=True,
         anonymizer_config="anon.lorem_ipsum( characters := 30 )",
     )
-    raw_url: orm.Mapped[str] = orm.mapped_column(
+    raw_url: orm.Mapped[str | None] = orm.mapped_column(
         sqlalchemy.Text,
+        nullable=True,
         anonymizer_config="anon.lorem_ipsum( characters := 30 )",
     )
     contents_url: orm.Mapped[str] = orm.mapped_column(
