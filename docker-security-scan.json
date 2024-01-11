@@ -3355,7 +3355,7 @@
     "VendorSeverity": {
       "amazon": 2,
       "nvd": 2,
-      "redhat": 2
+      "redhat": 1
     },
     "PublishedDate": "2023-12-12T15:15:07.867Z"
   },
@@ -3370,7 +3370,7 @@
     "VendorSeverity": {
       "amazon": 2,
       "nvd": 2,
-      "redhat": 2
+      "redhat": 1
     },
     "PublishedDate": "2023-12-12T15:15:07.867Z"
   },
@@ -3385,7 +3385,7 @@
     "VendorSeverity": {
       "amazon": 2,
       "nvd": 2,
-      "redhat": 2
+      "redhat": 1
     },
     "PublishedDate": "2023-12-12T15:15:07.867Z"
   },
@@ -3500,6 +3500,7 @@
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
     "VendorSeverity": {
+      "cbl-mariner": 2,
       "nvd": 2,
       "redhat": 2
     },
@@ -3514,6 +3515,7 @@
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
     "VendorSeverity": {
+      "cbl-mariner": 2,
       "nvd": 2,
       "redhat": 2
     },
@@ -3528,6 +3530,7 @@
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
     "VendorSeverity": {
+      "cbl-mariner": 2,
       "nvd": 2,
       "redhat": 2
     },
@@ -3542,6 +3545,7 @@
     "Title": "systemd-resolved: Unsigned name response in signed zone is not refused when DNSSEC=yes",
     "Severity": "MEDIUM",
     "VendorSeverity": {
+      "cbl-mariner": 2,
       "nvd": 2,
       "redhat": 2
     },
