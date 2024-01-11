@@ -5654,6 +5654,7 @@ previous_failed_batches:
             bypass_cache=True,
         )
         assert branch["commit"]["sha"] == tmp_mq_p1_refreshed["head"]["sha"]
+        assert tmp_mq_p1_refreshed["merged"]
 
         # merge the second one
         await self.create_status(tmp_mq_p2["pull_request"])
@@ -5667,6 +5668,7 @@ previous_failed_batches:
             bypass_cache=True,
         )
         assert branch["commit"]["sha"] == tmp_mq_p2_refreshed["head"]["sha"]
+        assert tmp_mq_p2_refreshed["merged"]
 
         # Queue is now empty, the process will restart
         await self.assert_merge_queue_contents(q, None, [])

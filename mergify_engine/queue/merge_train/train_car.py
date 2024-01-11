@@ -2754,8 +2754,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
             if tmp_pull_ctxt.body != draft_summary:
                 payload["body"] = draft_summary
 
+            queue_rule = self.get_queue_rule()
             if (
-                self._get_queue_check_run_conclusion_from_outcome()
+                queue_rule.config["queue_branch_merge_method"] != "fast-forward"
+                and self._get_queue_check_run_conclusion_from_outcome()
                 != check_api.Conclusion.PENDING
                 and not tmp_pull_ctxt.closed
             ):
