@@ -355,7 +355,7 @@ GitHubFileStatus = typing.Literal[
 
 
 class GitHubFile(typing_extensions.TypedDict):
-    sha: SHAType
+    sha: SHAType | None
     filename: str
     contents_url: str
     status: GitHubFileStatus
@@ -369,7 +369,7 @@ class GitHubFile(typing_extensions.TypedDict):
 
 
 class CachedGitHubFile(typing_extensions.TypedDict):
-    sha: SHAType
+    sha: SHAType | None
     filename: str
     contents_url: str
     status: GitHubFileStatus

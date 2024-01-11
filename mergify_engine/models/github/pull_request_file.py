@@ -41,8 +41,9 @@ class PullRequestFile(models.Base):
         primary_key=True,
         anonymizer_config="anon.lorem_ipsum( characters := 20 )",
     )
-    sha: orm.Mapped[github_types.SHAType] = orm.mapped_column(
+    sha: orm.Mapped[github_types.SHAType | None] = orm.mapped_column(
         sqlalchemy.Text,
+        nullable=True,
         anonymizer_config="anon.lorem_ipsum( characters := 15 )",
     )
     filename: orm.Mapped[str] = orm.mapped_column(
