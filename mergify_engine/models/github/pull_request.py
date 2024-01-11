@@ -314,6 +314,16 @@ class PullRequest(models.Base):
             ),
         )
 
+        try:
+            for commit in new_commits:
+                pr_commit_model.PullRequestCommit.type_adapter.validate_python(commit)
+        except pydantic_core.ValidationError:
+            LOG.warning(
+                "Skipping commits update for pull request %s because at least one commit can't be validated by its type adapter",
+                pull_request_id,
+                exc_info=True,
+            )
+
         for commit_index, commit in enumerate(new_commits):
             await pr_commit_model.PullRequestCommit.insert_or_update(
                 session,
@@ -362,6 +372,16 @@ class PullRequest(models.Base):
                 )
                 return
             raise
+
+        try:
+            for file in files:
+                pr_file_model.PullRequestFile.type_adapter.validate_python(file)
+        except pydantic_core.ValidationError:
+            LOG.warning(
+                "Skipping files update for pull request %s because at least one file can't be validated by its type adapter",
+                pull_request_id,
+                exc_info=True,
+            )
 
         for file in files:
             await pr_file_model.PullRequestFile.insert_or_update(
