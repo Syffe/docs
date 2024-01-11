@@ -103,10 +103,10 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "status": "unresolved",
                 "flaky": "flaky",
                 "last_seen": date.to_isoformat_with_Z(
-                    failed_job_with_flaky_nghb.started_at,
+                    failed_job_with_flaky_nghb.completed_at,
                 ),
                 "first_seen": date.to_isoformat_with_Z(
-                    flaky_failed_job_attempt_1.started_at,
+                    flaky_failed_job_attempt_1.completed_at,
                 ),
                 "pull_requests_count": 0,
             },
@@ -130,10 +130,10 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "status": "unresolved",
                 "flaky": "unknown",
                 "last_seen": date.to_isoformat_with_Z(
-                    failed_job_with_flaky_nghb.started_at,
+                    failed_job_with_flaky_nghb.completed_at,
                 ),
                 "first_seen": date.to_isoformat_with_Z(
-                    failed_job_with_flaky_nghb.started_at,
+                    failed_job_with_flaky_nghb.completed_at,
                 ),
                 "pull_requests_count": 0,
             },
@@ -157,10 +157,10 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "status": "unresolved",
                 "flaky": "unknown",
                 "last_seen": date.to_isoformat_with_Z(
-                    failed_job_with_no_flaky_nghb.started_at,
+                    failed_job_with_no_flaky_nghb.completed_at,
                 ),
                 "first_seen": date.to_isoformat_with_Z(
-                    failed_job_with_no_flaky_nghb.started_at,
+                    failed_job_with_no_flaky_nghb.completed_at,
                 ),
                 "pull_requests_count": 0,
             },
@@ -209,10 +209,10 @@ async def test_api_ci_issue_get_ci_issues_without_pr(
                 "status": "unresolved",
                 "flaky": "unknown",
                 "last_seen": date.to_isoformat_with_Z(
-                    failed_job_with_no_flaky_nghb.started_at,
+                    failed_job_with_no_flaky_nghb.completed_at,
                 ),
                 "first_seen": date.to_isoformat_with_Z(
-                    failed_job_with_no_flaky_nghb.started_at,
+                    failed_job_with_no_flaky_nghb.completed_at,
                 ),
                 "pull_requests_count": 0,
             },
@@ -296,10 +296,10 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 "status": "unresolved",
                 "flaky": "flaky",
                 "last_seen": date.to_isoformat_with_Z(
-                    failed_job_with_flaky_nghb.started_at,
+                    failed_job_with_flaky_nghb.completed_at,
                 ),
                 "first_seen": date.to_isoformat_with_Z(
-                    flaky_failed_job_attempt_1.started_at,
+                    flaky_failed_job_attempt_1.completed_at,
                 ),
                 "pull_requests_count": 3,
             },
@@ -349,10 +349,10 @@ async def test_api_ci_issue_get_ci_issues_with_pr(
                 "status": "unresolved",
                 "flaky": "unknown",
                 "last_seen": date.to_isoformat_with_Z(
-                    failed_job_with_no_flaky_nghb.started_at,
+                    failed_job_with_no_flaky_nghb.completed_at,
                 ),
                 "first_seen": date.to_isoformat_with_Z(
-                    failed_job_with_no_flaky_nghb.started_at,
+                    failed_job_with_no_flaky_nghb.completed_at,
                 ),
                 "pull_requests_count": 0,
             },

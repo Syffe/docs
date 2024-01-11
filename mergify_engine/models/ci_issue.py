@@ -314,9 +314,9 @@ class CiIssueGPT(models.Base, CiIssueMixin):
     def with_first_seen_column(cls) -> orm.strategy_options._AbstractLoad:
         return orm.with_expression(
             cls.first_seen,
-            cls._one_of_jobs_subquery(gh_models.WorkflowJob.started_at)
+            cls._one_of_jobs_subquery(gh_models.WorkflowJob.completed_at)
             .order_by(
-                gh_models.WorkflowJob.started_at.asc(),
+                gh_models.WorkflowJob.completed_at.asc(),
             )
             .scalar_subquery(),
         )
@@ -325,9 +325,9 @@ class CiIssueGPT(models.Base, CiIssueMixin):
     def with_last_seen_column(cls) -> orm.strategy_options._AbstractLoad:
         return orm.with_expression(
             cls.last_seen,
-            cls._one_of_jobs_subquery(gh_models.WorkflowJob.started_at)
+            cls._one_of_jobs_subquery(gh_models.WorkflowJob.completed_at)
             .order_by(
-                gh_models.WorkflowJob.started_at.desc(),
+                gh_models.WorkflowJob.completed_at.desc(),
             )
             .scalar_subquery(),
         )

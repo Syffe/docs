@@ -303,7 +303,10 @@ async def test_ci_issue_last_seen_first_seen(
         )
     ).scalar_one()
 
-    assert flaky_failed_job_attempt_1.started_at < failed_job_with_flaky_nghb.started_at
+    assert (
+        flaky_failed_job_attempt_1.completed_at
+        < failed_job_with_flaky_nghb.completed_at
+    )
 
-    assert issue.first_seen == flaky_failed_job_attempt_1.started_at
-    assert issue.last_seen == failed_job_with_flaky_nghb.started_at
+    assert issue.first_seen == flaky_failed_job_attempt_1.completed_at
+    assert issue.last_seen == failed_job_with_flaky_nghb.completed_at
