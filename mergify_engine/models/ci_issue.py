@@ -286,6 +286,7 @@ class CiIssueGPT(models.Base, CiIssueMixin):
             ).scalar_subquery(),
         )
 
+    first_event_id: orm.Mapped[int] = orm.query_expression()
     first_seen: orm.Mapped[datetime.datetime] = orm.query_expression()
     last_seen: orm.Mapped[datetime.datetime] = orm.query_expression()
 
@@ -308,6 +309,17 @@ class CiIssueGPT(models.Base, CiIssueMixin):
                 gh_models.WorkflowJobLogMetadata.ci_issue_id == cls.id,
             )
             .limit(1)
+        )
+
+    @classmethod
+    def with_first_event_id_column(cls) -> orm.strategy_options._AbstractLoad:
+        return orm.with_expression(
+            cls.first_event_id,
+            cls._one_of_jobs_subquery(gh_models.WorkflowJob.id)
+            .order_by(
+                gh_models.WorkflowJob.completed_at.asc(),
+            )
+            .scalar_subquery(),
         )
 
     @classmethod

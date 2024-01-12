@@ -72,6 +72,7 @@ class CiIssueDetailResponse:
     flaky: FlakyT
     first_seen: datetime.datetime
     last_seen: datetime.datetime
+    first_event_id: int
 
 
 @pydantic.dataclasses.dataclass
@@ -86,6 +87,7 @@ class CiIssueListResponse:
         metadata={"description": "List of CI issue events"},
     )
     flaky: FlakyT
+    first_event_id: int
     first_seen: datetime.datetime
     last_seen: datetime.datetime
     pull_requests_count: int
@@ -124,6 +126,7 @@ async def get_ci_issues(
         .options(
             sqlalchemy.orm.undefer(CiIssueGPT.events_count),
             CiIssueGPT.with_flaky_column(),
+            CiIssueGPT.with_first_event_id_column(),
             CiIssueGPT.with_first_seen_column(),
             CiIssueGPT.with_last_seen_column(),
             CiIssueGPT.with_pull_requests_count_column(),
@@ -209,6 +212,7 @@ async def get_ci_issues(
                 # TODO(sileht): make the order by with ORM
                 events=sorted(events, key=lambda e: e.started_at, reverse=True),
                 flaky=ci_issue.flaky,
+                first_event_id=ci_issue.first_event_id,
                 first_seen=ci_issue.first_seen,
                 last_seen=ci_issue.last_seen,
                 pull_requests_count=ci_issue.pull_requests_count,
@@ -284,6 +288,7 @@ async def get_ci_issue(
         .options(
             sqlalchemy.orm.undefer(CiIssueGPT.events_count),
             CiIssueGPT.with_flaky_column(),
+            CiIssueGPT.with_first_event_id_column(),
             CiIssueGPT.with_first_seen_column(),
             CiIssueGPT.with_last_seen_column(),
             CiIssueGPT.with_pull_requests_impacted_column(),
@@ -348,6 +353,7 @@ async def get_ci_issue(
         if ci_issue.pull_requests_impacted
         else [],
         flaky=ci_issue.flaky,
+        first_event_id=ci_issue.first_event_id,
         first_seen=ci_issue.first_seen,
         last_seen=ci_issue.last_seen,
     )
