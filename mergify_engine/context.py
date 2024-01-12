@@ -41,6 +41,7 @@ from mergify_engine.github_in_postgres import utils as ghinpg_utils
 from mergify_engine.models.github import commit_status as status_model
 from mergify_engine.models.github import pull_request_commit as prcommit_model
 from mergify_engine.models.github import pull_request_file as prfile_model
+from mergify_engine.models.github import pull_request_review as prreview_model
 from mergify_engine.rules.config import mergify as mergify_conf
 
 
@@ -2040,33 +2041,49 @@ class Context:
         branch = self.pull["base"]["ref"]
         return f"{login}/{repo}/pull/{number}@{branch}"
 
+    async def _reviews_from_db(self) -> list[github_types.GitHubReview]:
+        async with database.create_session() as session:
+            return await prreview_model.PullRequestReview.get_pull_request_reviews(
+                session,
+                self.pull["id"],
+            )
+
+    async def _reviews_from_http(self) -> list[github_types.GitHubReview]:
+        return [
+            review
+            async for review in typing.cast(
+                abc.AsyncIterable[github_types.GitHubReview],
+                self.client.items(
+                    f"{self.base_url}/pulls/{self.pull['number']}/reviews",
+                    resource_name="reviews",
+                    page_limit=5,
+                ),
+            )
+            # NOTE(sileht): We ignore any review done after the last event
+            # we received. It's safe because we will receive another
+            # review submitted event soon for the review we filter out.
+            # This allows to have a coherent view between review data
+            # retrieved in this API and the review data in pull request
+            # requested_reviewers and requested_teams attributes.
+            if review is not None
+            and (
+                self._most_recent_event_datetime is None
+                or date.fromisoformat(review["submitted_at"])
+                <= self._most_recent_event_datetime
+            )
+        ]
+
     @property
     async def reviews(self) -> list[github_types.GitHubReview]:
         reviews = self._caches.reviews.get()
         if reviews is cache.Unset:
-            reviews = [
-                review
-                async for review in typing.cast(
-                    abc.AsyncIterable[github_types.GitHubReview],
-                    self.client.items(
-                        f"{self.base_url}/pulls/{self.pull['number']}/reviews",
-                        resource_name="reviews",
-                        page_limit=5,
-                    ),
-                )
-                # NOTE(sileht): We ignore any review done after the last event
-                # we received. It's safe because we will received another
-                # review submitted event soon for the review we filter out
-                # This allows to have a coherent view between review data
-                # retrived in this API and the review data in pull request
-                # requested_reviewers and requested_teams attributes
-                if review is not None
-                and (
-                    self._most_recent_event_datetime is None
-                    or date.fromisoformat(review["submitted_at"])
-                    <= self._most_recent_event_datetime
-                )
-            ]
+            if await ghinpg_utils.can_repo_use_github_in_pg_data(
+                repo_owner=self.repository.repo["owner"]["login"],
+            ):
+                reviews = await self._reviews_from_db()
+            else:
+                reviews = await self._reviews_from_http()
+
             self._caches.reviews.set(reviews)
         return reviews
 

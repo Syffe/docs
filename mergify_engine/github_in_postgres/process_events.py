@@ -20,13 +20,17 @@ LOG = daiquiri.getLogger(__name__)
 
 
 HandledModelsT = (
-    type[gh_models.PullRequest] | type[gh_models.CheckRun] | type[gh_models.Status]
+    type[gh_models.PullRequest]
+    | type[gh_models.CheckRun]
+    | type[gh_models.Status]
+    | type[gh_models.PullRequestReview]
 )
 
 EVENT_TO_MODEL_MAPPING: dict[str, HandledModelsT] = {
     "pull_request": gh_models.PullRequest,
     "check_run": gh_models.CheckRun,
     "status": gh_models.Status,
+    "pull_request_review": gh_models.PullRequestReview,
 }
 
 

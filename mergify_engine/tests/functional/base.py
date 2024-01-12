@@ -1628,16 +1628,29 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             "PENDING",
         ] = "APPROVE",
         oauth_token: github_types.GitHubOAuthToken | None = None,
-    ) -> None:
+    ) -> int:
         await self.client_admin.post(
             f"{self.url_origin}/pulls/{pull_number}/reviews",
             json={"event": event, "body": f"event: {event}"},
             oauth_token=oauth_token,
         )
-        await self.wait_for(
-            "pull_request_review",
-            tests_utils.get_pull_request_review_event_payload(action="submitted"),
+        review_event = await self.wait_for_pull_request_review(action="submitted")
+        return review_event["review"]["id"]
+
+    async def dismiss_review(
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
+        review_id: int,
+        dismiss_message: str | None = None,
+    ) -> None:
+        if not dismiss_message:
+            dismiss_message = "Dismissed by Mergify"
+
+        await self.client_admin.put(
+            f"{self.url_origin}/pulls/{pull_number}/reviews/{review_id}/dismissals",
+            json={"event": "DISMISS", "message": dismiss_message},
         )
+        await self.wait_for_pull_request_review(action="dismissed", state="dismissed")
 
     async def get_review_requests(
         self,

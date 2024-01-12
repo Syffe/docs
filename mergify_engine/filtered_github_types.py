@@ -182,11 +182,13 @@ GitHubDataT = (
     github_types.GitHubPullRequest
     | github_types.GitHubCheckRunWithRepository
     | github_types.GitHubEventStatusBase
+    | github_types.GitHubEventPullRequestReviewForPostgres
 )
 GitHubEventDataT = (
     github_types.GitHubEventPullRequest
     | github_types.GitHubEventCheckRun
     | github_types.GitHubEventStatusBase
+    | github_types.GitHubEventPullRequestReview
 )
 
 
@@ -208,5 +210,19 @@ def extract_github_data_from_github_event(
 
     if event_type == "status":
         return typing.cast(github_types.GitHubEventStatusBase, event)
+
+    if event_type == "pull_request_review":
+        cast_event = typing.cast(github_types.GitHubEventPullRequestReview, event)
+        # The state is lowercase when in an event, but uppercase when retrieved
+        # from an http endpoint.
+        cast_event["review"]["state"] = typing.cast(
+            github_types.GitHubReviewStateType,
+            cast_event["review"]["state"].upper(),
+        )
+        return typing.cast(
+            github_types.GitHubEventPullRequestReviewForPostgres,
+            cast_event["review"]
+            | {"pull_request_id": cast_event["pull_request"]["id"]},
+        )
 
     raise RuntimeError(f"Unhandled event type to extract data from: {event_type}")

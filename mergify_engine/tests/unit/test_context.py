@@ -1147,6 +1147,7 @@ async def test_check_runs_ordering(
 
 async def test_reviews_filtering(
     a_pull_request: github_types.GitHubPullRequest,
+    fake_repository: context.Repository,
 ) -> None:
     all_reviews: list[github_types.GitHubReview | None] = [
         github_types.GitHubReview(
@@ -1207,6 +1208,7 @@ async def test_reviews_filtering(
             raise RuntimeError(f"not mocked api call: {url}")
 
     repo = mock.Mock()
+    repo.repo = fake_repository.repo
     repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
     repo.installation.client = mock.AsyncMock(items=fake_client_items)
     ctxt = context.Context(repo, a_pull_request)

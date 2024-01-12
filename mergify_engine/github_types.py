@@ -678,8 +678,12 @@ class GitHubReview(typing_extensions.TypedDict):
 
 class GitHubEventPullRequestReview(GitHubEventWithRepository):
     action: GitHubEventPullRequestReviewActionType
-    pull_request: GitHubPullRequest
+    pull_request: GitHubPullRequestBase
     review: GitHubReview
+
+
+class GitHubEventPullRequestReviewForPostgres(GitHubReview):
+    pull_request_id: GitHubPullRequestId
 
 
 class GitHubEventPullRequestReviewThread(GitHubEventPullRequestReview):

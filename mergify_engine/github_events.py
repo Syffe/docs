@@ -444,7 +444,7 @@ async def event_classifier(
     if event_type == "pull_request_review":
         event = typing.cast(github_types.GitHubEventPullRequestReview, event)
         return EventToRoute(
-            EventRoute.STREAM,
+            EventRoute.STREAM | EventRoute.GITHUB_IN_POSTGRES,
             event_type,
             event_id,
             event,
