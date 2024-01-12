@@ -4,6 +4,7 @@ import urllib.parse
 
 import fastapi
 import pydantic
+import starlette
 
 from mergify_engine.web import utils
 
@@ -199,10 +200,15 @@ class PageResponse(pydantic.BaseModel, typing.Generic[T]):
                 "cursor": page.cursor_prev.to_string(),
                 **cleaned_query_parameters,
             }
-
         links = {
             name: base_url.replace(query=urllib.parse.urlencode(qp, doseq=True))
             for name, qp in links_query_parameters.items()
         }
 
-        return ",".join([f'<{link}>; rel="{name}"' for name, link in links.items()])
+        return generate_links_header(links)
+
+
+def generate_links_header(
+    links: dict[str, starlette.datastructures.URL],
+) -> str:
+    return ",".join([f'<{link}>; rel="{name}"' for name, link in links.items()])

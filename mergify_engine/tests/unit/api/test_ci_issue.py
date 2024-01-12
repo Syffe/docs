@@ -815,7 +815,9 @@ async def test_api_ci_issue_get_ci_issue_event_log(
     assert reply.status_code == 404
 
 
-@pytest.mark.populated_db_datasets("TestGhaFailedJobsLinkToCissueGPTDataset")
+@pytest.mark.populated_db_datasets(
+    "TestGhaFailedJobsLinkToCissueGPTDataset",
+)
 async def test_api_ci_issue_get_ci_issue_event_detail(
     populated_db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
@@ -823,6 +825,7 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
 ) -> None:
     await populated_db.commit()
     populated_db.expunge_all()
+
     await tests_utils.configure_web_client_to_work_with_a_repo(
         respx_mock,
         populated_db,
@@ -830,7 +833,23 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
         "OneAccount/OneRepo",
     )
 
-    job = await populated_db.get_one(
+    first_job = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/failed_job_with_flaky_nghb"],
+        options=[
+            orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt),
+            orm.joinedload(gh_models.WorkflowJob.log_metadata),
+        ],
+    )
+    second_job = await populated_db.get_one(
+        gh_models.WorkflowJob,
+        DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_2"],
+        options=[
+            orm.joinedload(gh_models.WorkflowJob.ci_issues_gpt),
+            orm.joinedload(gh_models.WorkflowJob.log_metadata),
+        ],
+    )
+    third_job = await populated_db.get_one(
         gh_models.WorkflowJob,
         DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_1"],
         options=[
@@ -838,77 +857,94 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
             orm.joinedload(gh_models.WorkflowJob.log_metadata),
         ],
     )
+    assert len(first_job.ci_issues_gpt) == 2
+    assert len(second_job.ci_issues_gpt) == 1
+    assert len(third_job.ci_issues_gpt) == 1
 
-    assert len(job.ci_issues_gpt) == 1
-    ci_issue = job.ci_issues_gpt[0]
-    assert len(job.log_metadata) == 1
-    event_id = job.log_metadata[0].id
+    assert len(first_job.log_metadata) == 2
+    assert len(second_job.log_metadata) == 1
+    assert len(third_job.log_metadata) == 1
 
-    reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/{event_id}",
-    )
+    assert first_job.steps is not None
+    assert second_job.steps is not None
 
-    assert job.steps is not None
+    assert first_job.ci_issues_gpt[0].id == second_job.ci_issues_gpt[0].id
+    assert first_job.ci_issues_gpt[0].id == third_job.ci_issues_gpt[0].id
 
-    assert reply.json() == {
-        "id": event_id,
-        "name": "A job",
-        "run_id": job.workflow_run_id,
-        "steps": [
-            {
-                "name": "Run a step",
-                "status": "completed",
-                "conclusion": "failure",
-                "number": 1,
-                "started_at": job.steps[0]["started_at"],
-                "completed_at": job.steps[0]["completed_at"],
-            },
-        ],
-        "failed_step_number": 1,
-        "started_at": date.to_isoformat_with_Z(job.started_at),
-        "completed_at": date.to_isoformat_with_Z(job.completed_at),
-        "flaky": "flaky",
-        "run_attempt": 1,
-        "failed_run_count": 3,
-        "log_extract": "Some logs",
-    }
+    ci_issue = first_job.ci_issues_gpt[0]
+    first_event_id = first_job.log_metadata[0].id
+    second_event_id = second_job.log_metadata[0].id
+    third_event_id = third_job.log_metadata[0].id
 
-    job = await populated_db.get_one(
-        gh_models.WorkflowJob,
-        DbPopulator.internal_ref["OneAccount/OneRepo/flaky_failed_job_attempt_2"],
-        options=[
-            orm.joinedload(gh_models.WorkflowJob.ci_issue),
-            orm.joinedload(gh_models.WorkflowJob.log_metadata),
-        ],
-    )
+    assert first_event_id > second_event_id
+    assert second_event_id > third_event_id
 
     assert ci_issue.short_id_suffix is not None
-    assert len(job.log_metadata) == 1
-    event_id = job.log_metadata[0].id
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/{event_id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/{first_event_id}",
     )
 
-    assert job.steps is not None
-
     assert reply.json() == {
-        "id": event_id,
+        "id": first_event_id,
         "name": "A job",
-        "run_id": job.workflow_run_id,
+        "run_id": first_job.workflow_run_id,
         "steps": [
             {
                 "name": "Run a step",
                 "status": "completed",
                 "conclusion": "failure",
                 "number": 1,
-                "started_at": job.steps[0]["started_at"],
-                "completed_at": job.steps[0]["completed_at"],
+                "started_at": first_job.steps[0]["started_at"],
+                "completed_at": first_job.steps[0]["completed_at"],
             },
         ],
         "failed_step_number": 1,
-        "started_at": date.to_isoformat_with_Z(job.started_at),
-        "completed_at": date.to_isoformat_with_Z(job.completed_at),
+        "started_at": date.to_isoformat_with_Z(first_job.started_at),
+        "completed_at": date.to_isoformat_with_Z(first_job.completed_at),
+        "flaky": "unknown",
+        "run_attempt": 1,
+        "failed_run_count": 1,
+        "log_extract": "Some similar logs",
+    }
+    assert reply.links == {
+        "next": {
+            "url": f"http://localhost:3000/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/{second_event_id}",
+            "rel": "next",
+        },
+    }
+
+    reply = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/{second_event_id}",
+    )
+    assert reply.links == {
+        "prev": {
+            "url": f"http://localhost:3000/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/{first_event_id}",
+            "rel": "prev",
+        },
+        "next": {
+            "url": f"http://localhost:3000/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/{third_event_id}",
+            "rel": "next",
+        },
+    }
+
+    assert reply.json() == {
+        "id": second_event_id,
+        "name": "A job",
+        "run_id": second_job.workflow_run_id,
+        "steps": [
+            {
+                "name": "Run a step",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 1,
+                "started_at": second_job.steps[0]["started_at"],
+                "completed_at": second_job.steps[0]["completed_at"],
+            },
+        ],
+        "failed_step_number": 1,
+        "started_at": date.to_isoformat_with_Z(second_job.started_at),
+        "completed_at": date.to_isoformat_with_Z(second_job.completed_at),
         "flaky": "flaky",
         "run_attempt": 2,
         "failed_run_count": 3,
@@ -918,13 +954,11 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     reply = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events/9999999",
     )
-
     assert reply.status_code == 404
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/9999999/events/{job.id}",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/9999999/events/{second_job.id}",
     )
-
     assert reply.status_code == 404
 
     await tests_utils.configure_web_client_to_work_with_a_repo(
@@ -935,9 +969,8 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
     )
 
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.short_id_suffix}/events/{job.id}",
+        f"/front/proxy/engine/v1/repos/colliding-account-1/colliding_repo_name/ci_issues/{ci_issue.short_id_suffix}/events/{second_job.id}",
     )
-
     assert reply.status_code == 404
 
 

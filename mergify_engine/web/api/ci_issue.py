@@ -537,6 +537,8 @@ async def get_ci_issue_event_detail(
         fastapi.Path(description="The ID of the CI Issue in this repository"),
     ],
     event_id: typing.Annotated[int, fastapi.Path(description="The ID of the Event")],
+    request: fastapi.Request,
+    response: fastapi.Response,
 ) -> CiIssueEventDetailResponse:
     sub_q_ci_issue_id = (
         sqlalchemy.select(CiIssueGPT.id)
@@ -547,7 +549,13 @@ async def get_ci_issue_event_detail(
         .scalar_subquery()
     )
 
-    stmt = (
+    common_filter = (
+        # NOTE(sileht): For security purpose:
+        gh_models.WorkflowJob.repository_id == repository_ctxt.repo["id"],
+        gh_models.WorkflowJobLogMetadata.ci_issue_id == sub_q_ci_issue_id,
+    )
+
+    current_stmt = (
         sqlalchemy.select(gh_models.WorkflowJobLogMetadata)
         .join(gh_models.WorkflowJobLogMetadata.workflow_job)
         .options(
@@ -558,19 +566,45 @@ async def get_ci_issue_event_detail(
                 gh_models.WorkflowJob.with_failed_run_count_column(),
             ),
         )
-        .where(
-            gh_models.WorkflowJobLogMetadata.id == event_id,
-            # NOTE(sileht): For security purpose:
-            gh_models.WorkflowJob.repository_id == repository_ctxt.repo["id"],
-            gh_models.WorkflowJobLogMetadata.ci_issue_id == sub_q_ci_issue_id,
-        )
+        .where(gh_models.WorkflowJobLogMetadata.id == event_id, *common_filter)
     )
 
-    result = await session.execute(stmt)
+    result = await session.execute(current_stmt)
     log_metadata = result.unique().scalar_one_or_none()
 
     if log_metadata is None:
         raise fastapi.HTTPException(404)
+
+    links = {}
+
+    prev_row_stmt = (
+        sqlalchemy.select(gh_models.WorkflowJobLogMetadata.id)
+        .join(gh_models.WorkflowJobLogMetadata.workflow_job)
+        .where(gh_models.WorkflowJobLogMetadata.id > event_id, *common_filter)
+        .order_by(gh_models.WorkflowJobLogMetadata.id.asc())
+        .limit(1)
+    )
+
+    result = await session.execute(prev_row_stmt)
+    prev_id = result.scalar_one_or_none()
+    if prev_id is not None:
+        path = f"{request.url.path.rpartition('/')[0]}/{prev_id}"
+        links["prev"] = request.url.replace(path=path)
+
+    next_row_stmt = (
+        sqlalchemy.select(gh_models.WorkflowJobLogMetadata.id)
+        .join(gh_models.WorkflowJobLogMetadata.workflow_job)
+        .where(gh_models.WorkflowJobLogMetadata.id < event_id, *common_filter)
+        .order_by(gh_models.WorkflowJobLogMetadata.id.desc())
+        .limit(1)
+    )
+    result = await session.execute(next_row_stmt)
+    next_id = result.scalar_one_or_none()
+    if next_id is not None:
+        path = f"{request.url.path.rpartition('/')[0]}/{next_id}"
+        links["next"] = request.url.replace(path=path)
+
+    response.headers["Link"] = pagination.generate_links_header(links)
 
     return CiIssueEventDetailResponse(
         id=log_metadata.id,
