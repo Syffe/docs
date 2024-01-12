@@ -11,6 +11,7 @@ import daiquiri
 import ddtrace
 import redis.asyncio as redispy
 from redis.asyncio import retry
+import redis.exceptions
 
 from mergify_engine import date
 from mergify_engine import exceptions
@@ -276,7 +277,10 @@ class RedisLinks:
             "authentication",
         ):
             if db in self.__dict__:
-                await self.__dict__[db].close(close_connection_pool=True)
+                try:
+                    await self.__dict__[db].close(close_connection_pool=True)
+                except redis.exceptions.TimeoutError:
+                    pass
 
     async def flushall(self) -> None:
         await self.cache.flushdb()
