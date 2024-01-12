@@ -58,6 +58,10 @@ EvaluatedConditionGroupT = abc.Mapping[
 ]
 
 
+class IgnoreConditionError(BaseException):
+    pass
+
+
 @dataclasses.dataclass
 class RuleConditionFilters:
     condition: dataclasses.InitVar[filter.TreeT]
@@ -131,7 +135,7 @@ class RuleCondition:
     -merged
     """
 
-    filters: RuleConditionFilters
+    filters: RuleConditionFilters = dataclasses.field(compare=False)
     label: str | None = None
     description: str | None = None
 
@@ -190,7 +194,17 @@ class RuleCondition:
             return self.label
         return str(self.filters.boolean)
 
-    def copy(self) -> RuleCondition:
+    def copy(
+        self,
+        ignore_conditions_starting_with: str | tuple[str, ...] | None = None,
+    ) -> RuleCondition:
+        if (
+            ignore_conditions_starting_with is not None
+            and self.get_attribute_name().startswith(
+                ignore_conditions_starting_with,
+            )
+        ):
+            raise IgnoreConditionError
         return RuleCondition(self.filters, self.label, self.description)
 
     async def __call__(self, obj: filter.GetAttrObjectT) -> bool:
@@ -417,9 +431,22 @@ class RuleConditionCombination(RuleConditionGroup):
     def is_faulty(self) -> bool:
         return any(c.evaluation_error for c in self.walk())
 
-    def copy(self) -> RuleConditionCombination:
+    def copy(
+        self,
+        ignore_conditions_starting_with: str | tuple[str, ...] | None = None,
+    ) -> RuleConditionCombination:
+        subconditions = []
+        for condition in self.conditions:
+            try:
+                subconditions.append(condition.copy(ignore_conditions_starting_with))
+            except IgnoreConditionError:
+                pass
+
+        if ignore_conditions_starting_with is not None and not subconditions:
+            raise IgnoreConditionError
+
         return self.__class__(
-            {self.operator: [c.copy() for c in self.conditions]},
+            {self.operator: subconditions},
             description=self.description,
         )
 
@@ -443,9 +470,12 @@ class RuleConditionNegation(RuleConditionGroup):
 
         self.operator, self.condition = next(iter(data.items()))
 
-    def copy(self) -> RuleConditionNegation:
+    def copy(
+        self,
+        ignore_conditions_starting_with: str | tuple[str, ...] | None = None,
+    ) -> RuleConditionNegation:
         return self.__class__(
-            {self.operator: self.condition.copy()},
+            {self.operator: self.condition.copy(ignore_conditions_starting_with)},
             description=self.description,
         )
 
@@ -708,8 +738,16 @@ class BaseRuleConditions:
     def walk(self) -> abc.Iterator[RuleCondition]:
         yield from self.condition.walk()
 
-    def copy(self: BaseRuleConditionsType) -> BaseRuleConditionsType:
-        return self.__class__(self.condition.copy().conditions)
+    def copy(
+        self: BaseRuleConditionsType,
+        ignore_conditions_starting_with: str | tuple[str, ...] | None = None,
+    ) -> BaseRuleConditionsType:
+        try:
+            return self.__class__(
+                self.condition.copy(ignore_conditions_starting_with).conditions,
+            )
+        except IgnoreConditionError:
+            return self.__class__([])
 
 
 @dataclasses.dataclass

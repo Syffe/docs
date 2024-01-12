@@ -2840,3 +2840,151 @@ async def test_invalid_extended_configuration_already_loaded() -> None:
             repository_ctxt,
             extends_only_config_file,
         )
+
+
+async def test_rule_condition_copy() -> None:
+    condition = conditions.RuleCondition.from_string("base=main")
+
+    copy = condition.copy()
+
+    assert condition is not copy
+    assert condition == copy
+
+
+async def test_rule_condition_copy_ignore() -> None:
+    condition = conditions.RuleCondition.from_string("base=main")
+
+    with pytest.raises(conditions.IgnoreConditionError):
+        condition.copy(ignore_conditions_starting_with="base")
+
+    with pytest.raises(conditions.IgnoreConditionError):
+        condition.copy(ignore_conditions_starting_with=("base", "foo"))
+
+    copy = condition.copy(ignore_conditions_starting_with="foo")
+
+    assert condition is not copy
+    assert condition == copy
+
+
+async def test_rule_condition_combination_copy() -> None:
+    condition = conditions.RuleConditionCombination(
+        {
+            "and": [
+                conditions.RuleCondition.from_string("base=main"),
+                conditions.RuleCondition.from_string("label=foo"),
+            ],
+        },
+    )
+
+    copy = condition.copy()
+
+    assert condition is not copy
+    assert copy.operator == "and"
+    assert len(copy.conditions) == 2
+    assert copy.conditions[0] == conditions.RuleCondition.from_string("base=main")
+    assert copy.conditions[1] == conditions.RuleCondition.from_string("label=foo")
+
+
+async def test_rule_condition_combination_copy_ignore() -> None:
+    condition = conditions.RuleConditionCombination(
+        {
+            "and": [
+                conditions.RuleCondition.from_string("base=main"),
+                conditions.RuleCondition.from_string("label=foo"),
+            ],
+        },
+    )
+
+    with pytest.raises(conditions.IgnoreConditionError):
+        condition.copy(ignore_conditions_starting_with=("base", "label"))
+
+    copy = condition.copy(ignore_conditions_starting_with="base")
+
+    assert copy.operator == "and"
+    assert len(copy.conditions) == 1
+    assert copy.conditions[0] == conditions.RuleCondition.from_string("label=foo")
+
+
+async def test_rule_condition_negation_copy() -> None:
+    condition = conditions.RuleConditionNegation(
+        {
+            "not": conditions.RuleConditionCombination(
+                {
+                    "or": [
+                        conditions.RuleCondition.from_string("base=main"),
+                        conditions.RuleCondition.from_string("label=foo"),
+                    ],
+                },
+            ),
+        },
+    )
+
+    copy = condition.copy()
+
+    assert condition is not copy
+    assert copy.operator == "not"
+    assert copy.condition.operator == "or"
+    assert len(copy.condition.conditions) == 2
+    assert copy.condition.conditions[0] == conditions.RuleCondition.from_string(
+        "base=main",
+    )
+    assert copy.condition.conditions[1] == conditions.RuleCondition.from_string(
+        "label=foo",
+    )
+
+
+async def test_rule_condition_negation_copy_ignore() -> None:
+    condition = conditions.RuleConditionNegation(
+        {
+            "not": conditions.RuleConditionCombination(
+                {
+                    "or": [
+                        conditions.RuleCondition.from_string("base=main"),
+                        conditions.RuleCondition.from_string("label=foo"),
+                    ],
+                },
+            ),
+        },
+    )
+
+    with pytest.raises(conditions.IgnoreConditionError):
+        condition.copy(ignore_conditions_starting_with=("base", "label"))
+
+    copy = condition.copy(ignore_conditions_starting_with="base")
+
+    assert copy.operator == "not"
+    assert copy.condition.operator == "or"
+    assert len(copy.condition.conditions) == 1
+    assert copy.condition.conditions[0] == conditions.RuleCondition.from_string(
+        "label=foo",
+    )
+
+
+async def test_base_rule_conditions_copy() -> None:
+    condition = conditions.BaseRuleConditions(
+        [
+            conditions.RuleCondition.from_string("base=main"),
+            conditions.RuleCondition.from_string("label=foo"),
+        ],
+    )
+
+    copy = condition.copy()
+
+    assert condition is not copy
+    copy_subconditions = copy.condition.conditions
+    assert len(copy_subconditions) == 2
+    assert copy_subconditions[0] == conditions.RuleCondition.from_string("base=main")
+    assert copy_subconditions[1] == conditions.RuleCondition.from_string("label=foo")
+
+
+async def test_base_rule_conditions_copy_ignore() -> None:
+    condition = conditions.BaseRuleConditions(
+        [
+            conditions.RuleCondition.from_string("base=main"),
+            conditions.RuleCondition.from_string("label=foo"),
+        ],
+    )
+
+    copy = condition.copy(ignore_conditions_starting_with=("base", "label"))
+
+    assert len(copy.condition.conditions) == 0

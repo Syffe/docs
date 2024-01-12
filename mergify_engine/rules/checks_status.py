@@ -17,52 +17,19 @@ if typing.TYPE_CHECKING:
     from mergify_engine.queue.merge_train import TrainCarOutcome
 
 
-def get_conditions_with_ignored_attributes(
-    conditions: rules_conditions.PullRequestRuleConditions
-    | rules_conditions.QueueRuleMergeConditions,
-    attribute_prefixes: tuple[str, ...],
-) -> (
-    rules_conditions.PullRequestRuleConditions
-    | rules_conditions.QueueRuleMergeConditions
-):
-    conditions = conditions.copy()
-    for condition in conditions.walk():
-        attr = condition.get_attribute_name()
-        if attr.startswith(attribute_prefixes):
-            condition.make_always_true()
-    return conditions
-
-
-async def conditions_without_some_attributes_match_p(
-    log: logging.LoggerAdapter[logging.Logger],
-    pulls: list[condition_value_querier.BasePullRequest],
-    conditions: rules_conditions.PullRequestRuleConditions
-    | rules_conditions.QueueRuleMergeConditions,
-    attribute_prefixes: tuple[str, ...],
-) -> bool:
-    conditions = get_conditions_with_ignored_attributes(conditions, attribute_prefixes)
-    await conditions(pulls)
-    log.debug(
-        "does_conditions_without_some_attributes_match ?",
-        attribute_prefixes=attribute_prefixes,
-        match=conditions.match,
-        summary=conditions.get_summary(),
-    )
-    return conditions.match
-
-
-async def _get_checks_result(
+async def _get_ci_conclusion(
     repository: context.Repository,
     pulls: list[condition_value_querier.BasePullRequest],
     conditions: rules_conditions.PullRequestRuleConditions
     | rules_conditions.QueueRuleMergeConditions,
+    other_unknown_attributes: tuple[str, ...] = (),
 ) -> check_api.Conclusion:
     # NOTE(sileht): we replace BinaryFilter by IncompleteChecksFilter to ensure
     # all required CIs have finished. IncompleteChecksFilter return 3 states
     # instead of just True/False, this allows us to known if a condition can
     # change in the future or if its a final state.
     tree = conditions.extract_raw_filter_tree()
-    results: dict[int, filter.TernaryFilterResult] = {}
+    results: dict[github_types.GitHubPullRequestNumber, filter.TernaryFilterResult] = {}
 
     for pull in pulls:
         f = filter.IncompleteChecksFilter(
@@ -72,16 +39,12 @@ async def _get_checks_result(
                 await pull.get_attribute_value("check-pending"),
             ),
             all_checks=typing.cast(list[str], await pull.get_attribute_value("check")),
+            other_unknown_attributes=other_unknown_attributes,
         )
         live_resolvers.configure_filter(repository, f)
 
         ret = await f(pull)
-        if ret in {
-            filter.UnknownOnlyAttribute,
-            filter.UnknownOrTrueAttribute,
-            # NOTE(sileht): Impossible since since root conditions is always an AND, but better safe than sorry
-            filter.UnknownOrFalseAttribute,
-        }:
+        if isinstance(ret, filter.UnknownType):
             return check_api.Conclusion.PENDING
 
         pr_number = typing.cast(
@@ -109,15 +72,20 @@ async def get_outcome_from_conditions(
     if conditions.match:
         return TrainCarOutcome.WAITING_FOR_MERGE
 
-    only_checks_does_not_match = await conditions_without_some_attributes_match_p(
-        log,
+    # NOTE(charly): check conditions with CI conclusion unknown. If it fails for
+    # one pull request, CI is not the root cause.
+    match_with_ci_unknown = await _get_ternary_filter_results(
+        repository,
         pulls,
         conditions,
         ("check-", "status-"),
     )
-    if only_checks_does_not_match:
-        result = await _get_checks_result(repository, pulls, conditions)
-        if result == check_api.Conclusion.SUCCESS:
+    if not any(m is False for m in match_with_ci_unknown.values()):
+        # CI is the root cause of the condition unmatch, so get its conclusion
+        # to return the right outcome
+        ci_conclusion = await _get_ci_conclusion(repository, pulls, conditions)
+
+        if ci_conclusion == check_api.Conclusion.SUCCESS:
             log.error(
                 "_get_checks_result() unexpectedly returned check_api.Conclusion.SUCCESS "
                 "while conditions.match is false",
@@ -126,45 +94,81 @@ async def get_outcome_from_conditions(
             # So don't merge broken stuff
             return TrainCarOutcome.WAITING_FOR_CI
 
-        if result == check_api.Conclusion.PENDING:
+        if ci_conclusion == check_api.Conclusion.PENDING:
             return TrainCarOutcome.WAITING_FOR_CI
 
-        if result == check_api.Conclusion.FAILURE:
+        if ci_conclusion == check_api.Conclusion.FAILURE:
             return TrainCarOutcome.CHECKS_FAILED
 
         raise RuntimeError("Unexpected _get_checks_result() return value")
 
-    schedule_match = await conditions_without_some_attributes_match_p(
-        log,
+    # NOTE(charly): check conditions with CI conclusion and schedule unknown. If
+    # it fails for one pull request, CI and schedule are not the root cause,
+    # another condition has failed.
+    match_with_ci_and_schedule_unknown = await _get_ternary_filter_results(
+        repository,
         pulls,
         conditions,
         ("check-", "status-", "schedule", "current-datetime"),
     )
-    # NOTE(sileht): when something not related to checks does not match
-    # we now also remove schedule from the tree, if it match
-    # afterwards, it means that a schedule didn't match yet
-    if schedule_match:
-        # NOTE(sileht): now we look at the CIs result and if it fail
-        # we fail too, otherwise we wait for the schedule to match
-        result_without_schedule = await _get_checks_result(
+    if not any(m is False for m in match_with_ci_and_schedule_unknown.values()):
+        # NOTE(sileht): now we look at the CI conclusion while ignoring schedule
+        # conditions
+        ci_conclusion_without_schedule = await _get_ci_conclusion(
             repository,
             pulls,
-            get_conditions_with_ignored_attributes(
-                conditions,
-                ("schedule", "current-datetime"),
+            conditions.copy(
+                ignore_conditions_starting_with=("schedule", "current-datetime"),
             ),
         )
-        if result_without_schedule == check_api.Conclusion.FAILURE:
+
+        if ci_conclusion_without_schedule == check_api.Conclusion.FAILURE:
             # Checks failed outside of schedule
             return TrainCarOutcome.CHECKS_FAILED
 
-        if result_without_schedule == check_api.Conclusion.PENDING:
+        if ci_conclusion_without_schedule == check_api.Conclusion.PENDING:
             # Checks running outside of schedule
             return TrainCarOutcome.WAITING_FOR_CI
 
-        if result_without_schedule == check_api.Conclusion.SUCCESS:
+        if ci_conclusion_without_schedule == check_api.Conclusion.SUCCESS:
+            # Checks succeeded outside of schedule, we wait for the schedule
             return TrainCarOutcome.WAITING_FOR_SCHEDULE
 
         raise RuntimeError("Unexpected _get_checks_result() return value")
 
     return TrainCarOutcome.CONDITIONS_FAILED
+
+
+async def _get_ternary_filter_results(
+    repository: context.Repository,
+    pulls: list[condition_value_querier.BasePullRequest],
+    conditions: rules_conditions.PullRequestRuleConditions
+    | rules_conditions.QueueRuleMergeConditions,
+    unknown_attribute_prefixes: tuple[str, ...],
+) -> dict[github_types.GitHubPullRequestNumber, filter.TernaryFilterResult]:
+    tree = conditions.extract_raw_filter_tree()
+    results: dict[github_types.GitHubPullRequestNumber, filter.TernaryFilterResult] = {}
+
+    for pull in pulls:
+        pr_number = typing.cast(
+            github_types.GitHubPullRequestNumber,
+            await pull.get_attribute_value("number"),
+        )
+        filter_ = _create_ternary_filter(repository, tree, unknown_attribute_prefixes)
+        match = await filter_(pull)
+        results[pr_number] = match
+
+    return results
+
+
+def _create_ternary_filter(
+    repository: context.Repository,
+    tree: filter.TreeT,
+    unknown_attribute_prefixes: tuple[str, ...],
+) -> filter.TernaryFilter:
+    filter_ = filter.UnknownAttributesFilter(
+        tree,
+        unknown_attribute_prefixes=unknown_attribute_prefixes,
+    )
+    live_resolvers.configure_filter(repository, filter_)
+    return filter_

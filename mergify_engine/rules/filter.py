@@ -812,9 +812,28 @@ class FixedAttributesFilter(TernaryFilter):
 
 
 @dataclasses.dataclass(repr=False)
+class UnknownAttributesFilter(TernaryFilter):
+    unknown_attribute_prefixes: tuple[str, ...] = dataclasses.field(
+        default_factory=tuple,
+    )
+
+    def is_known(
+        self,
+        _op: BinaryOperatorT[FilterResultT],
+        attribute_name: str,
+        _ref_values: list[typing.Any],
+    ) -> bool:
+        real_attr_name = attribute_name.lstrip(Filter.LENGTH_OPERATOR)
+        return not real_attr_name.startswith(self.unknown_attribute_prefixes)
+
+
+@dataclasses.dataclass(repr=False)
 class IncompleteChecksFilter(TernaryFilter):
     pending_checks: list[str] = dataclasses.field(default_factory=list)
     all_checks: list[str] = dataclasses.field(default_factory=list)
+    other_unknown_attributes: tuple[str, ...] = dataclasses.field(
+        default_factory=tuple,
+    )
 
     def is_known(
         self,
@@ -822,12 +841,11 @@ class IncompleteChecksFilter(TernaryFilter):
         attribute_name: str,
         ref_values: list[typing.Any],
     ) -> bool:
-        binary_op, iterable_op, _ = op
+        real_attr_name = attribute_name.lstrip(Filter.LENGTH_OPERATOR)
+        if real_attr_name in self.other_unknown_attributes:
+            return False
 
-        if attribute_name.startswith(Filter.LENGTH_OPERATOR):
-            real_attr_name = attribute_name[1:]
-        else:
-            real_attr_name = attribute_name
+        binary_op, iterable_op, _ = op
 
         if real_attr_name.startswith(("check-", "status-")):
             if attribute_name.startswith(Filter.LENGTH_OPERATOR):

@@ -221,6 +221,37 @@ async def test_rules_checks_basic() -> None:
         TrainCarOutcome.WAITING_FOR_SCHEDULE,
     )
 
+    # Success reported and schedule missing (using "not" to exclude holidays)
+    # Monday 17:32, not a holiday but out of schedule
+    pull.attrs["current-datetime"] = datetime.datetime(
+        2024,
+        1,
+        8,
+        17,
+        32,
+        tzinfo=datetime.UTC,
+    )
+    pull.attrs["check-pending"] = ["whatever"]
+    pull.attrs["check-failure"] = ["foo"]
+    pull.attrs["check-success"] = ["fake-ci", "test-starter"]
+    await assert_queue_rule_checks_status(
+        [
+            "check-success=fake-ci",
+            "label=foobar",
+            "schedule=Mon-Fri 09:00-17:30",
+            {
+                "not": {
+                    "or": [
+                        "current-datetime = XXXX-01-01T00:00/XXXX-01-01T23:59",
+                        "current-datetime = XXXX-12-25T00:00/XXXX-12-25T23:59",
+                    ],
+                },
+            },
+        ],
+        pull,
+        TrainCarOutcome.WAITING_FOR_SCHEDULE,
+    )
+
 
 async def test_rules_checks_with_and_or() -> None:
     pull = conftest.FakePullRequest(
