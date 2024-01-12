@@ -54,7 +54,7 @@ class TestSummary(base.FunctionalTestBase):
 
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
-        assert summary["output"]["title"] == "1 rule matches"
+        assert summary["output"]["title"] == "1 potential rule"
         assert summary["output"]["summary"] is not None
         assert "1 not applicable rule" in summary["output"]["summary"]
 
@@ -95,7 +95,7 @@ class TestSummary(base.FunctionalTestBase):
 
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
-        assert summary["output"]["title"] == "1 rule matches"
+        assert summary["output"]["title"] == "1 potential rule"
         assert summary["output"]["summary"] is not None
         assert "1 not applicable rule" in summary["output"]["summary"]
 
@@ -122,10 +122,14 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"]["summary"] is not None
-        assert (
-            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `-conflict` [📌 merge requirement]\n- [X] `-draft` [📌 merge requirement]\n- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n"
-            in summary["output"]["summary"]
-        )
+        assert f"""### Rule: test (merge)
+- [ ] `label=test`
+- [X] `-closed` [📌 merge requirement]
+- [X] `-conflict` [📌 merge requirement]
+- [X] `-draft` [📌 merge requirement]
+- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]
+- [X] `base={self.main_branch_name}`
+""" in summary["output"]["summary"]
 
         await self.add_label(p["number"], "test")
         await self.run_engine()
@@ -134,10 +138,14 @@ class TestSummary(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"]["summary"] is not None
-        assert (
-            f"### ✅ Rule: test (merge)\n- [X] `-conflict` [📌 merge requirement]\n- [X] `-draft` [📌 merge requirement]\n- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]\n- [X] `base={self.main_branch_name}`\n- [X] `label=test`\n"
-            in summary["output"]["summary"]
-        )
+        assert f"""### Rule: test (merge)
+- [ ] `-closed` [📌 merge requirement]
+- [X] `-conflict` [📌 merge requirement]
+- [X] `-draft` [📌 merge requirement]
+- [X] `-mergify-configuration-changed` [📌 merge -> allow_merging_configuration_change setting requirement]
+- [X] `base={self.main_branch_name}`
+- [X] `label=test`
+""" in summary["output"]["summary"]
 
     async def test_pull_request_rules_order_operator_and(self) -> None:
         rules = {

@@ -1953,7 +1953,7 @@ async def test_get_pull_request_rules_evaluator(
 
     assert [r.name for r in match.rules] == ["default", "default"]
     assert list(match.matching_rules[0].actions.keys()) == ["merge"]
-    assert len(match.matching_rules[0].conditions.condition.conditions) == 4
+    assert len(match.matching_rules[0].conditions.condition.conditions) == 5
     assert not match.matching_rules[0].conditions.match
     config_change = match.matching_rules[0].conditions.condition.conditions[0]
     assert isinstance(config_change, rules.conditions.RuleCondition)
@@ -1962,15 +1962,15 @@ async def test_get_pull_request_rules_evaluator(
         config_change.description
         == "📌 merge -> allow_merging_configuration_change setting requirement"
     )
-    draft = match.matching_rules[0].conditions.condition.conditions[1]
+    draft = match.matching_rules[0].conditions.condition.conditions[2]
     assert isinstance(draft, rules.conditions.RuleCondition)
     assert str(draft) == "-draft"
     assert draft.description == "📌 merge requirement"
-    conflict = match.matching_rules[0].conditions.condition.conditions[2]
+    conflict = match.matching_rules[0].conditions.condition.conditions[3]
     assert isinstance(conflict, rules.conditions.RuleCondition)
     assert str(conflict) == "-conflict"
     assert conflict.description == "📌 merge requirement"
-    group = match.matching_rules[0].conditions.condition.conditions[3]
+    group = match.matching_rules[0].conditions.condition.conditions[4]
     assert isinstance(group, rules.conditions.RuleConditionCombination)
     assert group.operator == "or"
     assert len(group.conditions) == 3

@@ -140,7 +140,6 @@ class MergeAction(actions.Action):
         actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
         # FIXME(sileht): MRGFY-562
-        # enforce -merged/-closed in conditions requirements
         # | actions.ActionFlag.ALWAYS_RUN
     )
 
@@ -175,6 +174,10 @@ class MergeAction(actions.Action):
                 conditions.get_mergify_configuration_change_conditions(
                     "merge",
                     self.config["allow_merging_configuration_change"],
+                ),
+                conditions.RuleCondition.from_tree(
+                    {"=": ("closed", False)},
+                    description="📌 merge requirement",
                 ),
                 conditions.RuleCondition.from_tree(
                     {"=": ("draft", False)},

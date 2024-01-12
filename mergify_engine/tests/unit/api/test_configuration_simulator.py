@@ -131,6 +131,13 @@ queue_rules:
     assert conditions == [
         anys.AnyWithEntries(
             {
+                "label": "-closed",
+                "description": "📌 merge requirement",
+                "match": True,
+            },
+        ),
+        anys.AnyWithEntries(
+            {
                 "label": "-conflict",
                 "description": "📌 merge requirement",
                 "match": True,

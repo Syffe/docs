@@ -453,7 +453,7 @@ did not find expected alphabetic or numeric character
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
-        assert summary["output"]["title"] == "1 rule matches"
+        assert summary["output"]["title"] == "1 potential rule"
 
     async def test_invalid_action_option(self) -> None:
         rules = {
