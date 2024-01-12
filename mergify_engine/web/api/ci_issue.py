@@ -479,10 +479,12 @@ async def get_ci_issue_events(
         else:
             stmt = stmt.where(gh_models.WorkflowJobLogMetadata.id > cursor_event_id)
 
+    # NOTE(sileht): As IDs are always growing, to sort them from the most recent to the
+    # the oldest, we can use them.
     stmt = stmt.order_by(
-        gh_models.WorkflowJob.completed_at.desc()
+        gh_models.WorkflowJobLogMetadata.id.desc()
         if page.cursor.forward
-        else gh_models.WorkflowJob.completed_at.asc(),
+        else gh_models.WorkflowJobLogMetadata.id.asc(),
     ).limit(page.per_page)
 
     result = await session.execute(stmt)
