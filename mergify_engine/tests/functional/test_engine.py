@@ -348,8 +348,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             name="Summary",
         )
         assert check_run_summary_p["check_run"]["output"]["summary"] is not None
-        assert (
-            f"""### Rule: merge (merge)
+        assert f"""### Rule: merge (merge)
 - [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]
 - [ ] `branch-protection-review-decision=APPROVED` [🛡 GitHub branch protection]
 - [ ] any of: [🛡 GitHub branch protection]
@@ -372,9 +371,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
 ### ✅ Rule: merge (comment)
 - [X] `base={self.main_branch_name}`
-"""
-            in check_run_summary_p["check_run"]["output"]["summary"]
-        )
+""" in check_run_summary_p["check_run"]["output"]["summary"]
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         checks = [
@@ -502,16 +499,15 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.run_engine()
 
         comment = await self.wait_for_issue_comment(p["number"], "created")
-        assert (
-            f"""> refresh
+        assert f"""> refresh
 
 #### ✅ Pull request refreshed
 
 
 
-{utils.serialize_hidden_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running": True}))}"""
-            == comment["comment"]["body"]
-        )
+{utils.serialize_hidden_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running": True}))}""" == comment[
+            "comment"
+        ]["body"]
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         check_run_summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)

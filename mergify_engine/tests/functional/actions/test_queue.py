@@ -1204,13 +1204,10 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check_summary is not None
         assert check_summary["output"]["summary"] is not None
-        assert (
-            f"""
+        assert f"""
 - `status-success=continuous-integration/fake-ci-queue`
   - [X] #{p["number"]}
-"""
-            in check_summary["output"]["summary"]
-        )
+""" in check_summary["output"]["summary"]
         assert (
             "[ ] `status-success=continuous-integration/fake-ci-merge`"
             in check_summary["output"]["summary"]
@@ -4159,8 +4156,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         tmp_pull_sliced_1 = await self.wait_for_pull_request("opened")
         assert tmp_pull_sliced_1["pull_request"]["body"] is not None
-        assert (
-            f"""```yaml
+        assert f"""```yaml
 ---
 previous_failed_batches:
   - checked_pull_requests:
@@ -4168,9 +4164,7 @@ previous_failed_batches:
       - {p2['number']}
       - {p3['number']}
     draft_pr_number: {tmp_pull['number']}
-"""
-            in tmp_pull_sliced_1["pull_request"]["body"]
-        )
+""" in tmp_pull_sliced_1["pull_request"]["body"]
 
         # The train car has been splitted, the second car is in pending
         # state as speculative_checks=1
@@ -5538,16 +5532,15 @@ previous_failed_batches:
             {"action": "created"},
         )
         comments = await self.get_issue_comments(mq_pr_number)
-        assert (
-            f"""> refresh
+        assert f"""> refresh
 
 #### ✅ Pull request refreshed
 
 
 
-{utils.serialize_hidden_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running": True}))}"""
-            == comments[-1]["body"]
-        )
+{utils.serialize_hidden_payload(commands_runner.CommandPayload({"command": "refresh", "conclusion": "success", "action_is_running": True}))}""" == comments[
+            -1
+        ]["body"]
 
     async def test_queue_branch_fast_forward_basic(self) -> None:
         rules = {

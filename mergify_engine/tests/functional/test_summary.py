@@ -359,14 +359,11 @@ class TestQueueCISummary(base.FunctionalTestBase):
         assert summary is not None
         assert summary["output"] is not None
         assert summary["output"]["summary"] is not None
-        assert (
-            f"""
+        assert f"""
 ### Rule: no &lt;i&gt;manual&lt;/i&gt; merge (comment)
 - [ ] `label=<h1>foo</h1>bar`
 - [X] `base={self.main_branch_name}`
-"""
-            in summary["output"]["summary"]
-        )
+""" in summary["output"]["summary"]
 
     async def test_invalid_config_html_escape(self) -> None:
         rules = {

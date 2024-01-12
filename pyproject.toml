@@ -79,7 +79,7 @@ asgi-lifespan = "^2.1.0"
 filelock = "^3.13.1"
 poethepoet = "^0.24.4"
 pytest-rerunfailures = "^13.0"
-ruff = "^0.1.11"
+ruff = "^0.1.12"
 click = "^8.1.7"
 pytest-flakefinder = "^1.1.0"
 types-python-dateutil = "^2.8.19.20240106"
@@ -202,6 +202,8 @@ select = [
 ]
 
 ignore = [
+    # NOTE(Greesb): unncessary dunder calls
+    "PLC2801",
     # NOTE(Greesb): itertools.starmap is less efficient than list comprehensions
     "FURB140",
     # NOTE(Greesb): Checks for union annotations that contain redundant numeric types (e.g., int | float).

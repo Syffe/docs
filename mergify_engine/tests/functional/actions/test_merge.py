@@ -497,13 +497,10 @@ superRP!
         assert True is p2["merged"]
         assert p2["merge_commit_sha"]
         p3 = await self.get_commit(p2["merge_commit_sha"])
-        assert (
-            f"""test_merge_template: pull request n1 from integration (#{p2['number']})
+        assert f"""test_merge_template: pull request n1 from integration (#{p2['number']})
 
 mergify-test4
-superRP!"""
-            == p3["commit"]["message"]
-        )
+superRP!""" == p3["commit"]["message"]
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary
@@ -556,16 +553,15 @@ Co-Authored-By: {{ co_author.name }} <{{ co_author.email }}>
         merge_commit_sha = merged_pull["pull_request"]["merge_commit_sha"]
         assert merge_commit_sha is not None
         commit = await self.get_commit(merge_commit_sha)
-        assert (
-            f"""test_merge_template_with_co_authors: pull request n1 from integration
+        assert f"""test_merge_template_with_co_authors: pull request n1 from integration
 
 Hello there
 
 Pull request: #{merged_pull['number']}
 
-Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
-            == commit["commit"]["message"]
-        )
+Co-Authored-By: General Grievous <general.grievous@confederacy.org>""" == commit[
+            "commit"
+        ]["message"]
 
     async def test_merge_branch_protection_strict(self) -> None:
         rules = {

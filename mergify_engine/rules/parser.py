@@ -224,10 +224,8 @@ def _unquote(value: str) -> str:
     ):
         raise ConditionParsingError("Unbalanced quotes")
 
-    if (
-        (value[0] == '"' and value[-1] == '"')
-        or (value[0] == "'" and value[-1] == "'")
-        and len(value) >= 2
+    if (value[0] == '"' and value[-1] == '"') or (
+        (value[0] == "'" and value[-1] == "'") and len(value) >= 2
     ):
         return value[1:-1]
 

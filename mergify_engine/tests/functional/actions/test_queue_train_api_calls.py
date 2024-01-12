@@ -128,16 +128,13 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         tmp_pull = await self.wait_for_pull_request("opened")
         assert tmp_pull["pull_request"]["draft"]
         assert tmp_pull["pull_request"]["body"] is not None
-        assert (
-            f"""
+        assert f"""
 ---
 previous_failed_batches: []
 pull_requests:
   - number: {p2["number"]}
 ...
-"""
-            in tmp_pull["pull_request"]["body"]
-        )
+""" in tmp_pull["pull_request"]["body"]
 
         await car.send_checks_end_signal(p2["number"], queue_utils.ChecksFailed())
         await car.end_checking(

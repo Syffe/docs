@@ -272,8 +272,7 @@ def pyvcr_response_filter(
 ) -> dict[str, typing.Any] | None:
     if (
         response["status_code"] in {403, 429}
-        or response["status_code"] == 422
-        and "abuse" in response["content"]
+        or (response["status_code"] == 422 and "abuse" in response["content"])
     ) and response["headers"].get("X-RateLimit-Remaining") is not None:
         return None
 
