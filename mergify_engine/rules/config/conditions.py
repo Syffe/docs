@@ -6,7 +6,7 @@ from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import types
 
 
-MAX_CONDITIONS_PER_GROUP = 100
+MAX_CONDITIONS_PER_GROUP = 500
 
 
 def DeferSchemaLoading(
