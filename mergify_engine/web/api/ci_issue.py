@@ -390,16 +390,6 @@ async def patch_ci_issue(
 
 
 @pydantic.dataclasses.dataclass
-class CiIssueEventDetailResponse(CiIssueEventDeprecated):
-    completed_at: datetime.datetime
-    log_extract: str
-    failed_step_number: int | None
-    name: str
-    run_attempt: int
-    steps: list[github_types.GitHubWorkflowJobStep]
-
-
-@pydantic.dataclasses.dataclass
 class CiIssueEvent:
     id: int
     run_id: int
@@ -411,6 +401,11 @@ class CiIssueEvent:
     name: str
     run_attempt: int
     steps: list[github_types.GitHubWorkflowJobStep]
+
+
+@pydantic.dataclasses.dataclass
+class CiIssueEventDetailResponse(CiIssueEvent):
+    log_extract: str
 
 
 class CiIssueEventsResponse(pagination.PageResponse[CiIssueEvent]):
