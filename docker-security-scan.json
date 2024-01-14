@@ -2308,7 +2308,7 @@
     "Title": "kernel: libbpf: NULL pointer dereference in find_prog_by_sec_insn",
     "Severity": "MEDIUM",
     "VendorSeverity": {
-      "amazon": 2,
+      "amazon": 3,
       "cbl-mariner": 1,
       "nvd": 2,
       "redhat": 1,
@@ -3447,7 +3447,7 @@
       "amazon": 2,
       "cbl-mariner": 2,
       "nvd": 2,
-      "oracle-oval": 1,
+      "oracle-oval": 2,
       "photon": 2,
       "redhat": 1,
       "ubuntu": 1
@@ -3467,7 +3467,7 @@
       "amazon": 2,
       "cbl-mariner": 2,
       "nvd": 2,
-      "oracle-oval": 1,
+      "oracle-oval": 2,
       "photon": 2,
       "redhat": 1,
       "ubuntu": 1
@@ -3483,8 +3483,10 @@
     "Title": "gnutls: timing side-channel in the RSA-PSK authentication",
     "Severity": "MEDIUM",
     "VendorSeverity": {
+      "alma": 2,
       "amazon": 2,
       "nvd": 2,
+      "oracle-oval": 2,
       "photon": 2,
       "redhat": 2,
       "ubuntu": 2
