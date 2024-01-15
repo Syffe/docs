@@ -7,7 +7,7 @@ on:
     branches:
       - main
       - devs/**
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened, edited, converted_to_draft, ready_for_review]
   pull_request_review:
     types: [dismissed]
 
@@ -16,7 +16,7 @@ permissions: write-all
 jobs:
   add-linear-author-as-reviewer:
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.head_ref, 'mergify/merge-queue/') }}
+    if: ${{ !startsWith(github.head_ref, 'mergify/merge-queue/') && !github.event.pull_request.draft }}
     steps:
       - name: Add reviewers
         # yamllint disable-line rule:line-length
