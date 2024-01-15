@@ -182,3 +182,60 @@ async def test_api_simple_filters(
             },
         ],
     }
+
+
+@pytest.mark.parametrize(
+    (
+        "_insert_action_queue_leave",
+        "_insert_action_checks_end_event",
+    ),
+    (
+        (
+            [
+                {
+                    "pull_request": 1,
+                    "queued_at": "2022-11-24T12:10:00+00:00",
+                    "received_at": "2022-11-24T12:20:00+00:00",
+                    "seconds_waiting_for_freeze": 5 * 60,
+                },
+            ],
+            [
+                {
+                    "pull_request": 1,
+                    "checks_started_at": "2022-11-24T12:15:00+00:00",
+                    "checks_ended_at": None,
+                },
+            ],
+        ),
+    ),
+    indirect=True,
+)
+async def test_unknown_ci_runtime(
+    fake_repository: context.Repository,  # noqa: ARG001
+    web_client: tests_conftest.CustomTestClient,
+    api_token: tests_api_conftest.TokenUserRepo,
+    _insert_action_queue_leave: None,
+    _insert_action_checks_end_event: None,
+) -> None:
+    with time_travel("2022-11-25T00:00:00+00:00"):
+        response = await web_client.get(
+            "/v1/repos/Mergifyio/engine/stats/average_queue_time",
+            headers={"Authorization": api_token.api_token},
+        )
+
+        assert response.json() == {
+            "groups": [
+                {
+                    "base_ref": "main",
+                    "partition_name": "default",
+                    "queue_name": "default",
+                    "stats": [
+                        {
+                            "start": "2022-11-24T12:00:00Z",
+                            "end": "2022-11-24T12:59:59Z",
+                            "queue_time": 300.0,
+                        },
+                    ],
+                },
+            ],
+        }

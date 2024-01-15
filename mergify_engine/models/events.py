@@ -664,7 +664,9 @@ class EventActionQueueLeave(Event):
                 (chunk + interval[1]).label("end"),
                 sqlalchemy.type_coerce(
                     sqlalchemy.func.avg(
-                        cls.queued_time - ci_runtime - cls.seconds_waiting_for_freeze,
+                        cls.queued_time
+                        - sqlalchemy.func.coalesce(ci_runtime, 0.0)
+                        - cls.seconds_waiting_for_freeze,
                     ),
                     sqlalchemy.Float,
                 ).label("queued_idle_time"),
