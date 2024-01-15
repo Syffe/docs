@@ -48,8 +48,6 @@ class QueueFreezeResponse:
     )
 
 
-# FIXME(sileht): reuse dataclasses variante once
-# https://github.com/tiangolo/fastapi/issues/4679 is fixed
 class QueueFreezePayload(pydantic.BaseModel):
     reason: str = pydantic.Field(
         max_length=255,
