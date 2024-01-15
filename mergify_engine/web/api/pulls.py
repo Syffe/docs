@@ -84,12 +84,13 @@ async def get_pull_requests(
             detail=str(e),
         )
 
-    cursor = current_page.cursor
-    if cursor.value:
-        try:
-            start_page, start_pr = map(int, cursor.value.split("-"))
-        except ValueError:
-            raise fastapi.HTTPException(status_code=400, detail="Invalid page cursor")
+    # NOTE(Kontrolix): Had to enforce the type here because mypy doesn't recognize it well
+    cursor_value = typing.cast(
+        tuple[int, int] | None,
+        current_page.cursor.value(tuple[int, int]),
+    )
+    if cursor_value is not None:
+        start_page, start_pr = cursor_value
     else:
         start_page = 1
         start_pr = 0
@@ -173,7 +174,7 @@ async def get_pull_requests(
         items=matching_pulls,
         current=current_page,
         cursor_next=pagination.Cursor(
-            "" if reached_last_page else f"{page}-{nb_pulls_on_github}",
+            None if reached_last_page else (page, nb_pulls_on_github),
             True,
         ),
     )

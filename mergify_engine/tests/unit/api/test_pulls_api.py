@@ -1,8 +1,10 @@
 from urllib import parse
 
+import pytest
 import respx
 
 from mergify_engine import date
+from mergify_engine import pagination
 from mergify_engine.tests import conftest as tests_conftest
 from mergify_engine.tests.unit.api import conftest as tests_api_conftest
 
@@ -314,28 +316,23 @@ async def test_pulls_api_pagination(
     assert [p["number"] for p in resp.json()["pull_requests"]] == list(range(38, 48))
 
 
+@pytest.mark.parametrize("cursor_value", ["blabla", ("abc", 123), (1, 2, 3), (1,)])
 async def test_pulls_api_invalid_cursor(
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
+    cursor_value: object,
 ) -> None:
+    invalid_cursor = pagination.Cursor(cursor_value, True).to_string()
     resp = await web_client.request(
         "POST",
         "/v1/repos/Mergifyio/engine/pulls",
-        params={"cursor": "blabla"},
+        params={"cursor": invalid_cursor},
         json=["base=main"],
         headers={"Authorization": api_token.api_token},
     )
 
-    assert resp.status_code == 400
-    assert resp.json() == {"detail": "Invalid page cursor"}
-
-    resp = await web_client.request(
-        "POST",
-        "/v1/repos/Mergifyio/engine/pulls",
-        params={"cursor": "abc-123"},
-        json=["base=main"],
-        headers={"Authorization": api_token.api_token},
-    )
-
-    assert resp.status_code == 400
-    assert resp.json() == {"detail": "Invalid page cursor"}
+    assert resp.status_code == 422
+    assert resp.json() == {
+        "message": "Invalid cursor",
+        "cursor": invalid_cursor,
+    }

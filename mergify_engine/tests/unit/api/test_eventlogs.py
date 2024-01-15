@@ -14,6 +14,7 @@ from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.models import events as event_models
 from mergify_engine.models.github import repository as github_repository
+from mergify_engine.pagination import Cursor
 from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
 from mergify_engine.tests import conftest as tests_conftest
@@ -352,39 +353,81 @@ async def test_api_cursor_pg(
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [6, 5]
     links = parse_links(response.headers["link"])
-    assert links["next"].split("?")[-1] == "per_page=2&cursor=5"
+
+    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
+    assert param["per_page"] == ["2"]
+    next_cursor = Cursor.from_string(param["cursor"][0])
+    assert next_cursor.value(int) == 5
+    assert next_cursor.forward
 
     # first 2 to 4
     response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=5",
+        links["next"],
         headers={"Authorization": api_token.api_token},
     )
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [4, 3]
     links = parse_links(response.headers["link"])
-    assert links["next"].split("?")[-1] == "per_page=2&cursor=3"
-    assert links["prev"].split("?")[-1] == "per_page=2&cursor=-4"
+
+    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
+    assert param["per_page"] == ["2"]
+    next_cursor = Cursor.from_string(param["cursor"][0])
+    assert next_cursor.value(int) == 3
+    assert next_cursor.forward
+
+    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["prev"]).query)
+    assert param["per_page"] == ["2"]
+    prev_cursor = Cursor.from_string(param["cursor"][0])
+    assert prev_cursor.value(int) == 4
+    assert prev_cursor.backward
 
     # last 2 with initial last cursor
     response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=-",
+        links["last"],
         headers={"Authorization": api_token.api_token},
     )
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [2, 1]
     links = parse_links(response.headers["link"])
-    assert links["next"].split("?")[-1] == "per_page=2&cursor=-2"
+
+    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
+    assert param["per_page"] == ["2"]
+    next_cursor = Cursor.from_string(param["cursor"][0])
+    assert next_cursor.value(int) == 2
+    assert next_cursor.backward
 
     # last 2 to last 4
     response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=-2",
+        links["next"],
         headers={"Authorization": api_token.api_token},
     )
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [4, 3]
     links = parse_links(response.headers["link"])
-    assert links["next"].split("?")[-1] == "per_page=2&cursor=-4"
-    assert links["prev"].split("?")[-1] == "per_page=2&cursor=3"
+
+    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
+    assert param["per_page"] == ["2"]
+    next_cursor = Cursor.from_string(param["cursor"][0])
+    assert next_cursor.value(int) == 4
+    assert next_cursor.backward
+
+    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["prev"]).query)
+    assert param["per_page"] == ["2"]
+    prev_cursor = Cursor.from_string(param["cursor"][0])
+    assert prev_cursor.value(int) == 3
+    assert prev_cursor.forward
+
+    # Invalid cursor
+    invalid_cursor = Cursor("zerzer", True).to_string()
+    response = await web_client.get(
+        f"/v1/repos/Mergifyio/engine/logs?per_page=2&cursor={invalid_cursor}",
+        headers={"Authorization": api_token.api_token},
+    )
+    assert response.status_code == 422
+    assert response.json() == {
+        "message": "Invalid cursor",
+        "cursor": invalid_cursor,
+    }
 
 
 async def test_api_links_with_query_params(
@@ -405,45 +448,13 @@ async def test_api_links_with_query_params(
         headers={"Authorization": api_token.api_token},
     )
     links = parse_links(response.headers["link"])
-    assert set(urllib.parse.parse_qsl(links["first"].split("?")[-1])) == query_params
-
-
-async def test_api_cursor_invalid(
-    web_client: tests_conftest.CustomTestClient,
-    api_token: tests_api_conftest.TokenUserRepo,
-) -> None:
-    response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=INVALID_CURSOR",
-        headers={"Authorization": api_token.api_token},
-    )
-    assert response.status_code == 422
-    assert response.json() == {"message": "Invalid cursor", "cursor": "INVALID_CURSOR"}
-
-    response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=+123456_this_part_is_unexpected",
-        headers={"Authorization": api_token.api_token},
-    )
-    assert response.status_code == 422
-
-    response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=-123456_neither_is_this_part",
-        headers={"Authorization": api_token.api_token},
-    )
-    assert response.status_code == 422
-
-    # + alone (like any other char alone except for -) is not valid it is equivalent
-    # to default - not provided
-    response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=+",
-        headers={"Authorization": api_token.api_token},
-    )
-    assert response.status_code == 422
-
-    response = await web_client.get(
-        "/v1/repos/Mergifyio/engine/logs?per_page=2&cursor=",
-        headers={"Authorization": api_token.api_token},
-    )
-    assert response.status_code == 200
+    assert len(links) == 4
+    for link in links.values():
+        parsed_params = urllib.parse.parse_qsl(urllib.parse.urlparse(link).query)
+        parsed_params_without_cursor = {
+            param for param in parsed_params if param[0] != "cursor"
+        }
+        assert parsed_params_without_cursor == query_params
 
 
 @time_travel(LATER_TIMESTAMP)
