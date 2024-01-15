@@ -420,6 +420,13 @@ async def test_api_ci_issue_get_ci_issue_events(
                 "flaky": "unknown",
                 "run_id": anys.ANY_INT,
                 "job_id": anys.ANY_INT,
+                "metadata": {
+                    "language": "Python",
+                    "lineno": 325,
+                    "problem_type": "Error on test: my_awesome_test",
+                    "stack_trace": "some traceback",
+                    "test_framework": "pytest",
+                },
                 "started_at": anys.ANY_DATETIME_STR,
                 "completed_at": anys.ANY_DATETIME_STR,
                 "steps": [anys.ANY_DICT],
@@ -429,6 +436,13 @@ async def test_api_ci_issue_get_ci_issue_events(
                     "OneAccount/OneRepo/flaky_failed_job_attempt_2/metadata/1"
                 ],
                 "name": "A job",
+                "metadata": {
+                    "language": "Python",
+                    "lineno": 325,
+                    "problem_type": "Error on test: my_awesome_test",
+                    "stack_trace": "some traceback",
+                    "test_framework": "pytest",
+                },
                 "failed_run_count": 3,
                 "failed_step_number": 1,
                 "run_attempt": 2,
@@ -450,6 +464,13 @@ async def test_api_ci_issue_get_ci_issue_events(
                 "run_attempt": 1,
                 "run_id": job.workflow_run_id,
                 "job_id": job.id,
+                "metadata": {
+                    "language": "Python",
+                    "lineno": 325,
+                    "problem_type": "Error on test: my_awesome_test",
+                    "stack_trace": "some traceback",
+                    "test_framework": "pytest",
+                },
                 "started_at": job.started_at.isoformat().replace("+00:00", "Z"),
                 "completed_at": job.completed_at.isoformat().replace("+00:00", "Z"),
                 "steps": [
@@ -481,6 +502,13 @@ async def test_api_ci_issue_get_ci_issue_events(
                 "run_attempt": 1,
                 "job_id": job.id,
                 "run_id": job.workflow_run_id,
+                "metadata": {
+                    "language": "Python",
+                    "lineno": 325,
+                    "problem_type": "Error on test: my_awesome_test",
+                    "stack_trace": "some traceback",
+                    "test_framework": "pytest",
+                },
                 "started_at": job.started_at.isoformat().replace("+00:00", "Z"),
                 "completed_at": job.completed_at.isoformat().replace("+00:00", "Z"),
                 "steps": [
@@ -515,6 +543,13 @@ async def test_api_ci_issue_get_ci_issue_events(
                 "started_at": anys.ANY_DATETIME_STR,
                 "completed_at": anys.ANY_DATETIME_STR,
                 "steps": [anys.ANY_DICT],
+                "metadata": {
+                    "language": "Python",
+                    "lineno": 325,
+                    "problem_type": "Error on test: my_awesome_test",
+                    "stack_trace": "some traceback",
+                    "test_framework": "pytest",
+                },
             },
         ],
     }
@@ -536,6 +571,13 @@ async def test_api_ci_issue_get_ci_issue_events(
                 "started_at": anys.ANY_DATETIME_STR,
                 "completed_at": anys.ANY_DATETIME_STR,
                 "steps": [anys.ANY_DICT],
+                "metadata": {
+                    "language": "Python",
+                    "lineno": 325,
+                    "problem_type": "Error on test: my_awesome_test",
+                    "stack_trace": "some traceback",
+                    "test_framework": "pytest",
+                },
             },
         ],
     }
@@ -925,6 +967,13 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
         "run_attempt": 1,
         "failed_run_count": 1,
         "log_extract": "Some similar logs",
+        "metadata": {
+            "language": "Python",
+            "lineno": 325,
+            "problem_type": "Error on test: my_awesome_test",
+            "stack_trace": "some traceback",
+            "test_framework": "pytest",
+        },
     }
     assert reply.links == {
         "next": {
@@ -969,6 +1018,13 @@ async def test_api_ci_issue_get_ci_issue_event_detail(
         "run_attempt": 2,
         "failed_run_count": 3,
         "log_extract": "Some logs",
+        "metadata": {
+            "language": "Python",
+            "lineno": 325,
+            "problem_type": "Error on test: my_awesome_test",
+            "stack_trace": "some traceback",
+            "test_framework": "pytest",
+        },
     }
 
     reply = await web_client.get(

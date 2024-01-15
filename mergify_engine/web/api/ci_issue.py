@@ -391,6 +391,25 @@ async def patch_ci_issue(
         raise fastapi.HTTPException(404)
 
 
+def force_int_or_none(v: str | None) -> int | None:
+    # FIXME(sileht): we should change the lineno column to int and drop this helper
+    if v is None:
+        return None
+    try:
+        return int(v)
+    except ValueError:
+        return None
+
+
+@pydantic.dataclasses.dataclass
+class CiIssueEventMetadata:
+    problem_type: str | None
+    language: str | None
+    lineno: int | None
+    test_framework: str | None
+    stack_trace: str | None
+
+
 @pydantic.dataclasses.dataclass
 class CiIssueEvent:
     id: int
@@ -404,6 +423,7 @@ class CiIssueEvent:
     name: str
     run_attempt: int
     steps: list[github_types.GitHubWorkflowJobStep]
+    metadata: CiIssueEventMetadata
 
 
 @pydantic.dataclasses.dataclass
@@ -496,6 +516,13 @@ async def get_ci_issue_events(
             failed_run_count=event.workflow_job.failed_run_count,
             run_attempt=event.workflow_job.run_attempt,
             name=event.workflow_job.name_without_matrix,
+            metadata=CiIssueEventMetadata(
+                problem_type=event.problem_type,
+                language=event.language,
+                lineno=force_int_or_none(event.lineno),
+                test_framework=event.test_framework,
+                stack_trace=event.stack_trace,
+            ),
         )
         for event in logs_metadata
     ]
@@ -613,6 +640,13 @@ async def get_ci_issue_event_detail(
         log_extract=log_metadata.workflow_job.log_extract or "",
         run_attempt=log_metadata.workflow_job.run_attempt,
         name=log_metadata.workflow_job.name_without_matrix,
+        metadata=CiIssueEventMetadata(
+            problem_type=log_metadata.problem_type,
+            language=log_metadata.language,
+            lineno=force_int_or_none(log_metadata.lineno),
+            test_framework=log_metadata.test_framework,
+            stack_trace=log_metadata.stack_trace,
+        ),
     )
 
 
