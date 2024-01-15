@@ -336,4 +336,4 @@ async def test_saas_addons_middleware(monkeypatch: pytest.MonkeyPatch) -> None:
     check_request(200)
 
     monkeypatch.setattr(settings, "HTTP_SAAS_SECURITY_ENFORCE", True)
-    check_request(542)
+    check_request(442)

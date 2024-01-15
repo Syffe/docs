@@ -11,7 +11,7 @@ from mergify_engine import settings
 """
 This middleware is used to check the source of the incoming requests.
 
-For unexpected connection we will raise 542 error code to easily track issue related to this in Datadog
+For unexpected connection we will raise 442 error code to easily track issue related to this in Datadog
 
 Hackers may connect directly to the Heroku servers IPs and set the Host header manually.
 
@@ -62,7 +62,7 @@ class SaasSecurityMiddleware:
         except UnexpectedConnectionError:
             if settings.HTTP_SAAS_SECURITY_ENFORCE:
                 response = starlette.responses.Response(
-                    status_code=542,
+                    status_code=442,
                     content="Unexpected downstream servers",
                 )
                 await response(scope, receive, send)
