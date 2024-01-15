@@ -11,6 +11,7 @@ from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import eventlogs
 from mergify_engine import github_types
+from mergify_engine import pagination
 from mergify_engine import signals
 from mergify_engine.models import events as event_models
 from mergify_engine.models.github import repository as github_repository
@@ -357,7 +358,7 @@ async def test_api_cursor_pg(
     param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
     assert param["per_page"] == ["2"]
     next_cursor = Cursor.from_string(param["cursor"][0])
-    assert next_cursor.value(int) == 5
+    assert next_cursor.value(pagination.CursorType[int]) == 5
     assert next_cursor.forward
 
     # first 2 to 4
@@ -372,13 +373,13 @@ async def test_api_cursor_pg(
     param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
     assert param["per_page"] == ["2"]
     next_cursor = Cursor.from_string(param["cursor"][0])
-    assert next_cursor.value(int) == 3
+    assert next_cursor.value(pagination.CursorType[int]) == 3
     assert next_cursor.forward
 
     param = urllib.parse.parse_qs(urllib.parse.urlparse(links["prev"]).query)
     assert param["per_page"] == ["2"]
     prev_cursor = Cursor.from_string(param["cursor"][0])
-    assert prev_cursor.value(int) == 4
+    assert prev_cursor.value(pagination.CursorType[int]) == 4
     assert prev_cursor.backward
 
     # last 2 with initial last cursor
@@ -393,7 +394,7 @@ async def test_api_cursor_pg(
     param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
     assert param["per_page"] == ["2"]
     next_cursor = Cursor.from_string(param["cursor"][0])
-    assert next_cursor.value(int) == 2
+    assert next_cursor.value(pagination.CursorType[int]) == 2
     assert next_cursor.backward
 
     # last 2 to last 4
@@ -408,13 +409,13 @@ async def test_api_cursor_pg(
     param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
     assert param["per_page"] == ["2"]
     next_cursor = Cursor.from_string(param["cursor"][0])
-    assert next_cursor.value(int) == 4
+    assert next_cursor.value(pagination.CursorType[int]) == 4
     assert next_cursor.backward
 
     param = urllib.parse.parse_qs(urllib.parse.urlparse(links["prev"]).query)
     assert param["per_page"] == ["2"]
     prev_cursor = Cursor.from_string(param["cursor"][0])
-    assert prev_cursor.value(int) == 3
+    assert prev_cursor.value(pagination.CursorType[int]) == 3
     assert prev_cursor.forward
 
     # Invalid cursor

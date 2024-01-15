@@ -167,7 +167,7 @@ async def get_ci_issues(
     if status is not None:
         stmt = stmt.where(CiIssueGPT.status.in_(status))
 
-    cursor_issue_id = page.cursor.value(int)
+    cursor_issue_id = page.cursor.value(pagination.CursorType[int])
     if cursor_issue_id is not None:
         if page.cursor.forward:
             stmt = stmt.where(CiIssueGPT.short_id_suffix > cursor_issue_id)
@@ -465,7 +465,7 @@ async def get_ci_issue_events(
         )
     )
 
-    cursor_event_id = page.cursor.value(int)
+    cursor_event_id = page.cursor.value(pagination.CursorType[int])
     if cursor_event_id is not None:
         if page.cursor.forward:
             stmt = stmt.where(gh_models.WorkflowJobLogMetadata.id < cursor_event_id)

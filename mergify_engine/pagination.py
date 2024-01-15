@@ -17,6 +17,10 @@ DEFAULT_PER_PAGE = 10
 T = typing.TypeVar("T")
 
 
+class CursorType(pydantic.BaseModel, typing.Generic[T]):
+    value: T
+
+
 @dataclasses.dataclass
 class Cursor:
     _value: object
@@ -66,14 +70,14 @@ class Cursor:
     def backward(self) -> bool:
         return not self.forward
 
-    def value(self, expected_type: type[T]) -> T | None:
+    def value(self, expected_type: type[CursorType[T]]) -> T | None:
         if self._value is None:
             return None
         try:
-            return pydantic.TypeAdapter(
-                expected_type,
-            ).validate_python(
-                self._value,
+            return (
+                pydantic.TypeAdapter(expected_type)
+                .validate_python({"value": self._value})
+                .value
             )
         except pydantic.ValidationError:
             raise InvalidCursorError(self.to_string())

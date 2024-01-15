@@ -84,16 +84,11 @@ async def get_pull_requests(
             detail=str(e),
         )
 
-    # NOTE(Kontrolix): Had to enforce the type here because mypy doesn't recognize it well
-    cursor_value = typing.cast(
-        tuple[int, int] | None,
-        current_page.cursor.value(tuple[int, int]),
-    )
-    if cursor_value is not None:
-        start_page, start_pr = cursor_value
-    else:
-        start_page = 1
-        start_pr = 0
+    cursor_value = current_page.cursor.value(pagination.CursorType[tuple[int, int]])
+    if cursor_value is None:
+        cursor_value = (1, 0)
+
+    start_page, start_pr = cursor_value
 
     matching_pulls: list[github_types.GitHubPullRequest] = []
 

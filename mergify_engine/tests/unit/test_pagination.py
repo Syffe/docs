@@ -7,26 +7,23 @@ import pytest
 from mergify_engine import pagination
 
 
-T = typing.TypeVar("T")
-
-
 @pytest.mark.parametrize(
     ("value", "valid_type"),
     [
-        (20, int),
-        ("abcd", str),
-        ("with smiley: 😁", str),
-        ("/ : \\ - * { []}", str),
+        (20, pagination.CursorType[int]),
+        ("abcd", pagination.CursorType[str]),
+        ("with smiley: 😁", pagination.CursorType[str]),
+        ("/ : \\ - * { []}", pagination.CursorType[str]),
         (
             [1, 2, 3, "a", "b", "c"],
-            list[int | str],
+            pagination.CursorType[list[int | str]],
         ),
-        ({"abc": 1, "def": "ghi"}, dict[str, int | str]),
+        ({"abc": 1, "def": "ghi"}, pagination.CursorType[dict[str, int | str]]),
     ],
 )
 def test_cursor_value(
     value: object,
-    valid_type: type[T],
+    valid_type: type[pagination.CursorType[typing.Any]],
 ) -> None:
     cursor = pagination.Cursor(value, True)
 
@@ -38,18 +35,18 @@ def test_cursor_value(
 @pytest.mark.parametrize(
     ("value", "invalid_type"),
     [
-        (20, str),
-        ("abcd", int),
+        (20, pagination.CursorType[str]),
+        ("abcd", pagination.CursorType[int]),
         (
             [1, 2, 3, "a", "b", "c"],
-            list[int],
+            pagination.CursorType[list[int]],
         ),
-        ({"abc": 1, "def": "ghi"}, dict[str, int]),
+        ({"abc": 1, "def": "ghi"}, pagination.CursorType[dict[str, int]]),
     ],
 )
 def test_cursor_value_invalid_type(
     value: object,
-    invalid_type: type[T],
+    invalid_type: type[pagination.CursorType[typing.Any]],
 ) -> None:
     cursor = pagination.Cursor(value, True)
 
