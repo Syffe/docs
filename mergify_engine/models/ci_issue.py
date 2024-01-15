@@ -315,7 +315,7 @@ class CiIssueGPT(models.Base, CiIssueMixin):
     def with_first_event_id_column(cls) -> orm.strategy_options._AbstractLoad:
         return orm.with_expression(
             cls.first_event_id,
-            cls._one_of_jobs_subquery(gh_models.WorkflowJob.id)
+            cls._one_of_jobs_subquery(gh_models.WorkflowJobLogMetadata.id)
             .order_by(
                 gh_models.WorkflowJob.completed_at.asc(),
             )
