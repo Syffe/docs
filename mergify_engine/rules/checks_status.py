@@ -80,6 +80,8 @@ async def get_outcome_from_conditions(
         conditions,
         ("check-", "status-"),
     )
+    # NOTE(charly): all pull requests have either an unknown CI match, or a
+    # match
     if not any(m is False for m in match_with_ci_unknown.values()):
         # CI is the root cause of the condition unmatch, so get its conclusion
         # to return the right outcome
@@ -111,6 +113,8 @@ async def get_outcome_from_conditions(
         conditions,
         ("check-", "status-", "schedule", "current-datetime"),
     )
+    # NOTE(charly): all pull requests have either an unknown CI/schedule match,
+    # or a match
     if not any(m is False for m in match_with_ci_and_schedule_unknown.values()):
         # NOTE(sileht): now we look at the CI conclusion while ignoring schedule
         # conditions
