@@ -10,12 +10,12 @@
         "stack_trace": "voluptuous.error.MultipleInvalid: GitHub login contains invalid characters: jd @ data['users']"
     },
     {
-        "problem_type": "Invalid Configuration",
-        "test_name": "test_github_team_ok",
+        "problem_type": "GitHub organization contains invalid characters: foo",
+        "test_name": "test_github_team_ok[@foo/bar-foo-bar]",
         "language": "Python",
         "filename": "mergify_engine/tests/unit/rules/test_types.py",
         "lineno": 118,
-        "error": "MultipleInvalid",
+        "error": "voluptuous.error.MultipleInvalid",
         "test_framework": "pytest",
         "stack_trace": "voluptuous.error.MultipleInvalid: GitHub organization contains invalid characters: foo"
     }
