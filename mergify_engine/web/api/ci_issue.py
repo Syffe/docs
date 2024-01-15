@@ -395,6 +395,7 @@ async def patch_ci_issue(
 class CiIssueEvent:
     id: int
     run_id: int
+    job_id: int
     started_at: datetime.datetime
     completed_at: datetime.datetime
     flaky: typing.Literal["flaky", "unknown"]
@@ -485,6 +486,7 @@ async def get_ci_issue_events(
     events = [
         CiIssueEvent(
             id=event.id,
+            job_id=event.workflow_job.id,
             run_id=event.workflow_job.workflow_run_id,
             steps=event.workflow_job.steps or [],
             failed_step_number=event.workflow_job.failed_step_number,
@@ -600,6 +602,7 @@ async def get_ci_issue_event_detail(
 
     return CiIssueEventDetailResponse(
         id=log_metadata.id,
+        job_id=log_metadata.workflow_job.id,
         run_id=log_metadata.workflow_job.workflow_run_id,
         steps=log_metadata.workflow_job.steps or [],
         failed_step_number=log_metadata.workflow_job.failed_step_number,
