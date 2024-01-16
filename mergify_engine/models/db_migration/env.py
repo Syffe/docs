@@ -48,9 +48,9 @@ asyncio.run(run_async_migrations())
 
 @write_hooks.register("ruff")
 def ruff_hook(filename: str, _options: dict[str, str | int]) -> None:
-    subprocess.run(["ruff", "check", "--fix", filename])
+    subprocess.run(["ruff", "check", "--fix", filename])  # noqa: S603
 
 
 @write_hooks.register("ruff-format")
 def ruff_format_hook(filename: str, _options: dict[str, str | int]) -> None:
-    subprocess.run(["ruff", "format", filename])
+    subprocess.run(["ruff", "format", filename])  # noqa: S603

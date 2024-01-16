@@ -4,7 +4,6 @@ import filecmp
 import io
 import os
 import pathlib
-import subprocess
 from unittest import mock
 import warnings
 
@@ -77,18 +76,19 @@ async def test_migration(_setup_database: None, tmp_path: pathlib.Path) -> None:
         schema_dump_migration_path = pathlib.Path(os.environ["MIGRATED_DATA_DUMP"])
 
     for _file in (schema_dump_creation_path, schema_dump_migration_path):
-        # nosemgrep: python.lang.security.audit.subprocess-shell-true.subprocess-shell-true
-        subprocess.run(
-            "sed -i"
-            " -e '/^--/d'"  # remove comments
-            " -e '/^$/d'"  # remove empty lines
-            " -e '/^CREATE EXTENSION/d' -e '/^COMMENT ON EXTENSION/d'"  # remove heroku extensions
-            " -e 's/public\\.//g'"  # remove schema prefix
-            f" {_file}",
-            shell=True,
-            check=True,
-            timeout=10,
-        )
+        with _file.open("r") as f:
+            content = f.readlines()
+
+        with _file.open("w") as f:
+            for line in content:
+                if not line.strip() or line.startswith(
+                    ("--", "CREATE EXTENSION", "COMMENT ON EXTENSION"),
+                ):
+                    continue
+
+                line.replace("public.", "")
+
+            f.write(line)
 
     assert filecmp.cmp(
         schema_dump_creation_path,

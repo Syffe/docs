@@ -59,7 +59,7 @@ def register_script(script: str) -> ScriptIdT:
     script_id = ScriptIdT(uuid.uuid4())
     SCRIPTS[script_id] = (
         # NOTE(sileht): SHA1 is imposed by Redis itself
-        hashlib.sha1(  # nosemgrep contrib.dlint.dlint-equivalent.insecure-hashlib-use, python.lang.security.insecure-hash-algorithms.insecure-hash-algorithm-sha1
+        hashlib.sha1(  # nosemgrep contrib.dlint.dlint-equivalent.insecure-hashlib-use, python.lang.security.insecure-hash-algorithms.insecure-hash-algorithm-sha1 # noqa:S324
             script.encode("utf8"),
         )
         .hexdigest()

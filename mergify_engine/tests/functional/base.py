@@ -189,7 +189,7 @@ class GitterRecorder(gitter.Gitter):
 
     def prepare_args(self, args: typing.Any) -> list[str]:
         prepared_args = [
-            arg.replace(self._temporary_directory, "/tmp/mergify-gitter<random>")
+            arg.replace(self._temporary_directory, "/tmp/mergify-gitter<random>")  # noqa: S108
             for arg in args
         ]
         if "user.signingkey" in prepared_args:

@@ -145,7 +145,7 @@ BEGIN
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
-""".strip(),
+""".strip(),  # noqa: S608
         ),
         pg_trigger.PGTrigger.from_sql(
             """

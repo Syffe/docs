@@ -321,7 +321,7 @@ def pyvcr_request_filter(request: vcr.request.Request) -> vcr.request.Request:
     if request.method == "POST" and request.path.endswith("/access_tokens"):
         return None
 
-    if request.host in {"localhost", "0.0.0.0", "127.0.0.1"} and (
+    if request.host in {"localhost", "0.0.0.0", "127.0.0.1"} and (  # noqa: S104
         request.method != "PUT" or request.path != "/__breakpoint"
     ):
         # Ignore every localhost request except the `/breakpoint` one.

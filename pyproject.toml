@@ -196,12 +196,18 @@ select = [
  "RUF", "RET", "DTZ", "TCH", "COM",
  "PERF", "PT", "PL", "PGH", "SIM",
  "PIE", "YTT", "T20", "ARG", "PTH",
- "N", "PYI", "FURB", "FBT",
+ "N", "PYI", "FURB", "FBT", "S",
  # FIXME(sileht): doctring/rst-docstring like
  # "D"
 ]
 
 ignore = [
+    # NOTE(Greesb): use of assert detected
+    "S101",
+    # NOTE(Greesb): subprocess module is possibly insecure
+    "S404",
+    # NOTE(Greesb): Starting a process with a partial executable path
+    "S607",
     # NOTE(Greesb): Checks for the use of boolean positional arguments in function definitions
     # interesting but would require a big refactor
     "FBT001", "FBT002",
@@ -282,6 +288,9 @@ ignore = [
     # NOTE(Greesb): mypy doesn't support the `type myvar = [...]` syntax yet
     "UP040",
 ]
+
+[tool.ruff.per-file-ignores]
+"mergify_engine/tests/**/*.py" = ["S603", "S105", "S106", "S311"]
 
 [tool.ruff.lint]
 preview = true

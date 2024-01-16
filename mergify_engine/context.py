@@ -7,8 +7,8 @@ import dataclasses
 import datetime
 import functools
 import json
-import random
 import re
+import secrets
 import typing
 from urllib import parse
 
@@ -1137,7 +1137,7 @@ class Repository:
         labels = await self.get_labels()
         names = [label["name"].lower() for label in labels]
         if label_name.lower() not in names:
-            color = f"{random.randrange(16 ** 6):06x}"  # nosec
+            color = f"{secrets.randbelow(16 ** 6):06x}"
             try:
                 resp = await self.installation.client.post(
                     f"{self.base_url}/labels",
