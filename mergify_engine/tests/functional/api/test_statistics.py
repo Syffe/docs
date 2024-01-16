@@ -419,19 +419,17 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             assert count == 0
 
     async def test_time_to_merge_endpoint_at_timestamp_too_far(self) -> None:
-        at_timestamp = int(
-            (
-                date.utcnow() - (web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION * 2)
-            ).timestamp(),
-        )
+        at = date.utcnow() - (web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION * 2)
+        at = at.replace(microsecond=0)
+        at_timestamp = int(at.timestamp())
 
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={at_timestamp}",
         )
 
-        assert r.status_code == 400
+        assert r.status_code == 422
         assert (
-            f"The provided 'at' timestamp ({at_timestamp}) is too far in the past"
+            f"The provided 'at' ({at.isoformat()}) is too far in the past"
             in r.json()["detail"]
         )
 
@@ -645,32 +643,31 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             assert r.json()[0]["queues"][0]["queue_checks_outcome"]["SUCCESS"] == 1
 
     async def test_stats_endpoint_timestamp_in_future(self) -> None:
-        with time_travel("2022-08-18T10:00:00"):
-            future_timestamp = int(date.utcnow().timestamp()) + 1000
-            fail_urls = [
-                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={future_timestamp}",
-                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?start_at={future_timestamp}",
-                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?end_at={future_timestamp}",
-                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?start_at={future_timestamp}",
-                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={future_timestamp}",
-            ]
-            now_ts = int(date.utcnow().timestamp())
-            valid_urls = [
-                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={now_ts}",
-                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?start_at={now_ts}",
-                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?end_at={now_ts}",
-                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?start_at={now_ts}",
-                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={now_ts}",
-            ]
+        future_timestamp = int(date.fromisoformat("2123-12-12T12:12:12Z").timestamp())
+        fail_urls = [
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={future_timestamp}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?start_at={future_timestamp}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?end_at={future_timestamp}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?start_at={future_timestamp}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={future_timestamp}",
+        ]
+        now_ts = int(date.utcnow().timestamp())
+        valid_urls = [
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={now_ts}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?start_at={now_ts}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?end_at={now_ts}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?start_at={now_ts}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={now_ts}",
+        ]
 
-            for url in fail_urls:
-                r = await self.admin_app.get(
-                    url,
-                )
-                assert r.status_code == 422
+        for url in fail_urls:
+            r = await self.admin_app.get(
+                url,
+            )
+            assert r.status_code == 422, url
 
-            for url in valid_urls:
-                r = await self.admin_app.get(
-                    url,
-                )
-                assert r.status_code == 200
+        for url in valid_urls:
+            r = await self.admin_app.get(
+                url,
+            )
+            assert r.status_code == 200

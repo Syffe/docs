@@ -5,6 +5,7 @@ import uuid
 
 import daiquiri
 import fastapi
+import pydantic
 from pydantic import functional_validators
 import sentry_sdk
 
@@ -15,6 +16,7 @@ from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import settings
 from mergify_engine import subscription
+from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.config import types
@@ -24,7 +26,7 @@ from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import redis
-from mergify_engine.web import utils
+from mergify_engine.web import utils as web_utils
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -500,7 +502,7 @@ QueueRules = typing.Annotated[qr_config.QueueRules, fastapi.Depends(get_queue_ru
 _QueueNameFromPathPartiallyValidated = typing.Annotated[
     qr_config.QueueName,
     fastapi.Path(description="Name of the queue"),
-    functional_validators.AfterValidator(utils.CheckNullChar),
+    functional_validators.AfterValidator(web_utils.CheckNullChar),
 ]
 
 
@@ -538,13 +540,13 @@ QueueNameFromPath = typing.Annotated[
 BranchFromPath = typing.Annotated[
     github_types.GitHubRefType,
     fastapi.Path(description="The name of the branch"),
-    functional_validators.AfterValidator(utils.CheckNullChar),
+    functional_validators.AfterValidator(web_utils.CheckNullChar),
 ]
 
 OptionalBranchFromQuery = typing.Annotated[
     github_types.GitHubRefType | None,
     fastapi.Query(description="The name of the branch"),
-    functional_validators.AfterValidator(utils.CheckNullChar),
+    functional_validators.AfterValidator(web_utils.CheckNullChar),
 ]
 
 
@@ -563,7 +565,7 @@ PartitionRules = typing.Annotated[
 _PartitionName = typing.Annotated[
     partr_config.PartitionRuleName,
     fastapi.Path(title="PartitionName", description="The name of the partition"),
-    functional_validators.AfterValidator(utils.CheckNullChar),
+    functional_validators.AfterValidator(web_utils.CheckNullChar),
 ]
 
 
@@ -586,3 +588,29 @@ PartitionNameFromPath = typing.Annotated[
     partr_config.PartitionRuleName,
     fastapi.Depends(get_validated_partition_name),
 ]
+
+
+def verify_timerange(
+    start_at: typing.Annotated[
+        pydantic.PastDatetime | None,
+        fastapi.Query(
+            description="Get the stats until this date, default 1 day before end_at",
+        ),
+    ] = None,
+    end_at: typing.Annotated[
+        pydantic.PastDatetime | None,
+        fastapi.Query(description="Get the stats from this date, default now"),
+    ] = None,
+) -> utils.TimeRange:
+    if end_at is None:
+        end_at = date.utcnow()
+    if start_at is None:
+        start_at = end_at - datetime.timedelta(days=1)
+
+    try:
+        return utils.TimeRange(start_at, end_at)
+    except utils.InvalidTimeRangeError as e:
+        raise fastapi.HTTPException(status_code=422, detail=e.reason)
+
+
+TimeRange = typing.Annotated[utils.TimeRange, fastapi.Depends(verify_timerange)]

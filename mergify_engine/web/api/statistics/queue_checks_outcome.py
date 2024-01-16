@@ -8,7 +8,6 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
 from mergify_engine import database
-from mergify_engine import date
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_models
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -83,8 +82,7 @@ async def get_queue_checks_end_events(
     repository_ctxt: context.Repository,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
-    start_at: web_stat_utils.TimestampNotInFuture | None = None,
-    end_at: web_stat_utils.TimestampNotInFuture | None = None,
+    timerange: security.TimeRange,
     branch: str | None = None,
 ) -> sqlalchemy.ScalarResult[evt_models.EventActionQueueChecksEnd]:
     model = evt_models.EventActionQueueChecksEnd
@@ -93,6 +91,8 @@ async def get_queue_checks_end_events(
         model.repository_id == repository_ctxt.repo["id"],
         model.type == enumerations.EventType.ActionQueueChecksEnd,
         model.received_at >= web_stat_utils.get_oldest_datetime(),
+        model.received_at >= timerange.start_at,
+        model.received_at <= timerange.end_at,
     }
     if partition_names:
         query_filter.add(model.partition_name.in_(partition_names))
@@ -100,10 +100,6 @@ async def get_queue_checks_end_events(
         query_filter.add(model.queue_name.in_(queue_names))
     if branch is not None:
         query_filter.add(model.branch == branch)
-    if start_at is not None:
-        query_filter.add(model.received_at >= date.fromtimestamp(start_at))
-    if end_at is not None:
-        query_filter.add(model.received_at <= date.fromtimestamp(end_at))
 
     stmt = sqlalchemy.select(model).where(*query_filter).order_by(model.id.desc())
     return await session.scalars(stmt)
@@ -114,8 +110,7 @@ async def get_queue_checks_outcome(
     repository_ctxt: context.Repository,
     partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName,
-    start_at: web_stat_utils.TimestampNotInFuture | None = None,
-    end_at: web_stat_utils.TimestampNotInFuture | None = None,
+    timerange: security.TimeRange,
     branch: str | None = None,
 ) -> web_stat_types.QueueChecksOutcome:
     events = await get_queue_checks_end_events(
@@ -123,8 +118,7 @@ async def get_queue_checks_outcome(
         repository_ctxt=repository_ctxt,
         partition_names=(partition_name,),
         queue_names=(queue_name,),
-        start_at=start_at,
-        end_at=end_at,
+        timerange=timerange,
         branch=branch,
     )
 
@@ -176,18 +170,7 @@ class QueueChecksOutcomePerPartition:
 async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
     session: database.Session,
     repository_ctxt: security.RepositoryWithConfig,
-    start_at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
-        fastapi.Query(
-            description="Retrieve the stats that happened after this timestamp (in seconds)",
-        ),
-    ] = None,
-    end_at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
-        fastapi.Query(
-            description="Retrieve the stats that happened before this timestamp (in seconds)",
-        ),
-    ] = None,
+    timerange: security.TimeRange,
     branch: security.OptionalBranchFromQuery = None,
 ) -> list[QueueChecksOutcomePerPartition]:
     queue_rules = repository_ctxt.mergify_config["queue_rules"]
@@ -203,8 +186,7 @@ async def get_queue_checks_outcome_stats_for_all_queues_and_partitions_endpoint(
         repository_ctxt=repository_ctxt,
         partition_names=partition_names,
         queue_names=queue_names,
-        start_at=start_at,
-        end_at=end_at,
+        timerange=timerange,
         branch=branch,
     )
 
@@ -263,18 +245,7 @@ async def get_queue_checks_outcome_stats_all_partitions_endpoint(
     session: database.Session,
     repository_ctxt: security.RepositoryWithConfig,
     queue_name: security.QueueNameFromPath,
-    start_at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
-        fastapi.Query(
-            description="Retrieve the stats that happened after this timestamp (in seconds)",
-        ),
-    ] = None,
-    end_at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
-        fastapi.Query(
-            description="Retrieve the stats that happened before this timestamp (in seconds)",
-        ),
-    ] = None,
+    timerange: security.TimeRange,
     branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.QueueChecksOutcome:
     if len(repository_ctxt.mergify_config["partition_rules"]):
@@ -288,8 +259,7 @@ async def get_queue_checks_outcome_stats_all_partitions_endpoint(
         repository_ctxt=repository_ctxt,
         partition_name=partr_config.DEFAULT_PARTITION_NAME,
         queue_name=queue_name,
-        start_at=start_at,
-        end_at=end_at,
+        timerange=timerange,
         branch=branch,
     )
 
@@ -305,18 +275,7 @@ async def get_queue_checks_outcome_stats_partition_endpoint(
     repository_ctxt: security.RepositoryWithConfig,
     partition_name: security.PartitionNameFromPath,
     queue_name: security.QueueNameFromPath,
-    start_at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
-        fastapi.Query(
-            description="Retrieve the stats that happened after this timestamp (in seconds)",
-        ),
-    ] = None,
-    end_at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
-        fastapi.Query(
-            description="Retrieve the stats that happened before this timestamp (in seconds)",
-        ),
-    ] = None,
+    timerange: security.TimeRange,
     branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.QueueChecksOutcome:
     if (
@@ -333,7 +292,6 @@ async def get_queue_checks_outcome_stats_partition_endpoint(
         repository_ctxt=repository_ctxt,
         partition_name=partition_name,
         queue_name=queue_name,
-        start_at=start_at,
-        end_at=end_at,
+        timerange=timerange,
         branch=branch,
     )

@@ -43,7 +43,7 @@ from mergify_engine.web import root as web_root
 
 
 # for jwt generation
-tardis.configure(extend_ignore_list=["mergify_engine.clients.github_app"])
+tardis.configure(extend_ignore_list=["pydantic", "mergify_engine.clients.github_app"])
 
 GITHUB_CI = utils.strtobool(os.getenv("CI", "false"))
 

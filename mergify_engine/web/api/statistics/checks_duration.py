@@ -1,5 +1,3 @@
-import typing
-
 import fastapi
 
 from mergify_engine import database
@@ -22,18 +20,7 @@ async def get_checks_duration_stats_endpoint(
     session: database.Session,
     repository_ctxt: security.RepositoryWithConfig,
     queue_name: security.QueueNameFromPath,
-    start_at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
-        fastapi.Query(
-            description="Retrieve the stats that happened after this timestamp (in seconds)",
-        ),
-    ] = None,
-    end_at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
-        fastapi.Query(
-            description="Retrieve the stats that happened before this timestamp (in seconds)",
-        ),
-    ] = None,
+    timerange: security.TimeRange,
     branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.ChecksDurationResponse:
     if len(repository_ctxt.mergify_config["partition_rules"]):
@@ -46,8 +33,7 @@ async def get_checks_duration_stats_endpoint(
         repository_id=repository_ctxt.repo["id"],
         queue_names=(queue_name,),
         partition_names=(partr_config.DEFAULT_PARTITION_NAME,),
-        start_at=start_at,
-        end_at=end_at,
+        timerange=timerange,
         branch=branch,
     )
 
@@ -63,18 +49,7 @@ async def get_checks_duration_stats_partition_endpoint(
     repository_ctxt: security.RepositoryWithConfig,
     partition_name: security.PartitionNameFromPath,
     queue_name: security.QueueNameFromPath,
-    start_at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
-        fastapi.Query(
-            description="Retrieve the stats that happened after this timestamp (in seconds)",
-        ),
-    ] = None,
-    end_at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
-        fastapi.Query(
-            description="Retrieve the stats that happened before this timestamp (in seconds)",
-        ),
-    ] = None,
+    timerange: security.TimeRange,
     branch: security.OptionalBranchFromQuery = None,
 ) -> web_stat_types.ChecksDurationResponse:
     if (
@@ -90,7 +65,6 @@ async def get_checks_duration_stats_partition_endpoint(
         repository_id=repository_ctxt.repo["id"],
         queue_names=(queue_name,),
         partition_names=(partition_name,),
-        start_at=start_at,
-        end_at=end_at,
+        timerange=timerange,
         branch=branch,
     )

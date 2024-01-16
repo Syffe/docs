@@ -9,7 +9,6 @@ import sqlalchemy
 
 from mergify_engine import context
 from mergify_engine import database
-from mergify_engine import date
 from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_models
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -27,7 +26,7 @@ async def get_queue_leave_events(
     repository_ctxt: context.Repository,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
-    at: web_stat_utils.TimestampNotInFuture | None = None,
+    at: datetime.datetime | None = None,
     branch: str | None = None,
 ) -> sqlalchemy.ScalarResult[evt_models.EventActionQueueLeave]:
     model = evt_models.EventActionQueueLeave
@@ -48,22 +47,20 @@ async def get_queue_leave_events(
     if at is None:
         query_filter.add(model.received_at >= oldest_dt)
     else:
-        at_dt = date.fromtimestamp(at) if at is not None else None
-        if at_dt is not None and at_dt < oldest_dt:
+        if at is not None and at < oldest_dt:
             raise fastapi.HTTPException(
-                status_code=400,
+                status_code=422,
                 detail=(
-                    f"The provided 'at' timestamp ({at}) is too far in the past. "
+                    f"The provided 'at' ({at.isoformat()}) is too far in the past. "
                     "You can only query a maximum of "
                     f"{web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION.days} days in the past."
                 ),
             )
 
         query_filter.add(
-            model.received_at
-            >= at_dt - web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION,
+            model.received_at >= at - web_stat_utils.QUERY_MERGE_QUEUE_STATS_RETENTION,
         )
-        query_filter.add(model.received_at <= at_dt)
+        query_filter.add(model.received_at <= at)
 
     stmt = sqlalchemy.select(model).where(*query_filter).order_by(model.id.asc())
     return await session.scalars(stmt)
@@ -82,7 +79,7 @@ async def get_time_to_merge_from_partitions_and_queues(
     repository_ctxt: context.Repository,
     queue_names: tuple[qr_config.QueueName, ...],
     partition_names: tuple[partr_config.PartitionRuleName, ...],
-    at: web_stat_utils.TimestampNotInFuture | None = None,
+    at: datetime.datetime | None = None,
     branch: str | None = None,
 ) -> web_stat_types.TimeToMergeResponse:
     events = await get_queue_leave_events(
@@ -143,7 +140,7 @@ async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
     session: database.Session,
     repository_ctxt: security.RepositoryWithConfig,
     at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
+        pydantic.PastDatetime | None,
         fastapi.Query(
             description="Retrieve the time to merge at this timestamp (in seconds)",
         ),
@@ -221,7 +218,7 @@ async def get_average_time_to_merge_stats_endpoint(
     repository_ctxt: security.RepositoryWithConfig,
     queue_name: security.QueueNameFromPath,
     at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
+        pydantic.PastDatetime | None,
         fastapi.Query(
             description="Retrieve the average time to merge for the queue at this timestamp (in seconds)",
         ),
@@ -257,7 +254,7 @@ async def get_average_time_to_merge_stats_partition_endpoint(
     partition_name: security.PartitionNameFromPath,
     queue_name: security.QueueNameFromPath,
     at: typing.Annotated[
-        web_stat_utils.TimestampNotInFuture | None,
+        pydantic.PastDatetime | None,
         fastapi.Query(
             description="Retrieve the average time to merge for the queue at this timestamp (in seconds)",
         ),

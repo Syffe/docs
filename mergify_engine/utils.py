@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import dataclasses
+import datetime
 import enum
 import functools
 import hashlib
@@ -11,6 +13,8 @@ import typing
 import urllib
 
 import daiquiri
+import sqlalchemy
+from sqlalchemy import func
 import tenacity
 import voluptuous
 
@@ -19,6 +23,8 @@ from mergify_engine import github_types
 
 if typing.TYPE_CHECKING:
     from collections import abc
+
+    from sqlalchemy.dialects import postgresql
 
     from mergify_engine.models.github import repository as github_repository
 
@@ -363,3 +369,74 @@ def map_tenacity_try_again_to_real_cause(
             raise exc.__context__
 
     return inner_func
+
+
+@dataclasses.dataclass
+class InvalidTimeRangeError(ValueError):
+    reason: str
+    start_at: datetime.datetime
+    end_at: datetime.datetime
+
+
+@dataclasses.dataclass
+class TimeRange:
+    start_at: datetime.datetime
+    end_at: datetime.datetime
+
+    def __post_init__(self) -> None:
+        if self.start_at > self.end_at:
+            raise InvalidTimeRangeError(
+                "start_at must be before end_at",
+                self.start_at,
+                self.end_at,
+            )
+
+    def get_pg_interval(
+        self,
+    ) -> tuple[sqlalchemy.sql.functions.Function[postgresql.INTERVAL], ...]:
+        duration = self.end_at - self.start_at
+
+        # aggregation interval depending on the wanted duration = end_at - start_at
+        if duration <= datetime.timedelta(days=2):
+            # 1 value per hour (max 48 points)
+            return func.make_interval(0, 0, 0, 0, 1), func.make_interval(
+                0,
+                0,
+                0,
+                0,
+                0,
+                59,
+                59,
+            )
+        if duration <= datetime.timedelta(days=7):
+            # 1 value per 4 hours (max 42 points)
+            return func.make_interval(0, 0, 0, 0, 4), func.make_interval(
+                0,
+                0,
+                0,
+                0,
+                3,
+                59,
+                59,
+            )
+        if duration <= datetime.timedelta(days=60):
+            # 1 value per day (max 60 points)
+            return func.make_interval(0, 0, 0, 1), func.make_interval(
+                0,
+                0,
+                0,
+                0,
+                23,
+                59,
+                59,
+            )
+        # 1 value per 2 days (max 45 points)
+        return func.make_interval(0, 0, 0, 2), func.make_interval(
+            0,
+            0,
+            0,
+            1,
+            23,
+            59,
+            59,
+        )

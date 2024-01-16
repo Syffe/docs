@@ -143,26 +143,29 @@ async def test_api_partitions_list_filters(
         }
 
 
-async def test_api_invalid_start_at_end_at(
+async def test_api_invalid_date_in_the_future(
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
 ) -> None:
-    # provided date in past
-    with time_travel("2023-01-01T00:00:00Z"):
-        response = await web_client.get(
-            "/v1/repos/Mergifyio/engine/stats/queues_merged_count?start_at=2025-11-25T12:00Z",
-            headers={"Authorization": api_token.api_token},
-        )
-        assert response.status_code == 422
-        r = response.json()
-        assert r["detail"][0]["msg"] == "Value error, Datetime cannot be in the future"
-    # provided end_date > start_date
+    response = await web_client.get(
+        "/v1/repos/Mergifyio/engine/stats/queues_merged_count?start_at=3025-11-25T12:00Z",
+        headers={"Authorization": api_token.api_token},
+    )
+    assert response.status_code == 422
+    r = response.json()
+    assert r["detail"][0]["msg"] == "Input should be in the past"
+
+
+async def test_api_invalid_date_end_before_start(
+    web_client: tests_conftest.CustomTestClient,
+    api_token: tests_api_conftest.TokenUserRepo,
+) -> None:
     response = await web_client.get(
         "/v1/repos/Mergifyio/engine/stats/queues_merged_count?start_at=2022-11-25T12:00Z&end_at=2022-11-24T12:00Z",
         headers={"Authorization": api_token.api_token},
     )
     assert response.status_code == 422
-    assert response.json() == {"detail": "provided end_at should be after start_at"}
+    assert response.json() == {"detail": "start_at must be before end_at"}
 
 
 @pytest.mark.parametrize(

@@ -17,6 +17,7 @@ from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine import pagination
 from mergify_engine import signals
+from mergify_engine import utils
 from mergify_engine.clients import github  # noqa: TCH001
 from mergify_engine.models import enumerations
 from mergify_engine.models import events_metadata
@@ -496,18 +497,17 @@ class EventActionQueueMerged(Event):
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
         repository_ctxt: context.Repository,
-        start_at: datetime.datetime,
-        end_at: datetime.datetime,
-        interval: tuple[sqlalchemy.sql.functions.Function[postgresql.INTERVAL], ...],
+        timerange: utils.TimeRange,
         base_ref: list[github_types.GitHubRefType] | None = None,
         partition_name: list[partition_rules.PartitionRuleName] | None = None,
         queue_name: list[qr_config.QueueName] | None = None,
     ) -> typing.Sequence[sqlalchemy.engine.row.Row[typing.Any]]:
         filters = {
-            cls.received_at >= start_at,
-            cls.received_at <= end_at,
+            cls.received_at >= timerange.start_at,
+            cls.received_at <= timerange.end_at,
             cls.repository_id == repository_ctxt.repo["id"],
         }
+        interval = timerange.get_pg_interval()
 
         if base_ref is not None:
             filters.add(cls.base_ref.in_(base_ref))
@@ -612,18 +612,17 @@ class EventActionQueueLeave(Event):
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
         repository_ctxt: context.Repository,
-        start_at: datetime.datetime,
-        end_at: datetime.datetime,
-        interval: tuple[sqlalchemy.sql.functions.Function[postgresql.INTERVAL], ...],
+        timerange: utils.TimeRange,
         base_ref: list[github_types.GitHubRefType] | None = None,
         partition_name: list[partition_rules.PartitionRuleName] | None = None,
         queue_name: list[qr_config.QueueName] | None = None,
     ) -> typing.Sequence[sqlalchemy.engine.row.Row[typing.Any]]:
         filters = {
-            cls.received_at >= start_at,
-            cls.received_at <= end_at,
+            cls.received_at >= timerange.start_at,
+            cls.received_at <= timerange.end_at,
             cls.repository_id == repository_ctxt.repo["id"],
         }
+        interval = timerange.get_pg_interval()
 
         if base_ref is not None:
             filters.add(cls.base_ref.in_(base_ref))
@@ -724,18 +723,18 @@ class EventActionQueueChange(Event):
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
         repository_ctxt: context.Repository,
-        start_at: datetime.datetime,
-        end_at: datetime.datetime,
-        interval: tuple[sqlalchemy.sql.functions.Function[postgresql.INTERVAL], ...],
+        timerange: utils.TimeRange,
         base_ref: list[github_types.GitHubRefType] | None = None,
         partition_name: list[partition_rules.PartitionRuleName] | None = None,
         queue_name: list[qr_config.QueueName] | None = None,
     ) -> typing.Sequence[sqlalchemy.engine.row.Row[typing.Any]]:
         filters = {
-            cls.received_at >= start_at,
-            cls.received_at <= end_at,
+            cls.received_at >= timerange.start_at,
+            cls.received_at <= timerange.end_at,
             cls.repository_id == repository_ctxt.repo["id"],
         }
+
+        interval = timerange.get_pg_interval()
 
         if base_ref is not None:
             filters.add(cls.base_ref.in_(base_ref))
@@ -1027,9 +1026,7 @@ class EventActionQueueChecksEnd(Event):
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
         repository_ctxt: context.Repository,
-        start_at: datetime.datetime,
-        end_at: datetime.datetime,
-        interval: tuple[sqlalchemy.sql.functions.Function[postgresql.INTERVAL], ...],
+        timerange: utils.TimeRange,
         base_ref: list[github_types.GitHubRefType] | None = None,
         partition_name: list[partition_rules.PartitionRuleName] | None = None,
         queue_name: list[qr_config.QueueName] | None = None,
@@ -1042,10 +1039,11 @@ class EventActionQueueChecksEnd(Event):
                 spec_check.checks_started_at.isnot(None),
                 spec_check.checks_ended_at.isnot(None),
             ),
-            spec_check.checks_ended_at >= start_at,
-            spec_check.checks_ended_at <= end_at,
+            spec_check.checks_ended_at >= timerange.start_at,
+            spec_check.checks_ended_at <= timerange.end_at,
             cls.repository_id == repository_ctxt.repo["id"],
         }
+        interval = timerange.get_pg_interval()
 
         if base_ref is not None:
             filters.add(cls.base_ref.in_(base_ref))

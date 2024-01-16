@@ -13,7 +13,6 @@ from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules
 from mergify_engine.web import api
 from mergify_engine.web.api import security
-from mergify_engine.web.api.statistics import utils
 
 
 router = fastapi.APIRouter()
@@ -71,7 +70,7 @@ def format_response(result: list[dict[str, typing.Any]]) -> CIAverageRuntimeResp
 async def get_average_ci_runtime(
     session: database.Session,
     repository: security.Repository,
-    start_end: utils.StatsStartEnd,
+    timerange: security.TimeRange,
     base_ref: typing.Annotated[
         list[github_types.GitHubRefType] | None,
         fastapi.Query(description="Base reference(s) of the pull requests"),
@@ -85,16 +84,11 @@ async def get_average_ci_runtime(
         fastapi.Query(description="Name of the merge queue(s) for the pull requests"),
     ] = None,
 ) -> CIAverageRuntimeResponse:
-    start_at = typing.cast(datetime.datetime, start_end[0])
-    end_at = typing.cast(datetime.datetime, start_end[1])
-
     result = (
         await evt_models.EventActionQueueChecksEnd.get_average_ci_runtime_by_interval(
             session,
             repository,
-            start_at,
-            end_at,
-            utils.get_interval(end_at - start_at),
+            timerange,
             base_ref,
             partition_name,
             queue_name,
