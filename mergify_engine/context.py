@@ -500,7 +500,7 @@ class Repository:
                 "no mergify configuration has been loaded into the repository context",
             )
         if isinstance(mergify_config_or_exception, mergify_conf.InvalidRulesError):
-            raise RuntimeError(
+            raise RuntimeError(  # noqa: TRY004
                 "Trying to use the Mergify configuration after a loading failure",
             ) from mergify_config_or_exception
         return mergify_config_or_exception

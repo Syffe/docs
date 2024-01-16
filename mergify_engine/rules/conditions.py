@@ -360,7 +360,7 @@ class RuleConditionGroup(abstract.ABC):
                     yield_only_failing_conditions=yield_only_failing_conditions,
                 )
             else:
-                raise RuntimeError(f"Unsupported condition type: {type(condition)}")
+                raise RuntimeError(f"Unsupported condition type: {type(condition)}")  # noqa: TRY004
 
     def extract_raw_filter_tree(self, condition: RuleConditionNode) -> filter.TreeT:
         if isinstance(condition, RuleCondition):

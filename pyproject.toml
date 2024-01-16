@@ -281,8 +281,6 @@ ignore = [
     "A003",
     # NOTE(sileht): This enforce usage of raise ... from ...
     "B904", "TRY200",
-    # FIXME(sileht): Convert some exception -> TypeError
-    "TRY004",
     # FIXME(sileht): very interresting, ruff BLE is far better that flake8-blind-except
     "BLE001",
     # NOTE(Greesb): mypy doesn't support the `type myvar = [...]` syntax yet

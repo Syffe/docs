@@ -138,7 +138,7 @@ class Filter(typing.Generic[FilterResultT]):
         tree: TreeT | CompiledTreeT[GetAttrObject, FilterResultT],
     ) -> str:
         if callable(tree):
-            raise RuntimeError("Cannot convert compiled tree")
+            raise RuntimeError("Cannot convert compiled tree")  # noqa: TRY004
 
         # We don't do any kind of validation here since build_evaluator does
         # that.

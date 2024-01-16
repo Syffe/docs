@@ -91,7 +91,7 @@ def should_be_ignored(exception: Exception) -> bool:
                 if error.match(exception.message):
                     return True
             else:
-                raise RuntimeError(
+                raise RuntimeError(  # noqa: TRY004
                     f"Unexpected IGNORED_HTTP_ERROR_MESSAGES datatype: {type(error)}",
                 )
 

@@ -239,7 +239,7 @@ class AccountTokens(list[tuple[int, str, pydantic.SecretStr]]):
         if isinstance(v, list):
             for _, _, token in v:
                 if not isinstance(token, pydantic.SecretStr | str):
-                    raise ValueError("token must be a `str` or `pydantic.SecretStr`")
+                    raise TypeError("token must be a `str` or `pydantic.SecretStr`")
 
             return AccountTokens(
                 [

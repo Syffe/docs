@@ -209,7 +209,7 @@ class Time:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Time | datetime.datetime):
-            raise ValueError(f"Unsupported comparison type: {type(other)}")
+            raise TypeError(f"Unsupported comparison type: {type(other)}")
 
         now = utcnow()
         d1 = self._to_dt(self, now)
@@ -218,7 +218,7 @@ class Time:
 
     def __gt__(self, other: object) -> bool:
         if not isinstance(other, Time | datetime.datetime):
-            raise ValueError(f"Unsupported comparison type: {type(other)}")
+            raise TypeError(f"Unsupported comparison type: {type(other)}")
 
         now = utcnow()
         d1 = self._to_dt(self, now)
@@ -239,7 +239,7 @@ class Time:
                 second=0,
                 microsecond=0,
             )
-        raise ValueError(f"Unsupport comparaison type: {type(obj)}")
+        raise TypeError(f"Unsupport comparison type: {type(obj)}")
 
 
 _SHORT_WEEKDAY = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
@@ -450,7 +450,7 @@ class Schedule:
             other,
             Schedule | datetime.datetime,
         ):
-            raise ValueError(f"Unsupported comparison type: {type(other)}")
+            raise TypeError(f"Unsupported comparison type: {type(other)}")
 
         if isinstance(other, Schedule):
             # This is for unit/functional test purposes only
@@ -840,13 +840,13 @@ class UncertainDate:
 
     def __ge__(self, other: object) -> bool:
         if not isinstance(other, datetime.datetime):
-            raise ValueError(f"Unsupported comparison type: {type(other)}")
+            raise TypeError(f"Unsupported comparison type: {type(other)}")
 
         return self._as_datetime(other) >= other.astimezone(self.tzinfo)
 
     def __le__(self, other: object) -> bool:
         if not isinstance(other, datetime.datetime):
-            raise ValueError(f"Unsupported comparison type: {type(other)}")
+            raise TypeError(f"Unsupported comparison type: {type(other)}")
 
         return self._as_datetime(other) <= other.astimezone(self.tzinfo)
 
@@ -965,7 +965,7 @@ class DateTimeRange:
             other,
             DateTimeRange | datetime.datetime,
         ):
-            raise ValueError(f"Unsupported comparison type: {type(other)}")
+            raise TypeError(f"Unsupported comparison type: {type(other)}")
 
         if isinstance(other, DateTimeRange):
             return self.start == other.start and self.end == other.end

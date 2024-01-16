@@ -404,7 +404,7 @@ def _has_only_one_of(
     def func(obj: dict[str, typing.Any]) -> dict[str, typing.Any]:
         nonlocal msg
         if not isinstance(obj, dict):
-            raise RuntimeError(
+            raise RuntimeError(  # noqa: TRY004
                 "_has_only_one_of() must be used after `obj` format has been valided by voluptuous",
             )
 
