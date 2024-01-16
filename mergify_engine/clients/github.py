@@ -285,8 +285,7 @@ def _check_rate_limit(client: http.AsyncClient, response: httpx.Response) -> Non
     if response.status_code not in {403, 422, 429} or (
         response.status_code == 422
         and (
-            "errors" not in response.json()
-            or len(response.json()["errors"]) != 1
+            len(response.json().get("errors", [])) != 1
             or not isinstance(response.json()["errors"][0], dict)
             or response.json()["errors"][0].get("code", "") != "abuse"
         )

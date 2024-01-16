@@ -79,7 +79,7 @@ def get_check_run_event_payload(
     if action:
         payload["action"] = action
     if (
-        status
+        status  # noqa: PLR0916
         or conclusion
         or name
         or check_id

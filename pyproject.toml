@@ -242,9 +242,9 @@ ignore = [
     "PLR2004",
     # NOTE(Greesb): too many public methods
     "PLR0904",
-    # NOTE(Greesb): Too many return, branches, arguments, local variables, statements, boolean expression, positional arguments.
+    # NOTE(Greesb): Too many return, branches, arguments, local variables, statements, positional arguments.
     # Interesting but will require a big refactor
-    "PLR0911", "PLR0912", "PLR0913", "PLR0914", "PLR0915", "PLR0916", "PLR0917",
+    "PLR0911", "PLR0912", "PLR0913", "PLR0914", "PLR0915", "PLR0917",
     # NOTE(Greesb): custom class with __eq__ but no __hash__
     # We don't need it
     "PLW1641",
@@ -267,7 +267,7 @@ ignore = [
     "PT019",
     # NOTE(sileht): not compatible with ruff-format
     "ISC001",
-    # NOTE(sileht): line-length is up to black
+    # NOTE(sileht): line-len/gth is up to black
     "E501",
     # NOTE(sileht): we prefer using exc_info=True
     "G201", "TRY400",
