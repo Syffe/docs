@@ -541,7 +541,8 @@ class Train:
                 ) and car_can_be_interrupted:
                     ctxt.log.info(
                         "pull request already in train but misplaced",
-                        config=config,
+                        queue_rule_config=new_pull_queue_rule.config,
+                        queue_action_config=config,
                         **self.log_queue_extras,
                     )
                     is_already_queued = True
@@ -552,7 +553,8 @@ class Train:
                 # already in queue at right place, we are good
                 ctxt.log.info(
                     "pull request already in train",
-                    config=config,
+                    queue_rule_config=new_pull_queue_rule.config,
+                    queue_action_config=config,
                     **self.log_queue_extras,
                 )
                 return
@@ -598,6 +600,8 @@ class Train:
                 gh_pull=ctxt.pull["number"],
                 position=final_position,
                 queue_name=config["name"],
+                queue_rule_config=new_pull_queue_rule.config,
+                queue_action_config=config,
                 **self.log_queue_extras,
             )
 
