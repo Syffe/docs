@@ -381,11 +381,23 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
     )
 
     if parser == Parser.BOOL:
-        return _to_dict(negate, False, attribute, op, True)
+        return _to_dict(
+            negate=negate,
+            quantity=False,
+            attribute=attribute,
+            operator=op,
+            value=True,
+        )
 
     if parser == Parser.SCHEDULE:
         cond: dict[str, typing.Any] = {op: ("current-datetime", parse_schedule(value))}
-        return _to_dict(False, False, attribute, "@", cond)
+        return _to_dict(
+            negate=False,
+            quantity=False,
+            attribute=attribute,
+            operator="@",
+            value=cond,
+        )
 
     if parser in {Parser.TIMESTAMP, Parser.TIMESTAMP_OR_TIMEDELTA}:
         value = _unquote(value)
@@ -395,7 +407,13 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             except date.InvalidDateError:
                 pass
             else:
-                return _to_dict(False, False, f"{attribute}-relative", op, rd)
+                return _to_dict(
+                    negate=False,
+                    quantity=False,
+                    attribute=f"{attribute}-relative",
+                    operator=op,
+                    value=rd,
+                )
 
         try:
             dtr = date.DateTimeRange.fromisoformat_with_zoneinfo(value)
@@ -404,7 +422,13 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         else:
             if op not in EQUALITY_OPERATORS:
                 raise ConditionParsingError("Invalid operator")
-            return _to_dict(False, False, attribute, op, dtr)
+            return _to_dict(
+                negate=False,
+                quantity=False,
+                attribute=attribute,
+                operator=op,
+                value=dtr,
+            )
 
         try:
             d = date.fromisoformat_with_zoneinfo(value)
@@ -413,7 +437,13 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
 
         if op not in RANGE_OPERATORS:
             raise ConditionParsingError("Invalid operator")
-        return _to_dict(False, False, attribute, op, d)
+        return _to_dict(
+            negate=False,
+            quantity=False,
+            attribute=attribute,
+            operator=op,
+            value=d,
+        )
 
     if parser in {
         Parser.NUMBER,
@@ -426,7 +456,13 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
 
         if parser == Parser.POSITIVE_NUMBER and number < 0:
             raise ConditionParsingError("Value must be positive")
-        return _to_dict(negate, False, attribute, op, number)
+        return _to_dict(
+            negate=negate,
+            quantity=False,
+            attribute=attribute,
+            operator=op,
+            value=number,
+        )
 
     if parser in {
         Parser.BRANCH,
@@ -449,11 +485,23 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
                 number = int(value)
             except ValueError:
                 raise ConditionParsingError(f"{value} is not a number")
-            return _to_dict(negate, True, attribute, op, number)
+            return _to_dict(
+                negate=negate,
+                quantity=True,
+                attribute=attribute,
+                operator=op,
+                value=number,
+            )
 
         if is_jinja_template(value):
             template = get_jinja_template_wrapper(_unquote(value))
-            return _to_dict(negate, quantity, attribute, op, template)
+            return _to_dict(
+                negate=negate,
+                quantity=quantity,
+                attribute=attribute,
+                operator=op,
+                value=template,
+            )
 
         if op == REGEX_OPERATOR:
             try:
@@ -462,7 +510,13 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
                 re.compile(value)
             except re.error as e:
                 raise ConditionParsingError(f"Invalid regular expression: {e!s}")
-            return _to_dict(negate, quantity, attribute, op, value)
+            return _to_dict(
+                negate=negate,
+                quantity=quantity,
+                attribute=attribute,
+                operator=op,
+                value=value,
+            )
 
         if parser == Parser.TEXT:
             value = _unquote(value)
@@ -485,14 +539,26 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             else:
                 validate_github_login(value)
 
-        return _to_dict(negate, quantity, attribute, op, value)
+        return _to_dict(
+            negate=negate,
+            quantity=quantity,
+            attribute=attribute,
+            operator=op,
+            value=value,
+        )
 
     if parser == Parser.PERMISSION:
         try:
             permission = github_types.GitHubRepositoryPermission(value)
         except ValueError as e:
             raise ConditionParsingError(str(e))
-        return _to_dict(negate, False, attribute, op, permission)
+        return _to_dict(
+            negate=negate,
+            quantity=False,
+            attribute=attribute,
+            operator=op,
+            value=permission,
+        )
 
     raise RuntimeError(f"unhandled parser: {parser}")
 

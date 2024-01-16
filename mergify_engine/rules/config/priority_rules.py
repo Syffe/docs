@@ -85,7 +85,7 @@ class PriorityRules:
             priority_rules,
             ctxt.repository,
             [condition_value_querier.PullRequest(ctxt)],
-            False,
+            rule_hidden_from_merge_queue=False,
         )
         matching_priority_rules = [
             rule

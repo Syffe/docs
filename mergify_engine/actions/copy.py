@@ -273,9 +273,9 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 branch_name,
                 check_api.Conclusion.SUCCESS,
                 f"{self.KIND.capitalize()} to branch `{branch_name}` not needed, change already in branch `{branch_name}`",
-                None,
-                None,
-                False,
+                job_id=None,
+                pull_request_number=None,
+                conflicting=False,
             )
 
         except duplicate_pull.DuplicateFailedError as e:
@@ -322,8 +322,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             check_api.Conclusion.PENDING,
             message,
             job_id,
-            None,
-            False,
+            pull_request_number=None,
+            conflicting=False,
         )
 
     @classmethod
@@ -496,10 +496,10 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 CopyResult(
                     branch_name,
                     check_api.Conclusion.PENDING,
-                    "",
-                    None,
-                    None,
-                    False,
+                    details="",
+                    job_id=None,
+                    pull_request_number=None,
+                    conflicting=False,
                 ),
             )
             if previous_result.status == check_api.Conclusion.PENDING:

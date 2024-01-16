@@ -228,14 +228,14 @@ class DismissReviewsAction(actions.Action):
 
     validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("approved", default=True): voluptuous.Any(
-            True,
-            False,
+            True,  # noqa: FBT003
+            False,  # noqa: FBT003
             types.ListOf(types.GitHubLogin, MAX_DISMISS_REVIEWS),
             FROM_REQUESTED_REVIEWERS,
         ),
         voluptuous.Required("changes_requested", default=True): voluptuous.Any(
-            True,
-            False,
+            True,  # noqa: FBT003
+            False,  # noqa: FBT003
             types.ListOf(types.GitHubLogin, MAX_DISMISS_REVIEWS),
             FROM_REQUESTED_REVIEWERS,
         ),

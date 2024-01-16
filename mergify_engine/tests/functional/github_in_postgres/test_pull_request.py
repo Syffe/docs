@@ -108,7 +108,7 @@ class TestGitHubPullRequestInPg(base.FunctionalTestBase):
     async def test_pull_request_first_insertion_with_reviewers(self) -> None:
         await self.setup_repo()
 
-        async with self.event_reader.set_forwarding_events_status(False):
+        async with self.event_reader.set_forwarding_events_status(forward=False):
             p1 = await self.create_pr()
 
         p1_with_review_req = await self.create_review_request(

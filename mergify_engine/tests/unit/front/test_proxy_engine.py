@@ -203,8 +203,8 @@ async def test_engine_proxy_delete_queue_freeze(
         respx_mock,
         permission,
         expected_status_code != 403,
-        True,
-        False,
+        will_ask_for_user_perm=True,
+        private_repository=False,
     )
 
     url = "/front/proxy/engine/v1/repos/Mergifyio/engine/queue/main/freeze"

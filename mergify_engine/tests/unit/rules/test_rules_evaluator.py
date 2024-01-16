@@ -272,14 +272,14 @@ async def test_pull_request_rules_evaluator(
         ctxt.repository,
         rules_mod.YamlSchema(config),
         "",
-        False,
+        allow_extend=False,
     )
 
     evaluated_rules = await pull_request_rules.PullRequestRulesEvaluator.create(
         parsed_config["pull_request_rules"].rules,
         ctxt.repository,
         [condition_value_querier.PullRequest(ctxt)],
-        True,
+        rule_hidden_from_merge_queue=True,
     )
 
     if ignored:

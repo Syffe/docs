@@ -136,7 +136,7 @@ class PartitionRules:
             partition_rules,
             ctxt.repository,
             [condition_value_querier.PullRequest(ctxt)],
-            False,
+            rule_hidden_from_merge_queue=False,
         )
         fallback_partition_name = self.get_fallback_partition_name()
 

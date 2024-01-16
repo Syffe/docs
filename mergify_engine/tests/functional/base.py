@@ -605,7 +605,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         for marker in self.pytestmark:  # type: ignore[attr-defined]
             if marker.name == "delete_branch_on_merge":
                 if teardown:
-                    await self._set_delete_branch_on_merge(False)
+                    await self._set_delete_branch_on_merge(value=False)
                 else:
                     await self._set_delete_branch_on_merge(*marker.args)
 

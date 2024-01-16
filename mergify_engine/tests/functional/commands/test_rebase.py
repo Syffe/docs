@@ -103,7 +103,11 @@ class TestCommandRebase(base.FunctionalTestBase):
 
         # The repo is a fork with "maintainer_can_modify" authorization, but the
         # user is not a maintainer of the fork
-        with mock.patch.object(context.Context, "pull_from_fork", True), mock.patch(
+        with mock.patch.object(
+            context.Context,
+            "pull_from_fork",
+            True,  # noqa: FBT003
+        ), mock.patch(
             "mergify_engine.branch_updater.pre_rebase_check",
             return_value=True,
         ):

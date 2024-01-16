@@ -196,12 +196,15 @@ select = [
  "RUF", "RET", "DTZ", "TCH", "COM",
  "PERF", "PT", "PL", "PGH", "SIM",
  "PIE", "YTT", "T20", "ARG", "PTH",
- "N", "PYI", "FURB",
+ "N", "PYI", "FURB", "FBT",
  # FIXME(sileht): doctring/rst-docstring like
  # "D"
 ]
 
 ignore = [
+    # NOTE(Greesb): Checks for the use of boolean positional arguments in function definitions
+    # interesting but would require a big refactor
+    "FBT001", "FBT002",
     # NOTE(Greesb): unncessary dunder calls
     "PLC2801",
     # NOTE(Greesb): itertools.starmap is less efficient than list comprehensions

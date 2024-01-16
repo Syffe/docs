@@ -322,7 +322,7 @@ async def test_pulls_api_invalid_cursor(
     api_token: tests_api_conftest.TokenUserRepo,
     cursor_value: object,
 ) -> None:
-    invalid_cursor = pagination.Cursor(cursor_value, True).to_string()
+    invalid_cursor = pagination.Cursor(cursor_value, forward=True).to_string()
     resp = await web_client.request(
         "POST",
         "/v1/repos/Mergifyio/engine/pulls",

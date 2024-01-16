@@ -292,7 +292,7 @@ class Train:
             partition_rule_to_evaluate,
             ctxt.repository,
             [condition_value_querier.PullRequest(ctxt)],
-            False,
+            rule_hidden_from_merge_queue=False,
         )
 
         if not any(rule.conditions.match for rule in evaluator.matching_rules):

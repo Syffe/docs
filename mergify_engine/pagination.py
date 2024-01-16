@@ -33,7 +33,7 @@ class Cursor:
     @classmethod
     def from_string(cls, cursor_string: str) -> typing.Self:
         if not cursor_string:
-            return cls(None, True)
+            return cls(None, forward=True)
 
         # NOTE(Kontrolix): As we have no control over the cursor string that we could
         # receive, we must check every step of the decoding/unpacking process and
@@ -153,8 +153,12 @@ class Page(typing.Generic[T]):
     current: CurrentPage
     cursor_prev: Cursor | None = dataclasses.field(default=None)
     cursor_next: Cursor | None = dataclasses.field(default=None)
-    cursor_first: Cursor = dataclasses.field(default_factory=lambda: Cursor(None, True))
-    cursor_last: Cursor = dataclasses.field(default_factory=lambda: Cursor(None, False))
+    cursor_first: Cursor = dataclasses.field(
+        default_factory=lambda: Cursor(None, forward=True),
+    )
+    cursor_last: Cursor = dataclasses.field(
+        default_factory=lambda: Cursor(None, forward=False),
+    )
 
     @property
     def size(self) -> int:

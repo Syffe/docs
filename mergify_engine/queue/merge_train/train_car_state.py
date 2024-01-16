@@ -422,7 +422,7 @@ class TrainCarState:
         return self._compute_time_arrays_in_seconds(
             self.time_spent_outside_schedule_start_dates,
             self.time_spent_outside_schedule_end_dates,
-            True,
+            add_missing_end_date=True,
         )
 
     @property
@@ -430,7 +430,7 @@ class TrainCarState:
         return self._compute_time_arrays_in_seconds(
             self.time_spent_outside_schedule_start_dates,
             self.time_spent_outside_schedule_end_dates,
-            False,
+            add_missing_end_date=False,
         )
 
     @property
@@ -438,7 +438,7 @@ class TrainCarState:
         return self._compute_time_arrays_in_seconds(
             self.waiting_for_schedule_start_dates,
             self.waiting_for_schedule_end_dates,
-            True,
+            add_missing_end_date=True,
         )
 
     @property
@@ -446,7 +446,7 @@ class TrainCarState:
         return self._compute_time_arrays_in_seconds(
             self.waiting_for_schedule_start_dates,
             self.waiting_for_schedule_end_dates,
-            False,
+            add_missing_end_date=False,
         )
 
     @property
@@ -454,7 +454,7 @@ class TrainCarState:
         return self._compute_time_arrays_in_seconds(
             self.waiting_for_freeze_start_dates,
             self.waiting_for_freeze_end_dates,
-            True,
+            add_missing_end_date=True,
         )
 
     @property
@@ -462,7 +462,7 @@ class TrainCarState:
         return self._compute_time_arrays_in_seconds(
             self.waiting_for_freeze_start_dates,
             self.waiting_for_freeze_end_dates,
-            False,
+            add_missing_end_date=False,
         )
 
 

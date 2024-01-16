@@ -152,7 +152,7 @@ class PullRequestRules:
             runtime_rules,
             ctxt.repository,
             [condition_value_querier.PullRequest(ctxt)],
-            True,
+            rule_hidden_from_merge_queue=True,
         )
 
 

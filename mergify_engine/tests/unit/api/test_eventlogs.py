@@ -419,7 +419,7 @@ async def test_api_cursor_pg(
     assert prev_cursor.forward
 
     # Invalid cursor
-    invalid_cursor = Cursor("zerzer", True).to_string()
+    invalid_cursor = Cursor("zerzer", forward=True).to_string()
     response = await web_client.get(
         f"/v1/repos/Mergifyio/engine/logs?per_page=2&cursor={invalid_cursor}",
         headers={"Authorization": api_token.api_token},

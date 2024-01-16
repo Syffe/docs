@@ -4,9 +4,9 @@ from mergify_engine import cache
 def test_cache_method() -> None:
     c: cache.Cache[str, bool] = cache.Cache()
     assert c.get("foo") is cache.Unset
-    c.set("foo", False)
+    c.set("foo", value=False)
     assert not c.get("foo")
-    c.set("bar", True)
+    c.set("bar", value=True)
     assert c.get("bar")
     c.delete("foo")
     assert c.get("foo") is cache.Unset

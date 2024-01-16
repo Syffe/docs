@@ -166,7 +166,7 @@ def _enable_github_in_postgres() -> abc.Generator[None, None, None]:
     with mock.patch.object(
         settings,
         "GITHUB_IN_POSTGRES_EVENTS_INGESTION",
-        True,
+        True,  # noqa: FBT003
     ), mock.patch.object(
         settings,
         "GITHUB_IN_POSTGRES_USE_PR_IN_PG_FOR_ORGS",
@@ -428,7 +428,7 @@ def web_server_app() -> abc.Generator[fastapi.FastAPI, None, None]:
         settings,
         "HTTP_CF_TO_MERGIFY_HOSTS",
         ["*"],
-    ), mock.patch.object(settings, "HTTP_TO_HTTPS_REDIRECT", False):
+    ), mock.patch.object(settings, "HTTP_TO_HTTPS_REDIRECT", False):  # noqa: FBT003
         app = web_root.create_app(debug=True)
         yield app
 
@@ -460,7 +460,7 @@ async def web_client_with_fresh_web_app() -> (
         settings,
         "HTTP_CF_TO_MERGIFY_HOSTS",
         ["*"],
-    ), mock.patch.object(settings, "HTTP_TO_HTTPS_REDIRECT", False):
+    ), mock.patch.object(settings, "HTTP_TO_HTTPS_REDIRECT", False):  # noqa: FBT003
         fastapi_app = web_root.create_app(debug=True)
         async with asgi_lifespan.LifespanManager(fastapi_app):
             async with CustomTestClient(app=fastapi_app) as client:

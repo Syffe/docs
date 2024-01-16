@@ -1485,7 +1485,7 @@ queue_rules:
         [queuerules["default"]],
         ctxt.repository,
         [condition_value_querier.PullRequest(ctxt)],
-        False,
+        rule_hidden_from_merge_queue=False,
     )
     assert match.rules[0].queue_conditions.match
 

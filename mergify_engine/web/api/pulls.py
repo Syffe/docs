@@ -170,7 +170,7 @@ async def get_pull_requests(
         current=current_page,
         cursor_next=pagination.Cursor(
             None if reached_last_page else (page, nb_pulls_on_github),
-            True,
+            forward=True,
         ),
     )
 

@@ -291,7 +291,7 @@ async def test_migration_script_c3263ca8c1c0(
         database.init_sqlalchemy("migration_script")
 
         await prepare_data()
-        await assert_data(False, False, 4)
+        await assert_data(repo_exists=False, owner_exists=False, nb_pr_to_update=4)
         await _run_alembic("upgrade", c3263ca8c1c0.revision)
         if mergifyengine_saas_mode:
             # NOTE(Kontrolix): In manual mode we call `init_sqlalchemy` so we have
@@ -299,4 +299,4 @@ async def test_migration_script_c3263ca8c1c0(
             await conftest.reset_database_state()
             await c3263ca8c1c0.manual_run()
 
-        await assert_data(True, True, 0)
+        await assert_data(repo_exists=True, owner_exists=True, nb_pr_to_update=0)

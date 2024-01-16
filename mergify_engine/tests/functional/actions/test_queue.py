@@ -965,7 +965,11 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         # p2 merged and p1 rebased
-        p2_merged = await self.wait_for_pull_request("closed", p2["number"], True)
+        p2_merged = await self.wait_for_pull_request(
+            "closed",
+            p2["number"],
+            merged=True,
+        )
         p1_rebased = await self.get_pull(p1["number"])
         assert (
             p1_rebased["base"]["sha"] == p2_merged["pull_request"]["merge_commit_sha"]
@@ -1034,7 +1038,11 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         # p2 merged and p1 rebased
-        p2_merged = await self.wait_for_pull_request("closed", p2["number"], True)
+        p2_merged = await self.wait_for_pull_request(
+            "closed",
+            p2["number"],
+            merged=True,
+        )
         p1_rebased = await self.get_pull(p1["number"])
         assert (
             p1_rebased["base"]["sha"] == p2_merged["pull_request"]["merge_commit_sha"]
@@ -5994,10 +6002,14 @@ previous_failed_batches:
         await self.assert_merge_queue_contents(q, None, [])
 
     async def test_queue_with_allow_queue_branch_edit_set_to_false(self) -> None:
-        await self._do_test_queue_with_allow_queue_branch_edit(False)
+        await self._do_test_queue_with_allow_queue_branch_edit(
+            allow_queue_branch_edit=False,
+        )
 
     async def test_queue_with_allow_queue_branch_edit_set_to_true(self) -> None:
-        await self._do_test_queue_with_allow_queue_branch_edit(True)
+        await self._do_test_queue_with_allow_queue_branch_edit(
+            allow_queue_branch_edit=True,
+        )
 
     async def _do_test_queue_with_allow_queue_branch_edit(
         self,

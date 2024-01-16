@@ -219,7 +219,7 @@ class TestBackportAction(BackportActionTestBase):
 
     async def test_backport_conflicts(self) -> None:
         stable_branch = self.get_full_branch_name("stable/#3.1")
-        p, checks = await self._do_backport_conflicts(False)
+        p, checks = await self._do_backport_conflicts(ignore_conflicts=False)
 
         # Retrieve the new commit id that has been be cherry-picked
         await self.git("fetch", "origin")
@@ -254,7 +254,10 @@ no changes added to commit (use "git add" and/or "git commit -a")
 
     async def test_backport_ignore_conflicts(self) -> None:
         stable_branch = self.get_full_branch_name("stable/#3.1")
-        _p, checks = await self._do_backport_conflicts(True, ["backported"])
+        _p, checks = await self._do_backport_conflicts(
+            ignore_conflicts=True,
+            labels=["backported"],
+        )
 
         pull = (await self.get_pulls(params={"base": stable_branch}))[0]
 

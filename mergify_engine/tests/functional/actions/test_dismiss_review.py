@@ -291,7 +291,7 @@ Unknown pull request attribute: Loser
         await self._push_for_synchronize(p["head"]["ref"])
         await self.wait_for_pull_request("synchronize")
 
-        async with self.event_reader.set_forwarding_events_status(False):
+        async with self.event_reader.set_forwarding_events_status(forward=False):
             await self.client_admin.post(
                 f"{self.url_origin}/pulls/{p['number']}/reviews",
                 json={"event": "APPROVE", "body": "event: APPROVE"},

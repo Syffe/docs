@@ -25,7 +25,7 @@ def test_cursor_value(
     value: object,
     valid_type: type[pagination.CursorType[typing.Any]],
 ) -> None:
-    cursor = pagination.Cursor(value, True)
+    cursor = pagination.Cursor(value, forward=True)
 
     assert cursor.value(valid_type) == value
 
@@ -48,7 +48,7 @@ def test_cursor_value_invalid_type(
     value: object,
     invalid_type: type[pagination.CursorType[typing.Any]],
 ) -> None:
-    cursor = pagination.Cursor(value, True)
+    cursor = pagination.Cursor(value, forward=True)
 
     with pytest.raises(pagination.InvalidCursorError):
         cursor.value(invalid_type)

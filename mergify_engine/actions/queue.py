@@ -1029,12 +1029,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
     ) -> QueueCancellationQueryResult:
         # It's closed, it's not going to change
         if ctxt.closed:
-            return QueueCancellationQueryResult(True, "The pull request is closed.")
+            return QueueCancellationQueryResult(
+                should_be_cancelled=True,
+                summary="The pull request is closed.",
+            )
 
         if await ctxt.synchronized_by_user_at() is not None:
             return QueueCancellationQueryResult(
-                True,
-                "The pull request has been synchronized by a user.",
+                should_be_cancelled=True,
+                summary="The pull request has been synchronized by a user.",
             )
 
         should_be_cancelled = True
@@ -1045,8 +1048,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 # NOTE(sileht): train car has been deleted, wait for the queue status to be copied
                 # to the action status
                 return QueueCancellationQueryResult(
-                    False,
-                    "Wait for queue status to be copied.",
+                    should_be_cancelled=False,
+                    summary="Wait for queue status to be copied.",
                 )
 
             if (

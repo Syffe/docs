@@ -677,13 +677,13 @@ def TernaryFilterOperatorMultiple(
 def TernaryFilterOperatorAll(
     values: abc.Iterable[object],
 ) -> TernaryFilterResult:
-    return TernaryFilterOperatorMultiple(values, ALL_PRECEDENCES, True)
+    return TernaryFilterOperatorMultiple(values, ALL_PRECEDENCES, empty_default=True)
 
 
 def TernaryFilterOperatorAny(
     values: abc.Iterable[object],
 ) -> TernaryFilterResult:
-    return TernaryFilterOperatorMultiple(values, ANY_PRECEDENCES, False)
+    return TernaryFilterOperatorMultiple(values, ANY_PRECEDENCES, empty_default=False)
 
 
 def TernaryFilterOperatorNegate(

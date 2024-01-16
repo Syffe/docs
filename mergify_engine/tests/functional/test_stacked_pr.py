@@ -11,7 +11,7 @@ from mergify_engine.tests.functional import utils as tests_utils
     subscription.Features.WORKFLOW_AUTOMATION,
     subscription.Features.MERGE_QUEUE,
 )
-@pytest.mark.delete_branch_on_merge(True)
+@pytest.mark.delete_branch_on_merge(True)  # noqa: FBT003
 class TestStackedPr(base.FunctionalTestBase):
     async def test_merging_a_stack(self) -> None:
         rules = {

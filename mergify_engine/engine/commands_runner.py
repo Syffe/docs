@@ -547,7 +547,7 @@ async def post_result_for_command_with_followup(
     message = prepare_message(
         command.get_command(),
         command_result,
-        True,
+        action_is_running=True,
     )
     ctxt.log.info(
         "command %s: %s",
@@ -626,12 +626,12 @@ async def run_command(
                 ctxt,
                 prr_config.EvaluatedPullRequestRule(
                     prr_config.CommandRule(
-                        prr_config.PullRequestRuleName(str(command)),
-                        None,
-                        conds,
-                        {},
-                        False,
-                        state.github_comment_source["user"],
+                        name=prr_config.PullRequestRuleName(str(command)),
+                        disabled=None,
+                        conditions=conds,
+                        actions={},
+                        hidden=False,
+                        sender=state.github_comment_source["user"],
                     ),
                 ),
             )
@@ -668,12 +668,12 @@ async def run_command(
                 ctxt,
                 prr_config.EvaluatedPullRequestRule(
                     prr_config.CommandRule(
-                        prr_config.PullRequestRuleName(str(command)),
-                        None,
-                        conds,
-                        {},
-                        False,
-                        state.github_comment_source["user"],
+                        name=prr_config.PullRequestRuleName(str(command)),
+                        disabled=None,
+                        conditions=conds,
+                        actions={},
+                        hidden=False,
+                        sender=state.github_comment_source["user"],
                     ),
                 ),
             )

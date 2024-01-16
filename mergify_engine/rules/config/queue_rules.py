@@ -209,7 +209,7 @@ class QueueRule:
             [queue_rule_with_extra_conditions],
             repository,
             pulls,
-            False,
+            rule_hidden_from_merge_queue=False,
         )
         return queue_rules_evaluator.matching_rules[0]
 
@@ -338,7 +338,7 @@ class QueueRules:
             routing_rules,
             ctxt.repository,
             [condition_value_querier.PullRequest(ctxt)],
-            True,
+            rule_hidden_from_merge_queue=True,
         )
         return routing_rules_evaluator.matching_rules
 
@@ -367,7 +367,7 @@ class QueueRules:
             runtime_rules,
             ctxt.repository,
             [condition_value_querier.PullRequest(ctxt)],
-            True,
+            rule_hidden_from_merge_queue=True,
         )
 
 

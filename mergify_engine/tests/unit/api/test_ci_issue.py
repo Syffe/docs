@@ -627,7 +627,7 @@ async def test_api_ci_issue_get_ci_issue_events(
     }
 
     # Invalid cursor
-    invalid_cursor = pagination.Cursor("abcd", True).to_string()
+    invalid_cursor = pagination.Cursor("abcd", forward=True).to_string()
     response = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events?per_page=2&cursor={invalid_cursor}",
     )
@@ -1316,7 +1316,7 @@ async def test_api_ci_issue_get_ci_issues_pagination(
     assert first_page_issue_ids == {i["id"] for i in first_page_again.json()["issues"]}
 
     # Invalid cursor
-    invalid_cursor = pagination.Cursor("abcd", True).to_string()
+    invalid_cursor = pagination.Cursor("abcd", forward=True).to_string()
     response = await web_client.get(
         f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?per_page=2&cursor={invalid_cursor}",
     )

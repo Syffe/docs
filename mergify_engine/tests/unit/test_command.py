@@ -597,7 +597,7 @@ async def test_pending_commands_ordering(
                             "pending",
                             "pending",
                         ),
-                        True,
+                        action_is_running=True,
                     ),
                 },
             ),
