@@ -87,7 +87,7 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
     ) -> responses.JSONResponse:
         return responses.JSONResponse(
             status_code=422,
-            content={"message": "Invalid cursor", "cursor": exc.cursor},
+            content={"message": "Invalid cursor", "cursor": exc.cursor.to_string()},
         )
 
     @app.exception_handler(requests.ClientDisconnect)

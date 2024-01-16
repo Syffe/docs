@@ -442,8 +442,8 @@ async def get(
         received_from,
         received_to,
     )
-    first_event_id = events[0].id if events else None
-    last_event_id = events[-1].id if events else None
+    first_event_id = str(events[0].id) if events else None
+    last_event_id = str(events[-1].id) if events else None
 
     casted_events: list[Event] = []
     for raw in events:

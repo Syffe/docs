@@ -31,7 +31,9 @@ def _endpoint_with_testing_router(web_server: fastapi.FastAPI) -> None:
         response_model=test_auth.ResponseTest,
     )
     async def test_exception_pagination() -> None:
-        raise pagination.InvalidCursorError(cursor="abcdef")
+        raise pagination.InvalidCursorError(
+            cursor=pagination.Cursor.from_string("abcdef"),
+        )
 
     @router.get(
         "/testing-endpoint-exception-mergify-not-installed",

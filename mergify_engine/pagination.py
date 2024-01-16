@@ -1,11 +1,8 @@
-import base64
-import binascii
 import dataclasses
 import typing
 import urllib.parse
 
 import fastapi
-import msgpack
 import pydantic
 import starlette
 
@@ -17,101 +14,53 @@ DEFAULT_PER_PAGE = 10
 T = typing.TypeVar("T")
 
 
-class CursorType(pydantic.BaseModel, typing.Generic[T]):
-    value: T
-
-
 @dataclasses.dataclass
 class Cursor:
-    _value: object
+    value: str
     forward: bool
 
-    class DumpedCursor(typing.TypedDict):
-        value: object
-        forward: bool
-
     @classmethod
-    def from_string(cls, cursor_string: str) -> typing.Self:
-        if not cursor_string:
-            return cls(None, forward=True)
-
-        # NOTE(Kontrolix): As we have no control over the cursor string that we could
-        # receive, we must check every step of the decoding/unpacking process and
-        # raise an InvalidCursorError if something goes wrong.
-        try:
-            decoded_string = base64.urlsafe_b64decode(cursor_string)
-        except binascii.Error:
-            raise InvalidCursorError(cursor_string)
-
-        try:
-            unpacked_object = msgpack.loads(decoded_string)
-        except ValueError:
-            raise InvalidCursorError(cursor_string)
-
-        # NOTE(Kontrolix): As we have no control over the potenital unpacked_object
-        # that we get we must validate it against the DumpedCursor type.
-        try:
-            dumped_cursor = pydantic.TypeAdapter(cls.DumpedCursor).validate_python(
-                unpacked_object,
-            )
-        except pydantic.ValidationError:
-            raise InvalidCursorError(cursor_string)
-
-        return cls(_value=dumped_cursor["value"], forward=dumped_cursor["forward"])
+    def from_string(cls, cursor: str) -> typing.Self:
+        forward = not cursor.startswith("-")
+        return cls(cursor.lstrip("+-"), forward)
 
     def to_string(self) -> str:
-        return base64.urlsafe_b64encode(
-            msgpack.dumps(
-                self.DumpedCursor({"value": self._value, "forward": self.forward}),
-            ),
-        ).decode()
+        return f"{'' if self.forward else '-'}{self.value}"
 
     @property
     def backward(self) -> bool:
         return not self.forward
 
-    def value(self, expected_type: type[CursorType[T]]) -> T | None:
-        if self._value is None:
-            return None
-        try:
-            return (
-                pydantic.TypeAdapter(expected_type)
-                .validate_python({"value": self._value})
-                .value
-            )
-        except pydantic.ValidationError:
-            raise InvalidCursorError(self.to_string())
-
     def next(
         self,
-        first_item_value: object | None,
-        last_item_value: object | None,
+        first_item_id: str | None,
+        last_item_id: str | None,
     ) -> typing.Self:
-        if self.forward and last_item_value is not None:
-            return self.__class__(last_item_value, forward=True)
+        if self.forward and last_item_id is not None:
+            return self.__class__(last_item_id, forward=True)
 
-        if self.backward and first_item_value is not None:
-            return self.__class__(first_item_value, forward=False)
+        if self.backward and first_item_id is not None:
+            return self.__class__(first_item_id, forward=False)
 
         return self.__class__("", forward=True)
 
     def previous(
         self,
-        first_item_value: object | None,
-        last_item_value: object | None,
+        first_item_id: str | None,
+        last_item_id: str | None,
     ) -> typing.Self:
-        if self.forward and first_item_value is not None:
-            return self.__class__(first_item_value, forward=False)
+        if self.forward and first_item_id is not None:
+            return self.__class__(first_item_id, forward=False)
 
-        if self.backward and last_item_value is not None:
-            return self.__class__(last_item_value, forward=True)
+        if self.backward and last_item_id is not None:
+            return self.__class__(last_item_id, forward=True)
 
         return self.__class__("", forward=False)
 
 
 @dataclasses.dataclass
 class InvalidCursorError(Exception):
-    cursor: str
+    cursor: Cursor
 
 
 @dataclasses.dataclass
@@ -154,10 +103,10 @@ class Page(typing.Generic[T]):
     cursor_prev: Cursor | None = dataclasses.field(default=None)
     cursor_next: Cursor | None = dataclasses.field(default=None)
     cursor_first: Cursor = dataclasses.field(
-        default_factory=lambda: Cursor(None, forward=True),
+        default_factory=lambda: Cursor("", forward=True),
     )
     cursor_last: Cursor = dataclasses.field(
-        default_factory=lambda: Cursor(None, forward=False),
+        default_factory=lambda: Cursor("", forward=False),
     )
 
     @property
