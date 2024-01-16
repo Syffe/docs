@@ -452,6 +452,48 @@ class TestAttributes(base.FunctionalTestBase):
         comment = await self.wait_for_issue_comment(pr["number"], "created")
         assert comment["comment"]["body"] == "repository name full"
 
+    async def test_mergify_configuration_changed_condition(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "merge",
+                    "conditions": [
+                        "mergify-configuration-changed",
+                    ],
+                    "actions": {"merge": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        ctxt = context.Context(self.repository_ctxt, p1)
+        await self.run_engine()
+
+        assert (await self.get_pull(p1["number"]))["state"] == "open"
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert summary["output"]["summary"] is not None
+        assert (
+            """- [ ] `mergify-configuration-changed`""" in summary["output"]["summary"]
+        )
+
+        rules["pull_request_rules"].append(
+            {"name": "foobar", "conditions": ["label!=wip"], "actions": {"merge": {}}},
+        )
+        p2 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
+        ctxt = context.Context(self.repository_ctxt, p2)
+        await self.run_engine()
+        assert (await self.get_pull(p2["number"]))["state"] == "open"
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert summary["output"]["summary"] is not None
+        # NOTE(Syffe): The PR is not merged since `allow_configuration_change` is set to False
+        # by default, so not all the conditions are fulfilled
+        assert (
+            """- [X] `mergify-configuration-changed`""" in summary["output"]["summary"]
+        )
+
     async def test_repo_name_full_wrong(self) -> None:
         rules = {
             "pull_request_rules": [

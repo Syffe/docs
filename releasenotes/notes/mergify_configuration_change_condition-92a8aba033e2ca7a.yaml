@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    The ``mergify-configuration-changed`` boolean condition is now exposed to users.
+    It allows to detect configuration changes in a pull request.

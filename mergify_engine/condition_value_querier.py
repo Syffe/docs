@@ -341,7 +341,6 @@ class BasePullRequest:
             return ctxt.pull["draft"]
 
         if name == "mergify-configuration-changed":
-            # NOTE(sileht): only internally used
             return ctxt.configuration_changed
 
         if name == "author":

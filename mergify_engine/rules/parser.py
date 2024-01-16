@@ -121,6 +121,7 @@ CONDITION_PARSERS = {
     "queue-name": Parser.TEXT,
     "queue-frozen": Parser.BOOL,
     "queue-freeze-reason": Parser.TEXT,
+    "mergify-configuration-changed": Parser.BOOL,
 }
 COMMAND_ONLY_ATTRIBUTES = ("sender", "sender-permission")
 CONDITION_ENUMS = {
