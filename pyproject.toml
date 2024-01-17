@@ -197,6 +197,7 @@ select = [
  "PERF", "PT", "PL", "PGH", "SIM",
  "PIE", "YTT", "T20", "ARG", "PTH",
  "N", "PYI", "FURB", "FBT", "S",
+ "NPY",
  # FIXME(sileht): doctring/rst-docstring like
  # "D"
 ]
