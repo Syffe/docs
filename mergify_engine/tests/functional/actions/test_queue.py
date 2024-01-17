@@ -5550,6 +5550,8 @@ previous_failed_batches:
             -1
         ]["body"]
 
+    @pytest.mark.xdist_group(group="delete_branch_on_merge")
+    @pytest.mark.delete_branch_on_merge(False)  # noqa: FBT003
     async def test_queue_branch_fast_forward_basic(self) -> None:
         rules = {
             "queue_rules": [
@@ -5576,6 +5578,15 @@ previous_failed_batches:
                 },
             ],
         }
+        mock_delete_branch = mock.patch.object(
+            merge_train.TrainCar,
+            "_delete_branch",
+            side_effect=RuntimeError(
+                "Should not have deleted the branch with the train car function",
+            ),
+        )
+        self.register_mock(mock_delete_branch)
+
         await self.setup_repo(yaml.dump(rules), preload_configuration=True)
 
         p1 = await self.create_pr()
@@ -5619,7 +5630,7 @@ previous_failed_batches:
         # Merge p1
         await self.create_status(tmp_mq_p1["pull_request"])
         await self.run_engine()
-        await self.wait_for_all(
+        events = await self.wait_for_all(
             [
                 {
                     "event_type": "pull_request",
@@ -5645,31 +5656,70 @@ previous_failed_batches:
                         merged=True,
                     ),
                 },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_mq_p1["number"],
+                        merged=True,
+                    ),
+                },
             ],
+            sort_received_events=True,
         )
 
         # ensure it's fast-forward
-        tmp_mq_p1_refreshed = await self.get_pull(tmp_mq_p1["number"])
+        tmp_mq_p1_refreshed = typing.cast(
+            github_types.GitHubEventPullRequest,
+            events[-1].event,
+        )
         branch = await self.repository_ctxt.get_branch(
             self.main_branch_name,
             bypass_cache=True,
         )
-        assert branch["commit"]["sha"] == tmp_mq_p1_refreshed["head"]["sha"]
-        assert tmp_mq_p1_refreshed["merged"]
+        assert (
+            branch["commit"]["sha"]
+            == tmp_mq_p1_refreshed["pull_request"]["head"]["sha"]
+        )
 
         # merge the second one
         await self.create_status(tmp_mq_p2["pull_request"])
         await self.run_engine()
-        await self.wait_for_pull_request("closed", pr_number=p4["number"], merged=True)
+        events = await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p4["number"],
+                        merged=True,
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_mq_p2["number"],
+                        merged=True,
+                    ),
+                },
+            ],
+            sort_received_events=True,
+        )
 
         # ensure it's fast-forward
-        tmp_mq_p2_refreshed = await self.get_pull(tmp_mq_p2["number"])
+        tmp_mq_p2_refreshed = typing.cast(
+            github_types.GitHubEventPullRequest,
+            events[-1].event,
+        )
         branch = await self.repository_ctxt.get_branch(
             self.main_branch_name,
             bypass_cache=True,
         )
-        assert branch["commit"]["sha"] == tmp_mq_p2_refreshed["head"]["sha"]
-        assert tmp_mq_p2_refreshed["merged"]
+        assert (
+            branch["commit"]["sha"]
+            == tmp_mq_p2_refreshed["pull_request"]["head"]["sha"]
+        )
 
         # Queue is now empty, the process will restart
         await self.assert_merge_queue_contents(q, None, [])
@@ -5682,12 +5732,12 @@ previous_failed_batches:
 
         await self.assert_merge_queue_contents(
             q,
-            tmp_mq_p2_refreshed["head"]["sha"],
+            tmp_mq_p2_refreshed["pull_request"]["head"]["sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p5["number"]],
                     [],
-                    tmp_mq_p2_refreshed["head"]["sha"],
+                    tmp_mq_p2_refreshed["pull_request"]["head"]["sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p3["number"],
                 ),
@@ -5697,15 +5747,41 @@ previous_failed_batches:
         # merge the third one
         await self.create_status(tmp_mq_p3["pull_request"])
         await self.run_engine()
-        await self.wait_for_pull_request("closed", pr_number=p5["number"], merged=True)
+        events = await self.wait_for_all(
+            [
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=p5["number"],
+                        merged=True,
+                    ),
+                },
+                {
+                    "event_type": "pull_request",
+                    "payload": tests_utils.get_pull_request_event_payload(
+                        action="closed",
+                        pr_number=tmp_mq_p3["number"],
+                        merged=True,
+                    ),
+                },
+            ],
+            sort_received_events=True,
+        )
 
         # ensure it's fast-forward
-        tmp_mq_p3_refreshed = await self.get_pull(tmp_mq_p3["number"])
+        tmp_mq_p3_refreshed = typing.cast(
+            github_types.GitHubEventPullRequest,
+            events[-1].event,
+        )
         branch = await self.repository_ctxt.get_branch(
             self.main_branch_name,
             bypass_cache=True,
         )
-        assert branch["commit"]["sha"] == tmp_mq_p3_refreshed["head"]["sha"]
+        assert (
+            branch["commit"]["sha"]
+            == tmp_mq_p3_refreshed["pull_request"]["head"]["sha"]
+        )
 
         # Queue is now empty
         await self.assert_merge_queue_contents(q, None, [])

@@ -1465,16 +1465,18 @@ You don't need to do anything. Mergify will close this pull request automaticall
             if ep.user_pull_request_number not in not_reembarked_pull_requests
         ]
 
-        if self.train_car_state.checks_type in {
-            TrainCarChecksType.INPLACE,
-            TrainCarChecksType.DRAFT_DELEGATED,
-        }:
-            return
-
         if self.train_car_state.checks_type == TrainCarChecksType.DRAFT:
             if reason is not None:
                 await self._set_final_draft_pr_summary(reason, remaning_embarked_pulls)
-            await self._delete_branch()
+
+            # We delete the branch only if the checks failed (`reason is not None`)
+            # or if we are not in fast-forward mode.
+            queue_rule = self.get_queue_rule()
+            if (
+                reason is not None
+                or queue_rule.config["queue_branch_merge_method"] != "fast-forward"
+            ):
+                await self._delete_branch()
 
     async def _set_final_draft_pr_summary(
         self,

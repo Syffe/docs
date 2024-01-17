@@ -636,6 +636,21 @@ class AsyncGitHubInstallationClient(AsyncGitHubClient):
 
         raise RuntimeError("get_access_token() call on an unused client")
 
+    async def delete_branch_if_exists(self, base_url: str, branch_name: str) -> bool:
+        escaped_branch_name = parse.quote(branch_name, safe="")
+        try:
+            await self.delete(
+                f"{base_url}/git/refs/heads/{escaped_branch_name}",
+            )
+        except http.HTTPClientSideError as exc:
+            if exc.status_code == 404 or (
+                exc.status_code == 422 and "Reference does not exist" in exc.message
+            ):
+                return False
+            raise
+
+        return True
+
 
 def aget_client(
     installation: github_types.GitHubInstallation,

@@ -322,6 +322,21 @@ async def event_preprocessing(
                 event,
             )
 
+        elif (
+            event["action"] == "closed"
+            and event["pull_request"]["merged"]
+            and queue_utils.is_merge_queue_pr(event["pull_request"])
+        ):
+            # NOTE: draft pull request was merged with fast-forward, delete the head branch.
+            installation_json = await github.get_installation_from_account_id(
+                event["repository"]["owner"]["id"],
+            )
+            async with github.aget_client(installation_json) as client:
+                await client.delete_branch_if_exists(
+                    f"/repos/{installation_json['account']['login']}/{event['repository']['name']}",
+                    event["pull_request"]["head"]["ref"],
+                )
+
     elif event_type == "issue_comment":
         event = typing.cast(github_types.GitHubEventIssueComment, event)
         match = commands_runner.COMMAND_MATCHER.search(event["comment"]["body"])

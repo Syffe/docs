@@ -575,19 +575,10 @@ class Repository:
         return branch
 
     async def delete_branch_if_exists(self, branch_name: str) -> bool:
-        escaped_branch_name = parse.quote(branch_name, safe="")
-        try:
-            await self.installation.client.delete(
-                f"{self.base_url}/git/refs/heads/{escaped_branch_name}",
-            )
-        except http.HTTPClientSideError as exc:
-            if exc.status_code == 404 or (
-                exc.status_code == 422 and "Reference does not exist" in exc.message
-            ):
-                return False
-            raise
-
-        return True
+        return await self.installation.client.delete_branch_if_exists(
+            self.base_url,
+            branch_name,
+        )
 
     async def get_pulls(
         self,
