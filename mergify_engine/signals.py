@@ -301,7 +301,6 @@ def unregister() -> None:
 
 
 def register() -> None:
-    global SIGNALS
     for ep in importlib.metadata.entry_points(group="mergify_signals"):
         try:
             # NOTE(sileht): literal import is safe here, we control installed signal packages

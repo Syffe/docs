@@ -34,7 +34,6 @@ async def shutdown() -> None:
 
 
 def get_redis_links() -> redis_utils.RedisLinks:
-    global _REDIS_LINKS
     return _REDIS_LINKS
 
 

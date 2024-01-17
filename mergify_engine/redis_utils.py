@@ -54,7 +54,6 @@ SCRIPTS: dict[ScriptIdT, tuple[bytes, str]] = {}
 
 # TODO(sileht): Redis script management can be moved back to Redis.register_script() mechanism
 def register_script(script: str) -> ScriptIdT:
-    global SCRIPTS
     # NOTE(sileht): We don't use sha, in case of something server side change the script sha
     script_id = ScriptIdT(uuid.uuid4())
     SCRIPTS[script_id] = (
@@ -76,7 +75,6 @@ async def load_script(
     connection: redispy.connection.Connection,
     script_id: ScriptIdT,
 ) -> None:
-    global SCRIPTS
     sha, script = SCRIPTS[script_id]
     await connection.send_command("SCRIPT LOAD", script)
     newsha = await connection.read_response()
@@ -96,7 +94,6 @@ async def load_stream_scripts(connection: redispy.connection.Connection) -> None
     # * an old version of the asgi server
     # * a new version of the asgi server
     # * a new version of the backend
-    global SCRIPTS
     scripts = list(SCRIPTS.items())  # order matter for zip bellow
     shas = [sha for _, (sha, _) in scripts]
     ids = [_id for _id, _ in scripts]
@@ -116,7 +113,6 @@ async def run_script(
     keys: tuple[str, ...],
     args: tuple[str, ...] | None = None,
 ) -> typing.Any:
-    global SCRIPTS
     sha, _script = SCRIPTS[script_id]
     args = keys if args is None else keys + args
     return await redis.evalsha(sha, len(keys), *args)  # type: ignore[no-untyped-call]

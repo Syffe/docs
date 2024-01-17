@@ -249,8 +249,8 @@ ignore = [
     # NOTE(Greesb): custom class with __eq__ but no __hash__
     # We don't need it
     "PLW1641",
-    # NOTE(Greesb): global variables related stuff, we need those global variables
-    "PLW0602", "PLW0603",
+    # NOTE(Greesb): Checks for the use of global statements to update identifiers.
+    "PLW0603",
     # NOTE(Greesb): subprocess.run without explicit check argument
     "PLW1510",
     # NOTE(Greesb): continue not supported inside finally clause

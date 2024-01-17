@@ -91,7 +91,6 @@ class InvalidDynamicActionConfigurationError(Exception):
 
     @property
     def action_name(self) -> str:
-        global _CLASSES
         groups: tuple[PluginGroupT, ...] = ("mergify_actions", "mergify_commands")
         for group in groups:
             for name, obj in get_classes(group).items():

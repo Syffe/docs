@@ -118,7 +118,6 @@ def init_sqlalchemy(service_name: str) -> None:
 
 
 def _get_app() -> SQLAlchemyAppState:
-    global APP_STATE
     if APP_STATE is None:
         raise RuntimeError("APP_STATE not initialized")
     return APP_STATE
