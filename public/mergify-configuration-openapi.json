@@ -423,6 +423,11 @@
           "$ref": "#/definitions/TimestampOrRelativeTimestamp",
           "key": "updated-at",
           "description": "The time the pull request was updated at."
+        },
+        {
+          "key": "mergify-configuration-changed",
+          "type": "boolean",
+          "description": "Whether the pull request contains changes in the configuration file."
         }
       ]
     },
