@@ -626,6 +626,15 @@ async def test_api_ci_issue_get_ci_issue_events(
         "events": expected_last_event_page_json["events"],
     }
 
+    # We reached the end there should be no next link
+    reply = await web_client.get(reply.links["next"]["url"])
+    assert reply.json() == {
+        "per_page": 2,
+        "size": 0,
+        "events": [],
+    }
+    assert "next" not in reply.links
+
     # Invalid cursor
     invalid_cursor = pagination.Cursor("abcd", forward=True).to_string()
     response = await web_client.get(
@@ -1301,6 +1310,15 @@ async def test_api_ci_issue_get_ci_issues_pagination(
     assert second_page.status_code == 200, second_page.text
     assert len(second_page.json()["issues"]) == 1
     assert "prev" in second_page.links
+
+    # We reached the end there should be no next link
+    reply = await web_client.get(second_page.links["next"]["url"])
+    assert reply.json() == {
+        "per_page": 8,
+        "size": 0,
+        "issues": [],
+    }
+    assert "next" not in reply.links
 
     first_page_issue_ids = {i["id"] for i in first_page.json()["issues"]}
     second_page_issue_ids = {i["id"] for i in second_page.json()["issues"]}

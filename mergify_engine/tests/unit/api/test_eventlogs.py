@@ -315,7 +315,7 @@ async def test_api_query_params(
     assert {e["type"] for e in r["events"]} == {"action.comment", "action.merge"}
 
 
-async def test_api_cursor_pg(
+async def test_api_eventlogs_pagination(
     fake_repository: context.Repository,
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
@@ -415,6 +415,19 @@ async def test_api_cursor_pg(
     assert prev_cursor.value(pagination.CursorType[int]) == 3
     assert prev_cursor.forward
 
+    # After we reached the end there should be no next link
+    for _ in range(2):
+        response = await web_client.get(
+            response.links["next"]["url"],
+            headers={"Authorization": api_token.api_token},
+        )
+    assert "next" not in response.links
+
+
+async def test_api_eventlogs_pagination_invalid_cursor(
+    web_client: tests_conftest.CustomTestClient,
+    api_token: tests_api_conftest.TokenUserRepo,
+) -> None:
     # Invalid cursor
     invalid_cursor = Cursor("zerzer", forward=True).to_string()
     response = await web_client.get(
@@ -429,10 +442,25 @@ async def test_api_cursor_pg(
 
 
 async def test_api_links_with_query_params(
-    fake_repository: context.Repository,  # noqa: ARG001
+    fake_repository: context.Repository,
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
 ) -> None:
+    for _ in range(3):
+        await eventlogs.insert(
+            event="action.assign",
+            repository=fake_repository.repo,
+            pull_request=github_types.GitHubPullRequestNumber(1),
+            base_ref=github_types.GitHubRefType("main"),
+            metadata=signals.EventAssignMetadata(
+                {
+                    "added": ["leo", "charly", "guillaume"],
+                    "removed": ["damien", "fabien"],
+                },
+            ),
+            trigger="Rule: some dummmy rule",
+        )
+
     query_params = {
         ("per_page", "2"),
         ("pull_request", "1"),

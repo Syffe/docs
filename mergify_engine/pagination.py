@@ -86,27 +86,27 @@ class Cursor:
         self,
         first_item_id: object | None,
         last_item_id: object | None,
-    ) -> typing.Self:
+    ) -> typing.Self | None:
         if self.forward and last_item_id is not None:
             return self.__class__(last_item_id, forward=True)
 
         if self.backward and first_item_id is not None:
             return self.__class__(first_item_id, forward=False)
 
-        return self.__class__(None, forward=True)
+        return None
 
     def previous(
         self,
         first_item_id: object | None,
         last_item_id: object | None,
-    ) -> typing.Self:
+    ) -> typing.Self | None:
         if self.forward and first_item_id is not None:
             return self.__class__(first_item_id, forward=False)
 
         if self.backward and last_item_id is not None:
             return self.__class__(last_item_id, forward=True)
 
-        return self.__class__(None, forward=False)
+        return None
 
 
 @dataclasses.dataclass

@@ -301,6 +301,13 @@ async def test_pulls_api_pagination(
     assert len(resp.json()["pull_requests"]) == 10
     assert [p["number"] for p in resp.json()["pull_requests"]] == list(range(38, 48))
 
+    # After we reached the end there should be no next link
+    resp = await web_client.get(
+        resp.links["next"]["url"],
+        headers={"Authorization": api_token.api_token},
+    )
+    assert "next" not in resp.links
+
 
 @pytest.mark.parametrize("cursor_value", ["blabla", ("abc", 123), (1, 2, 3), (1,)])
 async def test_pulls_api_invalid_cursor(

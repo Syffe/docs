@@ -115,7 +115,7 @@ def test_cursor_invalid_string(value: str) -> None:
             True,
             20,
             None,
-            pagination.Cursor(None, forward=True),
+            None,
             pagination.Cursor(20, forward=False),
         ),
         (
@@ -123,14 +123,14 @@ def test_cursor_invalid_string(value: str) -> None:
             None,
             30,
             pagination.Cursor(30, forward=True),
-            pagination.Cursor(None, forward=False),
+            None,
         ),
         (
             True,
             None,
             None,
-            pagination.Cursor(None, forward=True),
-            pagination.Cursor(None, forward=False),
+            None,
+            None,
         ),
         (
             False,
@@ -144,21 +144,21 @@ def test_cursor_invalid_string(value: str) -> None:
             20,
             None,
             pagination.Cursor(20, forward=False),
-            pagination.Cursor(None, forward=False),
+            None,
         ),
         (
             False,
             None,
             30,
-            pagination.Cursor(None, forward=True),
+            None,
             pagination.Cursor(30, forward=True),
         ),
         (
             False,
             None,
             None,
-            pagination.Cursor(None, forward=True),
-            pagination.Cursor(None, forward=False),
+            None,
+            None,
         ),
     ],
 )
@@ -166,15 +166,17 @@ def test_cursor_next_previous(
     forward: bool,
     first_id: int | None,
     last_id: int | None,
-    expected_next: pagination.Cursor,
-    expected_previous: pagination.Cursor,
+    expected_next: pagination.Cursor | None,
+    expected_previous: pagination.Cursor | None,
 ) -> None:
     cursor = pagination.Cursor(20, forward=forward)
 
     next_cursor = cursor.next(first_id, last_id)
     assert next_cursor == expected_next
-    assert next_cursor.from_string(next_cursor.to_string()) == expected_next
+    if next_cursor is not None:
+        assert next_cursor.from_string(next_cursor.to_string()) == expected_next
 
     prev_cursor = cursor.previous(first_id, last_id)
     assert prev_cursor == expected_previous
-    assert prev_cursor.from_string(prev_cursor.to_string()) == expected_previous
+    if prev_cursor is not None:
+        assert prev_cursor.from_string(prev_cursor.to_string()) == expected_previous
