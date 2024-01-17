@@ -9,6 +9,7 @@ import typing
 import daiquiri
 import msgpack
 
+from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import filtered_github_types
@@ -18,6 +19,9 @@ from mergify_engine import redis_utils
 from mergify_engine import service
 from mergify_engine import settings
 from mergify_engine.clients import http
+from mergify_engine.models import active_user
+from mergify_engine.models.github import account as gh_account
+from mergify_engine.models.github import repository as gh_repository
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -151,7 +155,7 @@ async def store_active_users(
         if user["login"] == "web-flow":
             return
 
-        users[user["id"]] = user["login"]
+        users[user["id"]] = user
 
     if event_type == "push":
         typed_event = typing.cast(github_types.GitHubEventPush, event)
@@ -191,7 +195,8 @@ async def store_active_users(
 
     repo_key = _get_active_users_key(typed_event["repository"])
     transaction = await redis.pipeline()
-    for user_id, user_login in users.items():
+    for user_id, user in users.items():
+        user_login = user["login"]
         user_key = f"{user_id}~{user_login}"
         await transaction.zadd(repo_key, {user_key: time.time()})
         event_key = _get_active_users_events_key(typed_event["repository"], user_id)
@@ -203,6 +208,23 @@ async def store_active_users(
         )
 
     await transaction.execute()
+
+    async with database.create_session() as session:
+        repository = await gh_repository.GitHubRepository.get_or_create(
+            session,
+            typed_event["repository"],
+        )
+        session.add(repository)
+        for user in users.values():
+            user_account = await gh_account.GitHubAccount.get_or_create(session, user)
+            session.add(user_account)
+            await active_user.ActiveUser.track(
+                session,
+                repository.id,
+                user["id"],
+                filtered_github_types.extract(event_type, event_id, event),
+            )
+            await session.commit()
 
 
 class SeatCollaboratorJsonT(typing.TypedDict):

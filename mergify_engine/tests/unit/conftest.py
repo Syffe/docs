@@ -13,6 +13,7 @@ import respx
 
 from mergify_engine import condition_value_querier
 from mergify_engine import context
+from mergify_engine import count_seats
 from mergify_engine import filtered_github_types
 from mergify_engine import github_types
 from mergify_engine import queue
@@ -67,6 +68,12 @@ def get_pull_queue_config(
         update_bot_account=None,
         autosquash=True,
     )
+
+
+@pytest.fixture(autouse=True)
+def _disable_active_users_tracking() -> abc.Generator[None, None, None]:
+    with mock.patch.object(count_seats, "store_active_users"):
+        yield
 
 
 @pytest.fixture()

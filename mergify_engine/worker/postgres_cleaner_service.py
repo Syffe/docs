@@ -5,6 +5,7 @@ import daiquiri
 
 from mergify_engine import eventlogs
 from mergify_engine.ci import event_processing
+from mergify_engine.models import active_user
 from mergify_engine.models.github import check_run as gh_checkrun_model
 from mergify_engine.worker import task
 
@@ -31,3 +32,8 @@ class PostgresCleanerService(task.SimpleService):
             await gh_checkrun_model.CheckRun.delete_outdated_check_runs()
         except Exception:
             LOG.error("Failed to delete outdated check runs", exc_info=True)
+
+        try:
+            await active_user.ActiveUser.delete_outdated()
+        except Exception:
+            LOG.error("Failed to delete outdated active user", exc_info=True)

@@ -118,6 +118,7 @@ class Base(orm.DeclarativeBase):
 
 # NOTE(charly): ensure all models are loaded, to
 # allow Alembic to find all tables
+from mergify_engine.models import active_user  # noqa: E402,F401
 from mergify_engine.models import application_keys  # noqa: E402,F401
 from mergify_engine.models import ci_issue  # noqa: E402,F401
 from mergify_engine.models import enumerations  # noqa: E402,F401

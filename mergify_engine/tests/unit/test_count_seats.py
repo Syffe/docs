@@ -9,6 +9,7 @@ import msgpack
 import pydantic
 import pytest
 import respx
+import sqlalchemy.ext.asyncio
 
 from mergify_engine import count_seats
 from mergify_engine import date
@@ -16,8 +17,15 @@ from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import signals
+from mergify_engine.models import active_user
 from mergify_engine.tests.tardis import time_travel
 from mergify_engine.tests.unit import conftest
+
+
+@pytest.fixture(autouse=True)
+def _disable_active_users_tracking() -> None:
+    # This disables the conftest fixtures
+    return
 
 
 def test_seats_renamed_account_repo() -> None:
@@ -91,6 +99,7 @@ for file in _EVENT_DIR.iterdir():
 @time_travel("2011-11-11")
 @pytest.mark.parametrize(("event_type", "event"), list(GITHUB_SAMPLE_EVENTS.values()))
 async def test_store_active_users(
+    db: sqlalchemy.ext.asyncio.AsyncSession,
     event_type: str,
     event: github_types.GitHubEvent,
     redis_links: redis_utils.RedisLinks,
@@ -111,6 +120,15 @@ async def test_store_active_users(
         ) == [
             (b"21031067~Codertocat", 1320969600.0),
         ]
+
+        stmt = sqlalchemy.select(active_user.ActiveUser)
+        result = await db.execute(stmt)
+        users = result.scalars().all()
+        assert len(users) == 1
+        assert users[0].user_github_account_id == 21031067
+        assert users[0].repository_id == 186853002
+        assert users[0].last_seen_at == date.fromtimestamp(1320969600.0)
+
     elif event_type == "pull_request":
         assert await redis_links.active_users.zrangebyscore(
             "active-users~21031067~Codertocat~186853002~Hello-World",
@@ -131,6 +149,24 @@ async def test_store_active_users(
             "delivery_id": "whatever",
             "sender": {"id": 21031067, "login": "Codertocat", "type": "User"},
         }
+
+        stmt = sqlalchemy.select(active_user.ActiveUser)
+        result = await db.execute(stmt)
+        users = result.scalars().all()
+        assert len(users) == 2
+        assert users[0].user_github_account_id == 12345678
+        assert users[0].repository_id == 186853002
+        assert users[0].last_seen_at == date.fromtimestamp(1320969600.0)
+        assert users[1].user_github_account_id == 21031067
+        assert users[1].repository_id == 186853002
+        assert users[1].last_seen_at == date.fromtimestamp(1320969600.0)
+        assert users[1].last_event == {
+            "action": "opened",
+            "received_at": mock.ANY,
+            "delivery_id": "whatever",
+            "sender": {"id": 21031067, "login": "Codertocat", "type": "User"},
+        }
+
     else:
         assert (
             await redis_links.active_users.zrangebyscore(
@@ -141,10 +177,16 @@ async def test_store_active_users(
             == []
         )
 
+        stmt = sqlalchemy.select(active_user.ActiveUser)
+        result = await db.execute(stmt)
+        users = result.scalars().all()
+        assert len(users) == 0
+
 
 @time_travel("2011-11-11")
 @pytest.mark.parametrize(("event_type", "event"), list(GITHUB_SAMPLE_EVENTS.values()))
 async def test_get_usage_count_seats(
+    db: sqlalchemy.ext.asyncio.AsyncSession,  # noqa: ARG001
     web_client: httpx.AsyncClient,
     event_type: str,
     event: github_types.GitHubEvent,
