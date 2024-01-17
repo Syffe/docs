@@ -1,5 +1,3 @@
-from urllib import parse
-
 import pytest
 import respx
 
@@ -272,19 +270,7 @@ async def test_pulls_api_pagination(
     assert len(resp.json()["pull_requests"]) == 10
     assert [p["number"] for p in resp.json()["pull_requests"]] == list(range(28, 38))
 
-    links = resp.headers["link"].split(",")
-    next_link = None
-    for link in links:
-        if link.endswith('rel="next"'):
-            next_link = link
-            break
-
-    assert next_link is not None, "Should have a 'next' link in headers"
-
-    next_url_str = next_link.removesuffix('>; rel="next"')
-    next_url_str = next_url_str.removeprefix("<")
-
-    next_url_parsed = parse.urlparse(next_url_str)
+    assert "next" in resp.links, resp.links
 
     for i in range(38, 48):
         respx_mock.get(
@@ -305,7 +291,7 @@ async def test_pulls_api_pagination(
         )
     resp = await web_client.request(
         "POST",
-        f"{next_url_parsed.path}?{next_url_parsed.query}",
+        resp.links["next"]["url"],
         json=["label=generalkenobi"],
         headers={"Authorization": api_token.api_token},
     )

@@ -1,5 +1,4 @@
 import datetime
-import re
 import urllib.parse
 
 import anys
@@ -316,16 +315,6 @@ async def test_api_query_params(
     assert {e["type"] for e in r["events"]} == {"action.comment", "action.merge"}
 
 
-def parse_links(links: str) -> dict[str, str]:
-    link_re = re.compile(r'<(.*)>; rel="(\w+)"')
-    links_dict: dict[str, str] = {}
-    for l_ in links.split(","):
-        match = link_re.match(l_)
-        assert match is not None
-        links_dict.update({match.group(2): match.group(1)})
-    return links_dict
-
-
 async def test_api_cursor_pg(
     fake_repository: context.Repository,
     web_client: tests_conftest.CustomTestClient,
@@ -353,9 +342,10 @@ async def test_api_cursor_pg(
     )
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [6, 5]
-    links = parse_links(response.headers["link"])
 
-    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
+    param = urllib.parse.parse_qs(
+        urllib.parse.urlparse(response.links["next"]["url"]).query,
+    )
     assert param["per_page"] == ["2"]
     next_cursor = Cursor.from_string(param["cursor"][0])
     assert next_cursor.value(pagination.CursorType[int]) == 5
@@ -363,20 +353,23 @@ async def test_api_cursor_pg(
 
     # first 2 to 4
     response = await web_client.get(
-        links["next"],
+        response.links["next"]["url"],
         headers={"Authorization": api_token.api_token},
     )
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [4, 3]
-    links = parse_links(response.headers["link"])
 
-    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
+    param = urllib.parse.parse_qs(
+        urllib.parse.urlparse(response.links["next"]["url"]).query,
+    )
     assert param["per_page"] == ["2"]
     next_cursor = Cursor.from_string(param["cursor"][0])
     assert next_cursor.value(pagination.CursorType[int]) == 3
     assert next_cursor.forward
 
-    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["prev"]).query)
+    param = urllib.parse.parse_qs(
+        urllib.parse.urlparse(response.links["prev"]["url"]).query,
+    )
     assert param["per_page"] == ["2"]
     prev_cursor = Cursor.from_string(param["cursor"][0])
     assert prev_cursor.value(pagination.CursorType[int]) == 4
@@ -384,14 +377,15 @@ async def test_api_cursor_pg(
 
     # last 2 with initial last cursor
     response = await web_client.get(
-        links["last"],
+        response.links["last"]["url"],
         headers={"Authorization": api_token.api_token},
     )
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [2, 1]
-    links = parse_links(response.headers["link"])
 
-    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
+    param = urllib.parse.parse_qs(
+        urllib.parse.urlparse(response.links["next"]["url"]).query,
+    )
     assert param["per_page"] == ["2"]
     next_cursor = Cursor.from_string(param["cursor"][0])
     assert next_cursor.value(pagination.CursorType[int]) == 2
@@ -399,20 +393,23 @@ async def test_api_cursor_pg(
 
     # last 2 to last 4
     response = await web_client.get(
-        links["next"],
+        response.links["next"]["url"],
         headers={"Authorization": api_token.api_token},
     )
     resp = response.json()
     assert [r["id"] for r in resp["events"]] == [4, 3]
-    links = parse_links(response.headers["link"])
 
-    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["next"]).query)
+    param = urllib.parse.parse_qs(
+        urllib.parse.urlparse(response.links["next"]["url"]).query,
+    )
     assert param["per_page"] == ["2"]
     next_cursor = Cursor.from_string(param["cursor"][0])
     assert next_cursor.value(pagination.CursorType[int]) == 4
     assert next_cursor.backward
 
-    param = urllib.parse.parse_qs(urllib.parse.urlparse(links["prev"]).query)
+    param = urllib.parse.parse_qs(
+        urllib.parse.urlparse(response.links["prev"]["url"]).query,
+    )
     assert param["per_page"] == ["2"]
     prev_cursor = Cursor.from_string(param["cursor"][0])
     assert prev_cursor.value(pagination.CursorType[int]) == 3
@@ -448,10 +445,9 @@ async def test_api_links_with_query_params(
         f"/v1/repos/Mergifyio/engine/logs?{urllib.parse.urlencode(list(query_params), doseq=True)}",
         headers={"Authorization": api_token.api_token},
     )
-    links = parse_links(response.headers["link"])
-    assert len(links) == 4
-    for link in links.values():
-        parsed_params = urllib.parse.parse_qsl(urllib.parse.urlparse(link).query)
+    assert len(response.links) == 4
+    for link in response.links.values():
+        parsed_params = urllib.parse.parse_qsl(urllib.parse.urlparse(link["url"]).query)
         parsed_params_without_cursor = {
             param for param in parsed_params if param[0] != "cursor"
         }
