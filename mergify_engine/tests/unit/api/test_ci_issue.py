@@ -9,6 +9,7 @@ from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import date
+from mergify_engine import pagination
 from mergify_engine import settings
 from mergify_engine.config import types as config_types
 from mergify_engine.models import ci_issue
@@ -595,7 +596,7 @@ async def test_api_ci_issue_get_ci_issue_events(
     reply = await web_client.get(reply.links["next"]["url"])
     assert reply.json() == expected_last_event_page_json
     reply = await web_client.get(
-        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events?per_page=1&cursor=-",
+        reply.links["last"]["url"],
     )
     assert reply.json() == expected_last_event_page_json
 
@@ -623,6 +624,17 @@ async def test_api_ci_issue_get_ci_issue_events(
         "per_page": 2,
         "size": 1,
         "events": expected_last_event_page_json["events"],
+    }
+
+    # Invalid cursor
+    invalid_cursor = pagination.Cursor("abcd", forward=True).to_string()
+    response = await web_client.get(
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues/{ci_issue.short_id_suffix}/events?per_page=2&cursor={invalid_cursor}",
+    )
+    assert response.status_code == 422
+    assert response.json() == {
+        "message": "Invalid cursor",
+        "cursor": invalid_cursor,
     }
 
 
@@ -1304,8 +1316,12 @@ async def test_api_ci_issue_get_ci_issues_pagination(
     assert first_page_issue_ids == {i["id"] for i in first_page_again.json()["issues"]}
 
     # Invalid cursor
+    invalid_cursor = pagination.Cursor("abcd", forward=True).to_string()
     response = await web_client.get(
-        "/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?per_page=2&cursor=INVALID_CURSOR",
+        f"/front/proxy/engine/v1/repos/OneAccount/OneRepo/ci_issues?per_page=2&cursor={invalid_cursor}",
     )
     assert response.status_code == 422
-    assert response.json() == {"message": "Invalid cursor", "cursor": "INVALID_CURSOR"}
+    assert response.json() == {
+        "message": "Invalid cursor",
+        "cursor": invalid_cursor,
+    }
