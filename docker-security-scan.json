@@ -3490,6 +3490,7 @@
       "oracle-oval": 2,
       "photon": 2,
       "redhat": 2,
+      "rocky": 2,
       "ubuntu": 2
     },
     "PublishedDate": "2023-11-28T12:15:07.04Z"
@@ -3565,6 +3566,7 @@
     "VendorSeverity": {
       "bitnami": 3,
       "nvd": 3,
+      "photon": 3,
       "redhat": 2,
       "ubuntu": 2
     },
