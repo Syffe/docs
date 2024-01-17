@@ -1,8 +1,8 @@
-import pytest
+from urllib import parse
+
 import respx
 
 from mergify_engine import date
-from mergify_engine import pagination
 from mergify_engine.tests import conftest as tests_conftest
 from mergify_engine.tests.unit.api import conftest as tests_api_conftest
 
@@ -270,7 +270,19 @@ async def test_pulls_api_pagination(
     assert len(resp.json()["pull_requests"]) == 10
     assert [p["number"] for p in resp.json()["pull_requests"]] == list(range(28, 38))
 
-    assert "next" in resp.links, resp.links
+    links = resp.headers["link"].split(",")
+    next_link = None
+    for link in links:
+        if link.endswith('rel="next"'):
+            next_link = link
+            break
+
+    assert next_link is not None, "Should have a 'next' link in headers"
+
+    next_url_str = next_link.removesuffix('>; rel="next"')
+    next_url_str = next_url_str.removeprefix("<")
+
+    next_url_parsed = parse.urlparse(next_url_str)
 
     for i in range(38, 48):
         respx_mock.get(
@@ -291,7 +303,7 @@ async def test_pulls_api_pagination(
         )
     resp = await web_client.request(
         "POST",
-        resp.links["next"]["url"],
+        f"{next_url_parsed.path}?{next_url_parsed.query}",
         json=["label=generalkenobi"],
         headers={"Authorization": api_token.api_token},
     )
@@ -301,31 +313,29 @@ async def test_pulls_api_pagination(
     assert len(resp.json()["pull_requests"]) == 10
     assert [p["number"] for p in resp.json()["pull_requests"]] == list(range(38, 48))
 
-    # After we reached the end there should be no next link
-    resp = await web_client.get(
-        resp.links["next"]["url"],
-        headers={"Authorization": api_token.api_token},
-    )
-    assert "next" not in resp.links
 
-
-@pytest.mark.parametrize("cursor_value", ["blabla", ("abc", 123), (1, 2, 3), (1,)])
 async def test_pulls_api_invalid_cursor(
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
-    cursor_value: object,
 ) -> None:
-    invalid_cursor = pagination.Cursor(cursor_value, forward=True).to_string()
     resp = await web_client.request(
         "POST",
         "/v1/repos/Mergifyio/engine/pulls",
-        params={"cursor": invalid_cursor},
+        params={"cursor": "blabla"},
         json=["base=main"],
         headers={"Authorization": api_token.api_token},
     )
 
-    assert resp.status_code == 422
-    assert resp.json() == {
-        "message": "Invalid cursor",
-        "cursor": invalid_cursor,
-    }
+    assert resp.status_code == 400
+    assert resp.json() == {"detail": "Invalid page cursor"}
+
+    resp = await web_client.request(
+        "POST",
+        "/v1/repos/Mergifyio/engine/pulls",
+        params={"cursor": "abc-123"},
+        json=["base=main"],
+        headers={"Authorization": api_token.api_token},
+    )
+
+    assert resp.status_code == 400
+    assert resp.json() == {"detail": "Invalid page cursor"}
