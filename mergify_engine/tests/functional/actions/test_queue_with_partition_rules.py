@@ -845,7 +845,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             await self.merge_pull(p1["number"])
             await self.run_engine()
             assert reset_mock.call_count == 1
-            assert reset_partitions_mock.call_count == 2
+            assert reset_partitions_mock.call_count == 3
             iter_train_mock.assert_any_call(mock.ANY, ["projB"])
 
     async def test_partition_reset_when_pr_manual_merge_matches_several_partitions(
