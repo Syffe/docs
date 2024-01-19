@@ -1352,10 +1352,6 @@ class Train:
         ):
             return True
 
-        if not self._cars:
-            # NOTE(sileht): the PR that call this method will be deleted soon
-            return False
-
         # Base branch just moved but the last merged PR is the one we have on top on our
         # train, we just not yet received the event that have called Train.remove_pull()
         # NOTE(sileht): I wonder if it's robust enough, these cases should be enough to
