@@ -78,6 +78,10 @@ async def _insert_action_queue_change(
                 },
                 {
                     "size": 2,
+                    "received_at": "2022-11-24T14:45:00+00:00",
+                },
+                {
+                    "size": 1,
                     "received_at": "2022-11-24T14:55:00+00:00",
                 },
                 {
@@ -122,7 +126,7 @@ async def test_basic_api_response(
                     {
                         "start": "2022-11-24T14:00:00Z",
                         "end": "2022-11-24T14:59:59Z",
-                        "avg_size": 1.5,
+                        "avg_size": 1.33,
                         "max_size": 2,
                         "min_size": 1,
                     },

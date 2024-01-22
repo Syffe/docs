@@ -757,7 +757,10 @@ class EventActionQueueChange(Event):
             sqlalchemy.select(
                 chunk.label("start"),
                 (chunk + interval[1]).label("end"),
-                sqlalchemy.func.avg(cls.size).label("avg_size"),
+                sqlalchemy.func.round(
+                    sqlalchemy.func.avg(cls.size),
+                    2,
+                ).label("avg_size"),
                 sqlalchemy.func.max(cls.size).label("max_size"),
                 sqlalchemy.func.min(cls.size).label("min_size"),
                 cls.base_ref,
