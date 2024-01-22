@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import operator
+import re
 import typing
 
 import voluptuous
@@ -11,6 +12,7 @@ from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import rules
+from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 
@@ -33,6 +35,10 @@ pull_request_rules:
         delete_head_branch:
 """
 
+EXTENDED_REPOSITORY_NAME = re.compile(
+    rf"\s*extends:\s*(?P<repository_name>\.?{utils.MERGIFY_REPOSITORY_NAME_CHARACTER_GROUP})",
+)
+
 
 async def get_mergify_builtin_config(
     redis_cache: redis_utils.RedisCache,
@@ -51,6 +57,7 @@ class Defaults(typing.TypedDict):
 
 class MergifyConfig(typing.TypedDict):
     extends: github_types.GitHubRepositoryName | None
+    extended_anchors: dict[str, typing.Any]
     pull_request_rules: prr_config.PullRequestRules
     queue_rules: qr_config.QueueRules
     partition_rules: partr_config.PartitionRules
@@ -169,10 +176,61 @@ class InvalidRulesError(Exception):
         )
 
 
-async def get_mergify_config_from_file(
+async def get_fully_extended_mergify_config(
     repository_ctxt: context.Repository,
+    repo_name: github_types.GitHubRepositoryName,
     config_file: context.MergifyConfigFile,
-    allow_extend: bool = True,
+) -> MergifyConfig:
+    config_to_extend = await get_mergify_extended_config(
+        repository_ctxt,
+        repo_name,
+        config_file["path"],
+    )
+    try:
+        config = rules.YamlSchemaWithExtendedAnchors(
+            (config_file["decoded_content"], config_to_extend["extended_anchors"]),
+        )
+    except voluptuous.Invalid as e:
+        raise InvalidRulesError(e, config_file["path"])
+
+    # Allow an empty file
+    if config is None:
+        config = {}
+    return await get_mergify_config_from_dict(
+        config=config,
+        error_path=config_file["path"],
+        extended_config=config_to_extend,
+    )
+
+
+async def get_mergify_config_with_extracted_anchors_from_extended_file(
+    config_file: context.MergifyConfigFile,
+) -> MergifyConfig:
+    config = anchors = None
+
+    try:
+        parsed_config = rules.YamlAnchorsExtractorSchema(
+            config_file["decoded_content"],
+        )
+    except voluptuous.Invalid as e:
+        raise InvalidRulesError(e, config_file["path"])
+
+    if parsed_config is not None:
+        config, anchors = parsed_config
+
+    # Allow an empty file
+    if config is None:
+        config = {}
+
+    return await get_mergify_config_from_dict(
+        config=config,
+        error_path=config_file["path"],
+        anchors=anchors,
+    )
+
+
+async def get_mergify_config_from_base_file(
+    config_file: context.MergifyConfigFile,
 ) -> MergifyConfig:
     try:
         config = rules.YamlSchema(config_file["decoded_content"])
@@ -185,18 +243,78 @@ async def get_mergify_config_from_file(
 
     # Validate defaults
     return await get_mergify_config_from_dict(
-        repository_ctxt,
-        config,
-        config_file["path"],
-        allow_extend,
+        config=config,
+        error_path=config_file["path"],
     )
 
 
-async def get_mergify_config_from_dict(
+def get_extended_repository_name(
+    raw_config: str,
+) -> github_types.GitHubRepositoryName | None:
+    # NOTE(Syffe): we clean the conf of all possible characters used in YAML to set a value to a key.
+    # afterward we search for the extends pattern and the repository name.
+    # This separation of cleaning then searching is done for maintenance and readability purposes.
+    cleaned_config = re.sub(r"(?<=[>|])-|>|\||\'|\"|\\", "", raw_config)
+    extended_repository_name_pattern = EXTENDED_REPOSITORY_NAME.search(
+        cleaned_config,
+    )
+    if extended_repository_name_pattern is not None:
+        return extended_repository_name_pattern.group("repository_name")
+    return None
+
+    # extended_repository_name_pattern = EXTENDED_REPOSITORY_NAME.search(
+    #     raw_config,
+    # )
+    # if extended_repository_name_pattern is not None:
+    #     # NOTE(Syffe): we always match several groups, the one we want is the second, so number 1
+    #     extended_repository_name = rules.types.GitHubRepositoryName(
+    #         extended_repository_name_pattern.groupdict("repo_name"),
+    #     )
+    #     return github_types.GitHubRepositoryName(extended_repository_name)
+    # return None
+
+
+async def get_mergify_config_from_file(
     repository_ctxt: context.Repository,
+    config_file: context.MergifyConfigFile,
+    called_from_extend: bool = False,
+) -> MergifyConfig:
+    extended_repository_name = get_extended_repository_name(
+        config_file["decoded_content"],
+    )
+    if extended_repository_name is not None:
+        if called_from_extend:
+            # NOTE (Syffe): We don't want to allow infinite extends. This code is reached when we are calling
+            # get_mergify_config_from_file from get_fully_extended_mergify_config, which means
+            # that is an extended_repository_name exists here, we are in a case where the user is trying
+            # to chain several configuration extensions.
+            raise InvalidRulesError(
+                voluptuous.Invalid(
+                    "Maximum number of extended configuration reached. Limit is 1.",
+                    ["extends"],
+                ),
+                config_file["path"],
+            )
+
+        return await get_fully_extended_mergify_config(
+            repository_ctxt,
+            extended_repository_name,
+            config_file,
+        )
+
+    if called_from_extend:
+        return await get_mergify_config_with_extracted_anchors_from_extended_file(
+            config_file,
+        )
+
+    return await get_mergify_config_from_base_file(config_file)
+
+
+async def get_mergify_config_from_dict(
     config: dict[str, typing.Any],
     error_path: str,
-    allow_extend: bool = True,
+    anchors: dict[str, typing.Any] | None = None,
+    extended_config: MergifyConfig | None = None,
 ) -> MergifyConfig:
     try:
         rules.UserConfigurationSchema(config)
@@ -205,32 +323,18 @@ async def get_mergify_config_from_dict(
 
     defaults = config.pop("defaults", {})
 
-    extended_path = config.get("extends")
-    if extended_path is not None:
-        if not allow_extend:
-            raise InvalidRulesError(
-                voluptuous.Invalid(
-                    "Maximum number of extended configuration reached. Limit is 1.",
-                    ["extends"],
-                ),
-                error_path,
-            )
-        config_to_extend = await get_mergify_extended_config(
-            repository_ctxt,
-            extended_path,
-            error_path,
-        )
-        # NOTE(jules): Anchor and shared elements can't be shared between files
-        # because they are computed by rules.YamlSchema already.
-        merge_defaults(config_to_extend["defaults"], defaults)
-        merge_raw_configs(config_to_extend["raw_config"], config)
+    if extended_config is not None:
+        merge_defaults(extended_config["defaults"], defaults)
+        merge_raw_configs(extended_config["raw_config"], config)
+        anchors = extended_config["extended_anchors"]
 
     merge_config_with_defaults(config, defaults)
-
     try:
         final_config = rules.UserConfigurationSchema(config)
         final_config["defaults"] = defaults
         final_config["raw_config"] = config
+        final_config["extended_anchors"] = anchors if anchors is not None else {}
+
     except voluptuous.Invalid as e:
         raise InvalidRulesError(e, error_path)
     else:
@@ -290,5 +394,5 @@ async def get_mergify_extended_config(
     return await get_mergify_config_from_file(
         repository_ctxt,
         config_file,
-        allow_extend=False,
+        called_from_extend=True,
     )

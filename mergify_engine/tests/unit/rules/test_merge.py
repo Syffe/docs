@@ -3,6 +3,8 @@ from unittest import mock
 
 import pytest
 
+from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine.rules.config import mergify as mergify_conf
 
 
@@ -816,17 +818,28 @@ def test_merge_defaults(
 
 
 async def test_merge_rules_and_defaults() -> None:
-    config = {
-        "extends": "extended_configuration.yml",
-        "defaults": {"actions": {"copy": {"bot_account": "my_super_bot"}}},
-        "pull_request_rules": [
-            {
-                "name": "new_rule",
-                "conditions": ["label=comment"],
-                "actions": {"copy": {"branches": ["dev"]}},
-            },
-        ],
-    }
+    config_file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path=github_types.GitHubFilePath("whatever"),
+        encoding="base64",
+        decoded_content="""
+    extends: extended_configuration.yml
+    defaults:
+      actions:
+        copy:
+          bot_account: my_super_bot
+    pull_request_rules:
+      - name: new_rule
+        conditions:
+        - label=comment
+        actions:
+          copy:
+            branches:
+              - dev
+                """,
+    )
 
     config_to_extend = {
         "defaults": {
@@ -875,13 +888,12 @@ async def test_merge_rules_and_defaults() -> None:
         "mergify_engine.rules.config.mergify.get_mergify_extended_config",
         return_value={
             "defaults": defaults,
+            "extended_anchors": {},
             "raw_config": config_to_extend,
         },
     ):
-        merged_config = await mergify_conf.get_mergify_config_from_dict(
+        merged_config = await mergify_conf.get_mergify_config_from_file(
             mocked_ctxt,
-            config,
-            "",
-            allow_extend=True,
+            config_file,
         )
     assert merged_config["raw_config"] == expected_result

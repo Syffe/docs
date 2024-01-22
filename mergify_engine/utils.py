@@ -44,6 +44,8 @@ MERGIFY_COMMENT_PAYLOAD_MATCHER = re.compile(
     re.MULTILINE,
 )
 
+MERGIFY_REPOSITORY_NAME_CHARACTER_GROUP = r"[\w\-.]+"
+
 
 # NOTE(sileht): Sentinel object (eg: `marker = object()`) can't be expressed
 # with typing yet use the proposed workaround instead:

@@ -8,6 +8,7 @@ import typing
 import voluptuous
 
 from mergify_engine import github_types
+from mergify_engine import utils
 
 
 if typing.TYPE_CHECKING:
@@ -227,7 +228,9 @@ def check_forbidden_repository_name(v: str) -> str:
 GitHubRepositoryName = voluptuous.All(
     str,
     voluptuous.Length(min=1),
-    voluptuous.Match(re.compile(r"^[\w\-.]+$")),
+    voluptuous.Match(
+        re.compile(rf"^{utils.MERGIFY_REPOSITORY_NAME_CHARACTER_GROUP}$"),
+    ),
     check_forbidden_repository_name,
 )
 

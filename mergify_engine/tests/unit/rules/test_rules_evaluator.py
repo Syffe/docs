@@ -269,10 +269,8 @@ async def test_pull_request_rules_evaluator(
     ]
 
     parsed_config = await mergify_conf.get_mergify_config_from_dict(
-        ctxt.repository,
         rules_mod.YamlSchema(config),
         "",
-        allow_extend=False,
     )
 
     evaluated_rules = await pull_request_rules.PullRequestRulesEvaluator.create(

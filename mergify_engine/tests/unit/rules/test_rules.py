@@ -222,7 +222,6 @@ def test_invalid_pull_request_rule(invalid: typing.Any, error: str) -> None:
 async def test_same_pull_request_rules_name() -> None:
     with pytest.raises(mergify_conf.InvalidRulesError) as x:
         await mergify_conf.get_mergify_config_from_dict(
-            mock.MagicMock(),
             {
                 "pull_request_rules": [
                     {
@@ -248,7 +247,6 @@ async def test_same_pull_request_rules_name() -> None:
 async def test_same_queue_rules_name() -> None:
     with pytest.raises(mergify_conf.InvalidRulesError) as x:
         await mergify_conf.get_mergify_config_from_dict(
-            mock.MagicMock(),
             {
                 "queue_rules": [
                     {
@@ -274,7 +272,6 @@ async def test_same_queue_rules_name() -> None:
 async def test_fallback_partition_attribute_without_empty_conditions() -> None:
     with pytest.raises(mergify_conf.InvalidRulesError) as x:
         await mergify_conf.get_mergify_config_from_dict(
-            mock.MagicMock(),
             {
                 "partition_rules": [
                     {
@@ -295,7 +292,6 @@ async def test_fallback_partition_attribute_without_empty_conditions() -> None:
 async def test_double_fallback_partition_attribute() -> None:
     with pytest.raises(mergify_conf.InvalidRulesError) as x:
         await mergify_conf.get_mergify_config_from_dict(
-            mock.MagicMock(),
             {
                 "partition_rules": [
                     {
@@ -319,7 +315,6 @@ async def test_double_fallback_partition_attribute() -> None:
 async def test_same_partition_rules_name() -> None:
     with pytest.raises(mergify_conf.InvalidRulesError) as x:
         await mergify_conf.get_mergify_config_from_dict(
-            mock.MagicMock(),
             {
                 "partition_rules": [
                     {
@@ -343,7 +338,6 @@ async def test_same_partition_rules_name() -> None:
 async def test_default_partition_name_used() -> None:
     with pytest.raises(mergify_conf.InvalidRulesError) as x:
         await mergify_conf.get_mergify_config_from_dict(
-            mock.MagicMock(),
             {
                 "partition_rules": [
                     {
@@ -1135,6 +1129,7 @@ async def test_extends_infinite_loop() -> None:
             "queue_rules": qr_config.QueueRules([]),
             "partition_rules": partr_config.PartitionRules([]),
             "defaults": mergify_conf.Defaults({"actions": {}}),
+            "extended_anchors": {},
             "commands_restrictions": {},
             "raw_config": {
                 "extends": github_types.GitHubRepositoryName(".github"),
@@ -1151,9 +1146,9 @@ async def test_extends_infinite_loop() -> None:
         return_value=repository_ctxt,
     )
     with pytest.raises(mergify_conf.InvalidRulesError) as i:
-        await mergify_conf.get_mergify_config_from_dict(
+        await mergify_conf.get_mergify_extended_config(
             repository_ctxt,
-            mergify_config["raw_config"],
+            github_types.GitHubRepositoryName(".github"),
             "",
         )
     assert (
@@ -1166,21 +1161,6 @@ async def test_extends_limit(
     fake_repository: context.Repository,
     respx_mock: respx.MockRouter,
 ) -> None:
-    mergify_config = mergify_conf.MergifyConfig(
-        {
-            "extends": github_types.GitHubRepositoryName(".github"),
-            "pull_request_rules": prr_config.PullRequestRules([]),
-            "queue_rules": qr_config.QueueRules([]),
-            "partition_rules": partr_config.PartitionRules([]),
-            "defaults": mergify_conf.Defaults({"actions": {}}),
-            "commands_restrictions": {},
-            "raw_config": {
-                "extends": github_types.GitHubRepositoryName(".github"),
-            },
-            "_checks_to_retry_on_failure": {},
-        },
-    )
-
     # "Mergifyio/mergify-engine" because this is the value of the fake_repository
     # that is returned by the mocked `get_repository_by_name`
     respx_mock.get("/repos/Mergifyio/mergify-engine/installation").respond(200)
@@ -1204,9 +1184,9 @@ async def test_extends_limit(
         ),
     ):
         with pytest.raises(mergify_conf.InvalidRulesError) as i:
-            await mergify_conf.get_mergify_config_from_dict(
+            await mergify_conf.get_mergify_extended_config(
                 repository_ctxt,
-                mergify_config["raw_config"],
+                github_types.GitHubRepositoryName(".github"),
                 "",
             )
     assert (
@@ -1222,12 +1202,25 @@ async def test_extends_without_database_cache(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     # Config extension containing default values to assert the extension worked
+    mergify_raw_config = """
+extends: .github
+"""
+
     mergify_config_extension = """
 defaults:
   actions:
     comment:
       message: foobar
 """
+
+    config_file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path=github_types.GitHubFilePath("whatever"),
+        decoded_content=mergify_raw_config,
+        encoding="base64",
+    )
 
     respx_mock.get("repos/Mergifyio/.github").respond(
         200,
@@ -1254,10 +1247,9 @@ defaults:
             },
         ),
     )
-    config = await mergify_conf.get_mergify_config_from_dict(
+    config = await mergify_conf.get_mergify_config_from_file(
         fake_repository,
-        {"extends": github_types.GitHubRepositoryName(".github")},
-        "",
+        config_file,
     )
 
     # Configuration has been extended and have defaults from the extension
@@ -1304,6 +1296,17 @@ defaults:
     comment:
       message: foobar
 """
+    mergify_raw_config = """
+    extends: .github
+"""
+    config_file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path=github_types.GitHubFilePath("whatever"),
+        decoded_content=mergify_raw_config,
+        encoding="base64",
+    )
     respx_mock.get("repos/Mergifyio/.github/contents/.mergify.yml").respond(
         200,
         json=github_types.GitHubContentFile(  # type: ignore[arg-type]
@@ -1317,10 +1320,9 @@ defaults:
         ),
     )
 
-    config = await mergify_conf.get_mergify_config_from_dict(
+    config = await mergify_conf.get_mergify_config_from_file(
         fake_repository,
-        {"extends": github_types.GitHubRepositoryName(".github")},
-        "",
+        config_file,
     )
 
     # Configuration has been extended and have defaults from the extension, with no
@@ -2582,6 +2584,157 @@ async def test_rule_condition_related_checks(
     assert condition.related_checks == expected_related_checks
 
 
+async def test_yaml_anchors_config_extension(
+    fake_repository: context.Repository,
+) -> None:
+    rules = """
+            extends: .github
+
+            queue_rules:
+              - name: queue
+                merge_conditions: *common_checks
+                checks_timeout: 25m
+
+
+            pull_request_rules:
+              - name: queue
+                conditions:
+                  - base=main
+                  - label=to-be-merged
+                  - and: *common_checks
+                actions:
+                  queue:
+                    name: queue
+                    method: squash
+            """
+
+    async def item(
+        *_args: typing.Any,
+        **_kwargs: typing.Any,
+    ) -> github_types.GitHubContentFile:
+        return github_types.GitHubContentFile(
+            {
+                "content": encodebytes(rules.encode()).decode(),
+                "path": github_types.GitHubFilePath(".mergify.yml"),
+                "type": "file",
+                "sha": github_types.SHAType("azertyu"),
+                "encoding": "base64",
+            },
+        )
+
+    client = mock.Mock()
+    client.item.return_value = item()
+    fake_repository.installation.client = client
+
+    async def mocked_get_mergify_extended_config(  # type: ignore[no-untyped-def]
+        repository_ctxt,
+        *args: typing.Any,  # noqa: ARG001
+        **kwargs: typing.Any,  # noqa: ARG001
+    ):
+        extended_rules = """
+shared:
+  merge_ci: &common_checks
+    - "check-success=ci/circleci: check_if_tests_done"
+    - "#approved-reviews-by>=1"
+
+queue_rules:
+  - name: parent_queue
+    merge_conditions:
+      - label=parent
+      - and: *common_checks
+    checks_timeout: 25m
+
+pull_request_rules:
+  - name: parent
+    conditions:
+      - base=main
+      - label=to-be-merged
+      - and: *common_checks
+    actions:
+      queue:
+        name: parent_queue
+        method: squash
+"""
+        config_file = context.MergifyConfigFile(
+            decoded_content=extended_rules,
+            type="file",
+            content=encodebytes(extended_rules.encode()).decode(),
+            path=github_types.GitHubFilePath(".github/whatever.yml"),
+            sha=github_types.SHAType("azertyuiop"),
+            encoding="base64",
+        )
+        return await mergify_conf.get_mergify_config_from_file(
+            repository_ctxt,
+            config_file,
+            called_from_extend=True,
+        )
+
+    with mock.patch(
+        "mergify_engine.rules.config.mergify.get_mergify_extended_config",
+        side_effect=mocked_get_mergify_extended_config,
+        autospec=True,
+    ):
+        await fake_repository.load_mergify_config()
+
+    expected_config = {
+        "extends": ".github",
+        "queue_rules": [
+            {
+                "name": "queue",
+                "merge_conditions": [
+                    "check-success=ci/circleci: check_if_tests_done",
+                    "#approved-reviews-by>=1",
+                ],
+                "checks_timeout": "25m",
+            },
+            {
+                "name": "parent_queue",
+                "merge_conditions": [
+                    "label=parent",
+                    {
+                        "and": [
+                            "check-success=ci/circleci: check_if_tests_done",
+                            "#approved-reviews-by>=1",
+                        ],
+                    },
+                ],
+                "checks_timeout": "25m",
+            },
+        ],
+        "pull_request_rules": [
+            {
+                "name": "queue",
+                "conditions": [
+                    "base=main",
+                    "label=to-be-merged",
+                    {
+                        "and": [
+                            "check-success=ci/circleci: check_if_tests_done",
+                            "#approved-reviews-by>=1",
+                        ],
+                    },
+                ],
+                "actions": {"queue": {"name": "queue", "method": "squash"}},
+            },
+            {
+                "name": "parent",
+                "conditions": [
+                    "base=main",
+                    "label=to-be-merged",
+                    {
+                        "and": [
+                            "check-success=ci/circleci: check_if_tests_done",
+                            "#approved-reviews-by>=1",
+                        ],
+                    },
+                ],
+                "actions": {"queue": {"name": "parent_queue", "method": "squash"}},
+            },
+        ],
+    }
+    assert fake_repository.mergify_config["raw_config"] == expected_config
+
+
 async def test_queue_rules_parameters() -> None:
     config = await utils.load_mergify_config(
         """
@@ -2988,3 +3141,64 @@ async def test_base_rule_conditions_copy_ignore() -> None:
     copy = condition.copy(ignore_conditions_starting_with=("base", "label"))
 
     assert len(copy.condition.conditions) == 0
+
+
+@pytest.mark.parametrize(
+    ("config", "expected_value"),
+    (
+        ('extends: "abc-123"', "abc-123"),
+        ("extends: 'abc-123'", "abc-123"),
+        ("extends: '.abc-123'", ".abc-123"),
+        ('extends:        "abc-123"       ', "abc-123"),
+        ("extends:        abc-123       ", "abc-123"),
+        ("extends: abc-123       ", "abc-123"),
+        ("extends: .abc-123       ", ".abc-123"),
+        ("extends:      abc-123", "abc-123"),
+        ('extends:   "abc-123"', "abc-123"),
+        ("extends:   'abc-123'", "abc-123"),
+        (
+            """extends: |-
+   abc-123""",
+            "abc-123",
+        ),
+        (
+            """extends: >
+   abc-123""",
+            "abc-123",
+        ),
+        (
+            """extends: >
+   .abc-123""",
+            ".abc-123",
+        ),
+        (
+            """extends: >-
+   'abc-123'""",
+            "abc-123",
+        ),
+        (
+            """extends: >-\nabc-123""",
+            "abc-123",
+        ),
+        (
+            """extends: |
+   abc-123""",
+            "abc-123",
+        ),
+        (
+            '''extends: |
+   "abc-123"''',
+            "abc-123",
+        ),
+        (
+            """
+queue_rules:
+  - name: queue
+""",
+            None,
+        ),
+        ("abc-123", None),
+    ),
+)
+def test_get_extended_repository_name(config: str, expected_value: str | None) -> None:
+    assert mergify_conf.get_extended_repository_name(config) == expected_value

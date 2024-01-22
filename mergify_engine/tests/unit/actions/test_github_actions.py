@@ -1,5 +1,3 @@
-from unittest import mock
-
 import pytest
 import voluptuous
 
@@ -9,7 +7,6 @@ from mergify_engine.rules.config import mergify as mergify_conf
 
 async def test_github_actions_get_config() -> None:
     await mergify_conf.get_mergify_config_from_dict(
-        mock.MagicMock(),
         {
             "pull_request_rules": [
                 {
@@ -47,7 +44,6 @@ async def test_github_actions_get_config() -> None:
 
 async def test_github_actions_template_inputs() -> None:
     await mergify_conf.get_mergify_config_from_dict(
-        mock.MagicMock(),
         {
             "pull_request_rules": [
                 {

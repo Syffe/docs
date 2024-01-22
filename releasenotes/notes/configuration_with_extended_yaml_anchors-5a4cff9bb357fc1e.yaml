@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Mergify now allows you to share YAML anchors across configuration files
+    through the `extends` configuration feature.
+    You can now define your YAML anchors in a unique shared configuration file and use them
+    in all your other configuration files, without having to redefine them.
