@@ -295,7 +295,9 @@ class TrainCar:
         partr_config.PartitionRuleName
     ] = dataclasses.field(default_factory=list)
 
-    QUEUE_BRANCH_PREFIX: typing.ClassVar[str] = "tmp-"
+    # Prefix used when setting up the branch for the draft PR.
+    # After the branch is properly set up, we rename the branch by removing this prefix.
+    DRAFT_PR_BRANCH_PREFIX_DURING_SETUP: typing.ClassVar[str] = "tmp-"
 
     class Serialized(typing.TypedDict):
         train_car_state: TrainCarState.Serialized
@@ -1186,7 +1188,7 @@ class TrainCar:
             )
 
         self.queue_branch_name = github_types.GitHubRefType(
-            f"{self.QUEUE_BRANCH_PREFIX}{self.queue_branch_name}",
+            f"{self.DRAFT_PR_BRANCH_PREFIX_DURING_SETUP}{self.queue_branch_name}",
         )
 
         try:
@@ -1262,7 +1264,11 @@ class TrainCar:
                 ) from e
 
         new_branch_name = github_types.GitHubRefType(
-            self.queue_branch_name.replace(self.QUEUE_BRANCH_PREFIX, "", 1),
+            self.queue_branch_name.replace(
+                self.DRAFT_PR_BRANCH_PREFIX_DURING_SETUP,
+                "",
+                1,
+            ),
         )
         await self._rename_branch(self.queue_branch_name, new_branch_name, on_behalf)
         self.queue_branch_name = new_branch_name

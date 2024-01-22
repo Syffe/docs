@@ -1575,11 +1575,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         # NOTE(Kontrolix): This test let us know if this pull request is a draft merge
         # queue PR. If so, in the creation process of the pr, we create a branch with
-        # the QUEUE_BRANCH_PREFIX then merge code on this branch and finally rename it
-        # without the prefix. But check-suite linked to our check run was created
-        # before renaming so we have to look for branch name with the QUEUE_BRANCH_PREFIX
+        # the DRAFT_PR_BRANCH_PREFIX_DURING_SETUP then merge code on this branch
+        # and finally rename it without the prefix.
+        # But check-suite linked to our check run was created before renaming so we have
+        # to look for branch name with the DRAFT_PR_BRANCH_PREFIX_DURING_SETUP
         if pull["draft"] and tmp == constants.MERGE_QUEUE_BRANCH_PREFIX.strip("/"):
-            tmp = f"{merge_train.TrainCar.QUEUE_BRANCH_PREFIX}{tmp}"
+            tmp = f"{merge_train.TrainCar.DRAFT_PR_BRANCH_PREFIX_DURING_SETUP}{tmp}"
 
         return tmp.replace("/", "-")
 
