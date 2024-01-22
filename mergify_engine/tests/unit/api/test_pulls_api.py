@@ -1,5 +1,6 @@
-from urllib import parse
+import urllib.parse
 
+import pytest
 import respx
 
 from mergify_engine import date
@@ -240,9 +241,9 @@ async def test_pulls_api_pagination(
 
     next_link = resp.links["next"]["url"]
     next_cursor = pagination.Cursor.from_string(
-        parse.parse_qs(parse.urlparse(next_link).query)["cursor"][0],
+        urllib.parse.parse_qs(urllib.parse.urlparse(next_link).query)["cursor"][0],
     )
-    assert next_cursor.value == "2-0"
+    assert next_cursor.value(pagination.CursorType[tuple[int, int]]) == (2, 0)
 
     # Second call overlap github page 2 and 3
     resp = await web_client.post(
@@ -260,9 +261,9 @@ async def test_pulls_api_pagination(
 
     next_link = resp.links["next"]["url"]
     next_cursor = pagination.Cursor.from_string(
-        parse.parse_qs(parse.urlparse(next_link).query)["cursor"][0],
+        urllib.parse.parse_qs(urllib.parse.urlparse(next_link).query)["cursor"][0],
     )
-    assert next_cursor.value == "3-2"
+    assert next_cursor.value(pagination.CursorType[tuple[int, int]]) == (3, 2)
 
     # Thrid call restart on page 3 from where we stopped and return the last 3 PRs
     resp = await web_client.post(
@@ -282,28 +283,23 @@ async def test_pulls_api_pagination(
     assert "next" not in resp.links
 
 
+@pytest.mark.parametrize("cursor_value", ["blabla", ("abc", 123), (1, 2, 3), (1,)])
 async def test_pulls_api_invalid_cursor(
     web_client: tests_conftest.CustomTestClient,
     api_token: tests_api_conftest.TokenUserRepo,
+    cursor_value: object,
 ) -> None:
+    invalid_cursor = pagination.Cursor(cursor_value, forward=True).to_string()
     resp = await web_client.request(
         "POST",
         "/v1/repos/Mergifyio/engine/pulls",
-        params={"cursor": "blabla"},
+        params={"cursor": invalid_cursor},
         json=["base=main"],
         headers={"Authorization": api_token.api_token},
     )
 
-    assert resp.status_code == 400
-    assert resp.json() == {"detail": "Invalid page cursor"}
-
-    resp = await web_client.request(
-        "POST",
-        "/v1/repos/Mergifyio/engine/pulls",
-        params={"cursor": "abc-123"},
-        json=["base=main"],
-        headers={"Authorization": api_token.api_token},
-    )
-
-    assert resp.status_code == 400
-    assert resp.json() == {"detail": "Invalid page cursor"}
+    assert resp.status_code == 422
+    assert resp.json() == {
+        "message": "Invalid cursor",
+        "cursor": invalid_cursor,
+    }

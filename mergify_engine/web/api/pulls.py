@@ -84,15 +84,11 @@ async def get_pull_requests(
             detail=str(e),
         )
 
-    cursor = current_page.cursor
-    if cursor.value:
-        try:
-            start_page, start_idx = map(int, cursor.value.split("-"))
-        except ValueError:
-            raise fastapi.HTTPException(status_code=400, detail="Invalid page cursor")
-    else:
-        start_page = 1
-        start_idx = 0
+    cursor_value = current_page.cursor.value(pagination.CursorType[tuple[int, int]])
+    if cursor_value is None:
+        cursor_value = (1, 0)
+
+    start_page, start_idx = cursor_value
 
     matching_pulls: list[github_types.GitHubPullRequest] = []
 
@@ -176,7 +172,7 @@ async def get_pull_requests(
         else:
             pr_idx_on_page += 1
 
-        cursor_next = pagination.Cursor(f"{page}-{pr_idx_on_page}", forward=True)
+        cursor_next = pagination.Cursor((page, pr_idx_on_page), forward=True)
 
     response_page: pagination.Page[github_types.GitHubPullRequest] = pagination.Page(
         items=matching_pulls,
