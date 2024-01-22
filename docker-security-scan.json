@@ -3506,7 +3506,8 @@
     "VendorSeverity": {
       "cbl-mariner": 2,
       "nvd": 2,
-      "redhat": 2
+      "redhat": 2,
+      "ubuntu": 1
     },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
   },
@@ -3521,7 +3522,8 @@
     "VendorSeverity": {
       "cbl-mariner": 2,
       "nvd": 2,
-      "redhat": 2
+      "redhat": 2,
+      "ubuntu": 1
     },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
   },
@@ -3536,7 +3538,8 @@
     "VendorSeverity": {
       "cbl-mariner": 2,
       "nvd": 2,
-      "redhat": 2
+      "redhat": 2,
+      "ubuntu": 1
     },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
   },
@@ -3551,7 +3554,8 @@
     "VendorSeverity": {
       "cbl-mariner": 2,
       "nvd": 2,
-      "redhat": 2
+      "redhat": 2,
+      "ubuntu": 1
     },
     "PublishedDate": "2023-12-23T13:15:07.573Z"
   },
@@ -3564,12 +3568,77 @@
     "Title": "sqlite: heap-buffer-overflow at sessionfuzz",
     "Severity": "HIGH",
     "VendorSeverity": {
+      "alma": 2,
       "bitnami": 3,
+      "cbl-mariner": 2,
       "nvd": 3,
+      "oracle-oval": 2,
       "photon": 3,
       "redhat": 2,
+      "rocky": 2,
       "ubuntu": 2
     },
     "PublishedDate": "2023-12-29T10:15:13.89Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2024-0567",
+    "PkgName": "libgnutls30",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2024-0567",
+    "Title": "gnutls: rejects certificate chain with distributed trust",
+    "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "redhat": 2,
+      "ubuntu": 2
+    },
+    "PublishedDate": "2024-01-16T14:15:48.527Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2024-22365",
+    "PkgName": "libpam-modules",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2024-22365",
+    "Title": "pam: allowing unpriledged user to block another user namespace",
+    "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "redhat": 2,
+      "ubuntu": 2
+    }
+  },
+  {
+    "VulnerabilityID": "CVE-2024-22365",
+    "PkgName": "libpam-modules-bin",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2024-22365",
+    "Title": "pam: allowing unpriledged user to block another user namespace",
+    "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "redhat": 2,
+      "ubuntu": 2
+    }
+  },
+  {
+    "VulnerabilityID": "CVE-2024-22365",
+    "PkgName": "libpam-runtime",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2024-22365",
+    "Title": "pam: allowing unpriledged user to block another user namespace",
+    "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "redhat": 2,
+      "ubuntu": 2
+    }
+  },
+  {
+    "VulnerabilityID": "CVE-2024-22365",
+    "PkgName": "libpam0g",
+    "Status": "affected",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2024-22365",
+    "Title": "pam: allowing unpriledged user to block another user namespace",
+    "Severity": "MEDIUM",
+    "VendorSeverity": {
+      "redhat": 2,
+      "ubuntu": 2
+    }
   }
 ]
