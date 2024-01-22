@@ -18,12 +18,12 @@ from mergify_engine.queue.merge_train.types import EmbarkedPullWithCar
 
 
 __all__ = [
-    "get_redis_train_key",
-    "CiState",
     "CheckStateT",
+    "CiState",
     "Convoy",
     "EmbarkedPull",
     "EmbarkedPullWithCar",
+    "MergeQueueResetError",
     "QueueCheck",
     "Train",
     "TrainCar",
@@ -32,5 +32,5 @@ __all__ = [
     "TrainCarPullRequestCreationFailureError",
     "TrainCarState",
     "TrainCarStateForSummary",
-    "MergeQueueResetError",
+    "get_redis_train_key",
 ]

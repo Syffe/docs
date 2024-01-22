@@ -28,8 +28,8 @@ if typing.TYPE_CHECKING:
     from mergify_engine import context as context_mod
     from mergify_engine.rules.config import partition_rules as partr_config
 
-MARKDOWN_TITLE_RE = re.compile(r"^#+ ", re.I)
-MARKDOWN_COMMIT_MESSAGE_RE = re.compile(r"^#+ Commit Message ?:?\s*$", re.I)
+MARKDOWN_TITLE_RE = re.compile(r"^#+ ", re.IGNORECASE)
+MARKDOWN_COMMIT_MESSAGE_RE = re.compile(r"^#+ Commit Message ?:?\s*$", re.IGNORECASE)
 MARKDOWN_COMMENT_RE = re.compile("(<!--.*?-->)", flags=re.DOTALL | re.IGNORECASE)
 COMMITS_ARRAY_ATTRIBUTE_RE = re.compile(r"^commits\[(-?\d+|\*)\]\.([\-\w]+)$")
 
@@ -817,8 +817,8 @@ class PullRequest(BasePullRequest):
 
         level_str = level[0].strip()
 
-        level_re = re.compile(rf"^{level_str} +", re.I)
-        section_re = re.compile(rf"^{section_escaped}\s*$", re.I)
+        level_re = re.compile(rf"^{level_str} +", re.IGNORECASE)
+        section_re = re.compile(rf"^{section_escaped}\s*$", re.IGNORECASE)
 
         found = False
         section_lines = []
