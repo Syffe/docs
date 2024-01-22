@@ -3,6 +3,7 @@ from urllib import parse
 import respx
 
 from mergify_engine import date
+from mergify_engine import pagination
 from mergify_engine.tests import conftest as tests_conftest
 from mergify_engine.tests.unit.api import conftest as tests_api_conftest
 
@@ -89,6 +90,7 @@ async def test_pulls_api_filters(
     resp = await web_client.request(
         "POST",
         "/v1/repos/Mergifyio/engine/pulls",
+        params={"per_page": 30},
         json=["-closed"],
         headers={"Authorization": api_token.api_token},
     )
@@ -101,6 +103,7 @@ async def test_pulls_api_filters(
     resp = await web_client.request(
         "POST",
         "/v1/repos/Mergifyio/engine/pulls",
+        params={"per_page": 30},
         json=["label=darkvader"],
         headers={"Authorization": api_token.api_token},
     )
@@ -112,6 +115,7 @@ async def test_pulls_api_filters(
     resp = await web_client.request(
         "POST",
         "/v1/repos/Mergifyio/engine/pulls",
+        params={"per_page": 30},
         json=["invalidcondition=darkvader"],
         headers={"Authorization": api_token.api_token},
     )
@@ -178,56 +182,35 @@ async def test_pulls_api_pagination(
         "default": False,
     }
 
-    pulls_p1 = [
-        pr
-        | {
-            "number": i,
-            "id": i,
-            "labels": [hellolabel],
-        }
-        for i in range(30)
-    ]
-    pulls_p1[-1]["labels"] = [kenobilabel]
-    pulls_p1[-2]["labels"] = [kenobilabel]
+    pulls = [pr | {"number": i, "id": i, "labels": [kenobilabel]} for i in range(15)]
 
-    pulls_p2 = [
-        pr
-        | {
-            "number": i,
-            "id": i,
-            "labels": [kenobilabel],
-        }
-        for i in range(30, 60)
-    ]
+    pulls[7]["labels"] = [hellolabel]
+    pulls[9]["labels"] = [hellolabel]
 
-    respx_mock.get(
-        "https://api.github.com/repos/Mergifyio/engine/pulls",
-        params={
-            "state": "open",
-            "sort": "created",
-            "direction": "desc",
-            "per_page": 30,
-            "page": 1,
-        },
-    ).respond(200, json=pulls_p1)
-
-    respx_mock.get(
-        "https://api.github.com/repos/Mergifyio/engine/pulls",
-        params={
-            "state": "open",
-            "sort": "created",
-            "direction": "desc",
-            "per_page": 30,
-            "page": 2,
-        },
-    ).respond(200, json=pulls_p2)
-
-    for i in range(28, 30):
+    # 4 pages because when we will hit the end of Github page 3, we will not have yet
+    # 5 results to return, therefore we will have to call page 4 to see if there more
+    # results to fetch.
+    for i in range(4):
         respx_mock.get(
-            f"https://api.github.com/repos/Mergifyio/engine/pulls/{i}",
+            "https://api.github.com/repos/Mergifyio/engine/pulls",
+            params={
+                "state": "open",
+                "sort": "created",
+                "direction": "desc",
+                "per_page": 5,
+                "page": i + 1,
+            },
+        ).respond(200, json=pulls[(i * 5) : 5 + (i * 5)])
+
+    for pull in pulls:
+        if pull["labels"] != [kenobilabel]:
+            continue
+
+        respx_mock.get(
+            f"https://api.github.com/repos/Mergifyio/engine/pulls/{pull['number']}",
         ).respond(
             200,
-            json=pulls_p1[i]
+            json=pull
             | {
                 "maintainer_can_modify": True,
                 "merged": False,
@@ -240,78 +223,63 @@ async def test_pulls_api_pagination(
             },
         )
 
-    for i in range(30, 38):
-        respx_mock.get(
-            f"https://api.github.com/repos/Mergifyio/engine/pulls/{i}",
-        ).respond(
-            200,
-            json=pulls_p2[i - 30]
-            | {
-                "maintainer_can_modify": True,
-                "merged": False,
-                "merged_by": None,
-                "rebaseable": True,
-                "mergeable": True,
-                "mergeable_state": "clean",
-                "changed_files": 1,
-                "commits": 1,
-            },
-        )
-
-    resp = await web_client.request(
-        "POST",
+    # First call is in sync with the github page 1
+    resp = await web_client.post(
         "/v1/repos/Mergifyio/engine/pulls",
+        params={"per_page": 5},
         json=["label=generalkenobi"],
         headers={"Authorization": api_token.api_token},
     )
-
     assert resp.status_code == 200
-    assert "pull_requests" in resp.json()
-    assert len(resp.json()["pull_requests"]) == 10
-    assert [p["number"] for p in resp.json()["pull_requests"]] == list(range(28, 38))
 
-    links = resp.headers["link"].split(",")
-    next_link = None
-    for link in links:
-        if link.endswith('rel="next"'):
-            next_link = link
-            break
+    resp_json = resp.json()
+    assert len(resp_json["pull_requests"]) == 5
+    assert resp_json["per_page"] == 5
+    assert resp_json["size"] == 5
+    assert [p["number"] for p in resp_json["pull_requests"]] == [0, 1, 2, 3, 4]
 
-    assert next_link is not None, "Should have a 'next' link in headers"
+    next_link = resp.links["next"]["url"]
+    next_cursor = pagination.Cursor.from_string(
+        parse.parse_qs(parse.urlparse(next_link).query)["cursor"][0],
+    )
+    assert next_cursor.value == "2-0"
 
-    next_url_str = next_link.removesuffix('>; rel="next"')
-    next_url_str = next_url_str.removeprefix("<")
-
-    next_url_parsed = parse.urlparse(next_url_str)
-
-    for i in range(38, 48):
-        respx_mock.get(
-            f"https://api.github.com/repos/Mergifyio/engine/pulls/{i}",
-        ).respond(
-            200,
-            json=pulls_p2[i - 30]
-            | {
-                "maintainer_can_modify": True,
-                "merged": False,
-                "merged_by": None,
-                "rebaseable": True,
-                "mergeable": True,
-                "mergeable_state": "clean",
-                "changed_files": 1,
-                "commits": 1,
-            },
-        )
-    resp = await web_client.request(
-        "POST",
-        f"{next_url_parsed.path}?{next_url_parsed.query}",
+    # Second call overlap github page 2 and 3
+    resp = await web_client.post(
+        next_link,
         json=["label=generalkenobi"],
         headers={"Authorization": api_token.api_token},
     )
-
     assert resp.status_code == 200
-    assert "pull_requests" in resp.json()
-    assert len(resp.json()["pull_requests"]) == 10
-    assert [p["number"] for p in resp.json()["pull_requests"]] == list(range(38, 48))
+
+    resp_json = resp.json()
+    assert len(resp_json["pull_requests"]) == 5
+    assert resp_json["per_page"] == 5
+    assert resp_json["size"] == 5
+    assert [p["number"] for p in resp.json()["pull_requests"]] == [5, 6, 8, 10, 11]
+
+    next_link = resp.links["next"]["url"]
+    next_cursor = pagination.Cursor.from_string(
+        parse.parse_qs(parse.urlparse(next_link).query)["cursor"][0],
+    )
+    assert next_cursor.value == "3-2"
+
+    # Thrid call restart on page 3 from where we stopped and return the last 3 PRs
+    resp = await web_client.post(
+        next_link,
+        json=["label=generalkenobi"],
+        headers={"Authorization": api_token.api_token},
+    )
+    assert resp.status_code == 200
+
+    resp_json = resp.json()
+    assert len(resp_json["pull_requests"]) == 3
+    assert resp_json["per_page"] == 5
+    assert resp_json["size"] == 3
+    assert [p["number"] for p in resp.json()["pull_requests"]] == [12, 13, 14]
+
+    #  We reached the end there should be no next link
+    assert "next" not in resp.links
 
 
 async def test_pulls_api_invalid_cursor(

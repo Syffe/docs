@@ -87,12 +87,12 @@ async def get_pull_requests(
     cursor = current_page.cursor
     if cursor.value:
         try:
-            start_page, start_pr = map(int, cursor.value.split("-"))
+            start_page, start_idx = map(int, cursor.value.split("-"))
         except ValueError:
             raise fastapi.HTTPException(status_code=400, detail="Invalid page cursor")
     else:
         start_page = 1
-        start_pr = 0
+        start_idx = 0
 
     matching_pulls: list[github_types.GitHubPullRequest] = []
 
@@ -117,23 +117,20 @@ async def get_pull_requests(
     page = start_page - 1
     reached_last_page = False
     while len(matching_pulls) != current_page.per_page and not reached_last_page:
-        # The number of pr we went through while trying to fill our page.
-        # It will be useful for building `cursor_next`.
-        nb_pulls_on_github = 0
         page += 1
         pulls = await repository.get_pulls(
             state="open",
             sort="created",
             sort_direction="desc",
             page=page,
+            per_page=current_page.per_page,
         )
         reached_last_page = len(pulls) < current_page.per_page
-        for idx, pull in enumerate(pulls):
-            if page == start_page and idx < start_pr:
+        for pr_idx_on_page, pull in enumerate(pulls):
+            if page == start_page and pr_idx_on_page < start_idx:
                 continue
 
             pull_with_all_data = None
-            nb_pulls_on_github += 1
 
             # Those attributes are not present when querying `/pulls`.
             # But we can manually fill them to not have to make a query to GitHub
@@ -169,13 +166,22 @@ async def get_pull_requests(
                 if len(matching_pulls) == current_page.per_page:
                     break
 
+    if reached_last_page:
+        cursor_next = None
+    else:
+        if pr_idx_on_page + 1 == current_page.per_page:
+            # We're at the end of the page, so we'll need incremente page to next page
+            page = page + 1
+            pr_idx_on_page = 0
+        else:
+            pr_idx_on_page += 1
+
+        cursor_next = pagination.Cursor(f"{page}-{pr_idx_on_page}", forward=True)
+
     response_page: pagination.Page[github_types.GitHubPullRequest] = pagination.Page(
         items=matching_pulls,
         current=current_page,
-        cursor_next=pagination.Cursor(
-            "" if reached_last_page else f"{page}-{nb_pulls_on_github}",
-            forward=True,
-        ),
+        cursor_next=cursor_next,
     )
 
     return MatchingPullRequests(page=response_page)  # type: ignore[call-arg]
