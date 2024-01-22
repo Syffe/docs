@@ -11,6 +11,7 @@ from mergify_engine import github_types
 from mergify_engine import pagination
 from mergify_engine.models import enumerations
 from mergify_engine.web import api
+from mergify_engine.web import utils
 from mergify_engine.web.api import security
 
 
@@ -55,7 +56,7 @@ async def get_repository_events(
         annotated_types.Lt(security.PG_INT_MAX),
     ] = None,
     base_ref: typing.Annotated[
-        github_types.GitHubRefType | None,
+        utils.PostgresTextField[github_types.GitHubRefType] | None,
         fastapi.Query(description="Get events for PRs to the given base ref"),
     ] = None,
     event_type: typing.Annotated[

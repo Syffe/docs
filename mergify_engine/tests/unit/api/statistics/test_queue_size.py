@@ -295,3 +295,18 @@ async def test_api_grouping(
                 },
             ],
         }
+
+
+@pytest.mark.parametrize("query_param", ("base_ref", "partition_name", "queue_name"))
+async def test_invalid_query_string(
+    query_param: str,
+    fake_repository: context.Repository,  # noqa: ARG001
+    web_client: tests_conftest.CustomTestClient,
+    api_token: tests_api_conftest.TokenUserRepo,
+) -> None:
+    response = await web_client.get(
+        f"/v1/repos/Mergifyio/engine/stats/queue_size?{query_param}=foo%00bar",
+        headers={"Authorization": api_token.api_token},
+    )
+    assert response.status_code == 422
+    assert "is not a valid string" in response.text

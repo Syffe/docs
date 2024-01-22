@@ -24,8 +24,10 @@ def CheckNullChar(v: str) -> str:
     return v
 
 
-PostgresText = typing.Annotated[
-    str,
+_T = typing.TypeVar("_T")
+
+PostgresTextField: typing.TypeAlias = typing.Annotated[
+    _T,
     pydantic.Field(
         min_length=1,
         max_length=255,

@@ -38,7 +38,7 @@ class ApplicationsList:
 
 
 class ApplicationBody(pydantic.BaseModel):
-    name: utils.PostgresText
+    name: utils.PostgresTextField[str]
 
 
 router = fastapi.APIRouter(

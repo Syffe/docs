@@ -12,6 +12,7 @@ from mergify_engine.models import events as evt_models
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules
 from mergify_engine.web import api
+from mergify_engine.web import utils
 from mergify_engine.web.api import security
 
 
@@ -72,15 +73,15 @@ async def get_average_ci_runtime(
     repository: security.Repository,
     timerange: security.TimeRange,
     base_ref: typing.Annotated[
-        list[github_types.GitHubRefType] | None,
+        list[utils.PostgresTextField[github_types.GitHubRefType]] | None,
         fastapi.Query(description="Base reference(s) of the pull requests"),
     ] = None,
     partition_name: typing.Annotated[
-        list[partr_config.PartitionRuleName] | None,
+        list[utils.PostgresTextField[partr_config.PartitionRuleName]] | None,
         fastapi.Query(description="Partition name(s) of the pull requests"),
     ] = None,
     queue_name: typing.Annotated[
-        list[queue_rules.QueueName] | None,
+        list[utils.PostgresTextField[queue_rules.QueueName]] | None,
         fastapi.Query(description="Name of the merge queue(s) for the pull requests"),
     ] = None,
 ) -> CIAverageRuntimeResponse:
