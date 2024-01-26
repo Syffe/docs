@@ -31,9 +31,12 @@ protection](https://docs.github.com/en/repositories/configuring-branches-and-mer
 settings that allow to enforce certain restrictions when pushing commits to
 your repository.
 
-Mergify automatically injects those conditions in your rules as they can't be
-bypassed. For example, if you request your pull request to be approved by at
-least one person, Mergify will inject the `#approved-reviews-by>=1` condition.
+Mergify automatically injects those conditions in your rules, though,
+they can be bypassed.
+(see
+[branch_protection_injection_mode](/configuration/file-format/#queue-rules).
+For example, if you request your pull request to be approved by at least
+one person, Mergify will inject the `#approved-reviews-by>=1` condition.
 
 <Image src={branchProtectionConditionsScreenshot} alt="Mergify Branch Protection Condition Injection" />
 
