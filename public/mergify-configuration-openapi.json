@@ -1005,7 +1005,7 @@
               "$ref": "#/definitions/Template"
             },
             "report_mode": {
-              "description": "List of reporting modes for the action's result",
+              "description": "List of reporting modes for the action's result.",
               "default": ["check"],
                 "$ref": "#/definitions/ReportModeArray"
             }
